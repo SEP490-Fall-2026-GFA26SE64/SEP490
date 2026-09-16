@@ -1,0 +1,4 @@
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 42px; padding: 8px 16px; font: inherit; font-size: var(--text-sm); color: var(--accent); background: var(--surface); border: 1px solid var(--control-border); border-radius: var(--radius-control); cursor: pointer; }
+.ui-button:hover:not(:disabled) { background: var(--control-hover); }
+.ui-button:disabled { opacity: .6; cursor: wait; }
+.ui-button svg { flex-shrink: 0; }

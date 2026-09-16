@@ -1,0 +1,15 @@
+**/target/
+**/node_modules/
+**/dist/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+**/.env
+**/.env.*
+!**/.env.example
+.idea/
+*.log
+artifacts/
+**/playwright-report/
+**/test-results/

@@ -1,0 +1,7 @@
+.heading { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.heading--page { font-size: var(--text-page); }
+.heading--section { font-size: var(--text-section); }
+.eyebrow { color: var(--accent); font-size: 13px; font-weight: 500; margin: 0 0 var(--space-2); }
+@media (max-width: 560px) {
+  .heading--page { font-size: 26px; }
+}

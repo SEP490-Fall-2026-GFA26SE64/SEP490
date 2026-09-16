@@ -1,0 +1,10 @@
+**/target
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+**/.git
+**/.venv
+frontend
+recommendation-engine
+tests

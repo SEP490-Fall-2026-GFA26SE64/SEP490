@@ -1,0 +1,27 @@
+:root {
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-body: 16px;
+  --text-page: 30px;
+  --text-section: 18px;
+  --text-primary: #283333;
+  --text-secondary: #5f6464;
+  --text-muted: #667371;
+  --surface: #fff;
+  --background: #f6f8f8;
+  --accent: #16705c;
+  --border: #dce3e2;
+  --control-border: #b2c9c2;
+  --control-hover: #eaf4f0;
+  --focus: #aa7300;
+  --warning: #e6b753;
+  --danger: #a03636;
+  --surface-tint: #f0f6f3;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-control: 5px;
+}
