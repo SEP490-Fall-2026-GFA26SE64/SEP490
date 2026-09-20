@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AdminDashboardPage } from '../features/administration/dashboard/AdminDashboardPage'
 import { DesignSystemShowcasePage } from '../features/administration/design-system/DesignSystemShowcasePage'
 import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/KnowledgeGraphPage'
+import { LoginPage } from '../features/auth/LoginPage'
 import { AssessmentPage } from '../features/learner/assessment/AssessmentPage'
 import { CompetencyGapAnalysisPage } from '../features/learner/gap-analysis/CompetencyGapAnalysisPage'
 import { AdaptivePathwayPage } from '../features/learner/pathway/AdaptivePathwayPage'
@@ -23,8 +24,12 @@ export default function App() {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
-            {/* Default & Learner routes */}
-            <Route path="/" element={<Navigate to="/learner/pathway" replace />} />
+            {/* Auth routes: Root redirects to Login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/home" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* Learner routes */}
             <Route path="/learner" element={<Navigate to="/learner/pathway" replace />} />
             <Route path="/learner/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/learner/gap-analysis" element={<CompetencyGapAnalysisPage />} />

@@ -4,13 +4,11 @@ import {
   ArrowRight,
   Bell,
   BookOpen,
-  Check,
   CheckCircle2,
   Copy,
   Info,
   Layers,
   Palette,
-  RotateCcw,
   Search,
   Settings,
   Sliders,
@@ -18,6 +16,7 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 import { Heading } from '../../../shared/components/typography/Heading'
+import { Text } from '../../../shared/components/typography/Text'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../shared/components/ui/Accordion'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Breadcrumb } from '../../../shared/components/ui/Breadcrumb'
@@ -26,13 +25,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
+import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import './DesignSystemShowcasePage.css'
-
 
 export interface PaletteSwatch {
   name: string
@@ -51,127 +51,25 @@ export interface PaletteTheme {
   swatches: PaletteSwatch[]
 }
 
-const PALETTES: Record<string, PaletteTheme> = {
-  original: {
-    id: 'original',
-    name: 'Classic Blue',
-    badgeLabel: 'Original (Default)',
-    subtitle: 'Existing design tokens (#0056D2) with cool neutral canvas.',
-    primaryHex: '#0056D2',
-    accentDot: '#0056D2',
-    swatches: [
-      { name: 'Primary Blue', hex: '#0056D2', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
-      { name: 'Primary Hover', hex: '#00419E', class: 'bg-[hsl(215_100%_31%)] text-white', role: 'CTA Hover State' },
-      { name: 'Secondary Tint', hex: '#E8F0FE', class: 'bg-secondary text-secondary-foreground border border-blue-200', role: 'Secondary Action / Badges' },
-      { name: 'Canvas Background', hex: '#F5F7FA', class: 'bg-background border border-border text-foreground', role: 'Page Background' },
-      { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
-      { name: 'Navy Foreground', hex: '#1F2937', class: 'bg-[hsl(215_25%_17%)] text-white', role: 'Headings & Body Text' },
-      { name: 'Muted Text', hex: '#5F6464', class: 'bg-[hsl(215_12%_42%)] text-white', role: 'Subtitles & Captions' },
-      { name: 'Success Green', hex: '#16A34A', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
-      { name: 'Warning Amber', hex: '#D97706', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending' },
-      { name: 'Destructive Red', hex: '#DC2626', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
-    ],
-  },
-  sapphire: {
-    id: 'sapphire',
-    name: 'Modern Sapphire',
-    badgeLabel: 'Refined Blue',
-    subtitle: 'Deeper tech sapphire (#2563EB) & slate neutrals — modern enterprise evolution.',
-    primaryHex: '#2563EB',
-    accentDot: '#2563EB',
-    swatches: [
-      { name: 'Sapphire Blue', hex: '#2563EB', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
-      { name: 'Royal Hover', hex: '#1E40AF', class: 'bg-[hsl(224_76%_40%)] text-white', role: 'CTA Hover State' },
-      { name: 'Ice Secondary', hex: '#EFF6FF', class: 'bg-secondary text-secondary-foreground border border-blue-200', role: 'Secondary Action / Badges' },
-      { name: 'Slate Canvas', hex: '#F8FAFC', class: 'bg-background border border-border text-foreground', role: 'Page Background' },
-      { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
-      { name: 'Deep Navy', hex: '#0F172A', class: 'bg-[hsl(222_47%_11%)] text-white', role: 'Headings & Body Text' },
-      { name: 'Slate Muted', hex: '#64748B', class: 'bg-[hsl(215_16%_47%)] text-white', role: 'Subtitles & Captions' },
-      { name: 'Emerald Success', hex: '#10B981', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
-      { name: 'Warning Amber', hex: '#F59E0B', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending' },
-      { name: 'Destructive Red', hex: '#EF4444', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
-    ],
-  },
-  emerald: {
-    id: 'emerald',
-    name: 'Emerald Intelligence',
-    badgeLabel: 'Pine & Mint',
-    subtitle: 'Deep forest pine (#0A635D) with mint ice and distinct vivid leaf success green.',
-    primaryHex: '#0A635D',
-    accentDot: '#0A635D',
-    swatches: [
-      { name: 'Deep Pine Teal', hex: '#0A635D', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
-      { name: 'Rich Forest Hover', hex: '#064E49', class: 'bg-[hsl(176_88%_20%)] text-white', role: 'CTA Hover State' },
-      { name: 'Mint Secondary', hex: '#CCFBF1', class: 'bg-secondary text-secondary-foreground border border-teal-200', role: 'Secondary Action / Badges' },
-      { name: 'Fresh Canvas', hex: '#F8FAFA', class: 'bg-background border border-border text-foreground', role: 'Page Background' },
-      { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
-      { name: 'Graphite Text', hex: '#1B282C', class: 'bg-[hsl(200_24%_14%)] text-white', role: 'Headings & Body Text' },
-      { name: 'Sage Muted', hex: '#5C6D70', class: 'bg-[hsl(180_10%_42%)] text-white', role: 'Subtitles & Captions' },
-      { name: 'Vivid Leaf Success', hex: '#16A34A', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
-      { name: 'Warm Amber', hex: '#D97706', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending' },
-      { name: 'Destructive Red', hex: '#DC2626', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
-    ],
-  },
-  orange: {
-    id: 'orange',
-    name: 'Solar Amber',
-    badgeLabel: 'Warm Terracotta',
-    subtitle: 'Warm executive terracotta (#E8590C) with stone canvas & high-contrast accents.',
-    primaryHex: '#E8590C',
-    accentDot: '#E8590C',
-    swatches: [
-      { name: 'Terracotta Orange', hex: '#E8590C', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
-      { name: 'Burnt Amber Hover', hex: '#C2410C', class: 'bg-[hsl(21_90%_40%)] text-white', role: 'CTA Hover State' },
-      { name: 'Cream Peach Tint', hex: '#FFF7ED', class: 'bg-secondary text-secondary-foreground border border-orange-200', role: 'Secondary Action / Badges' },
-      { name: 'Stone Canvas', hex: '#FAF9F7', class: 'bg-background border border-border text-foreground', role: 'Page Background' },
-      { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
-      { name: 'Charcoal Text', hex: '#231C18', class: 'bg-[hsl(24_25%_12%)] text-white', role: 'Headings & Body Text' },
-      { name: 'Warm Muted', hex: '#786D65', class: 'bg-[hsl(25_10%_44%)] text-white', role: 'Subtitles & Captions' },
-      { name: 'Crisp Green Success', hex: '#16A34A', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
-      { name: 'Deep Amber', hex: '#D97706', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending' },
-      { name: 'Destructive Red', hex: '#DC2626', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
-    ],
-  },
-  indigo: {
-    id: 'indigo',
-    name: 'Linear Indigo',
-    badgeLabel: 'Modern Violet',
-    subtitle: 'High-tech developer tool aesthetic (#6366F1) with midnight slate.',
-    primaryHex: '#6366F1',
-    accentDot: '#6366F1',
-    swatches: [
-      { name: 'Electric Indigo', hex: '#6366F1', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
-      { name: 'Royal Violet Hover', hex: '#4338CA', class: 'bg-[hsl(243_75%_52%)] text-white', role: 'CTA Hover State' },
-      { name: 'Lavender Mist', hex: '#EEF2FF', class: 'bg-secondary text-secondary-foreground border border-indigo-200', role: 'Secondary Action / Badges' },
-      { name: 'Modern Canvas', hex: '#F8F9FC', class: 'bg-background border border-border text-foreground', role: 'Page Background' },
-      { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
-      { name: 'Midnight Slate', hex: '#0B0F19', class: 'bg-[hsl(224_71%_10%)] text-white', role: 'Headings & Body Text' },
-      { name: 'Indigo Gray', hex: '#646A7E', class: 'bg-[hsl(220_14%_46%)] text-white', role: 'Subtitles & Captions' },
-      { name: 'Success Emerald', hex: '#10B981', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
-      { name: 'Warning Amber', hex: '#F59E0B', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending' },
-      { name: 'Destructive Rose', hex: '#F43F5E', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
-    ],
-  },
-  slate: {
-    id: 'slate',
-    name: 'Minimalist Slate',
-    badgeLabel: 'Monochrome Tech',
-    subtitle: 'Content-first monochrome tech (#1A273C) with crisp clean contrast.',
-    primaryHex: '#1A273C',
-    accentDot: '#1A273C',
-    swatches: [
-      { name: 'Obsidian Navy', hex: '#1A273C', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
-      { name: 'Black Obsidian', hex: '#0D1420', class: 'bg-[hsl(222_47%_10%)] text-white', role: 'CTA Hover State' },
-      { name: 'Slate Tint', hex: '#EAEFF4', class: 'bg-secondary text-secondary-foreground border border-slate-200', role: 'Secondary Action / Badges' },
-      { name: 'Pure Canvas', hex: '#FCFCFC', class: 'bg-background border border-border text-foreground', role: 'Page Background' },
-      { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
-      { name: 'Charcoal Text', hex: '#141920', class: 'bg-[hsl(220_30%_12%)] text-white', role: 'Headings & Body Text' },
-      { name: 'Neutral Slate', hex: '#626D7A', class: 'bg-[hsl(215_14%_46%)] text-white', role: 'Subtitles & Captions' },
-      { name: 'Success Green', hex: '#16A34A', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
-      { name: 'Warning Amber', hex: '#D97706', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending' },
-      { name: 'Destructive Red', hex: '#DC2626', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
-    ],
-  },
+const OFFICIAL_PALETTE: PaletteTheme = {
+  id: 'orange',
+  name: 'Refined Orange with Cool Slate Neutrals',
+  badgeLabel: 'Official Team Palette',
+  subtitle: 'Crisp cool slate canvas (easy on eyes), refined brand orange CTAs, and vivid yellow for In Progress states.',
+  primaryHex: '#EA580C',
+  accentDot: '#EA580C',
+  swatches: [
+    { name: 'Brand Orange', hex: '#EA580C', class: 'bg-primary text-primary-foreground', role: 'Main Brand / Primary CTAs' },
+    { name: 'Amber Hover', hex: '#C2410C', class: 'bg-[hsl(21_90%_40%)] text-white', role: 'CTA Hover State' },
+    { name: 'Soft Peach Tint', hex: '#FFF5EB', class: 'bg-secondary text-secondary-foreground border border-orange-200', role: 'Secondary Action / Badges' },
+    { name: 'Cool Slate Canvas', hex: '#F8FAFC', class: 'bg-background border border-border text-foreground', role: 'Page Canvas (Eye-Friendly)' },
+    { name: 'Card Surface', hex: '#FFFFFF', class: 'bg-card border border-border text-foreground', role: 'Containers & Cards' },
+    { name: 'Deep Slate Text', hex: '#0F172A', class: 'bg-[hsl(222_47%_11%)] text-white', role: 'Headings & Body Text' },
+    { name: 'Slate Muted', hex: '#64748B', class: 'bg-[hsl(215_16%_47%)] text-white', role: 'Subtitles & Captions' },
+    { name: 'Crisp Green Success', hex: '#16A34A', class: 'bg-success text-success-foreground', role: 'Completed & Active' },
+    { name: 'Vivid Yellow', hex: '#EAB308', class: 'bg-warning text-warning-foreground', role: 'In Progress / Pending (Distinct Yellow)' },
+    { name: 'Destructive Red', hex: '#DC2626', class: 'bg-destructive text-destructive-foreground', role: 'Errors & Deletions' },
+  ],
 }
 
 const SAMPLE_COURSES = [
@@ -208,40 +106,14 @@ export function DesignSystemShowcasePage() {
   const { toast } = useToast()
   const [copiedColor, setCopiedColor] = React.useState<string | null>(null)
 
-  // Active palette theme state
-  const [activeThemeId, setActiveThemeId] = React.useState<string>(() => {
-    return document.documentElement.getAttribute('data-theme') || 'original'
-  })
-
-  const currentTheme = PALETTES[activeThemeId] || PALETTES.original
-
-  const handleSelectTheme = (themeId: string) => {
-    setActiveThemeId(themeId)
-    if (themeId === 'original') {
-      document.documentElement.removeAttribute('data-theme')
-    } else {
-      document.documentElement.setAttribute('data-theme', themeId)
-    }
-    toast({
-      title: `Applied "${PALETTES[themeId]?.name || themeId}" Palette`,
-      description: 'Live CSS variables updated across all components on this page.',
-      variant: 'info',
-    })
-  }
-
-  const handleResetToDefault = () => {
-    setActiveThemeId('original')
-    document.documentElement.removeAttribute('data-theme')
-    toast({
-      title: 'Reset to Original Palette',
-      description: 'Restored classic design tokens.',
-      variant: 'info',
-    })
-  }
-
   const copyHex = (hex: string) => {
     navigator.clipboard.writeText(hex)
     setCopiedColor(hex)
+    toast({
+      title: `Copied ${hex}`,
+      description: 'Color code copied to clipboard.',
+      variant: 'info',
+    })
     setTimeout(() => setCopiedColor(null), 2000)
   }
 
@@ -264,12 +136,12 @@ export function DesignSystemShowcasePage() {
                 <Palette className="h-7 w-7 text-primary" />
                 Design System Showcase
               </Heading>
-              <p className="text-muted-foreground mt-1 text-sm max-w-2xl">
-                System design tokens, primary blue palette (`#0056D2`), reusable shared components (`src/shared/components/ui/`), and interactive state controls.
-              </p>
+              <Text variant="subtitle" className="mt-1 max-w-2xl">
+                Refined Brand Orange design tokens (<code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">#EA580C</code>), eye-friendly cool slate canvas, vivid yellow for In Progress states, unified typography, and state controls.
+              </Text>
             </div>
-            <Badge variant="secondary" className="px-3 py-1 text-xs self-start md:self-center font-medium">
-              Theme Connected
+            <Badge variant="secondary" className="px-3 py-1 text-xs self-start md:self-center font-semibold">
+              Official Orange Palette
             </Badge>
           </div>
         </div>
@@ -280,75 +152,39 @@ export function DesignSystemShowcasePage() {
             <div>
               <Heading level={2} size="section" className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                Color Palette & Live Theme Switcher
+                Official Color Palette: Solar Amber & Terracotta
               </Heading>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Toggle between curated palettes to test contrast, buttons, badges, and cards live across the workspace.
-              </p>
+              <Text variant="caption" className="mt-0.5">
+                Team-approved color palette active system-wide across all pages and interactive controls.
+              </Text>
             </div>
-            <div className="flex items-center gap-2">
-              {activeThemeId !== 'original' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<RotateCcw className="h-3.5 w-3.5" />}
-                  onClick={handleResetToDefault}
-                >
-                  Reset Default
-                </Button>
-              )}
-              {copiedColor && (
-                <span className="text-xs text-success font-medium animate-in fade-in">
-                  Copied {copiedColor} to clipboard!
-                </span>
-              )}
-            </div>
+            {copiedColor && (
+              <span className="text-xs text-success font-medium animate-in fade-in">
+                Copied {copiedColor} to clipboard!
+              </span>
+            )}
           </div>
 
-          {/* PALETTE TOGGLE BAR */}
-          <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Select Palette:
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Active Theme: <strong className="text-foreground">{currentTheme.name}</strong> &bull; {currentTheme.subtitle}
-              </span>
+          {/* Official Palette Banner */}
+          <div className="p-4 rounded-xl border border-border bg-card shadow-xs flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <span
+                className="w-5 h-5 rounded-full shrink-0 border border-black/10 shadow-xs"
+                style={{ backgroundColor: OFFICIAL_PALETTE.primaryHex }}
+              />
+              <div>
+                <strong className="text-sm text-foreground">{OFFICIAL_PALETTE.name}</strong>
+                <p className="text-xs text-muted-foreground">{OFFICIAL_PALETTE.subtitle}</p>
+              </div>
             </div>
-
-            <div className="flex flex-wrap gap-2 pt-1">
-              {Object.values(PALETTES).map((p) => {
-                const isSelected = activeThemeId === p.id
-
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => handleSelectTheme(p.id)}
-                    className={`flex items-center gap-2.5 px-3.5 py-2 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-primary bg-secondary text-foreground ring-2 ring-primary/20 font-semibold shadow-xs'
-                        : 'border-border bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                  >
-                    <span
-                      className="w-3.5 h-3.5 rounded-full shrink-0 border border-black/10"
-                      style={{ backgroundColor: p.accentDot }}
-                    />
-                    <span>{p.name}</span>
-                    <Badge variant={isSelected ? 'primary' : 'outline'} className="text-[10px] px-1.5 py-0">
-                      {p.badgeLabel}
-                    </Badge>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-primary ml-0.5" />}
-                  </button>
-                )
-              })}
-            </div>
+            <Badge variant="primary" className="text-xs px-2.5 py-1">
+              Active Design System
+            </Badge>
           </div>
 
           {/* Swatches Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {currentTheme.swatches.map((color) => (
+            {OFFICIAL_PALETTE.swatches.map((color) => (
               <Card
                 key={color.name + color.hex}
                 className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
@@ -358,8 +194,8 @@ export function DesignSystemShowcasePage() {
                   className="h-24 p-3 flex flex-col justify-between"
                   style={{
                     backgroundColor: color.hex,
-                    color: ['#FFFFFF', '#F5F7FA', '#F8FAFC', '#F8FAFA', '#F8F9FC', '#FCFCFC', '#E8F0FE', '#EFF6FF', '#CCFBF1', '#EEF2FF', '#EAEFF4'].includes(color.hex)
-                      ? '#1F2937'
+                    color: ['#FFFFFF', '#FAF9F7', '#FFF7ED', '#F0EDE8', '#DDD8D3'].includes(color.hex)
+                      ? '#231C18'
                       : '#FFFFFF',
                   }}
                 >
@@ -375,6 +211,91 @@ export function DesignSystemShowcasePage() {
               </Card>
             ))}
           </div>
+        </section>
+
+        {/* SECTION 1.5: Standardized Typography Scale */}
+        <section className="space-y-4">
+          <div>
+            <Heading level={2} size="section" className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Standardized Typography Scale
+            </Heading>
+            <Text variant="caption" className="mt-0.5">
+              Locked type tokens and components preventing mismatch across pages. Base font: IBM Plex Sans.
+            </Text>
+          </div>
+
+          <Card className="border-border overflow-hidden">
+            <div className="divide-y divide-border">
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 bg-muted/20">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Display / Hero Title (32px / 700)</Text>
+                  <Heading level={1} size="display">Knowledge Graph Architecture</Heading>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Heading level=&#123;1&#125; size="display" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Page Title / H1 (26px / 700)</Text>
+                  <Heading level={1} size="page">Adaptive Pathway & Competency Matrix</Heading>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Heading level=&#123;1&#125; size="page" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 bg-muted/20">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Section Heading / H2 (20px / 600)</Text>
+                  <Heading level={2} size="section">Role-Skill Taxonomy & Validation</Heading>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Heading level=&#123;2&#125; size="section" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Subsection Heading / H3 (16px / 600)</Text>
+                  <Heading level={3} size="subsection">Dynamic Knowledge Tracing Parameters</Heading>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Heading level=&#123;3&#125; size="subsection" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 bg-muted/20">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Card Header / H4 (15px / 600)</Text>
+                  <Heading level={4} size="card">Machine Learning Specialization Card</Heading>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Heading level=&#123;4&#125; size="card" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Subtitle / Lead Text (15px / 400)</Text>
+                  <Text variant="lead">
+                    Real-time adaptive learning recommendations driven by ontology graphs and continuous competency tracking.
+                  </Text>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Text variant="lead" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 bg-muted/20">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Body Text Default (14px / 400)</Text>
+                  <Text variant="body">
+                    Standard body copy used across dashboards, tables, modal descriptions, and instructional modules.
+                  </Text>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Text variant="body" /&gt;</code>
+              </div>
+
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <Text variant="eyebrow">Caption & Metadata (12px / 500)</Text>
+                  <Text variant="caption">Last updated: 5 minutes ago &bull; Verified by Ontologist Engine</Text>
+                </div>
+                <code className="text-xs font-mono text-muted-foreground">&lt;Text variant="caption" /&gt;</code>
+              </div>
+            </div>
+          </Card>
         </section>
 
         {/* SECTION 2: Toast Notification System Playground */}
@@ -689,6 +610,62 @@ export function DesignSystemShowcasePage() {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Unified PageHeader & StatCard Components */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <span>Shared Architecture Components: PageHeader & StatCard</span>
+              </CardTitle>
+              <CardDescription>
+                Standardized layout primitives shared across all actor portals (Learner, Manager, Administrator).
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="p-4 rounded-xl border border-border bg-muted/20 space-y-4">
+                <Text variant="eyebrow">Shared PageHeader Component Example</Text>
+                <PageHeader
+                  icon={<Palette className="h-7 w-7 text-primary" />}
+                  title="Example Feature Console"
+                  description="Standardized typography, action alignment, and sub-text flow across all actor views."
+                  actions={
+                    <Badge variant="secondary" className="font-semibold">
+                      Enterprise Tier
+                    </Badge>
+                  }
+                  className="pb-4 border-b-0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Text variant="eyebrow">Shared StatCard Component Example</Text>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <StatCard
+                    variant="gradient"
+                    title="Active Learners"
+                    value="1,420"
+                    valueClassName="text-primary"
+                    description="Continuous competency tracking"
+                  />
+                  <StatCard
+                    variant="gradient"
+                    title="Knowledge Mastery"
+                    value="88.4%"
+                    valueClassName="text-success"
+                    description="Passing dynamic gate quizzes"
+                  />
+                  <StatCard
+                    variant="gradient"
+                    title="Cost Reduction"
+                    value="$124.5K"
+                    description="Eliminating redundant training"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

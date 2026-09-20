@@ -1,13 +1,13 @@
 import { CheckCircle2, DollarSign, Send, TrendingUp, UserCheck } from 'lucide-react'
 import * as React from 'react'
-import { Heading } from '../../../shared/components/typography/Heading'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Breadcrumb } from '../../../shared/components/ui/Breadcrumb'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
+import { StatCard } from '../../../shared/components/ui/StatCard'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { AVERAGE_READINESS, TOTAL_HOURS_SAVED } from '../data/managerData'
@@ -29,72 +29,48 @@ export function EvaluationsPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        <Breadcrumb
-          items={[
-            { label: 'Platform Home', href: '/' },
-            { label: 'Manager Console', href: '/manager/team-matrix' },
-            { label: '360° Review & Endorsements' },
-          ]}
-        />
-
         {/* Console Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
-          <div>
-            <Heading level={1} size="page" className="flex items-center gap-3">
-              <UserCheck className="h-8 w-8 text-primary" />
-              <span>360° Review & Endorsements</span>
-            </Heading>
-            <p className="text-muted-foreground mt-1 text-sm max-w-3xl">
-              Perform qualitative behavioral verification and endorse employee competencies to unlock advanced roles in the enterprise ontology.
-            </p>
-          </div>
-
-          <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 self-start md:self-center">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <span>Active Review Cycle</span>
-          </Badge>
-        </div>
+        <PageHeader
+          icon={<UserCheck className="h-8 w-8 text-primary" />}
+          title="360° Review & Endorsements"
+          description="Perform qualitative behavioral verification and endorse employee competencies to unlock advanced roles in the enterprise ontology."
+          actions={
+            <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Active Review Cycle</span>
+            </Badge>
+          }
+        />
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="bg-gradient-to-br from-card to-secondary/30">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-                <TrendingUp className="h-4 w-4 text-primary" /> Average Team Readiness
-              </CardDescription>
-              <CardTitle className="text-2xl font-bold text-primary">{AVERAGE_READINESS}%</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={AVERAGE_READINESS} variant="primary" />
-              <p className="text-xs text-muted-foreground mt-1.5">+14% improvement this quarter</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            variant="gradient"
+            icon={<TrendingUp className="h-4 w-4 text-primary" />}
+            title="Average Team Readiness"
+            value={`${AVERAGE_READINESS}%`}
+            valueClassName="text-primary"
+            description="+14% improvement this quarter"
+          >
+            <Progress value={AVERAGE_READINESS} variant="primary" />
+          </StatCard>
 
-          <Card className="bg-gradient-to-br from-card to-secondary/30">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-                <DollarSign className="h-4 w-4 text-success" /> Cumulative Hours Saved
-              </CardDescription>
-              <CardTitle className="text-2xl font-bold text-success">{TOTAL_HOURS_SAVED} Hours</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground">
-                Saved via adaptive knowledge-gap skipping vs rigid traditional LMS courses.
-              </p>
-            </CardContent>
-          </Card>
+          <StatCard
+            variant="gradient"
+            icon={<DollarSign className="h-4 w-4 text-success" />}
+            title="Cumulative Hours Saved"
+            value={`${TOTAL_HOURS_SAVED} Hours`}
+            valueClassName="text-success"
+            description="Saved via adaptive knowledge-gap skipping vs rigid traditional LMS courses."
+          />
 
-          <Card className="bg-gradient-to-br from-card to-secondary/30">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-                <UserCheck className="h-4 w-4 text-primary" /> Promotion Ready
-              </CardDescription>
-              <CardTitle className="text-2xl font-bold text-foreground">1 Employee</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground">Elena Rostova has reached 92% of target competency thresholds.</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            variant="gradient"
+            icon={<UserCheck className="h-4 w-4 text-primary" />}
+            title="Promotion Ready"
+            value="1 Employee"
+            description="Elena Rostova has reached 92% of target competency thresholds."
+          />
         </div>
 
         {/* 360 Evaluation Card */}

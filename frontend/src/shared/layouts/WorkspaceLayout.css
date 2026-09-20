@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: 1rem;
   padding: 12px 24px;
   background: hsl(var(--card));
   border-bottom: 1px solid hsl(var(--border));
@@ -22,9 +22,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
+  color: hsl(var(--foreground));
   text-decoration: none;
+  letter-spacing: -0.01em;
 }
 
 .brand svg {
@@ -32,7 +34,7 @@
   flex-shrink: 0;
 }
 
-/* Layout Body with Sidebar */
+/* Layout Body with Snug, Modern Sidebar-to-Content Flow */
 .workspace-body {
   display: flex;
   flex: 1;
@@ -41,14 +43,18 @@
 }
 
 .workspace-sidebar {
-  width: 250px;
+  width: 240px;
   flex-shrink: 0;
   background: hsl(var(--card));
   border-right: 1px solid hsl(var(--border));
-  padding: 24px 16px;
+  padding: 20px 14px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  position: sticky;
+  top: 61px;
+  height: calc(100vh - 61px);
+  align-self: flex-start;
 }
 
 .workspace-sidebar-header {
@@ -59,7 +65,7 @@
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: hsl(var(--muted-foreground));
 }
 
@@ -67,6 +73,14 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+}
+
+.workspace-sidebar-user {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid hsl(var(--border));
+  position: relative;
 }
 
 .workspace-sidebar-link {
@@ -97,25 +111,27 @@
   flex-shrink: 0;
 }
 
+/* Main Workspace Content - Snug Adjacent Alignment (No Giant Centering Gap) */
 .workspace-main {
   flex: 1;
-  padding: 32px 40px;
-  max-width: 1280px;
-  margin: 0 auto;
+  min-width: 0;
   width: 100%;
+  padding: 24px 32px;
+  margin: 0;
 }
 
 .workspace-main.full-width {
-  max-width: 100%;
+  width: 100%;
+  padding: 24px 32px;
 }
 
 .workspace-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--space-4);
+  gap: 1rem;
   border-top: 1px solid hsl(var(--border));
-  padding: 20px 32px;
+  padding: 16px 28px;
   font-size: 12px;
   color: hsl(var(--muted-foreground));
   background: hsl(var(--card));
@@ -128,6 +144,8 @@
 
   .workspace-sidebar {
     width: 100%;
+    position: static;
+    height: auto;
     border-right: none;
     border-bottom: 1px solid hsl(var(--border));
     padding: 12px 16px;
@@ -147,7 +165,7 @@
   }
 
   .workspace-main {
-    padding: 20px 16px;
+    padding: 16px;
   }
 
   .workspace-footer {

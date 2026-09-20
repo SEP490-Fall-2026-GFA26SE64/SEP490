@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils'
 export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number
   max?: number
-  variant?: 'primary' | 'success' | 'warning' | 'secondary'
+  variant?: 'primary' | 'success' | 'warning' | 'destructive' | 'secondary'
   showLabel?: boolean
   label?: string
 }
@@ -13,6 +13,7 @@ const variantStyles = {
   primary: 'bg-primary',
   success: 'bg-success',
   warning: 'bg-warning',
+  destructive: 'bg-destructive',
   secondary: 'bg-secondary',
 }
 

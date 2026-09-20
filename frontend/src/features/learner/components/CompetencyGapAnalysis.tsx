@@ -88,9 +88,11 @@ export function CompetencyGapAnalysis() {
         <Card className="bg-gradient-to-br from-card to-secondary/30">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-              <TrendingUp className="h-4 w-4 text-success" /> Role Readiness
+              <TrendingUp className="h-4 w-4 text-primary" /> Role Readiness
             </CardDescription>
-            <CardTitle className="text-2xl font-bold text-primary">{readinessPercentage}%</CardTitle>
+            <CardTitle className="text-2xl font-bold text-primary">
+              {readinessPercentage}%
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Progress value={readinessPercentage} variant="primary" />
@@ -160,7 +162,7 @@ export function CompetencyGapAnalysis() {
                     </div>
                   </div>
 
-                  {/* Dual comparison bar */}
+                  {/* Dual comparison bar with green, yellow, and red status colors */}
                   <div className="space-y-1">
                     <div className="relative h-2.5 w-full rounded-full bg-muted overflow-hidden">
                       {/* Target level background indicator */}
@@ -168,10 +170,16 @@ export function CompetencyGapAnalysis() {
                         className="absolute h-full bg-border rounded-full"
                         style={{ width: `${skill.requiredLevel}%` }}
                       />
-                      {/* Current level fill */}
+                      {/* Current level fill: Green (Mastered/Low Gap), Yellow (Moderate Gap), Red (Critical Gap) */}
                       <div
                         className={`absolute h-full rounded-full transition-all duration-500 ${
-                          isMastered ? 'bg-success' : 'bg-primary'
+                          isMastered
+                            ? 'bg-success'
+                            : skill.priority === 'high'
+                              ? 'bg-destructive'
+                              : skill.priority === 'medium'
+                                ? 'bg-warning'
+                                : 'bg-success'
                         }`}
                         style={{ width: `${skill.currentLevel}%` }}
                       />

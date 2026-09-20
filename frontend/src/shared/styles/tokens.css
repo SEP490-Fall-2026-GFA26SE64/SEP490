@@ -1,197 +1,110 @@
 :root {
-  /* Design System Color Palette (HSL & Hex) */
-  --primary: 215 100% 41%;          /* Brand Blue #0056D2 */
-  --primary-hover: 215 100% 31%;    /* Darker Blue #00419E */
-  --primary-foreground: 0 0% 100%;   /* White #FFFFFF */
+  /* ==========================================================================
+     Official Team Design System: Refined Orange with Cool Slate Neutral Canvas
+     - Crisp, cool slate canvas prevents eye strain (no hot yellow/brown haze)
+     - Focused burnt orange primary CTAs
+     - Vivid Golden Yellow for In Progress / Pending (distinct from primary orange)
+     ========================================================================== */
 
-  --secondary: 217 90% 95%;         /* Soft Light Blue Tint #E8F0FE */
-  --secondary-hover: 217 90% 90%;
-  --secondary-foreground: 215 100% 35%; /* Deep Blue Text #004BBA */
+  /* Brand Primary - Refined Terracotta Orange */
+  --primary: 24 88% 48%;              /* #EA580C - Crisp, focused brand orange */
+  --primary-hover: 21 90% 40%;        /* #C2410C */
+  --primary-foreground: 0 0% 100%;   /* #FFFFFF */
 
-  --background: 210 20% 98%;        /* Page Canvas #F5F7FA */
-  --foreground: 215 25% 17%;        /* Dark Navy/Charcoal #1F2937 */
+  /* Secondary Tint - Soft Peach Tint */
+  --secondary: 24 95% 96%;            /* #FFF5EB */
+  --secondary-hover: 24 95% 91%;      /* #FEE6D4 */
+  --secondary-foreground: 21 90% 36%; /* #9A3412 */
 
-  --card: 0 0% 100%;                /* Pure White #FFFFFF */
-  --card-foreground: 215 25% 17%;
+  /* Canvas & Containers - Crisp Cool Slate (Gentle on the eyes, high scannability) */
+  --background: 210 30% 98%;          /* #F8FAFC - Clean cool slate canvas */
+  --foreground: 222 47% 11%;          /* #0F172A - Deep crisp slate text */
+
+  --card: 0 0% 100%;                /* #FFFFFF - Pure clean surface */
+  --card-foreground: 222 47% 11%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 215 25% 17%;
+  --popover-foreground: 222 47% 11%;
 
-  --muted: 210 16% 93%;             /* Light Neutral Gray #EDF1F5 */
-  --muted-foreground: 215 12% 42%;    /* Slate Gray Text #5F6464 */
+  /* Neutral States - Cool Slate Neutrals */
+  --muted: 210 25% 94%;               /* #F1F5F9 */
+  --muted-foreground: 215 16% 47%;    /* #64748B - Modern slate muted text */
 
-  --accent: 217 90% 95%;
-  --accent-foreground: 215 100% 41%;
+  --accent: 24 95% 96%;
+  --accent-foreground: 24 88% 48%;
 
-  --destructive: 0 72% 51%;         /* Warning Red #DC2626 */
-  --destructive-foreground: 0 0% 100%;
-
-  --success: 142 72% 36%;           /* Success Green #16A34A */
+  /* Feedback Colors */
+  --success: 142 72% 36%;           /* #16A34A - High-Contrast Leaf Green */
   --success-foreground: 0 0% 100%;
 
-  --warning: 38 92% 50%;            /* Warning Amber #D97706 */
-  --warning-foreground: 0 0% 100%;
+  /* In Progress / Pending / Warning - Luminous Yellow (DISTINCT from Primary Orange) */
+  --warning: 48 96% 48%;            /* #EAB308 - Vivid Sunny Yellow */
+  --warning-foreground: 222 47% 11%; /* #0F172A - High-contrast dark text on yellow */
 
-  --border: 210 14% 84%;            /* Light Border #D1D7DC */
-  --input: 210 14% 84%;
-  --ring: 215 100% 41%;             /* Focus Ring #0056D2 */
+  --destructive: 0 72% 51%;         /* #DC2626 - Warning / Error Red */
+  --destructive-foreground: 0 0% 100%;
 
-  --radius: 0.375rem;               /* 6px rounded control radius */
+  /* Borders & Focus Rings - Crisp Cool Slate */
+  --border: 214 32% 91%;              /* #E2E8F0 */
+  --input: 214 32% 91%;
+  --ring: 24 88% 48%;                 /* #EA580C */
 
-  /* Legacy & Semantic direct token fallbacks */
-  --font-body: 'IBM Plex Sans', sans-serif;
-  --text-xs: 12px;
-  --text-sm: 14px;
-  --text-body: 16px;
-  --text-page: 30px;
-  --text-section: 18px;
-  --text-primary: #1F2937;
-  --text-secondary: #5F6464;
-  --text-muted: #667371;
-  --surface: #ffffff;
-  --control-border: #D1D7DC;
-  --control-hover: #E8F0FE;
-  --focus: #0056D2;
+  --radius: 0.5rem;                  /* 8px modern control radius */
+
+  /* Direct Color Tokens */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --surface: #FFFFFF;
+  --control-border: #E2E8F0;
+  --control-hover: #FFF5EB;
+  --focus: #EA580C;
+
+  /* Typography Scale Tokens */
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-display: 36px;
+  --text-page: 28px;
+  --text-section: 22px;
+  --text-subsection: 18px;
+  --text-card: 16px;
+  --text-body: 15.5px;
+  --text-body-sm: 14px;
+  --text-caption: 13px;
+  --text-eyebrow: 12px;
 }
 
 .dark {
-  --background: 215 28% 10%;
-  --foreground: 210 20% 98%;
-  --card: 215 28% 13%;
-  --card-foreground: 210 20% 98%;
-  --popover: 215 28% 13%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 215 100% 55%;
+  /* High-Tech Cool Slate Dark Mode with Refined Orange CTAs and Bright Yellow Status */
+  --background: 222 47% 9%;           /* #0B0F17 - Deep Cool Slate */
+  --foreground: 210 30% 96%;          /* #F1F5F9 - Crisp Off-White */
+
+  --card: 222 40% 13%;               /* #141C2A - Clean Elevated Card */
+  --card-foreground: 210 30% 96%;
+
+  --popover: 222 40% 13%;
+  --popover-foreground: 210 30% 96%;
+
+  --primary: 24 95% 53%;             /* #F97316 - Glowing Orange */
+  --primary-hover: 24 95% 46%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 215 25% 20%;
-  --secondary-foreground: 210 20% 98%;
-  --muted: 215 25% 18%;
-  --muted-foreground: 215 15% 65%;
-  --accent: 215 25% 20%;
-  --accent-foreground: 210 20% 98%;
-  --destructive: 0 62% 45%;
+
+  --secondary: 222 25% 18%;          /* #222C3C */
+  --secondary-foreground: 210 30% 96%;
+
+  --muted: 222 25% 16%;              /* #1B2433 */
+  --muted-foreground: 215 20% 65%;   /* #94A3B8 */
+
+  --accent: 222 25% 18%;
+  --accent-foreground: 24 95% 53%;
+
+  --destructive: 0 65% 50%;
   --destructive-foreground: 0 0% 100%;
-  --border: 215 25% 22%;
-  --input: 215 25% 22%;
-  --ring: 215 100% 55%;
-}
 
-/* ==========================================================================
-   Alternative Professional Color Palettes (Live Toggleable)
-   Default / Original palette in :root is 100% preserved.
-   ========================================================================== */
+  --warning: 48 96% 53%;             /* #FACC15 - Bright Luminous Yellow */
+  --warning-foreground: 222 47% 11%;
 
-/* 1. Modern Sapphire / Refined Blue (Enterprise Tech, tuned away from Coursera) */
-[data-theme="sapphire"] {
-  --primary: 221 83% 53%;             /* Modern Sapphire #2563EB */
-  --primary-hover: 224 76% 40%;       /* Deep Royal #1E40AF */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 214 95% 93%;            /* Ice Blue #EFF6FF */
-  --secondary-hover: 214 95% 88%;
-  --secondary-foreground: 224 76% 40%;
-  --background: 210 40% 98%;           /* Slate Canvas #F8FAFC */
-  --foreground: 222 47% 11%;           /* Deep Navy #0F172A */
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;                /* Soft Slate #F1F5F9 */
-  --muted-foreground: 215 16% 47%;     /* Slate Muted #64748B */
-  --accent: 214 95% 93%;
-  --accent-foreground: 221 83% 53%;
-  --border: 214 32% 91%;               /* Clean Border #E2E8F0 */
-  --input: 214 32% 91%;
-  --ring: 221 83% 53%;
-  --success: 142 71% 45%;
-  --focus: #2563EB;
-}
-
-/* 2. Emerald & Teal Intelligence (Adaptive Knowledge Graph Focus) */
-[data-theme="emerald"] {
-  --primary: 175 84% 26%;             /* Deep Pine Teal #0A635D */
-  --primary-hover: 176 88% 20%;       /* Rich Forest Teal #064E49 */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 166 76% 94%;            /* Mint Ice #CCFBF1 */
-  --secondary-hover: 166 76% 88%;
-  --secondary-foreground: 176 88% 20%;
-  --background: 180 20% 99%;           /* Fresh Canvas #F8FAFA */
-  --foreground: 200 24% 14%;           /* Deep Graphite #1B282C */
-  --card: 0 0% 100%;
-  --card-foreground: 200 24% 14%;
-  --muted: 170 20% 94%;                /* Light Mint Gray #E9F1F0 */
-  --muted-foreground: 180 10% 42%;     /* Sage Gray #5C6D70 */
-  --accent: 166 76% 94%;
-  --accent-foreground: 175 84% 26%;
-  --border: 170 18% 86%;               /* Subtle Teal Border #D3DFDE */
-  --input: 170 18% 86%;
-  --ring: 175 84% 26%;
-  --success: 138 76% 38%;              /* Vivid Spring Leaf Green #16A34A (distinct from teal) */
-  --focus: #0A635D;
-}
-
-/* 3. Solar Amber & Warm Copper (Warm Executive Tech) */
-[data-theme="orange"] {
-  --primary: 24 95% 48%;              /* Warm Terracotta Orange #E8590C */
-  --primary-hover: 21 90% 40%;        /* Deep Burnt Amber #C2410C */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 33 100% 96%;           /* Warm Cream Peach #FFF7ED */
-  --secondary-hover: 33 100% 90%;
-  --secondary-foreground: 21 90% 36%; /* Deep Rust #9A3412 */
-  --background: 30 20% 98%;           /* Warm Stone Canvas #FAF9F7 */
-  --foreground: 24 25% 12%;           /* Warm Charcoal #231C18 */
-  --card: 0 0% 100%;
-  --card-foreground: 24 25% 12%;
-  --muted: 30 15% 93%;                /* Warm Sand Gray #F0EDE8 */
-  --muted-foreground: 25 10% 44%;     /* Muted Warm Slate #786D65 */
-  --accent: 33 100% 96%;
-  --accent-foreground: 24 95% 48%;
-  --border: 30 12% 86%;               /* Soft Warm Border #DDD8D3 */
-  --input: 30 12% 86%;
-  --ring: 24 95% 48%;
-  --success: 142 72% 36%;             /* Crisp High-Contrast Green #16A34A */
-  --focus: #E8590C;
-}
-
-/* 3. Linear Indigo / Modern Violet (Precision Developer / High-Tech SaaS) */
-[data-theme="indigo"] {
-  --primary: 239 84% 67%;             /* Electric Indigo #6366F1 */
-  --primary-hover: 243 75% 52%;       /* Royal Violet #4338CA */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 240 100% 96%;           /* Lavender Mist #EEF2FF */
-  --secondary-hover: 240 100% 92%;
-  --secondary-foreground: 243 75% 52%;
-  --background: 220 33% 98%;           /* High-Tech Canvas #F8F9FC */
-  --foreground: 224 71% 10%;           /* Midnight Slate #0B0F19 */
-  --card: 0 0% 100%;
-  --card-foreground: 224 71% 10%;
-  --muted: 220 20% 94%;                /* Cool Gray #EEF0F6 */
-  --muted-foreground: 220 14% 46%;     /* Indigo Slate #646A7E */
-  --accent: 240 100% 96%;
-  --accent-foreground: 239 84% 67%;
-  --border: 220 20% 88%;               /* Soft Violet Gray #DCE0EA */
-  --input: 220 20% 88%;
-  --ring: 239 84% 67%;
-  --success: 142 72% 36%;
-  --focus: #6366F1;
-}
-
-/* 4. Minimalist Slate (Content-First Monochrome Tech) */
-[data-theme="slate"] {
-  --primary: 222 47% 20%;             /* Obsidian Navy #1A273C */
-  --primary-hover: 222 47% 10%;       /* Black Obsidian #0D1420 */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 20% 94%;            /* Slate Tint #EAEFF4 */
-  --secondary-hover: 210 20% 88%;
-  --secondary-foreground: 222 47% 20%;
-  --background: 0 0% 99%;              /* Pure Light #FCFCFC */
-  --foreground: 220 30% 12%;           /* Charcoal #141920 */
-  --card: 0 0% 100%;
-  --card-foreground: 220 30% 12%;
-  --muted: 210 16% 93%;                /* Pure Slate #F1F4F7 */
-  --muted-foreground: 215 14% 46%;     /* Neutral Slate #626D7A */
-  --accent: 210 20% 94%;
-  --accent-foreground: 222 47% 20%;
-  --border: 214 18% 85%;               /* Crisp Neutral #D4DAE1 */
-  --input: 214 18% 85%;
-  --ring: 222 47% 20%;
-  --success: 142 72% 36%;
-  --focus: #1A273C;
+  --border: 222 25% 20%;             /* #263345 */
+  --input: 222 25% 20%;
+  --ring: 24 95% 53%;
+  --focus: #F97316;
 }
