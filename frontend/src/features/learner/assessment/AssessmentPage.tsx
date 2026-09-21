@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   CheckSquare,
   Clock,
+  Compass,
   FileText,
   Flag,
   History,
@@ -24,14 +25,17 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   Sparkles,
+  Target,
   X,
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
+import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import {
   Card,
@@ -677,6 +681,9 @@ export function AssessmentPage() {
   const unansweredCount = totalQuestions - answeredCount
   const flaggedCount = Object.values(flagged).filter(Boolean).length
 
+  // Upcoming tab status filter state ('all' | 'available' | 'completed' | 'locked')
+  const [upcomingStatusFilter, setUpcomingStatusFilter] = React.useState<'all' | 'available' | 'completed' | 'locked'>('all')
+
   // History tab search, filter & sort state
   const [historySearch, setHistorySearch] = React.useState('')
   const [historyFilter, setHistoryFilter] = React.useState<'all' | 'passed' | 'failed'>('all')
@@ -867,9 +874,6 @@ export function AssessmentPage() {
                     Retake Assessment
                   </Button>
                 )}
-                <Badge variant="outline" className="text-xs">
-                  AI Knowledge Architect Track
-                </Badge>
               </div>
             </div>
 
@@ -1326,188 +1330,481 @@ export function AssessmentPage() {
                 }}
                 className="w-auto"
               >
-                <TabsList>
-                  <TabsTrigger value="upcoming" className="flex items-center gap-1.5 text-xs sm:text-sm">
+                <TabsList className="bg-muted/70 p-1">
+                  <TabsTrigger value="upcoming" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>Upcoming</span>
+                    <span>Upcoming Milestone Quizzes</span>
                   </TabsTrigger>
-                  <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm">
+                  <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                     <History className="h-4 w-4 text-primary" />
-                    <span>History ({attempts.length})</span>
+                    <span>Attempt History ({attempts.length})</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
-                  AI Knowledge Architect Track
-                </Badge>
-              </div>
             </div>
 
-            {/* TAB 1: UPCOMING ASSESSMENTS */}
-            {activeTab === 'upcoming' && (
-              <div className="space-y-6">
-                {/* Header Banner */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-5 rounded-xl border border-border shadow-xs">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="secondary" className="text-xs font-semibold text-primary">
-                        Dynamic Pathway Assessments
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">End-of-Module Evaluations</span>
-                    </div>
-                    <Heading level={1} size="page" className="text-foreground">
-                      Upcoming Pathway Quizzes
-                    </Heading>
-                    <Text variant="subtitle" className="mt-0.5">
-                      Milestone assessment quizzes unlock sequentially as you finish each module in your Adaptive Learning Pathway.
-                    </Text>
-                  </div>
+            {/* TAB 1: UPCOMING ASSESSMENTS (2-COLUMN COCKPIT LAYOUT) */}
+            {activeTab === 'upcoming' && (() => {
+              const availableQuizzes = PATHWAY_QUIZZES.filter((q) => q.status === 'available')
+              const completedQuizzes = PATHWAY_QUIZZES.filter((q) => q.status === 'completed')
+              const lockedQuizzes = PATHWAY_QUIZZES.filter((q) => q.status === 'locked')
+              const nextQuiz = availableQuizzes[0] || PATHWAY_QUIZZES[0]
+              const filteredUpcomingQuizzes = PATHWAY_QUIZZES.filter(
+                (q) => upcomingStatusFilter === 'all' || q.status === upcomingStatusFilter
+              )
 
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="px-3 py-1 text-xs">
-                      1 Available &bull; 2 Locked &bull; 2 Completed
-                    </Badge>
-                  </div>
-                </div>
-
-
-
-                {/* List of Pathway Quizzes */}
-                <div className="space-y-4">
-                  {PATHWAY_QUIZZES.map((quiz) => {
-                    const isAvailable = quiz.status === 'available'
-                    const isLocked = quiz.status === 'locked'
-                    const isCompleted = quiz.status === 'completed'
-
-                    return (
-                      <div
-                        key={quiz.id}
-                        className={`upcoming-quiz-card ${quiz.status}`}
-                        onClick={() => {
-                          if (isAvailable) {
-                            setSelectedQuizModal(quiz)
-                          }
-                        }}
-                      >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="space-y-2 flex-1">
-                            <div className="flex items-center gap-2.5 flex-wrap">
-                              <Badge variant="outline" className="font-mono text-xs font-semibold text-primary">
-                                {quiz.moduleCode}
-                              </Badge>
-
-                              {isCompleted && (
-                                <Badge variant="success" className="gap-1 text-xs font-semibold">
-                                  <CheckCircle className="h-3 w-3" />
-                                  Completed &bull; Passed ({quiz.lastScore}%)
-                                </Badge>
-                              )}
-
-                              {isAvailable && (
-                                <Badge variant="primary" className="gap-1 text-xs font-semibold bg-primary text-primary-foreground animate-pulse">
-                                  <Sparkles className="h-3 w-3" />
-                                  Ready to Take &bull; Next in Pathway
-                                </Badge>
-                              )}
-
-                              {isLocked && (
-                                <Badge variant="secondary" className="gap-1 text-xs font-medium text-muted-foreground">
-                                  <Lock className="h-3 w-3" />
-                                  Locked
-                                </Badge>
-                              )}
-
-                              <span className="text-xs text-muted-foreground">
-                                {quiz.moduleTitle}
-                              </span>
-                            </div>
-
-                            <div>
-                              <h3 className="text-base font-bold text-foreground">
-                                {quiz.quizTitle}
-                              </h3>
-                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-3xl">
-                                {quiz.description}
-                              </p>
-                            </div>
-
-                            {/* Prerequisite Alert if Locked */}
-                            {isLocked && quiz.prerequisite && (
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium pt-1">
-                                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span>Prerequisite: {quiz.prerequisite}</span>
-                              </div>
-                            )}
-
-                            {/* Skills Tested Badges */}
-                            <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                              <span className="text-[11px] font-semibold text-muted-foreground mr-1">Skills:</span>
-                              {quiz.skills.map((skill) => (
-                                <Badge key={skill} variant="outline" className="text-[11px] px-2 py-0">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
+              return (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* LEFT COLUMN: Hero Milestone Card & Unified Adaptive Timeline Big Container (lg:col-span-8) */}
+                  <div className="lg:col-span-8 space-y-5">
+                    {/* 1. Hero Milestone Progress Card */}
+                    <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-xs">
+                      <div className="relative z-10 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                              <Sparkles className="h-3.5 w-3.5" />
+                              Dynamic Pathway Quizzes
+                            </span>
+                            <span className="text-xs text-muted-foreground font-medium hidden sm:inline">
+                              End-of-Module Evaluations
+                            </span>
                           </div>
 
-                          {/* Action Column */}
-                          <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border">
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5 text-primary" />
-                                {quiz.durationMinutes}m
-                              </span>
-                              <span>&bull;</span>
-                              <span className="flex items-center gap-1">
-                                <FileText className="h-3.5 w-3.5 text-primary" />
-                                {quiz.questionCount} Questions
-                              </span>
-                            </div>
+                          <div className="flex items-center gap-2 text-xs font-semibold">
+                            <span className="text-muted-foreground">Milestone Progress:</span>
+                            <Badge variant="success" className="font-mono text-xs font-bold">
+                              2 of 5 Cleared (40%)
+                            </Badge>
+                          </div>
+                        </div>
 
-                            {isAvailable && (
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                rightIcon={<ArrowRight className="h-4 w-4" />}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setSelectedQuizModal(quiz)
-                                }}
-                              >
-                                Take Quiz
-                              </Button>
-                            )}
+                        <div>
+                          <Heading level={1} size="page" className="text-foreground tracking-tight text-xl sm:text-2xl font-bold">
+                            Upcoming Pathway Quizzes
+                          </Heading>
+                          <Text variant="subtitle" className="mt-1 text-muted-foreground max-w-2xl leading-relaxed text-xs sm:text-sm">
+                            Milestone assessment quizzes unlock sequentially as you finish each module in your Adaptive Learning Pathway. Passing each quiz calibrates knowledge tracing and unlocks the next module.
+                          </Text>
+                        </div>
 
-                            {isCompleted && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                leftIcon={<History className="h-3.5 w-3.5 text-primary" />}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setHistorySearch(`${quiz.moduleCode}: ${quiz.moduleTitle}`)
-                                  setActiveTab('history')
-                                }}
-                              >
-                                View
-                              </Button>
-                            )}
-
-                            {isLocked && (
-                              <Button variant="outline" size="sm" disabled leftIcon={<Lock className="h-3.5 w-3.5" />}>
-                                Locked
-                              </Button>
-                            )}
+                        {/* Pathway Sequential Progress Step Bar */}
+                        <div className="pt-2">
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5 flex-wrap gap-1">
+                            <span className="text-success font-bold">MOD-101 (RDF) ✓</span>
+                            <span className="text-success font-bold">MOD-204 (Neo4j) ✓</span>
+                            <span className="text-primary font-bold flex items-center gap-1">
+                              <Sparkles size={11} /> MOD-301 (GNN) • Ready
+                            </span>
+                            <span className="text-foreground font-bold flex items-center gap-1">
+                              <Lock size={11} className="text-muted-foreground" /> MOD-305 (DKT)
+                            </span>
+                            <span className="text-foreground font-bold flex items-center gap-1">
+                              <Lock size={11} className="text-muted-foreground" /> MOD-401 (Capstone)
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-5 gap-1.5 h-2 w-full rounded-full overflow-hidden bg-muted/80 p-0.5">
+                            <div className="bg-success rounded-full" title="MOD-101: Passed (92%)" />
+                            <div className="bg-success rounded-full" title="MOD-204: Passed (90%)" />
+                            <div className="bg-primary rounded-full animate-pulse" title="MOD-301: Ready to Take" />
+                            <div className="bg-muted-foreground/50 rounded-full" title="MOD-305: Locked" />
+                            <div className="bg-muted-foreground/50 rounded-full" title="MOD-401: Locked" />
                           </div>
                         </div>
                       </div>
-                    )
-                  })}
+
+                      {/* Ambient decorative glow */}
+                      <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
+                    </div>
+
+                    {/* 2. ADAPTIVE TIMELINE (SINGLE BIG UNIFIED CONTAINER) */}
+                    <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+                      {/* Big Container Header: Title, Summary & Status Filters */}
+                      <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Layers className="h-5 w-5 text-primary shrink-0" />
+                            <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                              Adaptive Pathway Timeline
+                            </h2>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Sequential milestone evaluations calibrated to your demonstrated competency
+                          </p>
+                        </div>
+
+                        {/* Interactive Filter Pills Integrated into the Header */}
+                        <div className="flex items-center gap-1 flex-wrap p-1 rounded-xl bg-card border border-border shadow-2xs">
+                          <button
+                            type="button"
+                            onClick={() => setUpcomingStatusFilter('all')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                              upcomingStatusFilter === 'all'
+                                ? 'bg-secondary text-primary shadow-2xs font-bold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            }`}
+                          >
+                            All ({PATHWAY_QUIZZES.length})
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setUpcomingStatusFilter('available')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                              upcomingStatusFilter === 'available'
+                                ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            }`}
+                          >
+                            <Sparkles className="h-3 w-3" />
+                            <span>Ready ({availableQuizzes.length})</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setUpcomingStatusFilter('completed')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                              upcomingStatusFilter === 'completed'
+                                ? 'bg-success/15 text-success font-bold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            }`}
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span>Done ({completedQuizzes.length})</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setUpcomingStatusFilter('locked')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                              upcomingStatusFilter === 'locked'
+                                ? 'bg-foreground text-background font-bold shadow-2xs'
+                                : 'text-foreground/80 hover:text-foreground hover:bg-muted/70 font-medium'
+                            }`}
+                          >
+                            <Lock className="h-3 w-3 text-muted-foreground" />
+                            <span>Locked ({lockedQuizzes.length})</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Big Container Body: Continuous Adaptive Timeline Track */}
+                      <div className="p-5 sm:p-7 relative">
+                        <div className="relative">
+                          {/* Continuous Vertical Timeline Line */}
+                          <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
+
+                          <div className="space-y-6">
+                            {filteredUpcomingQuizzes.map((quiz) => {
+                              const isAvailable = quiz.status === 'available'
+                              const isLocked = quiz.status === 'locked'
+                              const isCompleted = quiz.status === 'completed'
+
+                              return (
+                                <div key={quiz.id} className="relative flex items-start gap-3.5 sm:gap-5 group">
+                                  {/* Timeline Node Bullet Pin */}
+                                  <div
+                                    className={`relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all ${
+                                      isCompleted
+                                        ? 'border-success bg-success text-white shadow-2xs'
+                                        : isAvailable
+                                          ? 'border-primary bg-primary text-primary-foreground shadow-xs ring-4 ring-primary/20 animate-pulse'
+                                          : 'border-border bg-muted text-foreground'
+                                    }`}
+                                  >
+                                    {isCompleted ? (
+                                      <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    ) : isAvailable ? (
+                                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    ) : (
+                                      <Lock className="h-4 w-4 sm:h-4 sm:w-4 text-muted-foreground" />
+                                    )}
+                                  </div>
+
+                                  {/* Timeline Step Content Surface Panel */}
+                                  <div
+                                    className={`flex-1 min-w-0 rounded-xl p-4 sm:p-5 border transition-all ${
+                                      isAvailable
+                                        ? 'border-primary/50 bg-secondary/35 shadow-xs ring-1 ring-primary/25 cursor-pointer hover:border-primary'
+                                        : isCompleted
+                                          ? 'border-border bg-card hover:border-success/50 shadow-2xs'
+                                          : 'border-border bg-muted/20'
+                                    }`}
+                                    onClick={() => {
+                                      if (isAvailable) {
+                                        setSelectedQuizModal(quiz)
+                                      }
+                                    }}
+                                  >
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                      <div className="space-y-2.5 flex-1 min-w-0">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                          <Badge
+                                            variant="outline"
+                                            className={`font-mono text-xs font-bold shrink-0 ${
+                                              isLocked ? 'text-muted-foreground bg-muted/60 border-border' : 'text-primary bg-secondary/60 border-primary/30'
+                                            }`}
+                                          >
+                                            {quiz.moduleCode}
+                                          </Badge>
+
+                                          {isCompleted && (
+                                            <Badge variant="success" className="gap-1 text-xs font-semibold shrink-0">
+                                              <CheckCircle className="h-3 w-3" />
+                                              Completed &bull; Passed ({quiz.lastScore}%)
+                                            </Badge>
+                                          )}
+
+                                          {isAvailable && (
+                                            <Badge variant="primary" className="gap-1 text-xs font-semibold bg-primary text-primary-foreground shadow-xs shrink-0">
+                                              <Sparkles className="h-3 w-3" />
+                                              Ready to Take
+                                            </Badge>
+                                          )}
+
+                                          {isLocked && (
+                                            <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted text-foreground border-border shrink-0">
+                                              <Lock className="h-3 w-3 text-foreground" />
+                                              Locked Gate
+                                            </Badge>
+                                          )}
+
+                                          <span className="text-xs font-medium text-foreground truncate min-w-0">
+                                            {quiz.moduleTitle}
+                                          </span>
+                                        </div>
+
+                                        <div>
+                                          <h3 className="text-base font-bold text-foreground transition-colors">
+                                            {quiz.quizTitle}
+                                          </h3>
+                                          <p className="text-xs sm:text-sm mt-1 leading-relaxed max-w-2xl text-muted-foreground font-normal">
+                                            {quiz.description}
+                                          </p>
+                                        </div>
+
+                                        {/* Skills Tested Badges */}
+                                        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                                          <span className="text-[11px] font-bold mr-1 text-muted-foreground">
+                                            Skills Tested:
+                                          </span>
+                                          {quiz.skills.map((skill) => (
+                                            <Badge
+                                              key={skill}
+                                              variant="outline"
+                                              className="text-[11px] px-2 py-0.5 font-semibold bg-muted/40 text-foreground border-border"
+                                            >
+                                              {skill}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Action Column */}
+                                      <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border md:pl-4">
+                                        <div className="flex items-center gap-3 text-xs font-mono">
+                                          <span className="flex items-center gap-1 font-bold text-foreground">
+                                            <Clock className="h-3.5 w-3.5 text-primary" />
+                                            {quiz.durationMinutes}m
+                                          </span>
+                                          <span className="text-muted-foreground font-bold">&bull;</span>
+                                          <span className="flex items-center gap-1 font-bold text-foreground">
+                                            <FileText className="h-3.5 w-3.5 text-primary" />
+                                            {quiz.questionCount} Questions
+                                          </span>
+                                        </div>
+
+                                        {isAvailable && (
+                                          <Button
+                                            variant="primary"
+                                            size="sm"
+                                            rightIcon={<ArrowRight className="h-4 w-4" />}
+                                            className="shadow-xs font-semibold"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setSelectedQuizModal(quiz)
+                                            }}
+                                          >
+                                            Take Quiz Now
+                                          </Button>
+                                        )}
+
+                                        {isCompleted && (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            leftIcon={<History className="h-3.5 w-3.5 text-primary" />}
+                                            className="font-medium hover:border-primary/40"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setHistorySearch(`${quiz.moduleCode}: ${quiz.moduleTitle}`)
+                                              setActiveTab('history')
+                                            }}
+                                          >
+                                            Review Attempt
+                                          </Button>
+                                        )}
+
+                                        {isLocked && (
+                                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground font-bold text-xs border border-border shadow-2xs">
+                                            <Lock className="h-3.5 w-3.5 text-foreground" />
+                                            <span>Locked Gate</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT COLUMN: Supporting Hub & Contextual Cards (lg:col-span-4) */}
+                  <div className="lg:col-span-4 space-y-5">
+                    {/* Card A: Target Track Readiness & Summary */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold shadow-2xs">
+                            <Target size={19} />
+                          </div>
+                          <div>
+                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Target Role</h3>
+                            <p className="text-sm font-bold text-foreground">AI Knowledge Architect</p>
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="font-mono text-[11px] font-bold text-primary">
+                          Staff Level
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">Milestone Readiness</span>
+                          <span className="text-foreground font-mono font-bold">40% (2 / 5 Passed)</span>
+                        </div>
+                        <Progress value={40} variant="primary" />
+                      </div>
+
+                      {/* 2x2 Metric Tile Grid */}
+                      <div className="grid grid-cols-2 gap-2.5 pt-1">
+                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                          <div className="text-[11px] font-semibold text-muted-foreground">Highest Score</div>
+                          <div className="text-xl font-bold text-success mt-0.5 font-mono">92%</div>
+                          <div className="text-[10px] text-muted-foreground font-mono truncate">MOD-101 RDF</div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                          <div className="text-[11px] font-semibold text-muted-foreground">Average Score</div>
+                          <div className="text-xl font-bold text-primary mt-0.5 font-mono">91%</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">2 Assessments</div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                          <div className="text-[11px] font-semibold text-muted-foreground">Est. Time Left</div>
+                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">1h 35m</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">3 Quizzes Left</div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                          <div className="text-[11px] font-semibold text-muted-foreground">Skills Verified</div>
+                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">6 / 18</div>
+                          <div className="text-[10px] text-success font-semibold flex items-center gap-0.5">
+                            <CheckCircle2 size={11} /> +4 on next pass
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card B: Next Action Priority Spotlight (MOD-301) */}
+                    {nextQuiz && (
+                      <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-secondary/60 via-card to-card p-5 shadow-xs space-y-3.5 relative overflow-hidden">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="primary" className="text-[11px] font-bold px-2.5 py-0.5 gap-1 shadow-2xs">
+                            <Sparkles size={12} />
+                            <span>Next Priority Milestone</span>
+                          </Badge>
+                          <span className="font-mono text-xs font-bold text-primary">{nextQuiz.moduleCode}</span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-bold text-foreground leading-snug">
+                            {nextQuiz.quizTitle}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                            Covers Graph Neural Networks, Spatial GCN convolution, and DKT models. Clearing this milestone unlocks Module MOD-305 in your pathway.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 border-t border-border/60 font-mono">
+                          <span className="flex items-center gap-1 font-semibold text-foreground">
+                            <Clock size={13} className="text-primary" /> {nextQuiz.durationMinutes} mins
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <FileText size={13} className="text-primary" /> {nextQuiz.questionCount} Questions
+                          </span>
+                          <span>•</span>
+                          <span className="text-success font-semibold">Pass: {nextQuiz.passingScore}%</span>
+                        </div>
+
+                        <Button
+                          variant="primary"
+                          size="default"
+                          className="w-full justify-center shadow-xs font-semibold mt-1"
+                          rightIcon={<ArrowRight size={15} />}
+                          onClick={() => setSelectedQuizModal(nextQuiz)}
+                        >
+                          Launch Milestone Quiz
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Card C: Supporting Pathway & Gap Analysis Hub */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-lg bg-secondary text-primary flex items-center justify-center">
+                          <Compass size={15} />
+                        </div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                          Connected Curriculum
+                        </h4>
+                      </div>
+
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Milestone assessment results feed directly into your Bayesian Knowledge Tracing parameters, updating prerequisite gates and competency radars.
+                      </p>
+
+                      <div className="space-y-2 pt-1">
+                        <Link
+                          to="/learner/gap-analysis"
+                          className="flex items-center justify-between p-2.5 rounded-xl border border-border/70 hover:border-primary/40 hover:bg-muted/50 transition-all text-xs group cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                              <Award size={14} />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                                Competency Gap Analysis
+                              </div>
+                              <div className="text-[10.5px] text-muted-foreground truncate">
+                                Compare verified mastery vs. target standards
+                              </div>
+                            </div>
+                          </div>
+                          <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-2" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* TAB 2: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
             {activeTab === 'history' && (
@@ -1678,18 +1975,26 @@ export function AssessmentPage() {
                   </div>
                 </div>
 
-                {/* List of Finished Attempts */}
-                <Card className="border-border shadow-xs">
-                  <CardHeader className="pb-3 border-b border-border">
-                    <CardTitle className="text-sm font-bold flex items-center justify-between">
-                      <span>Historical Attempts Ledger</span>
-                      <span className="text-xs text-muted-foreground font-normal">
-                        Showing {filteredAttempts.length} of {attempts.length} attempts across all modules
-                      </span>
-                    </CardTitle>
-                  </CardHeader>
+                {/* List of Finished Attempts - Unified Big Container Design */}
+                <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+                  <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <History className="h-5 w-5 text-primary shrink-0" />
+                        <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                          Historical Attempts Ledger
+                        </h2>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Archived attempt results, submission timestamps, and verified competencies across all modules
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono bg-card px-3 py-1.5 rounded-lg border border-border shadow-2xs">
+                      Showing {filteredAttempts.length} of {attempts.length} attempts
+                    </span>
+                  </div>
 
-                  <CardContent className="p-0">
+                  <div>
                     <div className="divide-y divide-border">
                       {filteredAttempts.length === 0 ? (
                         <div className="p-8 text-center space-y-2">
@@ -1773,8 +2078,8 @@ export function AssessmentPage() {
                         })
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             )}
           </div>

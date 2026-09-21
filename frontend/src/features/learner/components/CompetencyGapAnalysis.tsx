@@ -1,4 +1,5 @@
-import { ArrowUpRight, Award, Calendar, CheckCircle2, Target, TrendingUp } from 'lucide-react'
+import { useState } from 'react'
+import { AlertCircle, ArrowUpRight, Award, Calendar, CheckCircle2, Filter, Search, Target, TrendingUp } from 'lucide-react'
 
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
@@ -63,11 +64,26 @@ const SAMPLE_SKILLS: CompetencySkill[] = [
 ]
 
 export function CompetencyGapAnalysis() {
+  const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
+  const [search, setSearch] = useState('')
   const targetRole = 'AI Knowledge Architect'
 
   const totalRequired = SAMPLE_SKILLS.reduce((acc, s) => acc + s.requiredLevel, 0)
   const totalCurrent = SAMPLE_SKILLS.reduce((acc, s) => acc + s.currentLevel, 0)
   const readinessPercentage = Math.round((totalCurrent / totalRequired) * 100)
+
+  const filteredSkills = SAMPLE_SKILLS.filter((skill) => {
+    if (filter !== 'all' && skill.priority !== filter) return false
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      return skill.name.toLowerCase().includes(q) || skill.category.toLowerCase().includes(q) || skill.bridgeModule.toLowerCase().includes(q)
+    }
+    return true
+  })
+
+  const criticalCount = SAMPLE_SKILLS.filter((s) => s.priority === 'high').length
+  const moderateCount = SAMPLE_SKILLS.filter((s) => s.priority === 'medium').length
+  const masteredCount = SAMPLE_SKILLS.filter((s) => s.priority === 'low').length
 
   return (
     <div className="space-y-6">
@@ -119,33 +135,123 @@ export function CompetencyGapAnalysis() {
         </Card>
       </div>
 
-      {/* Granular Micro-skill Gap Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+      {/* Unified Big Container Design for Competency Gap Breakdown */}
+      <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+        {/* Elevated Header with Filter Pills */}
+        <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              <span>Competency Gap Breakdown vs Target Role</span>
+              <Award className="h-5 w-5 text-primary shrink-0" />
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                Competency Gap Breakdown vs Target Role
+              </h2>
             </div>
-            <span className="text-xs font-normal text-muted-foreground">5 Micro-skills Evaluated</span>
-          </CardTitle>
-          <CardDescription>
-            Calculated by the Competency Intelligence Engine using diagnostic assessments and work evidence.
-          </CardDescription>
-        </CardHeader>
+            <p className="text-xs text-muted-foreground">
+              Calculated by the Competency Intelligence Engine using diagnostic assessments and work evidence
+            </p>
+          </div>
 
-        <CardContent className="space-y-4">
-          <div className="divide-y divide-border">
-            {SAMPLE_SKILLS.map((skill) => {
+          {/* Interactive Status Filter Pills */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/50 border border-border/80 self-start md:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                filter === 'all'
+                  ? 'bg-card text-foreground font-bold shadow-2xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <Filter className="h-3 w-3" />
+              <span>All ({SAMPLE_SKILLS.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFilter('high')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                filter === 'high'
+                  ? 'bg-destructive/15 text-destructive font-bold'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <span>Critical Gaps ({criticalCount})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFilter('medium')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                filter === 'medium'
+                  ? 'bg-warning/15 text-warning font-bold'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <span>Moderate ({moderateCount})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFilter('low')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                filter === 'low'
+                  ? 'bg-success/15 text-success font-bold'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <CheckCircle2 className="h-3 w-3 text-success" />
+              <span>Mastered ({masteredCount})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Search Toolbar */}
+        <div className="p-3.5 border-b border-border bg-muted/5 flex items-center gap-2">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search skill name, category, or bridge module..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/25 transition-colors"
+            />
+          </div>
+          <span className="text-[11px] text-muted-foreground font-mono ml-auto pr-2">
+            Showing {filteredSkills.length} of {SAMPLE_SKILLS.length} micro-skills
+          </span>
+        </div>
+
+        {/* Items List */}
+        <div className="divide-y divide-border">
+          {filteredSkills.length === 0 ? (
+            <div className="p-8 text-center space-y-2">
+              <Search className="h-8 w-8 text-muted-foreground mx-auto opacity-40" />
+              <div className="text-sm font-semibold text-foreground">No matching competencies found</div>
+              <p className="text-xs text-muted-foreground">Try adjusting your filter or search query.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter('all')
+                  setSearch('')
+                }}
+                className="text-xs text-primary underline font-medium cursor-pointer"
+              >
+                Reset filters
+              </button>
+            </div>
+          ) : (
+            filteredSkills.map((skill) => {
               const gap = Math.max(0, skill.requiredLevel - skill.currentLevel)
               const isMastered = skill.currentLevel >= skill.requiredLevel
 
               return (
-                <div key={skill.id} className="py-3.5 first:pt-0 last:pb-0 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-foreground">{skill.name}</span>
+                <div key={skill.id} className="p-4 sm:p-5 hover:bg-muted/20 transition-colors space-y-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-sm text-foreground">{skill.name}</span>
                         <Badge
                           variant={
                             skill.priority === 'high'
@@ -154,27 +260,28 @@ export function CompetencyGapAnalysis() {
                                 ? 'warning'
                                 : 'success'
                           }
+                          className="text-[11px] font-semibold"
                         >
                           {skill.priority === 'high' ? 'Critical Gap' : skill.priority === 'medium' ? 'Moderate Gap' : 'Mastered'}
                         </Badge>
+                        <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                          {skill.category}
+                        </Badge>
                       </div>
-                      <span className="text-xs text-muted-foreground">{skill.category}</span>
                     </div>
 
-                    <div className="text-xs text-muted-foreground sm:text-right">
+                    <div className="text-xs text-muted-foreground sm:text-right font-mono">
                       <span>Current: <strong className="text-foreground">{skill.currentLevel}%</strong> / Req: <strong className="text-foreground">{skill.requiredLevel}%</strong></span>
                     </div>
                   </div>
 
-                  {/* Dual comparison bar with green, yellow, and red status colors */}
+                  {/* Dual comparison progress bar */}
                   <div className="space-y-1">
-                    <div className="relative h-2.5 w-full rounded-full bg-muted overflow-hidden">
-                      {/* Target level background indicator */}
+                    <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
                       <div
                         className="absolute h-full bg-border rounded-full"
                         style={{ width: `${skill.requiredLevel}%` }}
                       />
-                      {/* Current level fill: Green (Mastered/Low Gap), Yellow (Moderate Gap), Red (Critical Gap) */}
                       <div
                         className={`absolute h-full rounded-full transition-all duration-500 ${
                           isMastered
@@ -191,29 +298,33 @@ export function CompetencyGapAnalysis() {
                   </div>
 
                   <div className="flex items-center justify-between text-xs pt-0.5">
-                    <span className="text-muted-foreground flex items-center gap-1">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
                       {isMastered ? (
                         <>
-                          <CheckCircle2 className="h-3.5 w-3.5 text-success inline" /> Mastered — Ready for Target Role
+                          <CheckCircle2 className="h-3.5 w-3.5 text-success inline" />
+                          <span className="font-medium text-success">Mastered &bull; Ready for Target Role</span>
                         </>
                       ) : (
                         <>
-                          Recommended Bridge: <code className="font-mono text-primary font-medium">{skill.bridgeModule}</code>
+                          <span>Recommended Bridge:</span>
+                          <code className="font-mono text-primary font-semibold bg-secondary/50 px-1.5 py-0.5 rounded border border-primary/20">
+                            {skill.bridgeModule}
+                          </code>
                         </>
                       )}
                     </span>
                     {!isMastered && (
-                      <span className="font-semibold text-destructive flex items-center">
-                        Gap: -{gap}% <ArrowUpRight className="h-3 w-3 ml-0.5" />
+                      <span className="font-semibold text-destructive flex items-center gap-0.5">
+                        Deficit: -{gap}% <ArrowUpRight className="h-3.5 w-3.5" />
                       </span>
                     )}
                   </div>
                 </div>
               )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+            })
+          )}
+        </div>
+      </div>
     </div>
   )
 }

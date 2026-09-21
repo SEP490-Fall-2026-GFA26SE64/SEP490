@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { Compass, GitFork, ListOrdered, Sparkles } from 'lucide-react'
-import { Badge } from '../../../shared/components/ui/Badge'
+import { Compass, GitFork, ListOrdered } from 'lucide-react'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
   Tabs,
@@ -23,12 +22,6 @@ export function AdaptivePathwayPage() {
           icon={<Compass className="h-8 w-8 text-primary" />}
           title="Adaptive Learning Pathway"
           description="Interactive curriculum map and real-time adaptive learning recommendations driven by Neo4j Knowledge Graph ontology."
-          actions={
-            <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5">
-              <Sparkles size={14} className="text-primary" />
-              <span>Target: AI Knowledge Architect</span>
-            </Badge>
-          }
         />
 
         {/* Pathway View Tabs: Interactive Roadmap (roadmap.sh style) vs. Adaptive Timeline */}

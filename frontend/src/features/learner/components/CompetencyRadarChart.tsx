@@ -280,7 +280,7 @@ export function CompetencyRadarChart({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all cursor-pointer ${
               showCurrentMastery
                 ? 'border-primary/40 bg-primary/10 text-foreground font-semibold'
-                : 'border-border bg-muted/40 text-muted-foreground line-through opacity-70'
+                : 'border-border bg-muted text-muted-foreground line-through'
             }`}
           >
             <span className="h-2.5 w-2.5 rounded-full bg-primary inline-block" />
@@ -294,7 +294,7 @@ export function CompetencyRadarChart({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all cursor-pointer ${
               showTargetBenchmark
                 ? 'border-border bg-muted/70 text-foreground font-semibold'
-                : 'border-border bg-muted/30 text-muted-foreground line-through opacity-70'
+                : 'border-border bg-muted/50 text-muted-foreground line-through'
             }`}
           >
             <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-muted-foreground inline-block" />

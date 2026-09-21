@@ -16,19 +16,19 @@
   --secondary-hover: 24 95% 91%;      /* #FEE6D4 */
   --secondary-foreground: 21 90% 36%; /* #9A3412 */
 
-  /* Canvas & Containers - Crisp Cool Slate (Gentle on the eyes, high scannability) */
-  --background: 210 30% 98%;          /* #F8FAFC - Clean cool slate canvas */
+  /* Canvas & Containers - Crisp Cool Slate Canvas (Distinct surface elevation against white cards) */
+  --background: 215 22% 92%;          /* #E4EAF2 - Rich cool slate canvas that prevents white cards from blending in */
   --foreground: 222 47% 11%;          /* #0F172A - Deep crisp slate text */
 
-  --card: 0 0% 100%;                /* #FFFFFF - Pure clean surface */
+  --card: 0 0% 100%;                /* #FFFFFF - Pure clean elevated surface */
   --card-foreground: 222 47% 11%;
 
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
 
   /* Neutral States - Cool Slate Neutrals */
-  --muted: 210 25% 94%;               /* #F1F5F9 */
-  --muted-foreground: 215 16% 47%;    /* #64748B - Modern slate muted text */
+  --muted: 215 20% 86%;               /* #D4DFEC - Distinct neutral fill */
+  --muted-foreground: 215 22% 38%;    /* #4B5F76 - High-contrast slate muted text (6.2:1 WCAG AA) */
 
   --accent: 24 95% 96%;
   --accent-foreground: 24 88% 48%;
@@ -45,8 +45,8 @@
   --destructive-foreground: 0 0% 100%;
 
   /* Borders & Focus Rings - Crisp Cool Slate */
-  --border: 214 32% 91%;              /* #E2E8F0 */
-  --input: 214 32% 91%;
+  --border: 215 20% 82%;              /* #C6D2E0 - Crisp elevated container borders */
+  --input: 215 20% 82%;
   --ring: 24 88% 48%;                 /* #EA580C */
 
   --radius: 0.5rem;                  /* 8px modern control radius */

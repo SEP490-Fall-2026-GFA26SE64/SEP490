@@ -2,9 +2,7 @@ import { ArrowRight, CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { useToast } from '../../../shared/hooks/useToast'
-import { cn } from '../../../shared/lib/utils'
 
 export interface PathwayStep {
   id: string
@@ -114,16 +112,20 @@ export function AdaptivePathwayTimeline() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span>AI-Driven Adaptive Learning Pathway</span>
-            </CardTitle>
-            <CardDescription className="mt-1">
-              Dynamic graph-traversal route continually recalculated based on real-time assessment performance.
-            </CardDescription>
+      {/* Unified Big Container Design Matching Upcoming Pathway Quizzes */}
+      <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+        {/* Elevated Header */}
+        <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary shrink-0" />
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                AI-Driven Adaptive Learning Pathway
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Dynamic graph-traversal route continually recalculated based on real-time assessment performance
+            </p>
           </div>
 
           <Button
@@ -131,137 +133,160 @@ export function AdaptivePathwayTimeline() {
             size="sm"
             onClick={handleSimulateRemedyFallback}
             leftIcon={<Zap className="h-4 w-4 text-warning" />}
+            className="self-start md:self-auto shadow-2xs font-semibold"
           >
             {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
           </Button>
-        </CardHeader>
+        </div>
 
-        <CardContent>
-          <div className="relative pl-6 sm:pl-8 border-l-2 border-border space-y-8 my-2">
-            {steps.map((step) => {
-              const isRecommended = step.status === 'recommended'
-              const isRemedy = step.status === 'remedy'
-              const isCompleted = step.status === 'completed'
+        {/* Big Container Body: Continuous Adaptive Timeline Track */}
+        <div className="p-5 sm:p-7 relative">
+          <div className="relative">
+            {/* Continuous Vertical Timeline Line Matching Upcoming Pathway Quizzes */}
+            <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
 
+            <div className="space-y-6">
+              {steps.map((step) => {
+                const isRecommended = step.status === 'recommended'
+                const isRemedy = step.status === 'remedy'
+                const isCompleted = step.status === 'completed'
+                const isLocked = step.status === 'locked'
 
-              return (
-                <div key={step.id} className="relative group">
-                  {/* Timeline indicator node */}
-                  <div
-                    className={`absolute -left-[31px] sm:-left-[39px] top-1 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
-                      isCompleted
-                        ? 'border-success bg-success text-white'
-                        : isRecommended
-                          ? 'border-primary bg-primary text-white ring-4 ring-primary/20 animate-pulse'
-                          : isRemedy
-                            ? 'border-warning bg-warning text-white ring-4 ring-warning/20'
-                            : 'border-border bg-card text-muted-foreground'
-                    }`}
-                  >
-                    {isCompleted ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : isRecommended || isRemedy ? (
-                      <Zap className="h-4 w-4" />
-                    ) : (
-                      <Lock className="h-3.5 w-3.5" />
-                    )}
-                  </div>
-
-                  {/* Step Card Content */}
-                  <div
-                    className={`rounded-lg border p-4 sm:p-5 transition-all ${
-                      isRecommended
-                        ? 'border-primary/50 bg-secondary/30 shadow-md ring-1 ring-primary/30'
-                        : isRemedy
-                          ? 'border-warning/60 bg-amber-50/50 shadow-md ring-1 ring-warning/40'
-                          : isCompleted
-                            ? 'border-border bg-card'
-                            : 'border-border bg-muted/40 opacity-75'
-                    }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <code className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-foreground">
-                            {step.code}
-                          </code>
-                          <span className="font-semibold text-foreground text-sm sm:text-base">{step.title}</span>
-                          <Badge
-                            variant={
-                              isCompleted
-                                ? 'success'
-                                : isRecommended
-                                  ? 'primary'
-                                  : isRemedy
-                                    ? 'warning'
-                                    : 'secondary'
-                            }
-                            className={cn(
-                              !isCompleted && !isRecommended && !isRemedy && 'gap-1 text-xs font-medium text-muted-foreground'
-                            )}
-                          >
-                            {isCompleted ? (
-                              `Completed (${step.score}%)`
-                            ) : isRecommended ? (
-                              'Next Best Action'
-                            ) : isRemedy ? (
-                              'Knowledge Tracing Remedy'
-                            ) : (
-                              <>
-                                <Lock className="h-3 w-3" />
-                                Prerequisites Locked
-                              </>
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <span className="text-xs text-muted-foreground shrink-0">{step.estimatedHours} hrs study</span>
-                    </div>
-
-                    {step.prerequisite && (
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Prerequisite: <span className="font-medium text-foreground">{step.prerequisite}</span>
-                      </p>
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/60">
-                      <div className="flex flex-wrap gap-1.5 items-center">
-                        <span className="text-xs text-muted-foreground mr-1">Skills:</span>
-                        {step.skillsTaught.map((skill) => (
-                          <span
-                            key={skill}
-                            className="text-xs px-2 py-0.5 rounded-full bg-card border border-border text-foreground font-medium"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-
-                      {(isRecommended || isRemedy) && (
-                        <Button
-                          size="sm"
-                          variant={isRemedy ? 'secondary' : 'primary'}
-                          rightIcon={<ArrowRight className="h-4 w-4" />}
-                          onClick={() => {
-                            toast({
-                              title: `Launching ${step.code}`,
-                              description: `Starting active learning session for ${step.title}`,
-                              variant: 'success',
-                            })
-                          }}
-                        >
-                          {isRemedy ? 'Bridge Gap Now' : 'Start Module'}
-                        </Button>
+                return (
+                  <div key={step.id} className="relative flex items-start gap-3.5 sm:gap-5 group">
+                    {/* Timeline Node Bullet Pin Matching Upcoming Pathway Quizzes */}
+                    <div
+                      className={`relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all ${
+                        isCompleted
+                          ? 'border-success bg-success text-white shadow-2xs'
+                          : isRecommended
+                            ? 'border-primary bg-primary text-primary-foreground shadow-xs ring-4 ring-primary/20 animate-pulse'
+                            : isRemedy
+                              ? 'border-warning bg-warning text-white shadow-xs ring-4 ring-warning/20 animate-pulse'
+                              : 'border-border bg-muted text-foreground'
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : isRecommended ? (
+                        <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : isRemedy ? (
+                        <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <Lock className="h-4 w-4 sm:h-4 sm:w-4 text-muted-foreground" />
                       )}
                     </div>
+
+                    {/* Timeline Step Content Surface Panel */}
+                    <div
+                      className={`flex-1 min-w-0 rounded-xl p-4 sm:p-5 border transition-all ${
+                        isRecommended
+                          ? 'border-primary/50 bg-secondary/35 shadow-xs ring-1 ring-primary/25 cursor-pointer hover:border-primary'
+                          : isRemedy
+                            ? 'border-warning/60 bg-amber-50/40 shadow-xs ring-1 ring-warning/30'
+                            : isCompleted
+                              ? 'border-border bg-card shadow-2xs hover:border-success/50'
+                              : 'border-border bg-muted/20'
+                      }`}
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <Badge
+                            variant="outline"
+                            className={`font-mono text-xs font-bold shrink-0 ${
+                              isLocked
+                                ? 'text-muted-foreground bg-muted/60 border-border'
+                                : isRecommended
+                                  ? 'text-primary bg-secondary/60 border-primary/30'
+                                  : isRemedy
+                                    ? 'text-warning bg-amber-50 border-warning/40'
+                                    : 'text-success bg-success/10 border-success/30'
+                            }`}
+                          >
+                            {step.code}
+                          </Badge>
+
+                          {isCompleted && (
+                            <Badge variant="success" className="gap-1 text-xs font-semibold shrink-0">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Completed ({step.score}%)
+                            </Badge>
+                          )}
+
+                          {isRecommended && (
+                            <Badge variant="primary" className="gap-1 text-xs font-semibold bg-primary text-primary-foreground shadow-xs shrink-0">
+                              <Sparkles className="h-3 w-3" />
+                              Next Best Action
+                            </Badge>
+                          )}
+
+                          {isRemedy && (
+                            <Badge variant="warning" className="gap-1 text-xs font-semibold bg-warning text-white shadow-xs shrink-0">
+                              <Zap className="h-3 w-3" />
+                              Remedy Fallback
+                            </Badge>
+                          )}
+
+                          {isLocked && (
+                            <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted text-foreground border-border shrink-0">
+                              <Lock className="h-3 w-3 text-foreground" />
+                              Locked Gate
+                            </Badge>
+                          )}
+
+                          <span className="text-xs font-medium text-foreground truncate min-w-0">
+                            {step.title}
+                          </span>
+                        </div>
+
+                        <span className="text-xs text-muted-foreground font-semibold shrink-0 md:ml-auto">
+                          {step.estimatedHours} hrs study
+                        </span>
+                      </div>
+
+                      {/* Skills Tested Badges & Action CTA */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/60">
+                        <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                          <span className="text-[11px] font-bold mr-1 text-muted-foreground">
+                            Skills:
+                          </span>
+                          {step.skillsTaught.map((skill) => (
+                            <Badge
+                              key={skill}
+                              variant="outline"
+                              className="text-[11px] px-2 py-0.5 font-semibold bg-muted/40 text-foreground border-border"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        {(isRecommended || isRemedy) && (
+                          <Button
+                            size="sm"
+                            variant={isRemedy ? 'secondary' : 'primary'}
+                            rightIcon={<ArrowRight className="h-4 w-4" />}
+                            className="shadow-xs font-semibold text-xs"
+                            onClick={() => {
+                              toast({
+                                title: `Launching ${step.code}`,
+                                description: `Starting active learning session for ${step.title}`,
+                                variant: 'success',
+                              })
+                            }}
+                          >
+                            {isRemedy ? 'Bridge Gap Now' : 'Start Module'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

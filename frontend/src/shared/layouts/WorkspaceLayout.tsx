@@ -5,19 +5,18 @@ import {
   Award,
   Briefcase,
   CheckSquare,
+  ChevronDown,
   Compass,
   GraduationCap,
   Layers,
   LayoutDashboard,
   LogOut,
   Mail,
-  MoreHorizontal,
   Network,
   Palette,
   Shield,
   ShieldCheck,
   TrendingUp,
-  User,
   UserCheck,
   Users,
 } from 'lucide-react'
@@ -34,7 +33,7 @@ import {
 import { useToast } from '../hooks/useToast'
 import './WorkspaceLayout.css'
 
-interface SidebarItem {
+interface NavTabItem {
   label: string
   href: string
   icon: React.ReactNode
@@ -93,84 +92,81 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const isManager = activeActor === 'manager'
   const isAdmin = activeActor === 'admin'
 
-  let sidebarTitle = ''
-  let sidebarItems: SidebarItem[] = []
+  // Actor-specific navigation tabs for the navbar
+  let actorTabs: NavTabItem[] = []
 
   if (isLearner) {
-    sidebarTitle = 'Learner Portal'
-    sidebarItems = [
+    actorTabs = [
       {
         label: 'Overview',
         href: '/learner/overview',
-        icon: <LayoutDashboard size={17} />,
+        icon: <LayoutDashboard size={15} />,
       },
       {
         label: 'Adaptive Pathway',
         href: '/learner/pathway',
-        icon: <Compass size={17} />,
+        icon: <Compass size={15} />,
       },
       {
         label: 'Gap Analysis',
         href: '/learner/gap-analysis',
-        icon: <Award size={17} />,
+        icon: <Award size={15} />,
       },
       {
         label: 'Assessment Quiz',
         href: '/learner/assessment',
-        icon: <CheckSquare size={17} />,
+        icon: <CheckSquare size={15} />,
       },
       {
         label: 'Server Status',
         href: '/system-status?portal=learner',
-        icon: <Activity size={17} />,
+        icon: <Activity size={15} />,
       },
     ]
   } else if (isManager) {
-    sidebarTitle = 'Manager Console'
-    sidebarItems = [
+    actorTabs = [
       {
         label: 'Team Matrix',
         href: '/manager/team-matrix',
-        icon: <Users size={17} />,
+        icon: <Users size={15} />,
       },
       {
         label: 'Upskilling & ROI',
         href: '/manager/roi-forecast',
-        icon: <TrendingUp size={17} />,
+        icon: <TrendingUp size={15} />,
       },
       {
         label: '360° Evaluations',
         href: '/manager/evaluations',
-        icon: <UserCheck size={17} />,
+        icon: <UserCheck size={15} />,
       },
       {
         label: 'Server Status',
         href: '/system-status?portal=manager',
-        icon: <Activity size={17} />,
+        icon: <Activity size={15} />,
       },
     ]
   } else if (isAdmin) {
-    sidebarTitle = 'Administration'
-    sidebarItems = [
+    actorTabs = [
       {
         label: 'Role-Skill Taxonomy',
         href: '/admin/dashboard',
-        icon: <Layers size={17} />,
+        icon: <Layers size={15} />,
       },
       {
         label: 'Knowledge Graph',
         href: '/admin/knowledge-graph',
-        icon: <Network size={17} />,
+        icon: <Network size={15} />,
       },
       {
         label: 'Design System',
         href: '/admin/design-system',
-        icon: <Palette size={17} />,
+        icon: <Palette size={15} />,
       },
       {
         label: 'Server Status',
         href: '/system-status?portal=admin',
-        icon: <Activity size={17} />,
+        icon: <Activity size={15} />,
       },
     ]
   }
@@ -180,7 +176,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     ? {
         name: 'Alex Chen',
         email: 'alex.chen@adaptlearn.internal',
-        role: 'AI Knowledge Architect Track',
+        role: 'Learner',
         initials: 'AC',
         portal: 'Learner Portal',
         details: [
@@ -215,194 +211,211 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
           ],
         }
 
-  const showSidebar = sidebarItems.length > 0
+  // Helper for determining whether a nav tab is active
+  const isTabActive = (itemHref: string) => {
+    if (itemHref.startsWith('/system-status')) {
+      return (
+        path.startsWith('/system-status') &&
+        ((isLearner && (!location.search || location.search.includes('portal=learner'))) ||
+          (isManager && location.search.includes('portal=manager')) ||
+          (isAdmin && location.search.includes('portal=admin')))
+      )
+    }
+    if (itemHref === '/learner/overview') {
+      return path === '/learner/overview' || path === '/learner' || path === '/'
+    }
+    if (itemHref === '/learner/pathway') {
+      return path === '/learner/pathway'
+    }
+    if (itemHref === '/learner/gap-analysis') {
+      return path === '/learner/gap-analysis'
+    }
+    if (itemHref === '/learner/assessment') {
+      return path === '/learner/assessment' || path === '/assessment'
+    }
+    if (itemHref === '/manager/team-matrix') {
+      return path === '/manager/team-matrix' || path === '/manager'
+    }
+    if (itemHref === '/manager/roi-forecast') {
+      return path === '/manager/roi-forecast'
+    }
+    if (itemHref === '/manager/evaluations') {
+      return path === '/manager/evaluations'
+    }
+    if (itemHref === '/admin/dashboard') {
+      return path === '/admin/dashboard' || path === '/admin'
+    }
+    if (itemHref === '/admin/knowledge-graph') {
+      return path === '/admin/knowledge-graph' || path === '/knowledge-graph'
+    }
+    if (itemHref === '/admin/design-system') {
+      return path === '/admin/design-system' || path === '/design-system'
+    }
+    return path === itemHref
+  }
 
   return (
     <div className="workspace">
-      <header className="topbar">
-        <div className="flex items-center space-x-6">
-          <Link className="brand" to="/learner/overview">
-            <Network size={24} aria-hidden="true" />
-            <span>Adapt-Learn-Graph</span>
-          </Link>
-
-          {/* Actor Navigation Tabs */}
-          <nav className="flex items-center space-x-1 sm:space-x-2 flex-wrap">
-            <Link
-              to="/learner/overview"
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                isLearner
-                  ? 'bg-secondary text-secondary-foreground font-semibold'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <GraduationCap size={16} />
-              <span>Learner</span>
+      {/* Top Navigation Header with Tabs directly in Navbar and Far-Right Account */}
+      <header className="workspace-header">
+        <div className="workspace-topbar">
+          {/* Left: Brand */}
+          <div className="flex items-center justify-start min-w-0">
+            <Link className="brand shrink-0" to={isLearner ? '/learner/overview' : isManager ? '/manager/team-matrix' : '/admin/dashboard'}>
+              <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
+              <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate">
+                Adapt-Learn-Graph
+              </span>
             </Link>
+          </div>
 
-            <Link
-              to="/manager/team-matrix"
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                isManager
-                  ? 'bg-secondary text-secondary-foreground font-semibold'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <Briefcase size={16} />
-              <span>Manager</span>
-            </Link>
-
-            <Link
-              to="/admin/dashboard"
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                isAdmin
-                  ? 'bg-secondary text-secondary-foreground font-semibold'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <ShieldCheck size={16} />
-              <span>Admin</span>
-            </Link>
+          {/* Center: Feature Tabs Directly in Navbar */}
+          <nav className="workspace-tabs-nav" aria-label="Feature navigation tabs">
+            {actorTabs.map((item) => {
+              const active = isTabActive(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`workspace-nav-tab ${active ? 'active' : ''}`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
           </nav>
+
+          {/* Far-Right: User Account Card & Dropdown */}
+          <div className="flex items-center justify-end">
+            <div ref={userMenuRef} className="workspace-account relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              className={`workspace-account-btn ${isUserMenuOpen ? 'active' : ''}`}
+              title="Account actions and profile"
+              aria-label="User actions menu"
+              aria-expanded={isUserMenuOpen}
+            >
+              <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                {userProfile.initials}
+              </div>
+              <div className="hidden sm:flex flex-col items-start text-left min-w-0">
+                <span className="text-sm font-bold text-foreground leading-tight truncate max-w-[130px]">
+                  {userProfile.name}
+                </span>
+                <span className="text-xs text-muted-foreground leading-tight truncate">
+                  {userProfile.portal}
+                </span>
+              </div>
+              <ChevronDown
+                size={14}
+                className={`text-muted-foreground transition-transform duration-150 ${
+                  isUserMenuOpen ? 'rotate-180 text-primary' : ''
+                }`}
+              />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isUserMenuOpen && (
+              <div className="workspace-account-dropdown">
+                {/* Header with enlarged name and email */}
+                <div className="px-4 py-3 border-b border-border bg-muted/25">
+                  <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
+                  <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
+                </div>
+
+                <div className="py-1">
+                  {/* Switch Persona Shortcuts */}
+                  <div className="px-3.5 py-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Switch Role Portal
+                    </span>
+                    <div className="mt-1.5 flex flex-col gap-0.5">
+                      <Link
+                        to="/learner/overview"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                          isLearner
+                            ? 'bg-secondary text-primary font-semibold'
+                            : 'text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <GraduationCap size={13} />
+                          <span>Learner Portal</span>
+                        </span>
+                        {isLearner && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                      </Link>
+
+                      <Link
+                        to="/manager/team-matrix"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                          isManager
+                            ? 'bg-secondary text-primary font-semibold'
+                            : 'text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Briefcase size={13} />
+                          <span>Manager Console</span>
+                        </span>
+                        {isManager && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                      </Link>
+
+                      <Link
+                        to="/admin/dashboard"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                          isAdmin
+                            ? 'bg-secondary text-primary font-semibold'
+                            : 'text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <ShieldCheck size={13} />
+                          <span>Administration</span>
+                        </span>
+                        {isAdmin && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="my-1 border-t border-border" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsUserMenuOpen(false)
+                      toast({
+                        title: 'Signed Out',
+                        description: 'You have been signed out of Adapt-Learn-Graph.',
+                        variant: 'info',
+                      })
+                      navigate('/login')
+                    }}
+                    className="w-full text-left px-3.5 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2 font-medium cursor-pointer"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-
-
+        </div>
       </header>
 
+      {/* Main Content Area (Full-Width, No Sidebar) */}
       <div className="workspace-body">
-        {showSidebar && (
-          <aside className="workspace-sidebar">
-            <div className="workspace-sidebar-header">
-              <span className="workspace-sidebar-title">{sidebarTitle}</span>
-            </div>
-            <nav className="workspace-sidebar-nav">
-              {sidebarItems.map((item) => {
-                const isActive =
-                  path === item.href ||
-                  (item.href.startsWith('/system-status') && path.startsWith('/system-status')) ||
-                  (item.href === '/learner/overview' && (path === '/' || path === '/learner' || path === '/learner/overview')) ||
-                  (item.href === '/learner/pathway' && path === '/learner/pathway') ||
-                  (item.href === '/manager/team-matrix' && path === '/manager') ||
-                  (item.href === '/admin/dashboard' && path === '/admin') ||
-                  (item.href === '/admin/knowledge-graph' && path === '/knowledge-graph') ||
-                  (item.href === '/admin/design-system' && path === '/design-system') ||
-                  (item.href === '/learner/assessment' && path === '/assessment')
-
-                return (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={`workspace-sidebar-link ${isActive ? 'active' : ''}`}
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </Link>
-                )
-              })}
-            </nav>
-
-            {/* Bottom User Card & Options Menu */}
-            <div ref={userMenuRef} className="workspace-sidebar-user relative">
-              <div className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/50 transition-colors group">
-                <div
-                  className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
-                  onClick={() => {
-                    if (isLearner) {
-                      navigate('/learner/overview')
-                    } else {
-                      setIsProfileDialogOpen(true)
-                    }
-                  }}
-                  title="Click to view profile"
-                >
-                  <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                    {userProfile.initials}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold text-foreground truncate">
-                      {userProfile.name}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground truncate">
-                      {userProfile.portal}
-                    </div>
-                  </div>
-                </div>
-
-                {/* The "..." Button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setIsUserMenuOpen((prev) => !prev)
-                  }}
-                  className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
-                    isUserMenuOpen
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                  title="More user options"
-                  aria-label="User actions menu"
-                >
-                  <MoreHorizontal size={16} />
-                </button>
-              </div>
-
-              {/* Popover Dropdown Menu */}
-              {isUserMenuOpen && (
-                <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl shadow-xl z-50 py-1.5 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150">
-                  <div className="px-3 py-2 border-b border-border">
-                    <p className="text-xs font-semibold text-foreground truncate">{userProfile.name}</p>
-                    <p className="text-[11px] text-muted-foreground truncate font-mono">{userProfile.email}</p>
-                  </div>
-
-                  <div className="py-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsUserMenuOpen(false)
-                        if (isLearner) {
-                          navigate('/learner/overview')
-                        } else {
-                          setIsProfileDialogOpen(true)
-                        }
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-foreground hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2 font-medium cursor-pointer"
-                    >
-                      <User size={14} className="text-primary" />
-                      <span>{isLearner ? 'View Competency Overview' : 'View Profile'}</span>
-                    </button>
-
-                    <div className="my-1 border-t border-border" />
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsUserMenuOpen(false)
-                        toast({
-                          title: 'Signed Out',
-                          description: 'You have been signed out of Adapt-Learn-Graph.',
-                          variant: 'info',
-                        })
-                        navigate('/login')
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2 font-medium cursor-pointer"
-                    >
-                      <LogOut size={14} />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </aside>
-        )}
-
-        <main className={`workspace-main ${!showSidebar ? 'full-width' : ''}`}>
+        <main className="workspace-main">
           {children}
         </main>
       </div>
 
-      {/* Profile Dialog */}
+      {/* User Profile Dialog */}
       <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
         <div className="space-y-5">
           <DialogHeader>

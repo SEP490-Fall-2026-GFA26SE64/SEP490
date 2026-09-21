@@ -6,7 +6,6 @@ import {
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -31,22 +30,26 @@ export function AdminDashboardPage() {
           }
         />
 
-        {/* Role-Skill Taxonomy Card */}
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Layers className="h-5 w-5 text-primary" />
-                <span>Organizational Role & Competency Mappings</span>
-              </CardTitle>
-              <CardDescription>
-                Define required competencies and micro-skill thresholds for each organizational role.
-              </CardDescription>
+        {/* Role-Skill Taxonomy - Unified Big Container Design */}
+        <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+          {/* Big Container Header */}
+          <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Layers className="h-5 w-5 text-primary shrink-0" />
+                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                  Organizational Role & Competency Mappings
+                </h2>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Define required competencies and micro-skill thresholds for each organizational role in the ontology.
+              </p>
             </div>
             <Button
               size="sm"
               variant="primary"
               leftIcon={<Plus className="h-4 w-4" />}
+              className="shadow-xs font-semibold shrink-0"
               onClick={() => {
                 toast({
                   title: 'Ontology Node Created',
@@ -57,51 +60,62 @@ export function AdminDashboardPage() {
             >
               Add Role / Skill Node
             </Button>
-          </CardHeader>
+          </div>
 
-          <CardContent className="space-y-4">
-            <div className="divide-y divide-border">
-              {[
-                {
-                  role: 'AI Knowledge Architect',
-                  category: 'Data Science & Architecture',
-                  competencyCount: 4,
-                  skills: ['Neo4j Cypher', 'Node2Vec', 'PyG', 'DKT Modeling'],
-                },
-                {
-                  role: 'Senior Machine Learning Engineer',
-                  category: 'Applied AI',
-                  competencyCount: 6,
-                  skills: ['PyTorch', 'Model Serving', 'Feature Stores', 'MLOps'],
-                },
-                {
-                  role: 'Full-Stack Knowledge Engineer',
-                  category: 'Software Engineering',
-                  competencyCount: 5,
-                  skills: ['React', 'vis.js / D3', 'FastAPI', 'Spring Boot Hexagonal'],
-                },
-              ].map((item, idx) => (
-                <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-foreground text-sm">{item.role}</span>
-                      <Badge variant="outline">{item.category}</Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {item.skills.map((skill) => (
-                        <span key={skill} className="text-xs px-2 py-0.5 rounded bg-muted text-foreground font-mono">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
+          {/* Table / Ledger Body */}
+          <div className="divide-y divide-border">
+            {[
+              {
+                role: 'AI Knowledge Architect',
+                category: 'Data Science & Architecture',
+                competencyCount: 4,
+                skills: ['Neo4j Cypher', 'Node2Vec', 'PyG', 'DKT Modeling'],
+              },
+              {
+                role: 'Senior Machine Learning Engineer',
+                category: 'Applied AI',
+                competencyCount: 6,
+                skills: ['PyTorch', 'Model Serving', 'Feature Stores', 'MLOps'],
+              },
+              {
+                role: 'Full-Stack Knowledge Engineer',
+                category: 'Software Engineering',
+                competencyCount: 5,
+                skills: ['React', 'vis.js / D3', 'FastAPI', 'Spring Boot Hexagonal'],
+              },
+            ].map((item) => (
+              <div
+                key={item.role}
+                className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
+              >
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="font-bold text-foreground text-sm sm:text-base">{item.role}</span>
+                    <Badge variant="outline" className="text-xs font-semibold bg-secondary/30 text-primary border-primary/30">
+                      {item.category}
+                    </Badge>
                   </div>
-
-                  <span className="text-xs text-muted-foreground shrink-0">{item.competencyCount} Competencies linked</span>
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {item.skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="text-xs px-2.5 py-0.5 rounded-md bg-muted text-foreground font-mono font-medium border border-border"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
+                <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
+                    {item.competencyCount} Competencies linked
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </WorkspaceLayout>
   )

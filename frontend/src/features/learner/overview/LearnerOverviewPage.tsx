@@ -112,17 +112,11 @@ export function LearnerOverviewPage() {
           title="Learner Overview"
           description="Continuous competency cockpit tracking verified skill mastery, Bayesian knowledge estimation, and dynamic pathway progression."
           actions={
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <Badge variant="secondary" className="px-3 py-1.5 font-medium flex items-center gap-1.5">
-                <Sparkles size={14} className="text-primary" />
-                <span>Target: AI Knowledge Architect</span>
-              </Badge>
-              <Link to="/learner/pathway">
-                <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>
-                  Continue Pathway
-                </Button>
-              </Link>
-            </div>
+            <Link to="/learner/pathway">
+              <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>
+                Continue Pathway
+              </Button>
+            </Link>
           }
         />
 
@@ -235,17 +229,19 @@ export function LearnerOverviewPage() {
         {/* =========================================================================
             USE CASE 3: VIEW COMPETENCY PROFILE & DETAILED EVIDENCE SOURCES
            ========================================================================= */}
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border pb-4">
+        <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+          <div className="p-5 sm:p-6 border-b border-border bg-muted/15 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  <span>Verified Competency Profile & Evidence Sources</span>
-                </CardTitle>
-                <CardDescription>
-                  Detailed micro-skill evaluations verified by diagnostic quizzes, peer endorsements, and repository commits.
-                </CardDescription>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+                  <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                    Verified Competency Profile & Evidence Sources
+                  </h2>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Detailed micro-skill evaluations verified by diagnostic quizzes, peer endorsements, and repository commits
+                </p>
               </div>
 
               {/* Search bar */}
@@ -256,31 +252,31 @@ export function LearnerOverviewPage() {
                   placeholder="Search micro-skills or domains..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-1.5 text-xs bg-muted/40 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                  className="w-full pl-9 pr-4 py-1.5 text-xs bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                 />
               </div>
             </div>
 
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 text-xs">
+            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 text-xs">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                      : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   {cat === 'all' ? 'All Domains' : cat}
                 </button>
               ))}
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="pt-4 space-y-4">
+          <div>
             {filteredSkills.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground space-y-2">
                 <Search size={32} className="mx-auto text-muted-foreground/50" />
@@ -291,7 +287,7 @@ export function LearnerOverviewPage() {
                     setSearchQuery('')
                     setSelectedCategory('all')
                   }}
-                  className="text-xs text-primary underline"
+                  className="text-xs text-primary underline font-medium cursor-pointer"
                 >
                   Reset filters
                 </button>
@@ -303,7 +299,7 @@ export function LearnerOverviewPage() {
                   const gap = Math.max(0, skill.targetRoleRequirement - skill.estimatedMastery)
 
                   return (
-                    <div key={skill.id} className="py-4 first:pt-1 last:pb-0 space-y-3">
+                    <div key={skill.id} className="p-4 sm:p-5 hover:bg-muted/20 transition-colors space-y-3">
                       {/* Top Skill Row */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="space-y-1">
@@ -427,8 +423,8 @@ export function LearnerOverviewPage() {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </WorkspaceLayout>
   )
