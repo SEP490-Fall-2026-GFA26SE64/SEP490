@@ -6,6 +6,7 @@ import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/K
 import { LoginPage } from '../features/auth/LoginPage'
 import { AssessmentPage } from '../features/learner/assessment/AssessmentPage'
 import { CompetencyGapAnalysisPage } from '../features/learner/gap-analysis/CompetencyGapAnalysisPage'
+import { LearnerOverviewPage } from '../features/learner/overview/LearnerOverviewPage'
 import { AdaptivePathwayPage } from '../features/learner/pathway/AdaptivePathwayPage'
 import { EvaluationsPage } from '../features/manager/evaluations/EvaluationsPage'
 import { RoiForecastPage } from '../features/manager/roi-forecast/RoiForecastPage'
@@ -30,7 +31,9 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
 
             {/* Learner routes */}
-            <Route path="/learner" element={<Navigate to="/learner/pathway" replace />} />
+            <Route path="/learner" element={<Navigate to="/learner/overview" replace />} />
+            <Route path="/learner/overview" element={<LearnerOverviewPage />} />
+            <Route path="/learner/profile" element={<Navigate to="/learner/overview" replace />} />
             <Route path="/learner/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/learner/gap-analysis" element={<CompetencyGapAnalysisPage />} />
             <Route path="/learner/assessment" element={<AssessmentPage />} />
@@ -54,7 +57,7 @@ export default function App() {
             <Route path="/system-status" element={<SystemStatusPage />} />
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/learner/pathway" replace />} />
+            <Route path="*" element={<Navigate to="/learner/overview" replace />} />
           </Routes>
           <Toaster />
         </BrowserRouter>

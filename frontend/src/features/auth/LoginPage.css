@@ -140,8 +140,8 @@
   position: absolute;
   right: calc(50% + 260px);
   bottom: 24px;
-  width: 520px;
-  max-width: 32vw;
+  width:700px;
+  max-width: 35vw;
   pointer-events: none;
   z-index: 2;
   display: flex;
@@ -155,7 +155,7 @@
   position: absolute;
   left: calc(50% + 315px);
   bottom: 34px;
-  width: 560px;
+  width: 660px;
   max-width: 35vw;
   pointer-events: none;
   z-index: 2;

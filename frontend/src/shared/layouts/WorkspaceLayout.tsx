@@ -8,6 +8,7 @@ import {
   Compass,
   GraduationCap,
   Layers,
+  LayoutDashboard,
   LogOut,
   Mail,
   MoreHorizontal,
@@ -98,6 +99,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   if (isLearner) {
     sidebarTitle = 'Learner Portal'
     sidebarItems = [
+      {
+        label: 'Overview',
+        href: '/learner/overview',
+        icon: <LayoutDashboard size={17} />,
+      },
       {
         label: 'Adaptive Pathway',
         href: '/learner/pathway',
@@ -215,7 +221,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     <div className="workspace">
       <header className="topbar">
         <div className="flex items-center space-x-6">
-          <Link className="brand" to="/learner/pathway">
+          <Link className="brand" to="/learner/overview">
             <Network size={24} aria-hidden="true" />
             <span>Adapt-Learn-Graph</span>
           </Link>
@@ -223,7 +229,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
           {/* Actor Navigation Tabs */}
           <nav className="flex items-center space-x-1 sm:space-x-2 flex-wrap">
             <Link
-              to="/learner/pathway"
+              to="/learner/overview"
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
                 isLearner
                   ? 'bg-secondary text-secondary-foreground font-semibold'
@@ -260,20 +266,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
 
-        {/* Topbar Right Section */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
-          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-muted/40 border border-border text-xs text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-success inline-block" />
-            <span>Org SSO: Active</span>
-          </div>
-          <Link
-            to="/login"
-            className="text-xs px-3 py-1 rounded-md border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
-            title="Switch account or login"
-          >
-            Sign Out
-          </Link>
-        </div>
+
       </header>
 
       <div className="workspace-body">
@@ -287,7 +280,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                 const isActive =
                   path === item.href ||
                   (item.href.startsWith('/system-status') && path.startsWith('/system-status')) ||
-                  (item.href === '/learner/pathway' && (path === '/' || path === '/learner')) ||
+                  (item.href === '/learner/overview' && (path === '/' || path === '/learner' || path === '/learner/overview')) ||
+                  (item.href === '/learner/pathway' && path === '/learner/pathway') ||
                   (item.href === '/manager/team-matrix' && path === '/manager') ||
                   (item.href === '/admin/dashboard' && path === '/admin') ||
                   (item.href === '/admin/knowledge-graph' && path === '/knowledge-graph') ||
@@ -312,7 +306,13 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               <div className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/50 transition-colors group">
                 <div
                   className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
-                  onClick={() => setIsProfileDialogOpen(true)}
+                  onClick={() => {
+                    if (isLearner) {
+                      navigate('/learner/overview')
+                    } else {
+                      setIsProfileDialogOpen(true)
+                    }
+                  }}
                   title="Click to view profile"
                 >
                   <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
@@ -360,12 +360,16 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                       type="button"
                       onClick={() => {
                         setIsUserMenuOpen(false)
-                        setIsProfileDialogOpen(true)
+                        if (isLearner) {
+                          navigate('/learner/overview')
+                        } else {
+                          setIsProfileDialogOpen(true)
+                        }
                       }}
                       className="w-full text-left px-3 py-2 text-xs text-foreground hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2 font-medium cursor-pointer"
                     >
                       <User size={14} className="text-primary" />
-                      <span>View Profile</span>
+                      <span>{isLearner ? 'View Competency Overview' : 'View Profile'}</span>
                     </button>
 
                     <div className="my-1 border-t border-border" />

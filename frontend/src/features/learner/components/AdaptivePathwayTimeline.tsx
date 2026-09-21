@@ -4,6 +4,7 @@ import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { useToast } from '../../../shared/hooks/useToast'
+import { cn } from '../../../shared/lib/utils'
 
 export interface PathwayStep {
   id: string
@@ -193,16 +194,24 @@ export function AdaptivePathwayTimeline() {
                                   ? 'primary'
                                   : isRemedy
                                     ? 'warning'
-                                    : 'outline'
+                                    : 'secondary'
                             }
+                            className={cn(
+                              !isCompleted && !isRecommended && !isRemedy && 'gap-1 text-xs font-medium text-muted-foreground'
+                            )}
                           >
-                            {isCompleted
-                              ? `Completed (${step.score}%)`
-                              : isRecommended
-                                ? 'Next Best Action'
-                                : isRemedy
-                                  ? 'Knowledge Tracing Remedy'
-                                  : 'Prerequisites Locked'}
+                            {isCompleted ? (
+                              `Completed (${step.score}%)`
+                            ) : isRecommended ? (
+                              'Next Best Action'
+                            ) : isRemedy ? (
+                              'Knowledge Tracing Remedy'
+                            ) : (
+                              <>
+                                <Lock className="h-3 w-3" />
+                                Prerequisites Locked
+                              </>
+                            )}
                           </Badge>
                         </div>
                       </div>

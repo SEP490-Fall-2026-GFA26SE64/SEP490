@@ -1,4 +1,4 @@
-import { ArrowUpRight, Award, CheckCircle2, Clock, Target, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, Award, Calendar, CheckCircle2, Target, TrendingUp } from 'lucide-react'
 
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
@@ -103,13 +103,17 @@ export function CompetencyGapAnalysis() {
         <Card className="bg-gradient-to-br from-card to-secondary/30">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-              <Clock className="h-4 w-4 text-primary" /> Training Efficiency
+              <Calendar className="h-4 w-4 text-primary" /> Time Left
             </CardDescription>
-            <CardTitle className="text-2xl font-bold text-foreground">38.5 Hours Saved</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">24 Days Remaining</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Adaptive graph skips modules for already mastered competencies.
+          <CardContent className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Start: <strong className="text-foreground font-semibold">Aug 15, 2026</strong></span>
+              <span className="text-muted-foreground">Target: <strong className="text-primary font-semibold">Oct 15, 2026</strong></span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Target role deployment deadline set by organization.
             </p>
           </CardContent>
         </Card>

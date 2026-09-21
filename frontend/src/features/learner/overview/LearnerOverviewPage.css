@@ -1,0 +1,15 @@
+/* Scoped styles for Learner Overview page */
+.learner-overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.evidence-source-card {
+  transition: all 0.15s ease-in-out;
+}
+
+.evidence-source-card:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  background-color: hsl(var(--card));
+}
