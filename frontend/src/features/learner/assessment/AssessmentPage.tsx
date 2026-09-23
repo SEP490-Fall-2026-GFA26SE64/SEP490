@@ -30,7 +30,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -40,6 +40,7 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '../../../shared/components/ui/Card'
@@ -53,6 +54,8 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
 import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import './AssessmentPage.css'
@@ -620,6 +623,8 @@ const PATHWAY_QUIZZES: PathwayQuiz[] = [
 
 export function AssessmentPage() {
   const { toast } = useToast()
+  const location = useLocation()
+  const { profile, isLearningLocked, completeDiagnosticAssessment } = useEmployeeLearningState()
 
   // Navigation tab state: 'upcoming' | 'history'
   const [activeTab, setActiveTab] = React.useState<'upcoming' | 'history'>('upcoming')
@@ -658,6 +663,13 @@ export function AssessmentPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [isSubmitted, reviewAttemptId])
+
+  // Automatically open quiz modal if navigated with ?diagnostic=true
+  React.useEffect(() => {
+    if (location.search.includes('diagnostic=true') && !isTakingQuiz && !isSubmitted) {
+      setSelectedQuizModal(PATHWAY_QUIZZES[2])
+    }
+  }, [location.search, isTakingQuiz, isSubmitted])
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -794,10 +806,17 @@ export function AssessmentPage() {
     setReviewAttemptId(newAttempt.id)
     setCurrentIndex(0)
 
+    // Unlock learning pathway if diagnostic requirement is active
+    if (isLearningLocked) {
+      completeDiagnosticAssessment(scorePct)
+    }
+
     toast({
-      title: `Assessment Completed: ${scorePct}%`,
-      description: `You got ${correct} of ${totalQuestions} correct. You are now in Review Mode to inspect your answers.`,
-      variant: scorePct >= 80 ? 'success' : 'warning',
+      title: isLearningLocked ? 'Diagnostic Assessment Passed! 🎉' : `Assessment Completed: ${scorePct}%`,
+      description: isLearningLocked
+        ? `Score: ${scorePct}%. Your Adaptive Learning Pathway and Interactive Roadmap are now unlocked!`
+        : `You got ${correct} of ${totalQuestions} correct. You are now in Review Mode to inspect your answers.`,
+      variant: 'success',
     })
   }
 
@@ -1321,8 +1340,10 @@ export function AssessmentPage() {
               UPCOMING & HISTORY TABS VIEW
              ========================================================================= */
           <div className="space-y-6">
-            {/* View Mode Navigation Tabs: Upcoming vs History */}
+            {/* View Mode Navigation Tabs: Upcoming vs History + Target Role Selector */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+              <TargetRoleSelector />
+
               <Tabs
                 value={activeTab}
                 onValueChange={(val) => {
@@ -1333,18 +1354,92 @@ export function AssessmentPage() {
                 <TabsList className="bg-muted/70 p-1">
                   <TabsTrigger value="upcoming" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>Upcoming Milestone Quizzes</span>
+                    <span>Upcoming Pathway Quizzes</span>
                   </TabsTrigger>
                   <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                     <History className="h-4 w-4 text-primary" />
-                    <span>Attempt History ({attempts.length})</span>
+                    <span>Attempt History</span>
+                    {isLearningLocked && <Lock size={12} className="text-warning ml-0.5" />}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
-            {/* TAB 1: UPCOMING ASSESSMENTS (2-COLUMN COCKPIT LAYOUT) */}
+            {/* TAB 1: UPCOMING ASSESSMENTS */}
             {activeTab === 'upcoming' && (() => {
+              // If diagnostic is locked, employee can ONLY see and take the diagnostic assessment!
+              if (isLearningLocked) {
+                return (
+                  <div className="space-y-6 max-w-3xl mx-auto py-2">
+                    <Card className="border border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md overflow-hidden">
+                      <CardHeader className="p-6 border-b border-border/80">
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                            <Sparkles size={14} /> Mandatory Diagnostic Baseline
+                          </span>
+                          <Badge variant="warning" className="text-xs font-bold">
+                            Diagnostic Assessment Required
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-xl font-extrabold text-foreground mt-2.5">
+                          Target Role Baseline Diagnostic: {profile.targetRole || 'AI Knowledge Architect'}
+                        </CardTitle>
+                        <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                          Assigned by {profile.assignedByManager || 'David Miller (Line Manager)'} &bull; Deadline:{' '}
+                          {profile.deadline || '2026-12-31'}. Complete this 10-question baseline to calibrate your competency graph and unlock the adaptive curriculum.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-6 space-y-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Duration</div>
+                            <div className="text-base font-bold text-foreground mt-0.5">25 Mins</div>
+                          </div>
+                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Questions</div>
+                            <div className="text-base font-bold text-foreground mt-0.5">10 Items</div>
+                          </div>
+                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Pass Score</div>
+                            <div className="text-base font-bold text-success mt-0.5">80%</div>
+                          </div>
+                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Grading</div>
+                            <div className="text-base font-bold text-primary mt-0.5">Instant</div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                          <span className="text-xs text-muted-foreground">
+                            Version: <strong className="text-foreground">{profile.targetRoleVersion || 'v2.4'}</strong>
+                          </span>
+                          <Button
+                            variant="primary"
+                            size="default"
+                            className="font-bold shadow-xs px-6"
+                            rightIcon={<ArrowRight size={16} />}
+                            onClick={() => setSelectedQuizModal(PATHWAY_QUIZZES[2])}
+                          >
+                            Take Diagnostic Assessment Now
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Regular milestone quizzes blocked banner */}
+                    <div className="p-5 rounded-2xl border border-border bg-muted/30 text-center space-y-2">
+                      <div className="flex items-center justify-center gap-2 text-xs font-bold text-foreground">
+                        <Lock size={15} className="text-muted-foreground" />
+                        <span>Curriculum Module Quizzes Locked</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                        End-of-module quizzes (MOD-101, MOD-204, MOD-301, MOD-305, MOD-401) and attempt history are locked until you complete this diagnostic assessment.
+                      </p>
+                    </div>
+                  </div>
+                )
+              }
+
               const availableQuizzes = PATHWAY_QUIZZES.filter((q) => q.status === 'available')
               const completedQuizzes = PATHWAY_QUIZZES.filter((q) => q.status === 'completed')
               const lockedQuizzes = PATHWAY_QUIZZES.filter((q) => q.status === 'locked')
@@ -1354,7 +1449,42 @@ export function AssessmentPage() {
               )
 
               return (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="space-y-5">
+                  {/* DIAGNOSTIC ASSESSMENT REQUIRED BANNER WHEN LEARNING IS LOCKED */}
+                  {isLearningLocked && (
+                    <div className="rounded-2xl border border-warning/40 bg-gradient-to-r from-warning/15 via-warning/10 to-card p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-start sm:items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-warning/20 text-warning shrink-0">
+                          <Target size={22} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-foreground">
+                              Mandatory Diagnostic Assessment Required
+                            </span>
+                            <Badge variant="warning" className="text-[10px] font-bold">
+                              Action Required
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Your Line Manager assigned target role &ldquo;<strong className="text-foreground">{profile.targetRole || 'AI Knowledge Architect'}</strong>&rdquo;.
+                            Complete this diagnostic quiz to calibrate your knowledge model and unlock your Interactive Roadmap &amp; Timeline.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="shrink-0 font-bold"
+                        onClick={() => setSelectedQuizModal(PATHWAY_QUIZZES[2])}
+                        rightIcon={<ArrowRight size={14} />}
+                      >
+                        Start Diagnostic Quiz
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* LEFT COLUMN: Hero Milestone Card & Unified Adaptive Timeline Big Container (lg:col-span-8) */}
                   <div className="lg:col-span-8 space-y-5">
                     {/* 1. Hero Milestone Progress Card */}
@@ -1803,11 +1933,43 @@ export function AssessmentPage() {
                     </div>
                   </div>
                 </div>
+                </div>
               )
             })()}
 
             {/* TAB 2: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
             {activeTab === 'history' && (
+              isLearningLocked ? (
+                <div className="max-w-xl mx-auto py-8">
+                  <Card className="border border-warning/30 bg-card shadow-xs text-center p-8 space-y-4">
+                    <div className="w-12 h-12 rounded-2xl bg-warning/15 text-warning flex items-center justify-center mx-auto">
+                      <Lock size={24} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="text-base font-bold text-foreground">Attempt History Locked</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Your attempt history for <strong className="text-foreground">{profile.targetRole || 'AI Knowledge Architect'}</strong> is unavailable until you complete the baseline diagnostic assessment.
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Tip: You can switch to a previous completed target role using the <strong>TARGET ROLE</strong> dropdown above to review historical attempt records.
+                      </p>
+                    </div>
+                    <div className="pt-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          setActiveTab('upcoming')
+                          setSelectedQuizModal(PATHWAY_QUIZZES[2])
+                        }}
+                        rightIcon={<ArrowRight size={14} />}
+                      >
+                        Take Diagnostic Assessment
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
+              ) : (
               <div className="space-y-5">
                 {/* Attempts Stats Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -2081,7 +2243,8 @@ export function AssessmentPage() {
                   </div>
                 </div>
               </div>
-            )}
+            )
+          )}
           </div>
         )}
 

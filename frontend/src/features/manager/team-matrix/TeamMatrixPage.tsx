@@ -16,7 +16,7 @@ import { AVERAGE_READINESS, TEAM_MEMBERS, TOTAL_HOURS_SAVED } from '../data/mana
 import './TeamMatrixPage.css'
 
 export function TeamMatrixPage() {
-  const [statusFilter, setStatusFilter] = React.useState<'all' | 'ready' | 'on_track' | 'support'>('all')
+  const [statusFilter, setStatusFilter] = React.useState<'all' | 'ready' | 'on_track' | 'needs_attention'>('all')
   const [searchQuery, setSearchQuery] = React.useState('')
 
   const filteredMembers = TEAM_MEMBERS.filter((member) => {
@@ -133,14 +133,14 @@ export function TeamMatrixPage() {
 
               <button
                 type="button"
-                onClick={() => setStatusFilter('support')}
+                onClick={() => setStatusFilter('needs_attention')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'support'
+                  statusFilter === 'needs_attention'
                     ? 'bg-destructive/15 text-destructive font-bold'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
               >
-                <span>Needs Support ({TEAM_MEMBERS.filter((m) => m.status === 'support').length})</span>
+                <span>Needs Support ({TEAM_MEMBERS.filter((m) => m.status === 'needs_attention').length})</span>
               </button>
             </div>
           </div>

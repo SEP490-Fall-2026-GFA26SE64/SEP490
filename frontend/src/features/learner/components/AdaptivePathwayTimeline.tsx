@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react'
+import { CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -260,24 +260,6 @@ export function AdaptivePathwayTimeline() {
                             </Badge>
                           ))}
                         </div>
-
-                        {(isRecommended || isRemedy) && (
-                          <Button
-                            size="sm"
-                            variant={isRemedy ? 'secondary' : 'primary'}
-                            rightIcon={<ArrowRight className="h-4 w-4" />}
-                            className="shadow-xs font-semibold text-xs"
-                            onClick={() => {
-                              toast({
-                                title: `Launching ${step.code}`,
-                                description: `Starting active learning session for ${step.title}`,
-                                variant: 'success',
-                              })
-                            }}
-                          >
-                            {isRemedy ? 'Bridge Gap Now' : 'Start Module'}
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </div>

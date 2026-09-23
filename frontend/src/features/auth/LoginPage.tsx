@@ -5,7 +5,8 @@ import { useToast } from '../../shared/hooks/useToast'
 import './LoginPage.css'
 
 interface DemoAccount {
-  role: 'Learner' | 'Manager' | 'Admin'
+  role: 'Employee' | 'Line Manager' | 'L&D Manager' | 'Admin'
+  actorKey: 'employee' | 'line-manager' | 'ld-manager' | 'admin'
   username: string
   label: string
   targetRoute: string
@@ -13,22 +14,32 @@ interface DemoAccount {
 
 const DEMO_ACCOUNTS: DemoAccount[] = [
   {
-    role: 'Learner',
-    username: 'learner.alex',
-    label: 'Alex Chen (Learner)',
-    targetRoute: '/learner/pathway',
+    role: 'Employee',
+    actorKey: 'employee',
+    username: 'employee.alex',
+    label: 'Alex Chen (Employee)',
+    targetRoute: '/employee/overview',
   },
   {
-    role: 'Manager',
-    username: 'manager.sarah',
-    label: 'Sarah Connor (Manager)',
-    targetRoute: '/manager/team-matrix',
+    role: 'Line Manager',
+    actorKey: 'line-manager',
+    username: 'linemanager.david',
+    label: 'David Miller (Line Manager)',
+    targetRoute: '/line-manager/employees',
+  },
+  {
+    role: 'L&D Manager',
+    actorKey: 'ld-manager',
+    username: 'ldmanager.sarah',
+    label: 'Sarah Connor (L&D Manager)',
+    targetRoute: '/ld-manager/team-matrix',
   },
   {
     role: 'Admin',
+    actorKey: 'admin',
     username: 'admin.elena',
     label: 'Elena Rostova (Admin)',
-    targetRoute: '/admin/dashboard',
+    targetRoute: '/admin/users',
   },
 ]
 
@@ -36,7 +47,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  const [username, setUsername] = React.useState('learner.alex')
+  const [username, setUsername] = React.useState('employee.alex')
   const [password, setPassword] = React.useState('••••••••••••')
   const [showPassword, setShowPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -67,11 +78,11 @@ export function LoginPage() {
     setTimeout(() => {
       setIsLoading(false)
       const matched = DEMO_ACCOUNTS.find((a) => a.username.toLowerCase() === username.toLowerCase())
-      const target = matched ? matched.targetRoute : '/learner/pathway'
+      const target = matched ? matched.targetRoute : '/employee/overview'
 
       localStorage.setItem('auth_user', username)
       if (matched) {
-        localStorage.setItem('active_actor', matched.role.toLowerCase())
+        localStorage.setItem('active_actor', matched.actorKey)
       }
 
       toast({

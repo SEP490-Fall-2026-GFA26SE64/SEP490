@@ -4,6 +4,7 @@ import { AlertCircle, ArrowUpRight, Award, Calendar, CheckCircle2, Filter, Searc
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Progress } from '../../../shared/components/ui/Progress'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 
 export interface CompetencySkill {
   id: string
@@ -64,9 +65,13 @@ const SAMPLE_SKILLS: CompetencySkill[] = [
 ]
 
 export function CompetencyGapAnalysis() {
+  const { profile, isViewingActiveRole } = useEmployeeLearningState()
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [search, setSearch] = useState('')
-  const targetRole = 'AI Knowledge Architect'
+
+  const activeRoleName = profile.targetRole || 'AI Knowledge Architect'
+  const selectedRole = profile.previousRoles?.find((r) => r.roleKey === profile.selectedViewRoleKey)
+  const targetRole = isViewingActiveRole ? activeRoleName : (selectedRole?.roleTitle || activeRoleName)
 
   const totalRequired = SAMPLE_SKILLS.reduce((acc, s) => acc + s.requiredLevel, 0)
   const totalCurrent = SAMPLE_SKILLS.reduce((acc, s) => acc + s.currentLevel, 0)
