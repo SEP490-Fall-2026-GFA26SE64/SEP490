@@ -3,10 +3,13 @@ import type { ReactNode } from 'react'
 import {
   Activity,
   Award,
+  BarChart3,
+  BookOpen,
   Briefcase,
   CheckSquare,
   ChevronDown,
   Compass,
+  FileQuestion,
   GraduationCap,
   Layers,
   LayoutDashboard,
@@ -17,7 +20,6 @@ import {
   Shield,
   ShieldCheck,
   TrendingUp,
-  UserCheck,
   Users,
 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -148,6 +150,31 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isLdManager) {
     actorTabs = [
       {
+        label: 'Outcomes',
+        href: '/ld-manager/learning-outcomes',
+        icon: <BarChart3 size={15} />,
+      },
+      {
+        label: 'Target Roles',
+        href: '/ld-manager/target-roles',
+        icon: <Briefcase size={15} />,
+      },
+      {
+        label: 'Ontology & Skills',
+        href: '/ld-manager/ontology',
+        icon: <Network size={15} />,
+      },
+      {
+        label: 'Learning Modules',
+        href: '/ld-manager/modules',
+        icon: <BookOpen size={15} />,
+      },
+      {
+        label: 'Assessment Bank',
+        href: '/ld-manager/assessment-bank',
+        icon: <FileQuestion size={15} />,
+      },
+      {
         label: 'Team Matrix',
         href: '/ld-manager/team-matrix',
         icon: <Users size={15} />,
@@ -156,11 +183,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: 'Upskilling & ROI',
         href: '/ld-manager/roi-forecast',
         icon: <TrendingUp size={15} />,
-      },
-      {
-        label: '360° Evaluations',
-        href: '/ld-manager/evaluations',
-        icon: <UserCheck size={15} />,
       },
       {
         label: 'Server Status',
@@ -278,14 +300,31 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/line-manager/employees') {
       return path.startsWith('/line-manager')
     }
+    if (itemHref === '/ld-manager/learning-outcomes') {
+      return (
+        path === '/ld-manager/learning-outcomes' ||
+        path === '/ld-manager' ||
+        path === '/manager/learning-outcomes' ||
+        path === '/manager'
+      )
+    }
+    if (itemHref === '/ld-manager/target-roles') {
+      return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
+    }
+    if (itemHref === '/ld-manager/ontology') {
+      return path === '/ld-manager/ontology' || path === '/manager/ontology'
+    }
+    if (itemHref === '/ld-manager/modules') {
+      return path === '/ld-manager/modules' || path === '/manager/modules'
+    }
+    if (itemHref === '/ld-manager/assessment-bank') {
+      return path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+    }
     if (itemHref === '/ld-manager/team-matrix') {
-      return path === '/ld-manager/team-matrix' || path === '/ld-manager' || path === '/manager/team-matrix' || path === '/manager'
+      return path === '/ld-manager/team-matrix' || path === '/manager/team-matrix'
     }
     if (itemHref === '/ld-manager/roi-forecast') {
       return path === '/ld-manager/roi-forecast' || path === '/manager/roi-forecast'
-    }
-    if (itemHref === '/ld-manager/evaluations') {
-      return path === '/ld-manager/evaluations' || path === '/manager/evaluations'
     }
     if (itemHref === '/admin/users') {
       return path === '/admin/users'
@@ -307,7 +346,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     : isLineManager
     ? '/line-manager/employees'
     : isLdManager
-    ? '/ld-manager/team-matrix'
+    ? '/ld-manager/learning-outcomes'
     : '/admin/users'
 
   return (
@@ -428,7 +467,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 3. L&D Manager */}
                         <Link
-                          to="/ld-manager/team-matrix"
+                          to="/ld-manager/learning-outcomes"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager

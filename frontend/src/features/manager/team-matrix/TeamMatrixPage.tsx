@@ -8,7 +8,6 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -32,18 +31,13 @@ export function TeamMatrixPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Console Header */}
-        <PageHeader
-          icon={<Users className="h-8 w-8 text-primary" />}
-          title="Team Competency Matrix"
-          description="Track team competency coverage, benchmark employee capability scores against Neo4j ontology targets, and identify critical skill gaps."
-          actions={
-            <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
-              <Users className="h-4 w-4 text-primary" />
-              <span>{TEAM_MEMBERS.length} Team Members Scoped</span>
-            </Badge>
-          }
-        />
+        {/* Top Badges */}
+        <div className="flex items-center justify-end pb-1 border-b border-border/60">
+          <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            <span>{TEAM_MEMBERS.length} Team Members Scoped</span>
+          </Badge>
+        </div>
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

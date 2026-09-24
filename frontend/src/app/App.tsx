@@ -10,8 +10,12 @@ import { CompetencyGapAnalysisPage } from '../features/employee/gap-analysis/Com
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { EmployeeManagementPage } from '../features/line-manager/employee-management/EmployeeManagementPage'
-import { EvaluationsPage } from '../features/manager/evaluations/EvaluationsPage'
+import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
+import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
+import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
+import { LearningOutcomesPage } from '../features/manager/learning-outcomes/LearningOutcomesPage'
 import { RoiForecastPage } from '../features/manager/roi-forecast/RoiForecastPage'
+import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
 import { SystemStatusPage } from '../features/system/SystemStatusPage'
 import { Toaster } from '../shared/components/ui/Toast'
@@ -53,17 +57,27 @@ export default function App() {
             <Route path="/line-manager" element={<Navigate to="/line-manager/employees" replace />} />
             <Route path="/line-manager/employees" element={<EmployeeManagementPage />} />
 
-            {/* 3. L&D Manager routes (formerly Manager) */}
-            <Route path="/ld-manager" element={<Navigate to="/ld-manager/team-matrix" replace />} />
+            {/* 3. L&D Manager routes */}
+            <Route path="/ld-manager" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
+            <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
+            <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
+            <Route path="/ld-manager/ontology" element={<CompetencyOntologyPage />} />
+            <Route path="/ld-manager/modules" element={<LearningModulesPage />} />
+            <Route path="/ld-manager/assessment-bank" element={<AssessmentBankPage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
             <Route path="/ld-manager/roi-forecast" element={<RoiForecastPage />} />
-            <Route path="/ld-manager/evaluations" element={<EvaluationsPage />} />
+            <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
             {/* Backwards compatibility for Manager routes */}
-            <Route path="/manager" element={<Navigate to="/ld-manager/team-matrix" replace />} />
+            <Route path="/manager" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
+            <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
+            <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />
+            <Route path="/manager/ontology" element={<Navigate to="/ld-manager/ontology" replace />} />
+            <Route path="/manager/modules" element={<Navigate to="/ld-manager/modules" replace />} />
+            <Route path="/manager/assessment-bank" element={<Navigate to="/ld-manager/assessment-bank" replace />} />
             <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/team-matrix" replace />} />
             <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/roi-forecast" replace />} />
-            <Route path="/manager/evaluations" element={<Navigate to="/ld-manager/evaluations" replace />} />
+            <Route path="/manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
             {/* 4. Administrator routes */}
             <Route path="/admin" element={<Navigate to="/admin/users" replace />} />

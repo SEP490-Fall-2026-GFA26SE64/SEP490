@@ -419,27 +419,6 @@ export function EmployeeManagementPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Page Title & Subtitle */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/70 pb-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-              <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                <Target size={22} />
-              </span>
-              Team Development & Target Role Supervision
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Manage enterprise target role assignments, version alignments, deadlines, and diagnostic coverage across direct reports.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted text-muted-foreground border border-border">
-              <Users size={14} className="text-primary" />
-              Line Manager: <strong className="text-foreground">David Miller</strong>
-            </span>
-          </div>
-        </div>
-
         {/* KPI Metrics Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard

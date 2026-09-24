@@ -4,7 +4,6 @@ import { getSystemStatus } from '../../shared/api/system'
 import { Badge } from '../../shared/components/ui/Badge'
 import { Button } from '../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../shared/components/ui/Card'
-import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
 import './SystemStatusPage.css'
 
@@ -18,22 +17,18 @@ export function SystemStatusPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        <PageHeader
-          icon={<Server className="h-8 w-8 text-primary" />}
-          title="System Status & Health"
-          description="Live operational telemetry, Neo4j graph cluster availability, and backend API connectivity."
-          actions={
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<RefreshCw className={`h-4 w-4 ${status.isFetching ? 'animate-spin' : ''}`} />}
-              onClick={() => void status.refetch()}
-              disabled={status.isFetching}
-            >
-              Refresh Telemetry
-            </Button>
-          }
-        />
+        {/* Top Actions */}
+        <div className="flex items-center justify-end pb-1 border-b border-border/60">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<RefreshCw className={`h-4 w-4 ${status.isFetching ? 'animate-spin' : ''}`} />}
+            onClick={() => void status.refetch()}
+            disabled={status.isFetching}
+          >
+            Refresh Telemetry
+          </Button>
+        </div>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">

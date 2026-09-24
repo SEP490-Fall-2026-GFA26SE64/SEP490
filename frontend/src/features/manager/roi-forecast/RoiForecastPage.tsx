@@ -1,7 +1,6 @@
 import { AlertTriangle, DollarSign, Sparkles, TrendingUp, UserCheck } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -12,18 +11,13 @@ export function RoiForecastPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Console Header */}
-        <PageHeader
-          icon={<TrendingUp className="h-8 w-8 text-primary" />}
-          title="Predictive Upskilling & ROI Forecast"
-          description="Forecast time-to-mastery using Knowledge Tracing velocity, compute direct corporate training cost savings, and target high-ROI group intervention modules."
-          actions={
-            <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span>AI Predictive Engine</span>
-            </Badge>
-          }
-        />
+        {/* Top Badges */}
+        <div className="flex items-center justify-end pb-1 border-b border-border/60">
+          <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span>AI Predictive Engine</span>
+          </Badge>
+        </div>
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
