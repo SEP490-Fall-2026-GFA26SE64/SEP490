@@ -1,5 +1,6 @@
 import {
   Database,
+  Eye,
   Layers,
   Plus,
   ShieldCheck,
@@ -107,10 +108,26 @@ export function AdminDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
                     {item.competencyCount} Competencies linked
                   </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      toast({
+                        title: item.role,
+                        description: `Inspecting ${item.competencyCount} competency bindings.`,
+                        variant: 'info',
+                      })
+                    }}
+                    title="View Role Details"
+                    aria-label="View Role Details"
+                  >
+                    <Eye className="h-4 w-4 text-primary" />
+                  </Button>
                 </div>
               </div>
             ))}

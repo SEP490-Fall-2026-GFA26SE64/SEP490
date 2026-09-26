@@ -9,16 +9,19 @@ import {
   Copy,
   Edit3,
   ExternalLink,
+  Eye,
   Layers,
   Plus,
   Search,
   Trash2,
+  Upload,
   Users,
 } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import {
   Dialog,
   DialogDescription,
@@ -27,27 +30,145 @@ import {
   DialogTitle,
 } from '../../../shared/components/ui/Dialog'
 import { StatCard } from '../../../shared/components/ui/StatCard'
+import {
+  QuickConfigImportModal,
+  type ImportPreset,
+} from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
+  getActiveCompany,
+  updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import {
   INITIAL_MICRO_SKILLS,
-  INITIAL_MODULES,
   type LearningModuleModel,
 } from '../data/ldManagerMockData'
+
+const MODULE_PRESETS: ImportPreset[] = [
+  {
+    id: 'preset-deep-learning-modules',
+    name: 'Advanced Foundation & LLM Systems (3 Modules)',
+    description: 'Covers Attention Implementations, Distributed Inference, and Vector RAG Pipelines.',
+    badge: 'AI Curricula',
+    itemCount: 3,
+    previewSnippet: JSON.stringify(
+      [
+        { code: 'MOD-ATTN-101', title: 'Attention Mechanism & Tensor Workflows', durationMinutes: 60 },
+        { code: 'MOD-VLLM-201', title: 'High-Concurrency LLM Inference Engines', durationMinutes: 75 },
+        { code: 'MOD-RAG-301', title: 'Vector Retrieval & Knowledge Grounding', durationMinutes: 90 },
+      ],
+      null,
+      2
+    ),
+    payload: [
+      {
+        id: `mod-${Date.now()}-1`,
+        stableId: `mod-uuid-attn-1`,
+        code: 'MOD-ATTN-101',
+        title: 'Attention Mechanism & Tensor Workflows',
+        version: '1.0',
+        status: 'published' as const,
+        durationMinutes: 60,
+        sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/attention.html',
+        teachesSkillIds: [INITIAL_MICRO_SKILLS[0]?.id || 'skill-attn-01'],
+        activePlanEnrollments: 8,
+        updatedAt: new Date().toISOString().slice(0, 10),
+      },
+      {
+        id: `mod-${Date.now()}-2`,
+        stableId: `mod-uuid-vllm-2`,
+        code: 'MOD-VLLM-201',
+        title: 'High-Concurrency LLM Inference Engines',
+        version: '1.0',
+        status: 'draft' as const,
+        durationMinutes: 75,
+        sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/vllm.html',
+        teachesSkillIds: [INITIAL_MICRO_SKILLS[1]?.id || 'skill-kv-01'],
+        activePlanEnrollments: 0,
+        updatedAt: new Date().toISOString().slice(0, 10),
+      },
+      {
+        id: `mod-${Date.now()}-3`,
+        stableId: `mod-uuid-rag-3`,
+        code: 'MOD-RAG-301',
+        title: 'Vector Retrieval & Knowledge Grounding',
+        version: '1.0',
+        status: 'published' as const,
+        durationMinutes: 90,
+        sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/rag.html',
+        teachesSkillIds: [INITIAL_MICRO_SKILLS[2]?.id || 'skill-vec-01'],
+        activePlanEnrollments: 5,
+        updatedAt: new Date().toISOString().slice(0, 10),
+      },
+    ],
+  },
+]
 
 export function LearningModulesPage() {
   const { toast } = useToast()
 
-  const [modules, setModules] = React.useState<LearningModuleModel[]>(INITIAL_MODULES)
+  const [modules, setModules] = React.useState<LearningModuleModel[]>(() => getActiveCompany()?.modules ?? [])
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'published' | 'draft' | 'archived'>('all')
+
+  // Synchronize state when active company scope changes
+  React.useEffect(() => {
+    const handleSync = () => {
+      const active = getActiveCompany()
+      setModules(active?.modules ?? [])
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+    }
+  }, [])
+
+  // Explicit persistence helper to prevent circular re-render loops
+  const saveAndSetModules = React.useCallback(
+    (updater: LearningModuleModel[] | ((prev: LearningModuleModel[]) => LearningModuleModel[])) => {
+      setModules((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({
+          ...c,
+          modules: next,
+        }))
+        return next
+      })
+    },
+    []
+  )
+
+  const activeComp = getActiveCompany()
+  const companyMicroSkills = activeComp?.microSkills || []
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
   const [isTeachesModalOpen, setIsTeachesModalOpen] = React.useState(false)
   const [isArchiveModalOpen, setIsArchiveModalOpen] = React.useState(false)
   const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
   const [selectedModule, setSelectedModule] = React.useState<LearningModuleModel | null>(null)
+  const [viewingDetailsModule, setViewingDetailsModule] = React.useState<LearningModuleModel | null>(null)
+  const [deletingDraftModule, setDeletingDraftModule] = React.useState<LearningModuleModel | null>(null)
+
+  const handleImportModules = (data: any) => {
+    const list = Array.isArray(data) ? data : data.modules || []
+    const normalized: LearningModuleModel[] = list.map((item: any, idx: number) => ({
+      id: item.id || `mod-${Date.now()}-${idx}`,
+      stableId: item.stableId || `mod-uuid-${Date.now()}-${idx}`,
+      code: (item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
+      title: (item.title || 'Untitled Module').trim(),
+      version: item.version || '1.0',
+      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+      durationMinutes: Number(item.durationMinutes) || 45,
+      sampleContentUri: item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html',
+      teachesSkillIds: Array.isArray(item.teachesSkillIds) ? item.teachesSkillIds : [],
+      activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
+      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
+    }))
+    saveAndSetModules((prev) => [...normalized, ...prev])
+  }
 
   // Module form state
   const [moduleForm, setModuleForm] = React.useState({
@@ -124,7 +245,7 @@ export function LearningModulesPage() {
 
     if (selectedModule) {
       // Direct edit for draft
-      setModules((prev) =>
+      saveAndSetModules((prev) =>
         prev.map((m) =>
           m.id === selectedModule.id
             ? {
@@ -159,7 +280,7 @@ export function LearningModulesPage() {
         updatedAt: new Date().toISOString().slice(0, 10),
       }
 
-      setModules([newMod, ...modules])
+      saveAndSetModules([newMod, ...modules])
       toast({
         title: 'Draft Module Created',
         description: `Draft metadata for ${newMod.code} saved. Add taught skills before publishing.`,
@@ -194,7 +315,7 @@ export function LearningModulesPage() {
       title: `${mod.title} (Draft Revision)`,
     }
 
-    setModules([successor, ...modules])
+    saveAndSetModules([successor, ...modules])
     toast({
       title: 'Successor Draft Created',
       description: `Created v${nextVer} draft for ${mod.code}. Historical student attempts remain safely linked to v${mod.version}.`,
@@ -213,7 +334,7 @@ export function LearningModulesPage() {
       return
     }
 
-    setModules(modules.filter((m) => m.id !== mod.id))
+    saveAndSetModules(modules.filter((m) => m.id !== mod.id))
     toast({
       title: 'Draft Module Deleted',
       description: `Draft module ${mod.code} (v${mod.version}) was permanently deleted.`,
@@ -237,7 +358,7 @@ export function LearningModulesPage() {
       ? mod.teachesSkillIds.filter((id) => id !== skillId)
       : [...mod.teachesSkillIds, skillId]
 
-    setModules((prev) =>
+    saveAndSetModules((prev) =>
       prev.map((m) => (m.id === mod.id ? { ...m, teachesSkillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : m)),
     )
 
@@ -272,7 +393,7 @@ export function LearningModulesPage() {
       return
     }
 
-    setModules((prev) =>
+    saveAndSetModules((prev) =>
       prev.map((m) => (m.id === mod.id ? { ...m, status: 'published', updatedAt: new Date().toISOString().slice(0, 10) } : m)),
     )
     setIsPublishModalOpen(false)
@@ -305,7 +426,7 @@ export function LearningModulesPage() {
       return
     }
 
-    setModules((prev) =>
+    saveAndSetModules((prev) =>
       prev.map((m) =>
         m.id === selectedModule.id
           ? {
@@ -336,14 +457,24 @@ export function LearningModulesPage() {
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         {/* Top Actions */}
-        <div className="flex items-center justify-end pb-1 border-b border-border/60">
+        <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
+          >
+            Import
+          </Button>
           <Button
             variant="primary"
             size="sm"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={handleOpenCreate}
+            className="font-semibold shadow-2xs"
           >
-            Create Learning Module (Draft)
+            Create
           </Button>
         </div>
 
@@ -453,7 +584,14 @@ export function LearningModulesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {filteredModules.map((mod) => {
+                    {filteredModules.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-10 text-muted-foreground text-xs">
+                          No learning modules registered yet for this company. Click "+ New Module" or import blueprint modules to begin.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredModules.map((mod) => {
                       const isDraft = mod.status === 'draft'
                       const isPublished = mod.status === 'published'
 
@@ -514,12 +652,24 @@ export function LearningModulesPage() {
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              {!isDraft && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => setViewingDetailsModule(mod)}
+                                  title="View Details"
+                                  aria-label="View Details"
+                                >
+                                  <Eye className="h-4 w-4 text-primary" />
+                                </Button>
+                              )}
                               {isDraft ? (
                                 <>
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    leftIcon={<Edit3 className="h-3 w-3" />}
+                                    className="h-8 w-8 p-0"
                                     onClick={() => {
                                       setSelectedModule(mod)
                                       setModuleForm({
@@ -530,29 +680,20 @@ export function LearningModulesPage() {
                                       })
                                       setIsCreateModalOpen(true)
                                     }}
+                                    title="Edit Draft"
+                                    aria-label="Edit Draft"
                                   >
-                                    Edit
+                                    <Edit3 className="h-4 w-4" />
                                   </Button>
                                   <Button
-                                    variant="primary"
+                                    variant="destructive"
                                     size="sm"
-                                    leftIcon={<CheckCircle2 className="h-3 w-3" />}
-                                    onClick={() => {
-                                      setSelectedModule(mod)
-                                      setIsPublishModalOpen(true)
-                                    }}
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setDeletingDraftModule(mod)}
+                                    title="Delete Draft"
+                                    aria-label="Delete Draft"
                                   >
-                                    Publish
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-2"
-                                    leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                                    onClick={() => handleDeleteDraftModule(mod)}
-                                    title="Delete draft module"
-                                  >
-                                    Delete Draft
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </>
                               ) : isPublished ? (
@@ -560,33 +701,30 @@ export function LearningModulesPage() {
                                   <Button
                                     variant="secondary"
                                     size="sm"
-                                    leftIcon={<Copy className="h-3 w-3" />}
+                                    className="h-8 w-8 p-0"
                                     onClick={() => handleCreateSuccessorDraft(mod)}
-                                    title="Create successor draft without overwriting learning history"
+                                    title="Create Draft"
+                                    aria-label="Create Draft"
                                   >
-                                    Successor Draft
+                                    <Copy className="h-4 w-4" />
                                   </Button>
                                   <Button
-                                    variant="ghost"
+                                    variant="outline"
                                     size="sm"
-                                    className="text-destructive hover:bg-destructive/10"
-                                    leftIcon={<Archive className="h-3 w-3" />}
+                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                                     onClick={() => handleOpenArchiveModal(mod)}
-                                    title="Archive module and reassign active plans"
+                                    title="Archive Module"
+                                    aria-label="Archive Module"
                                   >
-                                    Archive
+                                    <Archive className="h-4 w-4" />
                                   </Button>
                                 </>
-                              ) : (
-                                <Badge variant="secondary" className="text-[10px]">
-                                  Archived ({mod.replacementModuleId || 'Historical'})
-                                </Badge>
-                              )}
+                              ) : null}
                             </div>
                           </td>
                         </tr>
                       )
-                    })}
+                    }))}
                   </tbody>
                 </table>
               </div>
@@ -700,7 +838,12 @@ export function LearningModulesPage() {
             </DialogHeader>
 
             <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 text-xs">
-              {INITIAL_MICRO_SKILLS.map((skill) => {
+              {companyMicroSkills.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground text-xs border border-dashed rounded-lg">
+                  No micro-skills registered for this company yet. Define micro-skills in Competency Ontology first.
+                </div>
+              ) : (
+                companyMicroSkills.map((skill) => {
                 const isLinked = selectedModule.teachesSkillIds.includes(skill.id)
 
                 return (
@@ -735,7 +878,7 @@ export function LearningModulesPage() {
                     )}
                   </div>
                 )
-              })}
+              }))}
             </div>
 
             <DialogFooter>
@@ -893,6 +1036,195 @@ export function LearningModulesPage() {
           </div>
         </Dialog>
       )}
+
+      {/* LEARNING MODULE DETAILS MODAL (Miro Flow: Learning Modules Screen -> Learning Module Details) */}
+      {viewingDetailsModule && (
+        <Dialog
+          open={Boolean(viewingDetailsModule)}
+          onOpenChange={(open) => !open && setViewingDetailsModule(null)}
+          className="max-w-2xl"
+        >
+          <div className="space-y-4">
+            <DialogHeader>
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <DialogTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary shrink-0" />
+                  <span>Learning Module Details: {viewingDetailsModule.title}</span>
+                </DialogTitle>
+                <Badge
+                  variant={
+                    viewingDetailsModule.status === 'published'
+                      ? 'success'
+                      : viewingDetailsModule.status === 'draft'
+                        ? 'warning'
+                        : 'outline'
+                  }
+                  className="font-bold text-xs"
+                >
+                  {viewingDetailsModule.status.toUpperCase()}
+                </Badge>
+              </div>
+              <DialogDescription>
+                Curriculum specifications, duration, content endpoints, and mapped TEACHES competency relationships.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Archived Info Panel if module is archived */}
+            {viewingDetailsModule.status === 'archived' && (
+              <div className="p-3.5 rounded-xl border border-warning/30 bg-warning/10 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in-50">
+                <div className="flex items-start gap-2.5">
+                  <Archive className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <span className="font-semibold text-warning">Archived Curriculum Asset</span>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      This module is archived from new pathway generation. Historical completions and attempts remain permanently recorded in the learner ledger.
+                    </p>
+                  </div>
+                </div>
+                {viewingDetailsModule.replacementModuleId ? (
+                  <div className="shrink-0 text-left sm:text-right">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-0.5">
+                      Recommended Replacement
+                    </span>
+                    <Badge variant="secondary" className="font-mono text-xs font-semibold">
+                      {viewingDetailsModule.replacementModuleId}
+                    </Badge>
+                  </div>
+                ) : (
+                  <Badge variant="outline" className="shrink-0 text-xs text-muted-foreground">
+                    Historical Record
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            {/* Module Metadata Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Module Code</span>
+                <span className="font-mono font-bold text-foreground mt-0.5 block">{viewingDetailsModule.code}</span>
+              </div>
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Version</span>
+                <span className="font-mono font-bold text-foreground mt-0.5 block">v{viewingDetailsModule.version}</span>
+              </div>
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Estimated Time</span>
+                <span className="font-mono font-bold text-primary mt-0.5 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {viewingDetailsModule.durationMinutes} Mins
+                </span>
+              </div>
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Active Learners</span>
+                <span className="font-mono font-bold text-foreground mt-0.5 block">
+                  {viewingDetailsModule.activePlanEnrollments} Enrolled
+                </span>
+              </div>
+            </div>
+
+
+            {/* Taught Micro-Skills Section */}
+            <div className="space-y-2 text-xs">
+              <span className="font-bold text-foreground flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-primary" />
+                Taught Micro-skills with Observable Outcomes ({viewingDetailsModule.teachesSkillIds.length})
+              </span>
+              <div className="max-h-52 overflow-y-auto space-y-2 rounded-lg border border-border p-2">
+                {viewingDetailsModule.teachesSkillIds.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-xs">
+                    No micro-skills linked yet. Link skills via TEACHES modal.
+                  </div>
+                ) : (
+                  viewingDetailsModule.teachesSkillIds.map((skId) => {
+                    const skill = companyMicroSkills.find((s) => s.id === skId)
+                    return (
+                      <div
+                        key={skId}
+                        className="p-2.5 rounded-lg border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-primary">{skill?.code}</span>
+                            <span className="font-semibold text-foreground">{skill?.name}</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            {skill?.observableOutcome}
+                          </p>
+                        </div>
+                        <Badge variant="secondary" className="shrink-0 text-[10px] font-semibold">
+                          Bloom: {skill?.bloomLevel || 'Apply'}
+                        </Badge>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button variant="outline" size="sm" onClick={() => setViewingDetailsModule(null)}>
+                Close
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  const m = viewingDetailsModule
+                  setViewingDetailsModule(null)
+                  setSelectedModule(m)
+                  setIsTeachesModalOpen(true)
+                }}
+                leftIcon={<Layers className="h-3 w-3" />}
+              >
+                Link Micro-skill
+              </Button>
+            </DialogFooter>
+          </div>
+        </Dialog>
+      )}
+      {/* CONFIRMATION PROMPT TO DISCARD DRAFT MODULE */}
+      <ConfirmationModal
+        open={Boolean(deletingDraftModule)}
+        onOpenChange={(open) => !open && setDeletingDraftModule(null)}
+        title="Discard Draft Module?"
+        description={
+          deletingDraftModule ? (
+            <div className="space-y-2 text-xs">
+              <p>
+                Are you sure you want to discard the draft version for{' '}
+                <strong className="text-foreground font-semibold">
+                  {deletingDraftModule.code} - {deletingDraftModule.title} (v{deletingDraftModule.version})
+                </strong>
+                ?
+              </p>
+              <p className="text-muted-foreground">
+                All uncommitted curriculum bindings and module settings for this draft will be removed.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Delete Draft"
+        cancelText="Keep Draft"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingDraftModule) {
+            handleDeleteDraftModule(deletingDraftModule)
+            setDeletingDraftModule(null)
+          }
+        }}
+      />
+
+      <QuickConfigImportModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        title="Import Learning Module Catalog"
+        entityName="Learning Modules"
+        description="Select an industry course catalog or upload custom curriculum JSON to rapidly populate instructional modules for your organization."
+        presets={MODULE_PRESETS}
+        onImport={handleImportModules}
+        sampleJsonPlaceholder={`[\n  {\n    "code": "MOD-ATTN-101",\n    "title": "Attention Mechanism & Tensor Workflows",\n    "durationMinutes": 60,\n    "sampleContentUri": "https://learning.adaptlearn.internal/modules/content/sample.html"\n  }\n]`}
+      />
     </WorkspaceLayout>
   )
 }

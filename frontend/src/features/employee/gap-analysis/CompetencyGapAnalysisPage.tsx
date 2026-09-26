@@ -6,8 +6,8 @@ import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { CompetencyGapAnalysis } from '../../learner/components/CompetencyGapAnalysis'
-import '../../learner/gap-analysis/CompetencyGapAnalysisPage.css'
+import { CompetencyGapAnalysis } from '../components/CompetencyGapAnalysis'
+import './CompetencyGapAnalysisPage.css'
 
 export function CompetencyGapAnalysisPage() {
   const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
@@ -15,15 +15,9 @@ export function CompetencyGapAnalysisPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Sleek Top Utility Bar with TargetRoleSelector */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border px-4 py-3 rounded-xl shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <TargetRoleSelector />
-            <span className="text-xs text-muted-foreground hidden md:inline">
-              Benchmark Target: {profile.targetReadinessScore}% &bull; Assigned by:{' '}
-              {profile.assignedByManager || 'David Miller (Line Manager)'}
-            </span>
-          </div>
+        {/* Top of the screen matching Assessment Quiz: Target Role on left, Status on right */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+          <TargetRoleSelector />
 
           <div className="flex items-center gap-2">
             {isLearningLocked ? (
@@ -55,7 +49,7 @@ export function CompetencyGapAnalysisPage() {
                   <strong className="text-primary">{profile.targetRole || 'AI Knowledge Architect'}</strong>.
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Complete the diagnostic assessment in the assessment center to calibrate your knowledge graph. Once calibrated, your skill proficiencies will be benchmarked against the target readiness requirement of {profile.targetReadinessScore}%.
+                  Complete the diagnostic assessment in the assessment center to calibrate your knowledge graph. Once calibrated, your skill proficiencies will be benchmarked against your target readiness requirement of {profile.targetReadinessScore}%.
                 </p>
               </div>
 
@@ -88,7 +82,6 @@ export function CompetencyGapAnalysisPage() {
             </CardContent>
           </Card>
         ) : (
-          /* UNLOCKED GAP ANALYSIS VIEW */
           <CompetencyGapAnalysis />
         )}
       </div>

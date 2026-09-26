@@ -36,9 +36,23 @@ import {
   type LearningOutcomeCohort,
   SKILL_ACQUISITION_METRICS,
 } from '../data/ldManagerMockData'
+import { getActiveCompany, type CompanyRecord } from '../../../shared/stores/companyStore'
 
 export function LearningOutcomesPage() {
   const { toast } = useToast()
+  const [activeCompany, setActiveCompany] = React.useState<CompanyRecord>(getActiveCompany)
+
+  React.useEffect(() => {
+    const handleSync = () => {
+      setActiveCompany(getActiveCompany())
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('companies_updated', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
+    }
+  }, [])
 
   // Filter states
   const [selectedDept, setSelectedDept] = React.useState<string>('all')
@@ -54,8 +68,87 @@ export function LearningOutcomesPage() {
   // Cohort Drilldown Modal state
   const [selectedCohort, setSelectedCohort] = React.useState<LearningOutcomeCohort | null>(null)
 
+  const employees = (activeCompany.users || []).filter((u) => u.role === 'Employee')
+  const targetRoles = activeCompany.targetRoles || []
+
+  // Derive cohorts strictly for the active company
+  const cohorts: LearningOutcomeCohort[] = React.useMemo(() => {
+    if (activeCompany.id === 'comp-technova') {
+      return LEARNING_OUTCOME_COHORTS
+    }
+
+    if (targetRoles.length === 0 && employees.length === 0) {
+      return []
+    }
+
+    if (targetRoles.length > 0) {
+      return targetRoles.map((tr) => {
+        const enrolled = employees.filter((e) => e.targetRole === tr.title)
+        const count = enrolled.length > 0 ? enrolled.length : (employees.length > 0 ? 1 : 0)
+        return {
+          id: `cohort-${tr.id}`,
+          cohortName: `${tr.title} Acceleration Cohort`,
+          department: tr.department || 'Engineering',
+          targetRole: tr.title,
+          learnerCount: count,
+          avgScore: count > 0 ? 82 : 0,
+          completionRate: count > 0 ? 68 : 0,
+          gapClosureRate: count > 0 ? 74 : 0,
+          startDate: activeCompany.createdAt || '2026-02-01',
+          targetEndDate: '2026-12-31',
+          status: 'On Track' as const,
+          velocityTrend: 'improving' as const,
+          modulesAssigned: (activeCompany.modules || []).slice(0, 3).map((m) => m.code),
+        }
+      })
+    }
+
+    return [
+      {
+        id: `cohort-${activeCompany.id}`,
+        cohortName: `${activeCompany.name} Talent Cohort`,
+        department: employees[0]?.department || 'General',
+        targetRole: 'General Capability',
+        learnerCount: employees.length,
+        avgScore: 78,
+        completionRate: 60,
+        gapClosureRate: 65,
+        startDate: activeCompany.createdAt || '2026-02-01',
+        targetEndDate: '2026-12-31',
+        status: 'On Track' as const,
+        velocityTrend: 'improving' as const,
+        modulesAssigned: (activeCompany.modules || []).slice(0, 2).map((m) => m.code),
+      },
+    ]
+  }, [activeCompany, targetRoles, employees])
+
+  // Derive skill acquisition metrics for active company
+  const skillMetrics = React.useMemo(() => {
+    if (activeCompany.id === 'comp-technova' && activeCompany.microSkills.length >= 3) {
+      return SKILL_ACQUISITION_METRICS
+    }
+    if ((activeCompany.microSkills || []).length === 0) return []
+    return activeCompany.microSkills.slice(0, 5).map((s, idx) => ({
+      skillId: s.id,
+      skillCode: s.code,
+      skillName: s.name,
+      masteryRate: 70 + ((idx * 9) % 25),
+      avgAttemptsToPass: 1.5,
+      difficultyTag: (idx === 0 ? 'Bottleneck' : idx === 1 ? 'High Velocity' : 'Nominal') as 'Bottleneck' | 'High Velocity' | 'Nominal',
+      status: (idx === 0 ? 'bottleneck' : idx === 1 ? 'high_attainment' : 'normal') as 'bottleneck' | 'high_attainment' | 'normal',
+    }))
+  }, [activeCompany])
+
+  const availableDepts = React.useMemo(() => {
+    const set = new Set<string>()
+    cohorts.forEach((c) => {
+      if (c.department) set.add(c.department)
+    })
+    return Array.from(set)
+  }, [cohorts])
+
   // Filter cohorts
-  const filteredCohorts = LEARNING_OUTCOME_COHORTS.filter((c) => {
+  const filteredCohorts = cohorts.filter((c) => {
     const matchesDept = selectedDept === 'all' || c.department === selectedDept
     const matchesStatus = selectedStatus === 'all' || c.status.toLowerCase() === selectedStatus.toLowerCase()
     const matchesSearch =
@@ -157,7 +250,7 @@ export function LearningOutcomesPage() {
             title="Total Active Learners"
             value={totalLearners.toString()}
             valueClassName="text-primary"
-            description="Across 3 operational departments"
+            description={`In ${activeCompany.name} across ${availableDepts.length || 1} department${availableDepts.length === 1 ? '' : 's'}`}
           >
             <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
               <span className="font-semibold text-foreground">{filteredCohorts.length}</span> active cohorts
@@ -217,48 +310,54 @@ export function LearningOutcomesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-              {SKILL_ACQUISITION_METRICS.map((s) => {
-                const isBottleneck = s.difficultyTag === 'Bottleneck'
-                const isHigh = s.difficultyTag === 'High Velocity'
-                return (
-                  <div
-                    key={s.skillCode}
-                    className={`p-3.5 rounded-lg border transition-all ${
-                      isBottleneck
-                        ? 'border-destructive/30 bg-destructive/5'
-                        : isHigh
-                        ? 'border-success/30 bg-success/5'
-                        : 'border-border bg-card'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-mono text-[11px] font-semibold text-muted-foreground">{s.skillCode}</span>
-                      <Badge
-                        variant={isBottleneck ? 'destructive' : isHigh ? 'success' : 'secondary'}
-                        className="text-[10px] py-0 px-1.5"
-                      >
-                        {s.difficultyTag}
-                      </Badge>
+            {skillMetrics.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-4 text-center">
+                No micro-skills defined in {activeCompany.name}. Define ontology skills to view velocity metrics.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                {skillMetrics.map((s) => {
+                  const isBottleneck = s.difficultyTag === 'Bottleneck'
+                  const isHigh = s.difficultyTag === 'High Velocity'
+                  return (
+                    <div
+                      key={s.skillCode}
+                      className={`p-3.5 rounded-lg border transition-all ${
+                        isBottleneck
+                          ? 'border-destructive/30 bg-destructive/5'
+                          : isHigh
+                          ? 'border-success/30 bg-success/5'
+                          : 'border-border bg-card'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-mono text-[11px] font-semibold text-muted-foreground">{s.skillCode}</span>
+                        <Badge
+                          variant={isBottleneck ? 'destructive' : isHigh ? 'success' : 'secondary'}
+                          className="text-[10px] py-0 px-1.5"
+                        >
+                          {s.difficultyTag}
+                        </Badge>
+                      </div>
+                      <div className="font-semibold text-xs text-foreground truncate" title={s.skillName}>
+                        {s.skillName}
+                      </div>
+                      <div className="mt-3 flex items-baseline justify-between">
+                        <span className="text-xl font-bold text-foreground">{s.masteryRate}%</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {s.avgAttemptsToPass} {s.avgAttemptsToPass === 1 ? 'attempt' : 'attempts'} avg
+                        </span>
+                      </div>
+                      <Progress
+                        value={s.masteryRate}
+                        variant={isBottleneck ? 'destructive' : isHigh ? 'success' : 'primary'}
+                        className="mt-2 h-1.5"
+                      />
                     </div>
-                    <div className="font-semibold text-xs text-foreground truncate" title={s.skillName}>
-                      {s.skillName}
-                    </div>
-                    <div className="mt-3 flex items-baseline justify-between">
-                      <span className="text-xl font-bold text-foreground">{s.masteryRate}%</span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {s.avgAttemptsToPass} {s.avgAttemptsToPass === 1 ? 'attempt' : 'attempts'} avg
-                      </span>
-                    </div>
-                    <Progress
-                      value={s.masteryRate}
-                      variant={isBottleneck ? 'destructive' : isHigh ? 'success' : 'primary'}
-                      className="mt-2 h-1.5"
-                    />
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -297,9 +396,11 @@ export function LearningOutcomesPage() {
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
                     <option value="all">All Departments</option>
-                    <option value="Machine Learning & Cognitive Architecture">ML & Cognitive Arch</option>
-                    <option value="Platform Engineering">Platform Engineering</option>
-                    <option value="Data Analytics & BI">Data Analytics & BI</option>
+                    {availableDepts.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -418,12 +519,14 @@ export function LearningOutcomesPage() {
                         </td>
                         <td className="py-3 px-3 text-right">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            leftIcon={<Eye className="h-3.5 w-3.5" />}
+                            className="h-8 w-8 p-0"
                             onClick={() => setSelectedCohort(cohort)}
+                            title="View Department Outcome Details"
+                            aria-label="View Department Outcome Details"
                           >
-                            Drilldown
+                            <Eye className="h-4 w-4 text-primary" />
                           </Button>
                         </td>
                       </tr>
@@ -438,13 +541,17 @@ export function LearningOutcomesPage() {
 
       {/* Cohort Drilldown Dialog */}
       {selectedCohort && (
-        <Dialog open={Boolean(selectedCohort)} onOpenChange={(open) => !open && setSelectedCohort(null)}>
+        <Dialog
+          open={Boolean(selectedCohort)}
+          onOpenChange={(open) => !open && setSelectedCohort(null)}
+          className="max-w-2xl"
+        >
           <div className="space-y-4">
             <DialogHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
                 <DialogTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-primary" />
-                  Cohort Outcome Drilldown
+                  <Award className="h-5 w-5 text-primary shrink-0" />
+                  <span>Department Outcome Details: {selectedCohort.department}</span>
                 </DialogTitle>
                 <Badge
                   variant={
@@ -454,6 +561,7 @@ export function LearningOutcomesPage() {
                       ? 'primary'
                       : 'destructive'
                   }
+                  className="shrink-0"
                 >
                   {selectedCohort.status}
                 </Badge>

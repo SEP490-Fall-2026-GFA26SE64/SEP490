@@ -1,8 +1,7 @@
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
   Award,
+  Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -19,7 +18,6 @@ import {
   UserCheck,
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
 import {
   Card,
   CardContent,
@@ -32,23 +30,106 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { CompetencyRadarChart } from '../../learner/components/CompetencyRadarChart'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { CompetencyRadarChart } from '../components/CompetencyRadarChart'
 import {
   COMPETENCY_SKILL_PROFILES,
   type CompetencySkillProfile,
   type EvidenceSource,
-  LEARNER_PROFILE_STATS,
-} from '../../learner/data/learnerOverviewData'
-import '../../learner/overview/LearnerOverviewPage.css'
+} from '../data/employeeOverviewData'
+import './EmployeeOverviewPage.css'
 
 export function EmployeeOverviewPage() {
-  const { profile, isLearningLocked } = useEmployeeLearningState()
+  const { profile } = useEmployeeLearningState()
+  const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+
+  React.useEffect(() => {
+    const handleSync = () => setActiveCompany(getActiveCompany())
+    window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('companies_updated', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
+    }
+  }, [])
+
   const [selectedRole, setSelectedRole] = React.useState('ai-knowledge-architect')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [selectedCategory, setSelectedCategory] = React.useState<string>('all')
   const [expandedSkills, setExpandedSkills] = React.useState<Record<string, boolean>>({
     'c-1': true,
   })
+
+  // Derive skills from active company microSkills
+  const companySkills: CompetencySkillProfile[] = React.useMemo(() => {
+    if (!activeCompany?.microSkills || activeCompany.microSkills.length === 0) {
+      return []
+    }
+    return activeCompany.microSkills.map((ms, idx) => {
+      const match = COMPETENCY_SKILL_PROFILES.find(
+        (p) => p.name.toLowerCase() === ms.name.toLowerCase() || p.id === ms.id
+      )
+      if (match) return match
+      const isMastered = ms.status === 'published'
+      return {
+        id: ms.id,
+        name: ms.name,
+        category: (ms.bloomLevel === 'Create' ? 'AI & Knowledge Tracing' : 'Graph Architecture') as any,
+        estimatedMastery: isMastered ? 82 : 55,
+        targetRoleRequirement: 85,
+        status: isMastered ? 'mastered' : 'in_progress',
+        bktConfidence: 89,
+        evidenceCount: isMastered ? 2 : 1,
+        evidenceSources: [
+          {
+            id: `ev-${ms.id}`,
+            type: 'assessment',
+            title: `${ms.name} Formative Diagnostic`,
+            providerOrIssuer: 'Enterprise Cognitive Engine',
+            date: '2026-09-20',
+            scoreOrLevel: isMastered ? '85%' : '55%',
+            verificationStatus: isMastered ? 'verified' : 'pending',
+            notes: ms.observableOutcome,
+          },
+        ],
+        recommendedModule: activeCompany.modules[idx % (activeCompany.modules.length || 1)]?.title || 'Core Foundation Module',
+      }
+    })
+  }, [activeCompany])
+
+  // Company-scoped statistics
+  const profileStats = React.useMemo(() => {
+    const totalSkills = activeCompany.microSkills.length
+    const mastered = activeCompany.microSkills.filter((s) => s.status === 'published').length
+    const inProgress = totalSkills - mastered
+    const overallMastery = totalSkills > 0 ? Math.round((mastered / totalSkills) * 100) : 0
+    const totalModules = activeCompany.modules.length
+    const completedModules = Math.min(totalModules, Math.floor(totalModules * 0.5))
+    const pathwayProgress = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
+
+    return {
+      overallMasteryPercentage: overallMastery,
+      totalSkillsEvaluated: totalSkills,
+      masteredSkillsCount: mastered,
+      inProgressSkillsCount: inProgress,
+      criticalGapsCount: Math.max(0, totalSkills - mastered),
+      pathwayProgressPercentage: pathwayProgress,
+      completedModulesCount: completedModules,
+      totalPathwayModules: totalModules,
+      bktConfidencePercentage: totalSkills > 0 ? 91 : 0,
+      hoursSavedViaAdaptivity: totalModules * 4.5,
+      lastAssessedDate: '2026-09-20',
+    }
+  }, [activeCompany])
+
+  // Duration, Start Date, End Date metadata for overview
+  const startDate = profile.assignedAt ? profile.assignedAt.split(' ')[0] : '2026-06-15'
+  const endDate = profile.deadline || '2026-12-31'
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const diffDays = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)))
+  const diffMonths = (diffDays / 30.4).toFixed(1)
+  const durationText = `${diffMonths} Months (${diffDays} Days)`
 
   const toggleSkillExpand = (skillId: string) => {
     setExpandedSkills((prev) => ({
@@ -58,7 +139,7 @@ export function EmployeeOverviewPage() {
   }
 
   // Filter skills based on search and category
-  const filteredSkills = COMPETENCY_SKILL_PROFILES.filter((skill) => {
+  const filteredSkills = companySkills.filter((skill) => {
     const matchesSearch =
       skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -67,15 +148,20 @@ export function EmployeeOverviewPage() {
     return matchesSearch && matchesCategory
   })
 
-  // Categories list
-  const categories = [
-    'all',
-    'Graph Architecture',
-    'AI & Knowledge Tracing',
-    'Distributed Systems',
-    'Data Persistence',
-    'Semantic Web',
-  ]
+  // Categories list with counts
+  const categories = React.useMemo(() => {
+    const set = new Set<string>()
+    companySkills.forEach((s) => set.add(s.category))
+    const arr = [{ key: 'all', label: 'All Domains', count: companySkills.length }]
+    set.forEach((cat) => {
+      arr.push({
+        key: cat,
+        label: cat,
+        count: companySkills.filter((s) => s.category === cat).length,
+      })
+    })
+    return arr
+  }, [companySkills])
 
   const getEvidenceIcon = (type: EvidenceSource['type']) => {
     switch (type) {
@@ -106,31 +192,26 @@ export function EmployeeOverviewPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16 employee-overview-container">
-        {/* =========================================================================
-            CLEAN, SNUG TOP BAR (REMOVED BLOATED MARKETING HEADERS & DESCRIPTIONS)
-           ========================================================================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border px-4 py-3 rounded-xl shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <TargetRoleSelector />
-            <span className="text-xs text-muted-foreground hidden md:inline">
-              Supervisor: {profile.assignedByManager || 'David Miller (Line Manager)'} &bull; Target: {profile.targetReadinessScore}%
-            </span>
-          </div>
+        {/* Top of the screen matching Assessment Quiz style: Target Role on left, Timeline on right */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+          <TargetRoleSelector />
 
-          <div className="flex items-center gap-2">
-            {isLearningLocked ? (
-              <Link to="/employee/assessment?diagnostic=true">
-                <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>
-                  Take Diagnostic Assessment
-                </Button>
-              </Link>
-            ) : (
-              <Link to="/employee/pathway">
-                <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>
-                  Continue Pathway
-                </Button>
-              </Link>
-            )}
+          {/* Timeline & Duration Metadata */}
+          <div className="flex flex-wrap items-center gap-2.5 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-2xs text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Calendar size={13} className="text-primary" />
+              <span>Start: <strong className="text-foreground font-mono">{startDate}</strong></span>
+            </div>
+            <span className="text-border hidden sm:inline">&bull;</span>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Calendar size={13} className="text-primary" />
+              <span>End: <strong className="text-foreground font-mono">{endDate}</strong></span>
+            </div>
+            <span className="text-border hidden sm:inline">&bull;</span>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Clock size={13} className="text-primary" />
+              <span>Duration: <Badge variant="secondary" className="font-mono text-xs font-bold text-primary">{durationText}</Badge></span>
+            </div>
           </div>
         </div>
 
@@ -139,11 +220,11 @@ export function EmployeeOverviewPage() {
            ========================================================================= */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Aggregate Competency Statistics
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Sparkles size={13} className="text-primary" /> Aggregate Competency Statistics
             </h2>
-            <span className="text-xs text-muted-foreground">
-              Last Assessed: <strong className="text-foreground">{LEARNER_PROFILE_STATS.lastAssessedDate}</strong>
+            <span className="text-xs text-muted-foreground font-mono">
+              Last Assessed: <strong className="text-foreground">{profileStats.lastAssessedDate}</strong>
             </span>
           </div>
 
@@ -153,16 +234,16 @@ export function EmployeeOverviewPage() {
               variant="gradient"
               icon={<Award className="h-4 w-4" />}
               title="Overall Skill Mastery"
-              value={`${LEARNER_PROFILE_STATS.overallMasteryPercentage}%`}
-              valueClassName="text-primary"
-              description={`${LEARNER_PROFILE_STATS.masteredSkillsCount} of ${LEARNER_PROFILE_STATS.totalSkillsEvaluated} micro-skills mastered`}
+              value={`${profileStats.overallMasteryPercentage}%`}
+              valueClassName="text-primary font-bold"
+              description={`${profileStats.masteredSkillsCount} of ${profileStats.totalSkillsEvaluated} micro-skills mastered`}
             >
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                   <span>Target Benchmark</span>
                   <span className="font-bold text-foreground">{profile.targetReadinessScore}% Minimum</span>
                 </div>
-                <Progress value={LEARNER_PROFILE_STATS.overallMasteryPercentage} variant="primary" className="h-2" />
+                <Progress value={profileStats.overallMasteryPercentage} variant="primary" className="h-2" />
               </div>
             </StatCard>
 
@@ -171,14 +252,14 @@ export function EmployeeOverviewPage() {
               variant="default"
               icon={<Target className="h-4 w-4 text-primary" />}
               title="Target Readiness"
-              value={`${LEARNER_PROFILE_STATS.overallMasteryPercentage}%`}
-              valueClassName="text-foreground"
+              value={`${profileStats.overallMasteryPercentage}%`}
+              valueClassName="text-foreground font-bold"
               description={`Readiness for ${profile.targetRole || 'AI Knowledge Architect'}`}
             >
               <div className="mt-3 flex items-center justify-between text-xs pt-1 border-t border-border/60">
                 <span className="text-muted-foreground">Confidence Metric</span>
                 <Badge variant="secondary" className="font-mono text-xs">
-                  {LEARNER_PROFILE_STATS.bktConfidencePercentage}% BKT
+                  {profileStats.bktConfidencePercentage}% BKT
                 </Badge>
               </div>
             </StatCard>
@@ -188,12 +269,13 @@ export function EmployeeOverviewPage() {
               variant="default"
               icon={<CheckCircle2 className="h-4 w-4 text-success" />}
               title="Pathway Progression"
-              value={`${LEARNER_PROFILE_STATS.completedModulesCount} / ${LEARNER_PROFILE_STATS.totalPathwayModules} Modules`}
+              value={`${profileStats.completedModulesCount} / ${profileStats.totalPathwayModules} Modules`}
+              valueClassName="text-foreground font-bold"
               description="Curriculum milestone advancement"
             >
               <div className="mt-3 flex items-center gap-1.5 text-xs text-success font-medium">
                 <ShieldCheck size={14} />
-                <span>{LEARNER_PROFILE_STATS.pathwayProgressPercentage}% Pathway Cleared</span>
+                <span>{profileStats.pathwayProgressPercentage}% Pathway Cleared</span>
               </div>
             </StatCard>
 
@@ -202,7 +284,8 @@ export function EmployeeOverviewPage() {
               variant="default"
               icon={<TrendingUp className="h-4 w-4 text-primary" />}
               title="Adaptivity Hours Saved"
-              value={`${LEARNER_PROFILE_STATS.hoursSavedViaAdaptivity} hrs`}
+              value={`${profileStats.hoursSavedViaAdaptivity} hrs`}
+              valueClassName="text-foreground font-bold"
               description="Reduced learning time through knowledge tracing"
             >
               <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
@@ -214,12 +297,12 @@ export function EmployeeOverviewPage() {
         </div>
 
         {/* =========================================================================
-            MAIN SECTION: RADAR CHART + MULTI-CRITERIA SKILL DRILL-DOWN
+            MAIN SECTION: RADAR CHART (LEFT) + SKILL DRILL-DOWN (RIGHT)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* LEFT: Radar Chart Card */}
-          <div className="lg:col-span-5">
-            <Card className="border border-border bg-card shadow-xs">
+          {/* LEFT: Generous Radar Chart Card */}
+          <div className="lg:col-span-6 xl:col-span-5">
+            <Card className="border border-border bg-card shadow-xs overflow-hidden">
               <CardHeader className="pb-3 border-b border-border/80">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -229,40 +312,31 @@ export function EmployeeOverviewPage() {
                     </CardTitle>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
-                    6 Domains
+                    6 Key Domains
                   </Badge>
                 </div>
                 <CardDescription className="text-xs text-muted-foreground mt-1">
-                  Multivariate vector of verified proficiency vs target benchmark requirements.
+                  Multivariate vector of verified proficiency vs target role benchmark requirements.
                 </CardDescription>
               </CardHeader>
+
               <CardContent className="pt-4 flex flex-col items-center">
                 <CompetencyRadarChart
                   selectedRoleKey={selectedRole}
                   onSelectRoleKey={setSelectedRole}
                 />
-                <div className="w-full pt-4 mt-2 border-t border-border/60 grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-primary inline-block" />
-                    <span className="text-muted-foreground">Current Verified</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-muted-foreground/30 inline-block border border-dashed border-foreground/40" />
-                    <span className="text-muted-foreground">Target Requirement</span>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* RIGHT: Detailed Competency List with Expandable Evidence */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className="lg:col-span-6 xl:col-span-7 space-y-4">
             <Card className="border border-border bg-card shadow-xs">
               <CardHeader className="pb-4 border-b border-border/80">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-base font-bold text-foreground">
-                      Micro-Skill Mastery & Evidence Ledger
+                      Micro-Skill Mastery &amp; Evidence Ledger
                     </CardTitle>
                     <CardDescription className="text-xs text-muted-foreground mt-0.5">
                       Explore granular skill ratings and inspect multi-source verification evidence.
@@ -270,7 +344,7 @@ export function EmployeeOverviewPage() {
                   </div>
 
                   {/* Search Bar */}
-                  <div className="relative w-full sm:w-56">
+                  <div className="relative w-full sm:w-52">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
                       type="text"
@@ -282,20 +356,29 @@ export function EmployeeOverviewPage() {
                   </div>
                 </div>
 
-                {/* Category Pills */}
+                {/* Category Pills with Count badges */}
                 <div className="flex items-center gap-1.5 flex-wrap pt-3">
                   {categories.map((cat) => (
                     <button
-                      key={cat}
+                      key={cat.key}
                       type="button"
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                        selectedCategory === cat
+                      onClick={() => setSelectedCategory(cat.key)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        selectedCategory === cat.key
                           ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
                           : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
                       }`}
                     >
-                      {cat === 'all' ? 'All Domains' : cat}
+                      <span>{cat.label}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                          selectedCategory === cat.key
+                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {cat.count}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -409,3 +492,6 @@ export function EmployeeOverviewPage() {
     </WorkspaceLayout>
   )
 }
+
+// Backwards compatibility alias
+export const LearnerOverviewPage = EmployeeOverviewPage

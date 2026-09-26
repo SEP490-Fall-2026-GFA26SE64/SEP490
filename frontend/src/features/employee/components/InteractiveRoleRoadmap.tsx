@@ -18,6 +18,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Dialog } from '../../../shared/components/ui/Dialog'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { cn } from '../../../shared/lib/utils'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
 import {
   type LearningModuleNode,
   type MicroSkillNode,
@@ -27,15 +28,62 @@ import {
 import './InteractiveRoleRoadmap.css'
 
 export function InteractiveRoleRoadmap() {
-  const [selectedRoleKey, setSelectedRoleKey] = React.useState('ai-knowledge-architect')
+  const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+
+  React.useEffect(() => {
+    const handleSync = () => setActiveCompany(getActiveCompany())
+    window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('companies_updated', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
+    }
+  }, [])
+
+  const selectedRoleKey = 'ai-knowledge-architect'
   const [searchQuery, setSearchQuery] = React.useState('')
   const [selectedDetailSkill, setSelectedDetailSkill] = React.useState<MicroSkillNode | null>(null)
   const [selectedDetailModule, setSelectedDetailModule] = React.useState<LearningModuleNode | null>(null)
 
-  const roadmapData: TargetRoleRoadmap =
-    TARGET_ROLE_ROADMAPS[selectedRoleKey] || TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
+  const roadmapData: TargetRoleRoadmap = React.useMemo(() => {
+    if (activeCompany.id === 'comp-technova') {
+      return TARGET_ROLE_ROADMAPS[selectedRoleKey] || TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
+    }
+    const modules: LearningModuleNode[] = (activeCompany.modules || []).map((m, idx) => ({
+      id: m.id,
+      moduleCode: m.code,
+      title: m.title,
+      description: `Core instructional curriculum module for ${activeCompany.name}.`,
+      status: idx === 0 ? 'completed' : idx === 1 ? 'in_progress' : 'not_started',
+      estimatedDurationMinutes: m.durationMinutes || 60,
+      order: idx + 1,
+      branchSide: idx % 2 === 0 ? 'left' : 'right',
+      microSkills: (activeCompany.microSkills || []).slice(idx * 2, idx * 2 + 2).map((ms) => ({
+        id: ms.id,
+        skillCode: ms.code,
+        name: ms.name,
+        description: ms.observableOutcome || 'Verified operational skill competency.',
+        status: ms.status === 'published' ? 'achieved' : 'not_achieved',
+        masteryPercentage: ms.status === 'published' ? 90 : 50,
+        estimatedMinutes: 30,
+      })),
+    }))
 
-  // Derive counts from fixed learner data
+    return {
+      roleId: activeCompany.targetRoles[0]?.id || 'role-active',
+      roleCode: activeCompany.targetRoles[0]?.code || 'ROLE-GEN',
+      name: activeCompany.targetRoles[0]?.title || 'Active Target Goal',
+      jobLevel: 'Professional',
+      domain: activeCompany.name,
+      description: `Instructional roadmap aligned to ${activeCompany.name} competency requirements.`,
+      totalModules: modules.length,
+      totalSkills: modules.reduce((acc, m) => acc + m.microSkills.length, 0),
+      achievedSkills: modules.reduce((acc, m) => acc + m.microSkills.filter((s) => s.status === 'achieved').length, 0),
+      modules,
+    }
+  }, [activeCompany, selectedRoleKey])
+
+  // Derive counts from active company roadmap
   const totalMicroSkills = roadmapData.modules.reduce((acc, m) => acc + m.microSkills.length, 0)
   const achievedMicroSkills = roadmapData.modules.reduce(
     (acc, m) => acc + m.microSkills.filter((s) => s.status === 'achieved').length,
@@ -46,31 +94,23 @@ export function InteractiveRoleRoadmap() {
     (achievedMicroSkills / (totalMicroSkills || 1)) * 100
   )
 
+  if (roadmapData.modules.length === 0) {
+    return (
+      <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
+        <Sparkles size={32} className="mx-auto text-muted-foreground/60 mb-2" />
+        <h3 className="text-sm font-bold text-foreground">No Roadmap Configured</h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+          No learning modules or skill branches have been created for {activeCompany.name} yet.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      {/* Top Toolbar: Search, Role Switcher, Legend & Progress Bar */}
+      {/* Top Toolbar: Search, Legend & Progress Bar */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Target size={18} className="text-primary shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Target Role:
-            </span>
-          </div>
-
-          <div className="relative">
-            <select
-              value={selectedRoleKey}
-              onChange={(e) => setSelectedRoleKey(e.target.value)}
-              aria-label="Select target role for roadmap"
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-muted/60 border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-            >
-              <option value="ai-knowledge-architect">AI Knowledge Architect</option>
-            </select>
-          </div>
-
-          <div className="h-4 w-px bg-border hidden sm:block" />
-
           {/* Quick status counters */}
           <div className="flex items-center gap-3 text-xs">
             <span className="font-semibold text-foreground">

@@ -12,8 +12,8 @@ import {
   Plus,
   RefreshCw,
   Search,
-  ShieldCheck,
   Trash2,
+  Upload,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
@@ -22,6 +22,7 @@ import { Network, type Options } from 'vis-network'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import {
   Dialog,
   DialogDescription,
@@ -31,18 +32,139 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
+import {
+  QuickConfigImportModal,
+  type ImportPreset,
+} from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import {
+  getActiveCompany,
+  updateActiveCompany,
+} from '../../../shared/stores/companyStore'
 import {
   type CompetencyModel,
   INITIAL_COMPETENCIES,
   INITIAL_MICRO_SKILLS,
-  INITIAL_PREREQUISITES,
-  INITIAL_PROVENANCE_LEDGER,
   type MicroSkillModel,
   type PrerequisiteEdge,
-  type ProvenanceRecord,
 } from '../data/ldManagerMockData'
+
+const ONTOLOGY_PRESETS: ImportPreset[] = [
+  {
+    id: 'preset-foundation-models',
+    name: 'Foundation Models & LLM Engineering',
+    description: '2 Macro Competencies, 4 Micro-skills, and 2 Prerequisite edges based on Stanford CS324.',
+    badge: 'AI Curricula',
+    itemCount: 6,
+    previewSnippet: JSON.stringify(
+      {
+        competencies: [
+          { code: 'COMP-LLM-01', name: 'Transformer Architectures & Attention Mechanisms' },
+          { code: 'COMP-RAG-01', name: 'Retrieval Augmented Generation & Vector Indices' },
+        ],
+        microSkills: [
+          { code: 'SKILL-ATTN-01', name: 'Implement Multi-Head Scaled Dot-Product Attention' },
+          { code: 'SKILL-KV-01', name: 'Configure KV-Cache Quantization & PagedAttention' },
+        ],
+      },
+      null,
+      2
+    ),
+    payload: {
+      competencies: [
+        {
+          id: 'comp-llm-01',
+          stableId: 'comp-uuid-llm-01',
+          code: 'COMP-LLM-01',
+          name: 'Transformer Architectures & Attention Mechanisms',
+          definition: 'Deep understanding of self-attention matrices, positional encodings, and modern transformer layers.',
+          version: '1.0',
+          status: 'draft',
+          derivationRef: 'Stanford CS324 Foundation Models Curriculum 2026',
+          skillIds: ['skill-attn-01', 'skill-kv-01'],
+          updatedAt: new Date().toISOString().slice(0, 10),
+        },
+        {
+          id: 'comp-rag-01',
+          stableId: 'comp-uuid-rag-01',
+          code: 'COMP-RAG-01',
+          name: 'Retrieval Augmented Generation & Vector Indices',
+          definition: 'Engineering neural search indexing, re-ranking filters, and hybrid lexical-semantic retrieval.',
+          version: '1.0',
+          status: 'draft',
+          derivationRef: 'NeurIPS 2025 Knowledge Grounding Standards',
+          skillIds: ['skill-vec-01', 'skill-rr-01'],
+          updatedAt: new Date().toISOString().slice(0, 10),
+        },
+      ],
+      microSkills: [
+        {
+          id: 'skill-attn-01',
+          stableId: 'ms-uuid-attn-01',
+          code: 'SKILL-ATTN-01',
+          name: 'Implement Multi-Head Scaled Dot-Product Attention',
+          observableOutcome: 'Derives queries, keys, values tensors and computes masked softmax weights without memory leakage.',
+          bloomLevel: 'Apply',
+          version: '1.0',
+          status: 'draft',
+          provenance: { source: 'PyTorch Model Zoo', ruleRef: 'ATTN-CORE-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+        },
+        {
+          id: 'skill-kv-01',
+          stableId: 'ms-uuid-kv-01',
+          code: 'SKILL-KV-01',
+          name: 'Configure KV-Cache Quantization & PagedAttention',
+          observableOutcome: 'Profiles vLLM chunked prefill memory allocations under high token concurrency.',
+          bloomLevel: 'Analyze',
+          version: '1.0',
+          status: 'draft',
+          provenance: { source: 'vLLM Systems Paper', ruleRef: 'PAGED-ATTN-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+        },
+        {
+          id: 'skill-vec-01',
+          stableId: 'ms-uuid-vec-01',
+          code: 'SKILL-VEC-01',
+          name: 'Construct HNSW Vector Graph Embedding Pipeline',
+          observableOutcome: 'Builds approximate nearest neighbor graph index with recall@10 >= 0.95.',
+          bloomLevel: 'Create',
+          version: '1.0',
+          status: 'draft',
+          provenance: { source: 'FAISS Benchmarks', ruleRef: 'VEC-IND-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+        },
+        {
+          id: 'skill-rr-01',
+          stableId: 'ms-uuid-rr-01',
+          code: 'SKILL-RR-01',
+          name: 'Integrate Cross-Encoder Reciprocal Rank Fusion',
+          observableOutcome: 'Applies reranking scoring to boost precision on complex domain queries.',
+          bloomLevel: 'Evaluate',
+          version: '1.0',
+          status: 'draft',
+          provenance: { source: 'Information Retrieval Council', ruleRef: 'RRF-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+        },
+      ],
+      prerequisites: [
+        {
+          id: 'pre-attn-kv',
+          sourceSkillId: 'skill-attn-01',
+          targetSkillId: 'skill-kv-01',
+          requiredThreshold: 80,
+          type: 'hard_prerequisite',
+          ruleRef: 'ATTN-PREQ',
+        },
+        {
+          id: 'pre-vec-rr',
+          sourceSkillId: 'skill-vec-01',
+          targetSkillId: 'skill-rr-01',
+          requiredThreshold: 75,
+          type: 'recommended',
+          ruleRef: 'VEC-PREQ',
+        },
+      ],
+    },
+  },
+]
 
 export function CompetencyOntologyPage() {
   const { toast } = useToast()
@@ -59,17 +181,133 @@ export function CompetencyOntologyPage() {
   const [prereqTypeFilter, setPrereqTypeFilter] = React.useState('all')
 
   // State for entities
-  const [competencies, setCompetencies] = React.useState<CompetencyModel[]>(INITIAL_COMPETENCIES)
-  const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>(INITIAL_MICRO_SKILLS)
-  const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>(INITIAL_PREREQUISITES)
-  const [provenanceLedger, setProvenanceLedger] = React.useState<ProvenanceRecord[]>(INITIAL_PROVENANCE_LEDGER)
+  const [competencies, setCompetencies] = React.useState<CompetencyModel[]>(() => getActiveCompany()?.competencies ?? [])
+  const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills ?? [])
+  const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>(() => getActiveCompany()?.prerequisites ?? [])
+
+  // Synchronize state when active company scope changes
+  React.useEffect(() => {
+    const handleSync = () => {
+      const active = getActiveCompany()
+      setCompetencies(active?.competencies ?? [])
+      setMicroSkills(active?.microSkills ?? [])
+      setPrerequisites(active?.prerequisites ?? [])
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+    }
+  }, [])
+
+  // Explicit persistence helpers to prevent circular re-render loops
+  const saveAndSetCompetencies = React.useCallback(
+    (updater: CompetencyModel[] | ((prev: CompetencyModel[]) => CompetencyModel[])) => {
+      setCompetencies((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({ ...c, competencies: next }))
+        return next
+      })
+    },
+    []
+  )
+
+  const saveAndSetMicroSkills = React.useCallback(
+    (updater: MicroSkillModel[] | ((prev: MicroSkillModel[]) => MicroSkillModel[])) => {
+      setMicroSkills((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({ ...c, microSkills: next }))
+        return next
+      })
+    },
+    []
+  )
+
+  const saveAndSetPrerequisites = React.useCallback(
+    (updater: PrerequisiteEdge[] | ((prev: PrerequisiteEdge[]) => PrerequisiteEdge[])) => {
+      setPrerequisites((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({ ...c, prerequisites: next }))
+        return next
+      })
+    },
+    []
+  )
 
   // Modals state
   const [isCompModalOpen, setIsCompModalOpen] = React.useState(false)
   const [isSkillModalOpen, setIsSkillModalOpen] = React.useState(false)
   const [isHasSkillModalOpen, setIsHasSkillModalOpen] = React.useState(false)
   const [isPrereqModalOpen, setIsPrereqModalOpen] = React.useState(false)
-  const [isProvModalOpen, setIsProvModalOpen] = React.useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
+
+  const handleImportOntology = (payload: any) => {
+    const rawComps = Array.isArray(payload) ? payload : payload.competencies || []
+    const rawSkills = payload.microSkills || []
+    const rawPrereqs = payload.prerequisites || []
+
+    const normalizedComps: CompetencyModel[] = rawComps.map((c: any, idx: number) => ({
+      id: c.id || `comp-${Date.now()}-${idx}`,
+      stableId: c.stableId || `comp-uuid-${Date.now()}-${idx}`,
+      code: (c.code || `COMP-${idx + 1}`).trim().toUpperCase(),
+      name: (c.name || 'Untitled Competency Domain').trim(),
+      definition: (c.definition || 'Domain definition and scope.').trim(),
+      version: c.version || '1.0',
+      status: (c.status === 'draft' || c.status === 'archived') ? c.status : 'published',
+      derivationRef: c.derivationRef || 'Internal Curriculum Framework 2026',
+      skillIds: Array.isArray(c.skillIds) ? c.skillIds : [],
+      updatedAt: c.updatedAt || new Date().toISOString().slice(0, 10),
+    }))
+
+    const normalizedSkills: MicroSkillModel[] = rawSkills.map((s: any, idx: number) => ({
+      id: s.id || `skill-${Date.now()}-${idx}`,
+      stableId: s.stableId || `ms-uuid-${Date.now()}-${idx}`,
+      code: (s.code || `SKILL-${idx + 1}`).trim().toUpperCase(),
+      name: (s.name || 'Untitled Micro-skill').trim(),
+      observableOutcome: (s.observableOutcome || 'Applies and demonstrates competency.').trim(),
+      bloomLevel: s.bloomLevel || 'Apply',
+      version: s.version || '1.0',
+      status: (s.status === 'draft' || s.status === 'archived') ? s.status : 'published',
+      provenance: s.provenance || {
+        source: s.provenanceSource || 'Internal Subject Matter Expert',
+        ruleRef: s.provenanceRuleRef || 'EXP-CORE-01',
+        type: 'source-backed',
+        recordedDate: new Date().toISOString().slice(0, 10),
+      },
+    }))
+
+    const normalizedPrereqs: PrerequisiteEdge[] = rawPrereqs.map((p: any, idx: number) => ({
+      id: p.id || `edge-${Date.now()}-${idx}`,
+      sourceSkillId: p.sourceSkillId || '',
+      targetSkillId: p.targetSkillId || '',
+      relationshipType: p.relationshipType || 'strictly_requires',
+      rationale: p.rationale || 'Prerequisite dependency',
+      pedagogicalWeight: typeof p.pedagogicalWeight === 'number' ? p.pedagogicalWeight : 1.0,
+      createdAt: p.createdAt || new Date().toISOString().slice(0, 10),
+    }))
+
+    const updatedComps = [...normalizedComps, ...competencies]
+    const updatedSkills = [...normalizedSkills, ...microSkills]
+    const updatedPrereqs = [...normalizedPrereqs, ...prerequisites]
+
+    setCompetencies(updatedComps)
+    setMicroSkills(updatedSkills)
+    setPrerequisites(updatedPrereqs)
+    updateActiveCompany((c) => ({
+      ...c,
+      competencies: updatedComps,
+      microSkills: updatedSkills,
+      prerequisites: updatedPrereqs,
+    }))
+  }
+
+  // Details Modals state (Miro Flow)
+  const [viewingCompDetails, setViewingCompDetails] = React.useState<CompetencyModel | null>(null)
+  const [viewingSkillDetails, setViewingSkillDetails] = React.useState<MicroSkillModel | null>(null)
+  const [viewingEdgeDetails, setViewingEdgeDetails] = React.useState<PrerequisiteEdge | null>(null)
+
+  // Deletion confirmation state
+  const [deletingDraftComp, setDeletingDraftComp] = React.useState<CompetencyModel | null>(null)
+  const [deletingEdgeId, setDeletingEdgeId] = React.useState<string | null>(null)
 
   // Selection states
   const [selectedComp, setSelectedComp] = React.useState<CompetencyModel | null>(null)
@@ -101,17 +339,6 @@ export function CompetencyOntologyPage() {
     requiredThreshold: 75,
     type: 'hard_prerequisite' as 'hard_prerequisite' | 'recommended',
     ruleRef: 'PREREQ-PEDAGOGY-01',
-  })
-
-  // Provenance Form
-  const [provForm, setProvForm] = React.useState({
-    entityType: 'Competency' as ProvenanceRecord['entityType'],
-    entityCode: '',
-    entityName: '',
-    sourceRef: '',
-    ruleRef: '',
-    provenanceStatus: 'source-backed' as ProvenanceRecord['provenanceStatus'],
-    notes: '',
   })
 
   // Graph state
@@ -151,7 +378,7 @@ export function CompetencyOntologyPage() {
 
     if (selectedComp) {
       // Editing draft
-      setCompetencies((prev) =>
+      saveAndSetCompetencies((prev) =>
         prev.map((c) =>
           c.id === selectedComp.id
             ? {
@@ -183,21 +410,7 @@ export function CompetencyOntologyPage() {
         skillIds: [],
         updatedAt: new Date().toISOString().slice(0, 10),
       }
-      setCompetencies([newC, ...competencies])
-
-      // Auto record in provenance
-      const prov: ProvenanceRecord = {
-        id: `prov-${Date.now()}`,
-        entityType: 'Competency',
-        entityCode: newC.code,
-        entityName: newC.name,
-        sourceRef: newC.derivationRef,
-        ruleRef: 'DERIVE-COMP-DRAFT',
-        versionDate: newC.updatedAt,
-        provenanceStatus: 'derived',
-        notes: 'Initial draft creation in ontology workspace.',
-      }
-      setProvenanceLedger([prov, ...provenanceLedger])
+      saveAndSetCompetencies([newC, ...competencies])
 
       toast({
         title: 'Draft Competency Created',
@@ -232,7 +445,7 @@ export function CompetencyOntologyPage() {
       definition: `${comp.definition} (Successor revision v${nextVer})`,
     }
 
-    setCompetencies([successor, ...competencies])
+    saveAndSetCompetencies([successor, ...competencies])
     toast({
       title: 'Successor Draft Created',
       description: `Draft v${nextVer} spawned for ${comp.code}. Preserved stable ID and history.`,
@@ -251,7 +464,7 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    setCompetencies(competencies.filter((c) => c.id !== comp.id))
+    saveAndSetCompetencies(competencies.filter((c) => c.id !== comp.id))
     toast({
       title: 'Draft Deleted',
       description: `Draft competency ${comp.code} (v${comp.version}) was permanently deleted.`,
@@ -273,7 +486,7 @@ export function CompetencyOntologyPage() {
     const hasLink = comp.skillIds.includes(skillId)
     const updatedSkills = hasLink ? comp.skillIds.filter((id) => id !== skillId) : [...comp.skillIds, skillId]
 
-    setCompetencies((prev) =>
+    saveAndSetCompetencies((prev) =>
       prev.map((c) => (c.id === comp.id ? { ...c, skillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : c)),
     )
 
@@ -316,7 +529,7 @@ export function CompetencyOntologyPage() {
     }
 
     if (selectedSkill) {
-      setMicroSkills((prev) =>
+      saveAndSetMicroSkills((prev) =>
         prev.map((s) =>
           s.id === selectedSkill.id
             ? {
@@ -352,21 +565,7 @@ export function CompetencyOntologyPage() {
         },
       }
 
-      setMicroSkills([newSkill, ...microSkills])
-
-      // Auto provenance ledger entry
-      const prov: ProvenanceRecord = {
-        id: `prov-${Date.now()}`,
-        entityType: 'Micro-Skill',
-        entityCode: newSkill.code,
-        entityName: newSkill.name,
-        sourceRef: newSkill.provenance.source,
-        ruleRef: newSkill.provenance.ruleRef,
-        versionDate: newSkill.provenance.recordedDate,
-        provenanceStatus: newSkill.provenance.type,
-        notes: 'Observable micro-skill outcome defined.',
-      }
-      setProvenanceLedger([prov, ...provenanceLedger])
+      saveAndSetMicroSkills([newSkill, ...microSkills])
 
       toast({
         title: 'Micro-skill Created',
@@ -452,7 +651,7 @@ export function CompetencyOntologyPage() {
       ruleRef: ruleRef || 'PEDAGOGY-SEQ',
     }
 
-    setPrerequisites([...prerequisites, newEdge])
+    saveAndSetPrerequisites([...prerequisites, newEdge])
     setIsPrereqModalOpen(false)
 
     const sourceSkill = microSkills.find((s) => s.id === sourceSkillId)
@@ -466,7 +665,7 @@ export function CompetencyOntologyPage() {
   }
 
   const handleDeletePrereq = (id: string) => {
-    setPrerequisites((prev) => prev.filter((p) => p.id !== id))
+    saveAndSetPrerequisites((prev) => prev.filter((p) => p.id !== id))
     toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
   }
 
@@ -729,6 +928,15 @@ export function CompetencyOntologyPage() {
           <Button
             variant="outline"
             size="sm"
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
+          >
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={handleOpenCreateSkill}
           >
@@ -745,7 +953,7 @@ export function CompetencyOntologyPage() {
         </div>
 
         {/* Aggregate KPI StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
             variant="gradient"
             icon={<BookOpen className="h-4 w-4 text-primary" />}
@@ -772,15 +980,6 @@ export function CompetencyOntologyPage() {
             valueClassName="text-warning"
             description="Acyclic dependency relationships"
           />
-
-          <StatCard
-            variant="gradient"
-            icon={<ShieldCheck className="h-4 w-4 text-primary" />}
-            title="Provenance Records"
-            value={provenanceLedger.length.toString()}
-            valueClassName="text-primary"
-            description="Source-backed &amp; verified"
-          />
         </div>
 
         {/* Tabbed Console - Natural flex-wrap width prevents overlap */}
@@ -791,9 +990,6 @@ export function CompetencyOntologyPage() {
             </TabsTrigger>
             <TabsTrigger value="skills" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Micro-skills &amp; Prereqs
-            </TabsTrigger>
-            <TabsTrigger value="provenance" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
-              Provenance Ledger
             </TabsTrigger>
             <TabsTrigger value="graph" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Explore Graph
@@ -833,7 +1029,14 @@ export function CompetencyOntologyPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {competencies.map((comp) => {
+                      {competencies.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-10 text-muted-foreground text-xs">
+                            No competencies registered yet for this company. Click "+ New Competency" or import a blueprint to get started.
+                          </td>
+                        </tr>
+                      ) : (
+                        competencies.map((comp) => {
                         const isDraft = comp.status === 'draft'
                         const isPublished = comp.status === 'published'
 
@@ -874,12 +1077,24 @@ export function CompetencyOntologyPage() {
                             </td>
                             <td className="py-3 px-3 text-right">
                               <div className="flex items-center justify-end gap-1.5">
+                                {!isDraft && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setViewingCompDetails(comp)}
+                                    title="View Details"
+                                    aria-label="View Details"
+                                  >
+                                    <Eye className="h-4 w-4 text-primary" />
+                                  </Button>
+                                )}
                                 {isDraft ? (
                                   <div className="flex items-center justify-end gap-1.5">
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      leftIcon={<Edit3 className="h-3 w-3" />}
+                                      className="h-8 w-8 p-0"
                                       onClick={() => {
                                         setSelectedComp(comp)
                                         setCompForm({
@@ -890,36 +1105,39 @@ export function CompetencyOntologyPage() {
                                         })
                                         setIsCompModalOpen(true)
                                       }}
+                                      title="Edit Draft"
+                                      aria-label="Edit Draft"
                                     >
-                                      Edit Draft
+                                      <Edit3 className="h-4 w-4" />
                                     </Button>
                                     <Button
-                                      variant="ghost"
+                                      variant="destructive"
                                       size="sm"
-                                      className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-2"
-                                      leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                                      onClick={() => handleDeleteDraftComp(comp)}
-                                      title="Delete draft competency"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setDeletingDraftComp(comp)}
+                                      title="Delete Draft"
+                                      aria-label="Delete Draft"
                                     >
-                                      Delete Draft
+                                      <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </div>
                                 ) : (
                                   <Button
                                     variant="secondary"
                                     size="sm"
-                                    leftIcon={<Copy className="h-3 w-3" />}
+                                    className="h-8 w-8 p-0"
                                     onClick={() => handleCreateSuccessorComp(comp)}
-                                    title="Create successor draft preserving stable ID"
+                                    title="Create Draft"
+                                    aria-label="Create Draft"
                                   >
-                                    Successor Draft
+                                    <Copy className="h-4 w-4" />
                                   </Button>
                                 )}
                               </div>
                             </td>
                           </tr>
                         )
-                      })}
+                      }))}
                     </tbody>
                   </table>
                 </div>
@@ -1044,7 +1262,6 @@ export function CompetencyOntologyPage() {
                               <th className="py-2.5 px-3">Observable Learning Outcome</th>
                               <th className="py-2.5 px-3 text-center">Bloom Level</th>
                               <th className="py-2.5 px-3">Provenance Reference</th>
-                              <th className="py-2.5 px-3">Origin Status</th>
                               <th className="py-2.5 px-3 text-right">Actions</th>
                             </tr>
                           </thead>
@@ -1067,40 +1284,43 @@ export function CompetencyOntologyPage() {
                                 <td className="py-3 px-3 text-[11px] font-mono text-muted-foreground">
                                   {skill.provenance.source}
                                 </td>
-                                <td className="py-3 px-3">
-                                  <Badge
-                                    variant={
-                                      skill.provenance.type === 'source-backed'
-                                        ? 'success'
-                                        : skill.provenance.type === 'derived'
-                                        ? 'primary'
-                                        : 'warning'
-                                    }
-                                  >
-                                    {skill.provenance.type}
-                                  </Badge>
-                                </td>
                                 <td className="py-3 px-3 text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    leftIcon={<Edit3 className="h-3 w-3" />}
-                                    onClick={() => {
-                                      setSelectedSkill(skill)
-                                      setSkillForm({
-                                        code: skill.code,
-                                        name: skill.name,
-                                        observableOutcome: skill.observableOutcome,
-                                        bloomLevel: skill.bloomLevel,
-                                        source: skill.provenance.source,
-                                        ruleRef: skill.provenance.ruleRef,
-                                        type: skill.provenance.type,
-                                      })
-                                      setIsSkillModalOpen(true)
-                                    }}
-                                  >
-                                    Edit
-                                  </Button>
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    {skill.status !== 'draft' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setViewingSkillDetails(skill)}
+                                        title="View Details"
+                                        aria-label="View Details"
+                                      >
+                                        <Eye className="h-4 w-4 text-primary" />
+                                      </Button>
+                                    )}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => {
+                                        setSelectedSkill(skill)
+                                        setSkillForm({
+                                          code: skill.code,
+                                          name: skill.name,
+                                          observableOutcome: skill.observableOutcome,
+                                          bloomLevel: skill.bloomLevel,
+                                          source: skill.provenance.source,
+                                          ruleRef: skill.provenance.ruleRef,
+                                          type: skill.provenance.type,
+                                        })
+                                        setIsSkillModalOpen(true)
+                                      }}
+                                      title="Edit Micro-skill"
+                                      aria-label="Edit Micro-skill"
+                                    >
+                                      <Edit3 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -1221,14 +1441,28 @@ export function CompetencyOntologyPage() {
                                     {edge.ruleRef}
                                   </td>
                                   <td className="py-3 px-3 text-right">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeletePrereq(edge.id)}
-                                      className="text-destructive hover:text-destructive/80 p-1 cursor-pointer"
-                                      title="Delete prerequisite edge"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setViewingEdgeDetails(edge)}
+                                        title="View Details"
+                                        aria-label="View Details"
+                                      >
+                                        <Eye className="h-4 w-4 text-primary" />
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setDeletingEdgeId(edge.id)}
+                                        title="Delete Edge"
+                                        aria-label="Delete Edge"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               )
@@ -1243,92 +1477,7 @@ export function CompetencyOntologyPage() {
             )
           })()}
 
-          {/* TAB 3: PROVENANCE LEDGER */}
-          <TabsContent value="provenance" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-primary" />
-                      Ontology Provenance Registry
-                    </CardTitle>
-                    <CardDescription>
-                      Audit ledger verifying authoritative source citations, derivation dates, and synthesis tags.
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<Plus className="h-3.5 w-3.5" />}
-                    onClick={() => {
-                      setProvForm({
-                        entityType: 'Competency',
-                        entityCode: 'COMP-SEM-01',
-                        entityName: 'Graph Semantic Architecture',
-                        sourceRef: 'ACM Computing Curricula 2023',
-                        ruleRef: 'ACM-KRR-2023',
-                        provenanceStatus: 'source-backed',
-                        notes: 'Audited against official publication.',
-                      })
-                      setIsProvModalOpen(true)
-                    }}
-                  >
-                    Record Provenance Entry
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                        <th className="py-2.5 px-3">Entity Type</th>
-                        <th className="py-2.5 px-3">Entity Code &amp; Name</th>
-                        <th className="py-2.5 px-3">Source Citation Reference</th>
-                        <th className="py-2.5 px-3">Rule Reference</th>
-                        <th className="py-2.5 px-3">Audit Date</th>
-                        <th className="py-2.5 px-3">Origin Status</th>
-                        <th className="py-2.5 px-3">Verification Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {provenanceLedger.map((prov) => (
-                        <tr key={prov.id} className="hover:bg-muted/20">
-                          <td className="py-3 px-3">
-                            <Badge variant="secondary" className="font-semibold text-[10px]">
-                              {prov.entityType}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-3">
-                            <div className="font-mono font-bold text-foreground">{prov.entityCode}</div>
-                            <div className="text-[11px] text-muted-foreground">{prov.entityName}</div>
-                          </td>
-                          <td className="py-3 px-3 font-medium text-foreground">{prov.sourceRef}</td>
-                          <td className="py-3 px-3 font-mono text-muted-foreground text-[11px]">{prov.ruleRef}</td>
-                          <td className="py-3 px-3 text-muted-foreground font-mono">{prov.versionDate}</td>
-                          <td className="py-3 px-3">
-                            <Badge
-                              variant={
-                                prov.provenanceStatus === 'source-backed'
-                                  ? 'success'
-                                  : prov.provenanceStatus === 'derived'
-                                  ? 'primary'
-                                  : 'warning'
-                              }
-                            >
-                              {prov.provenanceStatus}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-3 text-muted-foreground text-[11px] max-w-xs">{prov.notes}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
 
           {/* TAB 4: EXPLORE ONTOLOGY GRAPH */}
           <TabsContent value="graph" className="space-y-4">
@@ -1974,130 +2123,501 @@ export function CompetencyOntologyPage() {
         </div>
       </Dialog>
 
-      {/* RECORD PROVENANCE MODAL */}
-      <Dialog open={isProvModalOpen} onOpenChange={setIsProvModalOpen}>
-        <div className="space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              Record Ontology Provenance Reference
-            </DialogTitle>
-            <DialogDescription>
-              Attribution ledger for certifying source-backed, derived, or synthetic provenance across graph entities.
-            </DialogDescription>
-          </DialogHeader>
+      {/* 5. VIEW COMPETENCY DETAILS MODAL (Miro Flow) */}
+      <Dialog
+        open={Boolean(viewingCompDetails)}
+        onOpenChange={(open) => !open && setViewingCompDetails(null)}
+        className="max-w-2xl"
+      >
+        {viewingCompDetails && (
+          <div className="space-y-4">
+            <DialogHeader>
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <DialogTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary shrink-0" />
+                  <span>Competency Details: {viewingCompDetails.name}</span>
+                </DialogTitle>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    v{viewingCompDetails.version}
+                  </Badge>
+                  <Badge
+                    variant={
+                      viewingCompDetails.status === 'published'
+                        ? 'success'
+                        : viewingCompDetails.status === 'draft'
+                        ? 'warning'
+                        : 'outline'
+                    }
+                  >
+                    {viewingCompDetails.status.toUpperCase()}
+                  </Badge>
+                </div>
+              </div>
+              <DialogDescription>
+                Formal curriculum definition, version lineage, and ontological micro-skill bindings.
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-3 text-xs">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Entity Type</label>
-                <select
-                  value={provForm.entityType}
-                  onChange={(e) => setProvForm({ ...provForm, entityType: e.target.value as any })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="Competency">Competency</option>
-                  <option value="Micro-Skill">Micro-Skill</option>
-                  <option value="Prerequisite">Prerequisite Edge</option>
-                  <option value="Module">Learning Module</option>
-                  <option value="Question">Quiz Question</option>
-                </select>
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-muted/40 border border-border">
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Competency Code</span>
+                  <strong className="font-mono text-foreground font-bold text-sm">{viewingCompDetails.code}</strong>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Stable Entity ID</span>
+                  <span className="font-mono text-muted-foreground text-[11px] truncate block">{viewingCompDetails.stableId}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Last Updated</span>
+                  <span className="text-foreground font-semibold">{viewingCompDetails.updatedAt}</span>
+                </div>
+                <div className="col-span-2 sm:col-span-3">
+                  <span className="text-muted-foreground block text-[11px]">Competency Name</span>
+                  <strong className="text-foreground text-sm font-semibold">{viewingCompDetails.name}</strong>
+                </div>
               </div>
 
               <div>
-                <label className="font-semibold text-foreground block mb-1">Provenance Status</label>
-                <select
-                  value={provForm.provenanceStatus}
-                  onChange={(e) => setProvForm({ ...provForm, provenanceStatus: e.target.value as any })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="source-backed">Source-Backed</option>
-                  <option value="derived">Derived</option>
-                  <option value="synthetic">Synthetic</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Entity Code</label>
-                <input
-                  type="text"
-                  placeholder="e.g. COMP-SEM-01"
-                  value={provForm.entityCode}
-                  onChange={(e) => setProvForm({ ...provForm, entityCode: e.target.value })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+                <label className="font-semibold text-foreground block mb-1">Formal Curriculum Definition</label>
+                <div className="p-3 rounded-lg bg-card border border-border text-foreground leading-relaxed text-xs">
+                  {viewingCompDetails.definition}
+                </div>
               </div>
 
               <div>
-                <label className="font-semibold text-foreground block mb-1">Entity Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Graph Semantic Architecture"
-                  value={provForm.entityName}
-                  onChange={(e) => setProvForm({ ...provForm, entityName: e.target.value })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+                <label className="font-semibold text-foreground block mb-1">Academic &amp; Industry Derivation Reference</label>
+                <div className="p-2.5 rounded bg-muted/30 border border-border font-mono text-[11px] text-muted-foreground">
+                  {viewingCompDetails.derivationRef}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-semibold text-foreground flex items-center gap-1.5">
+                    <Layers className="h-3.5 w-3.5 text-primary" />
+                    Mapped Micro-skills ({viewingCompDetails.skillIds.length} HAS_SKILL)
+                  </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[11px]"
+                    onClick={() => {
+                      const comp = viewingCompDetails
+                      setViewingCompDetails(null)
+                      setSelectedComp(comp)
+                      setIsHasSkillModalOpen(true)
+                    }}
+                  >
+                    Manage Bindings
+                  </Button>
+                </div>
+
+                {viewingCompDetails.skillIds.length === 0 ? (
+                  <div className="p-4 rounded-lg bg-muted/20 border border-border text-center text-muted-foreground">
+                    No micro-skills currently bound to this competency.
+                  </div>
+                ) : (
+                  <div className="border border-border rounded-lg overflow-hidden divide-y divide-border max-h-56 overflow-y-auto">
+                    {viewingCompDetails.skillIds.map((sId) => {
+                      const skill = microSkills.find((s) => s.id === sId)
+                      if (!skill) return null
+                      return (
+                        <div key={sId} className="p-2.5 flex items-start justify-between gap-3 hover:bg-muted/10">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-primary">{skill.code}</span>
+                              <span className="font-semibold text-foreground">{skill.name}</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground line-clamp-1">{skill.observableOutcome}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <Badge variant="secondary" className="text-[10px] py-0">
+                              {skill.bloomLevel}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px] py-0 font-mono">
+                              v{skill.version}
+                            </Badge>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div>
-              <label className="font-semibold text-foreground block mb-1">Source Authority Reference</label>
-              <input
-                type="text"
-                placeholder="e.g. W3C OWL 2 Web Ontology Language Recommendation"
-                value={provForm.sourceRef}
-                onChange={(e) => setProvForm({ ...provForm, sourceRef: e.target.value })}
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">Audit Notes</label>
-              <textarea
-                rows={2}
-                placeholder="Verification methodology, curriculum board audit notes..."
-                value={provForm.notes}
-                onChange={(e) => setProvForm({ ...provForm, notes: e.target.value })}
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setViewingCompDetails(null)}>
+                Close
+              </Button>
+            </DialogFooter>
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setIsProvModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => {
-                if (!provForm.entityCode.trim() || !provForm.sourceRef.trim()) {
-                  toast({ title: 'Validation Error', description: 'Code and Source Ref are required.', variant: 'destructive' })
-                  return
-                }
-                const newProv: ProvenanceRecord = {
-                  id: `prov-${Date.now()}`,
-                  entityType: provForm.entityType,
-                  entityCode: provForm.entityCode,
-                  entityName: provForm.entityName || provForm.entityCode,
-                  sourceRef: provForm.sourceRef,
-                  ruleRef: provForm.ruleRef || 'PROV-REF-01',
-                  versionDate: new Date().toISOString().slice(0, 10),
-                  provenanceStatus: provForm.provenanceStatus,
-                  notes: provForm.notes || 'Recorded via manager console.',
-                }
-                setProvenanceLedger([newProv, ...provenanceLedger])
-                setIsProvModalOpen(false)
-                toast({ title: 'Provenance Recorded', description: `Saved record for ${newProv.entityCode}.`, variant: 'success' })
-              }}
-            >
-              Record Provenance
-            </Button>
-          </DialogFooter>
-        </div>
+        )}
       </Dialog>
+
+      {/* 6. VIEW MICRO-SKILL DETAILS MODAL (Miro Flow) */}
+      <Dialog
+        open={Boolean(viewingSkillDetails)}
+        onOpenChange={(open) => !open && setViewingSkillDetails(null)}
+        className="max-w-2xl"
+      >
+        {viewingSkillDetails && (() => {
+          const parentComps = competencies.filter((c) => c.skillIds.includes(viewingSkillDetails.id))
+          const incomingPrereqs = prerequisites.filter((p) => p.targetSkillId === viewingSkillDetails.id)
+          const outgoingPrereqs = prerequisites.filter((p) => p.sourceSkillId === viewingSkillDetails.id)
+
+          return (
+            <div className="space-y-4">
+              <DialogHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-primary shrink-0" />
+                    <span>Micro-skill Details: {viewingSkillDetails.name}</span>
+                  </DialogTitle>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      v{viewingSkillDetails.version}
+                    </Badge>
+                    <Badge
+                      variant={
+                        viewingSkillDetails.provenance.type === 'source-backed'
+                          ? 'success'
+                          : viewingSkillDetails.provenance.type === 'derived'
+                          ? 'primary'
+                          : 'warning'
+                      }
+                    >
+                      {viewingSkillDetails.provenance.type.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                <DialogDescription>
+                  Atomic, verifiable learning outcome telemetry with provenance citations and pedagogical graph position.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-muted/40 border border-border">
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Skill Code</span>
+                    <strong className="font-mono text-foreground font-bold text-sm">{viewingSkillDetails.code}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Bloom Taxonomy</span>
+                    <Badge variant="secondary" className="font-semibold text-xs mt-0.5">
+                      {viewingSkillDetails.bloomLevel}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Recorded Date</span>
+                    <span className="text-foreground font-semibold">{viewingSkillDetails.provenance.recordedDate}</span>
+                  </div>
+                  <div className="col-span-2 sm:col-span-3">
+                    <span className="text-muted-foreground block text-[11px]">Skill Name</span>
+                    <strong className="text-foreground text-sm font-semibold">{viewingSkillDetails.name}</strong>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1">Observable Learning Outcome</label>
+                  <div className="p-3 rounded-lg bg-card border border-border text-foreground leading-relaxed text-xs">
+                    {viewingSkillDetails.observableOutcome}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1">
+                    <span className="text-muted-foreground block text-[11px] font-semibold">Provenance Source</span>
+                    <p className="font-mono text-[11px] text-foreground">{viewingSkillDetails.provenance.source}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1">
+                    <span className="text-muted-foreground block text-[11px] font-semibold">Curriculum Rule Ref</span>
+                    <p className="font-mono text-[11px] text-foreground">{viewingSkillDetails.provenance.ruleRef}</p>
+                  </div>
+                </div>
+
+                {/* Graph Placement: Parents, Incoming Prereqs, Outgoing Prereqs */}
+                <div className="space-y-3 pt-1">
+                  <div>
+                    <span className="font-semibold text-foreground block mb-1.5">
+                      Parent Macro Competencies ({parentComps.length})
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {parentComps.map((c) => (
+                        <span
+                          key={c.id}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded bg-card border border-border text-[11px] text-foreground font-medium"
+                        >
+                          <BookOpen className="h-3 w-3 text-primary" />
+                          <strong className="font-mono">{c.code}</strong> - {c.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="font-semibold text-foreground block mb-1.5">
+                        Prerequisites Required ({incomingPrereqs.length})
+                      </span>
+                      {incomingPrereqs.length === 0 ? (
+                        <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
+                          Foundational skill (no prerequisites required).
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {incomingPrereqs.map((p) => {
+                            const srcSkill = microSkills.find((s) => s.id === p.sourceSkillId)
+                            return (
+                              <div
+                                key={p.id}
+                                className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
+                              >
+                                <span className="truncate">
+                                  <strong className="font-mono text-primary mr-1">{srcSkill?.code}</strong>
+                                  {srcSkill?.name}
+                                </span>
+                                <Badge variant="primary" className="text-[10px] shrink-0">
+                                  {p.requiredThreshold}%
+                                </Badge>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="font-semibold text-foreground block mb-1.5">
+                        Skills Unlocked ({outgoingPrereqs.length})
+                      </span>
+                      {outgoingPrereqs.length === 0 ? (
+                        <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
+                          Terminal skill (does not gate further skills).
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {outgoingPrereqs.map((p) => {
+                            const tgtSkill = microSkills.find((s) => s.id === p.targetSkillId)
+                            return (
+                              <div
+                                key={p.id}
+                                className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
+                              >
+                                <span className="truncate">
+                                  <strong className="font-mono text-primary mr-1">{tgtSkill?.code}</strong>
+                                  {tgtSkill?.name}
+                                </span>
+                                <Badge variant="secondary" className="text-[10px] shrink-0">
+                                  {p.requiredThreshold}%
+                                </Badge>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" size="sm" onClick={() => setViewingSkillDetails(null)}>
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Edit3 className="h-3 w-3" />}
+                  onClick={() => {
+                    const skill = viewingSkillDetails
+                    setViewingSkillDetails(null)
+                    setSelectedSkill(skill)
+                    setSkillForm({
+                      code: skill.code,
+                      name: skill.name,
+                      observableOutcome: skill.observableOutcome,
+                      bloomLevel: skill.bloomLevel,
+                      source: skill.provenance.source,
+                      ruleRef: skill.provenance.ruleRef,
+                      type: skill.provenance.type,
+                    })
+                    setIsSkillModalOpen(true)
+                  }}
+                >
+                  Edit Micro-skill
+                </Button>
+              </DialogFooter>
+            </div>
+          )
+        })()}
+      </Dialog>
+
+      {/* 7. VIEW PREREQUISITE EDGE DETAILS MODAL (Miro Flow) */}
+      <Dialog
+        open={Boolean(viewingEdgeDetails)}
+        onOpenChange={(open) => !open && setViewingEdgeDetails(null)}
+        className="max-w-xl"
+      >
+        {viewingEdgeDetails && (() => {
+          const source = microSkills.find((s) => s.id === viewingEdgeDetails.sourceSkillId)
+          const target = microSkills.find((s) => s.id === viewingEdgeDetails.targetSkillId)
+
+          return (
+            <div className="space-y-4">
+              <DialogHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <DialogTitle className="flex items-center gap-2">
+                    <GitBranch className="h-5 w-5 text-primary shrink-0" />
+                    <span>Prerequisite Edge Details</span>
+                  </DialogTitle>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge variant="primary" className="font-bold">
+                      {viewingEdgeDetails.requiredThreshold}% Mastery
+                    </Badge>
+                    <Badge variant={viewingEdgeDetails.type === 'hard_prerequisite' ? 'destructive' : 'secondary'}>
+                      {viewingEdgeDetails.type === 'hard_prerequisite' ? 'HARD PREREQUISITE' : 'RECOMMENDED'}
+                    </Badge>
+                  </div>
+                </div>
+                <DialogDescription>
+                  Directed dependency relationship enforcing knowledge sequencing and curriculum progression.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 text-xs">
+                {/* Visual Flow diagram */}
+                <div className="p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between gap-3">
+                  <div className="flex-1 p-2 rounded bg-card border border-border">
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Source Skill</span>
+                    <strong className="font-mono text-primary font-bold block">{source?.code}</strong>
+                    <span className="text-foreground font-semibold text-xs line-clamp-1">{source?.name}</span>
+                  </div>
+
+                  <div className="flex flex-col items-center shrink-0">
+                    <span className="text-[10px] font-mono text-primary font-bold">{viewingEdgeDetails.requiredThreshold}% req</span>
+                    <ArrowRight className="h-5 w-5 text-primary" />
+                    <span className="text-[9px] text-muted-foreground uppercase">{viewingEdgeDetails.type}</span>
+                  </div>
+
+                  <div className="flex-1 p-2 rounded bg-card border border-border">
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Target Skill</span>
+                    <strong className="font-mono text-primary font-bold block">{target?.code}</strong>
+                    <span className="text-foreground font-semibold text-xs line-clamp-1">{target?.name}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-card border border-border">
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Rule Citation Reference</span>
+                    <strong className="font-mono text-foreground font-bold text-xs">{viewingEdgeDetails.ruleRef}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Enforcement Policy</span>
+                    <span className="text-foreground font-medium">
+                      {viewingEdgeDetails.type === 'hard_prerequisite'
+                        ? 'Strict pathway gate blocking unlock'
+                        : 'Advisory guidance warning'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
+                    <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                      <span className="font-mono text-primary font-bold">{source?.code}</span>
+                      Observable Outcome:
+                    </span>
+                    <p className="text-muted-foreground text-xs">{source?.observableOutcome}</p>
+                  </div>
+
+                  <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
+                    <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                      <span className="font-mono text-primary font-bold">{target?.code}</span>
+                      Observable Outcome:
+                    </span>
+                    <p className="text-muted-foreground text-xs">{target?.observableOutcome}</p>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-secondary/40 border border-primary/20 text-foreground space-y-1">
+                  <strong className="text-xs font-semibold text-primary block">Adaptive Engine Behavior</strong>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    When an engineer's diagnostic assessment score on <span className="font-mono font-bold text-foreground">{source?.code}</span> is below {viewingEdgeDetails.requiredThreshold}%, the adaptive pathway generator automatically schedules remediation modules before unlocking <span className="font-mono font-bold text-foreground">{target?.code}</span>.
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" size="sm" onClick={() => setViewingEdgeDetails(null)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </div>
+          )
+        })()}
+      </Dialog>
+
+      {/* CONFIRMATION PROMPTS */}
+      <ConfirmationModal
+        open={Boolean(deletingDraftComp)}
+        onOpenChange={(open) => !open && setDeletingDraftComp(null)}
+        title="Discard Draft Competency?"
+        description={
+          deletingDraftComp ? (
+            <div className="space-y-2 text-xs">
+              <p>
+                Are you sure you want to discard the draft version for{' '}
+                <strong className="text-foreground font-semibold">
+                  {deletingDraftComp.code} - {deletingDraftComp.name} (v{deletingDraftComp.version})
+                </strong>
+                ?
+              </p>
+              <p className="text-muted-foreground">
+                All uncommitted curriculum definitions and micro-skill bindings for this draft will be removed.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Delete Draft"
+        cancelText="Keep Draft"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingDraftComp) {
+            handleDeleteDraftComp(deletingDraftComp)
+            setDeletingDraftComp(null)
+          }
+        }}
+      />
+
+      <ConfirmationModal
+        open={Boolean(deletingEdgeId)}
+        onOpenChange={(open) => !open && setDeletingEdgeId(null)}
+        title="Delete Prerequisite Edge?"
+        description="Are you sure you want to remove this directed prerequisite constraint? Learners on adaptive pathways will no longer be gated by this skill sequencing threshold."
+        confirmText="Delete Edge"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingEdgeId) {
+            handleDeletePrereq(deletingEdgeId)
+            setDeletingEdgeId(null)
+          }
+        }}
+      />
+
+      <QuickConfigImportModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        title="Import Ontology & Skill Blueprint"
+        entityName="Competencies & Skills"
+        description="Select an industry blueprint to rapidly provision competencies, micro-skills, and prerequisite dependencies for your organization."
+        presets={ONTOLOGY_PRESETS}
+        onImport={handleImportOntology}
+        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "definition": "Deep understanding of self-attention matrices and transformer layers.",\n      "derivationRef": "Stanford CS324 Foundation Models Curriculum 2026"\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "observableOutcome": "Derives queries, keys, values tensors and computes masked softmax weights.",\n      "bloomLevel": "Apply",\n      "provenanceSource": "PyTorch Model Zoo",\n      "provenanceRuleRef": "ATTN-CORE-01"\n    }\n  ]\n}`}
+      />
     </WorkspaceLayout>
   )
 }

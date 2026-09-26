@@ -6,16 +6,20 @@ import {
   CheckCircle2,
   Copy,
   Edit3,
+  Eye,
   FileQuestion,
+  Layers,
   Plus,
   Search,
   Sliders,
   Trash2,
+  Upload,
 } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import {
   Dialog,
   DialogDescription,
@@ -25,25 +29,155 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
+import {
+  QuickConfigImportModal,
+  type ImportPreset,
+} from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
+  getActiveCompany,
+  updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import {
   type AssessmentBlueprintModel,
   type BlueprintSkillRequirement,
-  INITIAL_BLUEPRINTS,
   INITIAL_MICRO_SKILLS,
   INITIAL_MODULES,
-  INITIAL_QUESTIONS,
   INITIAL_TARGET_ROLES,
   type QuizQuestionModel,
 } from '../data/ldManagerMockData'
+
+const QUESTION_PRESETS: ImportPreset[] = [
+  {
+    id: 'preset-foundation-diagnostic',
+    name: 'Foundation & LLM Diagnostic Bank (3 Items)',
+    description: 'Multiple choice items targeting Attention Mechanisms, KV-Cache and Vector Indexing.',
+    badge: 'Diagnostic Pack',
+    itemCount: 3,
+    previewSnippet: JSON.stringify(
+      [
+        { code: 'QST-ATTN-01', prompt: 'In multi-head attention, what does scaling by 1/sqrt(d_k) accomplish?' },
+        { code: 'QST-KV-01', prompt: 'How does PagedAttention prevent GPU VRAM fragmentation during generation?' },
+      ],
+      null,
+      2
+    ),
+    payload: [
+      {
+        id: `qst-${Date.now()}-1`,
+        stableId: `qst-uuid-attn-01`,
+        code: 'QST-ATTN-01',
+        prompt: 'In scaled dot-product attention, what mathematical challenge is mitigated by dividing QK^T by sqrt(d_k)?',
+        options: [
+          'Prevents gradient vanishing in the softmax function caused by extremely large dot products in high dimensions.',
+          'Eliminates the requirement for positional encodings in self-attention.',
+          'Compresses the key vectors to minimize GPU tensor memory bandwidth.',
+          'Enforces an upper bound threshold on causal masking.',
+        ],
+        correctAnswerIndex: 0,
+        feedback: 'For large values of d_k, the dot products grow large in magnitude, pushing the softmax into regions with extremely small gradients. Dividing by sqrt(d_k) counters this effect.',
+        assessedSkillId: INITIAL_MICRO_SKILLS[0]?.id || 'skill-attn-01',
+        difficulty: 'Medium' as const,
+        version: '1.0',
+        status: 'published' as const,
+        updatedAt: new Date().toISOString().slice(0, 10),
+      },
+      {
+        id: `qst-${Date.now()}-2`,
+        stableId: `qst-uuid-kv-01`,
+        code: 'QST-KV-01',
+        prompt: 'How does PagedAttention eliminate physical memory fragmentation during autoregressive decoding?',
+        options: [
+          'Allocates non-contiguous physical memory blocks mapped via virtual page tables, inspired by OS virtual memory.',
+          'Recomputes attention matrices on every step to bypass KV-cache storage.',
+          'Converts all float16 tensors into 1-bit integer quantization.',
+          'Truncates context history strictly at 512 tokens.',
+        ],
+        correctAnswerIndex: 0,
+        feedback: 'PagedAttention partitions the continuous key-value cache into discrete virtual blocks, allowing non-contiguous allocation and near-zero memory waste.',
+        assessedSkillId: INITIAL_MICRO_SKILLS[1]?.id || 'skill-kv-01',
+        difficulty: 'Hard' as const,
+        version: '1.0',
+        status: 'published' as const,
+        updatedAt: new Date().toISOString().slice(0, 10),
+      },
+      {
+        id: `qst-${Date.now()}-3`,
+        stableId: `qst-uuid-vec-01`,
+        code: 'QST-VEC-01',
+        prompt: 'Which heuristic in HNSW graph construction enables logarithmic search complexity across dense embeddings?',
+        options: [
+          'Hierarchical multi-layer skip-list graph structure with exponentially decaying link lengths.',
+          'Exhaustive cosine distance sweeps over all stored vector nodes.',
+          'Randomized drop-out of query dimensions during traversal.',
+          'Hashing embeddings into fixed 32-bit bloom filters.',
+        ],
+        correctAnswerIndex: 0,
+        feedback: 'Hierarchical Navigable Small World (HNSW) uses multiple layers of graphs where top layers have long-range links for fast coarse navigation and bottom layers have short-range links for fine precision.',
+        assessedSkillId: INITIAL_MICRO_SKILLS[2]?.id || 'skill-vec-01',
+        difficulty: 'Hard' as const,
+        version: '1.0',
+        status: 'published' as const,
+        updatedAt: new Date().toISOString().slice(0, 10),
+      },
+    ],
+  },
+]
 
 export function AssessmentBankPage() {
   const { toast } = useToast()
 
   const [activeTab, setActiveTab] = React.useState('questions')
-  const [questions, setQuestions] = React.useState<QuizQuestionModel[]>(INITIAL_QUESTIONS)
-  const [blueprints, setBlueprints] = React.useState<AssessmentBlueprintModel[]>(INITIAL_BLUEPRINTS)
+  const [questions, setQuestions] = React.useState<QuizQuestionModel[]>(() => getActiveCompany()?.questions ?? [])
+  const [blueprints, setBlueprints] = React.useState<AssessmentBlueprintModel[]>(() => getActiveCompany()?.blueprints ?? [])
+
+  // Synchronize state when active company scope changes
+  React.useEffect(() => {
+    const handleSync = () => {
+      const active = getActiveCompany()
+      setQuestions(active?.questions ?? [])
+      setBlueprints(active?.blueprints ?? [])
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+    }
+  }, [])
+
+  // Explicit persistence helper to prevent circular re-render loops
+  const saveAndSetQuestions = React.useCallback(
+    (updater: QuizQuestionModel[] | ((prev: QuizQuestionModel[]) => QuizQuestionModel[])) => {
+      setQuestions((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({
+          ...c,
+          questions: next,
+        }))
+        return next
+      })
+    },
+    []
+  )
+
+  const saveAndSetBlueprints = React.useCallback(
+    (updater: AssessmentBlueprintModel[] | ((prev: AssessmentBlueprintModel[]) => AssessmentBlueprintModel[])) => {
+      setBlueprints((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({
+          ...c,
+          blueprints: next,
+        }))
+        return next
+      })
+    },
+    []
+  )
+
+  const activeComp = getActiveCompany()
+  const companyMicroSkills = activeComp?.microSkills || []
+  const companyRoles = activeComp?.targetRoles || []
+  const companyModules = activeComp?.modules || []
 
   // Filters
   const [questionSearch, setQuestionSearch] = React.useState('')
@@ -53,7 +187,32 @@ export function AssessmentBankPage() {
   // Modals state
   const [isQuestionModalOpen, setIsQuestionModalOpen] = React.useState(false)
   const [isBlueprintModalOpen, setIsBlueprintModalOpen] = React.useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
   const [selectedQuestion, setSelectedQuestion] = React.useState<QuizQuestionModel | null>(null)
+  const [selectedBlueprint, setSelectedBlueprint] = React.useState<AssessmentBlueprintModel | null>(null)
+  const [viewingBlueprintDetails, setViewingBlueprintDetails] = React.useState<AssessmentBlueprintModel | null>(null)
+  const [deletingBlueprint, setDeletingBlueprint] = React.useState<AssessmentBlueprintModel | null>(null)
+
+  const handleImportQuestions = (data: any) => {
+    const list = Array.isArray(data) ? data : data.questions || []
+    const normalized: QuizQuestionModel[] = list.map((item: any, idx: number) => ({
+      id: item.id || `qst-${Date.now()}-${idx}`,
+      stableId: item.stableId || `qst-uuid-${Date.now()}-${idx}`,
+      code: (item.code || `QST-IMP-${idx + 1}`).trim().toUpperCase(),
+      prompt: (item.prompt || 'Untitled Assessment Question').trim(),
+      options: Array.isArray(item.options) && item.options.length >= 2 ? item.options : ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctAnswerIndex: typeof item.correctAnswerIndex === 'number' ? item.correctAnswerIndex : 0,
+      feedback: item.feedback || 'Explanatory feedback for this question.',
+      assessedSkillId: item.assessedSkillId || companyMicroSkills[0]?.id || 'skill-attn-01',
+      difficulty: item.difficulty || 'Intermediate',
+      version: item.version || '1.0',
+      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+      provenance: item.provenance || 'Imported Curriculum Test Bank',
+      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
+    }))
+    saveAndSetQuestions((prev) => [...normalized, ...prev])
+  }
+  const [deletingDraftQuestion, setDeletingDraftQuestion] = React.useState<QuizQuestionModel | null>(null)
 
   // Question Form
   const [questionForm, setQuestionForm] = React.useState({
@@ -62,7 +221,7 @@ export function AssessmentBankPage() {
     options: ['', '', '', ''],
     correctAnswerIndex: 0,
     feedback: '',
-    assessedSkillId: INITIAL_MICRO_SKILLS[0]?.id || '',
+    assessedSkillId: companyMicroSkills[0]?.id || '',
     difficulty: 'Intermediate' as QuizQuestionModel['difficulty'],
     provenance: '',
   })
@@ -72,13 +231,13 @@ export function AssessmentBankPage() {
     code: '',
     title: '',
     targetType: 'role' as 'role' | 'module',
-    targetId: INITIAL_TARGET_ROLES[0]?.id || '',
+    targetId: companyRoles[0]?.id || companyModules[0]?.id || '',
     passThreshold: 80,
     requirements: [
       {
-        skillId: INITIAL_MICRO_SKILLS[0]?.id || '',
-        skillCode: INITIAL_MICRO_SKILLS[0]?.code || '',
-        skillName: INITIAL_MICRO_SKILLS[0]?.name || '',
+        skillId: companyMicroSkills[0]?.id || '',
+        skillCode: companyMicroSkills[0]?.code || '',
+        skillName: companyMicroSkills[0]?.name || '',
         questionCount: 2,
       },
     ] as BlueprintSkillRequirement[],
@@ -157,7 +316,7 @@ export function AssessmentBankPage() {
 
     if (selectedQuestion) {
       // Editing draft
-      setQuestions((prev) =>
+      saveAndSetQuestions((prev) =>
         prev.map((q) =>
           q.id === selectedQuestion.id
             ? {
@@ -195,7 +354,7 @@ export function AssessmentBankPage() {
         provenance: questionForm.provenance || 'Official Diagnostic Bank',
       }
 
-      setQuestions([newQ, ...questions])
+      saveAndSetQuestions([newQ, ...questions])
       toast({
         title: 'Draft Question Created',
         description: `Registered ${newQ.code}. Exactly one micro-skill linked.`,
@@ -228,7 +387,7 @@ export function AssessmentBankPage() {
       prompt: `${q.prompt} (Revision)`,
     }
 
-    setQuestions([successor, ...questions])
+    saveAndSetQuestions([successor, ...questions])
     toast({
       title: 'Successor Version Spawned',
       description: `Draft v${nextVer} created. Historical submitted learner attempts continue using the original answer key.`,
@@ -237,7 +396,7 @@ export function AssessmentBankPage() {
   }
 
   const handlePublishQuestion = (q: QuizQuestionModel) => {
-    setQuestions((prev) => prev.map((item) => (item.id === q.id ? { ...item, status: 'published' } : item)))
+    saveAndSetQuestions((prev) => prev.map((item) => (item.id === q.id ? { ...item, status: 'published' } : item)))
     toast({
       title: 'Question Published',
       description: `${q.code} (v${q.version}) is now published in the active assessment bank.`,
@@ -256,7 +415,7 @@ export function AssessmentBankPage() {
       return
     }
 
-    setQuestions(questions.filter((item) => item.id !== q.id))
+    saveAndSetQuestions(questions.filter((item) => item.id !== q.id))
     toast({
       title: 'Draft Question Deleted',
       description: `Draft question ${q.code} (v${q.version}) was removed from the bank.`,
@@ -268,20 +427,34 @@ export function AssessmentBankPage() {
   // Blueprint Handlers & Coverage Validation
   // ------------------------------------------------------------------
   const handleOpenCreateBlueprint = () => {
+    setSelectedBlueprint(null)
     setBlueprintForm({
       code: `BP-${Math.random().toString(36).substring(2, 5).toUpperCase()}-TEST`,
       title: '',
       targetType: 'role',
-      targetId: INITIAL_TARGET_ROLES[0]?.id || '',
+      targetId: companyRoles[0]?.id || INITIAL_TARGET_ROLES[0]?.id || '',
       passThreshold: 80,
       requirements: [
         {
-          skillId: INITIAL_MICRO_SKILLS[0]?.id || '',
-          skillCode: INITIAL_MICRO_SKILLS[0]?.code || '',
-          skillName: INITIAL_MICRO_SKILLS[0]?.name || '',
+          skillId: companyMicroSkills[0]?.id || INITIAL_MICRO_SKILLS[0]?.id || '',
+          skillCode: companyMicroSkills[0]?.code || INITIAL_MICRO_SKILLS[0]?.code || '',
+          skillName: companyMicroSkills[0]?.name || INITIAL_MICRO_SKILLS[0]?.name || '',
           questionCount: 2,
         },
       ],
+    })
+    setIsBlueprintModalOpen(true)
+  }
+
+  const handleOpenEditBlueprint = (bp: AssessmentBlueprintModel) => {
+    setSelectedBlueprint(bp)
+    setBlueprintForm({
+      code: bp.code,
+      title: bp.title,
+      targetType: bp.targetType,
+      targetId: bp.targetId,
+      passThreshold: bp.passThreshold,
+      requirements: [...bp.requirements],
     })
     setIsBlueprintModalOpen(true)
   }
@@ -353,65 +526,116 @@ export function AssessmentBankPage() {
     const coverage = evaluateCoverage(blueprintForm.requirements)
     const targetName =
       blueprintForm.targetType === 'role'
-        ? INITIAL_TARGET_ROLES.find((r) => r.id === blueprintForm.targetId)?.title || 'Target Role'
-        : INITIAL_MODULES.find((m) => m.id === blueprintForm.targetId)?.title || 'Learning Module'
+        ? (companyRoles.find((r) => r.id === blueprintForm.targetId)?.title ||
+           INITIAL_TARGET_ROLES.find((r) => r.id === blueprintForm.targetId)?.title || 'Target Role')
+        : (companyModules.find((m) => m.id === blueprintForm.targetId)?.title ||
+           INITIAL_MODULES.find((m) => m.id === blueprintForm.targetId)?.title || 'Learning Module')
 
     const totalQuestions = blueprintForm.requirements.reduce((acc, r) => acc + r.questionCount, 0)
 
-    const newBp: AssessmentBlueprintModel = {
-      id: `bp-${Date.now()}`,
-      code: blueprintForm.code.trim().toUpperCase(),
-      title: blueprintForm.title.trim(),
-      targetType: blueprintForm.targetType,
-      targetId: blueprintForm.targetId,
-      targetName,
-      version: '1.0',
-      status: coverage.canActivate ? 'active' : 'draft',
-      passThreshold: blueprintForm.passThreshold,
-      requirements: blueprintForm.requirements,
-      totalQuestions,
-      coverageStatus: coverage.status,
-    }
+    if (selectedBlueprint) {
+      const updatedBp: AssessmentBlueprintModel = {
+        ...selectedBlueprint,
+        code: blueprintForm.code.trim().toUpperCase(),
+        title: blueprintForm.title.trim(),
+        targetType: blueprintForm.targetType,
+        targetId: blueprintForm.targetId,
+        targetName,
+        passThreshold: blueprintForm.passThreshold,
+        requirements: blueprintForm.requirements,
+        totalQuestions,
+        coverageStatus: coverage.status,
+        status: coverage.canActivate ? 'active' : 'draft',
+      }
 
-    setBlueprints([newBp, ...blueprints])
-    setIsBlueprintModalOpen(false)
-
-    if (coverage.canActivate) {
+      saveAndSetBlueprints((prev) => prev.map((b) => (b.id === selectedBlueprint.id ? updatedBp : b)))
+      setIsBlueprintModalOpen(false)
       toast({
-        title: 'Blueprint Active & Verified',
-        description: `${newBp.code} configured with 100% item coverage across published questions.`,
+        title: 'Blueprint Updated',
+        description: `Successfully saved changes for ${updatedBp.code}.`,
         variant: 'success',
       })
     } else {
-      toast({
-        title: 'Blueprint Saved as Draft (Shortage Warning)',
-        description: `Blueprint requires items that are not yet published in the bank. Coverage status: ${coverage.status}.`,
-        variant: 'warning',
-      })
+      const newBp: AssessmentBlueprintModel = {
+        id: `bp-${Date.now()}`,
+        code: blueprintForm.code.trim().toUpperCase(),
+        title: blueprintForm.title.trim(),
+        targetType: blueprintForm.targetType,
+        targetId: blueprintForm.targetId,
+        targetName,
+        version: '1.0',
+        status: coverage.canActivate ? 'active' : 'draft',
+        passThreshold: blueprintForm.passThreshold,
+        requirements: blueprintForm.requirements,
+        totalQuestions,
+        coverageStatus: coverage.status,
+      }
+
+      saveAndSetBlueprints((prev) => [newBp, ...prev])
+      setIsBlueprintModalOpen(false)
+
+      if (coverage.canActivate) {
+        toast({
+          title: 'Blueprint Active & Verified',
+          description: `${newBp.code} configured with 100% item coverage across published questions.`,
+          variant: 'success',
+        })
+      } else {
+        toast({
+          title: 'Blueprint Saved as Draft (Shortage Warning)',
+          description: `Blueprint requires items that are not yet published in the bank. Coverage status: ${coverage.status}.`,
+          variant: 'warning',
+        })
+      }
     }
+  }
+
+  const handleDeleteBlueprint = (bp: AssessmentBlueprintModel) => {
+    saveAndSetBlueprints((prev) => prev.filter((b) => b.id !== bp.id))
+    toast({
+      title: 'Blueprint Deleted',
+      description: `Assessment Blueprint ${bp.code} has been deleted.`,
+      variant: 'info',
+    })
   }
 
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Actions */}
+        {/* Top Actions: Conditional to active tab */}
         <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Sliders className="h-4 w-4" />}
-            onClick={handleOpenCreateBlueprint}
-          >
-            Configure Blueprint
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={handleOpenCreateQuestion}
-          >
-            Create Quiz Question
-          </Button>
+          {activeTab === 'questions' ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Upload className="h-4 w-4" />}
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
+              >
+                Import
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Plus className="h-4 w-4" />}
+                onClick={handleOpenCreateQuestion}
+                className="font-semibold shadow-2xs"
+              >
+                Create
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={handleOpenCreateBlueprint}
+              className="font-semibold shadow-2xs"
+            >
+              Create
+            </Button>
+          )}
         </div>
 
         {/* Aggregate KPI StatCards */}
@@ -539,7 +763,7 @@ export function AssessmentBankPage() {
                       </thead>
                       <tbody className="divide-y divide-border">
                         {filteredQuestions.map((q) => {
-                          const skill = INITIAL_MICRO_SKILLS.find((s) => s.id === q.assessedSkillId)
+                          const skill = companyMicroSkills.find((s) => s.id === q.assessedSkillId)
                           const isDraft = q.status === 'draft'
                           const isPublished = q.status === 'published'
 
@@ -558,13 +782,33 @@ export function AssessmentBankPage() {
                                   <span>Answer: {q.options[q.correctAnswerIndex]}</span>
                                 </div>
                               </td>
-                              <td className="py-3 px-3">
-                                <Badge variant="outline" className="font-mono text-[10px] block truncate max-w-[160px]">
-                                  {skill?.code || q.assessedSkillId}
-                                </Badge>
-                                <span className="text-[11px] text-muted-foreground truncate block max-w-[160px]">
-                                  {skill?.name}
-                                </span>
+                              <td className="py-3 px-3 min-w-[220px] max-w-[280px]">
+                                <div className="flex items-start gap-2.5">
+                                  <div className="mt-0.5 p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
+                                    <Layers className="h-3.5 w-3.5" />
+                                  </div>
+                                  <div className="space-y-0.5 min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="font-mono font-bold text-xs text-foreground tracking-tight">
+                                        {skill?.code || q.assessedSkillId}
+                                      </span>
+                                      {skill?.bloomLevel && (
+                                        <Badge
+                                          variant="secondary"
+                                          className="text-[9px] font-semibold uppercase tracking-wider py-0 px-1 bg-secondary text-primary border-primary/20"
+                                        >
+                                          {skill.bloomLevel}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p
+                                      className="text-xs text-muted-foreground font-medium truncate block"
+                                      title={skill?.name || q.assessedSkillId}
+                                    >
+                                      {skill?.name || 'Unmapped Micro-skill'}
+                                    </p>
+                                  </div>
+                                </div>
                               </td>
                               <td className="py-3 px-3 text-center">
                                 <Badge
@@ -595,7 +839,7 @@ export function AssessmentBankPage() {
                                       <Button
                                         variant="outline"
                                         size="sm"
-                                        leftIcon={<Edit3 className="h-3 w-3" />}
+                                        className="h-8 w-8 p-0"
                                         onClick={() => {
                                           setSelectedQuestion(q)
                                           setQuestionForm({
@@ -610,37 +854,32 @@ export function AssessmentBankPage() {
                                           })
                                           setIsQuestionModalOpen(true)
                                         }}
+                                        title="Edit Draft"
+                                        aria-label="Edit Draft"
                                       >
-                                        Edit
+                                        <Edit3 className="h-4 w-4" />
                                       </Button>
                                       <Button
-                                        variant="primary"
+                                        variant="destructive"
                                         size="sm"
-                                        leftIcon={<CheckCircle2 className="h-3 w-3" />}
-                                        onClick={() => handlePublishQuestion(q)}
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setDeletingDraftQuestion(q)}
+                                        title="Delete Draft"
+                                        aria-label="Delete Draft"
                                       >
-                                        Publish
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-2"
-                                        leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                                        onClick={() => handleDeleteDraftQuestion(q)}
-                                        title="Delete draft question"
-                                      >
-                                        Delete Draft
+                                        <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </>
                                   ) : (
                                     <Button
                                       variant="secondary"
                                       size="sm"
-                                      leftIcon={<Copy className="h-3 w-3" />}
+                                      className="h-8 w-8 p-0"
                                       onClick={() => handleCreateSuccessorQuestion(q)}
-                                      title="Create successor version; past submitted attempts retain original answer key"
+                                      title="Create Draft"
+                                      aria-label="Create Draft"
                                     >
-                                      Successor Draft
+                                      <Copy className="h-4 w-4" />
                                     </Button>
                                   )}
                                 </div>
@@ -672,7 +911,7 @@ export function AssessmentBankPage() {
                     </CardDescription>
                   </div>
                   <Button variant="primary" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={handleOpenCreateBlueprint}>
-                    New Blueprint
+                    Create
                   </Button>
                 </div>
               </CardHeader>
@@ -688,6 +927,7 @@ export function AssessmentBankPage() {
                         <th className="py-2.5 px-3">Micro-skill Requirements</th>
                         <th className="py-2.5 px-3">Coverage Status</th>
                         <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -761,6 +1001,40 @@ export function AssessmentBankPage() {
                                 {bp.status.toUpperCase()}
                               </Badge>
                             </td>
+                            <td className="py-3 px-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => setViewingBlueprintDetails(bp)}
+                                  title="View Blueprint Details"
+                                  aria-label="View Blueprint Details"
+                                >
+                                  <Eye className="h-4 w-4 text-primary" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleOpenEditBlueprint(bp)}
+                                  title="Edit Blueprint"
+                                  aria-label="Edit Blueprint"
+                                >
+                                  <Edit3 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => setDeletingBlueprint(bp)}
+                                  title="Delete Blueprint"
+                                  aria-label="Delete Blueprint"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
                           </tr>
                         )
                       })}
@@ -774,8 +1048,8 @@ export function AssessmentBankPage() {
       </div>
 
       {/* 1. CREATE / EDIT QUIZ QUESTION MODAL */}
-      <Dialog open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen}>
-        <div className="space-y-4 max-w-2xl">
+      <Dialog open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen} className="max-w-2xl">
+        <div className="space-y-4">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileQuestion className="h-5 w-5 text-primary" />
@@ -903,11 +1177,15 @@ export function AssessmentBankPage() {
                   onChange={(e) => setQuestionForm({ ...questionForm, assessedSkillId: e.target.value })}
                   className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  {INITIAL_MICRO_SKILLS.map((ms) => (
-                    <option key={ms.id} value={ms.id}>
-                      {ms.code} - {ms.name}
-                    </option>
-                  ))}
+                  {companyMicroSkills.length === 0 ? (
+                    <option value="" disabled>No micro-skills registered yet</option>
+                  ) : (
+                    companyMicroSkills.map((ms) => (
+                      <option key={ms.id} value={ms.id}>
+                        {ms.code} - {ms.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -924,24 +1202,39 @@ export function AssessmentBankPage() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
             <Button variant="outline" size="sm" onClick={() => setIsQuestionModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSaveQuestion}>
-              {selectedQuestion ? 'Save Changes' : 'Create Question'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleSaveQuestion}>
+                {selectedQuestion ? 'Save Draft' : 'Create Question'}
+              </Button>
+              {selectedQuestion?.status === 'draft' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<CheckCircle2 className="h-4 w-4" />}
+                  onClick={() => {
+                    handleSaveQuestion()
+                    handlePublishQuestion(selectedQuestion)
+                  }}
+                >
+                  Publish Question
+                </Button>
+              )}
+            </div>
           </DialogFooter>
         </div>
       </Dialog>
 
       {/* 2. CONFIGURE ASSESSMENT BLUEPRINT MODAL */}
-      <Dialog open={isBlueprintModalOpen} onOpenChange={setIsBlueprintModalOpen}>
-        <div className="space-y-4 max-w-2xl">
+      <Dialog open={isBlueprintModalOpen} onOpenChange={setIsBlueprintModalOpen} className="max-w-2xl">
+        <div className="space-y-4">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sliders className="h-5 w-5 text-primary" />
-              Configure Assessment Blueprint
+              {selectedBlueprint ? `Edit Assessment Blueprint (${selectedBlueprint.code})` : 'Create Assessment Blueprint'}
             </DialogTitle>
             <DialogDescription>
               Select a target role or module, configure required questions per micro-skill, and validate published item
@@ -1154,11 +1447,235 @@ export function AssessmentBankPage() {
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleSaveBlueprint}>
-              Save Blueprint
+              {selectedBlueprint ? 'Save Changes' : 'Create Blueprint'}
             </Button>
           </DialogFooter>
         </div>
       </Dialog>
+
+      {/* 3. VIEW BLUEPRINT DETAILS MODAL (Miro Flow) */}
+      <Dialog
+        open={Boolean(viewingBlueprintDetails)}
+        onOpenChange={(open) => !open && setViewingBlueprintDetails(null)}
+        className="max-w-2xl"
+      >
+        {viewingBlueprintDetails && (() => {
+          const bp = viewingBlueprintDetails
+          const isCovered = bp.coverageStatus === 'fully_covered'
+
+          return (
+            <div className="space-y-4">
+              <DialogHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sliders className="h-5 w-5 text-primary shrink-0" />
+                    <span>Assessment Blueprint Details: {bp.title}</span>
+                  </DialogTitle>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      v{bp.version}
+                    </Badge>
+                    <Badge variant={bp.status === 'active' ? 'primary' : 'outline'}>
+                      {bp.status.toUpperCase()}
+                    </Badge>
+                    <Badge
+                      variant={
+                        isCovered
+                          ? 'success'
+                          : bp.coverageStatus === 'partial_shortage'
+                          ? 'warning'
+                          : 'destructive'
+                      }
+                    >
+                      {isCovered ? 'FULLY COVERED' : bp.coverageStatus.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                <DialogDescription>
+                  Diagnostic blueprint specification mapping target role or module to item quotas and passing cutoffs.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 text-xs">
+                {/* Metric tiles */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-lg bg-muted/40 border border-border">
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Blueprint Code</span>
+                    <strong className="font-mono text-foreground font-bold text-sm">{bp.code}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Target Scope</span>
+                    <strong className="text-foreground text-xs font-semibold truncate block">
+                      {bp.targetType.toUpperCase()}: {bp.targetName}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Pass Threshold</span>
+                    <strong className="text-primary text-sm font-bold">{bp.passThreshold}%</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">Total Session Items</span>
+                    <strong className="text-foreground text-sm font-mono font-bold">{bp.totalQuestions} Questions</strong>
+                  </div>
+                </div>
+
+                {/* Quota and Coverage breakdown */}
+                <div>
+                  <h4 className="font-semibold text-foreground mb-2 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <FileQuestion className="h-4 w-4 text-primary" />
+                      Micro-skill Question Quotas &amp; Bank Coverage Inventory
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-normal">
+                      {bp.requirements.length} skill requirements
+                    </span>
+                  </h4>
+
+                  <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
+                    <div className="grid grid-cols-12 py-2 px-3 bg-muted/40 font-semibold text-[11px] text-muted-foreground uppercase">
+                      <div className="col-span-5">Micro-skill</div>
+                      <div className="col-span-2 text-center">Required Quota</div>
+                      <div className="col-span-2 text-center">In Bank</div>
+                      <div className="col-span-3 text-right">Coverage Health</div>
+                    </div>
+
+                    {bp.requirements.map((r) => {
+                      const published = getPublishedQuestionCount(r.skillId)
+                      const isShort = published < r.questionCount
+                      const diff = published - r.questionCount
+
+                      return (
+                        <div key={r.skillId} className="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-muted/10">
+                          <div className="col-span-5">
+                            <span className="font-mono font-bold text-primary mr-1.5">{r.skillCode}</span>
+                            <span className="font-medium text-foreground">{r.skillName}</span>
+                          </div>
+                          <div className="col-span-2 text-center font-mono font-bold text-foreground">
+                            {r.questionCount}
+                          </div>
+                          <div className="col-span-2 text-center font-mono font-semibold text-muted-foreground">
+                            {published}
+                          </div>
+                          <div className="col-span-3 text-right">
+                            {isShort ? (
+                              <Badge variant="destructive" className="text-[10px]">
+                                DEFICIT (-{Math.abs(diff)})
+                              </Badge>
+                            ) : (
+                              <Badge variant="success" className="text-[10px]">
+                                READY (+{diff} surplus)
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Sampling Engine Details */}
+                <div className="p-3 rounded-lg bg-secondary/40 border border-primary/20 space-y-1 text-muted-foreground text-xs">
+                  <strong className="text-primary font-semibold block text-xs">Dynamic Sampling Protocol</strong>
+                  <p className="leading-relaxed">
+                    When a diagnostic session begins, the assessment engine samples the required question count uniformly at random from the pool of published items matching each designated micro-skill. This prevents item memorization while ensuring psychometric consistency across test cohorts.
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" size="sm" onClick={() => setViewingBlueprintDetails(null)}>
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-3 w-3" />}
+                  onClick={() => {
+                    setViewingBlueprintDetails(null)
+                    handleOpenCreateQuestion()
+                  }}
+                >
+                  Author Question for Bank
+                </Button>
+              </DialogFooter>
+            </div>
+          )
+        })()}
+      </Dialog>
+      {/* CONFIRMATION PROMPT TO DISCARD DRAFT QUESTION */}
+      <ConfirmationModal
+        open={Boolean(deletingDraftQuestion)}
+        onOpenChange={(open) => !open && setDeletingDraftQuestion(null)}
+        title="Discard Draft Assessment Question?"
+        description={
+          deletingDraftQuestion ? (
+            <div className="space-y-2 text-xs">
+              <p>
+                Are you sure you want to discard draft question{' '}
+                <strong className="text-foreground font-semibold font-mono">
+                  {deletingDraftQuestion.code}
+                </strong>
+                ?
+              </p>
+              <p className="text-muted-foreground line-clamp-2">
+                "{deletingDraftQuestion.prompt}"
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Delete Draft"
+        cancelText="Keep Draft"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingDraftQuestion) {
+            handleDeleteDraftQuestion(deletingDraftQuestion)
+            setDeletingDraftQuestion(null)
+          }
+        }}
+      />
+
+      {/* CONFIRMATION PROMPT TO DELETE BLUEPRINT */}
+      <ConfirmationModal
+        open={Boolean(deletingBlueprint)}
+        onOpenChange={(open) => !open && setDeletingBlueprint(null)}
+        title="Delete Assessment Blueprint?"
+        description={
+          deletingBlueprint ? (
+            <div className="space-y-2 text-xs">
+              <p>
+                Are you sure you want to delete blueprint{' '}
+                <strong className="text-foreground font-semibold font-mono">
+                  {deletingBlueprint.code}
+                </strong>{' '}
+                ({deletingBlueprint.title})?
+              </p>
+              <p className="text-muted-foreground">
+                This blueprint template will be removed from diagnostic test generation.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Delete Blueprint"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingBlueprint) {
+            handleDeleteBlueprint(deletingBlueprint)
+            setDeletingBlueprint(null)
+          }
+        }}
+      />
+
+      <QuickConfigImportModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        title="Import Diagnostic Question Bank"
+        entityName="Assessment Questions"
+        description="Select an industry blueprint question pack or upload custom JSON questions to populate diagnostic assessments for your organization."
+        presets={QUESTION_PRESETS}
+        onImport={handleImportQuestions}
+        sampleJsonPlaceholder={`[\n  {\n    "code": "QST-ATTN-01",\n    "prompt": "In multi-head attention, what does scaling by 1/sqrt(d_k) accomplish?",\n    "options": [\n      "Prevents gradient vanishing in the softmax function.",\n      "Eliminates the requirement for positional encodings.",\n      "Compresses key vectors to minimize GPU tensor memory.",\n      "Enforces an upper bound threshold on causal masking."\n    ],\n    "correctAnswerIndex": 0,\n    "feedback": "For large values of d_k, dot products grow large pushing softmax into regions with small gradients.",\n    "difficulty": "Intermediate",\n    "provenance": "Internal Curriculum Assessment Bank"\n  }\n]`}
+      />
     </WorkspaceLayout>
   )
 }

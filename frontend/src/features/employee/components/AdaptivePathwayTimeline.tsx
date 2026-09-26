@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { useToast } from '../../../shared/hooks/useToast'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
 
 export interface PathwayStep {
   id: string
@@ -64,14 +65,49 @@ const INITIAL_PATHWAY: PathwayStep[] = [
 ]
 
 export function AdaptivePathwayTimeline() {
-  const [steps, setSteps] = React.useState<PathwayStep[]>(INITIAL_PATHWAY)
+  const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+
+  React.useEffect(() => {
+    const handleSync = () => setActiveCompany(getActiveCompany())
+    window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('companies_updated', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
+    }
+  }, [])
+
+  const defaultSteps: PathwayStep[] = React.useMemo(() => {
+    if (activeCompany.id === 'comp-technova') {
+      return INITIAL_PATHWAY
+    }
+    if (!activeCompany?.modules || activeCompany.modules.length === 0) {
+      return []
+    }
+    return activeCompany.modules.map((m, idx) => ({
+      id: `step-${m.id}`,
+      code: m.code,
+      title: m.title,
+      status: idx === 0 ? ('completed' as const) : idx === 1 ? ('recommended' as const) : ('locked' as const),
+      estimatedHours: Math.round((m.durationMinutes || 60) / 60) || 4,
+      skillsTaught: [m.title],
+      prerequisite: idx > 0 ? activeCompany.modules[idx - 1].code : undefined,
+      score: idx === 0 ? 88 : undefined,
+    }))
+  }, [activeCompany])
+
+  const [steps, setSteps] = React.useState<PathwayStep[]>(defaultSteps)
+  React.useEffect(() => {
+    setSteps(defaultSteps)
+  }, [defaultSteps])
+
   const [hasTriggeredRemedy, setHasTriggeredRemedy] = React.useState(false)
   const { toast } = useToast()
 
   // Simulate Knowledge Tracing injecting a prerequisite remedy module dynamically
   const handleSimulateRemedyFallback = () => {
     if (hasTriggeredRemedy) {
-      setSteps(INITIAL_PATHWAY)
+      setSteps(defaultSteps)
       setHasTriggeredRemedy(false)
       toast({
         title: 'Pathway Reset',
@@ -84,21 +120,18 @@ export function AdaptivePathwayTimeline() {
     const remedyStep: PathwayStep = {
       id: 'step-remedy-1',
       code: 'REM-102',
-      title: 'Remedy: Sparse Matrix Operations & Graph Adjacency',
+      title: 'Remedy: Foundation Diagnostic Review',
       status: 'remedy',
       estimatedHours: 3,
-      skillsTaught: ['Adjacency Matrices', 'Eigenvector Centrality'],
-      prerequisite: 'Triggered by failed GNN Diagnostic Quiz',
+      skillsTaught: ['Target Concept Reinforcement'],
+      prerequisite: 'Triggered by formative assessment check',
     }
 
     const updated = [
       steps[0],
-      steps[1],
       remedyStep,
-      { ...steps[2], status: 'locked' as const },
-      steps[3],
-      steps[4],
-    ]
+      ...steps.slice(1).map((s) => ({ ...s, status: 'locked' as const })),
+    ].filter(Boolean)
 
     setSteps(updated)
     setHasTriggeredRemedy(true)
@@ -108,6 +141,18 @@ export function AdaptivePathwayTimeline() {
       description: 'Knowledge Tracing detected a prerequisite gap in Linear Algebra. Remedy module REM-102 inserted into your route.',
       variant: 'warning',
     })
+  }
+
+  if (steps.length === 0) {
+    return (
+      <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
+        <Sparkles size={32} className="mx-auto text-muted-foreground/60 mb-2" />
+        <h3 className="text-sm font-bold text-foreground">No Learning Modules in Pathway</h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+          No learning modules have been configured or published for {activeCompany.name} yet.
+        </p>
+      </div>
+    )
   }
 
   return (

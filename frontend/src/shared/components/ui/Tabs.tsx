@@ -16,7 +16,7 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Tabs({ value, onValueChange, className, children, ...props }: TabsProps) {
   return (
     <TabsContext.Provider value={{ value, onValueChange }}>
-      <div className={cn('w-full space-y-4', className)} {...props}>
+      <div className={cn('w-full', className)} {...props}>
         {children}
       </div>
     </TabsContext.Provider>
@@ -27,7 +27,7 @@ export function TabsList({ className, children, ...props }: React.HTMLAttributes
   return (
     <div
       className={cn(
-        'inline-flex h-10 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground',
+        'inline-flex h-10 w-full items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground',
         className,
       )}
       {...props}

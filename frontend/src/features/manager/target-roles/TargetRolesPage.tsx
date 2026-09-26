@@ -7,16 +7,19 @@ import {
   CheckCircle2,
   Copy,
   Edit3,
+  Eye,
   Plus,
   Search,
   Sliders,
   Trash2,
+  Upload,
   Users,
 } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import {
   Dialog,
   DialogDescription,
@@ -25,30 +28,159 @@ import {
   DialogTitle,
 } from '../../../shared/components/ui/Dialog'
 import { StatCard } from '../../../shared/components/ui/StatCard'
+import {
+  QuickConfigImportModal,
+  type ImportPreset,
+} from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
+  getActiveCompany,
+  updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import {
   INITIAL_COMPETENCIES,
   INITIAL_MICRO_SKILLS,
-  INITIAL_TARGET_ROLES,
   type SkillTargetConfig,
   type TargetRoleModel,
 } from '../data/ldManagerMockData'
+
+const ROLE_PRESETS: ImportPreset[] = [
+  {
+    id: 'preset-ai-engineer-suite',
+    name: 'Cognitive Architecture & AI Suite (2 Roles)',
+    description: 'Target profiles for AI Knowledge Architect and Senior ML Engineer with baseline thresholds.',
+    badge: 'Enterprise Suite',
+    itemCount: 2,
+    previewSnippet: JSON.stringify(
+      [
+        { code: 'ROLE-AI-01', title: 'AI Knowledge Architect', department: 'Cognitive Architecture' },
+        { code: 'ROLE-ML-02', title: 'Senior Machine Learning Systems Engineer', department: 'Backend Systems' },
+      ],
+      null,
+      2
+    ),
+    payload: [
+      {
+        id: `role-${Date.now()}-1`,
+        stableId: `role-uuid-ai-01`,
+        code: 'ROLE-AI-01',
+        title: 'AI Knowledge Architect',
+        department: 'Machine Learning & Cognitive Architecture',
+        description: 'Designs enterprise knowledge graph reasoning engines and neuro-symbolic pathways.',
+        version: '1.0',
+        status: 'published' as const,
+        competencyIds: [INITIAL_COMPETENCIES[0]?.id || 'comp-1'],
+        skillTargets: [
+          {
+            skillId: INITIAL_MICRO_SKILLS[0]?.id || 'skill-1',
+            skillCode: INITIAL_MICRO_SKILLS[0]?.code || 'SKILL-01',
+            skillName: INITIAL_MICRO_SKILLS[0]?.name || 'Attention Mechanisms',
+            threshold: 85,
+            weight: 2.0,
+            mandatory: true,
+          },
+        ],
+        activeEnrollments: 4,
+        updatedAt: new Date().toISOString().slice(0, 10),
+        provenanceRef: 'Enterprise Talent Taxonomy 2026',
+      },
+      {
+        id: `role-${Date.now()}-2`,
+        stableId: `role-uuid-ml-02`,
+        code: 'ROLE-ML-02',
+        title: 'Senior Machine Learning Systems Engineer',
+        department: 'Backend Engineering',
+        description: 'Engineers distributed GPU inference serving and low-latency pipeline orchestration.',
+        version: '1.0',
+        status: 'published' as const,
+        competencyIds: [INITIAL_COMPETENCIES[1]?.id || 'comp-2'],
+        skillTargets: [
+          {
+            skillId: INITIAL_MICRO_SKILLS[1]?.id || 'skill-2',
+            skillCode: INITIAL_MICRO_SKILLS[1]?.code || 'SKILL-02',
+            skillName: INITIAL_MICRO_SKILLS[1]?.name || 'KV Cache Quantization',
+            threshold: 80,
+            weight: 1.5,
+            mandatory: true,
+          },
+        ],
+        activeEnrollments: 3,
+        updatedAt: new Date().toISOString().slice(0, 10),
+        provenanceRef: 'Enterprise Talent Taxonomy 2026',
+      },
+    ],
+  },
+]
 
 export function TargetRolesPage() {
   const { toast } = useToast()
 
   // Master roles state
-  const [roles, setRoles] = React.useState<TargetRoleModel[]>(INITIAL_TARGET_ROLES)
+  const [roles, setRoles] = React.useState<TargetRoleModel[]>(() => getActiveCompany()?.targetRoles ?? [])
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'draft' | 'published' | 'archived'>('all')
+
+  // Synchronize state when active company scope changes
+  React.useEffect(() => {
+    const handleSync = () => {
+      const active = getActiveCompany()
+      setRoles(active?.targetRoles ?? [])
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+    }
+  }, [])
+
+  // Explicit persistence helper to prevent circular re-render loops
+  const saveAndSetRoles = React.useCallback(
+    (updater: TargetRoleModel[] | ((prev: TargetRoleModel[]) => TargetRoleModel[])) => {
+      setRoles((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        updateActiveCompany((c) => ({
+          ...c,
+          targetRoles: next,
+        }))
+        return next
+      })
+    },
+    []
+  )
+
+  const activeComp = getActiveCompany()
+  const companyCompetencies = activeComp?.competencies || []
+  const companyMicroSkills = activeComp?.microSkills || []
 
   // Modals state
   const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = React.useState(false)
   const [isMappingsModalOpen, setIsMappingsModalOpen] = React.useState(false)
   const [isSkillTargetsModalOpen, setIsSkillTargetsModalOpen] = React.useState(false)
   const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
   const [selectedRole, setSelectedRole] = React.useState<TargetRoleModel | null>(null)
+  const [viewingDetailsRole, setViewingDetailsRole] = React.useState<TargetRoleModel | null>(null)
+  const [deletingDraftRole, setDeletingDraftRole] = React.useState<TargetRoleModel | null>(null)
+
+  const handleImportRoles = (data: any) => {
+    const list = Array.isArray(data) ? data : data.roles || []
+    const normalized: TargetRoleModel[] = list.map((item: any, idx: number) => ({
+      id: item.id || `role-${Date.now()}-${idx}`,
+      stableId: item.stableId || `role-uuid-${Date.now()}-${idx}`,
+      code: (item.code || `ROLE-IMP-${idx + 1}`).trim().toUpperCase(),
+      title: (item.title || 'Untitled Target Role').trim(),
+      department: (item.department || 'Machine Learning & Cognitive Architecture').trim(),
+      description: (item.description || 'Target career role definition').trim(),
+      version: item.version || '1.0',
+      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+      competencyIds: Array.isArray(item.competencyIds) ? item.competencyIds : [],
+      skillTargets: Array.isArray(item.skillTargets) ? item.skillTargets : [],
+      activeEnrollments: Number(item.activeEnrollments) || 0,
+      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
+      provenanceRef: item.provenanceRef || 'Enterprise Talent Taxonomy 2026',
+    }))
+    saveAndSetRoles((prev) => [...normalized, ...prev])
+  }
 
   // Form states for creating/editing role
   const [roleForm, setRoleForm] = React.useState({
@@ -136,7 +268,7 @@ export function TargetRolesPage() {
       provenanceRef: roleForm.provenanceRef || 'Internal L&D Job Specification 2026',
     }
 
-    setRoles([newRole, ...roles])
+    saveAndSetRoles([newRole, ...roles])
     setIsCreateRoleModalOpen(false)
     toast({
       title: 'Target Role Draft Created',
@@ -173,7 +305,7 @@ export function TargetRolesPage() {
       description: `Successor draft of ${publishedRole.title} (${publishedRole.version}). Historical learner assignments remain anchored to ${publishedRole.version}.`,
     }
 
-    setRoles([successorRole, ...roles])
+    saveAndSetRoles([successorRole, ...roles])
     toast({
       title: 'Successor Draft Initialized',
       description: `Created ${successorRole.title} (v${successorRole.version} Draft). Historical assignments to v${publishedRole.version} are protected.`,
@@ -183,7 +315,7 @@ export function TargetRolesPage() {
 
   // Delete Draft Role
   const handleDeleteDraft = (role: TargetRoleModel) => {
-    setRoles((prev) => prev.filter((r) => r.id !== role.id))
+    saveAndSetRoles((prev) => prev.filter((r) => r.id !== role.id))
     toast({
       title: 'Draft Role Deleted',
       description: `Draft profile for ${role.title} (v${role.version}) has been discarded.`,
@@ -194,11 +326,11 @@ export function TargetRolesPage() {
   // Open skill targets modal with first unassigned skill
   const handleOpenSkillTargets = (role: TargetRoleModel) => {
     setSelectedRole(role)
-    const firstUnassigned = INITIAL_MICRO_SKILLS.find(
+    const firstUnassigned = companyMicroSkills.find(
       (ms) => !role.skillTargets.some((st) => st.skillId === ms.id),
     )
     setNewSkillTarget({
-      skillId: firstUnassigned ? firstUnassigned.id : INITIAL_MICRO_SKILLS[0]?.id || '',
+      skillId: firstUnassigned ? firstUnassigned.id : companyMicroSkills[0]?.id || '',
       threshold: 80,
       weight: 1.0,
       mandatory: true,
@@ -209,7 +341,7 @@ export function TargetRolesPage() {
   // Toggle Competency Mapping
   const handleToggleCompetency = (roleId: string, compId: string) => {
     // Check if competency is archived
-    const comp = INITIAL_COMPETENCIES.find((c) => c.id === compId)
+    const comp = companyCompetencies.find((c) => c.id === compId)
     if (comp?.status === 'archived') {
       toast({
         title: 'Mapping Rejected',
@@ -219,7 +351,7 @@ export function TargetRolesPage() {
       return
     }
 
-    setRoles((prev) =>
+    saveAndSetRoles((prev) =>
       prev.map((r) => {
         if (r.id !== roleId) return r
         const alreadyLinked = r.competencyIds.includes(compId)
@@ -279,7 +411,7 @@ export function TargetRolesPage() {
       return
     }
 
-    const microSkill = INITIAL_MICRO_SKILLS.find((ms) => ms.id === newSkillTarget.skillId)
+    const microSkill = companyMicroSkills.find((ms) => ms.id === newSkillTarget.skillId)
     if (!microSkill) return
 
     const newTarget: SkillTargetConfig = {
@@ -300,7 +432,7 @@ export function TargetRolesPage() {
       }
     })
 
-    setRoles(updatedRoles)
+    saveAndSetRoles(updatedRoles)
     if (selectedRole && selectedRole.id === roleId) {
       setSelectedRole({
         ...selectedRole,
@@ -325,7 +457,7 @@ export function TargetRolesPage() {
         updatedAt: new Date().toISOString().slice(0, 10),
       }
     })
-    setRoles(updatedRoles)
+    saveAndSetRoles(updatedRoles)
     if (selectedRole && selectedRole.id === roleId) {
       setSelectedRole({
         ...selectedRole,
@@ -369,7 +501,7 @@ export function TargetRolesPage() {
       return
     }
 
-    setRoles((prev) =>
+    saveAndSetRoles((prev) =>
       prev.map((r) => (r.id === role.id ? { ...r, status: 'published', updatedAt: new Date().toISOString().slice(0, 10) } : r)),
     )
     setIsPublishModalOpen(false)
@@ -384,14 +516,24 @@ export function TargetRolesPage() {
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         {/* Top Actions */}
-        <div className="flex items-center justify-end pb-1 border-b border-border/60">
+        <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
+          >
+            Import
+          </Button>
           <Button
             variant="primary"
             size="sm"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={handleOpenCreateRole}
+            className="font-semibold shadow-2xs"
           >
-            Create Target Role (Draft)
+            Create
           </Button>
         </div>
 
@@ -501,7 +643,14 @@ export function TargetRolesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {filteredRoles.map((role) => {
+                    {filteredRoles.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-10 text-muted-foreground text-xs">
+                          No target roles registered yet for this company. Click "+ New Target Role" or import a role matrix to begin.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRoles.map((role) => {
                       const isDraft = role.status === 'draft'
                       const isPublished = role.status === 'published'
 
@@ -560,54 +709,58 @@ export function TargetRolesPage() {
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              {!isDraft && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => setViewingDetailsRole(role)}
+                                  title="View Details"
+                                  aria-label="View Details"
+                                >
+                                  <Eye className="h-4 w-4 text-primary" />
+                                </Button>
+                              )}
                               {isDraft ? (
                                 <>
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    leftIcon={<Sliders className="h-3 w-3" />}
+                                    className="h-8 w-8 p-0"
                                     onClick={() => handleOpenSkillTargets(role)}
+                                    title="Edit Draft"
+                                    aria-label="Edit Draft"
                                   >
-                                    Targets
+                                    <Edit3 className="h-4 w-4" />
                                   </Button>
                                   <Button
-                                    variant="primary"
+                                    variant="destructive"
                                     size="sm"
-                                    leftIcon={<CheckCircle2 className="h-3 w-3" />}
-                                    onClick={() => {
-                                      setSelectedRole(role)
-                                      setIsPublishModalOpen(true)
-                                    }}
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setDeletingDraftRole(role)}
+                                    title="Delete Draft"
+                                    aria-label="Delete Draft"
                                   >
-                                    Publish
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                    leftIcon={<Trash2 className="h-3 w-3" />}
-                                    onClick={() => handleDeleteDraft(role)}
-                                    title="Delete this draft version"
-                                  >
-                                    Delete Draft
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </>
                               ) : (
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  leftIcon={<Copy className="h-3 w-3" />}
+                                  className="h-8 w-8 p-0"
                                   onClick={() => handleCreateSuccessorDraft(role)}
-                                  title="Create a successor draft without altering historical assignments"
+                                  title="Create Draft"
+                                  aria-label="Create Draft"
                                 >
-                                  Successor Draft
+                                  <Copy className="h-4 w-4" />
                                 </Button>
                               )}
                             </div>
                           </td>
                         </tr>
                       )
-                    })}
+                    }))}
                   </tbody>
                 </table>
               </div>
@@ -730,7 +883,12 @@ export function TargetRolesPage() {
             <div className="space-y-3 text-xs">
               <div className="font-semibold text-foreground">Available Competencies Catalog</div>
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                {INITIAL_COMPETENCIES.map((comp) => {
+                {companyCompetencies.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground text-xs border border-dashed rounded-lg">
+                    No competencies registered for this company yet. Define competencies in Competency Ontology first.
+                  </div>
+                ) : (
+                  companyCompetencies.map((comp) => {
                   const isLinked = selectedRole.competencyIds.includes(comp.id)
                   const isArchived = comp.status === 'archived'
 
@@ -777,7 +935,7 @@ export function TargetRolesPage() {
                       </div>
                     </div>
                   )
-                })}
+                }))}
               </div>
 
               {selectedRole.status === 'published' && (
@@ -801,16 +959,20 @@ export function TargetRolesPage() {
 
       {/* 3. SET ROLE SKILL TARGETS MODAL */}
       {selectedRole && (
-        <Dialog open={isSkillTargetsModalOpen} onOpenChange={setIsSkillTargetsModalOpen}>
-          <div className="space-y-4 max-w-3xl">
+        <Dialog open={isSkillTargetsModalOpen} onOpenChange={setIsSkillTargetsModalOpen} className="max-w-3xl">
+          <div className="space-y-4">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Sliders className="h-5 w-5 text-primary" />
-                Configure Role Skill Targets
-              </DialogTitle>
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <DialogTitle className="flex items-center gap-2">
+                  <Edit3 className="h-5 w-5 text-primary shrink-0" />
+                  <span>Edit Target Role: {selectedRole.title}</span>
+                </DialogTitle>
+                <Badge variant={selectedRole.status === 'draft' ? 'warning' : 'success'}>
+                  v{selectedRole.version} {selectedRole.status.toUpperCase()}
+                </Badge>
+              </div>
               <DialogDescription>
-                Define micro-skill thresholds, positive importance weights, and mandatory flags for{' '}
-                {selectedRole.title} (v{selectedRole.version}). Duplicate targets are rejected.
+                Refine role attributes, micro-skill thresholds, and importance weights. Publish once requirements are satisfied.
               </DialogDescription>
             </DialogHeader>
 
@@ -822,6 +984,38 @@ export function TargetRolesPage() {
 
               return (
                 <div className="space-y-4 text-xs">
+                  {/* Basic role metadata editing for draft */}
+                  {selectedRole.status === 'draft' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg border border-border bg-card">
+                      <div>
+                        <label className="text-[11px] font-semibold text-foreground block mb-1">Role Title</label>
+                        <input
+                          type="text"
+                          value={selectedRole.title}
+                          onChange={(e) => {
+                            const newTitle = e.target.value
+                            setSelectedRole({ ...selectedRole, title: newTitle })
+                            saveAndSetRoles((prev) => prev.map((r) => (r.id === selectedRole.id ? { ...r, title: newTitle } : r)))
+                          }}
+                          className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-foreground block mb-1">Department</label>
+                        <input
+                          type="text"
+                          value={selectedRole.department}
+                          onChange={(e) => {
+                            const newDept = e.target.value
+                            setSelectedRole({ ...selectedRole, department: newDept })
+                            saveAndSetRoles((prev) => prev.map((r) => (r.id === selectedRole.id ? { ...r, department: newDept } : r)))
+                          }}
+                          className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Form to add a new skill target */}
                   {selectedRole.status === 'draft' ? (
                     <div className="p-3.5 rounded-lg border border-border bg-muted/30 space-y-3">
@@ -844,14 +1038,18 @@ export function TargetRolesPage() {
                                 : 'border-border text-foreground focus:ring-primary'
                             }`}
                           >
-                            {INITIAL_MICRO_SKILLS.map((ms) => {
-                              const isAssigned = selectedRole.skillTargets.some((st) => st.skillId === ms.id)
-                              return (
-                                <option key={ms.id} value={ms.id}>
-                                  {ms.code} - {ms.name} {isAssigned ? '✓ (Already Assigned)' : ''}
-                                </option>
-                              )
-                            })}
+                            {companyMicroSkills.length === 0 ? (
+                              <option value="" disabled>No micro-skills defined yet</option>
+                            ) : (
+                              companyMicroSkills.map((ms) => {
+                                const isAssigned = selectedRole.skillTargets.some((st) => st.skillId === ms.id)
+                                return (
+                                  <option key={ms.id} value={ms.id}>
+                                    {ms.code} - {ms.name} {isAssigned ? '✓ (Already Assigned)' : ''}
+                                  </option>
+                                )
+                              })
+                            )}
                           </select>
                         </div>
 
@@ -1002,10 +1200,23 @@ export function TargetRolesPage() {
           )
         })()}
 
-            <DialogFooter>
-              <Button variant="primary" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
-                Done
+            <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
+              <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                Save Draft
               </Button>
+              {selectedRole.status === 'draft' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<CheckCircle2 className="h-4 w-4" />}
+                  onClick={() => {
+                    setIsSkillTargetsModalOpen(false)
+                    setIsPublishModalOpen(true)
+                  }}
+                >
+                  Publish Role
+                </Button>
+              )}
             </DialogFooter>
           </div>
         </Dialog>
@@ -1114,6 +1325,205 @@ export function TargetRolesPage() {
           </div>
         </Dialog>
       )}
+
+      {/* TARGET ROLE DETAILS MODAL (Miro Flow: Target Roles Management Screen -> Target Role Details) */}
+      {viewingDetailsRole && (
+        <Dialog
+          open={Boolean(viewingDetailsRole)}
+          onOpenChange={(open) => !open && setViewingDetailsRole(null)}
+          className="max-w-2xl"
+        >
+          <div className="space-y-4">
+            <DialogHeader>
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <DialogTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-primary shrink-0" />
+                  <span>Target Role Details: {viewingDetailsRole.title}</span>
+                </DialogTitle>
+                <Badge
+                  variant={
+                    viewingDetailsRole.status === 'published'
+                      ? 'success'
+                      : viewingDetailsRole.status === 'draft'
+                        ? 'warning'
+                        : 'outline'
+                  }
+                  className="font-bold text-xs"
+                >
+                  {viewingDetailsRole.status.toUpperCase()}
+                </Badge>
+              </div>
+              <DialogDescription>
+                Comprehensive role architecture, ontology requirements, and active enterprise enrollments.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Meta Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Role Code</span>
+                <span className="font-mono font-bold text-foreground mt-0.5 block">{viewingDetailsRole.code}</span>
+              </div>
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Version</span>
+                <span className="font-mono font-bold text-foreground mt-0.5 block">v{viewingDetailsRole.version}</span>
+              </div>
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Department</span>
+                <span className="font-semibold text-foreground mt-0.5 truncate block">{viewingDetailsRole.department}</span>
+              </div>
+              <div className="p-3 rounded-lg border border-border bg-card">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Active Learners</span>
+                <span className="font-mono font-bold text-primary mt-0.5 block">{viewingDetailsRole.activeEnrollments} enrolled</span>
+              </div>
+            </div>
+
+            {/* Description & Citation */}
+            <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2 text-xs">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
+                  Role Objective &amp; Scope
+                </span>
+                <p className="text-foreground leading-relaxed">
+                  {viewingDetailsRole.description || 'Defines standardized competency requirements for this enterprise role track.'}
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">Authority Citation:</span>
+                <span className="font-mono font-medium text-foreground">{viewingDetailsRole.provenanceRef}</span>
+              </div>
+            </div>
+
+            {/* Linked Competencies */}
+            <div className="space-y-2 text-xs">
+              <span className="font-bold text-foreground flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-primary" />
+                Mapped Knowledge Competencies ({viewingDetailsRole.competencyIds.length})
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {viewingDetailsRole.competencyIds.map((cid) => {
+                  const comp = companyCompetencies.find((c) => c.id === cid)
+                  return (
+                    <span
+                      key={cid}
+                      className="px-2.5 py-1 rounded-md bg-secondary text-primary font-medium border border-primary/20"
+                    >
+                      {comp ? `${comp.code}: ${comp.name}` : cid}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Required Micro-Skill Targets Table */}
+            <div className="space-y-2 text-xs">
+              <span className="font-bold text-foreground flex items-center gap-1.5">
+                <Sliders className="h-3.5 w-3.5 text-primary" />
+                Target Micro-skill Benchmark Thresholds ({viewingDetailsRole.skillTargets.length})
+              </span>
+              <div className="max-h-48 overflow-y-auto rounded-lg border border-border">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                    <tr>
+                      <th className="py-2 px-3">Skill Code &amp; Name</th>
+                      <th className="py-2 px-3 text-center">Required Threshold</th>
+                      <th className="py-2 px-3 text-center">Weight</th>
+                      <th className="py-2 px-3 text-right">Requirement</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {viewingDetailsRole.skillTargets.map((st) => {
+                      const skill = companyMicroSkills.find((s) => s.id === st.skillId)
+                      return (
+                        <tr key={st.skillId} className="hover:bg-muted/20">
+                          <td className="py-2 px-3">
+                            <span className="font-mono font-bold text-foreground mr-1">{skill?.code}</span>
+                            <span className="text-muted-foreground">{skill?.name}</span>
+                          </td>
+                          <td className="py-2 px-3 text-center font-mono font-bold text-primary">
+                            {st.threshold}%
+                          </td>
+                          <td className="py-2 px-3 text-center font-mono">
+                            {st.weight}x
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <Badge variant={st.mandatory ? 'destructive' : 'secondary'} className="text-[10px]">
+                              {st.mandatory ? 'Mandatory' : 'Elective'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button variant="outline" size="sm" onClick={() => setViewingDetailsRole(null)}>
+                Close
+              </Button>
+              {viewingDetailsRole.status === 'draft' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    setViewingDetailsRole(null)
+                    handleOpenSkillTargets(r)
+                  }}
+                  leftIcon={<Sliders className="h-3 w-3" />}
+                >
+                  Edit Skill Targets
+                </Button>
+              )}
+            </DialogFooter>
+          </div>
+        </Dialog>
+      )}
+
+      {/* 5. CONFIRMATION PROMPT TO DISCARD DRAFT */}
+      <ConfirmationModal
+        open={Boolean(deletingDraftRole)}
+        onOpenChange={(open) => !open && setDeletingDraftRole(null)}
+        title="Discard Draft Target Role?"
+        description={
+          deletingDraftRole ? (
+            <div className="space-y-2 text-xs">
+              <p>
+                Are you sure you want to discard the draft version for{' '}
+                <strong className="text-foreground font-semibold">
+                  {deletingDraftRole.title} (v{deletingDraftRole.version})
+                </strong>
+                ?
+              </p>
+              <p className="text-muted-foreground">
+                All uncommitted micro-skill benchmark thresholds and configuration changes for this draft will be permanently removed.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Delete Draft"
+        cancelText="Keep Draft"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingDraftRole) {
+            handleDeleteDraft(deletingDraftRole)
+            setDeletingDraftRole(null)
+          }
+        }}
+      />
+
+      <QuickConfigImportModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        title="Import Target Role Suite"
+        entityName="Target Roles"
+        description="Select an industry role benchmark suite or upload custom target roles to configure career pathways for your organization."
+        presets={ROLE_PRESETS}
+        onImport={handleImportRoles}
+        sampleJsonPlaceholder={`[\n  {\n    "code": "ROLE-AI-01",\n    "title": "AI Knowledge Architect",\n    "department": "Machine Learning & Cognitive Architecture",\n    "description": "Designs enterprise knowledge graph reasoning engines and neuro-symbolic pathways.",\n    "provenanceRef": "Enterprise Talent Taxonomy 2026"\n  }\n]`}
+      />
     </WorkspaceLayout>
   )
 }

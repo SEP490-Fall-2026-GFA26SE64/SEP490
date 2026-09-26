@@ -6,6 +6,7 @@ import {
   BarChart3,
   BookOpen,
   Briefcase,
+  Building,
   CheckSquare,
   ChevronDown,
   Compass,
@@ -19,6 +20,8 @@ import {
   Palette,
   Shield,
   ShieldCheck,
+  Sparkles,
+  Target,
   TrendingUp,
   Users,
 } from 'lucide-react'
@@ -34,6 +37,12 @@ import {
 } from '../components/ui/Dialog'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
 import { useToast } from '../hooks/useToast'
+import {
+  getActiveCompany,
+  loadCompanies,
+  setActiveCompanyId,
+  type CompanyRecord,
+} from '../stores/companyStore'
 import './WorkspaceLayout.css'
 
 interface NavTabItem {
@@ -42,13 +51,30 @@ interface NavTabItem {
   icon: React.ReactNode
 }
 
-export type ActorRole = 'employee' | 'line-manager' | 'ld-manager' | 'admin'
+export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'guest'
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
   const path = location.pathname
+
+  // Active Company tracking
+  const [activeCompany, setActiveCompanyState] = React.useState<CompanyRecord>(getActiveCompany)
+  const [allCompanies, setAllCompanies] = React.useState<CompanyRecord[]>(loadCompanies)
+
+  React.useEffect(() => {
+    const handleUpdate = () => {
+      setActiveCompanyState(getActiveCompany())
+      setAllCompanies(loadCompanies())
+    }
+    window.addEventListener('active_company_changed', handleUpdate)
+    window.addEventListener('companies_updated', handleUpdate)
+    return () => {
+      window.removeEventListener('active_company_changed', handleUpdate)
+      window.removeEventListener('companies_updated', handleUpdate)
+    }
+  }, [])
 
   // User menu & profile dialog states
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
@@ -66,40 +92,59 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Persist and resolve active actor context across the 4 roles
-  const getActiveActor = (): ActorRole => {
-    if (path.startsWith('/line-manager')) {
-      localStorage.setItem('active_actor', 'line-manager')
-      return 'line-manager'
-    }
-    if (path.startsWith('/ld-manager') || path.startsWith('/manager')) {
+  // Persist active actor context across route changes in useEffect
+  React.useEffect(() => {
+    if (path.startsWith('/expert')) {
+      localStorage.setItem('active_actor', 'expert')
+    } else if (path.startsWith('/ld-manager') || path.startsWith('/manager')) {
       localStorage.setItem('active_actor', 'ld-manager')
-      return 'ld-manager'
-    }
-    if (
+    } else if (
       path.startsWith('/admin') ||
       path.startsWith('/knowledge-graph') ||
       path.startsWith('/design-system')
     ) {
       localStorage.setItem('active_actor', 'admin')
+    } else if (
+      path.startsWith('/employee') ||
+      path.startsWith('/learner') ||
+      path === '/assessment'
+    ) {
+      localStorage.setItem('active_actor', 'employee')
+    } else if (path.startsWith('/packages') || path.startsWith('/guest')) {
+      localStorage.setItem('active_actor', 'guest')
+    }
+  }, [path])
+
+  // Pure resolver for active actor context
+  const getActiveActor = (): ActorRole => {
+    if (path.startsWith('/expert')) return 'expert'
+    if (path.startsWith('/ld-manager') || path.startsWith('/manager')) return 'ld-manager'
+    if (
+      path.startsWith('/admin') ||
+      path.startsWith('/knowledge-graph') ||
+      path.startsWith('/design-system')
+    ) {
       return 'admin'
     }
-    if (path.startsWith('/employee') || path.startsWith('/learner') || path === '/assessment') {
-      localStorage.setItem('active_actor', 'employee')
+    if (
+      path.startsWith('/employee') ||
+      path.startsWith('/learner') ||
+      path === '/assessment'
+    ) {
       return 'employee'
     }
+    if (path.startsWith('/packages') || path.startsWith('/guest')) return 'guest'
 
-    const savedActor = localStorage.getItem('active_actor') as ActorRole | 'learner' | 'manager' | null
-    if (savedActor === 'line-manager' || savedActor === 'ld-manager' || savedActor === 'admin') {
+    const savedActor = localStorage.getItem('active_actor') as ActorRole | null
+    if (savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin' || savedActor === 'guest') {
       return savedActor
     }
-    if (savedActor === 'manager') return 'ld-manager'
     return 'employee'
   }
 
   const activeActor = getActiveActor()
-  const isEmployee = activeActor === 'employee'
-  const isLineManager = activeActor === 'line-manager'
+  const isEmployee = activeActor === 'employee' || activeActor === 'learner'
+  const isExpert = activeActor === 'expert'
   const isLdManager = activeActor === 'ld-manager'
   const isAdmin = activeActor === 'admin'
 
@@ -112,6 +157,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: 'Overview',
         href: '/employee/overview',
         icon: <LayoutDashboard size={15} />,
+      },
+      {
+        label: 'Target Roles',
+        href: '/employee/target-roles',
+        icon: <Target size={15} />,
       },
       {
         label: 'Adaptive Pathway',
@@ -134,16 +184,26 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Activity size={15} />,
       },
     ]
-  } else if (isLineManager) {
+  } else if (isExpert) {
     actorTabs = [
       {
-        label: 'Employee Management',
-        href: '/line-manager/employees',
-        icon: <Users size={15} />,
+        label: 'Ontology & Skills',
+        href: '/expert/ontology',
+        icon: <Network size={15} />,
+      },
+      {
+        label: 'Learning Modules',
+        href: '/expert/modules',
+        icon: <BookOpen size={15} />,
+      },
+      {
+        label: 'Assessment Bank',
+        href: '/expert/assessment-bank',
+        icon: <FileQuestion size={15} />,
       },
       {
         label: 'Server Status',
-        href: '/system-status?portal=line-manager',
+        href: '/system-status?portal=expert',
         icon: <Activity size={15} />,
       },
     ]
@@ -160,19 +220,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
-        label: 'Ontology & Skills',
-        href: '/ld-manager/ontology',
-        icon: <Network size={15} />,
-      },
-      {
-        label: 'Learning Modules',
-        href: '/ld-manager/modules',
-        icon: <BookOpen size={15} />,
-      },
-      {
-        label: 'Assessment Bank',
-        href: '/ld-manager/assessment-bank',
-        icon: <FileQuestion size={15} />,
+        label: 'User Directory',
+        href: '/ld-manager/users',
+        icon: <Users size={15} />,
       },
       {
         label: 'Team Matrix',
@@ -192,11 +242,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     ]
   } else if (isAdmin) {
     actorTabs = [
-      {
-        label: 'User Management',
-        href: '/admin/users',
-        icon: <Users size={15} />,
-      },
       {
         label: 'Role-Skill Taxonomy',
         href: '/admin/dashboard',
@@ -225,27 +270,29 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     ? {
         name: 'Alex Chen',
         email: 'alex.chen@adaptlearn.internal',
-        role: 'Employee (Learner)',
+        role: 'Employee',
         initials: 'AC',
         portal: 'Employee Portal',
         details: [
+          { label: 'Organization', value: activeCompany.name },
           { label: 'Department', value: 'Machine Learning & Cognitive Architecture' },
-          { label: 'Assigned Line Manager', value: 'David Miller' },
-          { label: 'Target Role', value: 'AI Knowledge Architect' },
+          { label: 'Target Career Goal', value: 'AI Knowledge Architect' },
+          { label: 'Goal Mode', value: 'Self-Directed Career Progression' },
           { label: 'Current Status', value: 'Diagnostic Active • 92% Highest Score' },
         ],
       }
-    : isLineManager
+    : isExpert
     ? {
-        name: 'David Miller',
-        email: 'david.miller@adaptlearn.internal',
-        role: 'Engineering Line Manager',
-        initials: 'DM',
-        portal: 'Line Manager Console',
+        name: 'Chen Wei',
+        email: 'chen.wei@adaptlearn.internal',
+        role: 'Expert',
+        initials: 'CW',
+        portal: 'Expert Authoring Portal',
         details: [
-          { label: 'Department', value: 'Machine Learning & Cognitive Architecture' },
-          { label: 'Direct Reports', value: '4 Supervised Engineers' },
-          { label: 'Management Scope', value: 'Target Role Assignment & Baseline Diagnostics' },
+          { label: 'Organization', value: activeCompany.name },
+          { label: 'Department', value: 'Cognitive Architecture & Curricula' },
+          { label: 'Authoring Scope', value: 'Macro Competencies, Micro-skills & Question Bank' },
+          { label: 'Curation Status', value: '100% Curricular Integrity Verified' },
         ],
       }
     : isLdManager
@@ -256,8 +303,10 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         initials: 'SC',
         portal: 'L&D Manager Console',
         details: [
-          { label: 'Department', value: 'Enterprise Talent & Knowledge Development' },
-          { label: 'Organization Scope', value: 'Cross-Departmental Skill Matrices' },
+          { label: 'Organization', value: activeCompany.name },
+          { label: 'Plan & User Quota', value: `${activeCompany.packageTier} (${activeCompany.users.length}/${activeCompany.maxUsers} seats)` },
+          { label: 'Department', value: 'Enterprise Talent Development' },
+          { label: 'Organization Scope', value: 'Cross-Departmental Skill Matrices & User Provisioning' },
           { label: 'Readiness Benchmark', value: '78% Average Team Readiness' },
         ],
       }
@@ -269,7 +318,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         portal: 'Administration',
         details: [
           { label: 'Department', value: 'Corporate Ontology & Governance' },
-          { label: 'Scope', value: 'RBAC User Management & Neo4j Knowledge Graph' },
+          { label: 'Scope', value: 'Neo4j Knowledge Graph & Design System Showcase' },
           { label: 'Cluster Connectivity', value: 'Neo4j Bolt: Active' },
         ],
       }
@@ -280,25 +329,40 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       return (
         path.startsWith('/system-status') &&
         ((isEmployee && (!location.search || location.search.includes('portal=employee') || location.search.includes('portal=learner'))) ||
-          (isLineManager && location.search.includes('portal=line-manager')) ||
+          (isExpert && location.search.includes('portal=expert')) ||
           (isLdManager && (location.search.includes('portal=ld-manager') || location.search.includes('portal=manager'))) ||
           (isAdmin && location.search.includes('portal=admin')))
       )
     }
-    if (itemHref === '/employee/overview') {
-      return path === '/employee/overview' || path === '/employee' || path === '/learner/overview' || path === '/learner' || path === '/'
+    if (itemHref === '/employee/overview' || itemHref === '/learner/overview') {
+      return (
+        path === '/employee/overview' ||
+        path === '/employee' ||
+        path === '/learner/overview' ||
+        path === '/learner' ||
+        path === '/'
+      )
     }
-    if (itemHref === '/employee/pathway') {
+    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
+      return path === '/employee/target-roles' || path === '/learner/target-roles'
+    }
+    if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
       return path === '/employee/pathway' || path === '/learner/pathway'
     }
-    if (itemHref === '/employee/gap-analysis') {
+    if (itemHref === '/employee/gap-analysis' || itemHref === '/learner/gap-analysis') {
       return path === '/employee/gap-analysis' || path === '/learner/gap-analysis'
     }
-    if (itemHref === '/employee/assessment') {
-      return path === '/employee/assessment' || path === '/assessment' || path === '/learner/assessment'
+    if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
+      return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
     }
-    if (itemHref === '/line-manager/employees') {
-      return path.startsWith('/line-manager')
+    if (itemHref === '/expert/ontology') {
+      return path === '/expert/ontology' || path === '/ld-manager/ontology' || path === '/manager/ontology'
+    }
+    if (itemHref === '/expert/modules') {
+      return path === '/expert/modules' || path === '/ld-manager/modules' || path === '/manager/modules'
+    }
+    if (itemHref === '/expert/assessment-bank') {
+      return path === '/expert/assessment-bank' || path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
     }
     if (itemHref === '/ld-manager/learning-outcomes') {
       return (
@@ -311,23 +375,14 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
-    if (itemHref === '/ld-manager/ontology') {
-      return path === '/ld-manager/ontology' || path === '/manager/ontology'
-    }
-    if (itemHref === '/ld-manager/modules') {
-      return path === '/ld-manager/modules' || path === '/manager/modules'
-    }
-    if (itemHref === '/ld-manager/assessment-bank') {
-      return path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+    if (itemHref === '/ld-manager/users') {
+      return path === '/ld-manager/users' || path === '/admin/users'
     }
     if (itemHref === '/ld-manager/team-matrix') {
       return path === '/ld-manager/team-matrix' || path === '/manager/team-matrix'
     }
     if (itemHref === '/ld-manager/roi-forecast') {
       return path === '/ld-manager/roi-forecast' || path === '/manager/roi-forecast'
-    }
-    if (itemHref === '/admin/users') {
-      return path === '/admin/users'
     }
     if (itemHref === '/admin/dashboard') {
       return path === '/admin/dashboard' || path === '/admin'
@@ -343,25 +398,37 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   const brandHomeUrl = isEmployee
     ? '/employee/overview'
-    : isLineManager
-    ? '/line-manager/employees'
+    : isExpert
+    ? '/expert/ontology'
     : isLdManager
     ? '/ld-manager/learning-outcomes'
-    : '/admin/users'
+    : '/admin/dashboard'
 
   return (
     <div className="workspace">
       {/* Top Navigation Header with Tabs directly in Navbar and Far-Right Account */}
       <header className="workspace-header">
         <div className="workspace-topbar">
-          {/* Left: Brand */}
-          <div className="flex items-center justify-start min-w-0">
+          {/* Left: Brand + Active Company Badge */}
+          <div className="flex items-center justify-start gap-3 min-w-0">
             <Link className="brand shrink-0" to={brandHomeUrl}>
               <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
               <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate">
                 Adapt-Learn-Graph
               </span>
             </Link>
+
+            {/* Active Company & Seat Quota Pill */}
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
+              <Building size={13} className="text-primary" />
+              <span className="truncate max-w-[140px]" title={activeCompany.name}>
+                {activeCompany.name}
+              </span>
+              <span className="text-muted-foreground">•</span>
+              <span className="font-mono text-primary text-[11px]">
+                {activeCompany.packageTier} ({activeCompany.users.length}/{activeCompany.maxUsers})
+              </span>
+            </div>
           </div>
 
           {/* Center: Feature Tabs Directly in Navbar */}
@@ -383,7 +450,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
           {/* Far-Right: Notifications & User Account Card */}
           <div className="flex items-center justify-end gap-2">
-            {/* Real-time Employee Notification Bell & Dropdown */}
+            {/* Real-time Notification Bell & Dropdown */}
             <NotificationDropdown />
 
             {/* Account Menu Button */}
@@ -422,10 +489,13 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                   <div className="px-4 py-3 border-b border-border bg-muted/25">
                     <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
                     <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
+                    <p className="text-[11px] text-primary font-semibold mt-1 flex items-center gap-1">
+                      <Building size={12} /> {activeCompany.name}
+                    </p>
                   </div>
 
                   <div className="py-1">
-                    {/* Switch Persona Shortcuts Across 4 Actors */}
+                    {/* Switch Persona Shortcuts Across 4 Primary Roles */}
                     <div className="px-3.5 py-1.5">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         Switch Role Portal
@@ -448,21 +518,21 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                           {isEmployee && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
                         </Link>
 
-                        {/* 2. Line Manager */}
+                        {/* 2. Expert */}
                         <Link
-                          to="/line-manager/employees"
+                          to="/expert/ontology"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isLineManager
+                            isExpert
                               ? 'bg-secondary text-primary font-semibold'
                               : 'text-foreground hover:bg-muted'
                           }`}
                         >
                           <span className="flex items-center gap-1.5">
-                            <Users size={13} />
-                            <span>Line Manager</span>
+                            <Sparkles size={13} className="text-success" />
+                            <span>Expert</span>
                           </span>
-                          {isLineManager && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                          {isExpert && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
                         </Link>
 
                         {/* 3. L&D Manager */}
@@ -484,7 +554,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 4. Admin */}
                         <Link
-                          to="/admin/users"
+                          to="/admin/dashboard"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isAdmin
@@ -499,6 +569,34 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                           {isAdmin && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
                         </Link>
                       </div>
+                    </div>
+
+                    <div className="my-1 border-t border-border" />
+
+                    {/* Switch Company Quick Option */}
+                    <div className="px-3.5 py-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                        Active Company Scope
+                      </span>
+                      <select
+                        value={activeCompany.id}
+                        onChange={(e) => {
+                          setActiveCompanyId(e.target.value)
+                          setIsUserMenuOpen(false)
+                          toast({
+                            title: 'Company Context Changed',
+                            description: `Switched active organization scope.`,
+                            variant: 'info',
+                          })
+                        }}
+                        className="w-full rounded border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground focus:outline-none"
+                      >
+                        {allCompanies.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.packageTier})
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="my-1 border-t border-border" />
@@ -567,6 +665,13 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               <Badge variant="secondary" className="font-semibold">
                 {userProfile.portal}
               </Badge>
+            </div>
+
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
+              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+                <Building size={14} className="text-primary" /> Organization
+              </span>
+              <span className="font-bold text-foreground">{activeCompany.name}</span>
             </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border text-xs">

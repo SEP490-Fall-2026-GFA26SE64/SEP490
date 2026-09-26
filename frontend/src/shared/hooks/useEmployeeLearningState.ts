@@ -5,7 +5,7 @@ export interface NotificationItem {
   title: string
   message: string
   timestamp: string
-  type: 'role_assigned' | 'role_replaced' | 'deadline_revised' | 'diagnostic_required' | 'diagnostic_passed' | 'general'
+  type: 'role_assigned' | 'role_replaced' | 'role_selected' | 'deadline_revised' | 'diagnostic_required' | 'diagnostic_passed' | 'general'
   isRead: boolean
   actionUrl?: string
   actionLabel?: string
@@ -22,9 +22,9 @@ export interface HistoricalTargetRole {
   description: string
 }
 
-export interface EmployeeLearningProfile {
-  employeeId: string
-  employeeName: string
+export interface LearnerLearningProfile {
+  learnerId: string
+  learnerName: string
   currentRole: string
   targetRole: string | null
   targetRoleVersion: string | null
@@ -40,21 +40,26 @@ export interface EmployeeLearningProfile {
   previousRoles: HistoricalTargetRole[]
 }
 
-const STORAGE_KEY_PROFILE = 'alg_employee_learning_profile_v2'
-const STORAGE_KEY_NOTIFS = 'alg_employee_notifications_v2'
+// Backwards compatibility alias
+export type EmployeeLearningProfile = LearnerLearningProfile
+
+import { getActiveCompany, getActiveCompanyId } from '../stores/companyStore'
+
+const getProfileStorageKey = () => `alg_learner_learning_profile_${getActiveCompanyId()}`
+const getNotifsStorageKey = () => `alg_learner_notifications_${getActiveCompanyId()}`
 const SYNC_EVENT_NAME = 'alg_learning_state_sync'
 
-const INITIAL_PROFILE: EmployeeLearningProfile = {
-  employeeId: 'emp-101',
-  employeeName: 'Alex Chen',
+const INITIAL_PROFILE: LearnerLearningProfile = {
+  learnerId: 'lrn-101',
+  learnerName: 'Alex Chen',
   currentRole: 'Junior Graph Developer',
   targetRole: 'AI Knowledge Architect',
   targetRoleVersion: 'v2.4 (Latest - Published 2026-06)',
   deadline: '2026-12-31',
-  assignedByManager: 'David Miller (Line Manager)',
+  assignedByManager: 'Self-Selected (Learner)',
   assignedAt: '2026-09-21 09:30',
   targetReadinessScore: 85,
-  diagnosticCompleted: false, // Initially false for active role so diagnostic lock rule is enforced!
+  diagnosticCompleted: false, // Diagnostic lock rule is enforced
   diagnosticScore: null,
   diagnosticCompletedAt: null,
   managerNotes: 'Targeting Q4 2026 promotion. Complete diagnostic assessment to calibrate GNN and ontology pathway.',
@@ -83,21 +88,50 @@ const INITIAL_PROFILE: EmployeeLearningProfile = {
   ],
 }
 
+const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
+  const comp = getActiveCompany()
+  if (comp.id === 'comp-technova') {
+    return INITIAL_PROFILE
+  }
+
+  const employee = (comp.users || []).find((u) => u.role === 'Employee') || comp.users[0]
+  const targetRole = employee?.targetRole || (comp.targetRoles[0]?.title ?? null)
+  const targetRoleVersion = comp.targetRoles[0]?.version ? `v${comp.targetRoles[0].version}` : (targetRole ? 'v1.0' : null)
+
+  return {
+    learnerId: employee ? employee.id : `lrn-${Date.now()}`,
+    learnerName: employee ? employee.name : 'Learner',
+    currentRole: employee ? (employee.department || 'Associate') : 'Associate',
+    targetRole,
+    targetRoleVersion,
+    deadline: targetRole ? '2026-12-31' : null,
+    assignedByManager: 'Self-Selected (Learner)',
+    assignedAt: new Date().toISOString().slice(0, 10),
+    targetReadinessScore: 80,
+    diagnosticCompleted: false,
+    diagnosticScore: null,
+    diagnosticCompletedAt: null,
+    managerNotes: targetRole ? `Calibrate your competency pathway for ${targetRole}.` : 'Select a target role to begin learning.',
+    selectedViewRoleKey: 'active',
+    previousRoles: [],
+  }
+}
+
 const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-1',
-    title: 'New Target Role Assigned (UC-04)',
-    message: 'David Miller assigned you "AI Knowledge Architect (v2.4)" with deadline 2026-12-31. Complete baseline diagnostic to unlock your pathway.',
+    title: 'Active Target Role Calibrated',
+    message: 'Review your selected target role and complete the diagnostic quiz to calibrate your pathway.',
     timestamp: '2 hours ago',
-    type: 'role_assigned',
+    type: 'role_selected',
     isRead: false,
     actionUrl: '/employee/assessment?diagnostic=true',
     actionLabel: 'Take Diagnostic Quiz',
   },
   {
     id: 'notif-2',
-    title: 'Mandatory Diagnostic Assessment Required',
-    message: 'Your active Interactive Roadmap and upcoming module evaluations are locked until you complete the baseline diagnostic quiz.',
+    title: 'Baseline Diagnostic Assessment Recommended',
+    message: 'Your active Interactive Roadmap and upcoming module evaluations will be calibrated once you complete the diagnostic quiz.',
     timestamp: '1 hour ago',
     type: 'diagnostic_required',
     isRead: false,
@@ -107,19 +141,21 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 ]
 
 export function useEmployeeLearningState() {
-  const [profile, setProfileState] = React.useState<EmployeeLearningProfile>(() => {
+  const [profile, setProfileState] = React.useState<LearnerLearningProfile>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_PROFILE)
+      const key = getProfileStorageKey()
+      const saved = localStorage.getItem(key)
       if (saved) return JSON.parse(saved)
     } catch {
       // ignore
     }
-    return INITIAL_PROFILE
+    return getInitialProfileForActiveCompany()
   })
 
   const [notifications, setNotificationsState] = React.useState<NotificationItem[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_NOTIFS)
+      const key = getNotifsStorageKey()
+      const saved = localStorage.getItem(key)
       if (saved) return JSON.parse(saved)
     } catch {
       // ignore
@@ -127,10 +163,11 @@ export function useEmployeeLearningState() {
     return INITIAL_NOTIFICATIONS
   })
 
-  const saveProfile = React.useCallback((newProfile: EmployeeLearningProfile) => {
+  const saveProfile = React.useCallback((newProfile: LearnerLearningProfile) => {
     setProfileState(newProfile)
     try {
-      localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(newProfile))
+      const key = getProfileStorageKey()
+      localStorage.setItem(key, JSON.stringify(newProfile))
       window.dispatchEvent(new Event(SYNC_EVENT_NAME))
     } catch {
       // ignore
@@ -140,29 +177,46 @@ export function useEmployeeLearningState() {
   const saveNotifications = React.useCallback((newNotifs: NotificationItem[]) => {
     setNotificationsState(newNotifs)
     try {
-      localStorage.setItem(STORAGE_KEY_NOTIFS, JSON.stringify(newNotifs))
+      const key = getNotifsStorageKey()
+      localStorage.setItem(key, JSON.stringify(newNotifs))
       window.dispatchEvent(new Event(SYNC_EVENT_NAME))
     } catch {
       // ignore
     }
   }, [])
 
-  // Listen to cross-component sync events
+  // Listen to cross-component sync and company change events
   React.useEffect(() => {
     const handleSync = () => {
       try {
-        const savedProf = localStorage.getItem(STORAGE_KEY_PROFILE)
-        if (savedProf) setProfileState(JSON.parse(savedProf))
-        const savedNotifs = localStorage.getItem(STORAGE_KEY_NOTIFS)
-        if (savedNotifs) setNotificationsState(JSON.parse(savedNotifs))
+        const profKey = getProfileStorageKey()
+        const savedProf = localStorage.getItem(profKey)
+        if (savedProf) {
+          setProfileState(JSON.parse(savedProf))
+        } else {
+          setProfileState(getInitialProfileForActiveCompany())
+        }
+
+        const notifsKey = getNotifsStorageKey()
+        const savedNotifs = localStorage.getItem(notifsKey)
+        if (savedNotifs) {
+          setNotificationsState(JSON.parse(savedNotifs))
+        } else {
+          setNotificationsState(INITIAL_NOTIFICATIONS)
+        }
       } catch {
         // ignore
       }
     }
+
     window.addEventListener(SYNC_EVENT_NAME, handleSync)
+    window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('companies_updated', handleSync)
     window.addEventListener('storage', handleSync)
     return () => {
       window.removeEventListener(SYNC_EVENT_NAME, handleSync)
+      window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
       window.removeEventListener('storage', handleSync)
     }
   }, [])
@@ -171,7 +225,6 @@ export function useEmployeeLearningState() {
   const isViewingActiveRole = profile.selectedViewRoleKey === 'active'
 
   // If viewing active role, check if diagnostic is pending
-  // If viewing a previous role, it is unlocked because baseline was already done!
   const isLearningLocked = isViewingActiveRole
     ? Boolean(profile.targetRole && !profile.diagnosticCompleted)
     : false
@@ -189,15 +242,37 @@ export function useEmployeeLearningState() {
     [profile, saveProfile]
   )
 
-  // UC-04: Assign Initial Target Role
-  const assignInitialTargetRole = React.useCallback(
-    (roleTitle: string, version: string, deadline: string, benchmark = 85, notes = '') => {
-      const updatedProfile: EmployeeLearningProfile = {
+  // LEARNER SELF-SELECTION OF TARGET ROLE
+  const selectTargetRole = React.useCallback(
+    (
+      roleTitle: string,
+      version: string,
+      deadline = '2026-12-31',
+      benchmark = 85,
+      notes = ''
+    ) => {
+      // Archive current active target role into previous roles if changing
+      let updatedPreviousRoles = profile.previousRoles
+      if (profile.targetRole && profile.targetRole !== roleTitle) {
+        const archiveEntry: HistoricalTargetRole = {
+          roleKey: `superseded-${Date.now()}`,
+          roleTitle: profile.targetRole,
+          version: profile.targetRoleVersion || 'v1.0',
+          completedAt: new Date().toISOString().split('T')[0],
+          readinessScore: 78,
+          diagnosticScore: profile.diagnosticScore || 85,
+          status: 'superseded',
+          description: `Switched goal to ${roleTitle} on ${new Date().toLocaleDateString()}`,
+        }
+        updatedPreviousRoles = [archiveEntry, ...profile.previousRoles]
+      }
+
+      const updatedProfile: LearnerLearningProfile = {
         ...profile,
         targetRole: roleTitle,
         targetRoleVersion: version,
         deadline,
-        assignedByManager: 'David Miller (Line Manager)',
+        assignedByManager: 'Self-Selected (Learner)',
         assignedAt: new Date().toLocaleString([], {
           year: 'numeric',
           month: '2-digit',
@@ -207,28 +282,37 @@ export function useEmployeeLearningState() {
         }),
         targetReadinessScore: benchmark,
         managerNotes: notes,
-        diagnosticCompleted: false, // Mandatory diagnostic required
+        diagnosticCompleted: false, // Baseline diagnostic calibrates new role
         diagnosticScore: null,
         selectedViewRoleKey: 'active',
+        previousRoles: updatedPreviousRoles,
       }
       saveProfile(updatedProfile)
 
       const newNotif: NotificationItem = {
         id: `notif-${Date.now()}`,
-        title: `Initial Target Role Assigned: ${roleTitle} (${version})`,
-        message: `Your Line Manager assigned target role "${roleTitle}" with deadline ${deadline}. Complete baseline diagnostic to unlock your roadmap.`,
+        title: `Target Role Activated: ${roleTitle}`,
+        message: `You selected "${roleTitle} (${version})" with target readiness ${benchmark}% and deadline ${deadline}. Complete the diagnostic quiz to calibrate your roadmap.`,
         timestamp: 'Just now',
-        type: 'role_assigned',
+        type: 'role_selected',
         isRead: false,
-        actionUrl: '/employee/assessment?diagnostic=true',
-        actionLabel: 'Take Diagnostic Quiz',
+        actionUrl: '/employee/pathway',
+        actionLabel: 'View Pathway',
       }
       saveNotifications([newNotif, ...notifications])
     },
     [profile, notifications, saveProfile, saveNotifications]
   )
 
-  // UC-05: Replace Target Role (Closes active assignment, archives to previous, supersedes pathway, requires reason, rechecks diagnostic)
+  // UC-04 Backwards-compatibility
+  const assignInitialTargetRole = React.useCallback(
+    (roleTitle: string, version: string, deadline: string, benchmark = 85, notes = '') => {
+      selectTargetRole(roleTitle, version, deadline, benchmark, notes)
+    },
+    [selectTargetRole]
+  )
+
+  // UC-05 Backwards-compatibility
   const replaceTargetRole = React.useCallback(
     (
       newRoleTitle: string,
@@ -237,63 +321,16 @@ export function useEmployeeLearningState() {
       benchmark = 85,
       replacementReason: string
     ) => {
-      // Archive current role into previousRoles
-      const archivedRole: HistoricalTargetRole | null = profile.targetRole
-        ? {
-            roleKey: `superseded-${Date.now()}`,
-            roleTitle: profile.targetRole,
-            version: profile.targetRoleVersion || 'v1.0',
-            completedAt: new Date().toISOString().split('T')[0],
-            readinessScore: 78,
-            diagnosticScore: profile.diagnosticScore || 85,
-            status: 'superseded',
-            description: `Superseded on ${new Date().toLocaleDateString()}. Reason: ${replacementReason}`,
-          }
-        : null
-
-      const updatedProfile: EmployeeLearningProfile = {
-        ...profile,
-        targetRole: newRoleTitle,
-        targetRoleVersion: newVersion,
-        deadline: newDeadline,
-        assignedByManager: 'David Miller (Line Manager)',
-        assignedAt: new Date().toLocaleString([], {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        targetReadinessScore: benchmark,
-        diagnosticCompleted: false, // Relocked for diagnostic recheck!
-        diagnosticScore: null,
-        selectedViewRoleKey: 'active',
-        previousRoles: archivedRole
-          ? [archivedRole, ...profile.previousRoles]
-          : profile.previousRoles,
-      }
-      saveProfile(updatedProfile)
-
-      const newNotif: NotificationItem = {
-        id: `notif-${Date.now()}`,
-        title: `Target Role Replaced: ${newRoleTitle} (${newVersion})`,
-        message: `Your Line Manager superseded your previous target role. Reason: "${replacementReason}". Retaining verified evidence; please complete diagnostic coverage recheck.`,
-        timestamp: 'Just now',
-        type: 'role_replaced',
-        isRead: false,
-        actionUrl: '/employee/assessment?diagnostic=true',
-        actionLabel: 'Recheck Diagnostic',
-      }
-      saveNotifications([newNotif, ...notifications])
+      selectTargetRole(newRoleTitle, newVersion, newDeadline, benchmark, replacementReason)
     },
-    [profile, notifications, saveProfile, saveNotifications]
+    [selectTargetRole]
   )
 
-  // UC-06: Revise Assignment Deadline (Retains target role version, updates deadline, requires reason)
+  // UC-06 Backwards-compatibility
   const reviseAssignmentDeadline = React.useCallback(
     (newDeadline: string, revisionReason: string) => {
       const prevDeadline = profile.deadline || 'None'
-      const updatedProfile: EmployeeLearningProfile = {
+      const updatedProfile: LearnerLearningProfile = {
         ...profile,
         deadline: newDeadline,
       }
@@ -301,8 +338,8 @@ export function useEmployeeLearningState() {
 
       const newNotif: NotificationItem = {
         id: `notif-${Date.now()}`,
-        title: `Assignment Deadline Revised: ${newDeadline}`,
-        message: `Your Line Manager updated target deadline from ${prevDeadline} to ${newDeadline}. Reason: "${revisionReason}". Target role version retained.`,
+        title: `Target Deadline Updated: ${newDeadline}`,
+        message: `Updated target deadline from ${prevDeadline} to ${newDeadline}. (${revisionReason})`,
         timestamp: 'Just now',
         type: 'deadline_revised',
         isRead: false,
@@ -317,7 +354,7 @@ export function useEmployeeLearningState() {
   // Complete diagnostic assessment
   const completeDiagnosticAssessment = React.useCallback(
     (score: number) => {
-      const updatedProfile: EmployeeLearningProfile = {
+      const updatedProfile: LearnerLearningProfile = {
         ...profile,
         diagnosticCompleted: true,
         diagnosticScore: score,
@@ -334,7 +371,7 @@ export function useEmployeeLearningState() {
       const successNotif: NotificationItem = {
         id: `notif-${Date.now()}`,
         title: 'Diagnostic Assessment Passed! 🎉',
-        message: `Score: ${score}%. Your Adaptive Learning Pathway, Interactive Roadmap, and upcoming evaluations are now unlocked!`,
+        message: `Score: ${score}%. Your Adaptive Learning Pathway, Interactive Roadmap, and upcoming evaluations are now calibrated and active!`,
         timestamp: 'Just now',
         type: 'diagnostic_passed',
         isRead: false,
@@ -368,7 +405,7 @@ export function useEmployeeLearningState() {
   }, [notifications, saveNotifications])
 
   const removeTargetRole = React.useCallback(() => {
-    const updatedProfile: EmployeeLearningProfile = {
+    const updatedProfile: LearnerLearningProfile = {
       ...profile,
       targetRole: null,
       targetRoleVersion: null,
@@ -393,6 +430,7 @@ export function useEmployeeLearningState() {
     unreadNotificationCount,
     notifications,
     setSelectedViewRoleKey,
+    selectTargetRole,
     assignInitialTargetRole,
     replaceTargetRole,
     reviseAssignmentDeadline,
@@ -404,3 +442,6 @@ export function useEmployeeLearningState() {
     clearNotifications,
   }
 }
+
+// Backwards compatibility alias
+export const useLearnerLearningState = useEmployeeLearningState

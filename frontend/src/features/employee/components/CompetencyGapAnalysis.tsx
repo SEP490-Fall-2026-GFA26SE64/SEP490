@@ -1,10 +1,12 @@
+import * as React from 'react'
 import { useState } from 'react'
-import { AlertCircle, ArrowUpRight, Award, Calendar, CheckCircle2, Filter, Search, Target, TrendingUp } from 'lucide-react'
+import { AlertCircle, ArrowUpRight, Award, CheckCircle2, Filter, Search, Target, TrendingUp } from 'lucide-react'
 
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
 
 export interface CompetencySkill {
   id: string
@@ -66,18 +68,53 @@ const SAMPLE_SKILLS: CompetencySkill[] = [
 
 export function CompetencyGapAnalysis() {
   const { profile, isViewingActiveRole } = useEmployeeLearningState()
+  const [activeCompany, setActiveCompany] = useState(getActiveCompany)
+
+  React.useEffect(() => {
+    const handleSync = () => setActiveCompany(getActiveCompany())
+    window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('companies_updated', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
+    }
+  }, [])
+
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [search, setSearch] = useState('')
 
   const activeRoleName = profile.targetRole || 'AI Knowledge Architect'
-  const selectedRole = profile.previousRoles?.find((r) => r.roleKey === profile.selectedViewRoleKey)
+  const selectedRole = profile.previousRoles?.find((r: { roleKey: string; roleTitle: string }) => r.roleKey === profile.selectedViewRoleKey)
   const targetRole = isViewingActiveRole ? activeRoleName : (selectedRole?.roleTitle || activeRoleName)
 
-  const totalRequired = SAMPLE_SKILLS.reduce((acc, s) => acc + s.requiredLevel, 0)
-  const totalCurrent = SAMPLE_SKILLS.reduce((acc, s) => acc + s.currentLevel, 0)
-  const readinessPercentage = Math.round((totalCurrent / totalRequired) * 100)
+  const companySkills = React.useMemo(() => {
+    if (activeCompany.id === 'comp-technova') {
+      return SAMPLE_SKILLS
+    }
+    if (!activeCompany?.microSkills || activeCompany.microSkills.length === 0) {
+      return []
+    }
+    return activeCompany.microSkills.map((ms, idx) => {
+      const isMastered = ms.status === 'published'
+      return {
+        id: ms.id,
+        name: ms.name,
+        category: ms.bloomLevel || 'Core Competency',
+        currentLevel: isMastered ? 85 : Math.min(70, 30 + ((idx * 15) % 40)),
+        requiredLevel: 85,
+        priority: isMastered ? ('low' as const) : idx % 2 === 0 ? ('high' as const) : ('medium' as const),
+        bridgeModule: activeCompany.modules[idx % (activeCompany.modules.length || 1)]
+          ? `${activeCompany.modules[idx % activeCompany.modules.length].code}: ${activeCompany.modules[idx % activeCompany.modules.length].title}`
+          : 'Foundation Alignment Module',
+      }
+    })
+  }, [activeCompany])
 
-  const filteredSkills = SAMPLE_SKILLS.filter((skill) => {
+  const totalRequired = companySkills.reduce((acc, s) => acc + s.requiredLevel, 0)
+  const totalCurrent = companySkills.reduce((acc, s) => acc + s.currentLevel, 0)
+  const readinessPercentage = totalRequired > 0 ? Math.round((totalCurrent / totalRequired) * 100) : 0
+
+  const filteredSkills = companySkills.filter((skill) => {
     if (filter !== 'all' && skill.priority !== filter) return false
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -86,9 +123,24 @@ export function CompetencyGapAnalysis() {
     return true
   })
 
-  const criticalCount = SAMPLE_SKILLS.filter((s) => s.priority === 'high').length
-  const moderateCount = SAMPLE_SKILLS.filter((s) => s.priority === 'medium').length
-  const masteredCount = SAMPLE_SKILLS.filter((s) => s.priority === 'low').length
+  const criticalCount = companySkills.filter((s) => s.priority === 'high').length
+  const moderateCount = companySkills.filter((s) => s.priority === 'medium').length
+  const masteredCount = companySkills.filter((s) => s.priority === 'low').length
+
+  if (companySkills.length === 0) {
+    return (
+      <Card className="border border-border text-center py-16 px-6">
+        <Target size={32} className="mx-auto text-muted-foreground/60 mb-3" />
+        <h3 className="text-base font-bold text-foreground">No Competencies Defined</h3>
+        <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-3">
+          Your organization ({activeCompany.name}) does not have any competencies or micro-skills tracked yet.
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          Please contact your L&amp;D Manager to configure the competency ontology.
+        </p>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -117,24 +169,27 @@ export function CompetencyGapAnalysis() {
           </CardHeader>
           <CardContent>
             <Progress value={readinessPercentage} variant="primary" />
-            <p className="text-xs text-muted-foreground mt-1.5">3 critical gaps remaining to bridge</p>
+            <p className="text-xs text-muted-foreground mt-1.5">{criticalCount} critical gaps remaining to bridge</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-card to-secondary/30">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-              <Calendar className="h-4 w-4 text-primary" /> Time Left
+              <Award className="h-4 w-4 text-primary" /> Target Benchmark
             </CardDescription>
-            <CardTitle className="text-2xl font-bold text-foreground">24 Days Remaining</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">
+              {profile.targetReadinessScore || 85}% Req
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Start: <strong className="text-foreground font-semibold">Aug 15, 2026</strong></span>
-              <span className="text-muted-foreground">Target: <strong className="text-primary font-semibold">Oct 15, 2026</strong></span>
+              <span className="text-destructive font-semibold">{criticalCount} Critical</span>
+              <span className="text-warning font-semibold">{moderateCount} Moderate</span>
+              <span className="text-success font-semibold">{masteredCount} Mastered</span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Target role deployment deadline set by organization.
+              Target role competency benchmark profile and gap priorities.
             </p>
           </CardContent>
         </Card>

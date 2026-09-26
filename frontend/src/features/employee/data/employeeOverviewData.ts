@@ -59,7 +59,7 @@ export interface TargetRoleBenchmark {
   }[]
 }
 
-export const LEARNER_PROFILE_STATS: ProfileStatistics = {
+export const EMPLOYEE_PROFILE_STATS: ProfileStatistics = {
   overallMasteryPercentage: 74,
   totalSkillsEvaluated: 18,
   masteredSkillsCount: 11,
@@ -72,6 +72,8 @@ export const LEARNER_PROFILE_STATS: ProfileStatistics = {
   hoursSavedViaAdaptivity: 38.5,
   lastAssessedDate: '2026-09-18',
 }
+
+export const LEARNER_PROFILE_STATS = EMPLOYEE_PROFILE_STATS
 
 export const TARGET_ROLE_BENCHMARKS: Record<string, TargetRoleBenchmark> = {
   'ai-knowledge-architect': {
@@ -186,7 +188,7 @@ export const COMPETENCY_SKILL_PROFILES: CompetencySkillProfile[] = [
       {
         id: 'ev-5',
         type: 'course',
-        title: 'MOD-102: Introduction to Learner State Estimation',
+        title: 'MOD-102: Introduction to Employee State Estimation',
         providerOrIssuer: 'Adapt-Learn-Graph Academy',
         date: '2026-08-10',
         scoreOrLevel: 'Passed (88%)',
@@ -239,7 +241,7 @@ export const COMPETENCY_SKILL_PROFILES: CompetencySkillProfile[] = [
       {
         id: 'ev-8',
         type: 'work_proof',
-        title: 'PR #589: Learner Event Streaming Architecture',
+        title: 'PR #589: Employee Event Streaming Architecture',
         providerOrIssuer: 'GitHub Repository: stream-pipeline',
         date: '2026-07-28',
         scoreOrLevel: 'Production Verified',

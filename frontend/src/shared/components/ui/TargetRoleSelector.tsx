@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Check, ChevronDown, Target } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, Compass, Target } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useEmployeeLearningState } from '../../hooks/useEmployeeLearningState'
 import { Badge } from './Badge'
 
@@ -20,13 +21,13 @@ export function TargetRoleSelector() {
   }, [])
 
   const currentRoleTitle = isViewingActiveRole
-    ? profile.targetRole || 'No Active Role'
+    ? profile.targetRole || 'No Active Goal'
     : profile.previousRoles.find((r) => r.roleKey === profile.selectedViewRoleKey)?.roleTitle ||
-      'Previous Role'
+      'Previous Goal'
 
   return (
     <div ref={dropdownRef} className="relative inline-flex items-center gap-2">
-      {/* Container matching user screenshot */}
+      {/* Container matching standard bar */}
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-card shadow-2xs">
         {/* Target Icon */}
         <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -77,7 +78,7 @@ export function TargetRoleSelector() {
         <div className="absolute left-0 top-full mt-1.5 w-80 sm:w-96 rounded-xl border border-border bg-card shadow-lg z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100 p-1.5 text-xs">
           <div className="px-3 py-2 border-b border-border bg-muted/30">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Current Active Assignment
+              Current Active Goal
             </span>
             <button
               type="button"
@@ -91,20 +92,34 @@ export function TargetRoleSelector() {
             >
               <div>
                 <div className="font-bold text-foreground flex items-center gap-1.5">
-                  <span>{profile.targetRole || 'No Target Assigned'}</span>
+                  <span>{profile.targetRole || 'No Target Selected'}</span>
                   {profile.targetRoleVersion && (
                     <span className="text-[10px] font-mono text-muted-foreground">
-                      ({profile.targetRoleVersion})
+                      ({profile.targetRoleVersion.split(' ')[0]})
                     </span>
                   )}
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Assigned by {profile.assignedByManager || 'Line Manager'} &bull; Due:{' '}
-                  {profile.deadline || '2026-12-31'}
+                  Target Benchmark: {profile.targetReadinessScore}% Minimum
                 </div>
               </div>
               {isViewingActiveRole && <Check size={15} className="text-primary shrink-0" />}
             </button>
+
+            {/* Direct Link to Role Selection Catalog */}
+            <div className="pt-2">
+              <Link
+                to="/employee/target-roles"
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center justify-between p-2 rounded-lg bg-secondary/80 hover:bg-secondary text-primary font-semibold transition-colors"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Compass size={14} />
+                  <span>Browse &amp; Change Target Roles</span>
+                </span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
           </div>
 
           {/* Previous / Finished Target Roles */}

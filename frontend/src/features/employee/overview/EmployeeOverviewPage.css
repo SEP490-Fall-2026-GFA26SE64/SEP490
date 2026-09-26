@@ -1,4 +1,5 @@
-/* Scoped styles for Learner Overview page */
+/* Scoped styles for Employee Overview page */
+.employee-overview-container,
 .learner-overview-container {
   display: flex;
   flex-direction: column;
