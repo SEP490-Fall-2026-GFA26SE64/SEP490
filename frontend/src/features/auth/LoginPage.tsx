@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Globe, Check, Network, UserPlus, LogIn } from 'lucide-react'
+import { Check, Network, UserPlus, LogIn } from 'lucide-react'
+import { LanguageSwitcher } from '../../shared/components/ui/LanguageSwitcher'
 import { useToast } from '../../shared/hooks/useToast'
 import './LoginPage.css'
 
@@ -158,21 +159,8 @@ export function LoginPage() {
           </Link>
         </div>
 
-        <div className="razor-nav-right">
-          <button
-            type="button"
-            className="razor-globe-btn"
-            title="Region: Global Enterprise"
-            onClick={() => {
-              toast({
-                title: 'Language & Locale',
-                description: 'Current Region: Enterprise US-East (English)',
-                variant: 'info',
-              })
-            }}
-          >
-            <Globe size={24} />
-          </button>
+        <div className="razor-nav-right flex items-center gap-3">
+          <LanguageSwitcher />
         </div>
       </header>
 

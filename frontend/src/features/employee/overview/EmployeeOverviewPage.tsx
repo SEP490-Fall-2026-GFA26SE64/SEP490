@@ -32,6 +32,7 @@ import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSele
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { CompetencyRadarChart } from '../components/CompetencyRadarChart'
 import {
   COMPETENCY_SKILL_PROFILES,
@@ -42,6 +43,7 @@ import './EmployeeOverviewPage.css'
 
 export function EmployeeOverviewPage() {
   const { profile } = useEmployeeLearningState()
+  const { t, language } = useTranslation()
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
 
   React.useEffect(() => {
@@ -130,7 +132,9 @@ export function EmployeeOverviewPage() {
   const end = new Date(endDate)
   const diffDays = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)))
   const diffMonths = (diffDays / 30.4).toFixed(1)
-  const durationText = `${diffMonths} Months (${diffDays} Days)`
+  const durationText = language === 'vi' 
+    ? `${diffMonths} Tháng (${diffDays} Ngày)`
+    : `${diffMonths} Months (${diffDays} Days)`
 
   const toggleSkillExpand = (skillId: string) => {
     setExpandedSkills((prev) => ({
@@ -203,17 +207,17 @@ export function EmployeeOverviewPage() {
               <div className="flex flex-wrap items-center gap-2.5 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-2xs text-xs">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Calendar size={13} className="text-primary" />
-                  <span>Start: <strong className="text-foreground font-mono">{startDate}</strong></span>
+                  <span>{t('header.start')}: <strong className="text-foreground font-mono">{startDate}</strong></span>
                 </div>
                 <span className="text-border hidden sm:inline">&bull;</span>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Calendar size={13} className="text-primary" />
-                  <span>End: <strong className="text-foreground font-mono">{endDate}</strong></span>
+                  <span>{t('header.end')}: <strong className="text-foreground font-mono">{endDate}</strong></span>
                 </div>
                 <span className="text-border hidden sm:inline">&bull;</span>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Clock size={13} className="text-primary" />
-                  <span>Duration: <Badge variant="secondary" className="font-mono text-xs font-bold text-primary">{durationText}</Badge></span>
+                  <span>{t('header.duration')}: <Badge variant="secondary" className="font-mono text-xs font-bold text-primary">{durationText}</Badge></span>
                 </div>
               </div>
             </div>
@@ -226,10 +230,10 @@ export function EmployeeOverviewPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Sparkles size={13} className="text-primary" /> Aggregate Competency Statistics
+              <Sparkles size={13} className="text-primary" /> {t('Aggregate Competency Statistics')}
             </h2>
             <span className="text-xs text-muted-foreground font-mono">
-              Last Assessed: <strong className="text-foreground">{profileStats.lastAssessedDate}</strong>
+              {t('Last Assessed:')} <strong className="text-foreground">{profileStats.lastAssessedDate}</strong>
             </span>
           </div>
 
@@ -238,15 +242,17 @@ export function EmployeeOverviewPage() {
             <StatCard
               variant="gradient"
               icon={<Award className="h-4 w-4" />}
-              title="Overall Skill Mastery"
+              title={t('Overall Skill Mastery')}
               value={`${profileStats.overallMasteryPercentage}%`}
               valueClassName="text-primary font-bold"
-              description={`${profileStats.masteredSkillsCount} of ${profileStats.totalSkillsEvaluated} micro-skills mastered`}
+              description={language === 'vi' 
+                ? `${profileStats.masteredSkillsCount} trên ${profileStats.totalSkillsEvaluated} vi kỹ năng đã thành thạo`
+                : `${profileStats.masteredSkillsCount} of ${profileStats.totalSkillsEvaluated} micro-skills mastered`}
             >
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
-                  <span>Target Benchmark</span>
-                  <span className="font-bold text-foreground">{profile.targetReadinessScore}% Minimum</span>
+                  <span>{t('Target Benchmark')}</span>
+                  <span className="font-bold text-foreground">{profile.targetReadinessScore}% {t('Minimum')}</span>
                 </div>
                 <Progress value={profileStats.overallMasteryPercentage} variant="primary" className="h-2" />
               </div>
@@ -256,13 +262,15 @@ export function EmployeeOverviewPage() {
             <StatCard
               variant="default"
               icon={<Target className="h-4 w-4 text-primary" />}
-              title="Target Readiness"
+              title={t('Target Readiness')}
               value={`${profileStats.overallMasteryPercentage}%`}
               valueClassName="text-foreground font-bold"
-              description={`Readiness for ${profile.targetRole || 'AI Knowledge Architect'}`}
+              description={language === 'vi' 
+                ? `Độ sẵn sàng cho ${profile.targetRole || 'AI Knowledge Architect'}`
+                : `Readiness for ${profile.targetRole || 'AI Knowledge Architect'}`}
             >
               <div className="mt-3 flex items-center justify-between text-xs pt-1 border-t border-border/60">
-                <span className="text-muted-foreground">Confidence Metric</span>
+                <span className="text-muted-foreground">{t('Confidence Metric')}</span>
                 <Badge variant="secondary" className="font-mono text-xs">
                   {profileStats.bktConfidencePercentage}% BKT
                 </Badge>
@@ -273,14 +281,14 @@ export function EmployeeOverviewPage() {
             <StatCard
               variant="default"
               icon={<CheckCircle2 className="h-4 w-4 text-success" />}
-              title="Pathway Progression"
-              value={`${profileStats.completedModulesCount} / ${profileStats.totalPathwayModules} Modules`}
+              title={t('Pathway Progression')}
+              value={`${profileStats.completedModulesCount} / ${profileStats.totalPathwayModules} ${t('Modules')}`}
               valueClassName="text-foreground font-bold"
-              description="Curriculum milestone advancement"
+              description={t('Curriculum milestone advancement')}
             >
               <div className="mt-3 flex items-center gap-1.5 text-xs text-success font-medium">
                 <ShieldCheck size={14} />
-                <span>{profileStats.pathwayProgressPercentage}% Pathway Cleared</span>
+                <span>{profileStats.pathwayProgressPercentage}% {t('Pathway Cleared')}</span>
               </div>
             </StatCard>
 
@@ -288,14 +296,14 @@ export function EmployeeOverviewPage() {
             <StatCard
               variant="default"
               icon={<TrendingUp className="h-4 w-4 text-primary" />}
-              title="Adaptivity Hours Saved"
+              title={t('Adaptivity Hours Saved')}
               value={`${profileStats.hoursSavedViaAdaptivity} hrs`}
               valueClassName="text-foreground font-bold"
-              description="Reduced learning time through knowledge tracing"
+              description={t('Reduced learning time through knowledge tracing')}
             >
               <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                 <Clock size={13} />
-                <span>Next assessment gate ready</span>
+                <span>{t('Next assessment gate ready')}</span>
               </div>
             </StatCard>
           </div>
@@ -313,15 +321,17 @@ export function EmployeeOverviewPage() {
                   <div className="flex items-center gap-2">
                     <Compass className="h-5 w-5 text-primary" />
                     <CardTitle className="text-base font-bold text-foreground">
-                      Competency Radar
+                      {t('Competency Radar Analysis')}
                     </CardTitle>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
-                    6 Key Domains
+                    {language === 'vi' ? '6 Lĩnh vực cốt lõi' : '6 Key Domains'}
                   </Badge>
                 </div>
                 <CardDescription className="text-xs text-muted-foreground mt-1">
-                  Multivariate vector of verified proficiency vs target role benchmark requirements.
+                  {language === 'vi' 
+                    ? 'Biểu đồ đa biến thể hiện mức độ thành thạo đã được xác thực so với yêu cầu tiêu chuẩn của vai trò mục tiêu.' 
+                    : 'Multivariate vector of verified proficiency vs target role benchmark requirements.'}
                 </CardDescription>
               </CardHeader>
 
@@ -341,10 +351,12 @@ export function EmployeeOverviewPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-base font-bold text-foreground">
-                      Micro-Skill Mastery &amp; Evidence Ledger
+                      {t('Micro-Skill Proficiency Breakdown')}
                     </CardTitle>
                     <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                      Explore granular skill ratings and inspect multi-source verification evidence.
+                      {language === 'vi'
+                        ? 'Khám phá xếp hạng kỹ năng chi tiết và kiểm tra minh chứng xác thực từ nhiều nguồn.'
+                        : 'Explore granular skill ratings and inspect multi-source verification evidence.'}
                     </CardDescription>
                   </div>
 
@@ -353,7 +365,7 @@ export function EmployeeOverviewPage() {
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
                       type="text"
-                      placeholder="Filter skills..."
+                      placeholder={t('Search micro-skills or categories...')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"

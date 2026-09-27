@@ -6,12 +6,14 @@ import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { CompetencyGapAnalysis } from '../components/CompetencyGapAnalysis'
 import './CompetencyGapAnalysisPage.css'
 
 export function CompetencyGapAnalysisPage() {
   const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
+  const { t, language } = useTranslation()
 
   return (
     <WorkspaceLayout>
@@ -23,11 +25,11 @@ export function CompetencyGapAnalysisPage() {
               <TargetRoleSelector />
               {isLearningLocked ? (
                 <Badge variant="warning" className="text-xs font-semibold px-2.5 py-1">
-                  <Lock size={12} className="mr-1 inline" /> Diagnostic Assessment Required
+                  <Lock size={12} className="mr-1 inline" /> {t('Diagnostic Assessment Required')}
                 </Badge>
               ) : (
                 <Badge variant="success" className="text-xs font-semibold px-2.5 py-1">
-                  <CheckCircle2 size={12} className="mr-1 inline" /> Gaps Evaluated &amp; Calibrated
+                  <CheckCircle2 size={12} className="mr-1 inline" /> {t('Gaps Evaluated & Calibrated')}
                 </Badge>
               )}
             </div>
@@ -44,14 +46,18 @@ export function CompetencyGapAnalysisPage() {
 
               <div className="space-y-2">
                 <h2 className="text-xl font-bold text-foreground tracking-tight">
-                  Competency Gap Analysis Locked
+                  {t('Competency Gap Analysis Locked')}
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Without completing your baseline diagnostic assessment, the system cannot determine your actual skill proficiencies or identify what your competency gaps are for{' '}
+                  {language === 'vi'
+                    ? 'Nếu chưa hoàn thành bài đánh giá chuẩn đoán ban đầu, hệ thống chưa thể xác định mức độ thành thạo thực tế hoặc khoảng cách năng lực cho '
+                    : 'Without completing your baseline diagnostic assessment, the system cannot determine your actual skill proficiencies or identify what your competency gaps are for '}
                   <strong className="text-primary">{profile.targetRole || 'AI Knowledge Architect'}</strong>.
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Complete the diagnostic assessment in the assessment center to calibrate your knowledge graph. Once calibrated, your skill proficiencies will be benchmarked against your target readiness requirement of {profile.targetReadinessScore}%.
+                  {language === 'vi'
+                    ? `Hoàn thành bài đánh giá trong trung tâm khảo thí để hiệu chuẩn đồ thị tri thức. Sau khi hiệu chuẩn, kỹ năng của bạn sẽ được đối sánh với yêu cầu sẵn sàng tối thiểu ${profile.targetReadinessScore}%.`
+                    : `Complete the diagnostic assessment in the assessment center to calibrate your knowledge graph. Once calibrated, your skill proficiencies will be benchmarked against your target readiness requirement of ${profile.targetReadinessScore}%.`}
                 </p>
               </div>
 
@@ -63,7 +69,7 @@ export function CompetencyGapAnalysisPage() {
                     rightIcon={<ArrowRight size={16} />}
                     className="font-bold shadow-xs px-5"
                   >
-                    Take Diagnostic Assessment Now
+                    {t('Take Diagnostic Assessment Now')}
                   </Button>
                 </Link>
 
@@ -74,7 +80,7 @@ export function CompetencyGapAnalysisPage() {
                   className="text-xs font-semibold hover:border-primary/40"
                   leftIcon={<RefreshCw size={13} />}
                 >
-                  Quick Unlock (Demo Test)
+                  {t('Quick Unlock (Demo Test)')}
                 </Button>
               </div>
 
