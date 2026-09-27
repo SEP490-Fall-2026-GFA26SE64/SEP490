@@ -20,6 +20,7 @@ import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
   Dialog,
   DialogDescription,
@@ -602,41 +603,45 @@ export function AssessmentBankPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Actions: Conditional to active tab */}
-        <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
-          {activeTab === 'questions' ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Upload className="h-4 w-4" />}
-                onClick={() => setIsImportModalOpen(true)}
-                className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
-              >
-                Import
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={handleOpenCreateQuestion}
-                className="font-semibold shadow-2xs"
-              >
-                Create
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<Plus className="h-4 w-4" />}
-              onClick={handleOpenCreateBlueprint}
-              className="font-semibold shadow-2xs"
-            >
-              Create
-            </Button>
-          )}
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            activeTab === 'questions' ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Upload className="h-4 w-4" />}
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
+                >
+                  Import
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  onClick={handleOpenCreateQuestion}
+                  className="font-semibold shadow-2xs"
+                >
+                  Create
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  onClick={handleOpenCreateBlueprint}
+                  className="font-semibold shadow-2xs"
+                >
+                  Create
+                </Button>
+              </div>
+            )
+          }
+        />
 
         {/* Aggregate KPI StatCards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { AlertCircle, ArrowUpRight, Award, CheckCircle2, Filter, Search, Target, TrendingUp } from 'lucide-react'
 
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Progress } from '../../../shared/components/ui/Progress'
+import { StatCard } from '../../../shared/components/ui/StatCard'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
 
@@ -129,70 +130,50 @@ export function CompetencyGapAnalysis() {
 
   if (companySkills.length === 0) {
     return (
-      <Card className="border border-border text-center py-16 px-6">
-        <Target size={32} className="mx-auto text-muted-foreground/60 mb-3" />
-        <h3 className="text-base font-bold text-foreground">No Competencies Defined</h3>
-        <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-3">
-          Your organization ({activeCompany.name}) does not have any competencies or micro-skills tracked yet.
-        </p>
-        <p className="text-[11px] text-muted-foreground">
-          Please contact your L&amp;D Manager to configure the competency ontology.
-        </p>
-      </Card>
+      <EmptyState
+        icon={<Target size={28} className="text-primary" />}
+        title="No Competencies Defined"
+        description={`Your organization (${activeCompany.name}) does not have any competencies or micro-skills tracked yet. Please contact your L&D Manager to configure the competency ontology.`}
+      />
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Top summary cards */}
+      {/* Top summary cards using shared StatCard */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-card to-secondary/30">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-              <Target className="h-4 w-4 text-primary" /> Target Role
-            </CardDescription>
-            <CardTitle className="text-xl">{targetRole}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Transition from: Senior Backend Engineer</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          variant="gradient"
+          icon={<Target className="h-4 w-4 text-primary" />}
+          title="Target Role"
+          value={targetRole}
+          description="Transition from: Senior Backend Engineer"
+        />
 
-        <Card className="bg-gradient-to-br from-card to-secondary/30">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-              <TrendingUp className="h-4 w-4 text-primary" /> Role Readiness
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-primary">
-              {readinessPercentage}%
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={readinessPercentage} variant="primary" />
-            <p className="text-xs text-muted-foreground mt-1.5">{criticalCount} critical gaps remaining to bridge</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          variant="gradient"
+          icon={<TrendingUp className="h-4 w-4 text-primary" />}
+          title="Role Readiness"
+          value={`${readinessPercentage}%`}
+          valueClassName="text-primary font-bold"
+          description={`${criticalCount} critical gaps remaining to bridge`}
+        >
+          <Progress value={readinessPercentage} variant="primary" className="mt-2" />
+        </StatCard>
 
-        <Card className="bg-gradient-to-br from-card to-secondary/30">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-              <Award className="h-4 w-4 text-primary" /> Target Benchmark
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-foreground">
-              {profile.targetReadinessScore || 85}% Req
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-destructive font-semibold">{criticalCount} Critical</span>
-              <span className="text-warning font-semibold">{moderateCount} Moderate</span>
-              <span className="text-success font-semibold">{masteredCount} Mastered</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Target role competency benchmark profile and gap priorities.
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          variant="gradient"
+          icon={<Award className="h-4 w-4 text-primary" />}
+          title="Target Benchmark"
+          value={`${profile.targetReadinessScore || 85}% Req`}
+          description="Target role competency benchmark profile and gap priorities."
+        >
+          <div className="flex items-center justify-between text-xs mt-2 pt-2 border-t border-border/50">
+            <span className="text-destructive font-semibold">{criticalCount} Critical</span>
+            <span className="text-warning font-semibold">{moderateCount} Moderate</span>
+            <span className="text-success font-semibold">{masteredCount} Mastered</span>
+          </div>
+        </StatCard>
       </div>
 
       {/* Unified Big Container Design for Competency Gap Breakdown */}

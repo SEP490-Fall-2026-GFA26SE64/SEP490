@@ -15,6 +15,7 @@ import {
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
   Dialog,
   DialogDescription,
@@ -453,28 +454,32 @@ export function UserManagementPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Actions Bar */}
-        <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Upload size={14} />}
-            onClick={() => setIsImportModalOpen(true)}
-            className="font-semibold bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 shadow-2xs"
-          >
-            Import
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus size={14} />}
-            onClick={openCreateModal}
-            disabled={isNearCapacity}
-            className="font-semibold shadow-2xs whitespace-nowrap"
-          >
-            Create
-          </Button>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Upload size={14} />}
+                onClick={() => setIsImportModalOpen(true)}
+                className="font-semibold bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 shadow-2xs"
+              >
+                Import
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Plus size={14} />}
+                onClick={openCreateModal}
+                disabled={isNearCapacity}
+                className="font-semibold shadow-2xs whitespace-nowrap"
+              >
+                Create
+              </Button>
+            </div>
+          }
+        />
 
         {/* Company Context Banner */}
         <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">

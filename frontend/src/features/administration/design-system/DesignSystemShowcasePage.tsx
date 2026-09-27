@@ -24,6 +24,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
+import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
@@ -130,16 +131,7 @@ export function DesignSystemShowcasePage() {
             ]}
           />
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
-            <div>
-              <Heading level={1} size="page" className="text-foreground flex items-center gap-3">
-                <Palette className="h-7 w-7 text-primary" />
-                Design System Showcase
-              </Heading>
-              <Text variant="subtitle" className="mt-1 max-w-2xl">
-                Refined Brand Orange design tokens (<code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">#EA580C</code>), eye-friendly cool slate canvas, vivid yellow for In Progress states, unified typography, and state controls.
-              </Text>
-            </div>
+          <div className="flex items-center justify-end gap-3 flex-wrap pb-2">
             <Badge variant="secondary" className="px-3 py-1 text-xs self-start md:self-center font-semibold">
               Official Orange Palette
             </Badge>
@@ -666,6 +658,20 @@ export function DesignSystemShowcasePage() {
                     description="Eliminating redundant training"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2 pt-4 border-t border-border">
+                <Text variant="eyebrow">Shared EmptyState Component Example</Text>
+                <EmptyState
+                  icon={<Sparkles className="h-6 w-6 text-primary" />}
+                  title="No Dynamic Data Available"
+                  description="Standardized fallback display with semantic icon, title, description, and primary CTA button."
+                  action={
+                    <Button variant="primary" size="sm" leftIcon={<Sparkles size={14} />}>
+                      Create Sample Record
+                    </Button>
+                  }
+                />
               </div>
             </CardContent>
           </Card>

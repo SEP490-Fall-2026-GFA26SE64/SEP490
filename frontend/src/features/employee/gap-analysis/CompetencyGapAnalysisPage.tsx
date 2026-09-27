@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -15,22 +16,23 @@ export function CompetencyGapAnalysisPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top of the screen matching Assessment Quiz: Target Role on left, Status on right */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-          <TargetRoleSelector />
-
-          <div className="flex items-center gap-2">
-            {isLearningLocked ? (
-              <Badge variant="warning" className="text-xs font-semibold px-2.5 py-1">
-                <Lock size={12} className="mr-1 inline" /> Diagnostic Assessment Required
-              </Badge>
-            ) : (
-              <Badge variant="success" className="text-xs font-semibold px-2.5 py-1">
-                <CheckCircle2 size={12} className="mr-1 inline" /> Gaps Evaluated &amp; Calibrated
-              </Badge>
-            )}
-          </div>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="w-full flex items-center justify-between gap-2.5 flex-wrap">
+              <TargetRoleSelector />
+              {isLearningLocked ? (
+                <Badge variant="warning" className="text-xs font-semibold px-2.5 py-1">
+                  <Lock size={12} className="mr-1 inline" /> Diagnostic Assessment Required
+                </Badge>
+              ) : (
+                <Badge variant="success" className="text-xs font-semibold px-2.5 py-1">
+                  <CheckCircle2 size={12} className="mr-1 inline" /> Gaps Evaluated &amp; Calibrated
+                </Badge>
+              )}
+            </div>
+          }
+        />
 
         {/* LOCKED STATE IF DIAGNOSTIC NOT COMPLETED */}
         {isLearningLocked ? (

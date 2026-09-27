@@ -35,6 +35,7 @@ import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import {
@@ -57,6 +58,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { getActiveCompany, getActiveCompanyId } from '../../../shared/stores/companyStore'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import './AssessmentPage.css'
@@ -624,6 +626,7 @@ const PATHWAY_QUIZZES: PathwayQuiz[] = [
 
 export function AssessmentPage() {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const location = useLocation()
   const { profile, isLearningLocked, completeDiagnosticAssessment } = useEmployeeLearningState()
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
@@ -1438,30 +1441,34 @@ export function AssessmentPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* View Mode Navigation Tabs: Upcoming vs History + Target Role Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-              <TargetRoleSelector />
+            {/* Actions Bar */}
+            <PageHeader
+              actions={
+                <div className="w-full flex items-center justify-between gap-2.5 flex-wrap">
+                  <TargetRoleSelector />
 
-              <Tabs
-                value={activeTab}
-                onValueChange={(val) => {
-                  setActiveTab(val as 'upcoming' | 'history')
-                }}
-                className="w-auto"
-              >
-                <TabsList className="bg-muted/70 p-1">
-                  <TabsTrigger value="upcoming" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <span>Upcoming Pathway Quizzes</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
-                    <History className="h-4 w-4 text-primary" />
-                    <span>Attempt History</span>
-                    {isLearningLocked && <Lock size={12} className="text-warning ml-0.5" />}
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={(val) => {
+                      setActiveTab(val as 'upcoming' | 'history')
+                    }}
+                    className="w-auto"
+                  >
+                    <TabsList className="bg-muted/70 p-1">
+                      <TabsTrigger value="upcoming" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span>{t('assessment.upcomingQuizzes')}</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
+                        <History className="h-4 w-4 text-primary" />
+                        <span>{t('assessment.attemptHistory')}</span>
+                        {isLearningLocked && <Lock size={12} className="text-warning ml-0.5" />}
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              }
+            />
 
             {/* TAB 1: UPCOMING ASSESSMENTS */}
             {activeTab === 'upcoming' && (() => {

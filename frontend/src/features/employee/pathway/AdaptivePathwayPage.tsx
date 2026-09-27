@@ -9,42 +9,49 @@ import {
 import { Link } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { AdaptivePathwayTimeline } from '../components/AdaptivePathwayTimeline'
 import { InteractiveRoleRoadmap } from '../components/InteractiveRoleRoadmap'
 
 export function AdaptivePathwayPage() {
   const [activeTab, setActiveTab] = React.useState('roadmap')
   const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
+  const { t } = useTranslation()
 
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          {/* Top of the screen matching Assessment Quiz: Target Role on left, Tabs on right */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-            <TargetRoleSelector />
+          {/* Actions Bar */}
+          <PageHeader
+            actions={
+              <div className="w-full flex items-center justify-between gap-2.5 flex-wrap">
+                <TargetRoleSelector />
 
-            <TabsList className="bg-muted/70 p-1">
-              <TabsTrigger
-                value="roadmap"
-                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
-              >
-                <GitFork size={15} className="text-primary" />
-                <span>Interactive Roadmap</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="timeline"
-                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
-              >
-                <ListOrdered size={15} className="text-primary" />
-                <span>Adaptive Timeline</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
+                <TabsList className="w-auto bg-muted/70 p-1">
+                  <TabsTrigger
+                    value="roadmap"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
+                  >
+                    <GitFork size={15} className="text-primary" />
+                    <span>{t('pathway.interactiveRoadmap')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="timeline"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
+                  >
+                    <ListOrdered size={15} className="text-primary" />
+                    <span>{t('pathway.adaptiveTimeline')}</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            }
+          />
 
           {/* LOCKED STATE OVERLAY IF DIAGNOSTIC IS NOT YET COMPLETED */}
           {isLearningLocked ? (

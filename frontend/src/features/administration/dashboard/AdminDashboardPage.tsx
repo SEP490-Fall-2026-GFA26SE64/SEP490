@@ -3,7 +3,6 @@ import {
   Eye,
   Layers,
   Plus,
-  ShieldCheck,
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -18,11 +17,8 @@ export function AdminDashboardPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Header */}
+        {/* Actions Bar */}
         <PageHeader
-          icon={<ShieldCheck className="h-8 w-8 text-primary" />}
-          title="Role-Skill Taxonomy & Ontology Console"
-          description="Curate the enterprise competency ontology, define role requirements, and manage skill taxonomy thresholds."
           actions={
             <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5">
               <Database className="h-4 w-4 text-primary" />

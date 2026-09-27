@@ -15,34 +15,27 @@ import {
   Layers,
   LayoutDashboard,
   LogOut,
-  Mail,
   Network,
   Palette,
-  Shield,
   ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
+  User,
   Users,
 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Badge } from '../components/ui/Badge'
-import { Button } from '../components/ui/Button'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/Dialog'
+import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
 import { useToast } from '../hooks/useToast'
+import { useTranslation } from '../i18n/LanguageContext'
 import {
   getActiveCompany,
   loadCompanies,
   setActiveCompanyId,
   type CompanyRecord,
 } from '../stores/companyStore'
+import { getUserProfile } from '../stores/userProfileStore'
 import './WorkspaceLayout.css'
 
 interface NavTabItem {
@@ -57,6 +50,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const path = location.pathname
 
   // Active Company tracking
@@ -76,10 +70,18 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // User menu & profile dialog states
+  // User menu state & profile update listener
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = React.useState(false)
+  const [, setProfileRevision] = React.useState(0)
   const userMenuRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileRevision((prev) => prev + 1)
+    }
+    window.addEventListener('user_profile_updated', handleProfileUpdate)
+    return () => window.removeEventListener('user_profile_updated', handleProfileUpdate)
+  }, [])
 
   // Close user menu when clicking outside
   React.useEffect(() => {
@@ -147,6 +149,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const isExpert = activeActor === 'expert'
   const isLdManager = activeActor === 'ld-manager'
   const isAdmin = activeActor === 'admin'
+  const isGuest = activeActor === 'guest'
 
   // Actor-specific navigation tabs for the navbar
   let actorTabs: NavTabItem[] = []
@@ -154,32 +157,32 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   if (isEmployee) {
     actorTabs = [
       {
-        label: 'Overview',
+        label: t('nav.overview'),
         href: '/employee/overview',
         icon: <LayoutDashboard size={15} />,
       },
       {
-        label: 'Target Roles',
+        label: t('nav.targetRoles'),
         href: '/employee/target-roles',
         icon: <Target size={15} />,
       },
       {
-        label: 'Adaptive Pathway',
+        label: t('nav.pathway'),
         href: '/employee/pathway',
         icon: <Compass size={15} />,
       },
       {
-        label: 'Gap Analysis',
+        label: t('nav.gapAnalysis'),
         href: '/employee/gap-analysis',
         icon: <Award size={15} />,
       },
       {
-        label: 'Assessment Quiz',
+        label: t('nav.assessmentQuiz'),
         href: '/employee/assessment',
         icon: <CheckSquare size={15} />,
       },
       {
-        label: 'Server Status',
+        label: t('nav.serverStatus'),
         href: '/system-status?portal=employee',
         icon: <Activity size={15} />,
       },
@@ -187,22 +190,22 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isExpert) {
     actorTabs = [
       {
-        label: 'Ontology & Skills',
+        label: t('nav.ontology'),
         href: '/expert/ontology',
         icon: <Network size={15} />,
       },
       {
-        label: 'Learning Modules',
+        label: t('nav.modules'),
         href: '/expert/modules',
         icon: <BookOpen size={15} />,
       },
       {
-        label: 'Assessment Bank',
+        label: t('nav.assessmentBank'),
         href: '/expert/assessment-bank',
         icon: <FileQuestion size={15} />,
       },
       {
-        label: 'Server Status',
+        label: t('nav.serverStatus'),
         href: '/system-status?portal=expert',
         icon: <Activity size={15} />,
       },
@@ -210,32 +213,32 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isLdManager) {
     actorTabs = [
       {
-        label: 'Outcomes',
+        label: t('nav.learningOutcomes'),
         href: '/ld-manager/learning-outcomes',
         icon: <BarChart3 size={15} />,
       },
       {
-        label: 'Target Roles',
+        label: t('nav.targetRoles'),
         href: '/ld-manager/target-roles',
         icon: <Briefcase size={15} />,
       },
       {
-        label: 'User Directory',
+        label: t('nav.userDirectory'),
         href: '/ld-manager/users',
         icon: <Users size={15} />,
       },
       {
-        label: 'Team Matrix',
+        label: t('nav.teamMatrix'),
         href: '/ld-manager/team-matrix',
         icon: <Users size={15} />,
       },
       {
-        label: 'Upskilling & ROI',
+        label: t('nav.roiForecast'),
         href: '/ld-manager/roi-forecast',
         icon: <TrendingUp size={15} />,
       },
       {
-        label: 'Server Status',
+        label: t('nav.serverStatus'),
         href: '/system-status?portal=ld-manager',
         icon: <Activity size={15} />,
       },
@@ -243,85 +246,38 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isAdmin) {
     actorTabs = [
       {
-        label: 'Role-Skill Taxonomy',
+        label: t('nav.ontology'),
         href: '/admin/dashboard',
         icon: <Layers size={15} />,
       },
       {
-        label: 'Knowledge Graph',
+        label: t('nav.knowledgeGraph'),
         href: '/admin/knowledge-graph',
         icon: <Network size={15} />,
       },
       {
-        label: 'Design System',
+        label: t('nav.designSystem'),
         href: '/admin/design-system',
         icon: <Palette size={15} />,
       },
       {
-        label: 'Server Status',
+        label: t('nav.serverStatus'),
         href: '/system-status?portal=admin',
         icon: <Activity size={15} />,
       },
     ]
+  } else if (isGuest) {
+    actorTabs = [
+      {
+        label: t('nav.selectPlan'),
+        href: '/packages',
+        icon: <Sparkles size={15} />,
+      },
+    ]
   }
 
-  // Active user profile metadata based on 4 actors
-  const userProfile = isEmployee
-    ? {
-        name: 'Alex Chen',
-        email: 'alex.chen@adaptlearn.internal',
-        role: 'Employee',
-        initials: 'AC',
-        portal: 'Employee Portal',
-        details: [
-          { label: 'Organization', value: activeCompany.name },
-          { label: 'Department', value: 'Machine Learning & Cognitive Architecture' },
-          { label: 'Target Career Goal', value: 'AI Knowledge Architect' },
-          { label: 'Goal Mode', value: 'Self-Directed Career Progression' },
-          { label: 'Current Status', value: 'Diagnostic Active • 92% Highest Score' },
-        ],
-      }
-    : isExpert
-    ? {
-        name: 'Chen Wei',
-        email: 'chen.wei@adaptlearn.internal',
-        role: 'Expert',
-        initials: 'CW',
-        portal: 'Expert Authoring Portal',
-        details: [
-          { label: 'Organization', value: activeCompany.name },
-          { label: 'Department', value: 'Cognitive Architecture & Curricula' },
-          { label: 'Authoring Scope', value: 'Macro Competencies, Micro-skills & Question Bank' },
-          { label: 'Curation Status', value: '100% Curricular Integrity Verified' },
-        ],
-      }
-    : isLdManager
-    ? {
-        name: 'Sarah Connor',
-        email: 'sarah.connor@adaptlearn.internal',
-        role: 'Enterprise L&D Director',
-        initials: 'SC',
-        portal: 'L&D Manager Console',
-        details: [
-          { label: 'Organization', value: activeCompany.name },
-          { label: 'Plan & User Quota', value: `${activeCompany.packageTier} (${activeCompany.users.length}/${activeCompany.maxUsers} seats)` },
-          { label: 'Department', value: 'Enterprise Talent Development' },
-          { label: 'Organization Scope', value: 'Cross-Departmental Skill Matrices & User Provisioning' },
-          { label: 'Readiness Benchmark', value: '78% Average Team Readiness' },
-        ],
-      }
-    : {
-        name: 'Elena Rostova',
-        email: 'elena.rostova@adaptlearn.internal',
-        role: 'Lead System Administrator',
-        initials: 'ER',
-        portal: 'Administration',
-        details: [
-          { label: 'Department', value: 'Corporate Ontology & Governance' },
-          { label: 'Scope', value: 'Neo4j Knowledge Graph & Design System Showcase' },
-          { label: 'Cluster Connectivity', value: 'Neo4j Bolt: Active' },
-        ],
-      }
+  // Active user profile metadata based on active actor
+  const userProfile = getUserProfile(activeActor)
 
   // Helper for determining whether a nav tab is active
   const isTabActive = (itemHref: string) => {
@@ -393,10 +349,15 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/admin/design-system') {
       return path === '/admin/design-system' || path === '/design-system'
     }
+    if (itemHref === '/packages' || itemHref.startsWith('/packages')) {
+      return path.startsWith('/packages') || path.startsWith('/guest')
+    }
     return path === itemHref
   }
 
-  const brandHomeUrl = isEmployee
+  const brandHomeUrl = isGuest
+    ? '/packages'
+    : isEmployee
     ? '/employee/overview'
     : isExpert
     ? '/expert/ontology'
@@ -419,16 +380,29 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             </Link>
 
             {/* Active Company & Seat Quota Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
-              <Building size={13} className="text-primary" />
-              <span className="truncate max-w-[140px]" title={activeCompany.name}>
-                {activeCompany.name}
-              </span>
-              <span className="text-muted-foreground">•</span>
-              <span className="font-mono text-primary text-[11px]">
-                {activeCompany.packageTier} ({activeCompany.users.length}/{activeCompany.maxUsers})
-              </span>
-            </div>
+            {!isGuest ? (
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
+                <Building size={13} className="text-primary" />
+                <span className="truncate max-w-[140px]" title={activeCompany.name}>
+                  {activeCompany.name}
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="font-mono text-primary text-[11px]">
+                  {activeCompany.packageTier} ({activeCompany.users.length}/{activeCompany.maxUsers})
+                </span>
+              </div>
+            ) : (
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
+                <Building size={13} className="text-primary" />
+                <span className="truncate max-w-[160px]">
+                  New Organization
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="font-mono text-primary text-[11px]">
+                  Select Package
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Center: Feature Tabs Directly in Navbar */}
@@ -448,8 +422,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          {/* Far-Right: Notifications & User Account Card */}
+          {/* Far-Right: Language Switcher, Notifications & User Account Card */}
           <div className="flex items-center justify-end gap-2">
+            {/* Language Switcher (EN / VI) */}
+            <LanguageSwitcher />
+
             {/* Real-time Notification Bell & Dropdown */}
             <NotificationDropdown />
 
@@ -490,7 +467,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                     <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
                     <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
                     <p className="text-[11px] text-primary font-semibold mt-1 flex items-center gap-1">
-                      <Building size={12} /> {activeCompany.name}
+                      <Building size={12} /> {isGuest ? 'New Organization Registration' : activeCompany.name}
                     </p>
                   </div>
 
@@ -498,7 +475,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                     {/* Switch Persona Shortcuts Across 4 Primary Roles */}
                     <div className="px-3.5 py-1.5">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Switch Role Portal
+                        {t('roles.switchRolePortal')}
                       </span>
                       <div className="mt-1.5 flex flex-col gap-0.5">
                         {/* 1. Employee */}
@@ -513,9 +490,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         >
                           <span className="flex items-center gap-1.5">
                             <GraduationCap size={13} />
-                            <span>Employee Portal</span>
+                            <span>{t('roles.employee')}</span>
                           </span>
-                          {isEmployee && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                          {isEmployee && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
 
                         {/* 2. Expert */}
@@ -530,9 +507,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         >
                           <span className="flex items-center gap-1.5">
                             <Sparkles size={13} className="text-success" />
-                            <span>Expert</span>
+                            <span>{t('roles.expert')}</span>
                           </span>
-                          {isExpert && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                          {isExpert && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
 
                         {/* 3. L&D Manager */}
@@ -547,9 +524,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         >
                           <span className="flex items-center gap-1.5">
                             <Briefcase size={13} />
-                            <span>L&D Manager</span>
+                            <span>{t('roles.ldManager')}</span>
                           </span>
-                          {isLdManager && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                          {isLdManager && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
 
                         {/* 4. Admin */}
@@ -564,9 +541,26 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         >
                           <span className="flex items-center gap-1.5">
                             <ShieldCheck size={13} />
-                            <span>Administrator</span>
+                            <span>{t('roles.admin')}</span>
                           </span>
-                          {isAdmin && <span className="text-[9px] font-mono font-bold">ACTIVE</span>}
+                          {isAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 5. Guest */}
+                        <Link
+                          to="/packages"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isGuest
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles size={13} className="text-primary" />
+                            <span>{t('roles.guest')}</span>
+                          </span>
+                          {isGuest && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
                       </div>
                     </div>
@@ -601,17 +595,14 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                     <div className="my-1 border-t border-border" />
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsUserMenuOpen(false)
-                        setIsProfileDialogOpen(true)
-                      }}
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsUserMenuOpen(false)}
                       className="w-full text-left px-3.5 py-1.5 text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 font-medium cursor-pointer"
                     >
-                      <Shield size={13} className="text-primary" />
-                      <span>Account Profile Details</span>
-                    </button>
+                      <User size={13} className="text-primary" />
+                      <span>{t('common.profile')}</span>
+                    </Link>
 
                     <button
                       type="button"
@@ -627,7 +618,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                       className="w-full text-left px-3.5 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2 font-medium cursor-pointer"
                     >
                       <LogOut size={14} />
-                      <span>Sign Out</span>
+                      <span>{t('common.logout')}</span>
                     </button>
                   </div>
                 </div>
@@ -641,91 +632,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       <div className="workspace-body">
         <main className="workspace-main">{children}</main>
       </div>
-
-      {/* User Profile Dialog */}
-      <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
-        <div className="space-y-5">
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-base shadow-xs">
-                {userProfile.initials}
-              </div>
-              <div>
-                <DialogTitle>{userProfile.name}</DialogTitle>
-                <DialogDescription>{userProfile.role}</DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
-              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-                <Shield size={14} className="text-primary" /> Active Portal
-              </span>
-              <Badge variant="secondary" className="font-semibold">
-                {userProfile.portal}
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
-              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-                <Building size={14} className="text-primary" /> Organization
-              </span>
-              <span className="font-bold text-foreground">{activeCompany.name}</span>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
-              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-                <Mail size={14} className="text-primary" /> Enterprise Email
-              </span>
-              <span className="font-mono text-foreground">{userProfile.email}</span>
-            </div>
-
-            <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-2 text-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Account Credentials & Scope
-              </div>
-              {userProfile.details.map((d) => (
-                <div
-                  key={d.label}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-border/50 last:border-0"
-                >
-                  <span className="text-muted-foreground">{d.label}:</span>
-                  <strong className="text-foreground">{d.value}</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <DialogFooter className="flex items-center justify-between gap-3 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<LogOut size={14} />}
-              onClick={() => {
-                setIsProfileDialogOpen(false)
-                toast({
-                  title: 'Signed Out',
-                  description: 'You have been signed out of Adapt-Learn-Graph.',
-                  variant: 'info',
-                })
-                navigate('/login')
-              }}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              Sign Out
-            </Button>
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsProfileDialogOpen(false)}
-            >
-              Close Profile
-            </Button>
-          </DialogFooter>
-        </div>
-      </Dialog>
     </div>
   )
 }

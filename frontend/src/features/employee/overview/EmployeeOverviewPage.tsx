@@ -25,6 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
@@ -192,28 +193,32 @@ export function EmployeeOverviewPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16 employee-overview-container">
-        {/* Top of the screen matching Assessment Quiz style: Target Role on left, Timeline on right */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-          <TargetRoleSelector />
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-wrap">
+              <TargetRoleSelector />
 
-          {/* Timeline & Duration Metadata */}
-          <div className="flex flex-wrap items-center gap-2.5 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-2xs text-xs">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Calendar size={13} className="text-primary" />
-              <span>Start: <strong className="text-foreground font-mono">{startDate}</strong></span>
+              {/* Timeline & Duration Metadata */}
+              <div className="flex flex-wrap items-center gap-2.5 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-2xs text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Calendar size={13} className="text-primary" />
+                  <span>Start: <strong className="text-foreground font-mono">{startDate}</strong></span>
+                </div>
+                <span className="text-border hidden sm:inline">&bull;</span>
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Calendar size={13} className="text-primary" />
+                  <span>End: <strong className="text-foreground font-mono">{endDate}</strong></span>
+                </div>
+                <span className="text-border hidden sm:inline">&bull;</span>
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Clock size={13} className="text-primary" />
+                  <span>Duration: <Badge variant="secondary" className="font-mono text-xs font-bold text-primary">{durationText}</Badge></span>
+                </div>
+              </div>
             </div>
-            <span className="text-border hidden sm:inline">&bull;</span>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Calendar size={13} className="text-primary" />
-              <span>End: <strong className="text-foreground font-mono">{endDate}</strong></span>
-            </div>
-            <span className="text-border hidden sm:inline">&bull;</span>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Clock size={13} className="text-primary" />
-              <span>Duration: <Badge variant="secondary" className="font-mono text-xs font-bold text-primary">{durationText}</Badge></span>
-            </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* =========================================================================
             AGGREGATED SUMMARY KPIS

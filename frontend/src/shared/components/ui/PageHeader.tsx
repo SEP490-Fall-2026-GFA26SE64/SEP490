@@ -3,7 +3,7 @@ import { Heading } from '../typography/Heading'
 import { cn } from '../../lib/utils'
 
 export interface PageHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
-  title: React.ReactNode
+  title?: React.ReactNode
   description?: React.ReactNode
   icon?: React.ReactNode
   actions?: React.ReactNode
@@ -17,6 +17,24 @@ export function PageHeader({
   className,
   ...props
 }: PageHeaderProps) {
+  if (!title && !description && !actions) {
+    return null
+  }
+
+  if (!title && !description) {
+    return (
+      <div
+        className={cn(
+          'w-full flex items-center justify-end gap-3 flex-wrap pb-1',
+          className
+        )}
+        {...props}
+      >
+        {actions}
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(

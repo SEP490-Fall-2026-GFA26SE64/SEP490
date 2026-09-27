@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -41,19 +42,20 @@ export function RoiForecastPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Badges */}
-        <div className="flex items-center justify-between pb-1 border-b border-border/60">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-foreground">{activeCompany.name}</span>
-            <Badge variant="secondary" className="font-mono text-[10px]">
-              {activeCompany.packageTier} Package
-            </Badge>
-          </div>
-          <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span>AI Predictive Engine</span>
-          </Badge>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-mono text-xs">
+                {activeCompany.packageTier} Package
+              </Badge>
+              <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span>AI Predictive Engine</span>
+              </Badge>
+            </div>
+          }
+        />
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

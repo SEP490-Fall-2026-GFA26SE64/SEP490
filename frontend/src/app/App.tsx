@@ -18,9 +18,11 @@ import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPag
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
 import { UserManagementPage } from '../features/manager/user-management/UserManagementPage'
 import { PackageSelectionPage } from '../features/packages/PackageSelectionPage'
+import { ProfilePage } from '../features/profile/ProfilePage'
 import { SystemStatusPage } from '../features/system/SystemStatusPage'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
+import { LanguageProvider } from '../shared/i18n/LanguageContext'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
@@ -30,7 +32,8 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <BrowserRouter>
+        <LanguageProvider>
+          <BrowserRouter>
           <Routes>
             {/* Auth routes */}
             <Route path="/" element={<Navigate to="/login" replace />} />
@@ -49,7 +52,10 @@ export default function App() {
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/employee/gap-analysis" element={<CompetencyGapAnalysisPage />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
-            <Route path="/employee/profile" element={<Navigate to="/employee/overview" replace />} />
+            <Route path="/employee/profile" element={<Navigate to="/profile" replace />} />
+
+            {/* Dedicated Profile Route for All Actors */}
+            <Route path="/profile" element={<ProfilePage />} />
 
             {/* Backwards compatibility for Learner routes */}
             <Route path="/learner" element={<Navigate to="/employee/overview" replace />} />
@@ -58,7 +64,7 @@ export default function App() {
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/learner/gap-analysis" element={<Navigate to="/employee/gap-analysis" replace />} />
             <Route path="/learner/assessment" element={<Navigate to="/employee/assessment" replace />} />
-            <Route path="/learner/profile" element={<Navigate to="/employee/overview" replace />} />
+            <Route path="/learner/profile" element={<Navigate to="/profile" replace />} />
             <Route path="/assessment" element={<Navigate to="/employee/assessment" replace />} />
 
             {/* 2. Expert routes (Ontology, Modules, Assessment Bank) */}
@@ -107,6 +113,7 @@ export default function App() {
           </Routes>
           <Toaster />
         </BrowserRouter>
+        </LanguageProvider>
       </ToastProvider>
     </QueryClientProvider>
   )

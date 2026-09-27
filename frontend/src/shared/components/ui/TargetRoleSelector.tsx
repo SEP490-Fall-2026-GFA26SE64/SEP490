@@ -2,11 +2,13 @@ import * as React from 'react'
 import { ArrowRight, Check, ChevronDown, Compass, Target } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useEmployeeLearningState } from '../../hooks/useEmployeeLearningState'
+import { useTranslation } from '../../i18n/LanguageContext'
 import { Badge } from './Badge'
 
 export function TargetRoleSelector() {
   const { profile, setSelectedViewRoleKey, isViewingActiveRole, isLearningLocked } =
     useEmployeeLearningState()
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
 
@@ -36,7 +38,7 @@ export function TargetRoleSelector() {
 
         {/* Label */}
         <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground select-none">
-          Target Role:
+          {t('header.targetRole')}:
         </span>
 
         {/* Dropdown Toggle Button */}
@@ -59,11 +61,11 @@ export function TargetRoleSelector() {
         {isViewingActiveRole ? (
           isLearningLocked ? (
             <Badge variant="warning" className="text-[10px] font-semibold py-0.5 hidden sm:inline-flex">
-              Diagnostic Required
+              {t('header.diagnosticRequired')}
             </Badge>
           ) : (
             <Badge variant="success" className="text-[10px] font-semibold py-0.5 hidden sm:inline-flex">
-              Active Pathway
+              {t('roles.active')}
             </Badge>
           )
         ) : (

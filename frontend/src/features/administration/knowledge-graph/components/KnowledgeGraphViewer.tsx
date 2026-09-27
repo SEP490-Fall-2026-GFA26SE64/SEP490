@@ -221,7 +221,7 @@ export function KnowledgeGraphViewer() {
           <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-xs border border-border rounded-lg p-3 shadow-md space-y-1.5 text-xs">
             <span className="font-semibold text-foreground uppercase tracking-wider block mb-1">Graph Ontology Legend</span>
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-xs bg-[#0B1B3D]" />
+              <div className="h-3 w-3 rounded-xs bg-foreground" />
               <span className="text-muted-foreground">Target Role Node</span>
             </div>
             <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export function KnowledgeGraphViewer() {
               <span className="text-muted-foreground">Identified Skill Gap</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-xs bg-blue-600" />
+              <div className="h-3 w-3 rounded-xs bg-primary/80" />
               <span className="text-muted-foreground">Learning Module (Course)</span>
             </div>
           </div>

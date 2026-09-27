@@ -8,14 +8,16 @@ import {
   CreditCard,
   Crown,
   Lock,
-  Network,
   ShieldCheck,
   Sparkles,
   Users,
   Zap,
 } from 'lucide-react'
+import { Heading } from '../../shared/components/typography/Heading'
+import { Text } from '../../shared/components/typography/Text'
 import { Badge } from '../../shared/components/ui/Badge'
 import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
 import {
   Dialog,
   DialogDescription,
@@ -25,6 +27,7 @@ import {
 } from '../../shared/components/ui/Dialog'
 import { Input } from '../../shared/components/ui/Input'
 import { useToast } from '../../shared/hooks/useToast'
+import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
 import {
   createCompanyFromPackagePurchase,
   type PackageTier,
@@ -159,57 +162,24 @@ export function PackageSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Top Navbar */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Network className="h-7 w-7 text-primary" />
-            <span className="font-bold text-base sm:text-lg tracking-tight text-foreground">
-              Adapt-Learn-Graph
-            </span>
-            <Badge variant="outline" className="ml-2 font-mono text-xs">
-              Guest Onboarding
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-foreground">{userName}</p>
-              <p className="text-[11px] text-muted-foreground font-mono">{userEmail}</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                localStorage.removeItem('auth_user')
-                navigate('/login')
-              }}
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full space-y-8">
+    <WorkspaceLayout>
+      <div className="space-y-8 pb-16">
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <Badge variant="secondary" className="px-3 py-1 font-semibold text-primary">
             <Sparkles size={13} className="mr-1.5 inline" /> Select Your Organization Plan
           </Badge>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+          <Heading level={1} size="display" className="tracking-tight text-foreground">
             Empower Your Workforce with Adaptive Competency Graphs
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          </Heading>
+          <Text variant="lead" className="text-muted-foreground max-w-2xl mx-auto">
             All plans include <strong className="text-foreground">identical, unrestricted platform capabilities</strong> with zero feature lockouts.
             Choose based solely on the number of user seats your organization requires.
-          </p>
+          </Text>
         </div>
 
         {/* Company Name Input Section */}
-        <div className="max-w-xl mx-auto bg-card border border-border p-5 rounded-2xl shadow-xs space-y-2">
+        <Card className="max-w-xl mx-auto border-border p-5 rounded-2xl shadow-xs space-y-2">
           <label
             htmlFor="company-name-input"
             className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
@@ -228,10 +198,10 @@ export function PackageSelectionPage() {
               required
             />
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <Text variant="caption" className="text-muted-foreground">
             This name will brand your company portal, ontology, learning modules, and user directory.
-          </p>
-        </div>
+          </Text>
+        </Card>
 
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
@@ -359,7 +329,7 @@ export function PackageSelectionPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Confirmation & Checkout Dialog */}
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
@@ -440,6 +410,6 @@ export function PackageSelectionPage() {
           </DialogFooter>
         </div>
       </Dialog>
-    </div>
+    </WorkspaceLayout>
   )
 }

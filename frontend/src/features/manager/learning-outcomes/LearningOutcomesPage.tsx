@@ -20,6 +20,7 @@ import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
   Dialog,
   DialogDescription,
@@ -216,31 +217,35 @@ export function LearningOutcomesPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Actions */}
-        <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Calendar className="h-4 w-4" />}
-            onClick={() =>
-              toast({
-                title: 'Current Academic Term',
-                description: 'Showing active aggregated outcomes for Q1 2026 cycle.',
-                variant: 'info',
-              })
-            }
-          >
-            Q1 2026 Cycle
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Download className="h-4 w-4" />}
-            onClick={() => setIsExportModalOpen(true)}
-          >
-            Export Learning Report
-          </Button>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Calendar className="h-4 w-4" />}
+                onClick={() =>
+                  toast({
+                    title: 'Current Academic Term',
+                    description: 'Showing active aggregated outcomes for Q1 2026 cycle.',
+                    variant: 'info',
+                  })
+                }
+              >
+                Q1 2026 Cycle
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Download className="h-4 w-4" />}
+                onClick={() => setIsExportModalOpen(true)}
+              >
+                Export Learning Report
+              </Button>
+            </div>
+          }
+        />
 
         {/* Aggregate KPI StatCards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

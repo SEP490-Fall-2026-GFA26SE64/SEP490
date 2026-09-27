@@ -23,6 +23,7 @@ import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
   Dialog,
   DialogDescription,
@@ -923,34 +924,38 @@ export function CompetencyOntologyPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Actions */}
-        <div className="flex items-center justify-end gap-2 pb-1 border-b border-border/60">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Upload className="h-4 w-4" />}
-            onClick={() => setIsImportModalOpen(true)}
-            className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
-          >
-            Import
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={handleOpenCreateSkill}
-          >
-            Create Micro-skill
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={handleOpenCreateComp}
-          >
-            Create Competency
-          </Button>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Upload className="h-4 w-4" />}
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
+              >
+                Import
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Plus className="h-4 w-4" />}
+                onClick={handleOpenCreateSkill}
+              >
+                Create Micro-skill
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Plus className="h-4 w-4" />}
+                onClick={handleOpenCreateComp}
+              >
+                Create Competency
+              </Button>
+            </div>
+          }
+        />
 
         {/* Aggregate KPI StatCards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

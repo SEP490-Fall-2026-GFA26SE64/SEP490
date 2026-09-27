@@ -27,6 +27,7 @@ import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Dialog } from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
@@ -109,19 +110,20 @@ export function TeamMatrixPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Badges */}
-        <div className="flex items-center justify-between pb-1 border-b border-border/60">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-foreground">{activeCompany.name}</span>
-            <Badge variant="secondary" className="font-mono text-[10px]">
-              {activeCompany.packageTier} Plan
-            </Badge>
-          </div>
-          <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
-            <Users className="h-3.5 w-3.5 text-primary" />
-            <span>{companyMembers.length} Team Members Scoped</span>
-          </Badge>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-mono text-xs">
+                {activeCompany.packageTier} Plan
+              </Badge>
+              <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
+                <Users className="h-3.5 w-3.5 text-primary" />
+                <span>{companyMembers.length} Members Scoped</span>
+              </Badge>
+            </div>
+          }
+        />
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -27,6 +27,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../../shared/components/ui/Dialog'
+import { EmptyState } from '../../../shared/components/ui/EmptyState'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
@@ -398,33 +400,27 @@ export function EmployeeTargetRolesPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16 target-roles-catalog-container">
-        {/* Top of the screen matching Assessment Quiz: Target Role on left */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-          <TargetRoleSelector />
-
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
-              {filteredRoles.length} Roles in Catalog
-            </Badge>
-          </div>
-        </div>
+        {/* Actions Bar */}
+        <PageHeader
+          actions={
+            <div className="w-full flex items-center justify-between gap-2.5 flex-wrap">
+              <TargetRoleSelector />
+              <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
+                {filteredRoles.length} Roles in Catalog
+              </Badge>
+            </div>
+          }
+        />
 
         {/* =========================================================================
             ACTIVE GOAL HERO OR EMPTY STATE
            ========================================================================= */}
         {rolesCatalog.length === 0 ? (
-          <Card className="border border-border shadow-xs text-center py-16 px-6">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-muted/60 text-muted-foreground flex items-center justify-center mb-4">
-              <Target size={28} />
-            </div>
-            <h3 className="text-lg font-bold text-foreground">No Target Roles Available</h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1 mb-4">
-              No target roles have been configured or published for {activeCompany.name} yet.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Please contact your L&amp;D Manager to create or import target roles for your organization.
-            </p>
-          </Card>
+          <EmptyState
+            icon={<Target size={28} className="text-primary" />}
+            title="No Target Roles Available"
+            description={`No target roles have been configured or published for ${activeCompany.name} yet. Please contact your L&D Manager to create or import target roles for your organization.`}
+          />
         ) : activeRoleInCatalog ? (
           <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-secondary/80 via-card to-card p-6 shadow-xs">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
