@@ -1,6 +1,7 @@
 package com.adaptlearngraph.platform;
 
 import com.adaptlearngraph.catalog.infrastructure.GraphSchemaMigrator;
+import com.adaptlearngraph.catalog.infrastructure.DevelopmentCatalogSeeder;
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class GraphSchemaTest {
     @Test
-    void createsCommunitySchemaAndRejectsDuplicateVersions() throws Exception {
+    void createsCatalogConstraintsAndRejectsDuplicateKeys() throws Exception {
         try (var neo4j = new Neo4jContainer<>("neo4j:5.26-community")) {
             neo4j.start();
             try (var driver = GraphDatabase.driver(neo4j.getBoltUrl(),
@@ -20,17 +21,31 @@ class GraphSchemaTest {
                 var migrator = new GraphSchemaMigrator(driver);
                 migrator.migrate();
                 migrator.migrate();
+                var seeder = new DevelopmentCatalogSeeder(driver);
+                seeder.seed();
+                seeder.seed();
                 try (var session = driver.session()) {
                     assertEquals(11, session.run("SHOW CONSTRAINTS YIELD name RETURN count(*) AS count").single()
                             .get("count").asInt());
                     assertEquals(1, session.run("MATCH (migration:SchemaMigration) RETURN count(migration) AS count")
                             .single().get("count").asInt());
-                    session.run("CREATE (:MicroSkill {skillId: 'synthetic-skill', versionId: 'version-1'})").consume();
+                    assertEquals(2, session.run("MATCH (module:LearningModule) RETURN count(module) AS count")
+                            .single().get("count").asInt());
+                    assertEquals(7, session.run("MATCH ()-[relationship]->() "
+                            + "RETURN count(DISTINCT type(relationship)) AS count")
+                            .single().get("count").asInt());
+                    assertEquals(2, session.run("MATCH (:TargetRole)-[:REQUIRES_SKILL]->(skill:MicroSkill) "
+                            + "RETURN count(skill) AS count").single().get("count").asInt());
+                    assertEquals(1, session.run("MATCH (:LearningModule)-[:HAS_ENTRY_REQUIREMENT]->(:MicroSkill) "
+                            + "RETURN count(*) AS count").single().get("count").asInt());
+                    session.run("CREATE (:MicroSkill {id: 'skill-1', code: 'SYNTHETIC_SKILL'})").consume();
                     assertThrows(ClientException.class,
                             () -> session
-                                    .run("CREATE (:MicroSkill {skillId: 'synthetic-skill', versionId: 'version-1'})")
+                                    .run("CREATE (:MicroSkill {id: 'skill-2', code: 'SYNTHETIC_SKILL'})")
                                     .consume());
-                    session.run("CREATE (:MicroSkill {skillId: 'synthetic-skill', versionId: 'version-2'})").consume();
+                    assertThrows(ClientException.class,
+                            () -> session.run("CREATE (:MicroSkill {id: 'skill-1', code: 'OTHER_SKILL'})").consume());
+                    session.run("CREATE (:TargetRole {id: 'role-1', code: 'SYNTHETIC_SKILL'})").consume();
                     session.run("MATCH (migration:SchemaMigration) SET migration.checksum = 'changed'").consume();
                     assertThrows(IllegalStateException.class, migrator::migrate);
                 }

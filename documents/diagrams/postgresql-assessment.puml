@@ -1,0 +1,240 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+title PostgreSQL - Assessment and learning
+class evidence_policy_version {
+    policy_version_id : uuid [PK]
+    policy_name : text
+    version : integer
+    configuration : jsonb
+    configuration_hash : platform.content_hash
+    approved_by? : uuid [FK]
+    approved_at? : timestamp with time zone
+}
+class model_version {
+    model_version_id : uuid [PK]
+    algorithm : text
+    version : text
+    parameter_hash : platform.content_hash
+    configuration : jsonb
+    artifact_ref : text
+    approved_by? : uuid [FK]
+    approved_at? : timestamp with time zone
+}
+class question_bank {
+    question_bank_id : uuid [PK]
+    name : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+}
+class item_version {
+    item_version_id : uuid [PK]
+    item_id : uuid
+    version : integer
+    question_bank_id : uuid [FK]
+    prompt : text
+    response_schema : jsonb
+    protected_key : jsonb
+    publication_state : text
+    content_hash : platform.content_hash
+}
+class assessment_version {
+    assessment_version_id : uuid [PK]
+    assessment_id : uuid
+    version : integer
+    title : text
+    purpose : text
+    pass_threshold : platform.unit_interval
+    scoring_version : text
+    publication_state : text
+    content_hash : platform.content_hash
+}
+class assessment_availability {
+    assessment_version_id : uuid [PK, FK]
+    revision : bigint [PK]
+    available : boolean
+    decided_by : uuid [FK]
+    decided_at : timestamp with time zone
+}
+class assessment_item {
+    assessment_version_id : uuid [PK, FK]
+    item_position : integer [PK]
+    item_version_id : uuid [FK]
+    required : boolean
+    scoring_weight : numeric
+}
+class item_skill_mapping {
+    mapping_version_id : uuid [PK]
+    item_version_id : uuid [FK]
+    skill_ref_id : uuid [FK]
+    skill_kind : text [FK]
+    evidence_weight : platform.positive_weight
+}
+class module_assessment_binding {
+    module_ref_id : uuid [PK, FK]
+    module_kind : text [FK]
+    assessment_version_id : uuid [PK, FK]
+    assessment_purpose : text [FK]
+    required : boolean
+    manifest_hash : platform.content_hash
+}
+class learning_activity {
+    activity_id : uuid [PK]
+    learner_id : uuid [FK]
+    module_ref_id : uuid [FK]
+    module_kind : text [FK]
+    kind : text
+    required_assessment_set_hash : platform.content_hash
+    created_at : timestamp with time zone
+}
+class activity_requirement {
+    activity_id : uuid [PK, FK]
+    module_ref_id : uuid [FK]
+    assessment_version_id : uuid [PK, FK]
+    required : boolean [FK]
+    manifest_hash : platform.content_hash [FK]
+}
+class assessment_assignment {
+    assignment_id : uuid [PK]
+    learner_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    purpose : text [FK]
+    activity_id? : uuid [FK]
+    activity_context? : uuid
+    available_from : timestamp with time zone
+    available_until? : timestamp with time zone
+    attempt_limit : integer
+    status : text
+}
+class assessment_attempt {
+    attempt_id : uuid [PK]
+    assignment_id : uuid [FK]
+    learner_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    activity_id? : uuid
+    activity_context? : uuid [FK]
+    operation : text
+    idempotency_key : text
+    request_hash : platform.content_hash
+    frozen_context : jsonb
+    submission_sequence : bigint
+    attempt_number : integer
+    accepted_at : timestamp with time zone
+}
+class item_response {
+    attempt_id : uuid [PK, FK]
+    item_position : integer [PK, FK]
+    assessment_version_id : uuid [FK]
+    item_version_id : uuid [FK]
+    response_payload : jsonb
+}
+class assessment_result {
+    attempt_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    activity_id? : uuid
+    activity_context? : uuid [FK]
+    score : platform.unit_interval
+    pass_threshold : platform.unit_interval
+    passed? : boolean
+    scoring_version : text
+    scored_at : timestamp with time zone
+}
+class evidence_observation {
+    observation_id : uuid [PK]
+    attempt_id : uuid [FK]
+    learner_id : uuid [FK]
+    item_position : integer [FK]
+    item_version_id : uuid [FK]
+    mapping_version_id : uuid [FK]
+    skill_ref_id : uuid [FK]
+    outcome : boolean
+    weight : platform.positive_weight [FK]
+    source_kind : text
+}
+class processing_stream {
+    processing_stream_id : uuid [PK]
+    learner_id : uuid [FK]
+    model_version_id : uuid [FK]
+    policy_version_id : uuid [FK]
+    created_at : timestamp with time zone
+}
+class profile_revision {
+    profile_revision_id : uuid [PK]
+    learner_id : uuid [FK]
+    processing_stream_id : uuid [FK]
+    model_version_id : uuid [FK]
+    policy_version_id : uuid [FK]
+    revision_number : bigint
+    evidence_watermark : bigint
+    status : text
+    created_at : timestamp with time zone
+}
+class mastery_estimate {
+    profile_revision_id : uuid [PK, FK]
+    skill_ref_id : uuid [PK, FK]
+    skill_kind : text [FK]
+    objective_value? : platform.unit_interval
+    provisional_value? : platform.unit_interval
+    effective_value? : platform.unit_interval
+    evidence_status : text
+}
+class evidence_application {
+    processing_stream_id : uuid [PK, FK]
+    observation_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    profile_revision_id : uuid [FK]
+    applied_at : timestamp with time zone
+}
+class progress_revision {
+    progress_revision_id : uuid [PK]
+    learner_id : uuid [FK]
+    revision_number : bigint
+    activity_snapshot : jsonb
+    snapshot_hash : platform.content_hash
+    created_at : timestamp with time zone
+}
+class module_completion {
+    activity_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    progress_revision_id : uuid [FK]
+    completed_at : timestamp with time zone
+}
+class completion_pass {
+    activity_id : uuid [PK, FK]
+    assessment_version_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    attempt_id : uuid [FK]
+    passed : boolean [FK]
+}
+activity_requirement --> assessment_assignment
+activity_requirement --> completion_pass
+assessment_assignment --> assessment_attempt
+assessment_attempt --> assessment_result
+assessment_attempt --> evidence_observation
+assessment_attempt --> item_response
+assessment_item --> item_response
+assessment_result --> completion_pass
+assessment_version --> assessment_assignment
+assessment_version --> assessment_availability
+assessment_version --> assessment_item
+assessment_version --> module_assessment_binding
+evidence_observation --> evidence_application
+evidence_policy_version --> processing_stream
+item_response --> evidence_observation
+item_skill_mapping --> evidence_observation
+item_version --> assessment_item
+item_version --> item_skill_mapping
+learning_activity --> activity_requirement
+learning_activity --> assessment_assignment
+learning_activity --> module_completion
+model_version --> processing_stream
+module_assessment_binding --> activity_requirement
+module_completion --> completion_pass
+processing_stream --> profile_revision
+profile_revision --> evidence_application
+profile_revision --> mastery_estimate
+progress_revision --> module_completion
+question_bank --> item_version
+@enduml

@@ -2,7 +2,6 @@ FROM maven:3.9.11-eclipse-temurin-21 AS build
 WORKDIR /workspace/backend
 COPY backend/pom.xml ./
 COPY backend/src ./src
-COPY infrastructure/neo4j/migrations /workspace/infrastructure/neo4j/migrations
 RUN mvn -B -ntp -DskipTests package
 
 FROM eclipse-temurin:21-jre-alpine

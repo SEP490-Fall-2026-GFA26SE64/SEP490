@@ -92,18 +92,6 @@
   </dependencies>
   <build>
     <finalName>adapt-learn-graph</finalName>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <directory>../infrastructure/neo4j/migrations</directory>
-        <targetPath>db/neo4j</targetPath>
-        <includes>
-          <include>*.cypher</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

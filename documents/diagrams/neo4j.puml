@@ -1,0 +1,77 @@
+@startuml
+!pragma layout smetana
+left to right direction
+hide empty members
+skinparam shadowing false
+
+class "JobDomain" as Domain {
+	id : String/UUID
+	code : String
+	name : String
+	description? : String
+	status : Status
+	createdAt : DateTime
+	updatedAt : DateTime
+}
+class "TargetRole" as Role {
+	id : String/UUID
+	code : String
+	name : String
+	familyCode : String
+	track : Track
+	description? : String
+	status : Status
+	createdAt : DateTime
+	updatedAt : DateTime
+}
+class "MacroCompetency" as Macro {
+	id : String/UUID
+	code : String
+	name : String
+	description? : String
+	status : Status
+	createdAt : DateTime
+	updatedAt : DateTime
+}
+class "MicroSkill\n(prerequisite)" as Foundation {
+	id : String/UUID
+	code : String
+	name : String
+	description? : String
+	status : Status
+	createdAt : DateTime
+	updatedAt : DateTime
+}
+class "MicroSkill\n(target)" as Destination {
+	id : String/UUID
+	code : String
+	name : String
+	description? : String
+	status : Status
+	createdAt : DateTime
+	updatedAt : DateTime
+}
+class "LearningModule" as Module {
+	id : String/UUID
+	code : String
+	title : String
+	provider : String
+	platform : String
+	sourceUrl : String/URL
+	durationHours? : Decimal
+	priceAmount? : Decimal
+	currency? : String
+	status : Status
+	createdAt : DateTime
+	updatedAt : DateTime
+}
+
+Domain --> Role : HAS_ROLE\nstatus, createdAt, updatedAt
+Role --> Macro : REQUIRES_MACRO\nstatus, createdAt, updatedAt
+Macro --> Foundation : HAS_SKILL\nstatus, createdAt, updatedAt
+Macro --> Destination : HAS_SKILL\nstatus, createdAt, updatedAt
+Role --> Destination : REQUIRES_SKILL\ntargetMastery, status, createdAt, updatedAt
+Foundation --> Destination : PREREQUISITE_OF\nminMastery, status, createdAt, updatedAt
+Module --> Destination : TEACHES\noutcomeMastery, coverage, status, createdAt, updatedAt
+Module --> Foundation : HAS_ENTRY_REQUIREMENT\nminMastery, status, createdAt, updatedAt
+@enduml

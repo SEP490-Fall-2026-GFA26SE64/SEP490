@@ -26,6 +26,27 @@ class DatabaseSchemaTest {
             try (var connection = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(),
                     postgres.getPassword());
                     var statement = connection.createStatement()) {
+                try (var result = statement.executeQuery(
+                        "SELECT count(*) FROM platform.application_role WHERE role_code IN "
+                                + "('EMPLOYEE', 'DOMAIN_EXPERT', 'ORGANIZATION_ADMINISTRATOR', 'PLATFORM_ADMINISTRATOR')")) {
+                    result.next();
+                    assertEquals(4, result.getInt(1));
+                }
+                statement.execute("""
+                        INSERT INTO platform.organization(organization_id, code, name) VALUES
+                            ('00000000-0000-0000-0000-000000000011', 'ORG_ONE', 'Organization One'),
+                            ('00000000-0000-0000-0000-000000000012', 'ORG_TWO', 'Organization Two');
+                        INSERT INTO platform.organizational_unit(unit_id, organization_id, name)
+                        VALUES ('00000000-0000-0000-0000-000000000013',
+                            '00000000-0000-0000-0000-000000000011', 'Development');
+                        """);
+                assertEquals("23503", assertThrows(SQLException.class, () -> statement.execute("""
+                        INSERT INTO platform.account(account_id, unit_id, organization_id, identifier,
+                            normalized_identifier, password_hash)
+                        VALUES ('00000000-0000-0000-0000-000000000014',
+                            '00000000-0000-0000-0000-000000000013',
+                            '00000000-0000-0000-0000-000000000012', 'other', 'other', 'hash')
+                        """)).getSQLState());
                 try (var result = statement
                         .executeQuery("SELECT state FROM platform.catalog_guard WHERE guard_id = 1")) {
                     result.next();

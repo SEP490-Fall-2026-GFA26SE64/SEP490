@@ -1,0 +1,10 @@
+CREATE CONSTRAINT job_domain_id IF NOT EXISTS FOR (node:JobDomain) REQUIRE node.id IS UNIQUE;
+CREATE CONSTRAINT job_domain_code IF NOT EXISTS FOR (node:JobDomain) REQUIRE node.code IS UNIQUE;
+CREATE CONSTRAINT target_role_id IF NOT EXISTS FOR (node:TargetRole) REQUIRE node.id IS UNIQUE;
+CREATE CONSTRAINT target_role_code IF NOT EXISTS FOR (node:TargetRole) REQUIRE node.code IS UNIQUE;
+CREATE CONSTRAINT macro_competency_id IF NOT EXISTS FOR (node:MacroCompetency) REQUIRE node.id IS UNIQUE;
+CREATE CONSTRAINT macro_competency_code IF NOT EXISTS FOR (node:MacroCompetency) REQUIRE node.code IS UNIQUE;
+CREATE CONSTRAINT micro_skill_id IF NOT EXISTS FOR (node:MicroSkill) REQUIRE node.id IS UNIQUE;
+CREATE CONSTRAINT micro_skill_code IF NOT EXISTS FOR (node:MicroSkill) REQUIRE node.code IS UNIQUE;
+CREATE CONSTRAINT learning_module_id IF NOT EXISTS FOR (node:LearningModule) REQUIRE node.id IS UNIQUE;
+CREATE CONSTRAINT learning_module_code IF NOT EXISTS FOR (node:LearningModule) REQUIRE node.code IS UNIQUE;
