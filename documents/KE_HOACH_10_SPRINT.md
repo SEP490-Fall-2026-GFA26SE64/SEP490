@@ -51,15 +51,15 @@ Nguồn phân công: [Phân công 4 người](PHAN_CONG_4_NGUOI.md); mục tiêu
 
 | Sprint | Function (ngày-công) | Tổng |
 | --- | --- | ---: |
-| 1 | REQ-003 Complete Soft Skill Assessment (3); REQ-046 Synchronize Learning State (2) | 5 |
-| 2 | REQ-044 Generate Soft-Skill AI Comments (2); REQ-046 Recover Incomplete Learning Updates (2); REQ-009 View Assessment Result (1) | 5 |
-| 3 | REQ-021 Review AI Soft-Skill Comments (2); REQ-002 Configure Baseline Assessment (3; fixture-backed, coverage gate sprint 4) | 5 |
-| 4 | REQ-001 View Target Roles (1.5); Choose Target Role (1.5); REQ-002 Complete Baseline Assessment (2/5, Bayesian engine) | 5 |
-| 5 | REQ-002 Complete Baseline Assessment (3/5, question snapshots/integration); REQ-009 View Assessment History (2) | 5 |
-| 6 | REQ-041 Update Competency Profile (2); Calculate Target-Role Gaps (2); REQ-006 View Competency Graph (1) | 5 |
-| 7 | REQ-042 Generate Initial Adaptive Pathway (5) | 5 |
-| 8 | REQ-008 Complete Module Assessment (3); REQ-043 Evaluate Recalculation Need (2) | 5 |
-| 9 | REQ-043 Recalculate Adaptive Pathway (3); REQ-025 View Employee Progress (2) | 5 |
+| 1 | REQ-001 View Target Roles (1.5); Choose Target Role (1.5); REQ-002 Configure Baseline Assessment (2/3) | 5 |
+| 2 | REQ-002 Configure Baseline Assessment (1/3); Complete Baseline Assessment (4/5) | 5 |
+| 3 | REQ-002 Complete Baseline Assessment (1/5); REQ-009 View Assessment Result (1); View Assessment History (2); REQ-046 Synchronize Learning State (1/2) | 5 |
+| 4 | REQ-046 Synchronize Learning State (1/2); REQ-041 Update Competency Profile (2); Calculate Target-Role Gaps (2) | 5 |
+| 5 | REQ-006 View Competency Graph (1); REQ-042 Generate Initial Adaptive Pathway (4/5) | 5 |
+| 6 | REQ-042 Generate Initial Adaptive Pathway (1/5); REQ-008 Complete Module Assessment (3); REQ-043 Evaluate Recalculation Need (1/2) | 5 |
+| 7 | REQ-043 Evaluate Recalculation Need (1/2); Recalculate Adaptive Pathway (3); REQ-046 Recover Incomplete Learning Updates (1/2) | 5 |
+| 8 | REQ-046 Recover Incomplete Learning Updates (1/2); REQ-025 View Employee Progress (2); REQ-003 Complete Soft Skill Assessment (2/3) | 5 |
+| 9 | REQ-003 Complete Soft Skill Assessment (1/3); REQ-044 Generate Soft-Skill AI Comments (2); REQ-021 Review AI Soft-Skill Comments (2) | 5 |
 | 10 | REQ-026 View Organizational Learning Statistics (2); REQ-027 Export Organizational Report (2); cross-store failure regression (1) | 5 |
 
 ## Người 4 - Pathway UI và benchmark
