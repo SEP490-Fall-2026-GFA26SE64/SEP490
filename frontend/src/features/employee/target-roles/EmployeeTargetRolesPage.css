@@ -1,0 +1,17 @@
+/* Scoped styles for Employee Target Roles Catalog */
+.target-roles-catalog-container,
+.employee-target-roles-catalog-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.target-roles-catalog-container input[type="range"]::-webkit-slider-thumb,
+.employee-target-roles-catalog-container input[type="range"]::-webkit-slider-thumb {
+  background-color: hsl(var(--primary));
+}
+
+.target-roles-catalog-container input[type="range"]::-moz-range-thumb,
+.employee-target-roles-catalog-container input[type="range"]::-moz-range-thumb {
+  background-color: hsl(var(--primary));
+}

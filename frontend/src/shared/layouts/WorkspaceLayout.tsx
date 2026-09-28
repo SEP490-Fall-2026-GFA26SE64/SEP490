@@ -1,17 +1,637 @@
+import * as React from 'react'
 import type { ReactNode } from 'react'
-import { Network } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import {
+  Activity,
+  Award,
+  BarChart3,
+  BookOpen,
+  Briefcase,
+  Building,
+  CheckSquare,
+  ChevronDown,
+  Compass,
+  FileQuestion,
+  GraduationCap,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Network,
+  Palette,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TrendingUp,
+  User,
+  Users,
+} from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
+import { NotificationDropdown } from '../components/ui/NotificationDropdown'
+import { useToast } from '../hooks/useToast'
+import { useTranslation } from '../i18n/LanguageContext'
+import {
+  getActiveCompany,
+  loadCompanies,
+  setActiveCompanyId,
+  type CompanyRecord,
+} from '../stores/companyStore'
+import { getUserProfile } from '../stores/userProfileStore'
 import './WorkspaceLayout.css'
 
+interface NavTabItem {
+  label: string
+  href: string
+  icon: React.ReactNode
+}
+
+export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'guest'
+
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const { t } = useTranslation()
+  const path = location.pathname
+
+  // Active Company tracking
+  const [activeCompany, setActiveCompanyState] = React.useState<CompanyRecord>(getActiveCompany)
+  const [allCompanies, setAllCompanies] = React.useState<CompanyRecord[]>(loadCompanies)
+
+  React.useEffect(() => {
+    const handleUpdate = () => {
+      setActiveCompanyState(getActiveCompany())
+      setAllCompanies(loadCompanies())
+    }
+    window.addEventListener('active_company_changed', handleUpdate)
+    window.addEventListener('companies_updated', handleUpdate)
+    return () => {
+      window.removeEventListener('active_company_changed', handleUpdate)
+      window.removeEventListener('companies_updated', handleUpdate)
+    }
+  }, [])
+
+  // User menu state & profile update listener
+  const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
+  const [, setProfileRevision] = React.useState(0)
+  const userMenuRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileRevision((prev) => prev + 1)
+    }
+    window.addEventListener('user_profile_updated', handleProfileUpdate)
+    return () => window.removeEventListener('user_profile_updated', handleProfileUpdate)
+  }, [])
+
+  // Close user menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Persist active actor context across route changes in useEffect
+  React.useEffect(() => {
+    if (path.startsWith('/expert')) {
+      localStorage.setItem('active_actor', 'expert')
+    } else if (path.startsWith('/ld-manager') || path.startsWith('/manager')) {
+      localStorage.setItem('active_actor', 'ld-manager')
+    } else if (
+      path.startsWith('/admin') ||
+      path.startsWith('/knowledge-graph') ||
+      path.startsWith('/design-system')
+    ) {
+      localStorage.setItem('active_actor', 'admin')
+    } else if (
+      path.startsWith('/employee') ||
+      path.startsWith('/learner') ||
+      path === '/assessment'
+    ) {
+      localStorage.setItem('active_actor', 'employee')
+    } else if (path.startsWith('/packages') || path.startsWith('/guest')) {
+      localStorage.setItem('active_actor', 'guest')
+    }
+  }, [path])
+
+  // Pure resolver for active actor context
+  const getActiveActor = (): ActorRole => {
+    if (path.startsWith('/expert')) return 'expert'
+    if (path.startsWith('/ld-manager') || path.startsWith('/manager')) return 'ld-manager'
+    if (
+      path.startsWith('/admin') ||
+      path.startsWith('/knowledge-graph') ||
+      path.startsWith('/design-system')
+    ) {
+      return 'admin'
+    }
+    if (
+      path.startsWith('/employee') ||
+      path.startsWith('/learner') ||
+      path === '/assessment'
+    ) {
+      return 'employee'
+    }
+    if (path.startsWith('/packages') || path.startsWith('/guest')) return 'guest'
+
+    const savedActor = localStorage.getItem('active_actor') as ActorRole | null
+    if (savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin' || savedActor === 'guest') {
+      return savedActor
+    }
+    return 'employee'
+  }
+
+  const activeActor = getActiveActor()
+  const isEmployee = activeActor === 'employee' || activeActor === 'learner'
+  const isExpert = activeActor === 'expert'
+  const isLdManager = activeActor === 'ld-manager'
+  const isAdmin = activeActor === 'admin'
+  const isGuest = activeActor === 'guest'
+
+  // Actor-specific navigation tabs for the navbar
+  let actorTabs: NavTabItem[] = []
+
+  if (isEmployee) {
+    actorTabs = [
+      {
+        label: t('nav.overview'),
+        href: '/employee/overview',
+        icon: <LayoutDashboard size={15} />,
+      },
+      {
+        label: t('nav.targetRoles'),
+        href: '/employee/target-roles',
+        icon: <Target size={15} />,
+      },
+      {
+        label: t('nav.pathway'),
+        href: '/employee/pathway',
+        icon: <Compass size={15} />,
+      },
+      {
+        label: t('nav.gapAnalysis'),
+        href: '/employee/gap-analysis',
+        icon: <Award size={15} />,
+      },
+      {
+        label: t('nav.assessmentQuiz'),
+        href: '/employee/assessment',
+        icon: <CheckSquare size={15} />,
+      },
+      {
+        label: t('nav.serverStatus'),
+        href: '/system-status?portal=employee',
+        icon: <Activity size={15} />,
+      },
+    ]
+  } else if (isExpert) {
+    actorTabs = [
+      {
+        label: t('nav.ontology'),
+        href: '/expert/ontology',
+        icon: <Network size={15} />,
+      },
+      {
+        label: t('nav.modules'),
+        href: '/expert/modules',
+        icon: <BookOpen size={15} />,
+      },
+      {
+        label: t('nav.assessmentBank'),
+        href: '/expert/assessment-bank',
+        icon: <FileQuestion size={15} />,
+      },
+      {
+        label: t('nav.serverStatus'),
+        href: '/system-status?portal=expert',
+        icon: <Activity size={15} />,
+      },
+    ]
+  } else if (isLdManager) {
+    actorTabs = [
+      {
+        label: t('nav.learningOutcomes'),
+        href: '/ld-manager/learning-outcomes',
+        icon: <BarChart3 size={15} />,
+      },
+      {
+        label: t('nav.targetRoles'),
+        href: '/ld-manager/target-roles',
+        icon: <Briefcase size={15} />,
+      },
+      {
+        label: t('nav.userDirectory'),
+        href: '/ld-manager/users',
+        icon: <Users size={15} />,
+      },
+      {
+        label: t('nav.teamMatrix'),
+        href: '/ld-manager/team-matrix',
+        icon: <Users size={15} />,
+      },
+      {
+        label: t('nav.roiForecast'),
+        href: '/ld-manager/roi-forecast',
+        icon: <TrendingUp size={15} />,
+      },
+      {
+        label: t('nav.serverStatus'),
+        href: '/system-status?portal=ld-manager',
+        icon: <Activity size={15} />,
+      },
+    ]
+  } else if (isAdmin) {
+    actorTabs = [
+      {
+        label: t('nav.ontology'),
+        href: '/admin/dashboard',
+        icon: <Layers size={15} />,
+      },
+      {
+        label: t('nav.knowledgeGraph'),
+        href: '/admin/knowledge-graph',
+        icon: <Network size={15} />,
+      },
+      {
+        label: t('nav.designSystem'),
+        href: '/admin/design-system',
+        icon: <Palette size={15} />,
+      },
+      {
+        label: t('nav.serverStatus'),
+        href: '/system-status?portal=admin',
+        icon: <Activity size={15} />,
+      },
+    ]
+  } else if (isGuest) {
+    actorTabs = [
+      {
+        label: t('nav.selectPlan'),
+        href: '/packages',
+        icon: <Sparkles size={15} />,
+      },
+    ]
+  }
+
+  // Active user profile metadata based on active actor
+  const userProfile = getUserProfile(activeActor)
+
+  // Helper for determining whether a nav tab is active
+  const isTabActive = (itemHref: string) => {
+    if (itemHref.startsWith('/system-status')) {
+      return (
+        path.startsWith('/system-status') &&
+        ((isEmployee && (!location.search || location.search.includes('portal=employee') || location.search.includes('portal=learner'))) ||
+          (isExpert && location.search.includes('portal=expert')) ||
+          (isLdManager && (location.search.includes('portal=ld-manager') || location.search.includes('portal=manager'))) ||
+          (isAdmin && location.search.includes('portal=admin')))
+      )
+    }
+    if (itemHref === '/employee/overview' || itemHref === '/learner/overview') {
+      return (
+        path === '/employee/overview' ||
+        path === '/employee' ||
+        path === '/learner/overview' ||
+        path === '/learner' ||
+        path === '/'
+      )
+    }
+    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
+      return path === '/employee/target-roles' || path === '/learner/target-roles'
+    }
+    if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
+      return path === '/employee/pathway' || path === '/learner/pathway'
+    }
+    if (itemHref === '/employee/gap-analysis' || itemHref === '/learner/gap-analysis') {
+      return path === '/employee/gap-analysis' || path === '/learner/gap-analysis'
+    }
+    if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
+      return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
+    }
+    if (itemHref === '/expert/ontology') {
+      return path === '/expert/ontology' || path === '/ld-manager/ontology' || path === '/manager/ontology'
+    }
+    if (itemHref === '/expert/modules') {
+      return path === '/expert/modules' || path === '/ld-manager/modules' || path === '/manager/modules'
+    }
+    if (itemHref === '/expert/assessment-bank') {
+      return path === '/expert/assessment-bank' || path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+    }
+    if (itemHref === '/ld-manager/learning-outcomes') {
+      return (
+        path === '/ld-manager/learning-outcomes' ||
+        path === '/ld-manager' ||
+        path === '/manager/learning-outcomes' ||
+        path === '/manager'
+      )
+    }
+    if (itemHref === '/ld-manager/target-roles') {
+      return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
+    }
+    if (itemHref === '/ld-manager/users') {
+      return path === '/ld-manager/users' || path === '/admin/users'
+    }
+    if (itemHref === '/ld-manager/team-matrix') {
+      return path === '/ld-manager/team-matrix' || path === '/manager/team-matrix'
+    }
+    if (itemHref === '/ld-manager/roi-forecast') {
+      return path === '/ld-manager/roi-forecast' || path === '/manager/roi-forecast'
+    }
+    if (itemHref === '/admin/dashboard') {
+      return path === '/admin/dashboard' || path === '/admin'
+    }
+    if (itemHref === '/admin/knowledge-graph') {
+      return path === '/admin/knowledge-graph' || path === '/knowledge-graph'
+    }
+    if (itemHref === '/admin/design-system') {
+      return path === '/admin/design-system' || path === '/design-system'
+    }
+    if (itemHref === '/packages' || itemHref.startsWith('/packages')) {
+      return path.startsWith('/packages') || path.startsWith('/guest')
+    }
+    return path === itemHref
+  }
+
+  const brandHomeUrl = isGuest
+    ? '/packages'
+    : isEmployee
+    ? '/employee/overview'
+    : isExpert
+    ? '/expert/ontology'
+    : isLdManager
+    ? '/ld-manager/learning-outcomes'
+    : '/admin/dashboard'
+
   return (
     <div className="workspace">
-      <header className="topbar">
-        <Link className="brand" to="/"><Network size={28} aria-hidden="true" />Adapt-Learn-Graph</Link>
-        <span className="environment">Development</span>
+      {/* Top Navigation Header with Tabs directly in Navbar and Far-Right Account */}
+      <header className="workspace-header">
+        <div className="workspace-topbar">
+          {/* Left: Brand + Active Company Badge */}
+          <div className="flex items-center justify-start gap-3 min-w-0">
+            <Link className="brand shrink-0" to={brandHomeUrl}>
+              <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
+              <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate">
+                Adapt-Learn-Graph
+              </span>
+            </Link>
+
+            {/* Active Company & Seat Quota Pill */}
+            {!isGuest ? (
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
+                <Building size={13} className="text-primary" />
+                <span className="truncate max-w-[140px]" title={activeCompany.name}>
+                  {activeCompany.name}
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="font-mono text-primary text-[11px]">
+                  {activeCompany.packageTier} ({activeCompany.users.length}/{activeCompany.maxUsers})
+                </span>
+              </div>
+            ) : (
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
+                <Building size={13} className="text-primary" />
+                <span className="truncate max-w-[160px]">
+                  New Organization
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="font-mono text-primary text-[11px]">
+                  Select Package
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Center: Feature Tabs Directly in Navbar */}
+          <nav className="workspace-tabs-nav" aria-label="Feature navigation tabs">
+            {actorTabs.map((item) => {
+              const active = isTabActive(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`workspace-nav-tab ${active ? 'active' : ''}`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Far-Right: Language Switcher, Notifications & User Account Card */}
+          <div className="flex items-center justify-end gap-2">
+            {/* Language Switcher (EN / VI) */}
+            <LanguageSwitcher />
+
+            {/* Real-time Notification Bell & Dropdown */}
+            <NotificationDropdown />
+
+            {/* Account Menu Button */}
+            <div ref={userMenuRef} className="workspace-account relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                className={`workspace-account-btn ${isUserMenuOpen ? 'active' : ''}`}
+                title="Account actions and profile"
+                aria-label="User actions menu"
+                aria-expanded={isUserMenuOpen}
+              >
+                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                  {userProfile.initials}
+                </div>
+                <div className="hidden sm:flex flex-col items-start text-left min-w-0">
+                  <span className="text-sm font-bold text-foreground leading-tight truncate max-w-[130px]">
+                    {userProfile.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground leading-tight truncate">
+                    {userProfile.portal}
+                  </span>
+                </div>
+                <ChevronDown
+                  size={14}
+                  className={`text-muted-foreground transition-transform duration-150 ${
+                    isUserMenuOpen ? 'rotate-180 text-primary' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="workspace-account-dropdown">
+                  {/* Header with enlarged name and email */}
+                  <div className="px-4 py-3 border-b border-border bg-muted/25">
+                    <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
+                    <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
+                    <p className="text-[11px] text-primary font-semibold mt-1 flex items-center gap-1">
+                      <Building size={12} /> {isGuest ? 'New Organization Registration' : activeCompany.name}
+                    </p>
+                  </div>
+
+                  <div className="py-1">
+                    {/* Switch Persona Shortcuts Across 4 Primary Roles */}
+                    <div className="px-3.5 py-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {t('roles.switchRolePortal')}
+                      </span>
+                      <div className="mt-1.5 flex flex-col gap-0.5">
+                        {/* 1. Employee */}
+                        <Link
+                          to="/employee/overview"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isEmployee
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <GraduationCap size={13} />
+                            <span>{t('roles.employee')}</span>
+                          </span>
+                          {isEmployee && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 2. Expert */}
+                        <Link
+                          to="/expert/ontology"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isExpert
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles size={13} className="text-success" />
+                            <span>{t('roles.expert')}</span>
+                          </span>
+                          {isExpert && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 3. L&D Manager */}
+                        <Link
+                          to="/ld-manager/learning-outcomes"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isLdManager
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Briefcase size={13} />
+                            <span>{t('roles.ldManager')}</span>
+                          </span>
+                          {isLdManager && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 4. Admin */}
+                        <Link
+                          to="/admin/dashboard"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isAdmin
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <ShieldCheck size={13} />
+                            <span>{t('roles.admin')}</span>
+                          </span>
+                          {isAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 5. Guest */}
+                        <Link
+                          to="/packages"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isGuest
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles size={13} className="text-primary" />
+                            <span>{t('roles.guest')}</span>
+                          </span>
+                          {isGuest && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+                      </div>
+                    </div>
+
+                    <div className="my-1 border-t border-border" />
+
+                    {/* Switch Company Quick Option */}
+                    <div className="px-3.5 py-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                        Active Company Scope
+                      </span>
+                      <select
+                        value={activeCompany.id}
+                        onChange={(e) => {
+                          setActiveCompanyId(e.target.value)
+                          setIsUserMenuOpen(false)
+                          toast({
+                            title: 'Company Context Changed',
+                            description: `Switched active organization scope.`,
+                            variant: 'info',
+                          })
+                        }}
+                        className="w-full rounded border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground focus:outline-none"
+                      >
+                        {allCompanies.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.packageTier})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="my-1 border-t border-border" />
+
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="w-full text-left px-3.5 py-1.5 text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 font-medium cursor-pointer"
+                    >
+                      <User size={13} className="text-primary" />
+                      <span>{t('common.profile')}</span>
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        toast({
+                          title: 'Signed Out',
+                          description: 'You have been signed out of Adapt-Learn-Graph.',
+                          variant: 'info',
+                        })
+                        navigate('/login')
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2 font-medium cursor-pointer"
+                    >
+                      <LogOut size={14} />
+                      <span>{t('common.logout')}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </header>
-      <main className="workspace-main">{children}</main>
-      <footer className="workspace-footer">Adapt-Learn-Graph<span>Development workspace</span></footer>
+
+      {/* Main Content Area */}
+      <div className="workspace-body">
+        <main className="workspace-main">{children}</main>
+      </div>
     </div>
   )
 }

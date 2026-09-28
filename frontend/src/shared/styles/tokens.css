@@ -1,27 +1,110 @@
 :root {
-  --font-body: 'IBM Plex Sans', sans-serif;
-  --text-xs: 12px;
-  --text-sm: 14px;
-  --text-body: 16px;
-  --text-page: 30px;
-  --text-section: 18px;
-  --text-primary: #283333;
-  --text-secondary: #5f6464;
-  --text-muted: #667371;
-  --surface: #fff;
-  --background: #f6f8f8;
-  --accent: #16705c;
-  --border: #dce3e2;
-  --control-border: #b2c9c2;
-  --control-hover: #eaf4f0;
-  --focus: #aa7300;
-  --warning: #e6b753;
-  --danger: #a03636;
-  --surface-tint: #f0f6f3;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --radius-control: 5px;
+  /* ==========================================================================
+     Official Team Design System: Refined Orange with Cool Slate Neutral Canvas
+     - Crisp, cool slate canvas prevents eye strain (no hot yellow/brown haze)
+     - Focused burnt orange primary CTAs
+     - Vivid Golden Yellow for In Progress / Pending (distinct from primary orange)
+     ========================================================================== */
+
+  /* Brand Primary - Refined Terracotta Orange */
+  --primary: 24 88% 48%;              /* #EA580C - Crisp, focused brand orange */
+  --primary-hover: 21 90% 40%;        /* #C2410C */
+  --primary-foreground: 0 0% 100%;   /* #FFFFFF */
+
+  /* Secondary Tint - Soft Peach Tint */
+  --secondary: 24 95% 96%;            /* #FFF5EB */
+  --secondary-hover: 24 95% 91%;      /* #FEE6D4 */
+  --secondary-foreground: 21 90% 36%; /* #9A3412 */
+
+  /* Canvas & Containers - Crisp Cool Slate Canvas (Distinct surface elevation against white cards) */
+  --background: 215 22% 92%;          /* #E4EAF2 - Rich cool slate canvas that prevents white cards from blending in */
+  --foreground: 222 47% 11%;          /* #0F172A - Deep crisp slate text */
+
+  --card: 0 0% 100%;                /* #FFFFFF - Pure clean elevated surface */
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  /* Neutral States - Cool Slate Neutrals */
+  --muted: 215 20% 86%;               /* #D4DFEC - Distinct neutral fill */
+  --muted-foreground: 215 22% 38%;    /* #4B5F76 - High-contrast slate muted text (6.2:1 WCAG AA) */
+
+  --accent: 24 95% 96%;
+  --accent-foreground: 24 88% 48%;
+
+  /* Feedback Colors */
+  --success: 142 72% 36%;           /* #16A34A - High-Contrast Leaf Green */
+  --success-foreground: 0 0% 100%;
+
+  /* In Progress / Pending / Warning - Luminous Yellow (DISTINCT from Primary Orange) */
+  --warning: 48 96% 48%;            /* #EAB308 - Vivid Sunny Yellow */
+  --warning-foreground: 222 47% 11%; /* #0F172A - High-contrast dark text on yellow */
+
+  --destructive: 0 72% 51%;         /* #DC2626 - Warning / Error Red */
+  --destructive-foreground: 0 0% 100%;
+
+  /* Borders & Focus Rings - Crisp Cool Slate */
+  --border: 215 20% 82%;              /* #C6D2E0 - Crisp elevated container borders */
+  --input: 215 20% 82%;
+  --ring: 24 88% 48%;                 /* #EA580C */
+
+  --radius: 0.5rem;                  /* 8px modern control radius */
+
+  /* Direct Color Tokens */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --surface: #FFFFFF;
+  --control-border: #E2E8F0;
+  --control-hover: #FFF5EB;
+  --focus: #EA580C;
+
+  /* Typography Scale Tokens */
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-display: 36px;
+  --text-page: 28px;
+  --text-section: 22px;
+  --text-subsection: 18px;
+  --text-card: 16px;
+  --text-body: 15.5px;
+  --text-body-sm: 14px;
+  --text-caption: 13px;
+  --text-eyebrow: 12px;
+}
+
+.dark {
+  /* High-Tech Cool Slate Dark Mode with Refined Orange CTAs and Bright Yellow Status */
+  --background: 222 47% 9%;           /* #0B0F17 - Deep Cool Slate */
+  --foreground: 210 30% 96%;          /* #F1F5F9 - Crisp Off-White */
+
+  --card: 222 40% 13%;               /* #141C2A - Clean Elevated Card */
+  --card-foreground: 210 30% 96%;
+
+  --popover: 222 40% 13%;
+  --popover-foreground: 210 30% 96%;
+
+  --primary: 24 95% 53%;             /* #F97316 - Glowing Orange */
+  --primary-hover: 24 95% 46%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 222 25% 18%;          /* #222C3C */
+  --secondary-foreground: 210 30% 96%;
+
+  --muted: 222 25% 16%;              /* #1B2433 */
+  --muted-foreground: 215 20% 65%;   /* #94A3B8 */
+
+  --accent: 222 25% 18%;
+  --accent-foreground: 24 95% 53%;
+
+  --destructive: 0 65% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --warning: 48 96% 53%;             /* #FACC15 - Bright Luminous Yellow */
+  --warning-foreground: 222 47% 11%;
+
+  --border: 222 25% 20%;             /* #263345 */
+  --input: 222 25% 20%;
+  --ring: 24 95% 53%;
+  --focus: #F97316;
 }

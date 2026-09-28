@@ -1,0 +1,455 @@
+/* Scoped styles for Agent/Enterprise Login Page strictly following system tokens */
+.razor-login-page {
+  --color-card: hsl(var(--card));
+  --color-secondary: hsl(var(--secondary));
+  --color-primary: hsl(var(--primary));
+  --color-primary-15: hsl(var(--primary) / 0.15);
+
+  min-height: 100vh;
+  width: 100%;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* TOP NAVBAR - Scaled Up with Premium Typography */
+.razor-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 64px 0;
+  z-index: 20;
+}
+
+@media (max-width: 640px) {
+  .razor-nav {
+    padding: 24px 24px 0;
+  }
+}
+
+.razor-brand-box {
+  display: flex;
+  align-items: center;
+}
+
+.razor-logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.035em;
+  text-decoration: none;
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s;
+}
+
+.razor-logo:hover {
+  opacity: 0.9;
+}
+
+.razor-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.razor-globe-btn {
+  background: transparent;
+  border: 1.5px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+
+.razor-globe-btn:hover {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.1);
+}
+
+.razor-nav-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.razor-nav-link:hover {
+  opacity: 0.75;
+}
+
+.razor-request-btn {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border: 1px solid hsl(var(--primary) / 0.3);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s;
+  box-shadow: 0 1px 2px hsl(var(--primary) / 0.05);
+}
+
+.razor-request-btn:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+.razor-request-btn:active {
+  transform: scale(0.98);
+}
+
+/* MAIN CONTENT AREA WITH CENTRALLY ALIGNED ILLUSTRATIONS FLANKING THE CARD */
+.razor-main-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 16px 32px 24px;
+  width: 100%;
+}
+
+.razor-stage {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  max-width: 1560px;
+  min-height: 640px;
+}
+
+/* Grounded Left illustration: hugs the left edge of the card, grounded on baseline */
+.razor-illustration-left {
+  position: absolute;
+  right: calc(50% + 260px);
+  bottom: 24px;
+  width:700px;
+  max-width: 35vw;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  transition: opacity 0.2s, transform 0.2s, width 0.2s;
+}
+
+/* Grounded Right illustration: positioned to the right of the card with comfortable breathing space */
+.razor-illustration-right {
+  position: absolute;
+  left: calc(50% + 315px);
+  bottom: 34px;
+  width: 660px;
+  max-width: 35vw;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  transition: opacity 0.2s, transform 0.2s, width 0.2s, left 0.2s, bottom 0.2s;
+}
+
+.razor-illustration-img {
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 36px rgba(15, 23, 42, 0.08));
+}
+
+@media (max-width: 1580px) {
+  .razor-illustration-left {
+    right: calc(50% + 250px);
+    width: 440px;
+  }
+  .razor-illustration-right {
+    left: calc(50% + 295px);
+    bottom: 56px;
+    width: 450px;
+  }
+}
+
+@media (max-width: 1360px) {
+  .razor-illustration-left {
+    right: calc(50% + 240px);
+    width: 360px;
+  }
+  .razor-illustration-right {
+    left: calc(50% + 275px);
+    width: 370px;
+  }
+}
+
+@media (max-width: 1140px) {
+  .razor-illustration-left {
+    right: calc(50% + 230px);
+    width: 290px;
+    opacity: 0.8;
+  }
+  .razor-illustration-right {
+    left: calc(50% + 255px);
+    width: 300px;
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 980px) {
+  .razor-illustration-left,
+  .razor-illustration-right {
+    display: none;
+  }
+}
+
+.razor-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* CENTER FLOATING WHITE CARD (Generously Scaled & Prominent) */
+.razor-card {
+  width: 100%;
+  max-width: 580px;
+  min-height: 560px;
+  margin-bottom: 24px;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 42px;
+  padding: 56px 50px 44px;
+  box-shadow: 0 24px 60px -15px hsl(var(--foreground) / 0.09),
+              0 8px 24px -6px hsl(var(--foreground) / 0.04),
+              0 0 1px 1px hsl(var(--border) / 0.6);
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .razor-card {
+    padding: 38px 26px 30px;
+    border-radius: 28px;
+    min-height: auto;
+    margin-bottom: 0;
+  }
+}
+
+.razor-card-header {
+  text-align: center;
+  margin-bottom: 34px;
+}
+
+.razor-card-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+}
+
+.razor-card-subtitle {
+  font-size: 15.5px;
+  color: hsl(var(--muted-foreground));
+  margin: 0 auto;
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+/* FORM STYLES - Enlarged with Premium Heuristics */
+.razor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.razor-input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: hsl(var(--card));
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 16px;
+  padding: 0 22px;
+  height: 62px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.razor-input-wrapper:focus-within {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.18);
+}
+
+.razor-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  padding-right: 10px;
+}
+
+.razor-input::placeholder {
+  color: hsl(var(--muted-foreground) / 0.7);
+  font-size: 15px;
+}
+
+.razor-input-circle-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid hsl(var(--border));
+  flex-shrink: 0;
+}
+
+.razor-hide-btn {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  padding: 6px 8px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.razor-hide-btn:hover {
+  color: hsl(var(--foreground));
+}
+
+/* SUBMIT BUTTON - Large, Confident & High-Contrast */
+.razor-submit-btn {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 16.5px;
+  font-weight: 700;
+  border: none;
+  border-radius: 15px;
+  height: 60px;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.razor-submit-btn:hover {
+  background-color: hsl(var(--primary-hover));
+  box-shadow: 0 6px 18px hsl(var(--primary) / 0.35);
+}
+
+.razor-submit-btn:active {
+  transform: scale(0.985);
+}
+
+.razor-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* DEMO SWITCHER PILLS */
+.razor-demo-strip {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px dashed hsl(var(--border));
+  text-align: center;
+}
+
+.razor-demo-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 12px;
+}
+
+.razor-demo-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.razor-demo-pill {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.razor-demo-pill:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.razor-demo-pill.active {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  box-shadow: 0 2px 6px hsl(var(--primary) / 0.15);
+}
+
+/* FOOTER - Scaled Up with Premium Typography */
+.razor-footer {
+  text-align: center;
+  padding: 24px 28px 36px;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 20;
+}
+
+.razor-footer-divider {
+  color: hsl(var(--border));
+  font-size: 16px;
+}
+
+.razor-privacy-link {
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  padding: 2px 6px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.razor-privacy-link:hover {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+}
