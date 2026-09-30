@@ -2,64 +2,86 @@
 
 **Function ID:** REQ-001-F01  
 **Actor:** Employee  
-**Status:** In clarification  
+**Status:** Base contract defined; implementation and real-adapter integration pending
 **Feature:** [Target Role Selection](README.md)
 
 ## Description
 
-Display only published, active, baseline-ready target roles within the employee's organization and the competency requirements of a selected role. Viewing a role does not select it as the employee's development goal. For this visibility gate, fully configured means baseline-ready as defined below.
+Display active, catalog-valid target roles owned by the employee's organization and the competency requirements of a selected role. Viewing a role does not select it as the employee's development goal. Baseline-assessment readiness, learner proficiency, skill gap and pathway availability are separate concerns and do not control this browsing function.
 
 **Input:** Authenticated employee, organization context, optional role-name search, and optional seniority filter.  
 **Outcome:** An authorized role list and role details; no target selection is changed.
+
+## Implementation Base Contract
+
+This contract supports an extensible first implementation while identity, catalog publication and cross-store versioning continue to evolve.
+
+### Data ownership
+
+- Neo4j owns target roles, micro-skills and `REQUIRES_SKILL.targetMastery`.
+- Trusted security context provides the employee identity and `organizationId`; clients must not choose the tenant in query parameters or request bodies.
+- PostgreSQL assessment settings, question coverage, learner evidence, mastery and pathways are not read by this function.
+- The application depends on a `TargetRoleCatalogPort`; Neo4j records are mapped at the infrastructure boundary and are not exposed directly to the API or frontend.
+
+### TargetRole fields used by this function
+
+| Field | Required | Purpose |
+| --- | --- | --- |
+| `id` | Yes | Stable technical identifier used by detail requests |
+| `code` | Yes | Stable business code |
+| `name` | Yes | Display and role-name search |
+| `familyCode` | Yes | Role family metadata |
+| `track` | Yes | Professional or management track; not seniority |
+| `organizationId` | Yes | Tenant scope matched to trusted actor context |
+| `seniority` | Yes | Exact grade filter: `P1`–`P5` for `PROFESSIONAL`, `M3`–`M4` for `MANAGEMENT`; not derived from code/name |
+| `description` | No | Employee-facing role summary |
+| `responsibilities` | No | Employee-facing responsibility list |
+| `status` | Yes | Only `ACTIVE` roles are browsable |
+
+Required proficiency is read from active `REQUIRES_SKILL.targetMastery`; it is not a learner score or readiness percentage.
+
+### Minimal API
+
+- `GET /api/v1/employee/target-roles?search=&seniority=`
+- `GET /api/v1/employee/target-roles/{roleId}`
+
+The list returns `id`, `code`, `name`, `track`, `seniority`, `description` and `requirementCount`. Detail additionally returns `familyCode`, `responsibilities` and requirements containing `skillId`, `skillCode`, `skillName` and `targetMastery`.
+
+The base has no pagination or catalog revision field. Results sort by normalized role name and then stable ID. Search is a trimmed, case-insensitive role-name substring; seniority is an exact grade-code match. A professional role must use `P1`–`P5`; a management role must use `M3`–`M4`. Grade meaning may differ by domain and role family.
 
 ## Confirmed Rules
 
 - Employees can view organization target roles and their competency requirements.
 - Other organizations' roles are not exposed through this function.
-- Only published, active roles whose configuration is complete are visible. Draft, inactive, archived, and incompletely configured roles are hidden from employee browsing. Publication and active status alone do not establish configuration completeness.
-- Baseline readiness requires defined role requirements and prerequisite relationships, saved baseline assessment settings, and passing eligible-question coverage for the configured role-and-prerequisite scope. Apply the established cap-per-difficulty rule: with cap 5, each scope skill needs at least 5 eligible Easy, 5 Medium, and 5 Hard questions. A previously successful configuration save alone is not proof that current question coverage still passes.
-- Mapped learning modules and their module assessments are not prerequisites for employee role visibility. Baseline readiness does not guarantee that a complete learning pathway can already be generated. Publication, active status, and organization isolation remain separate requirements.
+- A role is browsable only when its `organizationId` matches trusted actor context, its status is `ACTIVE`, its required fields are present, and it has at least one active `REQUIRES_SKILL` to an active skill with `targetMastery` in `[0,1]`.
+- `DRAFT`, `RETIRED`, cross-organization and catalog-invalid roles are hidden. The base does not introduce separate published or archived flags.
 - Display the role name, description and responsibilities, seniority level, competency requirements, and required proficiency for each micro-skill.
 - The assigned Domain Expert's name is not part of the selected employee-facing field set.
 - Provide search by role name and filtering by seniority. A required-micro-skill filter is not included in the selected scope.
-- Search and filtering operate only on published, active, fully configured roles within the employee's organization.
-- Recheck current role availability on every list or detail request, including loading, refreshing, searching, changing or clearing filters, opening details, and returning to the role list. Check organization authorization, publication, active status, and baseline readiness. Do not use background polling or pushed updates to refresh idle role lists or details.
-- An already-open page may retain previously returned content until the next request; it is not proof of current availability. Always recheck availability before confirming an initial selection or role change, as specified in [Choose Target Role](Choose%20Target%20Role.md). Reject an unavailable candidate without changing the existing selection or pathway.
+- Search and filtering operate only on active, catalog-valid roles within the employee's organization.
+- Every list or detail request checks the current organization scope, `ACTIVE` status and catalog validity.
 - When the search/filter returns no results, show "No matching roles" with a **Clear filters** action.
 - **Clear filters** resets the role-name search and seniority filter and reloads the permitted role list. It does not remove organization or role-visibility restrictions.
 - When the organization has no roles meeting all visibility conditions even without search/filter criteria, show "No roles available. Please contact your Organization Administrator." This message does not initiate an automatic notification or support request.
-- When the system detects that the viewed role has become unpublished, inactive, archived, or no longer baseline-ready, replace its details with "This role is no longer available" and a **Back to roles** action. Do not automatically redirect the employee. This includes loss of eligible-question coverage while the role remains published and active.
-- **Back to roles** returns to the currently permitted role list. This browsing behavior does not itself change an existing target-role selection or pathway; those lifecycle rules belong to the selection and learning functions.
-- Related selection decision, 2026-09-27: An already-selected role remains selected after baseline readiness loss even though it is excluded from new catalog responses. New baseline attempts are blocked until readiness is restored; existing attempts may continue with their preserved configuration. See [Choose Target Role](Choose%20Target%20Role.md). This does not authorize catalog details or a new selection of the unavailable role.
-- Related evidence-only decision, 2026-09-27: An already-selected role can have its baseline fulfilled through evidence with valid requirements, prerequisites, and saved settings, even when question coverage fails, provided no unknown skills remain in the resolved scope. This closes the employee-role allowance without a test attempt or score. The role remains hidden from new catalog responses while coverage fails; this exception does not authorize catalog details or a new selection.
-- Existing-pathway decision, 2026-09-27, option A: Learning through an existing active pathway continues after baseline readiness loss, including modules and module assessments, subject to their own availability and authorization checks. This is separate from catalog visibility: the role remains excluded from catalog responses while unready. See [View Adaptive Pathway](../Adaptive%20pathway/View%20Adaptive%20Pathway.md).
-
-## Open Decisions
-
-- Request-time availability checks and no background updates are confirmed. Detailed validation of role requirements and prerequisite relationships belongs to those authoring functions; consistency when setup changes during a check or selection remains to be defined.
-- Open-detail behavior, existing-selection retention, blocking new question-based baseline attempts, continuation of preserved attempts, evidence-only scope-and-settings checks, and continuation of existing-pathway learning are confirmed. Effects on soft-skill assessment remain open. Readiness loss alone does not archive a pathway or delete history; generation and recalculation details belong to the corresponding functions.
-- The missing-Expert email fallback was not selected. Reconcile the earlier blocked-start notification policy with baseline-ready-only discovery and later readiness loss for existing selections; browsing an empty role list still sends no notification.
+- If a detail request finds that the role is inactive, belongs to another organization or has invalid catalog data, show "This role is no longer available" with a **Back to roles** action. Do not redirect automatically; **Back to roles** loads the currently permitted list.
 
 ## Acceptance Baseline
 
 An authenticated employee can inspect permitted role requirements without modifying the role or seeing another organization's private catalog.
 
-- Given baseline-ready published/active, baseline-incomplete published/active, and draft roles in the same organization, employee browsing returns only baseline-ready published/active roles.
-- A published, active organization role with defined requirements and prerequisites, saved baseline settings, and passing coverage can appear even if its learning modules or module assessments are not ready. Missing saved baseline settings or failing coverage keeps it hidden even when modules are ready.
-- For cap 5, a scope skill with only 4 eligible Easy questions fails readiness even if it has 5 Medium and 5 Hard questions. A role that passes coverage but is draft or inactive remains hidden.
-- Inactive and archived roles are excluded even if they were previously published.
-- An available role's details show its description, responsibilities, seniority, required skills, and the target proficiency associated with each micro-skill.
-- Role-name search and the seniority filter narrow the permitted role list without exposing draft, inactive, archived, incompletely configured, or other-organization roles. Direct access to employee-facing catalog details must not expose an incompletely configured role either; this does not decide historical or existing-learning views.
-- Given search/filter criteria with no matching permitted roles, show "No matching roles" and **Clear filters**.
-- Activating **Clear filters** removes both discovery criteria and reloads only published, active, fully configured roles in the employee's organization; it does not change the employee's target-role selection.
-- Given an organization with no roles meeting all visibility conditions and no search/filter criteria, show "No roles available. Please contact your Organization Administrator." This includes the case where all roles have unfinished configuration. Do not expose hidden roles or automatically contact the administrator.
-- Given an open role detail view, when the system detects that the role is no longer published and active, replace the details with "This role is no longer available" and **Back to roles**, without an automatic redirect.
-- Given an open detail view for a published, active role, when the system detects that its baseline readiness no longer passes, replace the details with the same unavailable message and **Back to roles**. Do not retain the role details or automatically navigate away. This UI change does not itself alter an existing selection, pathway, assessment attempt, or history.
-- Activating **Back to roles** returns to the authorized role list, which excludes the unavailable role and applies the agreed empty-state behavior if necessary.
-- Given a role loses readiness after a list or detail response, an idle page sends no background availability checks and receives no automatic availability updates. The next list request excludes that role; the next detail request shows the agreed unavailable state without automatically redirecting.
-- Given an outdated page still presents a role as available, an initial-selection or role-change request rechecks current availability. If readiness has been lost, reject it without changing the current selection or pathway. Restoring readiness permits the role to appear on a later request only if all other visibility conditions also pass.
+- List returns only `ACTIVE`, catalog-valid roles whose `organizationId` equals trusted actor context.
+- `DRAFT`, `RETIRED`, cross-organization, missing-required-field, dangling-skill and invalid-`targetMastery` roles are not returned.
+- Detail displays name, code, description, responsibilities, track, seniority and each active required skill with its `targetMastery`.
+- Role-name search is trimmed and case-insensitive; seniority is an exact enum filter. When both are present they use AND semantics.
+- Search/filter with no results shows "No matching roles" and **Clear filters**. No permitted roles without discovery criteria shows "No roles available. Please contact your Organization Administrator."
+- Direct detail access to a nonexistent or unavailable role returns one public `ROLE_NOT_AVAILABLE` outcome without exposing cross-tenant existence.
+- Neo4j timeout or failure produces a dependency error and retry state; it is not converted to an empty catalog or unavailable role.
+- Every list/detail request checks current catalog state.
+- Browse operations do not create or change target selections, assessment attempts, evidence, mastery, pathways or history.
 
 ## Decision Log
+
+Entries before 2026-09-29 are retained as history. Where they conflict with the current contract above, the 2026-09-29 decisions supersede them for REQ-001-F01.
 
 | Date | Question | Confirmed answer |
 | --- | --- | --- |
@@ -73,3 +95,7 @@ An authenticated employee can inspect permitted role requirements without modify
 | 2026-09-27 | What must be configured before a published, active role becomes visible? | Option A: Baseline-ready. Role requirements and prerequisites are defined, baseline settings are saved, and eligible-question coverage passes. Learning modules and module assessments are not visibility prerequisites. |
 | 2026-09-27 | What should an open role detail page show when the system detects loss of baseline readiness? | Option A: Replace the details with "This role is no longer available" and a Back to roles action, matching existing unavailable-role behavior. Do not automatically redirect. Detection timing and existing-selection learning effects remain open. |
 | 2026-09-27 | Should already-open role lists and details update automatically when availability changes? | Option A: Recheck on the next request, including loading, refreshing, searching, and opening details. Always recheck before confirming selection. No background updates; idle content may remain outdated until the next request. |
+| 2026-09-29 | What determines employee catalog visibility for the implementation base? | Same-organization `ACTIVE` role with required catalog fields and at least one valid active required skill. Assessment settings and question coverage do not control browsing. |
+| 2026-09-29 | Where is organization scope stored initially? | `TargetRole.organizationId`, matched against trusted actor context behind `TargetRoleCatalogPort`; a future publication mapping may replace the adapter. |
+| 2026-09-29 | How are seniority and responsibilities represented? | Explicit `TargetRole.seniority` and optional `TargetRole.responsibilities`; do not derive seniority from code/name. |
+| 2026-09-30 | Which seniority values are valid across different job domains? | Use grade codes `P1`–`P5` for `PROFESSIONAL` and `M3`–`M4` for `MANAGEMENT`. The code is shared for filtering, while each domain/role family defines its detailed meaning. |

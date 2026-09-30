@@ -13,4 +13,4 @@ Case record template:
 | Boundaries | Missing/invalid data, duplicate request, status transition and authorization failure |
 | Evidence | Unit test class/method, date and result |
 
-First implementation targets: `REQ-001` role availability and one active selection, `REQ-002` confirmed baseline allowance behavior, `REQ-015` required mastery in `[0,1]`, and `REQ-041` gap calculation. These are **planned cases**, not functionality claimed by this baseline. Add a frontend test runner only when the first real interactive feature is implemented.
+Planned implementation targets for the separately approved test cluster include `REQ-001` role availability and one active selection, `REQ-002` confirmed baseline allowance behavior, `REQ-015` required mastery in `[0,1]`, and `REQ-041` gap calculation. These are test-plan targets, not present coverage or permission to create/run executable tests. Add a frontend test runner only after the user approves the relevant test cluster.

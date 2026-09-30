@@ -19,7 +19,10 @@ class "TargetRole" as Role {
 	name : String
 	familyCode : String
 	track : Track
+	organizationId : String/UUID
+	seniority : Seniority
 	description? : String
+	responsibilities? : List<String>
 	status : Status
 	createdAt : DateTime
 	updatedAt : DateTime
