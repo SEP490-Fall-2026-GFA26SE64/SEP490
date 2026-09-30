@@ -14,7 +14,7 @@ Create a Software Engineering target role in the organization catalog. Expert as
 
 ## Confirmed Related Rule
 
-Employee browsing exposes only published, active, baseline-ready target roles (REQ-001-F01, 2026-09-27). Option A defines readiness as role requirements and prerequisites being defined, baseline settings saved, and eligible-question coverage passing for the configured scope. Learning modules and module assessments are not visibility prerequisites. An unfinished baseline setup is excluded from list/detail responses even if published and active. Availability is checked on requests and before selection, with no background updates to idle pages. Publication authority, detailed authoring validation, concurrent-edit consistency, and creation default remain open.
+Under the current REQ-001-F01 browsing contract, employees see only same-organization, `ACTIVE`, catalog-valid target roles. A browsable role must contain the required catalog fields and at least one active valid required micro-skill; baseline settings and eligible-question coverage are checked when starting an assessment, not when browsing. Availability is reread on list/detail requests and before selection, with no background updates to idle pages. Publication authority, detailed authoring validation, concurrent-edit consistency, and creation default remain open for this management function.
 
 Employee role details include description and responsibilities, seniority grade, and required proficiency per micro-skill. Seniority uses `P1`–`P5` for the professional track and `M3`–`M4` for the management track; the selected grade must match the role track. The detailed meaning of a grade remains specific to the role's domain/family. Experts maintain the skill requirements.
 

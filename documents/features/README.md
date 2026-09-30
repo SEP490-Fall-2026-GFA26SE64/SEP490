@@ -15,10 +15,13 @@
 
 ## Clarification Tracker
 
-**Current function:** [View Target Roles](Target%20role%20selection/View%20Target%20Roles.md), REQ-001-F01, resumed after the baseline attempt-limit follow-up.  
-**Current question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments?  
-**Progress:** 0 of 84 functions clarified; 4 in clarification (one reopened active interview, two paused baseline functions, and one awaiting deferred and related readiness decisions) and 80 pending. All function documents are drafted.  
-**Next function after this one is clarified:** Resume [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
+**Latest clarified function:** [View Target Roles](Target%20role%20selection/View%20Target%20Roles.md), REQ-001-F01. Its implementation base and executable suites are available; browser system evidence and production Identity integration remain pending.
+
+**Current clarification question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments? This belongs to the AI soft-skill review flow, not REQ-001-F01.
+
+**Progress:** 1 of 84 functions clarified; 3 remain in clarification (the AI soft-skill review flow and two paused baseline functions), and 80 remain pending. All function documents are drafted.
+
+**Next target-role follow-up:** REQ-001-F01 remains in completion review until browser evidence and production Identity integration are available. The next planned clarification sequence is [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
 
 **Confirmed soft-skill readiness effect (2026-09-27):** Option A: Baseline readiness loss does not block a separate, otherwise eligible soft-skill assessment. The assessment remains subject to its own configuration and authorization rules. Baseline-start and evidence-only closure rules remain independent.
 **Confirmed AI comment visibility (2026-09-27):** Option B: Before expert review is complete, employees see only the summarized result, clearly labeled as AI-generated and pending expert review. The raw comment remains visible only to authorized experts and administrators.
