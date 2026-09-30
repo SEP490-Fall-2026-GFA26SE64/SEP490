@@ -1,6 +1,6 @@
 # Current Project Architecture
 
-**As of 2026-09-27.** This is a runnable database and deployment baseline, not an implementation of the 84 drafted functions in [features/README.md](features/README.md). The only implemented HTTP business-facing route is system status; Spring Security denies other routes until their access rules are built.
+**As of 2026-09-30.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles; it is not an implementation of all 84 drafted functions in [features/README.md](features/README.md). System status remains public. Target-role list/detail routes are enabled only in the local profile with the provisional local actor flag; production security remains deny-by-default until the real Identity authorization contract is integrated.
 
 ## Runtime topology
 
@@ -62,7 +62,7 @@ backend/
   src/main/java/com/adaptlearngraph/
     AdaptLearnGraphApplication.java
     platform/            startup, status API, migration orchestration
-    catalog/             Neo4j constraints and development-only catalog seed
+    catalog/             Target-role domain/use case/API, Neo4j adapter, constraints and development-only seed
     identity/            security boundary; account APIs not yet built
     assessment/          reserved feature package
     competency/          reserved feature package
@@ -86,7 +86,7 @@ documents/testing/      unit, integration, and system test plans
 compose.dev.yml, compose.prod.yml, .env.example
 ```
 
-Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). Existing placeholders remain placeholders; create real classes within these boundaries as functions become clarified. Billing, notifications, and organization-specific feature packages should be added when their contracts are agreed, not as empty scaffolding. The frontend source layout is unchanged; only its Docker development target and Vite proxy default changed.
+Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). `catalog` now applies this structure for REQ-001-F01: controllers call `TargetRoleQueryUseCase`, the application service reads trusted actor context and `TargetRoleCatalogPort`, and the Neo4j adapter maps driver records into domain outputs. Existing placeholders remain placeholders; create real classes within these boundaries as functions become clarified. Billing, notifications, and organization-specific feature packages should be added when their contracts are agreed, not as empty scaffolding. The frontend adds a feature-local target-role API/types/query boundary and browse/detail components while keeping the existing route and isolating legacy selection behavior.
 
 ## Technologies
 

@@ -13,8 +13,11 @@ import java.util.Optional;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.exceptions.Neo4jException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPort {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Neo4jTargetRoleCatalogAdapter.class);
     private static final String ROLE_PROJECTION = """
             role.id AS id,
             role.code AS code,
@@ -40,7 +43,8 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
               AND ($search IS NULL OR toLower(trim(role.name)) CONTAINS $search)
             OPTIONAL MATCH (role)-[requirement:REQUIRES_SKILL]->(skill:MicroSkill)
             WHERE requirement.status = 'ACTIVE' AND skill.status = 'ACTIVE'
-            RETURN """ + ROLE_PROJECTION;
+            RETURN
+            """ + ROLE_PROJECTION;
 
     private static final String DETAIL_QUERY = """
             MATCH (role:TargetRole)
@@ -49,7 +53,8 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
               AND role.status = 'ACTIVE'
             OPTIONAL MATCH (role)-[requirement:REQUIRES_SKILL]->(skill:MicroSkill)
             WHERE requirement.status = 'ACTIVE' AND skill.status = 'ACTIVE'
-            RETURN """ + ROLE_PROJECTION;
+            RETURN
+            """ + ROLE_PROJECTION;
 
     private final Driver driver;
     private final Neo4jTargetRoleMapper mapper;
@@ -78,6 +83,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
                     .flatMap(Optional::stream)
                     .toList();
         } catch (Neo4jException exception) {
+            LOGGER.warn("Failed to list available target roles", exception);
             throw catalogUnavailable(exception);
         }
     }
@@ -92,6 +98,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
                     transaction -> transaction.run(DETAIL_QUERY, parameters).list());
             return records.stream().findFirst().flatMap(mapper::toDetail);
         } catch (Neo4jException exception) {
+            LOGGER.warn("Failed to read available target-role detail", exception);
             throw catalogUnavailable(exception);
         }
     }

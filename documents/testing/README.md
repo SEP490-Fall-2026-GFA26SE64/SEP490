@@ -9,3 +9,7 @@ Keep runnable tests next to their code (`backend/src/test/java` and future front
 | System | [system/README.md](system/README.md) | Compose startup and browser-facing status proxy smoke checks; feature workflows pending |
 
 For every new function, record its `REQ-nnn-Fnn` ID, approved acceptance rule, test data and tenant scope, expected outcome, test file, and last run result. Do not mark a function covered solely because its database table exists.
+
+Active function plans:
+
+- [REQ-001-F01 View Target Roles](REQ-001-F01-view-target-roles.md) — cluster 2 approved; evidence is recorded only after executable tests run.

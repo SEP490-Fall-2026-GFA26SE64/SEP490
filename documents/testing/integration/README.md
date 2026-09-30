@@ -16,3 +16,5 @@ From the repository root on Windows:
 As APIs are implemented, add tests for PostgreSQL-to-Neo4j catalog reference resolution, transaction/outbox handoff, organization isolation, stale graph references, and retries after a partially completed migration. These tests require a confirmed cross-store contract from [../../ARCHITECTURE.md](../../ARCHITECTURE.md); current schema tests do **not** prove those flows yet.
 
 Each case should identify its feature ID, initial PostgreSQL and graph fixtures, API or job trigger, expected state in both stores, repeat/retry outcome, and test method.
+
+REQ-001-F01 Neo4j adapter cases were approved on 2026-09-30 and are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). They must use a disposable Neo4j container with explicit Org A/Org B, inactive and catalog-invalid fixtures; the development seed and manual Compose smoke are not integration-test evidence.

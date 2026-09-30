@@ -2,7 +2,7 @@
 
 **Function ID:** REQ-001-F01  
 **Actor:** Employee  
-**Status:** Base contract defined; implementation and real-adapter integration pending
+**Status:** Implementation base available; executable test evidence and production identity integration pending
 **Feature:** [Target Role Selection](README.md)
 
 ## Description
@@ -48,6 +48,13 @@ Required proficiency is read from active `REQUIRES_SKILL.targetMastery`; it is n
 The list returns `id`, `code`, `name`, `track`, `seniority`, `description` and `requirementCount`. Detail additionally returns `familyCode`, `responsibilities` and requirements containing `skillId`, `skillCode`, `skillName` and `targetMastery`.
 
 The base has no pagination or catalog revision field. Results sort by normalized role name and then stable ID. Search is a trimmed, case-insensitive role-name substring; seniority is an exact grade-code match. A professional role must use `P1`–`P5`; a management role must use `M3`–`M4`. Grade meaning may differ by domain and role family.
+
+### Current implementation status
+
+- Backend implements the inbound query use case, trusted actor port, Neo4j catalog adapter/mapper, REST list/detail endpoints and feature-local error mapping.
+- Local development uses a server-configured actor adapter enabled only by the `local` profile and `catalog.local-actor.enabled=true`; production security remains deny-by-default until the Identity owner supplies the real actor/authorization integration.
+- Frontend route `/employee/target-roles` uses TanStack Query for list/detail, search and seniority filtering, with loading, empty, retry and unavailable-detail states. Browse does not call the legacy selection flow.
+- Manual local API smoke was completed on 2026-09-30. This is not executable-test evidence; unit, API/security, Neo4j integration and frontend/system tests belong to the separately approved test cluster.
 
 ## Confirmed Rules
 
