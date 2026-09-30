@@ -40,3 +40,19 @@ Always check and reuse components in `src/shared/components/ui/` and `src/shared
 - `<StatCard />` for all metric / KPI cards
 - `<Heading />`, `<Text />`, `<Button />`, `<Badge />`, `<Card />`, `<Tabs />`, `<Accordion />`, `<Dialog />`, `<Input />`, `<Progress />`
 - If a component is shared across actors (Learner, Manager, Admin), place it in `src/shared/components/ui/`.
+
+---
+
+## Mandatory AI Feature Implementation Lifecycle (Always Active)
+
+When implementing any feature, enhancement, or bug fix using AI, all agents must strictly follow the 5-step lifecycle in sequence:
+
+1. **Clear Requirement of Function Using AI**: Find and read the function specification in `documents/features/<Feature>/<Function>.md` (extract ID `REQ-nnn-Fnn`, rules, inputs/outcomes, and open decisions). Proactively discuss and align with the user; do not touch code until requirements are cleared.
+2. **Implement Using AI**: Start implementation only after user alignment. Comply with UI-UX Pro Max (`tokens.css`), shared components (`src/shared/components/ui/`), hexagonal/clean architecture, and robust error handling.
+3. **Test Using AI**: Read and strictly follow the testing documentation in `documents/testing/` ([README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/README.md), [unit/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/unit/README.md), [integration/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/integration/README.md), and [system/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/system/README.md)). Perform all relevant testing levels (Unit, Integration with Testcontainers, and System with Compose stack). Record each case under its `REQ-nnn-Fnn` ID.
+4. **Test Manual**: Interactively verify visual behavior and user flows. Always provide the user with a structured Manual Test Checklist (URL, prerequisites, steps, expected results).
+5. **Update Document**: Update project feature specifications (`documents/features/`), record test case evidence in `documents/testing/`, update API docs, schema diagrams, and sprint trackers.
+
+Detailed guide: [.agents/rules/ai-feature-workflow.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/.agents/rules/ai-feature-workflow.md).
+
+

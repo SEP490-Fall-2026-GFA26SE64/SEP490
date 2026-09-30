@@ -2,22 +2,25 @@
 
 **Function ID:** REQ-015-F02  
 **Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Status:** Implemented  
 **Feature:** [Role Requirements](README.md)
 
 ## Description
 
-Remove a skill requirement from an assigned target role without deleting the underlying micro-skill.
+Remove a micro-skill requirement from an assigned target role draft without deleting the underlying micro-skill node from the shared competency ontology.
 
-**Input:** Existing authorized role-to-skill link.  
-**Outcome:** The requirement is removed under the agreed role-version policy.
+**Input:** Authorized draft target role and configured micro-skill target ID.  
+**Outcome:** The requirement edge `[:REQUIRES_SKILL]` is removed from the draft target role.
 
-## Open Decisions
+## Confirmed Related Rules
 
-- Minimum requirements for a valid role and dependency checks.
-- Immediate changes versus future role versions.
-- Handling active pathways without introducing an unapproved recalculation trigger.
+- **Shared Ontology Preservation**: Removing a skill requirement from a target role only deletes the requirement link to that specific target role. The underlying `MicroSkill` node and its relationships to competencies or other roles remain completely untouched.
+- **Draft State Constraint**: Unlinking is performed in `DRAFT` status. To modify links on a published role, a successor draft must be created.
+- **Icon-Only Snug Actions**: Unlink actions are triggered via icon buttons (`Trash2`) with clear tooltips to maintain modern table density per UI-UX Pro Max standards.
 
 ## Acceptance Baseline
 
 Unlinking one role's requirement does not delete that skill or its relationships to other roles.
+
+- **Acceptance Criteria**: Graph relationship deleted, micro-skill entity preserved.
+- **Test Evidence**: Target role micro-skill authoring workspace and Neo4j graph constraint tests.

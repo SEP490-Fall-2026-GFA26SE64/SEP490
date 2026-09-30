@@ -2,9 +2,7 @@ export interface SkillTargetConfig {
   skillId: string
   skillCode: string
   skillName: string
-  threshold: number // e.g. 80 (%)
-  weight: number // positive weight e.g. 1.0, 1.5, 2.0
-  mandatory: boolean
+  threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
 }
 
 export interface TargetRoleModel {
@@ -12,16 +10,84 @@ export interface TargetRoleModel {
   stableId: string
   code: string
   title: string
-  department: string
+  department?: string
+  domainCode?: string // 'ICT' | 'DATA' | 'AI'
+  familyCode?: string // 'JAVA_BACKEND' | 'DATA_AI' | ...
+  track?: 'PROFESSIONAL' | 'MANAGEMENT'
+  assignedExpertId?: string
+  assignedExpertName?: string
   description: string
   version: string
-  status: 'draft' | 'published' | 'archived'
+  status: 'draft' | 'sent' | 'rejected' | 'published' | 'archived'
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
   activeEnrollments: number
   updatedAt: string
-  provenanceRef: string
 }
+
+/**
+ * Ensures that within each role lineage (grouped by stableId/code),
+ * the published version always appears first, and any draft / sent / rejected
+ * successor version always appears immediately below its previous published version.
+ */
+export function sortTargetRolesWithDraftsBelowPublished(roles: TargetRoleModel[]): TargetRoleModel[] {
+  const groups = new Map<string, TargetRoleModel[]>()
+  for (const r of roles) {
+    const key = r.stableId || r.code
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key)!.push(r)
+  }
+
+  const result: TargetRoleModel[] = []
+
+  // Sort groups by role code alphabetically
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    const roleA = groups.get(a)![0]
+    const roleB = groups.get(b)![0]
+    return (roleA?.code || '').localeCompare(roleB?.code || '')
+  })
+
+  for (const key of sortedKeys) {
+    const groupRoles = groups.get(key)!
+    // Published / archived versions first (sorted by version ascending: 1.0, 2.0...)
+    const published = groupRoles
+      .filter((r) => r.status === 'published' || r.status === 'archived')
+      .sort((a, b) => (parseFloat(a.version) || 1.0) - (parseFloat(b.version) || 1.0))
+
+    // Draft / sent / rejected versions placed immediately below published
+    const nonPublished = groupRoles
+      .filter((r) => r.status !== 'published' && r.status !== 'archived')
+      .sort((a, b) => (parseFloat(a.version) || 1.0) - (parseFloat(b.version) || 1.0))
+
+    result.push(...published, ...nonPublished)
+  }
+
+  return result
+}
+
+export const JOB_DOMAINS = [
+  { code: 'ICT', name: 'Information & Communication Technology' },
+  { code: 'DATA', name: 'Data Engineering & Analytics' },
+  { code: 'AI', name: 'Artificial Intelligence & Cognitive Computing' },
+] as const
+
+export const CAREER_FAMILIES = [
+  { code: 'JAVA_BACKEND', name: 'Java Backend Engineering', domain: 'ICT' },
+  { code: 'PYTHON_DATA', name: 'Python & Data Engineering', domain: 'DATA' },
+  { code: 'AI_ML', name: 'Machine Learning & LLM Systems', domain: 'AI' },
+  { code: 'CLOUD_DEVOPS', name: 'Cloud & Infrastructure DevOps', domain: 'ICT' },
+  { code: 'FRONTEND_WEB', name: 'Modern Web & UI Architecture', domain: 'ICT' },
+  { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust', domain: 'ICT' },
+] as const
+
+export const ELIGIBLE_EXPERTS = [
+  { id: 'expert-chen', name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
+  { id: 'expert-vance', name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
+  { id: 'expert-rivera', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
+  { id: 'expert-nguyen', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
+] as const
 
 export interface CompetencyModel {
   id: string
@@ -331,19 +397,23 @@ export const INITIAL_TARGET_ROLES: TargetRoleModel[] = [
     code: 'ROLE-AI-ARCH',
     title: 'AI Knowledge Architect',
     department: 'Machine Learning & Cognitive Architecture',
+    domainCode: 'AI',
+    familyCode: 'AI_ML',
+    track: 'PROFESSIONAL',
+    assignedExpertId: 'expert-chen',
+    assignedExpertName: 'Dr. Sarah Chen',
     description: 'Enterprise architect responsible for multi-modal knowledge modeling, graph ML pipelines, and ontological integration.',
     version: '1.0',
     status: 'published',
     competencyIds: ['comp-semantic-arch', 'comp-graph-ml'],
     skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85, weight: 1.5, mandatory: true },
-      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 75, weight: 1.0, mandatory: true },
-      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 80, weight: 2.0, mandatory: true },
-      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 70, weight: 1.0, mandatory: false },
+      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85 },
+      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 75 },
+      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 80 },
+      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 70 },
     ],
     activeEnrollments: 24,
     updatedAt: '2026-02-10',
-    provenanceRef: 'Corporate Job Architecture Level 6 / Tech Spec 2026',
   },
   {
     id: 'role-ai-arch-v1.1-draft',
@@ -351,21 +421,44 @@ export const INITIAL_TARGET_ROLES: TargetRoleModel[] = [
     code: 'ROLE-AI-ARCH',
     title: 'AI Knowledge Architect',
     department: 'Machine Learning & Cognitive Architecture',
+    domainCode: 'AI',
+    familyCode: 'AI_ML',
+    track: 'PROFESSIONAL',
+    assignedExpertId: 'expert-chen',
+    assignedExpertName: 'Dr. Sarah Chen',
     description: 'Updated draft incorporating Vector Search Optimization and Deep Knowledge Tracing into core requirements.',
     version: '1.1',
-    status: 'draft',
+    status: 'sent',
     competencyIds: ['comp-semantic-arch', 'comp-graph-ml', 'comp-adaptive-sys'],
     skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85, weight: 1.5, mandatory: true },
-      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 80, weight: 1.2, mandatory: true },
-      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 85, weight: 2.0, mandatory: true },
-      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 75, weight: 1.0, mandatory: false },
-      { skillId: 'skill-dkt', skillCode: 'SKILL-DKT-05', skillName: 'Dynamic Deep Knowledge Tracing', threshold: 75, weight: 1.8, mandatory: true },
-      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 80, weight: 1.5, mandatory: false },
+      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85 },
+      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 80 },
+      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 85 },
+      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 75 },
+      { skillId: 'skill-dkt', skillCode: 'SKILL-DKT-05', skillName: 'Dynamic Deep Knowledge Tracing', threshold: 75 },
+      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 80 },
     ],
     activeEnrollments: 0,
     updatedAt: '2026-03-02',
-    provenanceRef: 'Corporate Job Architecture Level 6 (Draft Revision Q1)',
+  },
+  {
+    id: 'role-genai-fresh-draft',
+    stableId: 'role-uuid-003',
+    code: 'ROLE-GENAI-01',
+    title: 'Generative AI Applications Specialist',
+    department: 'Machine Learning & Cognitive Architecture',
+    domainCode: 'AI',
+    familyCode: 'AI_ML',
+    track: 'PROFESSIONAL',
+    assignedExpertId: 'expert-chen',
+    assignedExpertName: 'Dr. Sarah Chen',
+    description: 'Specialist responsible for enterprise prompt pipelines, agentic orchestration, and domain knowledge injection. Awaiting domain expert micro-skill configuration.',
+    version: '1.0',
+    status: 'draft',
+    competencyIds: ['comp-semantic-arch'],
+    skillTargets: [],
+    activeEnrollments: 0,
+    updatedAt: '2026-03-15',
   },
   {
     id: 'role-mlops-v2',
@@ -373,17 +466,43 @@ export const INITIAL_TARGET_ROLES: TargetRoleModel[] = [
     code: 'ROLE-MLOPS-02',
     title: 'Senior MLOps & Graph Systems Engineer',
     department: 'Platform Engineering',
+    domainCode: 'ICT',
+    familyCode: 'CLOUD_DEVOPS',
+    track: 'PROFESSIONAL',
+    assignedExpertId: 'expert-rivera',
+    assignedExpertName: 'Alex Rivera',
     description: 'Infrastructure specialist maintaining distributed vector stores, graph databases, and continuous model inference services.',
     version: '2.0',
     status: 'published',
     competencyIds: ['comp-semantic-arch'],
     skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 90, weight: 2.0, mandatory: true },
-      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 85, weight: 1.5, mandatory: true },
+      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 90 },
+      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 85 },
     ],
     activeEnrollments: 18,
     updatedAt: '2026-01-22',
-    provenanceRef: 'Infrastructure Engineering Matrix v2.0',
+  },
+  {
+    id: 'role-mlops-v2.1-draft',
+    stableId: 'role-uuid-002',
+    code: 'ROLE-MLOPS-02',
+    title: 'Senior MLOps & Graph Systems Engineer',
+    department: 'Platform Engineering',
+    domainCode: 'ICT',
+    familyCode: 'CLOUD_DEVOPS',
+    track: 'PROFESSIONAL',
+    assignedExpertId: 'expert-rivera',
+    assignedExpertName: 'Alex Rivera',
+    description: 'Updated draft revision requiring higher Cypher optimization and dynamic partition tuning.',
+    version: '2.1',
+    status: 'rejected',
+    competencyIds: ['comp-semantic-arch'],
+    skillTargets: [
+      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 80 },
+      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 85 },
+    ],
+    activeEnrollments: 0,
+    updatedAt: '2026-03-20',
   },
 ]
 

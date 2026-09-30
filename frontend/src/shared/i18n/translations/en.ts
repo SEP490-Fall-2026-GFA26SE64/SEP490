@@ -6,6 +6,7 @@ export const en = {
     gapAnalysis: 'Gap Analysis',
     assessmentQuiz: 'Assessment Quiz',
     serverStatus: 'Server Status',
+    assignedRoles: 'Target Roles',
     ontology: 'Ontology',
     modules: 'Modules',
     assessmentBank: 'Assessment Bank',

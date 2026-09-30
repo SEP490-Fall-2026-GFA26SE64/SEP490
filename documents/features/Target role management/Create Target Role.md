@@ -1,31 +1,39 @@
 # Create Target Role
 
 **Function ID:** REQ-023-F01  
-**Actor:** Organization Administrator  
-**Status:** Pending clarification  
+**Actor:** L&D Manager  
+**Status:** Implemented  
 **Feature:** [Target Role Management](README.md)
 
 ## Description
 
-Create a Software Engineering target role in the organization catalog. Expert assignment and skill-requirement editing are separate functions.
+Create a target role in the organization catalog. The L&D Manager creates the target role structure (unique code, title, Job Domain, Career Family, Track, Assigned Domain Expert, and description); Domain Experts will link micro-skills and maintain competency thresholds (REQ-015).
 
-**Input:** Role name and descriptive attributes.  
-**Outcome:** An organization-owned target-role record.
+**Input:** Role name, unique code, `domainCode` (`ICT`, `DATA`, `AI`), `familyCode` (`JAVA_BACKEND`, `PYTHON_DATA`, `AI_ML`, `CLOUD_DEVOPS`, `FRONTEND_WEB`, `CYBERSECURITY`), `track` (`PROFESSIONAL` or `MANAGEMENT`), `assignedExpertId`, description, and organization context (`organizationId`).  
+**Outcome:** An organization-owned target-role record in Neo4j with status `DRAFT`.
 
-## Confirmed Related Rule
+## Confirmed Related Rules
 
-Employee browsing exposes only published, active, baseline-ready target roles (REQ-001-F01, 2026-09-27). Option A defines readiness as role requirements and prerequisites being defined, baseline settings saved, and eligible-question coverage passing for the configured scope. Learning modules and module assessments are not visibility prerequisites. An unfinished baseline setup is excluded from list/detail responses even if published and active. Availability is checked on requests and before selection, with no background updates to idle pages. Publication authority, detailed authoring validation, concurrent-edit consistency, and creation default remain open.
-
-Employee role details include description and responsibilities, seniority, and required proficiency per micro-skill (confirmed 2026-09-26). Administrative metadata must support these descriptive fields; experts maintain the skill requirements.
-
-## Open Decisions
-
-- Additional required metadata, allowed seniority levels, duplicate-name rules, and role codes.
-- Draft/published lifecycle and readiness checks before employees can select the role.
-- Whether expert assignment is mandatory at creation and who publishes the completed role.
+- **Actor Role & Responsibilities**: L&D Manager (`LD_MANAGER`). The L&D Manager creates, views, edits, and deletes target role outlines. L&D Managers **cannot** add micro-skills (that is exclusively the Domain Expert's role).
+- **Track Field Definition & Engine Behavior**:
+  - `PROFESSIONAL`: Individual Contributor / Technical Specialist track focusing on deep hands-on code craftsmanship, system implementation, and architecture.
+  - `MANAGEMENT`: People & Engineering Leadership track focusing on technical coordination, team coaching, project delivery, and organizational governance.
+  - Pathway recalculation and baseline diagnostics use this track to weight hands-on technical proficiencies vs team/governance competencies.
+- **Domain Expert Assignment & Isolation**:
+  - Each target role must be assigned to an eligible Domain Expert (`assignedExpertId`).
+  - Other Domain Experts **cannot** see the target role if they are not assigned to it (`X-User-Role: DOMAIN_EXPERT` queries automatically filter by `assignedExpertId`).
+- **Tenant Isolation**: Every target role is isolated by `organizationId`. A manager cannot view or modify target roles belonging to another organization.
+- **Creation Default & Lifecycle**: Newly created target roles default to `DRAFT`. Per REQ-001-F01, roles in `DRAFT` remain hidden from employee browsing and baseline assessment until explicitly published and baseline-ready.
+- **Display Ordering Rule**:
+  - In target role catalogs (both L&D Manager and Domain Expert views), any successor draft, sent, or rejected version is **always ordered immediately below** its previous published version within the same lineage (e.g., `v1.1 DRAFT/SENT` is positioned directly beneath `v1.0 PUBLISHED`).
+- **Dispatching & Status Transitions**:
+  - `DRAFT` &rarr; `SENT`: L&D Manager clicks "Send to Expert" to dispatch the draft for micro-skill threshold mapping.
+  - `SENT` &rarr; `REJECTED`: Domain Expert can reject the assignment, returning the draft role to the L&D Manager for adjustment.
+  - `SENT` &rarr; `PUBLISHED`: Domain Expert publishes the role to the active graph once required micro-skills are mapped.
+- **Uniqueness & Validation**: Role code and name must be non-empty. Duplicate role codes within the organization/system are rejected with `409 Conflict`.
 
 ## Acceptance Baseline
 
-The role is created only in the administrator's organization and does not automatically acquire undefined competency requirements.
+The role is created only in the L&D Manager's organization, with assigned expert metadata, and does not automatically acquire undefined competency requirements.
 
-- A newly created role with unfinished configuration remains hidden from employee browsing and unavailable for new selection. Creating the record or setting publication/active status alone does not establish readiness.
+- A newly created role with unfinished configuration remains hidden from employee browsing and unavailable for new selection. Creating the record alone does not establish readiness.

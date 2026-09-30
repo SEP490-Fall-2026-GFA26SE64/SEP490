@@ -190,6 +190,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isExpert) {
     actorTabs = [
       {
+        label: t('nav.targetRoles'),
+        href: '/expert/target-roles',
+        icon: <Briefcase size={15} />,
+      },
+      {
         label: t('nav.ontology'),
         href: '/expert/ontology',
         icon: <Network size={15} />,
@@ -311,6 +316,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
       return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
     }
+    if (itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
+      return path === '/expert/target-roles' || path === '/expert/assigned-roles'
+    }
     if (itemHref === '/expert/ontology') {
       return path === '/expert/ontology' || path === '/ld-manager/ontology' || path === '/manager/ontology'
     }
@@ -360,7 +368,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     : isEmployee
     ? '/employee/overview'
     : isExpert
-    ? '/expert/ontology'
+    ? '/expert/assigned-roles'
     : isLdManager
     ? '/ld-manager/learning-outcomes'
     : '/admin/dashboard'
@@ -497,7 +505,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 2. Expert */}
                         <Link
-                          to="/expert/ontology"
+                          to="/expert/assigned-roles"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isExpert

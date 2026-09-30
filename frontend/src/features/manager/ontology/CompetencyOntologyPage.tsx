@@ -328,6 +328,7 @@ export function CompetencyOntologyPage() {
     name: '',
     observableOutcome: '',
     bloomLevel: 'Apply' as MicroSkillModel['bloomLevel'],
+    macroCompetencyCode: 'KNOWLEDGE' as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION',
     source: '',
     ruleRef: '',
     type: 'source-backed' as 'source-backed' | 'derived' | 'synthetic',
@@ -511,6 +512,7 @@ export function CompetencyOntologyPage() {
       name: '',
       observableOutcome: '',
       bloomLevel: 'Apply',
+      macroCompetencyCode: 'KNOWLEDGE',
       source: 'Industry Standard Syllabus 2026',
       ruleRef: 'SKILL-OBS-2026',
       type: 'source-backed',
@@ -519,7 +521,7 @@ export function CompetencyOntologyPage() {
     setIsSkillModalOpen(true)
   }
 
-  const handleSaveSkill = () => {
+  const handleSaveSkill = async () => {
     if (!skillForm.code.trim() || !skillForm.name.trim() || !skillForm.observableOutcome.trim()) {
       toast({
         title: 'Validation Error',
@@ -543,14 +545,51 @@ export function CompetencyOntologyPage() {
         ),
       )
       toast({ title: 'Micro-skill Updated', description: `Saved changes to ${skillForm.code}.`, variant: 'success' })
+      setIsSkillModalOpen(false)
     } else {
       if (microSkills.some((s) => s.code.toUpperCase() === skillForm.code.trim().toUpperCase())) {
         toast({ title: 'Duplicate Code', description: 'Skill code must be globally unique.', variant: 'destructive' })
         return
       }
 
+      const active = getActiveCompany()
+      const orgId = active?.id || 'default-org'
+      let generatedId = `skill-${Date.now()}`
+
+      try {
+        const res = await fetch(`/api/v1/organizations/${orgId}/micro-skills`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Role': 'DOMAIN_EXPERT',
+          },
+          body: JSON.stringify({
+            code: skillForm.code.trim().toUpperCase(),
+            name: skillForm.name.trim(),
+            description: skillForm.observableOutcome.trim(),
+            macroCompetencyCode: skillForm.macroCompetencyCode || 'KNOWLEDGE',
+          }),
+        })
+
+        if (res.status === 409) {
+          toast({
+            title: 'Duplicate Micro-skill Code',
+            description: `Micro-skill code ${skillForm.code} already exists for this organization.`,
+            variant: 'destructive',
+          })
+          return
+        }
+
+        if (res.ok) {
+          const data = await res.json()
+          if (data.id) generatedId = data.id
+        }
+      } catch {
+        // Fallback for standalone offline client
+      }
+
       const newSkill: MicroSkillModel = {
-        id: `skill-${Date.now()}`,
+        id: generatedId,
         stableId: `ms-uuid-${Date.now()}`,
         code: skillForm.code.trim().toUpperCase(),
         name: skillForm.name.trim(),
@@ -567,14 +606,14 @@ export function CompetencyOntologyPage() {
       }
 
       saveAndSetMicroSkills([newSkill, ...microSkills])
+      setIsSkillModalOpen(false)
 
       toast({
         title: 'Micro-skill Created',
-        description: `Registered ${newSkill.code} with observable outcome statement.`,
+        description: `Registered ${newSkill.code} under ${skillForm.macroCompetencyCode || 'KNOWLEDGE'}.`,
         variant: 'success',
       })
     }
-    setIsSkillModalOpen(false)
   }
 
   // ------------------------------------------------------------------
@@ -1314,6 +1353,7 @@ export function CompetencyOntologyPage() {
                                           name: skill.name,
                                           observableOutcome: skill.observableOutcome,
                                           bloomLevel: skill.bloomLevel,
+                                          macroCompetencyCode: 'KNOWLEDGE',
                                           source: skill.provenance.source,
                                           ruleRef: skill.provenance.ruleRef,
                                           type: skill.provenance.type,
@@ -1839,17 +1879,6 @@ export function CompetencyOntologyPage() {
                 className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">Source / Derivation Reference</label>
-              <input
-                type="text"
-                placeholder="e.g. ACM Computing Curricula 2023 / Knowledge Representation"
-                value={compForm.derivationRef}
-                onChange={(e) => setCompForm({ ...compForm, derivationRef: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
           </div>
 
           <DialogFooter>
@@ -1872,7 +1901,7 @@ export function CompetencyOntologyPage() {
               {selectedSkill ? `Edit Micro-skill (${selectedSkill.code})` : 'Create Micro-skill'}
             </DialogTitle>
             <DialogDescription>
-              Define an atomic micro-skill with an observable learning outcome and recorded provenance citation.
+              Define an atomic micro-skill with an observable learning outcome categorized under its parent macro-competency.
             </DialogDescription>
           </DialogHeader>
 
@@ -1907,58 +1936,39 @@ export function CompetencyOntologyPage() {
             </div>
 
             <div>
+              <label className="font-semibold text-foreground block mb-1">Macro-Competency Group</label>
+              <select
+                value={skillForm.macroCompetencyCode}
+                onChange={(e) => setSkillForm({ ...skillForm, macroCompetencyCode: e.target.value as any })}
+                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
+              >
+                <option value="KNOWLEDGE">KNOWLEDGE (Cognitive / Technical)</option>
+                <option value="COMMUNICATION">COMMUNICATION (Interpersonal)</option>
+                <option value="INNOVATION">INNOVATION (Creative / Problem Solving)</option>
+              </select>
+            </div>
+
+            <div>
               <label className="font-semibold text-foreground block mb-1">
-                Observable Learning Outcome <span className="text-destructive">*</span>
+                Observable Learning Outcome / Description <span className="text-destructive">*</span>
               </label>
               <textarea
-                rows={2}
-                placeholder="Measurable action-oriented outcome statement (e.g. Formulate declarative Cypher queries including MATCH and MERGE)..."
+                rows={3}
+                placeholder="Action-oriented outcome statement and skill scope (e.g. Formulate declarative Cypher queries including MATCH and MERGE)..."
                 value={skillForm.observableOutcome}
                 onChange={(e) => setSkillForm({ ...skillForm, observableOutcome: e.target.value })}
                 className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Bloom Taxonomy Level</label>
-                <select
-                  value={skillForm.bloomLevel}
-                  onChange={(e) => setSkillForm({ ...skillForm, bloomLevel: e.target.value as any })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="Remember">Remember</option>
-                  <option value="Understand">Understand</option>
-                  <option value="Apply">Apply</option>
-                  <option value="Analyze">Analyze</option>
-                  <option value="Evaluate">Evaluate</option>
-                  <option value="Create">Create</option>
-                </select>
+            <div className="p-3 rounded-lg bg-secondary border border-border/80 text-[11.5px] text-foreground space-y-1">
+              <div className="font-semibold text-primary flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-primary" />
+                Domain Expert Micro-Skill Scope (REQ-012-F01)
               </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Provenance Type</label>
-                <select
-                  value={skillForm.type}
-                  onChange={(e) => setSkillForm({ ...skillForm, type: e.target.value as any })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="source-backed">Source-Backed</option>
-                  <option value="derived">Derived</option>
-                  <option value="synthetic">Synthetic</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">Source Reference / Citation</label>
-              <input
-                type="text"
-                placeholder="e.g. Neo4j Certified Professional Framework v5.12"
-                value={skillForm.source}
-                onChange={(e) => setSkillForm({ ...skillForm, source: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              <p className="text-muted-foreground leading-relaxed">
+                As a Domain Expert, you are defining an atomic skill categorized under <strong>{skillForm.macroCompetencyCode}</strong>. Linking this micro-skill to Target Roles and setting required proficiencies will be handled in Sprint 3 (REQ-015).
+              </p>
             </div>
           </div>
 
@@ -2445,6 +2455,7 @@ export function CompetencyOntologyPage() {
                       name: skill.name,
                       observableOutcome: skill.observableOutcome,
                       bloomLevel: skill.bloomLevel,
+                      macroCompetencyCode: 'KNOWLEDGE',
                       source: skill.provenance.source,
                       ruleRef: skill.provenance.ruleRef,
                       type: skill.provenance.type,
