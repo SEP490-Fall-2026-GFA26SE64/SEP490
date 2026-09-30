@@ -14,6 +14,8 @@ public final class TargetRole {
     private final String assignedExpertId;
     private final String description;
     private final RoleStatus status;
+    private final String version;
+    private final String skillTargets;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -28,6 +30,8 @@ public final class TargetRole {
             String assignedExpertId,
             String description,
             RoleStatus status,
+            String version,
+            String skillTargets,
             Instant createdAt,
             Instant updatedAt) {
         this.id = Objects.requireNonNull(id, "TargetRole id cannot be null");
@@ -40,11 +44,30 @@ public final class TargetRole {
         this.assignedExpertId = assignedExpertId != null ? assignedExpertId.trim() : "";
         this.description = description != null ? description.trim() : "";
         this.status = Objects.requireNonNullElse(status, RoleStatus.DRAFT);
+        this.version = (version != null && !version.isBlank()) ? version.trim() : "1.0";
+        this.skillTargets = (skillTargets != null && !skillTargets.isBlank()) ? skillTargets.trim() : "[]";
         this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
         this.updatedAt = Objects.requireNonNullElseGet(updatedAt, Instant::now);
     }
 
-    // Backward-compatible constructor
+    // Backward-compatible constructor with 12 parameters
+    public TargetRole(
+            TargetRoleId id,
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            RoleStatus status,
+            Instant createdAt,
+            Instant updatedAt) {
+        this(id, organizationId, code, name, domainCode, familyCode, track, assignedExpertId, description, status, "1.0", "[]", createdAt, updatedAt);
+    }
+
+    // Backward-compatible constructor with 10 parameters
     public TargetRole(
             TargetRoleId id,
             String organizationId,
@@ -67,7 +90,10 @@ public final class TargetRole {
             String familyCode,
             RoleTrack track,
             String assignedExpertId,
-            String description) {
+            String description,
+            String version,
+            RoleStatus status,
+            String skillTargets) {
         Instant now = Instant.now();
         return new TargetRole(
                 TargetRoleId.generate(),
@@ -79,9 +105,23 @@ public final class TargetRole {
                 track,
                 assignedExpertId,
                 description,
-                RoleStatus.DRAFT,
+                status != null ? status : RoleStatus.DRAFT,
+                version != null && !version.isBlank() ? version.trim() : "1.0",
+                skillTargets != null && !skillTargets.isBlank() ? skillTargets.trim() : "[]",
                 now,
                 now);
+    }
+
+    public static TargetRole createNew(
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description) {
+        return createNew(organizationId, code, name, domainCode, familyCode, track, assignedExpertId, description, "1.0", RoleStatus.DRAFT, "[]");
     }
 
     public static TargetRole createNew(
@@ -91,7 +131,45 @@ public final class TargetRole {
             String familyCode,
             RoleTrack track,
             String description) {
-        return createNew(organizationId, code, name, "ICT", familyCode, track, "", description);
+        return createNew(organizationId, code, name, "ICT", familyCode, track, "", description, "1.0", RoleStatus.DRAFT, "[]");
+    }
+
+    public TargetRole updateDetails(
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            RoleStatus status,
+            String version,
+            String skillTargets) {
+        return new TargetRole(
+                this.id,
+                this.organizationId,
+                this.code,
+                name != null && !name.isBlank() ? name.trim() : this.name,
+                domainCode != null && !domainCode.isBlank() ? domainCode.trim().toUpperCase() : this.domainCode,
+                familyCode != null && !familyCode.isBlank() ? familyCode.trim().toUpperCase() : this.familyCode,
+                track != null ? track : this.track,
+                assignedExpertId != null ? assignedExpertId.trim() : this.assignedExpertId,
+                description != null ? description.trim() : this.description,
+                status != null ? status : this.status,
+                version != null && !version.isBlank() ? version.trim() : this.version,
+                skillTargets != null && !skillTargets.isBlank() ? skillTargets.trim() : this.skillTargets,
+                this.createdAt,
+                Instant.now());
+    }
+
+    public TargetRole updateDetails(
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            RoleStatus status) {
+        return updateDetails(name, domainCode, familyCode, track, assignedExpertId, description, status, this.version, this.skillTargets);
     }
 
     public TargetRole updateDetails(
@@ -101,19 +179,7 @@ public final class TargetRole {
             RoleTrack track,
             String assignedExpertId,
             String description) {
-        return new TargetRole(
-                this.id,
-                this.organizationId,
-                this.code,
-                name,
-                domainCode,
-                familyCode,
-                track,
-                assignedExpertId,
-                description,
-                this.status,
-                this.createdAt,
-                Instant.now());
+        return updateDetails(name, domainCode, familyCode, track, assignedExpertId, description, this.status, this.version, this.skillTargets);
     }
 
     public TargetRole markSent() {
@@ -214,6 +280,14 @@ public final class TargetRole {
 
     public RoleStatus getStatus() {
         return status;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String getSkillTargets() {
+        return skillTargets;
     }
 
     public Instant getCreatedAt() {

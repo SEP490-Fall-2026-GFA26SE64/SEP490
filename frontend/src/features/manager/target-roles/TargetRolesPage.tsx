@@ -44,8 +44,6 @@ import {
 import {
   CAREER_FAMILIES,
   ELIGIBLE_EXPERTS,
-  INITIAL_COMPETENCIES,
-  INITIAL_MICRO_SKILLS,
   JOB_DOMAINS,
   sortTargetRolesWithDraftsBelowPublished,
   type TargetRoleModel,
@@ -80,89 +78,75 @@ const EXPERT_OPTIONS: ComboboxOption[] = ELIGIBLE_EXPERTS.map((exp) => ({
 
 
 
-const ROLE_PRESETS: ImportPreset[] = [
-  {
-    id: 'preset-ai-engineer-suite',
-    name: 'Cognitive Architecture & AI Suite (2 Roles)',
-    description: 'Target profiles for AI Knowledge Architect and Senior ML Engineer with baseline thresholds.',
-    badge: 'Enterprise Suite',
-    itemCount: 2,
-    previewSnippet: JSON.stringify(
-      [
-        { code: 'ROLE-AI-01', title: 'AI Knowledge Architect', department: 'Cognitive Architecture' },
-        { code: 'ROLE-ML-02', title: 'Senior Machine Learning Systems Engineer', department: 'Backend Systems' },
-      ],
-      null,
-      2
-    ),
-    payload: [
-      {
-        id: `role-${Date.now()}-1`,
-        stableId: `role-uuid-ai-01`,
-        code: 'ROLE-AI-01',
-        title: 'AI Knowledge Architect',
-        department: 'Machine Learning & Cognitive Architecture',
-        description: 'Designs enterprise knowledge graph reasoning engines and neuro-symbolic pathways.',
-        version: '1.0',
-        status: 'published' as const,
-        competencyIds: [INITIAL_COMPETENCIES[0]?.id || 'comp-1'],
-        skillTargets: [
-          {
-            skillId: INITIAL_MICRO_SKILLS[0]?.id || 'skill-1',
-            skillCode: INITIAL_MICRO_SKILLS[0]?.code || 'SKILL-01',
-            skillName: INITIAL_MICRO_SKILLS[0]?.name || 'Attention Mechanisms',
-            threshold: 85,
-          },
-        ],
-        activeEnrollments: 4,
-        updatedAt: new Date().toISOString().slice(0, 10),
-      },
-      {
-        id: `role-${Date.now()}-2`,
-        stableId: `role-uuid-ml-02`,
-        code: 'ROLE-ML-02',
-        title: 'Senior Machine Learning Systems Engineer',
-        department: 'Backend Engineering',
-        description: 'Engineers distributed GPU inference serving and low-latency pipeline orchestration.',
-        version: '1.0',
-        status: 'published' as const,
-        competencyIds: [INITIAL_COMPETENCIES[1]?.id || 'comp-2'],
-        skillTargets: [
-          {
-            skillId: INITIAL_MICRO_SKILLS[1]?.id || 'skill-2',
-            skillCode: INITIAL_MICRO_SKILLS[1]?.code || 'SKILL-02',
-            skillName: INITIAL_MICRO_SKILLS[1]?.name || 'KV Cache Quantization',
-            threshold: 80,
-          },
-        ],
-        activeEnrollments: 3,
-        updatedAt: new Date().toISOString().slice(0, 10),
-      },
-    ],
-  },
-]
+const ROLE_PRESETS: ImportPreset[] = []
 
 export function TargetRolesPage() {
   const { toast } = useToast()
 
   // Master roles state
-  const [roles, setRoles] = React.useState<TargetRoleModel[]>(() => getActiveCompany()?.targetRoles ?? [])
+  const [roles, setRoles] = React.useState<TargetRoleModel[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
     'all' | 'published' | 'draft' | 'sent' | 'rejected' | 'archived'
   >('all')
 
+  const activeComp = getActiveCompany()
+  const orgId = activeComp?.id || 'comp-technova'
+
+  const fetchRoles = React.useCallback(async () => {
+    try {
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+        headers: {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const mapped: TargetRoleModel[] = data.map((r: any) => ({
+          id: r.id,
+          stableId: r.code,
+          code: r.code,
+          title: r.name,
+          domainCode: r.domainCode,
+          familyCode: r.familyCode,
+          track: r.track,
+          assignedExpertId: r.assignedExpertId,
+          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || r.assignedExpertId || '',
+          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || r.domainCode || 'Information Technology',
+          description: r.description || '',
+          version: r.version || '1.0',
+          status: (r.status?.toLowerCase() === 'active' ? 'published' : r.status?.toLowerCase()) || 'draft',
+          competencyIds: [],
+          skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
+          activeEnrollments: 0,
+          updatedAt: r.updatedAt ? r.updatedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+        }))
+        setRoles(mapped)
+      } else {
+        setRoles([])
+      }
+    } catch {
+      setRoles([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [orgId])
+
+  React.useEffect(() => {
+    fetchRoles()
+  }, [fetchRoles])
+
   // Synchronize state when active company scope changes
   React.useEffect(() => {
     const handleSync = () => {
-      const active = getActiveCompany()
-      setRoles(active?.targetRoles ?? [])
+      fetchRoles()
     }
     window.addEventListener('active_company_changed', handleSync)
     return () => {
       window.removeEventListener('active_company_changed', handleSync)
     }
-  }, [])
+  }, [fetchRoles])
 
   // Explicit persistence helper to prevent circular re-render loops
   const saveAndSetRoles = React.useCallback(
@@ -179,7 +163,6 @@ export function TargetRolesPage() {
     []
   )
 
-  const activeComp = getActiveCompany()
   const companyCompetencies = activeComp?.competencies || []
   const companyMicroSkills = activeComp?.microSkills || []
 
@@ -259,7 +242,7 @@ export function TargetRolesPage() {
   const activeLearners = roles.reduce((acc, r) => acc + r.activeEnrollments, 0)
 
   // Dispatch draft to Domain Expert for micro-skill configuration
-  const handleSendToExpert = (role: TargetRoleModel) => {
+  const handleSendToExpert = async (role: TargetRoleModel) => {
     const expert = ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
     const expertName = role.assignedExpertName || expert?.name || 'Assigned Expert'
 
@@ -269,7 +252,30 @@ export function TargetRolesPage() {
       updatedAt: new Date().toISOString().slice(0, 10),
     }
 
-    saveAndSetRoles((prev) => prev.map((r) => (r.id === role.id ? updatedRole : r)))
+    try {
+      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'LD_MANAGER',
+        },
+        body: JSON.stringify({
+          name: role.title,
+          domainCode: role.domainCode,
+          familyCode: role.familyCode,
+          track: role.track,
+          assignedExpertId: role.assignedExpertId,
+          description: role.description,
+          status: 'SENT',
+          version: role.version,
+          skillTargets: role.skillTargets,
+        }),
+      })
+      await fetchRoles()
+    } catch {
+      saveAndSetRoles((prev) => prev.map((r) => (r.id === role.id ? updatedRole : r)))
+    }
+
     if (selectedRole?.id === role.id) {
       setSelectedRole(updatedRole)
     }
@@ -345,11 +351,17 @@ export function TargetRolesPage() {
       }
 
       if (res.ok) {
-        const data = await res.json()
-        if (data.id) generatedId = data.id
+        await fetchRoles()
+        setIsCreateRoleModalOpen(false)
+        toast({
+          title: 'Target Role Draft Created',
+          description: `Draft role ${roleForm.code.trim().toUpperCase()} - ${roleForm.title.trim()} initialized and saved to database.`,
+          variant: 'success',
+        })
+        return
       }
     } catch {
-      // Backend unavailable in standalone frontend preview mode, fallback to local store
+      // Backend unavailable fallback
     }
 
     const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
@@ -386,13 +398,15 @@ export function TargetRolesPage() {
 
 
   // Create Successor Draft (v+1)
-  const handleCreateSuccessorDraft = (publishedRole: TargetRoleModel) => {
+  const handleCreateSuccessorDraft = async (publishedRole: TargetRoleModel) => {
     const currentVersionNum = parseFloat(publishedRole.version) || 1.0
     const successorVersion = (currentVersionNum + 0.1).toFixed(1)
 
     // Check if a draft or in-flight successor already exists for this role
     const existingDraft = roles.find(
-      (r) => r.stableId === publishedRole.stableId && (r.status === 'draft' || r.status === 'sent' || r.status === 'rejected'),
+      (r) =>
+        (r.stableId === publishedRole.stableId || r.code === publishedRole.code) &&
+        (r.status === 'draft' || r.status === 'sent' || r.status === 'rejected'),
     )
     if (existingDraft) {
       toast({
@@ -403,27 +417,57 @@ export function TargetRolesPage() {
       return
     }
 
-    const successorRole: TargetRoleModel = {
-      ...publishedRole,
-      id: `role-${Date.now()}`,
-      version: successorVersion,
-      status: 'draft',
-      activeEnrollments: 0, // Fresh draft has no historical assignments attached
-      updatedAt: new Date().toISOString().slice(0, 10),
-      description: `Successor draft of ${publishedRole.title} (${publishedRole.version}). Historical learner assignments remain anchored to ${publishedRole.version}.`,
-    }
+    try {
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'LD_MANAGER',
+        },
+        body: JSON.stringify({
+          code: publishedRole.code,
+          name: publishedRole.title,
+          domainCode: publishedRole.domainCode || 'ICT',
+          familyCode: publishedRole.familyCode || 'JAVA_BACKEND',
+          track: publishedRole.track || 'PROFESSIONAL',
+          assignedExpertId: publishedRole.assignedExpertId || '',
+          description: `Successor draft of ${publishedRole.title} (${publishedRole.version}). Historical learner assignments remain anchored to ${publishedRole.version}.`,
+          version: successorVersion,
+          status: 'DRAFT',
+          skillTargets: publishedRole.skillTargets || [],
+        }),
+      })
 
-    saveAndSetRoles([successorRole, ...roles])
-    toast({
-      title: 'Successor Draft Initialized',
-      description: `Created ${successorRole.title} (v${successorRole.version} Draft). Historical assignments to v${publishedRole.version} are protected.`,
-      variant: 'success',
-    })
+      if (res.ok) {
+        await fetchRoles()
+        toast({
+          title: 'Successor Draft Initialized',
+          description: `Created ${publishedRole.title} (v${successorVersion} Draft). Saved to database.`,
+          variant: 'success',
+        })
+        return
+      } else {
+        const errorData = await res.json().catch(() => ({}))
+        toast({
+          title: 'Failed to Create Successor Draft',
+          description: errorData.message || errorData.error || 'Server rejected successor draft creation.',
+          variant: 'destructive',
+        })
+        return
+      }
+    } catch (e: any) {
+      toast({
+        title: 'Network Error',
+        description: e?.message || 'Could not communicate with server.',
+        variant: 'destructive',
+      })
+      return
+    }
   }
 
   // Delete Target Role (Draft or Published)
   const handleDeleteRole = async (role: TargetRoleModel) => {
-    const orgId = activeComp?.id || 'default-org'
+    const orgId = activeComp?.id || 'comp-technova'
     try {
       await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
         method: 'DELETE',
@@ -431,6 +475,7 @@ export function TargetRolesPage() {
           'X-User-Role': 'LD_MANAGER',
         },
       })
+      await fetchRoles()
     } catch {
       // Local fallback
     }
@@ -480,7 +525,7 @@ export function TargetRolesPage() {
     const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
     const domainObj = JOB_DOMAINS.find((d) => d.code === editRoleForm.domainCode)
 
-    const orgId = activeComp?.id || 'default-org'
+    const orgId = activeComp?.id || 'comp-technova'
     try {
       await fetch(`/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`, {
         method: 'PUT',
@@ -495,8 +540,12 @@ export function TargetRolesPage() {
           track: editRoleForm.track,
           assignedExpertId: editRoleForm.assignedExpertId,
           description: editRoleForm.description,
+          status: selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'rejected' ? 'REJECTED' : 'DRAFT',
+          version: selectedRole.version,
+          skillTargets: selectedRole.skillTargets,
         }),
       })
+      await fetchRoles()
     } catch {
       // Local fallback
     }
@@ -592,7 +641,7 @@ export function TargetRolesPage() {
   }
 
   // Execute Publication
-  const handleExecutePublish = (role: TargetRoleModel) => {
+  const handleExecutePublish = async (role: TargetRoleModel) => {
     const validation = getPublishValidation(role)
     if (!validation.canPublish) {
       toast({
@@ -603,9 +652,32 @@ export function TargetRolesPage() {
       return
     }
 
-    saveAndSetRoles((prev) =>
-      prev.map((r) => (r.id === role.id ? { ...r, status: 'published', updatedAt: new Date().toISOString().slice(0, 10) } : r)),
-    )
+    try {
+      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'LD_MANAGER',
+        },
+        body: JSON.stringify({
+          name: role.title,
+          domainCode: role.domainCode,
+          familyCode: role.familyCode,
+          track: role.track,
+          assignedExpertId: role.assignedExpertId,
+          description: role.description,
+          status: 'ACTIVE',
+          version: role.version,
+          skillTargets: role.skillTargets,
+        }),
+      })
+      await fetchRoles()
+    } catch {
+      saveAndSetRoles((prev) =>
+        prev.map((r) => (r.id === role.id ? { ...r, status: 'published', updatedAt: new Date().toISOString().slice(0, 10) } : r)),
+      )
+    }
+
     setIsPublishModalOpen(false)
     toast({
       title: 'Target Role Published',
@@ -727,7 +799,12 @@ export function TargetRolesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {filteredRoles.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
+                <p className="text-sm font-medium">Loading target roles from database...</p>
+              </div>
+            ) : filteredRoles.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
                 <p className="text-sm font-semibold">No target roles found.</p>

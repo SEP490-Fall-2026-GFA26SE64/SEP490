@@ -55,7 +55,7 @@ export function ExpertAssignedRolesPage() {
 
   // Company state
   const activeCompany = getActiveCompany()
-  const [roles, setRoles] = React.useState<TargetRoleModel[]>(() => activeCompany?.targetRoles ?? [])
+  const orgId = activeCompany?.id || 'comp-technova'
   const companyMicroSkills = activeCompany?.microSkills?.length ? activeCompany.microSkills : INITIAL_MICRO_SKILLS
 
   // Active Expert identity switcher (to demonstrate data isolation in demo/manual testing)
@@ -63,7 +63,68 @@ export function ExpertAssignedRolesPage() {
     return localStorage.getItem('expert_active_id') || ELIGIBLE_EXPERTS[0].id
   })
 
+  const [roles, setRoles] = React.useState<TargetRoleModel[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
+
   const activeExpert = ELIGIBLE_EXPERTS.find((e) => e.id === selectedExpertId) || ELIGIBLE_EXPERTS[0]
+
+  const fetchAssignedRoles = React.useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/v1/organizations/${orgId}/target-roles?assignedExpertId=${encodeURIComponent(selectedExpertId)}`,
+        {
+          headers: {
+            'X-User-Role': 'DOMAIN_EXPERT',
+            'X-User-Id': selectedExpertId,
+          },
+        }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        const mapped: TargetRoleModel[] = data.map((r: any) => ({
+          id: r.id,
+          stableId: r.code,
+          code: r.code,
+          title: r.name,
+          domainCode: r.domainCode,
+          familyCode: r.familyCode,
+          track: r.track,
+          assignedExpertId: r.assignedExpertId,
+          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || r.assignedExpertId || '',
+          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || r.domainCode || 'Information Technology',
+          description: r.description || '',
+          version: r.version || '1.0',
+          status: (r.status?.toLowerCase() === 'active' ? 'published' : r.status?.toLowerCase()) || 'draft',
+          competencyIds: [],
+          skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
+          activeEnrollments: 0,
+          updatedAt: r.updatedAt ? r.updatedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+        }))
+        setRoles(mapped)
+      } else {
+        setRoles([])
+      }
+    } catch {
+      setRoles([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [orgId, selectedExpertId])
+
+  React.useEffect(() => {
+    fetchAssignedRoles()
+  }, [fetchAssignedRoles])
+
+  // Synchronize state when active company scope changes
+  React.useEffect(() => {
+    const handleSync = () => {
+      fetchAssignedRoles()
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+    }
+  }, [fetchAssignedRoles])
 
   // Persist chosen expert
   const handleSelectExpert = (expertId: string) => {
@@ -75,18 +136,6 @@ export function ExpertAssignedRolesPage() {
       variant: 'info',
     })
   }
-
-  // Synchronize state when active company scope changes
-  React.useEffect(() => {
-    const handleSync = () => {
-      const active = getActiveCompany()
-      setRoles(active?.targetRoles ?? [])
-    }
-    window.addEventListener('active_company_changed', handleSync)
-    return () => {
-      window.removeEventListener('active_company_changed', handleSync)
-    }
-  }, [])
 
   // Save roles update helper
   const saveAndSetRoles = React.useCallback(
@@ -146,7 +195,7 @@ export function ExpertAssignedRolesPage() {
     setIsRejectDialogOpen(true)
   }
 
-  const handleConfirmRejection = () => {
+  const handleConfirmRejection = async () => {
     if (!rejectingRole) return
 
     const updatedRole: TargetRoleModel = {
@@ -155,7 +204,31 @@ export function ExpertAssignedRolesPage() {
       updatedAt: new Date().toISOString().slice(0, 10),
     }
 
-    saveAndSetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    try {
+      await fetch(`/api/v1/organizations/${orgId}/target-roles/${rejectingRole.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'DOMAIN_EXPERT',
+          'X-User-Id': selectedExpertId,
+        },
+        body: JSON.stringify({
+          name: rejectingRole.title,
+          domainCode: rejectingRole.domainCode,
+          familyCode: rejectingRole.familyCode,
+          track: rejectingRole.track,
+          assignedExpertId: rejectingRole.assignedExpertId,
+          description: rejectingRole.description,
+          status: 'REJECTED',
+          version: rejectingRole.version,
+          skillTargets: rejectingRole.skillTargets,
+        }),
+      })
+      await fetchAssignedRoles()
+    } catch {
+      saveAndSetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    }
+
     if (authoringRole?.id === updatedRole.id) {
       setAuthoringRole(updatedRole)
       setIsAuthoringModalOpen(false)
@@ -207,7 +280,7 @@ export function ExpertAssignedRolesPage() {
   }
 
   // Add micro-skill target
-  const handleAddSkillTarget = () => {
+  const handleAddSkillTarget = async () => {
     if (!authoringRole || !newSkillId) return
 
     const skillObj = companyMicroSkills.find((s) => s.id === newSkillId)
@@ -244,6 +317,31 @@ export function ExpertAssignedRolesPage() {
     )
     setNewSkillId(remaining.length > 0 ? remaining[0].id : '')
 
+    // Persist immediately to database so reload preserves authored micro-skills
+    try {
+      await fetch(`/api/v1/organizations/${orgId}/target-roles/${authoringRole.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'DOMAIN_EXPERT',
+          'X-User-Id': selectedExpertId,
+        },
+        body: JSON.stringify({
+          name: updatedRole.title,
+          domainCode: updatedRole.domainCode,
+          familyCode: updatedRole.familyCode,
+          track: updatedRole.track,
+          assignedExpertId: updatedRole.assignedExpertId,
+          description: updatedRole.description,
+          version: updatedRole.version,
+          status: updatedRole.status === 'published' ? 'ACTIVE' : updatedRole.status === 'rejected' ? 'REJECTED' : 'DRAFT',
+          skillTargets: updatedRole.skillTargets,
+        }),
+      })
+    } catch (e) {
+      console.error('Failed to auto-persist skill target:', e)
+    }
+
     toast({
       title: 'Micro-skill Target Added',
       description: `Mapped ${skillObj.name} (${newThreshold}%) to ${updatedRole.title}.`,
@@ -252,7 +350,7 @@ export function ExpertAssignedRolesPage() {
   }
 
   // Remove micro-skill target
-  const handleRemoveSkillTarget = (skillId: string) => {
+  const handleRemoveSkillTarget = async (skillId: string) => {
     if (!authoringRole) return
 
     const updatedRole: TargetRoleModel = {
@@ -264,6 +362,31 @@ export function ExpertAssignedRolesPage() {
     setAuthoringRole(updatedRole)
     saveAndSetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
 
+    // Persist immediately to database so reload preserves removal
+    try {
+      await fetch(`/api/v1/organizations/${orgId}/target-roles/${authoringRole.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'DOMAIN_EXPERT',
+          'X-User-Id': selectedExpertId,
+        },
+        body: JSON.stringify({
+          name: updatedRole.title,
+          domainCode: updatedRole.domainCode,
+          familyCode: updatedRole.familyCode,
+          track: updatedRole.track,
+          assignedExpertId: updatedRole.assignedExpertId,
+          description: updatedRole.description,
+          version: updatedRole.version,
+          status: updatedRole.status === 'published' ? 'ACTIVE' : updatedRole.status === 'rejected' ? 'REJECTED' : 'DRAFT',
+          skillTargets: updatedRole.skillTargets,
+        }),
+      })
+    } catch (e) {
+      console.error('Failed to auto-persist skill target removal:', e)
+    }
+
     toast({
       title: 'Micro-skill Removed',
       description: 'The micro-skill benchmark threshold has been detached from this draft role.',
@@ -272,7 +395,7 @@ export function ExpertAssignedRolesPage() {
   }
 
   // Publish Role from Expert portal once skill requirements are satisfied
-  const handlePublishFromExpert = () => {
+  const handlePublishFromExpert = async () => {
     if (!authoringRole) return
 
     if (authoringRole.skillTargets.length === 0) {
@@ -290,7 +413,31 @@ export function ExpertAssignedRolesPage() {
       updatedAt: new Date().toISOString().slice(0, 10),
     }
 
-    saveAndSetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    try {
+      await fetch(`/api/v1/organizations/${orgId}/target-roles/${authoringRole.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'DOMAIN_EXPERT',
+          'X-User-Id': selectedExpertId,
+        },
+        body: JSON.stringify({
+          name: authoringRole.title,
+          domainCode: authoringRole.domainCode,
+          familyCode: authoringRole.familyCode,
+          track: authoringRole.track,
+          assignedExpertId: authoringRole.assignedExpertId,
+          description: authoringRole.description,
+          status: 'ACTIVE',
+          version: authoringRole.version,
+          skillTargets: authoringRole.skillTargets,
+        }),
+      })
+      await fetchAssignedRoles()
+    } catch {
+      saveAndSetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    }
+
     setAuthoringRole(updatedRole)
     setIsAuthoringModalOpen(false)
 
@@ -463,7 +610,12 @@ export function ExpertAssignedRolesPage() {
           </CardHeader>
 
           <CardContent className="p-0">
-            {filteredRoles.length === 0 ? (
+            {isLoading ? (
+              <div className="py-16 text-center text-muted-foreground space-y-3 px-4">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mx-auto" />
+                <p className="text-sm font-medium">Loading assigned target roles from database...</p>
+              </div>
+            ) : filteredRoles.length === 0 ? (
               <div className="py-16 text-center text-muted-foreground space-y-3 px-4">
                 <div className="h-12 w-12 rounded-full bg-muted/50 border border-border flex items-center justify-center mx-auto text-muted-foreground">
                   <Lock className="h-6 w-6" />

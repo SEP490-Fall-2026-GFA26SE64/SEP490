@@ -16,11 +16,14 @@ Update target-role metadata and Domain Expert assignment. Changes to micro-skill
 
 - **L&D Manager Scope**: L&D Managers can only edit the fields they create (title, domain, family, track, assigned expert, description). They **cannot** add or edit micro-skill requirements (which is exclusively the Domain Expert's role).
 - **Assigned Expert Isolation**: When an expert is assigned or changed, other experts lose visibility into this role. Only the assigned expert can view and configure the target role in their Expert Portal.
-- **Draft Mode Mutability**: In Draft status, all metadata fields are editable. Published roles require creating a successor draft to alter structural attributes.
+- **Status Lifecycle Transitions**: Both L&D Managers and assigned Domain Experts can transition the status:
+  - L&D Manager: transitions to `SENT` when dispatching to Domain Expert, or `ACTIVE` when publishing directly.
+  - Domain Expert: transitions to `ACTIVE` (Published) or `REJECTED` for target roles assigned to their expert ID. Unassigned experts are rejected with `403 Forbidden`.
 
 ## Acceptance Baseline
 
-Administrative metadata changes do not silently modify the role's skill requirements or erase existing role selections.
+Administrative metadata changes do not silently modify the role's skill requirements or erase existing role selections. Status updates persist directly to the database so that reloading preserves the updated status.
 
-- **Unit Test Evidence:** `TargetRoleDomainTest.updateDetailsModifiesMetadata`, `TargetRoleServiceTest.updatesTargetRoleSuccessfully`, `TargetRoleControllerTest.updateTargetRoleReturns200`, `TargetRoleControllerTest.updateTargetRoleReturns403ForLearner`
-- **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation` (verifies `role.updateDetails(...)` persists to Neo4j)
+- **Unit Test Evidence:** `TargetRoleDomainTest.updateDetailsModifiesMetadata`, `TargetRoleServiceTest.updatesTargetRoleSuccessfully`, `TargetRoleControllerTest.updateTargetRoleReturns200`, `TargetRoleControllerTest.updateTargetRoleReturns403ForLearner`, `TargetRoleControllerTest.updateTargetRoleReturns200ForAssignedExpert`, `TargetRoleControllerTest.updateTargetRoleReturns403ForUnassignedExpert`
+- **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation`, `PostgresTargetRoleRepositoryTest.saveUpdatesExistingRole` (verifies `status` and metadata updates persist to PostgreSQL)
+

@@ -275,4 +275,91 @@ class TargetRoleControllerTest {
                         .header("X-User-Id", "expert-beta"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F03: PUT returns 200 OK when assigned Domain Expert updates/publishes role")
+    void updateTargetRoleReturns200ForAssignedExpert() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole existingRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.SENT,
+                Instant.now(),
+                Instant.now());
+
+        TargetRole updatedRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.ACTIVE,
+                Instant.now(),
+                Instant.now());
+
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(existingRole));
+        when(manageTargetRoleUseCase.updateTargetRole(any()))
+                .thenReturn(Optional.of(updatedRole));
+
+        com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
+                        "AI Spec", "AI", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "ACTIVE");
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .header("X-User-Id", "expert-alpha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("ACTIVE"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F03: PUT returns 403 Forbidden when Domain Expert is not assigned to the role")
+    void updateTargetRoleReturns403ForUnassignedExpert() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole existingRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.SENT,
+                Instant.now(),
+                Instant.now());
+
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(existingRole));
+
+        com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
+                        "AI Spec", "AI", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "ACTIVE");
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .header("X-User-Id", "expert-beta")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
 }

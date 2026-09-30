@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -48,6 +49,8 @@ public class TargetRoleController {
         this.manageTargetRoleUseCase = manageTargetRoleUseCase;
     }
 
+    private static final com.fasterxml.jackson.databind.ObjectMapper OBJECT_MAPPER = new com.fasterxml.jackson.databind.ObjectMapper();
+
     @PostMapping
     public ResponseEntity<?> createTargetRole(
             @PathVariable("organizationId") String organizationId,
@@ -63,6 +66,17 @@ public class TargetRoleController {
                 ? RoleTrack.fromString(request.track())
                 : RoleTrack.PROFESSIONAL;
 
+        RoleStatus status = request.status() != null && !request.status().isBlank()
+                ? RoleStatus.fromString(request.status())
+                : RoleStatus.DRAFT;
+
+        String skillTargetsJson = "[]";
+        if (request.skillTargets() != null && !request.skillTargets().isEmpty()) {
+            try {
+                skillTargetsJson = OBJECT_MAPPER.writeValueAsString(request.skillTargets());
+            } catch (Exception ignored) {}
+        }
+
         CreateTargetRoleCommand command = new CreateTargetRoleCommand(
                 organizationId,
                 request.code(),
@@ -71,7 +85,10 @@ public class TargetRoleController {
                 request.familyCode(),
                 track,
                 request.assignedExpertId(),
-                request.description());
+                request.description(),
+                request.version() != null && !request.version().isBlank() ? request.version().trim() : "1.0",
+                status,
+                skillTargetsJson);
 
         TargetRole created = createTargetRoleUseCase.createTargetRole(command);
         TargetRoleResponse response = TargetRoleResponse.fromDomain(created);
@@ -162,11 +179,15 @@ public class TargetRoleController {
             @PathVariable("organizationId") String organizationId,
             @PathVariable("roleId") String roleId,
             @RequestHeader(value = "X-User-Role", required = false, defaultValue = "LD_MANAGER") String userRole,
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
             @Valid @RequestBody UpdateTargetRoleRequest request) {
 
-        if (!isAuthorizedManager(userRole)) {
+        boolean isManager = isAuthorizedManager(userRole);
+        boolean isExpert = isDomainExpert(userRole);
+
+        if (!isManager && !isExpert) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers and Administrators can update target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can update target roles"));
         }
 
         UUID uuid;
@@ -176,9 +197,32 @@ public class TargetRoleController {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid ID", "message", "Target role ID must be a valid UUID"));
         }
 
+        if (isExpert && !isManager) {
+            Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, new TargetRoleId(uuid));
+            if (existingOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            TargetRole existingRole = existingOpt.get();
+            if (userId != null && !userId.isBlank() && !userId.trim().equalsIgnoreCase(existingRole.getAssignedExpertId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this target role"));
+            }
+        }
+
         RoleTrack track = request.track() != null && !request.track().isBlank()
                 ? RoleTrack.fromString(request.track())
-                : RoleTrack.PROFESSIONAL;
+                : null;
+
+        String skillTargetsJson = null;
+        if (request.skillTargets() != null) {
+            try {
+                skillTargetsJson = OBJECT_MAPPER.writeValueAsString(request.skillTargets());
+            } catch (Exception ignored) {}
+        }
+
+        RoleStatus status = request.status() != null && !request.status().isBlank()
+                ? RoleStatus.fromString(request.status())
+                : null;
 
         UpdateTargetRoleCommand command = new UpdateTargetRoleCommand(
                 organizationId,
@@ -188,7 +232,10 @@ public class TargetRoleController {
                 request.familyCode(),
                 track,
                 request.assignedExpertId(),
-                request.description());
+                request.description(),
+                status,
+                request.version(),
+                skillTargetsJson);
 
         return manageTargetRoleUseCase.updateTargetRole(command)
                 .map(role -> ResponseEntity.ok(TargetRoleResponse.fromDomain(role)))

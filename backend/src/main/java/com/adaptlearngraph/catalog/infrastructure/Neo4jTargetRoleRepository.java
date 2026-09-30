@@ -41,6 +41,24 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     }
 
     @Override
+    public boolean existsByOrganizationIdAndCodeAndVersion(String organizationId, String code, String version) {
+        String cypher = """
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId AND r.code = $code AND coalesce(r.version, '1.0') = $version
+                RETURN count(r) > 0 AS exists
+                """;
+        try (var session = driver.session()) {
+            return session.run(cypher, Map.of(
+                    "organizationId", organizationId,
+                    "code", code,
+                    "version", (version != null && !version.isBlank()) ? version.trim() : "1.0"))
+                    .single()
+                    .get("exists")
+                    .asBoolean();
+        }
+    }
+
+    @Override
     public TargetRole save(TargetRole targetRole) {
         String cypher = """
                 MERGE (r:TargetRole {id: $id})
@@ -54,6 +72,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.assignedExpertId = $assignedExpertId,
                     r.description = $description,
                     r.status = $status,
+                    r.version = $version,
+                    r.skillTargets = $skillTargets,
                     r.createdAt = datetime($createdAt),
                     r.updatedAt = datetime($updatedAt)
                 ON MATCH SET
@@ -64,6 +84,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.assignedExpertId = $assignedExpertId,
                     r.description = $description,
                     r.status = $status,
+                    r.version = $version,
+                    r.skillTargets = $skillTargets,
                     r.updatedAt = datetime($updatedAt)
                 RETURN r
                 """;
@@ -78,6 +100,11 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         params.put("track", targetRole.getTrack().name());
         params.put("assignedExpertId", targetRole.getAssignedExpertId());
         params.put("description", targetRole.getDescription());
+        params.put("status", targetRole.getStatus().name());
+        params.put("version", targetRole.getVersion());
+        params.put("skillTargets", targetRole.getSkillTargets());
+        params.put("createdAt", targetRole.getCreatedAt().toString());
+        params.put("updatedAt", targetRole.getUpdatedAt().toString());
         params.put("status", targetRole.getStatus().name());
         params.put("createdAt", targetRole.getCreatedAt().toString());
         params.put("updatedAt", targetRole.getUpdatedAt().toString());
@@ -207,6 +234,13 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 ? node.get("updatedAt").asZonedDateTime().toInstant()
                 : Instant.now();
 
+        String version = node.containsKey("version") && !node.get("version").isNull()
+                ? node.get("version").asString()
+                : "1.0";
+        String skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
+                ? node.get("skillTargets").asString()
+                : "[]";
+
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
                 orgId,
@@ -218,6 +252,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 assignedExpertId,
                 desc,
                 RoleStatus.fromString(statusStr),
+                version,
+                skillTargets,
                 createdAt,
                 updatedAt);
     }

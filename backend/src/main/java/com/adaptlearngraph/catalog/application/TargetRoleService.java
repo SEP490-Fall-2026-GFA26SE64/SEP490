@@ -26,7 +26,8 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
     public TargetRole createTargetRole(CreateTargetRoleCommand command) {
         Objects.requireNonNull(command, "command cannot be null");
         String normalizedCode = command.code() != null ? command.code().trim().toUpperCase() : "";
-        if (targetRoleRepository.existsByOrganizationIdAndCode(command.organizationId(), normalizedCode)) {
+        String version = command.version() != null && !command.version().isBlank() ? command.version().trim() : "1.0";
+        if (targetRoleRepository.existsByOrganizationIdAndCodeAndVersion(command.organizationId(), normalizedCode, version)) {
             throw new DuplicateTargetRoleException(command.organizationId(), normalizedCode);
         }
 
@@ -38,7 +39,10 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.familyCode(),
                 command.track(),
                 command.assignedExpertId(),
-                command.description());
+                command.description(),
+                version,
+                command.status(),
+                command.skillTargets());
 
         return targetRoleRepository.save(targetRole);
     }
@@ -72,7 +76,10 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.familyCode(),
                 command.track(),
                 command.assignedExpertId(),
-                command.description());
+                command.description(),
+                command.status(),
+                command.version(),
+                command.skillTargets());
 
         return Optional.of(targetRoleRepository.save(updated));
     }

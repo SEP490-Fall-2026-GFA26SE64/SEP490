@@ -28,5 +28,11 @@ Dedicated workspace for Domain Experts to view target roles assigned to their sp
 - **Micro-skill Authoring**:
   - Minimum 1 micro-skill target required for graph publication readiness.
   - Required proficiency threshold bounded within 1% to 100% (stored as `targetMastery: Float [0, 1]` on `[:REQUIRES_SKILL]` in Neo4j).
-  - Per Neo4j Schema V5, redundant `weight` and `mandatory` flags are deprecated; all active `REQUIRES_SKILL` links are treated as core role requirements for diagnostic gap matching.
 - **Publication Readiness**: Once the domain expert has completed micro-skill threshold mapping, the target role can be published into the active enterprise knowledge graph.
+
+## Acceptance Baseline
+
+The Domain Expert workspace fetches target roles assigned exclusively to their user persona directly from `/api/v1/organizations/{organizationId}/target-roles?assignedExpertId={expertId}` without containing any frontend mock data. Publishing transitions the target role to `ACTIVE` (displayed as `published`), and rejections transition to `REJECTED`, persisting immediately to the database so page reloads reflect the persisted status.
+
+- **Unit Test Evidence:** `TargetRoleControllerTest.listTargetRolesReturns200`, `TargetRoleControllerTest.updateTargetRoleReturns200ForAssignedExpert`, `TargetRoleControllerTest.updateTargetRoleReturns403ForUnassignedExpert`, `TargetRoleServiceTest.filtersRolesByExpert`, `PostgresTargetRoleRepositoryTest.findByOrganizationIdMapsRows`, `PostgresTargetRoleRepositoryTest.saveUpdatesExistingRole`
+- **Flyway Migration Evidence:** `V7__target_roles_baseline.sql` (Populates baseline roles into PostgreSQL `platform.target_role`)

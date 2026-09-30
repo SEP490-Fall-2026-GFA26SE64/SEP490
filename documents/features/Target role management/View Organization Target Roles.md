@@ -24,5 +24,5 @@ Browse, filter, and inspect the organization's target-role catalog for L&D manag
 
 The L&D Manager can inspect own-organization roles with full tenant isolation and multi-criteria filtering without receiving expert micro-skill authoring permissions automatically.
 
-- **Unit Test Evidence:** `TargetRoleServiceTest.listsRolesWithOrgIsolation`, `TargetRoleControllerTest.listTargetRolesReturns200`
+- **Unit Test Evidence:** `TargetRoleServiceTest.listsRolesWithOrgIsolation`, `TargetRoleControllerTest.listTargetRolesReturns200`, `PostgresTargetRoleRepositoryTest` (PostgreSQL `platform.target_role` table via Flyway `V7__target_roles_baseline.sql`)
 - **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation` (Neo4j Testcontainers)
