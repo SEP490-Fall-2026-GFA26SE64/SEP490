@@ -1,0 +1,33 @@
+package com.adaptlearngraph.identity.infrastructure;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration(proxyBeanMethods = false)
+@Profile("local")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
+public class LocalCatalogSecurityConfiguration {
+    @Bean
+    @Order(1)
+    SecurityFilterChain localTargetRoleSecurity(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher(
+                        "/api/v1/employee/target-roles",
+                        "/api/v1/employee/target-roles/**")
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/employee/target-roles",
+                                "/api/v1/employee/target-roles/**")
+                        .permitAll()
+                        .anyRequest().denyAll())
+                .build();
+    }
+}
