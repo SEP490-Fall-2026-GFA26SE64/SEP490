@@ -1,3 +1,11 @@
 spring:
   flyway:
     enabled: false
+
+catalog:
+  local-actor:
+    enabled: ${CATALOG_LOCAL_ACTOR_ENABLED:true}
+    account-id: ${CATALOG_LOCAL_ACTOR_ACCOUNT_ID:00000000-0000-0000-0000-000000000001}
+    organization-id: ${CATALOG_LOCAL_ACTOR_ORGANIZATION_ID:00000000-0000-0000-0000-000000000001}
+    active: ${CATALOG_LOCAL_ACTOR_ACTIVE:true}
+    role: ${CATALOG_LOCAL_ACTOR_ROLE:EMPLOYEE}

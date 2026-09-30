@@ -22,9 +22,17 @@ public final class DevelopmentCatalogSeeder {
                                 """,
                         """
                                 MERGE (role:TargetRole {code: 'JAVA_BACKEND_P3'})
-                                ON CREATE SET role.id = randomUUID(), role.name = 'Java Backend Developer P3',
+                                ON CREATE SET role.id = randomUUID(), role.createdAt = datetime()
+                                SET role.name = 'Java Backend Developer P3',
                                     role.familyCode = 'JAVA_BACKEND', role.track = 'PROFESSIONAL',
-                                    role.status = 'ACTIVE', role.createdAt = datetime(), role.updatedAt = datetime()
+                                    role.organizationId = '00000000-0000-0000-0000-000000000001',
+                                    role.seniority = 'P3',
+                                    role.description = 'Develops and maintains Java backend services',
+                                    role.responsibilities = [
+                                        'Build and maintain Java backend services',
+                                        'Review API and persistence designs'
+                                    ],
+                                    role.status = 'ACTIVE', role.updatedAt = datetime()
                                 """,
                         """
                                 UNWIND [{code: 'KNOWLEDGE', name: 'Knowledge'},
