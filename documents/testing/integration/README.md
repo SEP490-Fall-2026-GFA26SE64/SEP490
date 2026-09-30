@@ -17,4 +17,4 @@ As APIs are implemented, add tests for PostgreSQL-to-Neo4j catalog reference res
 
 Each case should identify its feature ID, initial PostgreSQL and graph fixtures, API or job trigger, expected state in both stores, repeat/retry outcome, and test method.
 
-REQ-001-F01 Neo4j adapter cases were approved on 2026-09-30 and are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). They must use a disposable Neo4j container with explicit Org A/Org B, inactive and catalog-invalid fixtures; the development seed and manual Compose smoke are not integration-test evidence.
+REQ-001-F01 Neo4j adapter cases passed on 2026-09-30 and are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). They use a disposable Neo4j container with explicit Org A/Org B, inactive and catalog-invalid fixtures; the development seed and manual Compose smoke are not integration-test evidence.

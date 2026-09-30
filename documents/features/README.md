@@ -47,13 +47,13 @@
 
 **Confirmed retained selection (2026-09-27):** Option A: Keep an already-selected role after baseline readiness loss. Block new baseline attempts until repair, but allow existing baseline attempts to continue or resume using their preserved configuration and content. No forced role change, automatic pathway archival, or history deletion follows solely from this loss. Existing-pathway learning, soft-skill assessment, evidence-only completion, remaining notification details, and concurrent-edit consistency remain open; function counts are unchanged.
 
-**Latest answers (2026-09-26):** Employees browse published, active organization roles only. Details include role name, description and responsibilities, seniority, competency requirements, and required proficiency per micro-skill; assigned expert name was not selected.
+**Current browsing contract (updated 2026-09-29):** Employees browse same-organization, `ACTIVE`, catalog-valid roles. Details include role name, description and responsibilities, seniority, competency requirements, and required proficiency per micro-skill; assigned expert name was not selected. Publication and baseline readiness are not part of the current browsing gate.
 
 **Latest discovery decision (2026-09-26):** Option B: Search by role name and filter by seniority; no required-micro-skill filter.
 
-**Latest empty-results decisions (2026-09-26):** Empty search/filter results show "No matching roles" with a **Clear filters** action. When the organization has no published, active roles at all, show "No roles available. Please contact your Organization Administrator." No automatic administrator notification is introduced.
+**Current empty-results behavior:** Empty search/filter results show "No matching roles" with a **Clear filters** action. When the organization has no permitted catalog-valid role, show "No roles available. Please contact your Organization Administrator." No automatic administrator notification is introduced.
 
-**Latest completed function (2026-09-26):** View Target Roles (REQ-001-F01). Its final decision is option A: replace unavailable role details with "This role is no longer available" and a **Back to roles** action, without automatically redirecting.
+**Latest clarified function (2026-09-26; implementation/testing updated 2026-09-30):** View Target Roles (REQ-001-F01). Its confirmed behavior is to replace unavailable role details with "This role is no longer available" and a **Back to roles** action, without automatically redirecting. Executable suites pass; full browser system evidence and production Identity integration remain pending.
 
 **Confirmed selection limit (2026-09-26):** Option A: One active target role per employee at a time.
 

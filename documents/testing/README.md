@@ -12,4 +12,4 @@ For every new function, record its `REQ-nnn-Fnn` ID, approved acceptance rule, t
 
 Active function plans:
 
-- [REQ-001-F01 View Target Roles](REQ-001-F01-view-target-roles.md) — cluster 2 approved; evidence is recorded only after executable tests run.
+- [REQ-001-F01 View Target Roles](REQ-001-F01-view-target-roles.md) — domain/application, API/security, Neo4j integration and frontend suites passed on 2026-09-30; full browser system evidence remains pending.

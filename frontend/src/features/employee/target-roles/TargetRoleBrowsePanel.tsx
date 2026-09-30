@@ -24,6 +24,8 @@ export function TargetRoleBrowsePanel() {
 
   const roles = useTargetRoles({ search, seniority })
   const hasFilters = search.length > 0 || seniority !== null
+  const showToolbarClear = hasFilters
+    && (roles.isPending || roles.isError || (roles.data?.length ?? 0) > 0)
 
   const clearFilters = () => {
     setSearchInput('')
@@ -77,7 +79,7 @@ export function TargetRoleBrowsePanel() {
           </select>
         </label>
 
-        {hasFilters && <Button variant="outline" size="sm" onClick={clearFilters}>Clear filters</Button>}
+        {showToolbarClear && <Button variant="outline" size="sm" onClick={clearFilters}>Clear filters</Button>}
       </div>
 
       {roles.isPending ? (

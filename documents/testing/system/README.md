@@ -13,3 +13,5 @@ Expected baseline: databases healthy, `migrate` exited with code 0, API healthy,
 When user workflows exist, add end-to-end cases for employee role selection and baseline, expert graph editing and pathway review, organization-scoped account access, module assessment/recalculation, and subscription payment confirmation. Pin each scenario to a clarified `REQ-nnn-Fnn` rule, specify actor/organization and setup data, and capture outcome and date. Browser automation and external-provider test doubles are not installed in this baseline; choose them with the first implemented workflow.
 
 REQ-001-F01 is the first approved workflow test cluster; its full-stack scenario is tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Until a browser runner is selected, API-level Compose checks must be labeled as partial system evidence and may not claim the frontend states passed.
+
+Manual browser procedure: [REQ-001-F01 manual browser system check](REQ-001-F01-manual-browser-check.md). Record the actual browser/date/result in the function evidence file; the existence of this checklist is not evidence of a pass.

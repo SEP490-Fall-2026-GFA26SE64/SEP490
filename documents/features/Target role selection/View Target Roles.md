@@ -2,7 +2,7 @@
 
 **Function ID:** REQ-001-F01  
 **Actor:** Employee  
-**Status:** Implementation base available; executable test evidence and production identity integration pending
+**Status:** Implementation base and executable test suites available; browser system evidence and production identity integration pending
 **Feature:** [Target Role Selection](README.md)
 
 ## Description

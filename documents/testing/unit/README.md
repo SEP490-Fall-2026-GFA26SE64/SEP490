@@ -13,4 +13,4 @@ Case record template:
 | Boundaries | Missing/invalid data, duplicate request, status transition and authorization failure |
 | Evidence | Unit test class/method, date and result |
 
-The executable-test cluster for `REQ-001-F01` was approved on 2026-09-30; its cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Other targets such as REQ-001-F02 selection, REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved. A frontend runner may now be selected for F01 only; do not treat installation or mocked rendering alone as system evidence.
+The executable-test cluster for `REQ-001-F01` was approved and its domain/application, API/security and frontend component suites passed on 2026-09-30; cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Other targets such as REQ-001-F02 selection, REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved. Frontend component evidence is not system evidence.

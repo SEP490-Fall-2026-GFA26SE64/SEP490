@@ -4,8 +4,10 @@ import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import org.neo4j.driver.Driver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration(proxyBeanMethods = false)
+@Profile({"local", "prod"})
 public class CatalogConfiguration {
     @Bean
     TargetRoleCatalogPort targetRoleCatalogPort(Driver driver) {
