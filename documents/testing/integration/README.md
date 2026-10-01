@@ -4,7 +4,7 @@
 
 Current evidence:
 
-- `DatabaseSchemaTest`: migrate PostgreSQL V1-V6, validate reruns, organization/account cross-scope foreign key, product actor codes, and existing schema guards.
+- `DatabaseSchemaTest`: migrate PostgreSQL V1-V7, validate reruns, organization/account cross-scope foreign key, product actor codes, and existing schema guards.
 - `GraphSchemaTest`: migrate graph constraints twice, seed twice, check V5 node/relationship keys and uniqueness, reject a changed migration checksum.
 
 From the repository root on Windows:

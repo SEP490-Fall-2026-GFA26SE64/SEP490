@@ -15,11 +15,11 @@
 
 ## Clarification Tracker
 
-**Latest clarified function:** [View Target Roles](Target%20role%20selection/View%20Target%20Roles.md), REQ-001-F01. Its implementation base and executable suites are available; browser system evidence and production Identity integration remain pending.
+**Latest clarified function:** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02. Its contract and Flyway V7 persistence base are approved; business implementation and executable tests remain pending.
 
 **Current clarification question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments? This belongs to the AI soft-skill review flow, not REQ-001-F01.
 
-**Progress:** 1 of 84 functions clarified; 3 remain in clarification (the AI soft-skill review flow and two paused baseline functions), and 80 remain pending. All function documents are drafted.
+**Progress:** 2 of 84 functions clarified. F01 has a local/demo implementation base; F02 has an approved contract and persistence schema.
 
 **Next target-role follow-up:** REQ-001-F01 remains in completion review until browser evidence and production Identity integration are available. The next planned clarification sequence is [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
 
@@ -38,7 +38,7 @@
 
 **Confirmed existing-pathway continuation (2026-09-27):** Option A: Continue learning through existing active-pathway modules and module assessments after baseline readiness loss, subject to their own availability and authorization checks. Do not pause or archive a pathway solely for this loss, or reactivate an archived pathway. Catalog and baseline-start restrictions remain unchanged. The next question concerns soft-skill assessments during readiness loss, separately from deferred soft-skill result reuse. Function statuses and counts are unchanged.
 
-**Deferred function:** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02. Soft-skill result reuse remains provisional, and the new role-readiness gate must be clarified for selection. The expanded baseline scope retains the earlier unknown-gap-only rule, resolving that earlier question. The function is not counted as clarified.
+**Clarified selection function (2026-10-01):** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02, owns only the selection transaction. Baseline/gap/pathway generation and soft-skill reuse remain in their owning functions.
 
 **Custom visibility decision (2026-09-27):** A target role whose configuration is unfinished is not shown to employees. Reopen View Target Roles to define readiness and handle later loss of readiness. This answer does not select a missing-Expert email recipient or cancel all earlier blocked-start notification rules; reconcile their applicability after the visibility checklist is agreed. Existing learning/history effects remain open.
 

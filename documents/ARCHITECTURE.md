@@ -1,6 +1,6 @@
 # Current Project Architecture
 
-**As of 2026-09-30.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles; it is not an implementation of all 84 drafted functions in [features/README.md](features/README.md). System status remains public. Target-role list/detail routes are enabled only in the local profile with the provisional local actor flag; production security remains deny-by-default until the real Identity authorization contract is integrated.
+**As of 2026-10-01.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles and the approved persistence contract for REQ-001-F02 Choose Target Role; it is not an implementation of all drafted functions. Production security remains deny-by-default until the real Identity authorization contract is integrated.
 
 ## Runtime topology
 
@@ -17,18 +17,20 @@
 
 | Store | Current responsibility | Current baseline |
 | --- | --- | --- |
-| PostgreSQL 17.6 | Organizations, accounts/roles, assessments, question mappings and results, mastery/evidence, learning activity, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V6 in [db/migration](../backend/src/main/resources/db/migration); V6 adds organization identity and the four product actor codes while retaining legacy codes. |
+| PostgreSQL 17.6 | Organizations, accounts/roles, target selections, assessments, mastery/evidence, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V7 in [db/migration](../backend/src/main/resources/db/migration); V7 adds F02 command idempotency and immutable role display snapshots. |
 | Neo4j 5.26 Community | Catalog graph: `JobDomain`, organization-scoped `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule` and the seven relationships in [neo4j_schema.md](neo4j_schema.md) | Ten `id`/`code` uniqueness constraints, one per property per domain label, in [V1__catalog_constraints.cypher](../backend/src/main/resources/db/neo4j/V1__catalog_constraints.cypher). Development seed creates ICT, a Java role with `organizationId`, `seniority` and `responsibilities`, three macros, two skills, two modules, and all seven relationship types. |
 
 ## Database diagrams
 
 ### PostgreSQL
 
-The three views below include every column of the 52 migrated tables, including V6 changes to earlier tables. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
+The three views below include every column of the 53 migrated tables through V7. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
 
 ![PostgreSQL identity, catalog and processing tables](diagrams/postgresql.svg)
 
 [Identity and catalog PlantUML source](diagrams/postgresql.puml)
+
+The PlantUML source includes V7. Regenerate the checked-in SVG when Docker/PlantUML tooling is available.
 
 ![PostgreSQL assessment and learning tables](diagrams/postgresql-assessment.svg)
 
@@ -52,7 +54,7 @@ All catalog nodes use stable `id` and `code` keys. `TargetRole.organizationId` p
 
 The graph also has a technical `SchemaMigration` label with a uniqueness constraint and checksum record; it is **not** a sixth catalog entity. Neo4j Community constraints cannot by themselves enforce every V5 rule (such as `[0,1]` values, statuses, one active macro per skill, valid module URLs, or no prerequisite cycles). Future graph write services must validate these rules before committing. Dev sample `sourceUrl` values point to public Java and Spring guides; the seed never runs in `prod`.
 
-PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the supplied V5 graph schema uses stable `id`/`code` without graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. Do not treat the seeded graph as a published PostgreSQL catalog release; the reference and historical-snapshot contract needs confirmation before role selection, assessment, or pathway implementation. V6 allows nullable organization IDs for legacy accounts and platform administrators; this is not complete tenant authorization.
+PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the supplied V5 graph schema uses stable `id`/`code` without graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. Local/demo may seed matching cross-store references, but that seed is not a published production release.
 
 ## Backend structure
 
@@ -74,7 +76,7 @@ backend/
     evaluation/          reserved feature package
   src/main/resources/
     application*.yml     local, prod, migrate, starter, worker profiles
-    db/migration/        PostgreSQL Flyway V1-V6
+    db/migration/        PostgreSQL Flyway V1-V7
     db/neo4j/            graph constraints packaged in the backend JAR
   src/test/java/com/adaptlearngraph/
     platform/            unit, security, database and graph tests

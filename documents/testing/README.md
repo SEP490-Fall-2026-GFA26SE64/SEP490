@@ -13,3 +13,4 @@ For every new function, record its `REQ-nnn-Fnn` ID, approved acceptance rule, t
 Active function plans:
 
 - [REQ-001-F01 View Target Roles](REQ-001-F01-view-target-roles.md) — domain/application, API/security, Neo4j integration and frontend suites passed on 2026-09-30; full browser system evidence remains pending.
+- [REQ-001-F02 Choose Target Role](REQ-001-F02-choose-target-role.md) — approved test plan; executable tests have not been created or run.
