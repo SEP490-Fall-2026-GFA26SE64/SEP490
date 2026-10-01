@@ -14,4 +14,7 @@ When user workflows exist, add end-to-end cases for employee role selection and 
 
 REQ-001-F01 is the first approved workflow test cluster; its full-stack scenario is tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Until a browser runner is selected, API-level Compose checks must be labeled as partial system evidence and may not claim the frontend states passed.
 
-Manual browser procedure: [REQ-001-F01 manual browser system check](REQ-001-F01-manual-browser-check.md). Record the actual browser/date/result in the function evidence file; the existence of this checklist is not evidence of a pass.
+Manual browser procedures:
+- [REQ-001-F01 manual browser system check](REQ-001-F01-manual-browser-check.md).
+- [REQ-023 manual browser system check](REQ-023-manual-browser-check.md) (Target Role Management & Expert Authoring).
+Record the actual browser/date/result in the function evidence file; the existence of this checklist is not evidence of a pass.

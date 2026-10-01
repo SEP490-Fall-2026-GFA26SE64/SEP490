@@ -24,10 +24,15 @@ public record CreateTargetRoleRequest(
         @Pattern(regexp = "^(PROFESSIONAL|MANAGEMENT)?$", message = "Track must be either PROFESSIONAL or MANAGEMENT")
         String track,
 
+        @Pattern(regexp = "^(P[1-5]|M[3-4])?$", message = "Seniority must be P1-P5 or M3-M4")
+        String seniority,
+
         String assignedExpertId,
 
         @Size(max = 2000, message = "Description cannot exceed 2000 characters")
         String description,
+
+        List<String> responsibilities,
 
         String version,
 
@@ -42,13 +47,26 @@ public record CreateTargetRoleRequest(
             String domainCode,
             String familyCode,
             String track,
+            String seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities) {
+        this(code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, "1.0", "DRAFT", List.of());
+    }
+
+    public CreateTargetRoleRequest(
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            String track,
             String assignedExpertId,
             String description) {
-        this(code, name, domainCode, familyCode, track, assignedExpertId, description, "1.0", "DRAFT", List.of());
+        this(code, name, domainCode, familyCode, track, null, assignedExpertId, description, List.of(), "1.0", "DRAFT", List.of());
     }
 
     public CreateTargetRoleRequest(String code, String name, String familyCode, String track, String description) {
-        this(code, name, "ICT", familyCode, track, "", description, "1.0", "DRAFT", List.of());
+        this(code, name, "ICT", familyCode, track, null, "", description, List.of(), "1.0", "DRAFT", List.of());
     }
 }
 

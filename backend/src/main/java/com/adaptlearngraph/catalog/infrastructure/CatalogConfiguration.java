@@ -20,19 +20,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.sql.DataSource;
 
 @Configuration(proxyBeanMethods = false)
 public class CatalogConfiguration {
 
     @Bean
-    public TargetRoleRepository targetRoleRepository(
-            ObjectProvider<DataSource> dataSourceProvider,
-            ObjectProvider<Driver> driverProvider) {
-        DataSource dataSource = dataSourceProvider.getIfAvailable();
-        if (dataSource != null) {
-            return new PostgresTargetRoleRepository(dataSource);
-        }
+    public TargetRoleRepository targetRoleRepository(ObjectProvider<Driver> driverProvider) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
             return new Neo4jTargetRoleRepository(driver);

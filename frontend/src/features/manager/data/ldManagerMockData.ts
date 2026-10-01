@@ -14,23 +14,72 @@ export interface TargetRoleModel {
   domainCode?: string // 'ICT' | 'DATA' | 'AI'
   familyCode?: string // 'JAVA_BACKEND' | 'DATA_AI' | ...
   track?: 'PROFESSIONAL' | 'MANAGEMENT'
+  seniority?: string
   assignedExpertId?: string
   assignedExpertName?: string
   description: string
+  responsibilities?: string[]
   version: string
-  status: 'draft' | 'sent' | 'rejected' | 'published' | 'archived'
+  status: 'draft' | 'sent' | 'rejected' | 'published'
+  rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
   activeEnrollments: number
+  createdAt?: string
   updatedAt: string
 }
 
 /**
- * Ensures that within each role lineage (grouped by stableId/code),
- * the published version always appears first, and any draft / sent / rejected
- * successor version always appears immediately below its previous published version.
+ * Compares semantic or numeric versions, e.g. "1.0" < "1.1" < "1.2" < "2.0".
  */
-export function sortTargetRolesWithDraftsBelowPublished(roles: TargetRoleModel[]): TargetRoleModel[] {
+export function compareRoleVersions(vA?: string, vB?: string): number {
+  const partsA = (vA || '0').split('.').map((p) => parseInt(p, 10) || 0)
+  const partsB = (vB || '0').split('.').map((p) => parseInt(p, 10) || 0)
+  const maxLen = Math.max(partsA.length, partsB.length)
+  for (let i = 0; i < maxLen; i++) {
+    const a = partsA[i] || 0
+    const b = partsB[i] || 0
+    if (a !== b) {
+      return a - b
+    }
+  }
+  return 0
+}
+
+/**
+ * Formats an ISO datetime or date string into DD/MM/YYYY format.
+ * e.g. "2026-10-01T06:20:59.069533368Z" -> "01/10/2026"
+ */
+export function formatDate(dateStr?: string): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0')
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const year = d.getFullYear()
+      return `${day}/${month}/${year}`
+    }
+  } catch {}
+
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`
+  }
+  return dateStr
+}
+
+/**
+ * Ensures that within each role lineage (grouped by stableId/code):
+ * 1. The newest published version always appears first as the primary row (e.g. v2.0).
+ * 2. Older published versions appear immediately below the newest version, ordered by version ascending (e.g. v1.0, v1.1, v1.2).
+ * 3. Any draft / sent / rejected successor versions appear directly below the published group.
+ * 4. Lineage groups are sorted by newest creation/update date descending by default so new/updated roles appear at the top.
+ */
+export function sortTargetRolesWithDraftsBelowPublished(
+  roles: TargetRoleModel[],
+  sortBy: 'latest' | 'code' | 'title' = 'latest'
+): TargetRoleModel[] {
   const groups = new Map<string, TargetRoleModel[]>()
   for (const r of roles) {
     const key = r.stableId || r.code
@@ -40,28 +89,80 @@ export function sortTargetRolesWithDraftsBelowPublished(roles: TargetRoleModel[]
     groups.get(key)!.push(r)
   }
 
+  const getGroupLatestTime = (groupRoles: TargetRoleModel[]): number => {
+    let latest = 0
+    for (const r of groupRoles) {
+      const updatedTime = r.updatedAt ? new Date(r.updatedAt).getTime() : 0
+      const createdTime = r.createdAt ? new Date(r.createdAt).getTime() : 0
+      const best = Math.max(
+        isNaN(updatedTime) ? 0 : updatedTime,
+        isNaN(createdTime) ? 0 : createdTime
+      )
+      if (best > latest) {
+        latest = best
+      }
+    }
+    return latest
+  }
+
   const result: TargetRoleModel[] = []
 
-  // Sort groups by role code alphabetically
+  // Sort groups by selected criteria
   const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-    const roleA = groups.get(a)![0]
-    const roleB = groups.get(b)![0]
+    const rolesA = groups.get(a)!
+    const rolesB = groups.get(b)!
+    const roleA = rolesA[0]
+    const roleB = rolesB[0]
+
+    if (sortBy === 'latest') {
+      const timeA = getGroupLatestTime(rolesA)
+      const timeB = getGroupLatestTime(rolesB)
+      if (timeB !== timeA) {
+        return timeB - timeA // Latest created or updated at the very top
+      }
+      // Priority 1: Newly dispatched / sent roles should be at the absolute top of the queue
+      const hasSentA = rolesA.some((r) => r.status === 'sent')
+      const hasSentB = rolesB.some((r) => r.status === 'sent')
+      if (hasSentA && !hasSentB) return -1
+      if (hasSentB && !hasSentA) return 1
+
+      // Priority 2: In-flight draft roles take precedence over older published roles
+      const hasDraftA = rolesA.some((r) => r.status === 'draft')
+      const hasDraftB = rolesB.some((r) => r.status === 'draft')
+      if (hasDraftA && !hasDraftB) return -1
+      if (hasDraftB && !hasDraftA) return 1
+
+      // Fallback: reverse ID so newer entries go to top
+      return (roleB?.id || '').localeCompare(roleA?.id || '')
+    }
+
+    if (sortBy === 'title') {
+      return (roleA?.title || '').localeCompare(roleB?.title || '')
+    }
+
     return (roleA?.code || '').localeCompare(roleB?.code || '')
   })
 
   for (const key of sortedKeys) {
     const groupRoles = groups.get(key)!
-    // Published / archived versions first (sorted by version ascending: 1.0, 2.0...)
     const published = groupRoles
-      .filter((r) => r.status === 'published' || r.status === 'archived')
-      .sort((a, b) => (parseFloat(a.version) || 1.0) - (parseFloat(b.version) || 1.0))
+      .filter((r) => r.status === 'published')
+      .sort((a, b) => compareRoleVersions(b.version, a.version))
+
+    const newestPublished = published[0]
+    // Older published versions ordered ascending: v1.0 -> v1.1 -> v1.2
+    const olderPublished = published.slice(1).sort((a, b) => compareRoleVersions(a.version, b.version))
 
     // Draft / sent / rejected versions placed immediately below published
     const nonPublished = groupRoles
-      .filter((r) => r.status !== 'published' && r.status !== 'archived')
-      .sort((a, b) => (parseFloat(a.version) || 1.0) - (parseFloat(b.version) || 1.0))
+      .filter((r) => r.status !== 'published')
+      .sort((a, b) => compareRoleVersions(a.version, b.version))
 
-    result.push(...published, ...nonPublished)
+    if (newestPublished) {
+      result.push(newestPublished, ...olderPublished, ...nonPublished)
+    } else {
+      result.push(...nonPublished)
+    }
   }
 
   return result

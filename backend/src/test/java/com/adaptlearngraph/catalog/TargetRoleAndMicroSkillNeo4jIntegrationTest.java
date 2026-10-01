@@ -16,6 +16,7 @@ import org.neo4j.driver.GraphDatabase;
 import org.testcontainers.containers.Neo4jContainer;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -122,6 +123,55 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                             """).single().get("count").asInt();
                     assertEquals(1, relCount);
                 }
+
+                // Verify REQUIRES_SKILL graph relationship synchronization
+                TargetRole roleWithSkills = TargetRole.createNew(
+                        "org-beta",
+                        "ROLE_ML_ENG",
+                        "Machine Learning Engineer",
+                        "AI",
+                        "AI_ML",
+                        RoleTrack.PROFESSIONAL,
+                        "expert-chen",
+                        "ML and Deep learning role",
+                        "1.0",
+                        RoleStatus.ACTIVE,
+                        "[{\"skillCode\":\"APACHE_SPARK\",\"skillName\":\"Apache Spark\",\"threshold\":85}]");
+                roleRepo.save(roleWithSkills);
+
+                try (var session = driver.session()) {
+                    var reqCount = session.run("""
+                            MATCH (r:TargetRole {id: $id})-[req:REQUIRES_SKILL]->(s:MicroSkill {code: 'APACHE_SPARK'})
+                            RETURN count(req) AS count, req.targetMastery AS mastery
+                            """, Map.of("id", roleWithSkills.getId().toString())).single();
+                    assertEquals(1, reqCount.get("count").asInt());
+                    assertEquals(0.85, reqCount.get("mastery").asDouble(), 0.001);
+                }
+
+                // Verify reading back TargetRole reconstructs skillTargets from Neo4j graph relationships
+                var loadedBetaRole = roleRepo.findById("org-beta", roleWithSkills.getId());
+                assertTrue(loadedBetaRole.isPresent());
+                assertTrue(loadedBetaRole.get().getSkillTargets().contains("APACHE_SPARK"));
+                assertTrue(loadedBetaRole.get().getSkillTargets().contains("85"));
+
+                // Verify Successor Draft (v1.1) persists alongside v1.0 without Neo4j constraint collision
+                TargetRole successorDraft = TargetRole.createNew(
+                        "org-beta",
+                        "ROLE_ML_ENG",
+                        "Machine Learning Engineer",
+                        "AI",
+                        "AI_ML",
+                        RoleTrack.PROFESSIONAL,
+                        "expert-chen",
+                        "Successor draft for ML Engineer",
+                        "1.1",
+                        RoleStatus.DRAFT,
+                        "[]");
+                roleRepo.save(successorDraft);
+
+                assertTrue(roleRepo.existsByOrganizationIdAndCodeAndVersion("org-beta", "ROLE_ML_ENG", "1.0"));
+                assertTrue(roleRepo.existsByOrganizationIdAndCodeAndVersion("org-beta", "ROLE_ML_ENG", "1.1"));
+                assertEquals(3, roleRepo.findByOrganizationId("org-beta", TargetRoleFilter.empty()).size());
             }
         }
     }

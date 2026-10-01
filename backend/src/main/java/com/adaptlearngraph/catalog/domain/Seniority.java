@@ -26,4 +26,15 @@ public enum Seniority {
     public boolean supportsTrack(CareerTrack candidateTrack) {
         return track == candidateTrack;
     }
+
+    public boolean supportsTrack(RoleTrack candidateTrack) {
+        return candidateTrack != null && track.name().equalsIgnoreCase(candidateTrack.name());
+    }
+
+    public static Seniority fromString(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return Seniority.valueOf(value.trim().toUpperCase());
+    }
 }

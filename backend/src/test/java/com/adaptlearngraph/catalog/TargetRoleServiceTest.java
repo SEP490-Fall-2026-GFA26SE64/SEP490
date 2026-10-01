@@ -142,6 +142,54 @@ class TargetRoleServiceTest {
     }
 
     @Test
+    @DisplayName("REQ-023-F01 & REQ-023-F03: Creates and updates TargetRole with seniority and responsibilities")
+    void createsAndUpdatesWithSeniorityAndResponsibilities() {
+        CreateTargetRoleCommand createCmd = new CreateTargetRoleCommand(
+                "org-1",
+                "ROLE_AI_P4",
+                "AI Knowledge Architect",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                com.adaptlearngraph.catalog.domain.Seniority.P4,
+                "expert-chen",
+                "Enterprise knowledge graph role",
+                List.of("Model enterprise graphs", "Integrate DL pipelines"),
+                "1.0",
+                RoleStatus.DRAFT,
+                "[]");
+
+        TargetRole created = service.createTargetRole(createCmd);
+        assertEquals(com.adaptlearngraph.catalog.domain.Seniority.P4, created.getSeniority());
+        assertEquals(2, created.getResponsibilities().size());
+        assertEquals("Model enterprise graphs", created.getResponsibilities().get(0));
+
+        com.adaptlearngraph.catalog.application.port.in.UpdateTargetRoleCommand updateCmd =
+                new com.adaptlearngraph.catalog.application.port.in.UpdateTargetRoleCommand(
+                        "org-1",
+                        created.getId(),
+                        "AI Principal Architect",
+                        "AI",
+                        "AI_ML",
+                        RoleTrack.PROFESSIONAL,
+                        com.adaptlearngraph.catalog.domain.Seniority.P5,
+                        "expert-chen",
+                        "Principal knowledge graph role",
+                        List.of("Model enterprise graphs", "Integrate DL pipelines", "Strategic AI governance"),
+                        RoleStatus.ACTIVE,
+                        "1.0",
+                        "[]",
+                        null);
+
+        Optional<TargetRole> updatedOpt = service.updateTargetRole(updateCmd);
+        org.junit.jupiter.api.Assertions.assertTrue(updatedOpt.isPresent());
+        TargetRole updated = updatedOpt.get();
+        assertEquals(com.adaptlearngraph.catalog.domain.Seniority.P5, updated.getSeniority());
+        assertEquals(3, updated.getResponsibilities().size());
+        assertEquals("Strategic AI governance", updated.getResponsibilities().get(2));
+    }
+
+    @Test
     @DisplayName("REQ-023-F02 & REQ-011-F01: Lists target roles filtered by assigned domain expert")
     void listsRolesFilteredByAssignedExpert() {
         TargetRole role1 = TargetRole.createNew("org-1", "ROLE_AI", "AI Spec", "AI", "AI_ML", RoleTrack.PROFESSIONAL, "expert-1", "");

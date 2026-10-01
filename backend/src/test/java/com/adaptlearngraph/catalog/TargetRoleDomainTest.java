@@ -103,4 +103,43 @@ class TargetRoleDomainTest {
         TargetRole published = rejected.publish();
         assertEquals(RoleStatus.ACTIVE, published.getStatus());
     }
+
+    @Test
+    @DisplayName("createNew sets seniority and responsibilities and enforces track matching")
+    void createNewWithSeniorityAndResponsibilities() {
+        TargetRole validRole = TargetRole.createNew(
+                "org-1",
+                "ROLE_LEAD",
+                "Engineering Lead",
+                "ICT",
+                "JAVA_BACKEND",
+                RoleTrack.MANAGEMENT,
+                com.adaptlearngraph.catalog.domain.Seniority.M3,
+                "expert-1",
+                "Engineering Leadership Role",
+                java.util.List.of("Lead backend engineering team", "Manage sprint delivery"),
+                "1.0",
+                RoleStatus.DRAFT,
+                "[]");
+
+        assertEquals(com.adaptlearngraph.catalog.domain.Seniority.M3, validRole.getSeniority());
+        assertEquals(2, validRole.getResponsibilities().size());
+        assertEquals("Lead backend engineering team", validRole.getResponsibilities().get(0));
+
+        // Mismatched seniority: M3 cannot be assigned to PROFESSIONAL track
+        assertThrows(IllegalArgumentException.class, () -> TargetRole.createNew(
+                "org-1",
+                "ROLE_INVALID",
+                "Invalid Role",
+                "ICT",
+                "JAVA_BACKEND",
+                RoleTrack.PROFESSIONAL,
+                com.adaptlearngraph.catalog.domain.Seniority.M3,
+                "expert-1",
+                "Invalid",
+                java.util.List.of(),
+                "1.0",
+                RoleStatus.DRAFT,
+                "[]"));
+    }
 }

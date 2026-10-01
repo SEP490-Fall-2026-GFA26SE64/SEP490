@@ -16,13 +16,16 @@ public record TargetRoleResponse(
         String domainCode,
         String familyCode,
         String track,
+        String seniority,
         String assignedExpertId,
         String description,
+        List<String> responsibilities,
         String status,
         String version,
         List<Map<String, Object>> skillTargets,
         Instant createdAt,
-        Instant updatedAt) {
+        Instant updatedAt,
+        String rejectionReason) {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -44,13 +47,16 @@ public record TargetRoleResponse(
                 role.getDomainCode(),
                 role.getFamilyCode(),
                 role.getTrack().name(),
+                role.getSeniority() != null ? role.getSeniority().name() : null,
                 role.getAssignedExpertId(),
                 role.getDescription(),
+                role.getResponsibilities() != null ? role.getResponsibilities() : List.of(),
                 role.getStatus().name(),
                 role.getVersion(),
                 skills,
                 role.getCreatedAt(),
-                role.getUpdatedAt());
+                role.getUpdatedAt(),
+                role.getRejectionReason());
     }
 }
 

@@ -9,16 +9,21 @@
 
 Create a target role in the organization catalog. The L&D Manager creates the target role structure (unique code, title, Job Domain, Career Family, Track, Assigned Domain Expert, and description); Domain Experts will link micro-skills and maintain competency thresholds (REQ-015).
 
-**Input:** Role name, unique code, `domainCode` (`ICT`, `DATA`, `AI`), `familyCode` (`JAVA_BACKEND`, `PYTHON_DATA`, `AI_ML`, `CLOUD_DEVOPS`, `FRONTEND_WEB`, `CYBERSECURITY`), `track` (`PROFESSIONAL` or `MANAGEMENT`), `assignedExpertId`, description, and organization context (`organizationId`).  
+**Input:** Role name, unique code, `domainCode` (`ICT`, `DATA`, `AI`), `familyCode` (`JAVA_BACKEND`, `PYTHON_DATA`, `AI_ML`, `CLOUD_DEVOPS`, `FRONTEND_WEB`, `CYBERSECURITY`), `track` (`PROFESSIONAL` or `MANAGEMENT`), `seniority` (`P1`–`P5` for `PROFESSIONAL`, `M3`–`M4` for `MANAGEMENT`), `responsibilities` (list of key job duties for the Job Description), `assignedExpertId`, description, and organization context (`organizationId`).  
 **Outcome:** An organization-owned target-role record in PostgreSQL/Neo4j with status `DRAFT`.
 
 ## Confirmed Related Rules
 
 - **Actor Role & Responsibilities**: L&D Manager (`LD_MANAGER`). The L&D Manager creates, views, edits, and deletes target role outlines. L&D Managers **cannot** add micro-skills (that is exclusively the Domain Expert's role).
-- **Track Field Definition & Engine Behavior**:
-  - `PROFESSIONAL`: Individual Contributor / Technical Specialist track focusing on deep hands-on code craftsmanship, system implementation, and architecture. Seniority uses `P1`–`P5`.
-  - `MANAGEMENT`: People & Engineering Leadership track focusing on technical coordination, team coaching, project delivery, and organizational governance. Seniority uses `M3`–`M4`.
-  - Pathway recalculation and baseline diagnostics use this track to weight hands-on technical proficiencies vs team/governance competencies.
+- **Track & Seniority Validation & Engine Behavior**:
+  - `PROFESSIONAL`: Individual Contributor / Technical Specialist track focusing on deep hands-on code craftsmanship, system implementation, and architecture. Seniority levels strictly restricted to `P1`, `P2`, `P3`, `P4`, `P5`.
+  - `MANAGEMENT`: People & Engineering Leadership track focusing on technical coordination, team coaching, project delivery, and organizational governance. Seniority levels strictly restricted to `M3`, `M4`.
+  - Any mismatch between track and seniority (e.g. `MANAGEMENT` with `P3`, or `PROFESSIONAL` with `M3`) is rejected with `400 Bad Request`.
+  - Pathway recalculation and baseline diagnostics use this track and seniority to weight hands-on technical proficiencies vs team/governance competencies.
+- **Key Responsibilities List**:
+  - The L&D Manager specifies an array of strings representing the job duties / key responsibilities (Job Description) for the role.
+  - This is stored as a list property on the `:TargetRole` node (`r.responsibilities = [...]`).
+  - Responsibilities describe qualitative role expectations and differ from `:MicroSkill` nodes (which are atomic skills linked with benchmark target scores exclusively by Domain Experts).
 - **Connection to Employee Browsing Contract (REQ-001-F01)**:
   - Under the REQ-001-F01 browsing contract, employees see only same-organization, `ACTIVE`, catalog-valid target roles.
   - A browsable role must contain the required catalog fields and at least one active valid required micro-skill; baseline settings and eligible-question coverage are checked when starting an assessment, not when browsing.

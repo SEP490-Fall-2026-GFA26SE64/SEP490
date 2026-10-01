@@ -38,8 +38,10 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.domainCode(),
                 command.familyCode(),
                 command.track(),
+                command.seniority(),
                 command.assignedExpertId(),
                 command.description(),
+                command.responsibilities(),
                 version,
                 command.status(),
                 command.skillTargets());
@@ -75,11 +77,14 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.domainCode(),
                 command.familyCode(),
                 command.track(),
+                command.seniority(),
                 command.assignedExpertId(),
                 command.description(),
+                command.responsibilities(),
                 command.status(),
                 command.version(),
-                command.skillTargets());
+                command.skillTargets(),
+                command.rejectionReason());
 
         return Optional.of(targetRoleRepository.save(updated));
     }

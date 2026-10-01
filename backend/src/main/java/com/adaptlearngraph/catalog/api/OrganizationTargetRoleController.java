@@ -9,6 +9,7 @@ import com.adaptlearngraph.catalog.application.port.in.UpdateTargetRoleCommand;
 import com.adaptlearngraph.catalog.application.port.in.ViewTargetRolesUseCase;
 import com.adaptlearngraph.catalog.domain.RoleStatus;
 import com.adaptlearngraph.catalog.domain.RoleTrack;
+import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRole;
 import com.adaptlearngraph.catalog.domain.TargetRoleId;
 import jakarta.validation.Valid;
@@ -66,6 +67,14 @@ public class OrganizationTargetRoleController {
                 ? RoleTrack.fromString(request.track())
                 : RoleTrack.PROFESSIONAL;
 
+        Seniority seniority = request.seniority() != null && !request.seniority().isBlank()
+                ? Seniority.fromString(request.seniority())
+                : null;
+
+        if (seniority != null && !seniority.supportsTrack(track)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Seniority " + seniority + " does not match track " + track));
+        }
+
         RoleStatus status = request.status() != null && !request.status().isBlank()
                 ? RoleStatus.fromString(request.status())
                 : RoleStatus.DRAFT;
@@ -84,8 +93,10 @@ public class OrganizationTargetRoleController {
                 request.domainCode(),
                 request.familyCode(),
                 track,
+                seniority,
                 request.assignedExpertId(),
                 request.description(),
+                request.responsibilities() != null ? request.responsibilities() : List.of(),
                 request.version() != null && !request.version().isBlank() ? request.version().trim() : "1.0",
                 status,
                 skillTargetsJson);
@@ -225,6 +236,14 @@ public class OrganizationTargetRoleController {
                 ? RoleStatus.fromString(request.status())
                 : null;
 
+        Seniority seniority = request.seniority() != null && !request.seniority().isBlank()
+                ? Seniority.fromString(request.seniority())
+                : null;
+
+        if (seniority != null && track != null && !seniority.supportsTrack(track)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Seniority " + seniority + " does not match track " + track));
+        }
+
         UpdateTargetRoleCommand command = new UpdateTargetRoleCommand(
                 organizationId,
                 new TargetRoleId(uuid),
@@ -232,11 +251,14 @@ public class OrganizationTargetRoleController {
                 request.domainCode(),
                 request.familyCode(),
                 track,
+                seniority,
                 request.assignedExpertId(),
                 request.description(),
+                request.responsibilities(),
                 status,
                 request.version(),
-                skillTargetsJson);
+                skillTargetsJson,
+                request.rejectionReason());
 
         return manageTargetRoleUseCase.updateTargetRole(command)
                 .map(updated -> ResponseEntity.ok(TargetRoleResponse.fromDomain(updated)))

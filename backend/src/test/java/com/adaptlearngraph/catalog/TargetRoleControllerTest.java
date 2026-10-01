@@ -362,4 +362,133 @@ class TargetRoleControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F05: PUT rejects target role with rejectionReason from Domain Expert")
+    void updateTargetRoleRejectionWithReason() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole existingRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.SENT,
+                Instant.now(),
+                Instant.now());
+
+        TargetRole rejectedRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.REJECTED,
+                "1.0",
+                "[]",
+                Instant.now(),
+                Instant.now(),
+                "Skill benchmark threshold too high for junior tier");
+
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(existingRole));
+        when(manageTargetRoleUseCase.updateTargetRole(any()))
+                .thenReturn(Optional.of(rejectedRole));
+
+        com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
+                        "AI Spec", "AI", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "REJECTED", "1.0", List.of(), "Skill benchmark threshold too high for junior tier");
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .header("X-User-Id", "expert-alpha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.rejectionReason").value("Skill benchmark threshold too high for junior tier"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F01: POST returns 201 with seniority and responsibilities included")
+    void createTargetRoleWithSeniorityAndResponsibilitiesReturns201() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole createdRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI_P4",
+                "AI Architect P4",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                com.adaptlearngraph.catalog.domain.Seniority.P4,
+                "expert-chen",
+                "Senior AI role",
+                List.of("Design neural models", "Deploy graph ML"),
+                RoleStatus.DRAFT,
+                "1.0",
+                "[]",
+                Instant.now(),
+                Instant.now(),
+                null);
+
+        when(createTargetRoleUseCase.createTargetRole(any(CreateTargetRoleCommand.class)))
+                .thenReturn(createdRole);
+
+        CreateTargetRoleRequest request = new CreateTargetRoleRequest(
+                "ROLE_AI_P4",
+                "AI Architect P4",
+                "AI",
+                "AI_ML",
+                "PROFESSIONAL",
+                "P4",
+                "expert-chen",
+                "Senior AI role",
+                List.of("Design neural models", "Deploy graph ML"));
+
+        mockMvc.perform(post("/api/v1/organizations/org-1/target-roles")
+                        .with(csrf())
+                        .header("X-User-Role", "LD_MANAGER")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.seniority").value("P4"))
+                .andExpect(jsonPath("$.responsibilities[0]").value("Design neural models"))
+                .andExpect(jsonPath("$.responsibilities[1]").value("Deploy graph ML"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F01: POST returns 400 Bad Request when seniority does not match track")
+    void createTargetRoleWithMismatchedSeniorityReturns400() throws Exception {
+        CreateTargetRoleRequest request = new CreateTargetRoleRequest(
+                "ROLE_INVALID",
+                "Invalid Role",
+                "ICT",
+                "JAVA_BACKEND",
+                "PROFESSIONAL",
+                "M3",
+                "expert-1",
+                "Desc",
+                List.of());
+
+        mockMvc.perform(post("/api/v1/organizations/org-1/target-roles")
+                        .with(csrf())
+                        .header("X-User-Role", "LD_MANAGER")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"));
+    }
 }

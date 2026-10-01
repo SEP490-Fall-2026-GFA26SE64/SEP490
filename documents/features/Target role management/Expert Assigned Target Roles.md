@@ -19,11 +19,11 @@ Dedicated workspace for Domain Experts to view target roles assigned to their sp
   - **L&D Manager**: Exclusively defines macro title, job domain, career family, track archetype, description, and assigned domain expert.
    - **Domain Expert**: Strictly **cannot edit** macro fields (Code, Title, Domain, Family, Track, Assigned Expert, Description). Experts are strictly restricted to authoring micro-skill taxonomy targets (proficiency thresholds) and review decisions (Approve/Publish or Reject).
 - **Draft Versioning & Display Order**:
-  - Within each role lineage (grouped by `stableId` / role code), the published version appears first, and any draft / sent / rejected successor version **always appears immediately below** its previous published version (e.g. `ROLE-AI-ARCH v1.1 DRAFT/SENT` is positioned directly below `ROLE-AI-ARCH v1.0 PUBLISHED`).
+  - Within each role lineage (grouped by `stableId` / role code), if multiple published versions exist, only the newest published version is shown as the primary row; older published versions are collapsed inside with a dropdown indicator. Previous versions cannot be used to create successor drafts (only the newest published version can create drafts). Any draft / sent / rejected successor version appears below its published version without any "under v1.0" badge.
 - **Status Lifecycle & Rejection Workflow**:
   - `DRAFT`: Initial draft created by L&D Manager.
   - `SENT`: Dispatched by L&D Manager to the assigned Domain Expert (`handleSendToExpert`), appearing in Manager workspace as "Sent" and in Expert workspace as "Draft" (not "Action Required").
-  - `REJECTED`: Domain Expert can reject the target role. Status transitions to `REJECTED` and returns to the L&D Manager for adjustment and re-dispatch.
+  - `REJECTED`: Domain Expert can reject the target role by providing a mandatory rejection reason/feedback. Status transitions to `REJECTED`, and the rejection reason is stored on the `TargetRole` node (`rejectionReason`) in Neo4j and displayed to the L&D Manager for adjustment and re-dispatch.
   - `PUBLISHED`: Domain Expert publishes the role to the knowledge graph once &ge; 1 micro-skill target is configured.
 - **Micro-skill Authoring**:
   - Minimum 1 micro-skill target required for graph publication readiness.
