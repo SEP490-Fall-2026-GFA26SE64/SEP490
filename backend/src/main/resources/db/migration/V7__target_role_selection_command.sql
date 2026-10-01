@@ -16,6 +16,7 @@ CREATE TABLE platform.target_selection_request (
         CHECK (status IN ('PENDING', 'SUCCEEDED', 'REJECTED')),
     result_selection_id uuid,
     result_target_revision bigint CHECK (result_target_revision >= 0),
+    result_changed boolean,
     outcome_code text,
     created_at timestamptz NOT NULL DEFAULT now(),
     completed_at timestamptz,
@@ -27,18 +28,21 @@ CREATE TABLE platform.target_selection_request (
             AND completed_at IS NULL
             AND result_selection_id IS NULL
             AND result_target_revision IS NULL
+            AND result_changed IS NULL
             AND outcome_code IS NULL)
         OR
         (status = 'SUCCEEDED'
             AND completed_at IS NOT NULL
             AND result_selection_id IS NOT NULL
             AND result_target_revision IS NOT NULL
+            AND result_changed IS NOT NULL
             AND outcome_code IS NULL)
         OR
         (status = 'REJECTED'
             AND completed_at IS NOT NULL
             AND result_selection_id IS NULL
             AND result_target_revision IS NULL
+            AND result_changed IS NULL
             AND outcome_code IS NOT NULL
             AND btrim(outcome_code) <> '')
     )
