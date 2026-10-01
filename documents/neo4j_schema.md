@@ -164,7 +164,10 @@ TargetRole {
     name,
     familyCode,
     track,
+    organizationId,
+    seniority,
     description?,
+    responsibilities?,
     status,
     createdAt,
     updatedAt
@@ -180,12 +183,17 @@ TargetRole {
 | `name` | String | Có | Tên role hiển thị |
 | `familyCode` | String | Có | Nhóm các role cùng nghề, ví dụ `JAVA_BACKEND` |
 | `track` | Enum | Có | Nhánh `PROFESSIONAL` hoặc `MANAGEMENT` |
+| `organizationId` | String/UUID | Có | Organization sở hữu và được phép sử dụng role |
+| `seniority` | Enum | Có | Grade nghề nghiệp: `P1`–`P5` cho `PROFESSIONAL`, `M3`–`M4` cho `MANAGEMENT` |
 | `description` | String | Không | Mô tả trách nhiệm hoặc phạm vi công việc |
+| `responsibilities` | List<String> | Không | Danh sách trách nhiệm chính để hiển thị ở role detail |
 | `status` | Enum | Có | Trạng thái role |
 | `createdAt` | DateTime | Có | Thời điểm tạo |
 | `updatedAt` | DateTime | Có | Thời điểm cập nhật |
 
-Field `level` đã bị loại bỏ. Nếu cần thể hiện cấp độ, cấp độ có thể nằm trong `code` và `name`, ví dụ `JAVA_BACKEND_P3`.
+Field `level` đã bị loại bỏ. `code` và `name` vẫn có thể chứa grade nghiệp vụ như `JAVA_BACKEND_P3`, nhưng runtime phải dùng field `seniority` riêng để hiển thị và filter cấp độ.
+
+`seniority` là grade code dùng cho discovery/filter và không thay thế `track`. `PROFESSIONAL` chỉ dùng `P1`–`P5`; `MANAGEMENT` chỉ dùng `M3`–`M4`. Cùng một grade có thể mang mô tả năng lực/chức danh khác nhau giữa Finance, IT hoặc các domain khác; catalog của từng domain/role family sở hữu ý nghĩa chi tiết đó. Hậu tố như `P3` trong `code` vẫn không được dùng để suy luận seniority ở runtime.
 
 ### Ví dụ
 
@@ -196,7 +204,13 @@ Field `level` đã bị loại bỏ. Nếu cần thể hiện cấp độ, cấp
   "name": "Java Backend Developer P3",
   "familyCode": "JAVA_BACKEND",
   "track": "PROFESSIONAL",
+  "organizationId": "00000000-0000-0000-0000-000000000001",
+  "seniority": "P3",
   "description": "Develops and maintains Java backend applications",
+  "responsibilities": [
+    "Build and maintain Java backend services",
+    "Review API and persistence designs"
+  ],
   "status": "ACTIVE",
   "createdAt": "2026-09-01T00:00:00Z",
   "updatedAt": "2026-09-24T00:00:00Z"
@@ -558,6 +572,9 @@ Khác biệt:
 | `id` unique | Không có hai node cùng ID |
 | `code` unique trong cùng label | Không có hai skill hoặc role trùng code |
 | `status` thuộc enum cho phép | Tránh trạng thái tự do |
+| `TargetRole.organizationId` là UUID hợp lệ | Giữ tenant scope có thể kiểm tra trực tiếp |
+| `TargetRole.seniority` thuộc `P1`–`P5` hoặc `M3`–`M4` và khớp `track` | Search/filter không phụ thuộc tên/code; professional và management không trộn grade |
+| Mỗi phần tử `TargetRole.responsibilities` không rỗng | Không trả nội dung detail hỏng |
 | `updatedAt >= createdAt` | Dữ liệu thời gian hợp lệ |
 | `sourceUrl` hợp lệ | Module phải trỏ đến nguồn học thật |
 | `durationHours > 0` nếu có | Thời lượng phải hợp lệ |
@@ -595,6 +612,13 @@ CREATE (role:TargetRole {
   name: 'Java Backend Developer P3',
   familyCode: 'JAVA_BACKEND',
   track: 'PROFESSIONAL',
+  organizationId: '00000000-0000-0000-0000-000000000001',
+  seniority: 'P3',
+  description: 'Develops and maintains Java backend applications',
+  responsibilities: [
+    'Build and maintain Java backend services',
+    'Review API and persistence designs'
+  ],
   status: 'ACTIVE',
   createdAt: datetime(),
   updatedAt: datetime()

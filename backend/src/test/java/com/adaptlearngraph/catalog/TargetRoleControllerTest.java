@@ -1,7 +1,7 @@
 package com.adaptlearngraph.catalog;
 
 import com.adaptlearngraph.catalog.api.CreateTargetRoleRequest;
-import com.adaptlearngraph.catalog.api.TargetRoleController;
+import com.adaptlearngraph.catalog.api.OrganizationTargetRoleController;
 import com.adaptlearngraph.catalog.application.DuplicateTargetRoleException;
 import com.adaptlearngraph.catalog.application.port.in.CreateTargetRoleCommand;
 import com.adaptlearngraph.catalog.application.port.in.CreateTargetRoleUseCase;
@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(TargetRoleController.class)
+@WebMvcTest(OrganizationTargetRoleController.class)
 @DisplayName("REQ-023-F01 & REQ-023-F02: TargetRole HTTP Controller Tests")
 class TargetRoleControllerTest {
 

@@ -27,7 +27,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../../shared/components/ui/Dialog'
-import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
@@ -35,6 +34,7 @@ import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearn
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { TargetRoleBrowsePanel } from './TargetRoleBrowsePanel'
 import './EmployeeTargetRolesPage.css'
 
 export interface CatalogTargetRole {
@@ -396,6 +396,7 @@ export function EmployeeTargetRolesPage() {
   const activeRoleInCatalog = rolesCatalog.find(
     (r) => r.title.toLowerCase() === (profile.targetRole || '').toLowerCase()
   ) || rolesCatalog[0] || null
+  const showLegacySelectionCatalog = false
 
   return (
     <WorkspaceLayout>
@@ -403,25 +404,14 @@ export function EmployeeTargetRolesPage() {
         {/* Actions Bar */}
         <PageHeader
           actions={
-            <div className="w-full flex items-center justify-between gap-2.5 flex-wrap">
-              <TargetRoleSelector />
-              <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
-                {filteredRoles.length} Roles in Catalog
-              </Badge>
-            </div>
+            <TargetRoleSelector />
           }
         />
 
         {/* =========================================================================
             ACTIVE GOAL HERO OR EMPTY STATE
            ========================================================================= */}
-        {rolesCatalog.length === 0 ? (
-          <EmptyState
-            icon={<Target size={28} className="text-primary" />}
-            title="No Target Roles Available"
-            description={`No target roles have been configured or published for ${activeCompany.name} yet. Please contact your L&D Manager to create or import target roles for your organization.`}
-          />
-        ) : activeRoleInCatalog ? (
+        {activeRoleInCatalog ? (
           <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-secondary/80 via-card to-card p-6 shadow-xs">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-2 max-w-2xl">
@@ -483,10 +473,12 @@ export function EmployeeTargetRolesPage() {
           </div>
         ) : null}
 
+        <TargetRoleBrowsePanel />
+
         {/* =========================================================================
-            CATALOG SECTION HEADER & FILTER TOOLBAR
+            LEGACY SELECTION CATALOG — isolated until REQ-001-F02 is implemented
            ========================================================================= */}
-        {rolesCatalog.length > 0 && (
+        {showLegacySelectionCatalog && rolesCatalog.length > 0 && (
           <>
             <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

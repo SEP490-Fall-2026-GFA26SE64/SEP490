@@ -1,6 +1,6 @@
 # Current Project Architecture
 
-**As of 2026-09-27.** This is a runnable database and deployment baseline, not an implementation of the 84 drafted functions in [features/README.md](features/README.md). The only implemented HTTP business-facing route is system status; Spring Security denies other routes until their access rules are built.
+**As of 2026-09-30.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles; it is not an implementation of all 84 drafted functions in [features/README.md](features/README.md). System status remains public. Target-role list/detail routes are enabled only in the local profile with the provisional local actor flag; production security remains deny-by-default until the real Identity authorization contract is integrated.
 
 ## Runtime topology
 
@@ -18,7 +18,7 @@
 | Store | Current responsibility | Current baseline |
 | --- | --- | --- |
 | PostgreSQL 17.6 | Organizations, accounts/roles, assessments, question mappings and results, mastery/evidence, learning activity, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V6 in [db/migration](../backend/src/main/resources/db/migration); V6 adds organization identity and the four product actor codes while retaining legacy codes. |
-| Neo4j 5.26 Community | Catalog graph: `JobDomain`, `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule` and the seven relationships in [neo4j_schema.md](neo4j_schema.md) | Ten `id`/`code` uniqueness constraints, one per property per domain label, in [V1__catalog_constraints.cypher](../backend/src/main/resources/db/neo4j/V1__catalog_constraints.cypher). Development seed creates ICT, a Java role, three macros, two skills, two modules, and all seven relationship types. |
+| Neo4j 5.26 Community | Catalog graph: `JobDomain`, organization-scoped `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule` and the seven relationships in [neo4j_schema.md](neo4j_schema.md) | Ten `id`/`code` uniqueness constraints, one per property per domain label, in [V1__catalog_constraints.cypher](../backend/src/main/resources/db/neo4j/V1__catalog_constraints.cypher). Development seed creates ICT, a Java role with `organizationId`, `seniority` and `responsibilities`, three macros, two skills, two modules, and all seven relationship types. |
 
 ## Database diagrams
 
@@ -48,7 +48,7 @@ The five catalog labels and seven directed relationship types follow [neo4j_sche
 
 [PlantUML source](diagrams/neo4j.puml)
 
-All catalog nodes use stable `id` and `code` keys. Relationships also carry lifecycle `status`, `createdAt`, and `updatedAt`; their additional fields are shown on the relevant arrows. Learner mastery, assessment results, and pathway state belong in PostgreSQL, not on Neo4j nodes.
+All catalog nodes use stable `id` and `code` keys. `TargetRole.organizationId` provides the initial tenant-scoping contract; `seniority` is the domain-neutral grade code (`P1`–`P5` for `PROFESSIONAL`, `M3`–`M4` for `MANAGEMENT`) used for role discovery, while each domain/role family owns the grade's detailed meaning. `responsibilities` supports employee-facing detail. Relationships also carry lifecycle `status`, `createdAt`, and `updatedAt`; their additional fields are shown on the relevant arrows. Learner mastery, assessment results, and pathway state belong in PostgreSQL, not on Neo4j nodes.
 
 The graph also has a technical `SchemaMigration` label with a uniqueness constraint and checksum record; it is **not** a sixth catalog entity. Neo4j Community constraints cannot by themselves enforce every V5 rule (such as `[0,1]` values, statuses, one active macro per skill, valid module URLs, or no prerequisite cycles). Future graph write services must validate these rules before committing. Dev sample `sourceUrl` values point to public Java and Spring guides; the seed never runs in `prod`.
 
@@ -62,7 +62,7 @@ backend/
   src/main/java/com/adaptlearngraph/
     AdaptLearnGraphApplication.java
     platform/            startup, status API, migration orchestration
-    catalog/             Neo4j constraints and development-only catalog seed
+    catalog/             Target-role domain/use case/API, Neo4j adapter, constraints and development-only seed
     identity/            security boundary; account APIs not yet built
     assessment/          reserved feature package
     competency/          reserved feature package
@@ -86,7 +86,7 @@ documents/testing/      unit, integration, and system test plans
 compose.dev.yml, compose.prod.yml, .env.example
 ```
 
-Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). Existing placeholders remain placeholders; create real classes within these boundaries as functions become clarified. Billing, notifications, and organization-specific feature packages should be added when their contracts are agreed, not as empty scaffolding. The frontend source layout is unchanged; only its Docker development target and Vite proxy default changed.
+Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). `catalog` now applies this structure for REQ-001-F01: controllers call `TargetRoleQueryUseCase`, the application service reads trusted actor context and `TargetRoleCatalogPort`, and the Neo4j adapter maps driver records into domain outputs. Existing placeholders remain placeholders; create real classes within these boundaries as functions become clarified. Billing, notifications, and organization-specific feature packages should be added when their contracts are agreed, not as empty scaffolding. The frontend adds a feature-local target-role API/types/query boundary and browse/detail components while keeping the existing route and isolating legacy selection behavior.
 
 ## Technologies
 
@@ -122,7 +122,7 @@ Production publishes HTTP on `127.0.0.1:${WEB_PORT:-8088}`. Place a separately m
 ## Decisions to confirm
 
 1. **Catalog identity and history:** How should stable Neo4j V5 nodes map to the existing PostgreSQL `catalog_reference` fields (`entity_id`, `version_id`, `release_id`), and how are in-progress attempts/pathways pinned when the graph changes? Do not assume a fake graph version.
-2. **Organization-scoped roles:** Should graph target roles be shared across organizations with a PostgreSQL publication/assignment mapping, or should the V5 graph gain organization ownership? Confirm legacy account backfill, enforcement across existing unit/manager references, whether `organization_id` becomes mandatory for non-platform actors, and whether V6's initial `ACTIVE`/`SUSPENDED` organization statuses match the intended lifecycle.
+2. **Organization-scoped roles:** The implementation base stores `organizationId` on `TargetRole` and filters it against trusted actor context. A later shared-catalog/publication design may replace this through the catalog port without changing the employee-facing use case. Legacy account backfill, mandatory organization context for non-platform actors, and V6 organization lifecycle still require the identity owner.
 3. **Actor-code migration:** V6 adds `EMPLOYEE`, `DOMAIN_EXPERT`, `ORGANIZATION_ADMINISTRATOR`, `PLATFORM_ADMINISTRATOR` but deliberately does not guess how old `LEARNER`, `LD_MANAGER`, `ADMINISTRATOR` assignments map. Authentication and tenant-scoped authorization must be designed before opening business endpoints.
 4. **Graph operational metadata:** Confirm whether the non-domain `SchemaMigration` label is acceptable alongside the five V5 catalog labels, or whether migration history must be stored outside Neo4j.
 5. **Catalog content and modules:** The dev catalog is illustrative only. Confirm authoritative production role/skill data and how the V5 requirement for a real `LearningModule.sourceUrl` should apply to the product's dummy modules.

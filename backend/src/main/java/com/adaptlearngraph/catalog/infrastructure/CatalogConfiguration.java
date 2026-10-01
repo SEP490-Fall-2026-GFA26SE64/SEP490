@@ -5,6 +5,7 @@ import com.adaptlearngraph.catalog.application.port.in.CreateTargetRoleUseCase;
 import com.adaptlearngraph.catalog.application.port.in.ManageTargetRoleUseCase;
 import com.adaptlearngraph.catalog.application.port.in.TargetRoleFilter;
 import com.adaptlearngraph.catalog.application.port.in.ViewTargetRolesUseCase;
+import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleRepository;
 import com.adaptlearngraph.catalog.domain.TargetRole;
 import com.adaptlearngraph.catalog.domain.TargetRoleId;
@@ -12,6 +13,7 @@ import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,12 @@ public class CatalogConfiguration {
         return targetRoleService;
     }
 
+    @Bean
+    @Profile({"local", "prod"})
+    public TargetRoleCatalogPort targetRoleCatalogPort(Driver driver) {
+        return new Neo4jTargetRoleCatalogAdapter(driver);
+    }
+
     private static class InMemoryFallbackTargetRoleRepository implements TargetRoleRepository {
         private final Map<String, TargetRole> store = new ConcurrentHashMap<>();
 
@@ -65,6 +73,14 @@ public class CatalogConfiguration {
         public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
             return store.values().stream()
                     .anyMatch(r -> r.getOrganizationId().equals(organizationId) && r.getCode().equalsIgnoreCase(code));
+        }
+
+        @Override
+        public boolean existsByOrganizationIdAndCodeAndVersion(String organizationId, String code, String version) {
+            return store.values().stream()
+                    .anyMatch(r -> r.getOrganizationId().equals(organizationId)
+                            && r.getCode().equalsIgnoreCase(code)
+                            && r.getVersion().equalsIgnoreCase(version));
         }
 
         @Override
@@ -106,5 +122,3 @@ public class CatalogConfiguration {
         }
     }
 }
-
-

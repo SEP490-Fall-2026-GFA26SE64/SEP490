@@ -15,10 +15,13 @@
 
 ## Clarification Tracker
 
-**Current function:** [View Target Roles](Target%20role%20selection/View%20Target%20Roles.md), REQ-001-F01, resumed after the baseline attempt-limit follow-up.  
-**Current question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments?  
-**Progress:** 0 of 84 functions clarified; 4 in clarification (one reopened active interview, two paused baseline functions, and one awaiting deferred and related readiness decisions) and 80 pending. All function documents are drafted.  
-**Next function after this one is clarified:** Resume [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
+**Latest clarified function:** [View Target Roles](Target%20role%20selection/View%20Target%20Roles.md), REQ-001-F01. Its implementation base and executable suites are available; browser system evidence and production Identity integration remain pending.
+
+**Current clarification question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments? This belongs to the AI soft-skill review flow, not REQ-001-F01.
+
+**Progress:** 1 of 84 functions clarified; 3 remain in clarification (the AI soft-skill review flow and two paused baseline functions), and 80 remain pending. All function documents are drafted.
+
+**Next target-role follow-up:** REQ-001-F01 remains in completion review until browser evidence and production Identity integration are available. The next planned clarification sequence is [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
 
 **Confirmed soft-skill readiness effect (2026-09-27):** Option A: Baseline readiness loss does not block a separate, otherwise eligible soft-skill assessment. The assessment remains subject to its own configuration and authorization rules. Baseline-start and evidence-only closure rules remain independent.
 **Confirmed AI comment visibility (2026-09-27):** Option B: Before expert review is complete, employees see only the summarized result, clearly labeled as AI-generated and pending expert review. The raw comment remains visible only to authorized experts and administrators.
@@ -47,13 +50,13 @@
 
 **Confirmed retained selection (2026-09-27):** Option A: Keep an already-selected role after baseline readiness loss. Block new baseline attempts until repair, but allow existing baseline attempts to continue or resume using their preserved configuration and content. No forced role change, automatic pathway archival, or history deletion follows solely from this loss. Existing-pathway learning, soft-skill assessment, evidence-only completion, remaining notification details, and concurrent-edit consistency remain open; function counts are unchanged.
 
-**Latest answers (2026-09-26):** Employees browse published, active organization roles only. Details include role name, description and responsibilities, seniority, competency requirements, and required proficiency per micro-skill; assigned expert name was not selected.
+**Current browsing contract (updated 2026-09-29):** Employees browse same-organization, `ACTIVE`, catalog-valid roles. Details include role name, description and responsibilities, seniority, competency requirements, and required proficiency per micro-skill; assigned expert name was not selected. Publication and baseline readiness are not part of the current browsing gate.
 
 **Latest discovery decision (2026-09-26):** Option B: Search by role name and filter by seniority; no required-micro-skill filter.
 
-**Latest empty-results decisions (2026-09-26):** Empty search/filter results show "No matching roles" with a **Clear filters** action. When the organization has no published, active roles at all, show "No roles available. Please contact your Organization Administrator." No automatic administrator notification is introduced.
+**Current empty-results behavior:** Empty search/filter results show "No matching roles" with a **Clear filters** action. When the organization has no permitted catalog-valid role, show "No roles available. Please contact your Organization Administrator." No automatic administrator notification is introduced.
 
-**Latest completed function (2026-09-26):** View Target Roles (REQ-001-F01). Its final decision is option A: replace unavailable role details with "This role is no longer available" and a **Back to roles** action, without automatically redirecting.
+**Latest clarified function (2026-09-26; implementation/testing updated 2026-09-30):** View Target Roles (REQ-001-F01). Its confirmed behavior is to replace unavailable role details with "This role is no longer available" and a **Back to roles** action, without automatically redirecting. Executable suites pass; full browser system evidence and production Identity integration remain pending.
 
 **Confirmed selection limit (2026-09-26):** Option A: One active target role per employee at a time.
 

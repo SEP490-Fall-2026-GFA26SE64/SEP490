@@ -19,7 +19,9 @@ Each case should identify its feature ID, initial PostgreSQL and graph fixtures,
 
 ---
 
-## Sprint 1 Integration Test Evidence
+## Integration Test Evidence
+
+- REQ-001-F01 Neo4j adapter cases passed on 2026-09-30 and are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). They use a disposable Neo4j container with explicit Org A/Org B, inactive and catalog-invalid fixtures; the development seed and manual Compose smoke are not integration-test evidence.
 
 | Feature / REQ | Scope & Assertions Tested | Test File & Container | Run Date | Result |
 | :--- | :--- | :--- | :--- | :--- |
