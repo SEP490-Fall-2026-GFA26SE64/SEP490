@@ -1,6 +1,6 @@
 # Current Project Architecture
 
-**As of 2026-10-01.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles and the approved persistence contract for REQ-001-F02 Choose Target Role; it is not an implementation of all drafted functions. Production security remains deny-by-default until the real Identity authorization contract is integrated.
+**As of 2026-10-01.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles and the local-only backend vertical slice for REQ-001-F02 Choose Target Role; it is not an implementation of all drafted functions. F02 frontend work, runtime smoke and executable tests remain pending. Production security remains deny-by-default until the real Identity authorization contract is integrated.
 
 ## Runtime topology
 
@@ -10,7 +10,7 @@
 
 - One Spring Boot backend owns HTTP, security, migrations, and the future feature modules. There is no separate Python recommendation service or additional backend framework. PostgreSQL and Neo4j are data stores, not application servers.
 - The `migrate` profile runs Flyway first, then the Neo4j migrator under a PostgreSQL advisory lock, and exits. Compose starts the API only after that process succeeds. The `local` and `prod` API profiles do not run Flyway. A failed graph migration can leave PostgreSQL migrated; rerunning `migrate` is safe and checks Neo4j migration checksums.
-- Development Compose enables a repeatable, **sample-only** graph seed. Production initializes an empty catalog; no sample accounts or billing records are created. Docker named volumes persist both databases across restarts.
+- Development Compose enables a repeatable, **sample-only** cross-store seed: stable Neo4j catalog IDs match a PostgreSQL organization/account/learner/catalog reference fixture. It does not create a target selection or reset learner revisions on an existing volume. Production initializes an empty catalog and never creates sample accounts or billing records. Docker named volumes persist both databases across restarts.
 - [compose.dev.yml](../compose.dev.yml) runs Vite with live source mounts and publishes services on loopback. [compose.prod.yml](../compose.prod.yml) builds static assets into Caddy and publishes only the HTTP web entry point on loopback. Database and API containers have no published production ports.
 
 ## Ownership and data
@@ -54,7 +54,11 @@ All catalog nodes use stable `id` and `code` keys. `TargetRole.organizationId` p
 
 The graph also has a technical `SchemaMigration` label with a uniqueness constraint and checksum record; it is **not** a sixth catalog entity. Neo4j Community constraints cannot by themselves enforce every V5 rule (such as `[0,1]` values, statuses, one active macro per skill, valid module URLs, or no prerequisite cycles). Future graph write services must validate these rules before committing. Dev sample `sourceUrl` values point to public Java and Spring guides; the seed never runs in `prod`.
 
-PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the supplied V5 graph schema uses stable `id`/`code` without graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. Local/demo may seed matching cross-store references, but that seed is not a published production release.
+PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the supplied V5 graph schema uses stable `id`/`code` without graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. Successful request outcomes persist the selection, target revision, and original `changed` value so an idempotent replay returns the same observable result. F02 uses the trusted learner as the outbox aggregate, the target revision as source revision, and the request ID as correlation ID; selection, request outcome, audit, and outbox writes share the caller's PostgreSQL transaction. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. The provisional runtime adapter rechecks F01 availability under the trusted organization and then resolves exactly one `TARGET_ROLE` reference from the PostgreSQL release whose catalog guard is `OPEN`; mismatch is a dependency failure and the command never creates a reference. The local migrate flow may seed matching cross-store references, but that seed is not a published production release.
+
+F02's temporary assessment guard and `SUPERSEDED` pathway archive mapping are local/demo adapters behind application ports. They load only with the explicit local-dependency property and are absent from the production profile. The real assessment/pathway adapters must share the learner lock/revision transaction contract or provide an owner-approved equivalent before F02 is production-complete.
+
+F02's HTTP adapter is currently a local-only vertical slice. Its configured-actor security chain permits only GET/PUT on `/api/v1/employee/target-role-selection` when the local actor flag is enabled and excludes that endpoint from CSRF because no browser-authenticated principal exists yet. The production security chain is unchanged and denies the endpoint until the real Identity/Security adapter is delivered.
 
 ## Backend structure
 
@@ -68,7 +72,7 @@ backend/
     identity/            security boundary; account APIs not yet built
     assessment/          reserved feature package
     competency/          reserved feature package
-    learning/            reserved feature package
+    learning/            F02 target-role selection domain, application ports/service, HTTP and PostgreSQL/local adapters
     recommendation/      reserved feature package
     pathway/             reserved feature package
     synchronization/     reserved feature package

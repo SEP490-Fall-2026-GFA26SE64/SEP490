@@ -96,6 +96,7 @@ class target_selection_request {
     status : text
     result_selection_id? : uuid [FK]
     result_target_revision? : bigint
+    result_changed? : boolean
     outcome_code? : text
     created_at : timestamp with time zone
     completed_at? : timestamp with time zone
