@@ -1,30 +1,52 @@
-# Function and Unit Testing
+# Unit Testing Directory & Standards
 
-**Location:** `backend/src/test/java/com/adaptlearngraph/<feature>/` (and frontend feature-local tests once a runner is chosen). Use JUnit 5 for pure Java domain/application policies, Spring MVC/Security tests for HTTP access, and ArchUnit for layer rules. Tests should derive cases from an approved function document, not unresolved example behavior.
+**Location:** `backend/src/test/java/com/adaptlearngraph/<feature>/` and `frontend/src/`
 
-Existing checks: `SystemStatusTest` covers the status use case, public route, denied business routes, and CSRF; `WorkerProfileTest` covers the non-HTTP worker mode; `HexagonalArchitectureTest` prevents domain/application dependencies on adapters and Spring.
+Unit testing in this workspace validates pure domain invariants, application service logic, Spring MVC/Security endpoint contracts, and frontend presentation components in total isolation from persistent infrastructure.
 
-Case record template:
-
-| Field | Record |
-| --- | --- |
-| Function | `REQ-nnn-Fnn` and link to its approved feature document |
-| Policy | Actor, organization scope, inputs and exact accepted/rejected outcome |
-| Boundaries | Missing/invalid data, duplicate request, status transition and authorization failure |
-| Evidence | Unit test class/method, date and result |
+> [!NOTE]
+> Detailed test cases, boundary assertions, and execution evidence are maintained in **dedicated markdown files per requirement (REQ)** below. This README serves as the index and execution guide, not the central registry.
 
 ---
 
-## Unit Test Evidence Records
+## Requirement Test Plans & Evidence
 
-- The executable-test cluster for `REQ-001-F01` was approved and its domain/application, API/security and frontend component suites passed on 2026-09-30; cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Other targets such as REQ-001-F02 selection, REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved. Frontend component evidence is not system evidence.
-
-| Function ID | Policy & Scope | Boundaries Tested | Test File & Methods | Result |
+| Requirement ID | Feature Name | Primary Actor | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **REQ-023-F01** ([Create Target Role](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/features/Target%20role%20management/Create%20Target%20Role.md)) | Actor: `LD_MANAGER`. Scoped to `organizationId`. Creates target role with initial `DRAFT` status and normalized code. | - Blank name/code rejection (`IllegalArgumentException`)<br>- Duplicate code within organization rejects with 409 Conflict (`DuplicateTargetRoleException`)<br>- Unauthorized actor (e.g. `LEARNER`) returns 403 Forbidden<br>- Single source of truth in Neo4j graph catalog (`Neo4jTargetRoleRepository`) | `TargetRoleDomainTest`<br>`TargetRoleServiceTest`<br>`OrganizationTargetRoleControllerTest`<br>`TargetRoleAndMicroSkillNeo4jIntegrationTest` | **PASSED** (10 tests) |
-| **REQ-023-F02** ([View Organization Target Roles](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/features/Target%20role%20management/View%20Organization%20Target%20Roles.md)) | Actor: `LD_MANAGER`. Scoped strictly to caller's `organizationId`. Lists all organization target roles including draft items. | - Tenant isolation: Organization A cannot see Organization B's roles<br>- Query filters (search keyword, track filter, status filter)<br>- Single role retrieval and missing role handling<br>- Live Neo4j graph query mapping and `REQUIRES_SKILL` reconstruction | `TargetRoleServiceTest`<br>`OrganizationTargetRoleControllerTest`<br>`TargetRoleAndMicroSkillNeo4jIntegrationTest` | **PASSED** (8 tests) |
-| **REQ-023-F03** ([Update Target Role](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/features/Target%20role%20management/Update%20Target%20Role.md)) | Actor: `LD_MANAGER`. Updates mutable target role metadata (name, domainCode, familyCode, track, assignedExpertId, description). | - Immutable code preserved<br>- Status maintained (`DRAFT`, etc.)<br>- Unauthorized actor returns 403 Forbidden | `TargetRoleDomainTest`<br>`TargetRoleServiceTest`<br>`OrganizationTargetRoleControllerTest` | **PASSED** (4 tests) |
-| **REQ-023-F04** ([Delete Target Role](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/features/Target%20role%20management/Delete%20Target%20Role.md)) | Actor: `LD_MANAGER`. Permanently removes target role (`DRAFT` or `PUBLISHED`). | - Deletes both draft and published target roles<br>- Returns 204 No Content<br>- Unauthorized actor returns 403 Forbidden | `TargetRoleServiceTest`<br>`OrganizationTargetRoleControllerTest` | **PASSED** (3 tests) |
-| **REQ-011-F01 / REQ-023-F05** ([View Assigned Roles & Isolation](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)) | Actor: `DOMAIN_EXPERT`. Strictly filters roles by `assignedExpertId = X-User-Id`. | - Experts cannot view roles assigned to other experts (403 Forbidden)<br>- Status lifecycle transitions: `markSent()`, `reject()`, `publish()` | `TargetRoleDomainTest`<br>`TargetRoleServiceTest`<br>`OrganizationTargetRoleControllerTest` | **PASSED** (4 tests) |
-| **REQ-012-F01** ([Create Micro-Skill](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/features/Micro-skill%20management/Create%20Micro-Skill.md)) | Actor: `DOMAIN_EXPERT`. Scoped to `organizationId`. Creates atomic micro-skill linked to `MacroCompetency`. | - Blank code/name rejection<br>- Duplicate code within organization rejects with 409 Conflict (`DuplicateMicroSkillException`)<br>- Unauthorized non-expert actor returns 403 Forbidden | `MicroSkillDomainTest`<br>`MicroSkillServiceTest`<br>`MicroSkillControllerTest` | **PASSED** (8 tests) |
-| **Architecture** | Hexagonal architecture boundaries across `catalog` and `competency`. | - Domain does not depend on adapters or Spring<br>- Application depends on ports, not adapters<br>- Controllers do not depend on infrastructure | `HexagonalArchitectureTest` | **PASSED** (3 tests) |
+| **REQ-001-F01** | View Target Roles | `LEARNER` | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
+| **REQ-011** | Assigned Target Roles | `DOMAIN_EXPERT` | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | **PASSED** |
+| **REQ-012** | Micro-Skill Management | `DOMAIN_EXPERT` | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | **PASSED** |
+| **REQ-015** | Role Requirements | `DOMAIN_EXPERT` | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | **PASSED** |
+| **REQ-023** | Target Role Management | `LD_MANAGER` | [REQ-023-target-role-management.md](REQ-023-target-role-management.md) | **PASSED** |
+| **REQ-024** | Expert Assignment | `LD_MANAGER` | [REQ-024-expert-assignment.md](REQ-024-expert-assignment.md) | **PASSED** |
+| **Architecture** | Hexagonal Boundaries & Base | System / ArchUnit | [architecture-boundaries.md](architecture-boundaries.md) | **PASSED** |
+
+---
+
+## How to Run Unit Tests
+
+### Backend Unit Tests (JUnit 5 & ArchUnit)
+Run pure unit and controller contract tests via Maven wrapper:
+```powershell
+# Run all unit tests
+.\backend\mvnw.cmd -f backend/pom.xml test -Dtest="*Test,!*IntegrationTest,!*SchemaTest"
+
+# Run a specific feature unit test
+.\backend\mvnw.cmd -f backend/pom.xml test -Dtest="TargetRoleDomainTest,TargetRoleServiceTest"
+```
+
+### Frontend Component Tests (Vitest)
+```powershell
+cd frontend
+npm test
+```
+
+---
+
+## Standards for New Requirements
+
+When implementing or updating a requirement (`REQ-nnn`):
+1. **Create a dedicated file**: `documents/testing/unit/<REQ-ID>-<feature-slug>.md`.
+2. **Include Acceptance Criteria**: Pin every test method to an AC from the corresponding `documents/features/<Feature>/<Function>.md`.
+3. **Assert Architectural Completeness**: Explicitly verify all architecturally defined fields (e.g., track, seniority, responsibilities, version, assignedExpertId).
+4. **Link to this index**: Add the requirement to the table above.

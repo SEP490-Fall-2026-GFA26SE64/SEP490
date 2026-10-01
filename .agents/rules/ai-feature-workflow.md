@@ -23,10 +23,11 @@ flowchart LR
 1. **Locate & Read the Function Specification**:
    - Find and thoroughly read the corresponding feature/function markdown file under `documents/features/<Feature Name>/<Function Name>.md`.
    - Extract the **Function ID** (`REQ-nnn-Fnn`), **Actor**, **Inputs**, **Outcomes**, **Confirmed Rules**, and check for any **Open Decisions** or **Discussion Logs**.
-2. **Architectural Schema Inventory & Completeness Check**:
-   - Cross-reference **[documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md)**, **[documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md)**, and database schema diagrams for all entities, nodes, tables, and relationships involved in the feature.
-   - Inventory **all defined fields and properties** (e.g., for `TargetRole`: `id`, `code`, `title`, `description`, `domainCode`, `familyCode`, `track`, `seniority`, `responsibilities`, `version`, `organizationId`, `assignedExpertId`, `status`, etc.).
-   - Verify that the requirements, domain model, API contracts, and UI specifications explicitly account for 100% of the defined fields. No architecturally defined field may be skipped, overlooked, or left unaddressed.
+2. **Architectural Schema Inventory & Primary Source of Truth**:
+   - Always treat **[documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md)** and **[documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md)** (and database schema diagrams) as the **primary source of truth FIRST**.
+   - Note: The frontend is a UI created to visualize the system beforehand, and may contain legacy mock data, prototypes, or extraneous attributes (e.g., `provenance`, `bloomLevel`, `observableOutcome`, `derivationRef`, etc.) that are NOT in the architectural schema. **NEVER modify or adapt backend models, Flyway migrations, database seeders, or Cypher schemas to match preliminary frontend mock fields.** Instead, the frontend MUST be refactored and aligned strictly to `ARCHITECTURE.md` and `neo4j_schema.md`.
+   - Inventory **all defined fields and properties** for all involved entities/nodes/tables (e.g., for `TargetRole`: `id`, `code`, `title`, `description`, `domainCode`, `familyCode`, `track`, `seniority`, `responsibilities`, `version`, `organizationId`, `assignedExpertId`, `status`, etc.; for `MicroSkill`: `id`, `code`, `name`, `description?`, `status`, `createdAt`, `updatedAt`; for `MacroCompetency`: `id`, `code`, `name`, `description?`, `status`, `createdAt`, `updatedAt`).
+   - Verify that the requirements, domain model, API contracts, and UI specifications explicitly account for 100% of the defined fields. No architecturally defined field may be skipped, overlooked, or left unaddressed, and no unapproved mock fields may pollute the schema.
 3. **Requirement Clarification & Alignment with the User**:
    - Present a concise summary of the requirement, confirmed rules, inventoried architectural fields, and proposed technical design to the user.
    - Proactively ask questions or flag any open decisions, ambiguities, or architectural trade-offs using `ask_question` or clear prompts.
@@ -37,12 +38,13 @@ flowchart LR
 ## Step 2: Implement Using AI
 **Goal**: Write high-quality, production-ready code adhering to project architecture and standards only after requirement alignment.
 
-1. **Zero Blank / Unused Architecture Fields Enforcement (100% Schema Fidelity)**:
-   - **No Empty Defined Fields**: Under NO circumstances should any field, column, or property defined in [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) (or [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md) / PostgreSQL schema) be left blank, unmapped, unseeded, or ignored in the codebase.
+1. **Architecture & Schema Strict Compliance (Primary Source of Truth)**:
+   - **Strict Schema Alignment**: All backend entities, persistence models, seeders, and frontend UI components MUST strictly follow [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) and [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md). Remove legacy mock attributes (e.g., `provenance`, `bloomLevel`, `observableOutcome`, `derivationRef`) that are not in the architectural schema.
+   - **Zero Blank / Unused Architecture Fields**: Under NO circumstances should any field, column, or property defined in [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) or [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md) be left blank, unmapped, unseeded, or ignored in the codebase.
    - **Database Seeders & Migrations**: All seed data (`DevelopmentCatalogSeeder`, Flyway baseline/seed scripts, test fixtures) MUST populate every defined field with realistic, domain-appropriate values according to the architectural definition.
-   - **Persistence Mappers & Repositories**: Neo4j/PostgreSQL mappers (e.g., `Neo4jTargetRoleMapper`) and queries must map 100% of defined properties to and from persistence records without silently dropping or omitting any property.
+   - **Persistence Mappers & Repositories**: Neo4j/PostgreSQL mappers (e.g., `Neo4jTargetRoleMapper`, `Neo4jMicroSkillRepository`) and queries must map 100% of defined properties to and from persistence records without silently dropping or omitting any property.
    - **Domain & Application DTOs**: Domain entities, value objects, commands, queries, and API response DTOs must model, validate, and transport every defined field.
-   - **Frontend UI & Forms**: UI forms (create/edit modals), table columns, and detail dialogs must capture, display, and validate all architectural fields (e.g., track, seniority, responsibilities, version, etc.) so that users never encounter blank or unused data fields.
+   - **Frontend UI & Forms**: UI forms (create/edit modals), table columns, and detail dialogs must capture, display, and validate all architectural fields (e.g., track, seniority, responsibilities, version, description, etc.) while stripping away extraneous mock fields.
 2. **Design System & UI-UX Pro Max Enforcement**:
    - Strictly follow the design system: CSS variables from `tokens.css` (zero hardcoded hex colors), standard typography scale, snug modern density, and surface elevation.
    - Always reuse shared components from `src/shared/components/ui/` (`<PageHeader />`, `<StatCard />`, `<Button />`, `<Badge />`, `<Card />`, `<Pagination />`, etc.) and `src/shared/components/typography/`.
@@ -109,8 +111,12 @@ Agents must read and follow the testing guides in `documents/testing/`:
    - Update the function specification in `documents/features/<Feature Name>/<Function Name>.md` (e.g. mark status from "In clarification" / "Draft" to implemented, update discussion logs/confirmed rules if resolved).
    - Update sprint plans (`documents/KE_HOACH_10_SPRINT.md`), `documents/PRODUCT_OVERVIEW.md`, and feature index (`documents/features/README.md`) if impacted.
 3. **Testing Documentation Records**:
-   - Create or update the dedicated feature test plan and evidence file under `documents/testing/<REQ-ID>-<feature-name>.md` following the standard set by [documents/testing/REQ-001-F01-view-target-roles.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/REQ-001-F01-view-target-roles.md).
-   - Record test cases, commands, and results in `documents/testing/unit/README.md`, `documents/testing/integration/README.md`, and `documents/testing/system/README.md` under their `REQ-nnn-Fnn` IDs.
+   - **Dedicated Per-REQ Test Documents**: Do NOT use `README.md` as a monolithic central registry. Instead, create or update dedicated test markdown files for each requirement (`REQ`) across all three testing tiers:
+     - `documents/testing/unit/<REQ-ID>-<feature-name>.md`
+     - `documents/testing/integration/<REQ-ID>-<feature-name>.md`
+     - `documents/testing/system/<REQ-ID>-<feature-name>.md`
+   - Keep `README.md` in `documents/testing/`, `documents/testing/unit/`, `documents/testing/integration/`, and `documents/testing/system/` strictly as directory indexes, test execution instructions, and requirement matrices.
+   - Create or update high-level holistic master test plans under `documents/testing/<REQ-ID>-<feature-name>.md`.
    - Create or update the step-by-step manual browser checklist in `documents/testing/system/<REQ-ID>-manual-browser-check.md`.
 4. **API & Schema Documentation**:
    - Update API contracts, Swagger/OpenAPI docs, and schema diagrams (`documents/diagrams/`).

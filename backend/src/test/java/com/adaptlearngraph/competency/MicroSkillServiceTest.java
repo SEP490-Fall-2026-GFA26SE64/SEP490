@@ -71,6 +71,22 @@ class MicroSkillServiceTest {
         assertThrows(DuplicateMicroSkillException.class, () -> service.createMicroSkill(command2));
     }
 
+    @Test
+    @DisplayName("REQ-012-F02: Lists micro-skills scoped to organization")
+    void listsMicroSkillsSuccessfully() {
+        CreateMicroSkillCommand command = new CreateMicroSkillCommand(
+                "org-1",
+                "JAVA_CORE",
+                "Java Core",
+                "Core fundamentals",
+                "KNOWLEDGE");
+        service.createMicroSkill(command);
+
+        List<MicroSkill> result = service.listMicroSkills("org-1");
+        assertEquals(1, result.size());
+        assertEquals("JAVA_CORE", result.get(0).getCode());
+    }
+
     private static class InMemoryMicroSkillRepository implements MicroSkillRepository {
         final List<MicroSkill> skills = new ArrayList<>();
 
@@ -99,6 +115,13 @@ class MicroSkillServiceTest {
             return skills.stream()
                     .filter(s -> s.getOrganizationId().equals(organizationId) && s.getCode().equalsIgnoreCase(code))
                     .findFirst();
+        }
+
+        @Override
+        public List<MicroSkill> findAll(String organizationId) {
+            return skills.stream()
+                    .filter(s -> s.getOrganizationId().equals(organizationId))
+                    .toList();
         }
     }
 }

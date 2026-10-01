@@ -36,6 +36,44 @@ public class CompetencyConfiguration {
         return microSkillService;
     }
 
+    @Bean
+    public com.adaptlearngraph.competency.application.port.in.GetMicroSkillsUseCase getMicroSkillsUseCase(MicroSkillService microSkillService) {
+        return microSkillService;
+    }
+
+    @Bean
+    public com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository macroCompetencyRepository(ObjectProvider<Driver> driverProvider) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jMacroCompetencyRepository(driver);
+        }
+        return new InMemoryFallbackMacroCompetencyRepository();
+    }
+
+    @Bean
+    public com.adaptlearngraph.competency.application.MacroCompetencyService macroCompetencyService(
+            com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository macroCompetencyRepository) {
+        return new com.adaptlearngraph.competency.application.MacroCompetencyService(macroCompetencyRepository);
+    }
+
+    @Bean
+    public com.adaptlearngraph.competency.application.port.in.GetMacroCompetenciesUseCase getMacroCompetenciesUseCase(
+            com.adaptlearngraph.competency.application.MacroCompetencyService macroCompetencyService) {
+        return macroCompetencyService;
+    }
+
+    private static class InMemoryFallbackMacroCompetencyRepository implements com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository {
+        @Override
+        public java.util.List<com.adaptlearngraph.competency.domain.MacroCompetency> findAll() {
+            java.time.Instant now = java.time.Instant.now();
+            return java.util.List.of(
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("macro-knowledge", "KNOWLEDGE", "Technical & Domain Knowledge", "Foundational knowledge and operational mastery in domain concepts", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("macro-comm", "COMMUNICATION", "Team Communication & Collaboration", "Interpersonal skills, cross-functional communication, and stakeholder alignment", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("macro-innov", "INNOVATION", "Problem Solving & Innovation", "Algorithmic thinking, architectural innovation, and creative engineering resolution", "ACTIVE", now, now)
+            );
+        }
+    }
+
     private static class InMemoryFallbackMicroSkillRepository implements MicroSkillRepository {
         private final Map<String, MicroSkill> store = new ConcurrentHashMap<>();
 
@@ -64,6 +102,13 @@ public class CompetencyConfiguration {
             return store.values().stream()
                     .filter(m -> m.getOrganizationId().equals(organizationId) && m.getCode().equalsIgnoreCase(code))
                     .findFirst();
+        }
+
+        @Override
+        public java.util.List<MicroSkill> findAll(String organizationId) {
+            return store.values().stream()
+                    .filter(m -> m.getOrganizationId() == null || m.getOrganizationId().equals(organizationId))
+                    .toList();
         }
     }
 }

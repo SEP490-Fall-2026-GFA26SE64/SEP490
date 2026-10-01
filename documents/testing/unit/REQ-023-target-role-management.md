@@ -1,0 +1,41 @@
+# REQ-023 — Target Role Management Unit Testing Plan & Evidence
+
+**Feature Contracts:**
+- [REQ-023-F01 Create Target Role](../../features/Target%20role%20management/Create%20Target%20Role.md)
+- [REQ-023-F02 View Organization Target Roles](../../features/Target%20role%20management/View%20Organization%20Target%20Roles.md)
+- [REQ-023-F03 Update Target Role](../../features/Target%20role%20management/Update%20Target%20Role.md)
+- [REQ-023-F04 Delete Target Role](../../features/Target%20role%20management/Delete%20Target%20Role.md)
+- [REQ-023-F05 Expert Assigned Roles & Isolation](../../features/Target%20role%20management/Expert%20Assigned%20Target%20Roles.md)
+
+**Level:** Unit (Domain Invariants, Application Services, Controller Contracts & Security RBAC)  
+**Status:** PASSED (2026-10-01)
+
+---
+
+## 1. Test Cases
+
+| Case ID | Acceptance Rule | Scope / Fixture | Trigger / Method | Expected Outcome | Executable Test Location | Result |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **F01-U01** | REQ-023-F01 AC01, AC02 | TargetRole entity with track, domainCode, familyCode, version | Construct new TargetRole | Defaults to `DRAFT` status, normalizes code to uppercase, validates non-blank fields | [TargetRoleDomainTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/domain/TargetRoleDomainTest.java) | **PASS** |
+| **F01-U02** | REQ-023-F01 AC03 | InMemory repository with existing code & version | Call `createTargetRole` with same code & version | Rejects with `DuplicateTargetRoleException` (409 Conflict) | [TargetRoleServiceTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/application/TargetRoleServiceTest.java) | **PASS** |
+| **F01-U03** | REQ-023-F01 AC07 | TargetRole track-seniority matching & responsibilities list | Create TargetRole with Seniority and Responsibilities | Enforces P1–P5 for PROFESSIONAL and M3–M4 for MANAGEMENT; rejects invalid combinations | [TargetRoleDomainTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/domain/TargetRoleDomainTest.java) | **PASS** |
+| **F01-A01** | REQ-023-F01 AC01, AC04 | Mock service; `LD_MANAGER` caller vs `LEARNER` caller | `POST /api/v1/organizations/{orgId}/target-roles` | `201 Created` with role payload for L&D Manager; `403 Forbidden` for non-manager | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
+| **F01-A02** | REQ-023-F01 AC08 | Mock service; track and seniority mismatch payload | `POST /api/v1/organizations/{orgId}/target-roles` with track=MANAGEMENT, seniority=P3 | Rejects with `400 Bad Request` and descriptive error message | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
+| **F02-U01** | REQ-023-F02 AC01, AC02 | Roles across `org-alpha` and `org-beta` with various tracks, statuses, and assigned experts | Call `listTargetRoles` with `TargetRoleFilter` | Multi-tenant isolation holds; search keywords, track, domain, and expert filters evaluate correctly | [TargetRoleServiceTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/application/TargetRoleServiceTest.java) | **PASS** |
+| **F02-A01** | REQ-023-F02 AC01, AC03 | Mock service with role list | `GET /api/v1/organizations/{orgId}/target-roles` | `200 OK` with JSON array; single role lookup returns `200 OK` or `404 Not Found` | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
+| **F03-U01** | REQ-023-F03 AC01, AC02 | Existing target role in `DRAFT` status | Call `updateTargetRole` with new title, track, expert | Updates mutable fields while preserving immutable code and identity | [TargetRoleServiceTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/application/TargetRoleServiceTest.java) | **PASS** |
+| **F03-U02** | REQ-023-F03 AC04 | Existing target role | Call `updateTargetRole` with updated seniority and responsibilities | Correctly persists new seniority and non-empty responsibilities array | [TargetRoleServiceTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/application/TargetRoleServiceTest.java) | **PASS** |
+| **F03-A01** | REQ-023-F03 AC03 | Mock service; valid update payload | `PUT /api/v1/organizations/{orgId}/target-roles/{roleId}` | `200 OK` with updated TargetRoleDTO; `404 Not Found` if role does not exist | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
+| **F04-U01** | REQ-023-F04 AC01 | Existing target role (both `DRAFT` and `ACTIVE`) | Call `deleteTargetRole` | Successfully deletes role from repository; returns false when role not found | [TargetRoleServiceTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/application/TargetRoleServiceTest.java) | **PASS** |
+| **F04-A01** | REQ-023-F04 AC02 | Mock service; `LD_MANAGER` caller | `DELETE /api/v1/organizations/{orgId}/target-roles/{roleId}` | `204 No Content` on successful deletion; `404 Not Found` when nonexistent | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
+| **F05-A01** | REQ-023-F05 AC01 | `X-User-Role: DOMAIN_EXPERT`, `X-User-Id: expert-chen` | `GET /api/v1/organizations/{orgId}/target-roles` | Automatically injects `assignedExpertId = expert-chen` filter; hides other experts' roles | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
+| **F05-A02** | REQ-023-F05 AC04 | `X-User-Role: DOMAIN_EXPERT`, `X-User-Id: expert-alpha`, payload with `status = REJECTED` and `rejectionReason` | `PUT /api/v1/organizations/{orgId}/target-roles/{roleId}` | Transitions status to `REJECTED`, persists `rejectionReason`, returns 200 OK | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/TargetRoleControllerTest.java) | **PASS** |
+
+---
+
+## 2. Execution Evidence
+
+```powershell
+backend\mvnw.cmd "-Dtest=TargetRoleDomainTest,TargetRoleServiceTest,TargetRoleControllerTest" test
+# Result: PASS — 29 tests, 0 failures, 0 errors, 0 skips
+```

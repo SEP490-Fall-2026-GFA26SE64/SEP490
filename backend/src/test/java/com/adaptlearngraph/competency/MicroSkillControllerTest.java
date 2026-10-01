@@ -19,6 +19,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +41,9 @@ class MicroSkillControllerTest {
 
     @MockBean
     private CreateMicroSkillUseCase createMicroSkillUseCase;
+
+    @MockBean
+    private com.adaptlearngraph.competency.application.port.in.GetMicroSkillsUseCase getMicroSkillsUseCase;
 
     @Test
     @WithMockUser
@@ -118,5 +122,32 @@ class MicroSkillControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-012-F02: GET /api/v1/organizations/{orgId}/micro-skills returns 200 OK with skill list")
+    void listMicroSkillsReturns200() throws Exception {
+        UUID skillId = UUID.randomUUID();
+        MicroSkill skill = new MicroSkill(
+                new MicroSkillId(skillId),
+                "org-1",
+                "JAVA_CORE",
+                "Java Core",
+                "Core Java fundamentals",
+                "KNOWLEDGE",
+                SkillStatus.ACTIVE,
+                Instant.now(),
+                Instant.now());
+
+        when(getMicroSkillsUseCase.listMicroSkills("org-1")).thenReturn(List.of(skill));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/organizations/org-1/micro-skills")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].code").value("JAVA_CORE"))
+                .andExpect(jsonPath("$[0].name").value("Java Core"))
+                .andExpect(jsonPath("$[0].description").value("Core Java fundamentals"))
+                .andExpect(jsonPath("$[0].macroCompetencyCode").value("KNOWLEDGE"));
     }
 }

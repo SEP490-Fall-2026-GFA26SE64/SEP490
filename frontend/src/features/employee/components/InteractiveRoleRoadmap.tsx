@@ -62,7 +62,7 @@ export function InteractiveRoleRoadmap() {
         id: ms.id,
         skillCode: ms.code,
         name: ms.name,
-        description: ms.observableOutcome || 'Verified operational skill competency.',
+        description: ms.description || 'Verified operational skill competency.',
         status: ms.status === 'published' ? 'achieved' : 'not_achieved',
         masteryPercentage: ms.status === 'published' ? 90 : 50,
         estimatedMinutes: 30,

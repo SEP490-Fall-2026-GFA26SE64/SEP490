@@ -26,24 +26,32 @@ public final class DevelopmentCatalogSeeder {
                                 """,
                         // 2. Macro Competencies
                         """
-                                UNWIND [{code: 'KNOWLEDGE', name: 'Knowledge'},
-                                        {code: 'COMMUNICATION', name: 'Communication'},
-                                        {code: 'INNOVATION', name: 'Innovation'}] AS item
+                                UNWIND [{code: 'KNOWLEDGE', name: 'Knowledge', description: 'Core technical and conceptual domain knowledge'},
+                                        {code: 'COMMUNICATION', name: 'Communication', description: 'Interpersonal, technical communication, and collaboration'},
+                                        {code: 'INNOVATION', name: 'Innovation', description: 'Creative problem solving and novel architectural solutions'}] AS item
                                 MERGE (macro:MacroCompetency {code: item.code})
-                                ON CREATE SET macro.id = randomUUID(), macro.name = item.name,
+                                ON CREATE SET macro.id = randomUUID(), macro.name = item.name, macro.description = item.description,
                                     macro.status = 'ACTIVE', macro.createdAt = datetime(), macro.updatedAt = datetime()
+                                ON MATCH SET macro.name = item.name, macro.description = item.description, macro.updatedAt = datetime()
                                 """,
                         // 3. Micro Skills
                         """
-                                UNWIND [{code: 'JAVA_CORE', name: 'Java Core', macro: 'KNOWLEDGE'},
-                                        {code: 'SPRING_BOOT', name: 'Spring Boot', macro: 'KNOWLEDGE'},
-                                        {code: 'MS-PY-001', name: 'Python for Machine Learning', macro: 'KNOWLEDGE'},
-                                        {code: 'MS-DL-001', name: 'Deep Learning & PyTorch', macro: 'KNOWLEDGE'},
-                                        {code: 'MS-OPS-001', name: 'Containerization with Docker', macro: 'KNOWLEDGE'},
-                                        {code: 'MS-OPS-002', name: 'Kubernetes Cluster Orchestration', macro: 'KNOWLEDGE'}] AS item
+                                UNWIND [{code: 'JAVA_CORE', name: 'Java Core', macro: 'KNOWLEDGE',
+                                         description: 'Core Java programming language fundamentals, OOP, collections, multithreading, and streams API'},
+                                        {code: 'SPRING_BOOT', name: 'Spring Boot', macro: 'KNOWLEDGE',
+                                         description: 'Enterprise Spring Boot microservices, dependency injection, and REST endpoints'},
+                                        {code: 'MS-PY-001', name: 'Python for Machine Learning', macro: 'KNOWLEDGE',
+                                         description: 'Python data science stack: NumPy, Pandas, and data processing for ML'},
+                                        {code: 'MS-DL-001', name: 'Deep Learning & PyTorch', macro: 'KNOWLEDGE',
+                                         description: 'Neural network architectures, tensors, autograd, and training pipelines in PyTorch'},
+                                        {code: 'MS-OPS-001', name: 'Containerization with Docker', macro: 'KNOWLEDGE',
+                                         description: 'Building Docker container images, multi-stage builds, and container networking'},
+                                        {code: 'MS-OPS-002', name: 'Kubernetes Cluster Orchestration', macro: 'KNOWLEDGE',
+                                         description: 'Deployments, services, ingress, and cluster orchestration in Kubernetes'}] AS item
                                 MERGE (skill:MicroSkill {code: item.code})
-                                ON CREATE SET skill.id = randomUUID(), skill.name = item.name,
+                                ON CREATE SET skill.id = randomUUID(), skill.name = item.name, skill.description = item.description,
                                     skill.status = 'ACTIVE', skill.createdAt = datetime(), skill.updatedAt = datetime()
+                                ON MATCH SET skill.name = item.name, skill.description = item.description, skill.updatedAt = datetime()
                                 WITH skill, item
                                 MATCH (macro:MacroCompetency {code: item.macro})
                                 MERGE (macro)-[mapping:HAS_SKILL]->(skill)

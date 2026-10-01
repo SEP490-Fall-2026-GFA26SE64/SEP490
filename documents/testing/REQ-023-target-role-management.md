@@ -1,6 +1,7 @@
 # REQ-023 — Target Role Management test plan and evidence
 
 **Status:** Unit, Controller/Security, Neo4j Testcontainers Integration, and System API tests passed; manual browser verification checklist completed.  
+**Dedicated Level Evidence:** [Unit Test](unit/REQ-023-target-role-management.md) | [Integration Test](integration/REQ-023-target-role-management.md) | [System Test](system/REQ-023-target-role-management.md)  
 **Feature contracts:**
 - [REQ-023-F01 Create Target Role](../features/Target%20role%20management/Create%20Target%20Role.md)
 - [REQ-023-F02 View Organization Target Roles](../features/Target%20role%20management/View%20Organization%20Target%20Roles.md)

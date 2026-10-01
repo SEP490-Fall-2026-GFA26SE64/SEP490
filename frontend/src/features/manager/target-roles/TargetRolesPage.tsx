@@ -1437,7 +1437,7 @@ export function TargetRolesPage() {
                       !compSearchQuery.trim() ||
                       c.code.toLowerCase().includes(compSearchQuery.toLowerCase()) ||
                       c.name.toLowerCase().includes(compSearchQuery.toLowerCase()) ||
-                      c.definition.toLowerCase().includes(compSearchQuery.toLowerCase())
+                      (c.description || '').toLowerCase().includes(compSearchQuery.toLowerCase())
                   )
 
                   if (filtered.length === 0) {
@@ -1471,7 +1471,7 @@ export function TargetRolesPage() {
                               {comp.status}
                             </Badge>
                           </div>
-                          <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{comp.definition}</p>
+                          <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{comp.description}</p>
                         </div>
 
                         <div className="shrink-0">
@@ -2024,12 +2024,14 @@ export function TargetRolesPage() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {viewingDetailsRole.skillTargets.map((st) => {
-                      const skill = companyMicroSkills.find((s) => s.id === st.skillId)
+                      const skill = companyMicroSkills.find((s) => s.id === st.skillId || s.code === st.skillCode)
+                      const code = st.skillCode || skill?.code || 'SKILL'
+                      const name = st.skillName || skill?.name || ''
                       return (
-                        <tr key={st.skillId} className="hover:bg-muted/20">
+                        <tr key={st.skillId || st.skillCode} className="hover:bg-muted/20">
                           <td className="py-2 px-3">
-                            <span className="font-mono font-bold text-foreground mr-1">{skill?.code}</span>
-                            <span className="text-muted-foreground">{skill?.name}</span>
+                            <span className="font-mono font-bold text-foreground mr-1">{code}</span>
+                            <span className="text-muted-foreground">{name}</span>
                           </td>
                           <td className="py-2 px-3 text-center font-mono font-bold text-primary">
                             {st.threshold}%

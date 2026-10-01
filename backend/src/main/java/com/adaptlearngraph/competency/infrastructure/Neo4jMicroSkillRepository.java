@@ -111,17 +111,49 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         }
     }
 
+    @Override
+    public java.util.List<MicroSkill> findAll(String organizationId) {
+        String cypher = """
+                MATCH (s:MicroSkill)
+                WHERE s.organizationId = $organizationId OR s.organizationId IS NULL
+                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
+                RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+                ORDER BY s.code ASC
+                """;
+        try (var session = driver.session()) {
+            var result = session.run(cypher, Map.of("organizationId", organizationId));
+            java.util.List<MicroSkill> list = new java.util.ArrayList<>();
+            while (result.hasNext()) {
+                var record = result.next();
+                Node node = record.get("s").asNode();
+                String macroCode = record.get("macroCode").asString();
+                list.add(mapNodeToMicroSkill(node, organizationId, macroCode));
+            }
+            return list;
+        }
+    }
+
     private MicroSkill mapNodeToMicroSkill(Node node) {
-        String idStr = node.get("id").asString();
-        String orgId = node.get("organizationId").asString();
+        return mapNodeToMicroSkill(node, "default-org", null);
+    }
+
+    private MicroSkill mapNodeToMicroSkill(Node node, String defaultOrgId, String explicitMacroCode) {
+        String idStr = node.containsKey("id") && !node.get("id").isNull()
+                ? node.get("id").asString()
+                : java.util.UUID.randomUUID().toString();
+        String orgId = node.containsKey("organizationId") && !node.get("organizationId").isNull()
+                ? node.get("organizationId").asString()
+                : defaultOrgId;
         String code = node.get("code").asString();
         String name = node.get("name").asString();
         String desc = node.containsKey("description") && !node.get("description").isNull()
                 ? node.get("description").asString()
                 : "";
-        String macroCode = node.containsKey("macroCompetencyCode") && !node.get("macroCompetencyCode").isNull()
-                ? node.get("macroCompetencyCode").asString()
-                : "KNOWLEDGE";
+        String macroCode = explicitMacroCode != null && !explicitMacroCode.isBlank()
+                ? explicitMacroCode
+                : (node.containsKey("macroCompetencyCode") && !node.get("macroCompetencyCode").isNull()
+                        ? node.get("macroCompetencyCode").asString()
+                        : "KNOWLEDGE");
         String statusStr = node.containsKey("status") && !node.get("status").isNull()
                 ? node.get("status").asString()
                 : "ACTIVE";

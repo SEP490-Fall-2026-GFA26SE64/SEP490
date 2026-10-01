@@ -1,6 +1,7 @@
 # REQ-001-F01 — View Target Roles test plan and evidence
 
-**Status:** Cluster 2 executable tests passed; full browser system scenario remains not run
+**Status:** Cluster 2 executable tests passed; full browser system scenario remains not run  
+**Dedicated Level Evidence:** [Unit Test](unit/REQ-001-F01-view-target-roles.md) | [Integration Test](integration/REQ-001-F01-view-target-roles.md) | [System Test](system/REQ-001-F01-view-target-roles.md)  
 **Feature contract:** [View Target Roles](../features/Target%20role%20selection/View%20Target%20Roles.md)
 
 The development seed is not a production oracle. Tests must create deterministic organization-scoped fixtures and must not use real employee data or shared Compose volumes.

@@ -13,4 +13,6 @@ public interface MicroSkillRepository {
     Optional<MicroSkill> findById(String organizationId, MicroSkillId id);
 
     Optional<MicroSkill> findByCode(String organizationId, String code);
+
+    java.util.List<MicroSkill> findAll(String organizationId);
 }

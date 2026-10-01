@@ -1,20 +1,52 @@
-# System Testing
+# System Testing Directory & Standards
 
-Run system tests against the complete Compose stack, not a standalone Spring Boot `starter` profile. Current smoke coverage verifies service startup, Flyway/graph initialization, health, and frontend-to-API proxying; it does not prove any draft feature workflow.
+**Location:** Docker Compose Environment (`compose.dev.yml`) and Browser Workflows
 
+System testing validates complete end-to-end integration across all system tiers (PostgreSQL database, Neo4j graph database, Flyway/graph migrations, Spring Boot REST API, Vite frontend web client, and Nginx reverse proxy).
+
+> [!NOTE]
+> Detailed test scenarios, environment scopes, and execution evidence are maintained in **dedicated markdown files per requirement (REQ)** below. This README serves as the index and execution guide, not the central registry.
+
+---
+
+## Requirement Test Plans & Evidence
+
+| Requirement ID | Feature Name | Workflows Covered | System Test Document | Manual Procedure | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-001-F01** | View Target Roles | Learner Role Catalog Browse | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | [REQ-001-F01-manual-browser-check.md](REQ-001-F01-manual-browser-check.md) | **PASSED** (API) / Manual Available |
+| **REQ-011** | Assigned Target Roles | Expert Queue Isolation | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | [REQ-023-manual-browser-check.md](REQ-023-manual-browser-check.md#4-domain-expert-perspective--queue-isolation-req-011--req-023-f05) | **PASSED** |
+| **REQ-012** | Micro-Skill Management | Micro-Skill Catalog & Linking | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | — | **PASSED** |
+| **REQ-015** | Role Requirements | Micro-Skill Benchmark Authoring | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | [REQ-023-manual-browser-check.md](REQ-023-manual-browser-check.md#4-domain-expert-perspective--queue-isolation-req-011--req-023-f05) | **PASSED** |
+| **REQ-023** | Target Role Management | Full Target Role Lifecycle | [REQ-023-target-role-management.md](REQ-023-target-role-management.md) | [REQ-023-manual-browser-check.md](REQ-023-manual-browser-check.md) | **PASSED** |
+| **REQ-024** | Expert Assignment | Role Assignment & Reassignment | [REQ-024-expert-assignment.md](REQ-024-expert-assignment.md) | [REQ-023-manual-browser-check.md](REQ-023-manual-browser-check.md#2-ld-manager-workflow-assigning--reassigning-experts-req-024) | **PASSED** |
+
+---
+
+## How to Run System Stack & Smoke Checks
+
+Start the full Compose stack:
 ```powershell
 docker compose -f compose.dev.yml up --build -d
+```
+
+Verify service health and readiness:
+```powershell
 Invoke-RestMethod http://127.0.0.1:8088/api/v1/system/status
 docker compose -f compose.dev.yml ps
 ```
 
-Expected baseline: databases healthy, `migrate` exited with code 0, API healthy, and status reports `adapt-learn-graph`. A fresh dev graph includes the example Java role; the production graph stays empty. Keep test accounts and payment credentials out of production smoke data.
+Expected baseline:
+- Databases healthy (`postgres`, `neo4j`).
+- `migrate` service exited with code 0.
+- `api` healthy and responding to status queries.
+- `web` reverse-proxy serving on `http://127.0.0.1:8088`.
 
-When user workflows exist, add end-to-end cases for employee role selection and baseline, expert graph editing and pathway review, organization-scoped account access, module assessment/recalculation, and subscription payment confirmation. Pin each scenario to a clarified `REQ-nnn-Fnn` rule, specify actor/organization and setup data, and capture outcome and date. Browser automation and external-provider test doubles are not installed in this baseline; choose them with the first implemented workflow.
+---
 
-REQ-001-F01 is the first approved workflow test cluster; its full-stack scenario is tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Until a browser runner is selected, API-level Compose checks must be labeled as partial system evidence and may not claim the frontend states passed.
+## Standards for New Requirements
 
-Manual browser procedures:
-- [REQ-001-F01 manual browser system check](REQ-001-F01-manual-browser-check.md).
-- [REQ-023 manual browser system check](REQ-023-manual-browser-check.md) (Target Role Management & Expert Authoring).
-Record the actual browser/date/result in the function evidence file; the existence of this checklist is not evidence of a pass.
+When writing system tests for a new requirement (`REQ-nnn`):
+1. **Create a dedicated file**: `documents/testing/system/<REQ-ID>-<feature-slug>.md`.
+2. **Define User Journeys**: Specify multi-tier workflows connecting user actions (in UI/API) to persistent state changes across PostgreSQL and Neo4j.
+3. **Manual Browser Checklist**: If the requirement includes UI components, provide or link to a structured step-by-step manual browser testing checklist (`documents/testing/system/<REQ-ID>-manual-browser-check.md`).
+4. **Link to this index**: Add the requirement to the table above.

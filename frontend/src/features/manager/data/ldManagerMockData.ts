@@ -192,32 +192,24 @@ export const ELIGIBLE_EXPERTS = [
 
 export interface CompetencyModel {
   id: string
-  stableId: string
   code: string
   name: string
-  definition: string
-  version: string
-  status: 'draft' | 'published' | 'archived'
-  derivationRef: string
+  description?: string
+  status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
   skillIds: string[] // HAS_SKILL links
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface MicroSkillModel {
   id: string
-  stableId: string
   code: string
   name: string
-  observableOutcome: string
-  bloomLevel: 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create'
-  version: string
-  status: 'draft' | 'published' | 'archived'
-  provenance: {
-    source: string
-    ruleRef: string
-    type: 'source-backed' | 'derived' | 'synthetic'
-    recordedDate: string
-  }
+  description?: string
+  status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
+  macroCompetencyCode?: 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION' | string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface PrerequisiteEdge {
@@ -315,146 +307,8 @@ export interface SkillAcquisitionMetric {
 }
 
 // ----------------------------------------------------
-// INITIAL MOCK DATA
+// INITIAL PREREQUISITES & PROTOTYPE MOCK DATA
 // ----------------------------------------------------
-
-export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = [
-  {
-    id: 'skill-cypher',
-    stableId: 'ms-001',
-    code: 'SKILL-CYPHER-01',
-    name: 'Neo4j Cypher DDL & Pattern Matching',
-    observableOutcome: 'Formulate declarative Cypher queries including MATCH, MERGE, and index constraints against multi-relational graphs.',
-    bloomLevel: 'Apply',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Neo4j Certified Professional Framework v5.12',
-      ruleRef: 'GRAPH-DDL-2025.1',
-      type: 'source-backed',
-      recordedDate: '2025-11-15',
-    },
-  },
-  {
-    id: 'skill-gnn',
-    stableId: 'ms-002',
-    code: 'SKILL-GNN-02',
-    name: 'Graph Neural Networks & Message Passing',
-    observableOutcome: 'Construct spatial graph convolutional layers with neighborhood aggregation using PyTorch Geometric.',
-    bloomLevel: 'Create',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Stanford CS224W Machine Learning with Graphs (2024)',
-      ruleRef: 'GNN-ARCH-03',
-      type: 'source-backed',
-      recordedDate: '2025-10-20',
-    },
-  },
-  {
-    id: 'skill-embeddings',
-    stableId: 'ms-003',
-    code: 'SKILL-EMB-03',
-    name: 'Random Walk & Node2Vec Embeddings',
-    observableOutcome: 'Generate low-dimensional continuous vector representations for nodes using biased second-order random walks.',
-    bloomLevel: 'Analyze',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'KDD Grover & Leskovec Node2Vec Specification',
-      ruleRef: 'EMB-PROV-99',
-      type: 'derived',
-      recordedDate: '2025-09-12',
-    },
-  },
-  {
-    id: 'skill-owl-rdf',
-    stableId: 'ms-004',
-    code: 'SKILL-RDF-04',
-    name: 'RDF Schema & OWL 2 DL Ontologies',
-    observableOutcome: 'Define formal description logic axioms, subsumption hierarchies, and inverse functional object properties.',
-    bloomLevel: 'Evaluate',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'W3C OWL 2 Web Ontology Language Recommendation',
-      ruleRef: 'W3C-REC-OWL2-2012',
-      type: 'source-backed',
-      recordedDate: '2025-08-01',
-    },
-  },
-  {
-    id: 'skill-dkt',
-    stableId: 'ms-005',
-    code: 'SKILL-DKT-05',
-    name: 'Dynamic Deep Knowledge Tracing',
-    observableOutcome: 'Implement LSTM/Transformer architectures to track longitudinal learner skill mastery over chronological exercise logs.',
-    bloomLevel: 'Create',
-    version: '1.1',
-    status: 'draft',
-    provenance: {
-      source: 'NeurIPS Deep Knowledge Tracing Adaptation Matrix',
-      ruleRef: 'AIED-DKT-2024',
-      type: 'synthetic',
-      recordedDate: '2026-01-10',
-    },
-  },
-  {
-    id: 'skill-vector-db',
-    stableId: 'ms-006',
-    code: 'SKILL-VEC-06',
-    name: 'HNSW Indexing & Vector Search Optimization',
-    observableOutcome: 'Configure hierarchical navigable small world graphs for sub-millisecond approximate nearest neighbor retrieval.',
-    bloomLevel: 'Apply',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Malkov & Yashunin HNSW Technical Whitepaper',
-      ruleRef: 'VEC-INDEX-01',
-      type: 'source-backed',
-      recordedDate: '2025-12-04',
-    },
-  },
-]
-
-export const INITIAL_COMPETENCIES: CompetencyModel[] = [
-  {
-    id: 'comp-semantic-arch',
-    stableId: 'comp-uuid-01',
-    code: 'COMP-SEM-01',
-    name: 'Graph Semantic Architecture & Modeling',
-    definition: 'Engineering formal semantic data schemas, ontologies, and property graph representations for corporate enterprise data.',
-    version: '1.0',
-    status: 'published',
-    derivationRef: 'ACM Computing Curricula 2023 / Knowledge Representation & Reasoning',
-    skillIds: ['skill-cypher', 'skill-owl-rdf'],
-    updatedAt: '2026-02-14',
-  },
-  {
-    id: 'comp-graph-ml',
-    stableId: 'comp-uuid-02',
-    code: 'COMP-GML-02',
-    name: 'Graph Machine Learning & Embeddings',
-    definition: 'Applying geometric deep learning, representation learning, and neural message passing over connected topology networks.',
-    version: '1.0',
-    status: 'published',
-    derivationRef: 'IEEE Computational Intelligence Society AI Taxonomy 2025',
-    skillIds: ['skill-gnn', 'skill-embeddings'],
-    updatedAt: '2026-02-18',
-  },
-  {
-    id: 'comp-adaptive-sys',
-    stableId: 'comp-uuid-03',
-    code: 'COMP-ADP-03',
-    name: 'Adaptive Learning Engines & Cognitive Diagnostics',
-    definition: 'Designing personalized Bayesian and neural knowledge tracing architectures for prescriptive recommendation loops.',
-    version: '1.1',
-    status: 'draft',
-    derivationRef: 'International Artificial Intelligence in Education Society Standard',
-    skillIds: ['skill-dkt', 'skill-vector-db'],
-    updatedAt: '2026-03-01',
-  },
-]
 
 export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = [
   {

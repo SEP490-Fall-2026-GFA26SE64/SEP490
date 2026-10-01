@@ -1,7 +1,5 @@
 import {
   INITIAL_BLUEPRINTS,
-  INITIAL_COMPETENCIES,
-  INITIAL_MICRO_SKILLS,
   INITIAL_MODULES,
   INITIAL_PREREQUISITES,
   INITIAL_QUESTIONS,
@@ -48,7 +46,7 @@ export interface CompanyRecord {
   blueprints: AssessmentBlueprintModel[]
 }
 
-const STORAGE_KEY_COMPANIES = 'adaptlearn_companies_v1'
+const STORAGE_KEY_COMPANIES = 'adaptlearn_companies_v3'
 const STORAGE_KEY_ACTIVE_COMPANY = 'adaptlearn_active_company_id'
 
 // Initial seeded enterprise company: TechNova
@@ -114,8 +112,8 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       avatar: 'CB',
     },
   ],
-  competencies: INITIAL_COMPETENCIES,
-  microSkills: INITIAL_MICRO_SKILLS,
+  competencies: [],
+  microSkills: [],
   prerequisites: INITIAL_PREREQUISITES,
   modules: INITIAL_MODULES,
   targetRoles: INITIAL_TARGET_ROLES,
@@ -164,8 +162,8 @@ const SEED_COMPANY_ACME: CompanyRecord = {
       avatar: 'ES',
     },
   ],
-  competencies: INITIAL_COMPETENCIES.slice(0, 2),
-  microSkills: INITIAL_MICRO_SKILLS.slice(0, 3),
+  competencies: [],
+  microSkills: [],
   prerequisites: INITIAL_PREREQUISITES.slice(0, 2),
   modules: INITIAL_MODULES.slice(0, 2),
   targetRoles: INITIAL_TARGET_ROLES.slice(0, 1),

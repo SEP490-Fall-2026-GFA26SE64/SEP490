@@ -100,7 +100,7 @@ export function CompetencyGapAnalysis() {
       return {
         id: ms.id,
         name: ms.name,
-        category: ms.bloomLevel || 'Core Competency',
+        category: ms.macroCompetencyCode || 'KNOWLEDGE',
         currentLevel: isMastered ? 85 : Math.min(70, 30 + ((idx * 15) % 40)),
         requiredLevel: 85,
         priority: isMastered ? ('low' as const) : idx % 2 === 0 ? ('high' as const) : ('medium' as const),
