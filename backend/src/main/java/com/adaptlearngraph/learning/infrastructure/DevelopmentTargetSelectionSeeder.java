@@ -11,6 +11,8 @@ public final class DevelopmentTargetSelectionSeeder {
     public static final String ACCOUNT_ID = "00000000-0000-0000-0000-000000000001";
     public static final String ROLE_ID = "20000000-0000-0000-0000-000000000001";
     public static final String ROLE_REFERENCE_ID = "22000000-0000-0000-0000-000000000001";
+    public static final String ALTERNATE_ROLE_ID = "20000000-0000-0000-0000-000000000002";
+    public static final String ALTERNATE_ROLE_REFERENCE_ID = "22000000-0000-0000-0000-000000000003";
 
     private static final List<String> STATEMENTS = List.of(
             """
@@ -80,11 +82,7 @@ public final class DevelopmentTargetSelectionSeeder {
                         '70ef48b666f923de473ffe5552214c3a695beb7c98aa2e83b9691a77ac2ebd99',
                         '21000000-0000-0000-0000-000000000002',
                         '2026-10-01T00:00:00Z')
-                    ON CONFLICT (release_id) DO UPDATE
-                    SET source_revision = EXCLUDED.source_revision,
-                        manifest_hash = EXCLUDED.manifest_hash,
-                        source_event_id = EXCLUDED.source_event_id,
-                        confirmed_at = EXCLUDED.confirmed_at
+                    ON CONFLICT (release_id) DO NOTHING
                     """,
             """
                     INSERT INTO platform.catalog_reference (
@@ -98,13 +96,21 @@ public final class DevelopmentTargetSelectionSeeder {
                         'TARGET_ROLE',
                         '3a2a8d7b34468a4661eec9163c28ca13185426015bdb43771147f4214e399db6',
                         '2026-10-01T00:00:00Z')
-                    ON CONFLICT (catalog_ref_id) DO UPDATE
-                    SET entity_id = EXCLUDED.entity_id,
-                        version_id = EXCLUDED.version_id,
-                        release_id = EXCLUDED.release_id,
-                        kind = EXCLUDED.kind,
-                        source_hash = EXCLUDED.source_hash,
-                        confirmed_at = EXCLUDED.confirmed_at
+                    ON CONFLICT (catalog_ref_id) DO NOTHING
+                    """,
+            """
+                    INSERT INTO platform.catalog_reference (
+                        catalog_ref_id, entity_id, version_id, release_id,
+                        kind, source_hash, confirmed_at)
+                    VALUES (
+                        '22000000-0000-0000-0000-000000000003',
+                        '20000000-0000-0000-0000-000000000002',
+                        '22000000-0000-0000-0000-000000000004',
+                        '21000000-0000-0000-0000-000000000001',
+                        'TARGET_ROLE',
+                        'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+                        '2026-10-01T00:00:00Z')
+                    ON CONFLICT (catalog_ref_id) DO NOTHING
                     """,
             """
                     UPDATE platform.catalog_guard

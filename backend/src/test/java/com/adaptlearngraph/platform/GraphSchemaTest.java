@@ -31,10 +31,12 @@ class GraphSchemaTest {
                             .single().get("count").asInt());
                     assertEquals(2, session.run("MATCH (module:LearningModule) RETURN count(module) AS count")
                             .single().get("count").asInt());
+                    assertEquals(2, session.run("MATCH (role:TargetRole) RETURN count(role) AS count")
+                            .single().get("count").asInt());
                     assertEquals(7, session.run("MATCH ()-[relationship]->() "
                             + "RETURN count(DISTINCT type(relationship)) AS count")
                             .single().get("count").asInt());
-                    assertEquals(2, session.run("MATCH (:TargetRole)-[:REQUIRES_SKILL]->(skill:MicroSkill) "
+                    assertEquals(3, session.run("MATCH (:TargetRole)-[:REQUIRES_SKILL]->(skill:MicroSkill) "
                             + "RETURN count(skill) AS count").single().get("count").asInt());
                     assertEquals(1, session.run("MATCH (:LearningModule)-[:HAS_ENTRY_REQUIREMENT]->(:MicroSkill) "
                             + "RETURN count(*) AS count").single().get("count").asInt());

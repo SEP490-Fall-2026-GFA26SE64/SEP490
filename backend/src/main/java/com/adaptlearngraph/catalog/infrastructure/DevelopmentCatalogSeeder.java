@@ -40,6 +40,22 @@ public final class DevelopmentCatalogSeeder {
                                     role.updatedAt = datetime('2026-10-01T00:00:00Z')
                                 """,
                         """
+                                MERGE (role:TargetRole {code: 'PLATFORM_ENGINEER_P4'})
+                                SET role.id = '20000000-0000-0000-0000-000000000002',
+                                    role.createdAt = datetime('2026-10-01T00:00:00Z'),
+                                    role.name = 'Platform Engineer P4',
+                                    role.familyCode = 'PLATFORM_ENGINEERING', role.track = 'PROFESSIONAL',
+                                    role.organizationId = '00000000-0000-0000-0000-000000000001',
+                                    role.seniority = 'P4',
+                                    role.description = 'Builds reliable internal platforms and delivery automation',
+                                    role.responsibilities = [
+                                        'Build reusable platform capabilities',
+                                        'Improve delivery reliability and observability'
+                                    ],
+                                    role.status = 'ACTIVE',
+                                    role.updatedAt = datetime('2026-10-01T00:00:00Z')
+                                """,
+                        """
                                 UNWIND [{id: '30000000-0000-0000-0000-000000000001', code: 'KNOWLEDGE', name: 'Knowledge'},
                                         {id: '30000000-0000-0000-0000-000000000002', code: 'COMMUNICATION', name: 'Communication'},
                                         {id: '30000000-0000-0000-0000-000000000003', code: 'INNOVATION', name: 'Innovation'}] AS item
@@ -79,7 +95,23 @@ public final class DevelopmentCatalogSeeder {
                                     mapping.updatedAt = datetime('2026-10-01T00:00:00Z')
                                 """,
                         """
+                                MATCH (domain:JobDomain {code: 'ICT'}),
+                                      (role:TargetRole {code: 'PLATFORM_ENGINEER_P4'})
+                                MERGE (domain)-[mapping:HAS_ROLE]->(role)
+                                SET mapping.status = 'ACTIVE',
+                                    mapping.createdAt = datetime('2026-10-01T00:00:00Z'),
+                                    mapping.updatedAt = datetime('2026-10-01T00:00:00Z')
+                                """,
+                        """
                                 MATCH (role:TargetRole {code: 'JAVA_BACKEND_P3'}),
+                                      (macro:MacroCompetency {code: 'KNOWLEDGE'})
+                                MERGE (role)-[mapping:REQUIRES_MACRO]->(macro)
+                                SET mapping.status = 'ACTIVE',
+                                    mapping.createdAt = datetime('2026-10-01T00:00:00Z'),
+                                    mapping.updatedAt = datetime('2026-10-01T00:00:00Z')
+                                """,
+                        """
+                                MATCH (role:TargetRole {code: 'PLATFORM_ENGINEER_P4'}),
                                       (macro:MacroCompetency {code: 'KNOWLEDGE'})
                                 MERGE (role)-[mapping:REQUIRES_MACRO]->(macro)
                                 SET mapping.status = 'ACTIVE',
@@ -101,6 +133,15 @@ public final class DevelopmentCatalogSeeder {
                                       (skill:MicroSkill {code: item.code})
                                 MERGE (role)-[requirement:REQUIRES_SKILL]->(skill)
                                 SET requirement.targetMastery = item.target,
+                                    requirement.status = 'ACTIVE',
+                                    requirement.createdAt = datetime('2026-10-01T00:00:00Z'),
+                                    requirement.updatedAt = datetime('2026-10-01T00:00:00Z')
+                                """,
+                        """
+                                MATCH (role:TargetRole {code: 'PLATFORM_ENGINEER_P4'}),
+                                      (skill:MicroSkill {code: 'SPRING_BOOT'})
+                                MERGE (role)-[requirement:REQUIRES_SKILL]->(skill)
+                                SET requirement.targetMastery = 0.80,
                                     requirement.status = 'ACTIVE',
                                     requirement.createdAt = datetime('2026-10-01T00:00:00Z'),
                                     requirement.updatedAt = datetime('2026-10-01T00:00:00Z')
