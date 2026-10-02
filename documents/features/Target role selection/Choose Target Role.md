@@ -2,7 +2,7 @@
 
 **Function ID:** REQ-001-F02
 **Actor:** Employee
-**Status:** Clarified — Cluster 1 backend P1–P10 approved; frontend P11 not started
+**Status:** Local implementation base — Clusters 1–4 complete/pass; production owner adapters remain provisional
 **Feature:** [Target Role Selection](README.md)
 
 ## 1. Business outcome
@@ -43,6 +43,12 @@ Employee confirms role
 `roleSnapshot` contains only `id`, `code`, `name`, `track`, and `seniority`. It must not contain requirements, mastery, readiness, or pathway data.
 
 GET returns `204 No Content` when there is no active selection. A present GET result uses `changed=false`; PUT returns `200 OK` and preserves the original application outcome for idempotent replay.
+
+The frontend contract parses and validates the selection snapshot and revision before caching it. A prepared choose command owns one generated idempotency key, which is reused by its mutation execution; a successful mutation invalidates the current-selection query. The P12 confirmation flow prepares that command once when the action opens and guards both repeated open and submit events.
+
+The server-backed catalog UI marks the active role, disables selecting it again, and uses separate initial/change confirmation copy. The dialog retains its prepared command during submission, blocks duplicate confirmation, and distinguishes stale, assessment-active, unavailable-role, in-progress, and dependency errors. It does not accept a deadline/readiness benchmark or claim that selection immediately recalculates a pathway.
+
+The F02 page now uses the server selection as its only selection source of truth. Its active-role summary renders loading, dependency-error/retry, empty, and current-selection states from the same cached query as the catalog. The previous unreferenced legacy page containing the mock hero and selection handler was removed after confirming it had no route, export, or import consumer. F02 does not write or synchronize the server result into localStorage or the shared mock employee state. Employee overview, assessment, gap-analysis, and pathway consumers of that legacy state remain a separate migration follow-up owned by their respective Functions.
 
 ## 3. Confirmed rules
 
@@ -97,8 +103,9 @@ GET returns `204 No Content` when there is no active selection. A present GET re
 - Temporary dependency beans require `learning.target-selection.local-dependencies.enabled=true` and only load in `local` or `demo`; production remains without this bypass.
 - The assembled F02 use case currently loads only in the `local` profile and consumes the configured F01 actor context. Production has no temporary actor fallback and remains deny-by-default until the real Identity adapter is delivered.
 - The temporary REST controller and its GET/PUT security allowance load only in `local` when `catalog.local-actor.enabled=true`. CSRF is ignored only for this configured-actor selection endpoint; the production security chain remains unchanged and denies it.
-- **Deterministic local seed:** the migrate flow uses stable IDs for organization/account/learner, the Neo4j Java P3 role, catalog release, and PostgreSQL role reference. Existing learner revision and selection data are preserved; the seed never creates an active target selection.
+- **Deterministic local seed:** the migrate flow uses stable IDs for organization/account/learner, two Neo4j roles (Java Backend Developer P3 and Platform Engineer P4), the catalog release, and matching immutable PostgreSQL role references. Existing learner revision and selection data are preserved; the seed never creates an active target selection. The second role exists only to exercise change/stale/concurrency/system paths and is not production catalog data.
 - Completion requires real adapters from Identity/Catalog/Pathway owners, production deny-by-default, and rerun of authorization, tenant, contract, integration, system, and regression tests.
+- Dependency handoff is bidirectional: when Auth, Catalog, assessment activity/status, gap, pathway, notification, or synchronization contracts are finalized or changed, the owning feature must trigger a recheck of F01/F02 ports, provisional adapters, UI assumptions, documentation, and affected tests before F02 can be considered integrated.
 
 ## 7. Acceptance criteria
 
@@ -110,4 +117,4 @@ GET returns `204 No Content` when there is no active selection. A present GET re
 6. Cross-tenant, unavailable-role, assessment-active, and dependency-failure paths leave selection/pathway unchanged.
 7. Old pathway is archived through its port; evidence, mastery, and assessment history remain intact.
 
-Executable tests are not yet created or run. The approved plan is in [../../testing/REQ-001-F02-choose-target-role.md](../../testing/REQ-001-F02-choose-target-role.md).
+Cluster 2 T1–T6 completed on 2026-10-02. The final clean backend regression passed 84 tests across 17 suites; frontend Vitest passed 30 tests across eight files; the T4 command passed eight tests after adding the repeatable two-reference seed regression. Full Compose API scenarios passed initial/replay/no-op/conflict/outage recovery plus stale, competing role change, and assessment-active state preservation. Pre-Cluster-4 cleanup made the Playwright setup handle both an empty and existing selection, added executable stale/competing-change coverage, and verified accessible F02 dialogs; two Playwright 1.63.0 headless-Chrome scenarios passed. See [../../testing/REQ-001-F02-choose-target-role.md](../../testing/REQ-001-F02-choose-target-role.md) for commands and evidence. The recording F01 port and local/demo dependencies are not real Identity/Catalog/Assessment/Pathway owner integration, so production completion remains gated.
