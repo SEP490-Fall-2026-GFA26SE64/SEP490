@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertCircle, Compass, RefreshCw, Search, Target } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Compass, RefreshCw, Search, Target } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
@@ -7,6 +7,16 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { TargetRoleApiError } from './targetRoleApi'
 import { TargetRoleDetailDialog } from './TargetRoleDetailDialog'
 import { useTargetRoles } from './targetRoleQueries'
+import { prepareChooseTargetRoleCommand, TargetRoleSelectionApiError } from './targetRoleSelectionApi'
+import {
+  useChooseTargetRoleMutation,
+  useTargetRoleSelection,
+} from './targetRoleSelectionQueries'
+import {
+  TargetRoleSelectionDialog,
+  type PendingTargetRoleChoice,
+  type TargetRoleChoice,
+} from './TargetRoleSelectionDialog'
 import type { Seniority } from './targetRoleTypes'
 
 const SENIORITY_OPTIONS: Seniority[] = ['P1', 'P2', 'P3', 'P4', 'P5', 'M3', 'M4']
@@ -16,6 +26,9 @@ export function TargetRoleBrowsePanel() {
   const [search, setSearch] = React.useState('')
   const [seniority, setSeniority] = React.useState<Seniority | null>(null)
   const [detailRoleId, setDetailRoleId] = React.useState<string | null>(null)
+  const [pendingChoice, setPendingChoice] = React.useState<PendingTargetRoleChoice | null>(null)
+  const pendingChoiceRef = React.useRef<PendingTargetRoleChoice | null>(null)
+  const submissionInFlightRef = React.useRef(false)
 
   React.useEffect(() => {
     const timeout = window.setTimeout(() => setSearch(searchInput.trim()), 300)
@@ -23,6 +36,8 @@ export function TargetRoleBrowsePanel() {
   }, [searchInput])
 
   const roles = useTargetRoles({ search, seniority })
+  const selection = useTargetRoleSelection()
+  const chooseRole = useChooseTargetRoleMutation()
   const hasFilters = search.length > 0 || seniority !== null
   const showToolbarClear = hasFilters
     && (roles.isPending || roles.isError || (roles.data?.length ?? 0) > 0)
@@ -31,6 +46,48 @@ export function TargetRoleBrowsePanel() {
     setSearchInput('')
     setSearch('')
     setSeniority(null)
+  }
+
+  const openConfirmation = (role: TargetRoleChoice) => {
+    if (pendingChoiceRef.current || selection.isPending || selection.isError
+      || chooseRole.isPending || selection.data?.roleId === role.id) return
+    chooseRole.reset()
+    const choice = {
+      role,
+      command: prepareChooseTargetRoleCommand({
+        roleId: role.id,
+        expectedCurrentSelectionId: selection.data?.selectionId ?? null,
+      }),
+    }
+    pendingChoiceRef.current = choice
+    setPendingChoice(choice)
+  }
+
+  const closeConfirmation = () => {
+    if (chooseRole.isPending) return
+    chooseRole.reset()
+    pendingChoiceRef.current = null
+    setPendingChoice(null)
+  }
+
+  const confirmSelection = () => {
+    if (!pendingChoice || submissionInFlightRef.current || chooseRole.isPending) return
+    submissionInFlightRef.current = true
+    chooseRole.mutate(pendingChoice.command, {
+      onSuccess: () => {
+        pendingChoiceRef.current = null
+        setPendingChoice(null)
+      },
+      onError: (error) => {
+        if (error instanceof TargetRoleSelectionApiError
+          && (error.code === 'STALE_SELECTION' || error.code === 'SELECTION_STATE_CONFLICT')) {
+          void selection.refetch()
+        }
+      },
+      onSettled: () => {
+        submissionInFlightRef.current = false
+      },
+    })
   }
 
   return (
@@ -116,12 +173,21 @@ export function TargetRoleBrowsePanel() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {roles.data.map((role) => (
-            <Card key={role.id} className="border-border bg-card">
+          {roles.data.map((role) => {
+            const isActive = selection.data?.roleId === role.id
+            return (
+            <Card
+              key={role.id}
+              aria-label={`Target role ${role.name}`}
+              className={isActive ? 'border-success/40 bg-card' : 'border-border bg-card'}
+            >
               <CardHeader className="space-y-2 border-b border-border/70 pb-3">
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="primary" className="text-[10px] font-bold">{role.seniority}</Badge>
-                  <Badge variant="outline" className="text-[10px]">{role.track}</Badge>
+                  <div className="flex items-center gap-1.5">
+                    {isActive && <Badge variant="success" className="text-[10px]">Active role</Badge>}
+                    <Badge variant="outline" className="text-[10px]">{role.track}</Badge>
+                  </div>
                 </div>
                 <div>
                   <CardTitle className="text-base font-bold text-foreground">{role.name}</CardTitle>
@@ -136,15 +202,42 @@ export function TargetRoleBrowsePanel() {
                   <span className="text-muted-foreground">Required micro-skills</span>
                   <span className="font-mono font-bold text-foreground">{role.requirementCount}</span>
                 </div>
-                <Button variant="outline" size="sm" className="w-full" onClick={() => setDetailRoleId(role.id)}>
-                  View details
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setDetailRoleId(role.id)}>
+                    View details
+                  </Button>
+                  <Button
+                    variant={isActive ? 'secondary' : 'primary'}
+                    size="sm"
+                    disabled={isActive || selection.isPending || selection.isError || chooseRole.isPending}
+                    leftIcon={isActive ? <CheckCircle2 size={14} /> : <Target size={14} />}
+                    onClick={() => openConfirmation(role)}
+                  >
+                    {isActive ? 'Active' : 'Choose'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          ))}
+            )
+          })}
         </div>
       )}
-      <TargetRoleDetailDialog roleId={detailRoleId} onClose={() => setDetailRoleId(null)} />
+      <TargetRoleDetailDialog
+        roleId={detailRoleId}
+        activeRoleId={selection.data?.roleId ?? null}
+        selectionUnavailable={selection.isError || chooseRole.isPending}
+        selectionPending={selection.isPending}
+        onClose={() => setDetailRoleId(null)}
+        onChoose={openConfirmation}
+      />
+      <TargetRoleSelectionDialog
+        choice={pendingChoice}
+        currentSelection={selection.data ?? null}
+        error={chooseRole.error}
+        isPending={chooseRole.isPending}
+        onCancel={closeConfirmation}
+        onConfirm={confirmSelection}
+      />
     </section>
   )
 }

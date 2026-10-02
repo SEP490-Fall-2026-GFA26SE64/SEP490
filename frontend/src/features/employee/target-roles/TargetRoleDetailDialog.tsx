@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react'
+import { AlertCircle, ArrowLeft, CheckCircle2, RefreshCw, Target } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import {
@@ -10,19 +10,37 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { TargetRoleApiError } from './targetRoleApi'
 import { useTargetRole } from './targetRoleQueries'
+import type { TargetRoleDetail } from './targetRoleTypes'
 
 interface TargetRoleDetailDialogProps {
   roleId: string | null
+  activeRoleId: string | null
+  selectionUnavailable: boolean
+  selectionPending: boolean
   onClose: () => void
+  onChoose: (role: TargetRoleDetail) => void
 }
 
-export function TargetRoleDetailDialog({ roleId, onClose }: TargetRoleDetailDialogProps) {
+export function TargetRoleDetailDialog({
+  roleId,
+  activeRoleId,
+  selectionUnavailable,
+  selectionPending,
+  onClose,
+  onChoose,
+}: TargetRoleDetailDialogProps) {
   const detail = useTargetRole(roleId)
   const notAvailable = detail.error instanceof TargetRoleApiError
     && detail.error.code === 'ROLE_NOT_AVAILABLE'
+  const isActive = detail.data?.id === activeRoleId
 
   return (
-    <Dialog open={roleId !== null} onOpenChange={(open) => !open && onClose()} className="max-w-2xl">
+    <Dialog
+      open={roleId !== null}
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-2xl"
+      ariaLabel={detail.data?.name ?? 'Target role details'}
+    >
       {detail.isPending ? (
         <div role="status">
           <DialogHeader>
@@ -61,6 +79,7 @@ export function TargetRoleDetailDialog({ roleId, onClose }: TargetRoleDetailDial
               <DialogTitle>{detail.data.name}</DialogTitle>
               <Badge variant="primary" className="text-[10px] font-bold">{detail.data.seniority}</Badge>
               <Badge variant="outline" className="text-[10px]">{detail.data.track}</Badge>
+              {isActive && <Badge variant="success" className="text-[10px]">Active role</Badge>}
             </div>
             <DialogDescription>
               {detail.data.code} · {detail.data.familyCode}
@@ -111,9 +130,21 @@ export function TargetRoleDetailDialog({ roleId, onClose }: TargetRoleDetailDial
             </section>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sm:justify-between">
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft size={14} />} onClick={onClose}>
               Back to roles
+            </Button>
+            <Button
+              variant={isActive ? 'secondary' : 'primary'}
+              size="sm"
+              disabled={isActive || selectionUnavailable || selectionPending}
+              leftIcon={isActive ? <CheckCircle2 size={14} /> : <Target size={14} />}
+              onClick={() => {
+                onClose()
+                onChoose(detail.data)
+              }}
+            >
+              {isActive ? 'Current target role' : selectionPending ? 'Loading selection...' : 'Choose this role'}
             </Button>
           </DialogFooter>
         </div>
