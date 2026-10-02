@@ -13,3 +13,9 @@
 artifacts/
 **/playwright-report/
 **/test-results/
+
+# Local experiments, manual testing, and generated presentation files.
+/local/
+
+# Local CodeGraph indexes and runtime files.
+**/.codegraph/

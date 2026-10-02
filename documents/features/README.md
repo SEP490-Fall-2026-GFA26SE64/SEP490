@@ -17,7 +17,7 @@
 
 **Current function:** [View Target Roles](Target%20role%20selection/View%20Target%20Roles.md), REQ-001-F01, resumed after the baseline attempt-limit follow-up.  
 **Current question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments?  
-**Progress:** 0 of 84 functions clarified; 4 in clarification (one reopened active interview, two paused baseline functions, and one awaiting deferred and related readiness decisions) and 80 pending. All function documents are drafted.  
+**Progress:** 1 of 84 functions clarified ([View Adaptive Pathway](Adaptive%20pathway/View%20Adaptive%20Pathway.md) clarified); 4 in clarification (one reopened active interview, two paused baseline functions, and one awaiting deferred and related readiness decisions) and 79 pending. All function documents are drafted.  
 **Next function after this one is clarified:** Resume [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
 
 **Confirmed soft-skill readiness effect (2026-09-27):** Option A: Baseline readiness loss does not block a separate, otherwise eligible soft-skill assessment. The assessment remains subject to its own configuration and authorization rules. Baseline-start and evidence-only closure rules remain independent.
@@ -149,7 +149,7 @@
 | REQ-001 | [Target role selection](Target%20role%20selection/README.md) | 2 | 0 |
 | REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | 2 | 0 |
 | REQ-003 | [Soft skill assessment](Soft%20skill%20assessment/README.md) | 1 | 0 |
-| REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | 1 | 0 |
+| REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | 1 | 1 |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | 1 | 0 |
 | REQ-006 | [Competency graph](Competency%20graph/README.md) | 1 | 0 |
 | REQ-007 | [Dummy learning modules](Dummy%20learning%20modules/README.md) | 1 | 0 |
