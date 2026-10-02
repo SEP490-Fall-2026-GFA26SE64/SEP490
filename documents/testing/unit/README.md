@@ -13,4 +13,4 @@ Case record template:
 | Boundaries | Missing/invalid data, duplicate request, status transition and authorization failure |
 | Evidence | Unit test class/method, date and result |
 
-First implementation targets: `REQ-001` role availability and one active selection, `REQ-002` confirmed baseline allowance behavior, `REQ-015` required mastery in `[0,1]`, and `REQ-041` gap calculation. These are **planned cases**, not functionality claimed by this baseline. Add a frontend test runner only when the first real interactive feature is implemented.
+The executable-test cluster for `REQ-001-F01` was approved and its domain/application, API/security and frontend component suites passed on 2026-09-30; cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md). Other targets such as REQ-001-F02 selection, REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved. Frontend component evidence is not system evidence.
