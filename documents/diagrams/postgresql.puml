@@ -85,6 +85,21 @@ class target_selection {
     role_kind : text [FK]
     selected_at : timestamp with time zone
     ended_at? : timestamp with time zone
+    role_snapshot? : jsonb
+}
+class target_selection_request {
+    request_id : uuid [PK]
+    actor_id : uuid [FK]
+    operation : text
+    idempotency_key : text
+    request_hash : platform.content_hash
+    status : text
+    result_selection_id? : uuid [FK]
+    result_target_revision? : bigint
+    result_changed? : boolean
+    outcome_code? : text
+    created_at : timestamp with time zone
+    completed_at? : timestamp with time zone
 }
 class outbox_event {
     event_id : uuid [PK]
@@ -133,6 +148,7 @@ account --> audit_event
 account --> learner_state
 account --> manager_scope
 account --> session
+account --> target_selection_request
 application_role --> account_role
 catalog_reference --> target_selection
 catalog_release --> catalog_reference
@@ -145,4 +161,5 @@ organizational_unit --> manager_scope
 organizational_unit --> organizational_unit
 outbox_event --> processing_job
 processing_job --> processing_job
+target_selection --> target_selection_request
 @enduml

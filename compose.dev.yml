@@ -10,6 +10,7 @@ x-backend-environment: &backend-environment
   NEO4J_URI: bolt://neo4j:7687
   NEO4J_USER: neo4j
   NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
+  TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:-false}
 
 services:
   postgres:

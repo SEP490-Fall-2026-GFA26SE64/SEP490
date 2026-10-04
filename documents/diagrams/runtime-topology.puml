@@ -15,6 +15,6 @@ Browser --> Web
 Web --> API : /api
 API --> PG
 API --> Graph
-Migrate --> PG : Flyway V1-V6
+Migrate --> PG : Flyway V1-V7
 Migrate --> Graph : V5 catalog constraints
 @enduml

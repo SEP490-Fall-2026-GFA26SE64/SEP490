@@ -9,3 +9,9 @@ catalog:
     organization-id: ${CATALOG_LOCAL_ACTOR_ORGANIZATION_ID:00000000-0000-0000-0000-000000000001}
     active: ${CATALOG_LOCAL_ACTOR_ACTIVE:true}
     role: ${CATALOG_LOCAL_ACTOR_ROLE:EMPLOYEE}
+
+learning:
+  target-selection:
+    local-dependencies:
+      enabled: ${TARGET_SELECTION_LOCAL_DEPENDENCIES_ENABLED:true}
+      assessment-in-progress: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:false}
