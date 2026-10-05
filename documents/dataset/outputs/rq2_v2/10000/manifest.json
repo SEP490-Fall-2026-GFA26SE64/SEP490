@@ -1,0 +1,59 @@
+{
+  "datasetVersion": "RQ2_GRAPH_V2",
+  "seed": 42,
+  "validation": {
+    "passed": true,
+    "nodeCount": 10000,
+    "edgeCount": 58091,
+    "nodeCounts": {
+      "JobDomain": 3,
+      "TargetRole": 1000,
+      "MacroCompetency": 300,
+      "MicroSkill": 6000,
+      "LearningModule": 2697
+    },
+    "edgeCounts": {
+      "REQUIRES_SKILL": 20106,
+      "PREREQUISITE_OF": 12000,
+      "TEACHES": 12215,
+      "HAS_ENTRY_REQUIREMENT": 2619,
+      "HAS_ROLE": 1000,
+      "REQUIRES_MACRO": 4151,
+      "HAS_SKILL": 6000
+    },
+    "prerequisiteMeanOutDegree": 2.0,
+    "prerequisiteMaxOutDegree": 4,
+    "prerequisiteLongestPathHops": 7,
+    "cycleCheck": "PASS: all prerequisite edges strictly increase layer",
+    "skillsWithAtLeastFiveHopPath": 79
+  },
+  "filesSha256": {
+    "graph.json": "c606f9a7278c8ab148da85c0ec12c75fb2dac5f25ba36fa4b9ba3363f66e5f62",
+    "workloads.json": "4855b2f354ff381cb00d4e1596b52a311d85f6191440eb2b94ea88b577905e1d"
+  },
+  "measurementExecutionsPerGraph": 1000,
+  "measurementExecutionsByDepth": {
+    "3": 334,
+    "4": 333,
+    "5": 333
+  },
+  "warmupExecutionsPerGraph": 100,
+  "rules": {
+    "skillLayers": 8,
+    "prerequisiteMeanOutDegree": 2,
+    "prerequisiteMaxOutDegree": 4,
+    "requiredSkillsPerRole": [
+      15,
+      25
+    ],
+    "taughtSkillsPerModule": [
+      3,
+      6
+    ],
+    "entrySkillsPerModule": [
+      0,
+      2
+    ],
+    "density": "one fixed degree configuration across sizes"
+  }
+}

@@ -9,7 +9,9 @@
 **/.env.*
 !**/.env.example
 .idea/
+.DS_Store
 *.log
 artifacts/
+/local/
 **/playwright-report/
 **/test-results/
