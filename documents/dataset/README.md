@@ -1,5 +1,9 @@
 # Nạp dataset Excel vào Neo4j
 
+Để tạo fixture benchmark RQ3 (100 learner scenarios, paired module failures,
+curriculum tĩnh và fallback cố định), xem [RQ3 scenarios v1](outputs/rq3_v1/README.md)
+và [quyết định dataset RQ3](../features/Benchmark%20dataset%20creation/Create%20RQ3%20Dataset.md).
+
 Để tạo organization + admin/expert/employee trước, xem
 [Demo identities và đánh giá generator RQ1](DEMO_IDENTITY_AND_RQ1.md).
 Chạy `python3 documents/dataset/setup_demo_data.py --identity-only` để seed
