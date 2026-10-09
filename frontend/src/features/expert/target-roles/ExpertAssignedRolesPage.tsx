@@ -12,10 +12,10 @@ import {
   History,
   Layers,
   Lock,
+  Network as NetworkIcon,
   Plus,
   Search,
   Sliders,
-  Sparkles,
   Trash2,
   UserCheck,
   XCircle,
@@ -49,6 +49,7 @@ import {
 } from '../../manager/data/ldManagerMockData'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
+import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
 
 const EXPERT_PERSONA_OPTIONS: ComboboxOption[] = ELIGIBLE_EXPERTS.map((exp) => ({
   value: exp.id,
@@ -275,6 +276,7 @@ export function ExpertAssignedRolesPage() {
 
   // Target Role Details Modal State (Read-only view of role architecture)
   const [viewingDetailsRole, setViewingDetailsRole] = React.useState<TargetRoleModel | null>(null)
+  const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
 
   // Rejection Dialog State
   const [rejectingRole, setRejectingRole] = React.useState<TargetRoleModel | null>(null)
@@ -348,6 +350,7 @@ export function ExpertAssignedRolesPage() {
   // Skill target form state
   const [newSkillId, setNewSkillId] = React.useState('')
   const [newThreshold, setNewThreshold] = React.useState(80)
+  const [isSkillDropdownOpen, setIsSkillDropdownOpen] = React.useState(false)
 
   const availableSkills = React.useMemo(() => {
     if (!authoringRole) return []
@@ -618,7 +621,7 @@ export function ExpertAssignedRolesPage() {
           <StatCard
             variant="gradient"
             icon={<Sliders className="h-4 w-4 text-primary" />}
-            title="Configured Skill Targets"
+            title="Configured Micro-skills"
             value={totalSkillTargets.toString()}
             valueClassName="text-primary"
             description="Benchmark thresholds defined"
@@ -764,8 +767,8 @@ export function ExpertAssignedRolesPage() {
                         <th className="py-2.5 px-3">Role Title &amp; Version</th>
                         <th className="py-2.5 px-3">Domain &amp; Family</th>
                         <th className="py-2.5 px-3 whitespace-nowrap">Track &amp; Seniority</th>
-                        <th className="py-2.5 px-3 text-center">Linked Competencies</th>
-                        <th className="py-2.5 px-3 text-center">Skill Targets</th>
+                        <th className="py-2.5 px-3 text-center">Competency</th>
+                        <th className="py-2.5 px-3 text-center">Micro-skill</th>
                         <th className="py-2.5 px-3">Status</th>
                         <th className="py-2.5 px-3 text-right">Expert Action</th>
                       </tr>
@@ -929,6 +932,19 @@ export function ExpertAssignedRolesPage() {
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setGraphRole(role)
+                                }}
+                                title="View Knowledge Graph (REQ-018-F01)"
+                                aria-label="View Knowledge Graph"
+                              >
+                                <NetworkIcon className="h-4 w-4 text-primary" />
+                              </Button>
                               {(isPublished || isRejected) && (
                                 <Button
                                   variant="outline"
@@ -982,8 +998,8 @@ export function ExpertAssignedRolesPage() {
                                     e.stopPropagation()
                                     handleOpenAuthoring(role)
                                   }}
-                                  title="Revise Skill Targets"
-                                  aria-label="Revise Skill Targets"
+                                  title="Revise Micro-skills"
+                                  aria-label="Revise Micro-skills"
                                 >
                                   <Sliders className="h-4 w-4 text-muted-foreground" />
                                 </Button>
@@ -1015,9 +1031,8 @@ export function ExpertAssignedRolesPage() {
 
       {/* MICRO-SKILL AUTHORING MODAL (EXCLUSIVE TO DOMAIN EXPERT) */}
       {authoringRole && (
-        <Dialog open={isAuthoringModalOpen} onOpenChange={setIsAuthoringModalOpen} className="max-w-3xl">
-          <div className="space-y-4">
-            <DialogHeader>
+        <Dialog open={isAuthoringModalOpen} onOpenChange={setIsAuthoringModalOpen} className="max-w-3xl min-h-[580px] max-h-[92vh] flex flex-col p-6 overflow-hidden transition-all duration-200">
+          <DialogHeader className="shrink-0 mb-2">
               <div className="flex flex-wrap items-center justify-between gap-2.5">
                 <DialogTitle className="flex items-center gap-2">
                   <Sliders className="h-5 w-5 text-primary shrink-0" />
@@ -1049,7 +1064,7 @@ export function ExpertAssignedRolesPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 text-xs">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
               {/* Read-Only Macro Role Architecture Overview (Cannot be edited by Domain Expert) */}
               <div className="p-3.5 rounded-lg border border-border bg-muted/20 space-y-3">
                 <div className="flex items-center justify-between">
@@ -1130,22 +1145,9 @@ export function ExpertAssignedRolesPage() {
                 )}
               </div>
 
-              {/* Expert Scope Information Callout */}
-              <div className="p-3 rounded-lg border border-primary/20 bg-secondary/40 flex items-start gap-2.5">
-                <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <span className="font-semibold text-foreground">
-                    Domain Expert Authority Active
-                  </span>
-                  <p className="text-muted-foreground text-[11px] leading-relaxed">
-                    L&amp;D Managers define macro career titles, while Domain Experts configure technical micro-skill targets. Once configured with &ge; 1 micro-skill, you may publish this target role directly into the enterprise knowledge graph, or reject it if prerequisites are mismatched.
-                  </p>
-                </div>
-              </div>
-
               {/* Form to Add New Micro-Skill Target */}
               {authoringRole.status !== 'published' && (
-                <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+                <div className={`p-3.5 rounded-lg border border-border bg-card space-y-3 transition-all duration-200 ${isSkillDropdownOpen ? 'pb-64' : ''}`}>
                   <div className="font-semibold text-foreground flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <Plus className="h-4 w-4 text-primary" />
@@ -1167,6 +1169,7 @@ export function ExpertAssignedRolesPage() {
                         options={skillOptions}
                         value={newSkillId}
                         onChange={(val) => setNewSkillId(val)}
+                        onOpenChange={setIsSkillDropdownOpen}
                         placeholder="Search & select micro-skill..."
                         searchPlaceholder="Search by skill code or title..."
                         emptyMessage="All micro-skills are already assigned"
@@ -1209,7 +1212,7 @@ export function ExpertAssignedRolesPage() {
                 <div className="flex items-center justify-between text-xs font-semibold text-foreground">
                   <span className="flex items-center gap-1.5">
                     <Layers className="h-4 w-4 text-primary" />
-                    Configured Micro-skill Targets ({authoringRole.skillTargets.length})
+                    Configured Micro-skills ({authoringRole.skillTargets.length})
                   </span>
                   <span className="text-[10px] text-muted-foreground font-normal">
                     Threshold Required
@@ -1232,7 +1235,7 @@ export function ExpertAssignedRolesPage() {
                 {authoringRole.skillTargets.length === 0 ? (
                   <div className="p-6 rounded-lg border border-dashed border-border text-center text-muted-foreground space-y-1">
                     <AlertCircle className="h-5 w-5 mx-auto text-warning" />
-                    <p className="font-semibold text-foreground">No Micro-skill Targets Configured Yet</p>
+                    <p className="font-semibold text-foreground">No Micro-skills Configured Yet</p>
                     <p className="text-[11px]">
                       Add the required micro-skills above to specify competencies needed for this role.
                     </p>
@@ -1282,8 +1285,8 @@ export function ExpertAssignedRolesPage() {
                                     size="sm"
                                     className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                                     onClick={() => handleRemoveSkillTarget(st.skillId)}
-                                    title="Detach Skill Target"
-                                    aria-label="Detach Skill Target"
+                                    title="Detach Micro-skill"
+                                    aria-label="Detach Micro-skill"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
@@ -1299,7 +1302,7 @@ export function ExpertAssignedRolesPage() {
               </div>
             </div>
 
-            <DialogFooter className="flex items-center justify-between sm:justify-between w-full pt-2">
+            <DialogFooter className="shrink-0 flex items-center justify-between sm:justify-between w-full pt-3 border-t border-border mt-2">
               <Button variant="outline" size="sm" onClick={() => setIsAuthoringModalOpen(false)}>
                 Close
               </Button>
@@ -1330,7 +1333,6 @@ export function ExpertAssignedRolesPage() {
                 </div>
               )}
             </DialogFooter>
-          </div>
         </Dialog>
       )}
 
@@ -1522,7 +1524,7 @@ export function ExpertAssignedRolesPage() {
             <div className="space-y-2 text-xs">
               <span className="font-bold text-foreground flex items-center gap-1.5">
                 <Sliders className="h-3.5 w-3.5 text-primary" />
-                Configured Micro-skill Targets ({viewingDetailsRole.skillTargets.length})
+                Configured Micro-skills ({viewingDetailsRole.skillTargets.length})
               </span>
               {viewingDetailsRole.skillTargets.length === 0 ? (
                 <div className="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs">
@@ -1582,6 +1584,15 @@ export function ExpertAssignedRolesPage() {
           </div>
         </Dialog>
       )}
+
+      {/* Target-Role Knowledge Graph View Modal (REQ-018-F01) */}
+      <TargetRoleGraphModal
+        open={Boolean(graphRole)}
+        onOpenChange={(open) => !open && setGraphRole(null)}
+        roleId={graphRole?.id || null}
+        organizationId={orgId}
+        roleTitle={graphRole?.title}
+      />
     </WorkspaceLayout>
   )
 }

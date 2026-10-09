@@ -20,6 +20,7 @@ export interface ComboboxProps {
   className?: string
   size?: 'default' | 'sm'
   clearable?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function Combobox({
@@ -33,8 +34,21 @@ export function Combobox({
   className,
   size = 'default',
   clearable = true,
+  onOpenChange,
 }: ComboboxProps) {
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpenState] = React.useState(false)
+  const setIsOpen = React.useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      setIsOpenState((prev) => {
+        const next = typeof val === 'function' ? val(prev) : val
+        if (next !== prev) {
+          onOpenChange?.(next)
+        }
+        return next
+      })
+    },
+    [onOpenChange]
+  )
   const [searchQuery, setSearchQuery] = React.useState('')
   const containerRef = React.useRef<HTMLDivElement>(null)
 
@@ -56,7 +70,7 @@ export function Combobox({
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [setIsOpen])
 
   const handleSelect = (optionValue: string, optionDisabled?: boolean) => {
     if (optionDisabled) return

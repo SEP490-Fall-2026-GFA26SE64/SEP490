@@ -2,11 +2,17 @@ package com.adaptlearngraph.competency;
 
 import com.adaptlearngraph.competency.api.CreateMicroSkillRequest;
 import com.adaptlearngraph.competency.api.MicroSkillController;
+import com.adaptlearngraph.competency.api.UpdateMicroSkillRequest;
 import com.adaptlearngraph.competency.application.DuplicateMicroSkillException;
 import com.adaptlearngraph.competency.application.port.in.CreateMicroSkillCommand;
 import com.adaptlearngraph.competency.application.port.in.CreateMicroSkillUseCase;
+import com.adaptlearngraph.competency.application.port.in.DeleteMicroSkillUseCase;
+import com.adaptlearngraph.competency.application.port.in.GetMicroSkillsUseCase;
+import com.adaptlearngraph.competency.application.port.in.UpdateMicroSkillCommand;
+import com.adaptlearngraph.competency.application.port.in.UpdateMicroSkillUseCase;
 import com.adaptlearngraph.competency.domain.MicroSkill;
 import com.adaptlearngraph.competency.domain.MicroSkillId;
+import com.adaptlearngraph.competency.domain.MicroSkillInUseException;
 import com.adaptlearngraph.competency.domain.SkillStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -20,17 +26,24 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MicroSkillController.class)
-@DisplayName("REQ-012-F01: MicroSkill HTTP Controller Tests")
+@DisplayName("REQ-012: MicroSkill HTTP Controller Tests")
 class MicroSkillControllerTest {
 
     @Autowired
@@ -43,7 +56,13 @@ class MicroSkillControllerTest {
     private CreateMicroSkillUseCase createMicroSkillUseCase;
 
     @MockBean
-    private com.adaptlearngraph.competency.application.port.in.GetMicroSkillsUseCase getMicroSkillsUseCase;
+    private GetMicroSkillsUseCase getMicroSkillsUseCase;
+
+    @MockBean
+    private UpdateMicroSkillUseCase updateMicroSkillUseCase;
+
+    @MockBean
+    private DeleteMicroSkillUseCase deleteMicroSkillUseCase;
 
     @Test
     @WithMockUser
@@ -140,14 +159,101 @@ class MicroSkillControllerTest {
                 Instant.now(),
                 Instant.now());
 
-        when(getMicroSkillsUseCase.listMicroSkills("org-1")).thenReturn(List.of(skill));
+        when(getMicroSkillsUseCase.searchMicroSkills(eq("org-1"), any(), any(), any())).thenReturn(List.of(skill));
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/organizations/org-1/micro-skills")
+        mockMvc.perform(get("/api/v1/organizations/org-1/micro-skills")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].code").value("JAVA_CORE"))
                 .andExpect(jsonPath("$[0].name").value("Java Core"))
                 .andExpect(jsonPath("$[0].description").value("Core Java fundamentals"))
                 .andExpect(jsonPath("$[0].macroCompetencyCode").value("KNOWLEDGE"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-012-F02: GET /api/v1/organizations/{orgId}/micro-skills/{id} returns 200 OK")
+    void getMicroSkillReturns200() throws Exception {
+        UUID skillId = UUID.randomUUID();
+        MicroSkill skill = new MicroSkill(
+                new MicroSkillId(skillId),
+                "org-1",
+                "JAVA_CORE",
+                "Java Core",
+                "Core Java fundamentals",
+                "KNOWLEDGE",
+                SkillStatus.ACTIVE,
+                Instant.now(),
+                Instant.now());
+
+        when(getMicroSkillsUseCase.getMicroSkill("org-1", skillId.toString())).thenReturn(Optional.of(skill));
+
+        mockMvc.perform(get("/api/v1/organizations/org-1/micro-skills/" + skillId)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(skillId.toString()))
+                .andExpect(jsonPath("$.code").value("JAVA_CORE"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-012-F03: PUT /api/v1/organizations/{orgId}/micro-skills/{id} updates skill metadata")
+    void updateMicroSkillReturns200() throws Exception {
+        UUID skillId = UUID.randomUUID();
+        MicroSkill updatedSkill = new MicroSkill(
+                new MicroSkillId(skillId),
+                "org-1",
+                "JAVA_CORE",
+                "Java Core Advanced",
+                "Updated details",
+                "INNOVATION",
+                SkillStatus.ACTIVE,
+                Instant.now(),
+                Instant.now());
+
+        when(updateMicroSkillUseCase.updateMicroSkill(any(UpdateMicroSkillCommand.class))).thenReturn(updatedSkill);
+
+        UpdateMicroSkillRequest request = new UpdateMicroSkillRequest(
+                "Java Core Advanced",
+                "Updated details",
+                "INNOVATION",
+                SkillStatus.ACTIVE);
+
+        mockMvc.perform(put("/api/v1/organizations/org-1/micro-skills/" + skillId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Java Core Advanced"))
+                .andExpect(jsonPath("$.macroCompetencyCode").value("INNOVATION"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-012-F04: DELETE /api/v1/organizations/{orgId}/micro-skills/{id} returns 204 No Content")
+    void deleteMicroSkillReturns204() throws Exception {
+        UUID skillId = UUID.randomUUID();
+        doNothing().when(deleteMicroSkillUseCase).deleteMicroSkill("org-1", skillId.toString());
+
+        mockMvc.perform(delete("/api/v1/organizations/org-1/micro-skills/" + skillId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-012-F04: DELETE returns 409 Conflict when skill has active dependencies")
+    void deleteMicroSkillReturns409WhenInUse() throws Exception {
+        UUID skillId = UUID.randomUUID();
+        doThrow(new MicroSkillInUseException("Skill is referenced by roles"))
+                .when(deleteMicroSkillUseCase).deleteMicroSkill("org-1", skillId.toString());
+
+        mockMvc.perform(delete("/api/v1/organizations/org-1/micro-skills/" + skillId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Skill is referenced by roles"));
     }
 }

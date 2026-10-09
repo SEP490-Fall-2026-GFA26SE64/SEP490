@@ -2,7 +2,8 @@
 
 **Function ID:** REQ-012-F01  
 **Actor:** Domain Expert  
-**Status:** In implementation  
+**Status:** Implemented  
+**Test Evidence:** [unit/REQ-012](../../testing/unit/REQ-012-micro-skill-management.md), [integration/REQ-012](../../testing/integration/REQ-012-micro-skill-management.md), [system/REQ-012](../../testing/system/REQ-012-micro-skill-management.md)  
 **Feature:** [Micro-Skill Management](README.md)
 
 ## Description

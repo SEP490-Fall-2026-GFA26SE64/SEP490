@@ -11,6 +11,7 @@ import {
   Edit3,
   Eye,
   History,
+  Network as NetworkIcon,
   Plus,
   Search,
   Send,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react'
 
 import * as React from 'react'
+import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
@@ -208,6 +210,7 @@ export function TargetRolesPage() {
   const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
   const [selectedRole, setSelectedRole] = React.useState<TargetRoleModel | null>(null)
   const [viewingDetailsRole, setViewingDetailsRole] = React.useState<TargetRoleModel | null>(null)
+  const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] = React.useState<TargetRoleModel | null>(null)
   const [compSearchQuery, setCompSearchQuery] = React.useState('')
 
@@ -932,8 +935,8 @@ export function TargetRolesPage() {
                       <th className="py-2.5 px-3">Domain &amp; Family</th>
                       <th className="py-2.5 px-3 whitespace-nowrap">Track &amp; Seniority</th>
                       <th className="py-2.5 px-3">Assigned Expert</th>
-                      <th className="py-2.5 px-3 text-center">Competencies</th>
-                      <th className="py-2.5 px-3 text-center">Skill Targets</th>
+                      <th className="py-2.5 px-3 text-center">Competency</th>
+                      <th className="py-2.5 px-3 text-center">Micro-skill</th>
                       <th className="py-2.5 px-3">Status</th>
                       <th className="py-2.5 px-3 text-right">Actions</th>
                     </tr>
@@ -1136,6 +1139,21 @@ export function TargetRolesPage() {
                                 aria-label="View Details"
                               >
                                 <Eye className="h-4 w-4 text-primary" />
+                              </Button>
+
+                              {/* View Knowledge Graph (REQ-018-F01) */}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setGraphRole(role)
+                                }}
+                                title="View Knowledge Graph (REQ-018-F01)"
+                                aria-label="View Knowledge Graph"
+                              >
+                                <NetworkIcon className="h-4 w-4 text-primary" />
                               </Button>
 
 
@@ -1802,7 +1820,7 @@ export function TargetRolesPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Linked Competencies (&ge; 1 required)</span>
+                      <span className="text-muted-foreground">Competency (&ge; 1 required)</span>
                       {validation.hasCompetencies ? (
                         <span className="text-success font-semibold flex items-center gap-1">
                           <Check className="h-3.5 w-3.5" /> {selectedRole.competencyIds.length} Linked
@@ -1813,13 +1831,13 @@ export function TargetRolesPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Micro-skill Targets configured</span>
+                      <span className="text-muted-foreground">Micro-skills configured</span>
                       {validation.hasSkillTargets ? (
                         <span className="text-success font-semibold flex items-center gap-1">
                           <Check className="h-3.5 w-3.5" /> {selectedRole.skillTargets.length} Configured
                         </span>
                       ) : (
-                        <span className="text-destructive font-semibold">0 Targets</span>
+                        <span className="text-destructive font-semibold">0 Micro-skills</span>
                       )}
                     </div>
 
@@ -2012,7 +2030,7 @@ export function TargetRolesPage() {
             <div className="space-y-2 text-xs">
               <span className="font-bold text-foreground flex items-center gap-1.5">
                 <Sliders className="h-3.5 w-3.5 text-primary" />
-                Target Micro-skill Benchmark Thresholds ({viewingDetailsRole.skillTargets.length})
+                Target Micro-skills ({viewingDetailsRole.skillTargets.length})
               </span>
               <div className="max-h-48 overflow-y-auto rounded-lg border border-border">
                 <table className="w-full text-left text-xs">
@@ -2072,7 +2090,7 @@ export function TargetRolesPage() {
                     }}
                     leftIcon={<Sliders className="h-3 w-3" />}
                   >
-                    Edit Skill Targets
+                    Edit Micro-skills
                   </Button>
                 )}
               </div>
@@ -2138,7 +2156,7 @@ export function TargetRolesPage() {
                     </Badge>
                   )}
                   <span className="ml-auto font-mono text-[10px]">
-                    {deletingRole.skillTargets?.length || 0} skill targets
+                    {deletingRole.skillTargets?.length || 0} micro-skills
                   </span>
                 </div>
               </div>
@@ -2192,6 +2210,15 @@ export function TargetRolesPage() {
         presets={ROLE_PRESETS}
         onImport={handleImportRoles}
         sampleJsonPlaceholder={`[\n  {\n    "code": "ROLE-AI-01",\n    "title": "AI Knowledge Architect",\n    "department": "Machine Learning & Cognitive Architecture",\n    "description": "Designs enterprise knowledge graph reasoning engines and neuro-symbolic pathways."\n  }\n]`}
+      />
+
+      {/* Target-Role Knowledge Graph View Modal (REQ-018-F01) */}
+      <TargetRoleGraphModal
+        open={Boolean(graphRole)}
+        onOpenChange={(open) => !open && setGraphRole(null)}
+        roleId={graphRole?.id || null}
+        organizationId={activeComp?.id || 'default-org'}
+        roleTitle={graphRole?.title}
       />
     </WorkspaceLayout>
   )

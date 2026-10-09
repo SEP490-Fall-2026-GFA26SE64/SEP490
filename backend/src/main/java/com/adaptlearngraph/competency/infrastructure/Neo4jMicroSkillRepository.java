@@ -8,6 +8,9 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.types.Node;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,7 +26,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
         String cypher = """
                 MATCH (s:MicroSkill)
-                WHERE s.organizationId = $organizationId AND s.code = $code
+                WHERE (s.organizationId = $organizationId OR s.organizationId IS NULL) AND s.code = $code
                 RETURN count(s) > 0 AS exists
                 """;
         try (var session = driver.session()) {
@@ -54,6 +57,10 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                     s.status = $status,
                     s.updatedAt = datetime($updatedAt)
                 WITH s
+                OPTIONAL MATCH (oldMacro:MacroCompetency)-[oldRel:HAS_SKILL]->(s)
+                WHERE oldMacro.code <> $macroCompetencyCode
+                DELETE oldRel
+                WITH s
                 MERGE (macro:MacroCompetency {code: $macroCompetencyCode})
                 ON CREATE SET macro.id = randomUUID(), macro.name = $macroCompetencyCode,
                     macro.status = 'ACTIVE', macro.createdAt = datetime(), macro.updatedAt = datetime()
@@ -82,14 +89,18 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     @Override
     public Optional<MicroSkill> findById(String organizationId, MicroSkillId id) {
         String cypher = """
-                MATCH (s:MicroSkill)
-                WHERE s.organizationId = $organizationId AND s.id = $id
-                RETURN s
+                MATCH (s:MicroSkill {id: $id})
+                WHERE s.organizationId = $organizationId OR s.organizationId IS NULL
+                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
+                RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
                 """;
         try (var session = driver.session()) {
             var result = session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString()));
             if (result.hasNext()) {
-                return Optional.of(mapNodeToMicroSkill(result.next().get("s").asNode()));
+                var record = result.next();
+                Node node = record.get("s").asNode();
+                String macroCode = record.get("macroCode").asString();
+                return Optional.of(mapNodeToMicroSkill(node, organizationId, macroCode));
             }
             return Optional.empty();
         }
@@ -99,42 +110,101 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public Optional<MicroSkill> findByCode(String organizationId, String code) {
         String cypher = """
                 MATCH (s:MicroSkill)
-                WHERE s.organizationId = $organizationId AND s.code = $code
-                RETURN s
+                WHERE (s.organizationId = $organizationId OR s.organizationId IS NULL) AND s.code = $code
+                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
+                RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
                 """;
         try (var session = driver.session()) {
             var result = session.run(cypher, Map.of("organizationId", organizationId, "code", code));
             if (result.hasNext()) {
-                return Optional.of(mapNodeToMicroSkill(result.next().get("s").asNode()));
+                var record = result.next();
+                Node node = record.get("s").asNode();
+                String macroCode = record.get("macroCode").asString();
+                return Optional.of(mapNodeToMicroSkill(node, organizationId, macroCode));
             }
             return Optional.empty();
         }
     }
 
     @Override
-    public java.util.List<MicroSkill> findAll(String organizationId) {
-        String cypher = """
+    public List<MicroSkill> findAll(String organizationId) {
+        return search(organizationId, null, null, null);
+    }
+
+    @Override
+    public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
+        StringBuilder cypher = new StringBuilder("""
                 MATCH (s:MicroSkill)
-                WHERE s.organizationId = $organizationId OR s.organizationId IS NULL
+                WHERE (s.organizationId = $organizationId OR s.organizationId IS NULL)
+                """);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("organizationId", organizationId);
+
+        if (query != null && !query.isBlank()) {
+            cypher.append(" AND (toLower(s.name) CONTAINS toLower($query) OR toLower(s.code) CONTAINS toLower($query))");
+            params.put("query", query.trim());
+        }
+
+        if (status != null) {
+            cypher.append(" AND s.status = $status");
+            params.put("status", status.name());
+        }
+
+        cypher.append("""
                 OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
-                ORDER BY s.code ASC
-                """;
+                WITH s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+                """);
+
+        if (macroCode != null && !macroCode.isBlank()) {
+            cypher.append(" WHERE macroCode = $macroCode");
+            params.put("macroCode", macroCode.trim().toUpperCase());
+        }
+
+        cypher.append(" RETURN s, macroCode ORDER BY s.code ASC");
+
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("organizationId", organizationId));
-            java.util.List<MicroSkill> list = new java.util.ArrayList<>();
+            var result = session.run(cypher.toString(), params);
+            List<MicroSkill> list = new ArrayList<>();
             while (result.hasNext()) {
                 var record = result.next();
                 Node node = record.get("s").asNode();
-                String macroCode = record.get("macroCode").asString();
-                list.add(mapNodeToMicroSkill(node, organizationId, macroCode));
+                String resolvedMacro = record.get("macroCode").asString();
+                list.add(mapNodeToMicroSkill(node, organizationId, resolvedMacro));
             }
             return list;
         }
     }
 
-    private MicroSkill mapNodeToMicroSkill(Node node) {
-        return mapNodeToMicroSkill(node, "default-org", null);
+    @Override
+    public int countDependencies(String organizationId, MicroSkillId id) {
+        String cypher = """
+                MATCH (s:MicroSkill {id: $id})
+                OPTIONAL MATCH (role:TargetRole)-[r:REQUIRES_SKILL]->(s)
+                OPTIONAL MATCH (s)-[p1:PREREQUISITE_OF]->()
+                OPTIONAL MATCH ()-[p2:PREREQUISITE_OF]->(s)
+                OPTIONAL MATCH (:LearningModule)-[t:TEACHES]->(s)
+                RETURN count(r) + count(p1) + count(p2) + count(t) AS totalDeps
+                """;
+        try (var session = driver.session()) {
+            var result = session.run(cypher, Map.of("id", id.toString()));
+            if (result.hasNext()) {
+                return result.next().get("totalDeps").asInt();
+            }
+            return 0;
+        }
+    }
+
+    @Override
+    public void delete(String organizationId, MicroSkillId id) {
+        String cypher = """
+                MATCH (s:MicroSkill {id: $id})
+                WHERE s.organizationId = $organizationId OR s.organizationId IS NULL
+                DETACH DELETE s
+                """;
+        try (var session = driver.session()) {
+            session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString())).consume();
+        }
     }
 
     private MicroSkill mapNodeToMicroSkill(Node node, String defaultOrgId, String explicitMacroCode) {

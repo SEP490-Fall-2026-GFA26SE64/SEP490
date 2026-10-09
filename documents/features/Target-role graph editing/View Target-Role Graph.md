@@ -1,23 +1,28 @@
 # View Target-Role Graph
 
 **Function ID:** REQ-018-F01  
-**Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Actor:** Domain Expert, L&D Manager  
+**Status:** Implemented  
+**Test Evidence:** [unit/REQ-018](../../testing/unit/REQ-018-target-role-graph-editing.md), [integration/REQ-018](../../testing/integration/REQ-018-target-role-graph-editing.md), [system/REQ-018](../../testing/system/REQ-018-target-role-graph-editing.md)  
 **Feature:** [Target-Role Graph Editing](README.md)
 
 ## Description
 
-Display the assigned role's knowledge graph for inspection and navigation to permitted editing functions.
+Display the assigned role's knowledge graph for inspection, prerequisite analysis, and navigation to permitted editing functions.
 
-**Input:** Expert assignment and selected target role.  
-**Outcome:** An authorized graph view of role requirements and learning relationships.
+**Input:** Organization ID and Target Role ID.  
+**Outcome:** An authorized graph view of role requirements (`REQUIRES_SKILL`) and learning prerequisite relationships (`PREREQUISITE_OF`).
 
-## Open Decisions
+## Confirmed Rules
 
-- Default node types, relationship types, graph depth, and filters.
-- Whether missing coverage and invalid prerequisites are highlighted.
-- Draft versus published graph views and large-graph navigation.
+- **Authorized Scope:** Returns the target role subgraph containing:
+  - Role node: `id`, `code`, `title`, `track`, `seniority`, `status`.
+  - Required micro-skills: `id`, `code`, `name`, `macroCompetencyCode`, `targetMastery`.
+  - Internal prerequisite dependencies: `sourceSkillId`, `sourceSkillCode`, `targetSkillId`, `targetSkillCode`, `minMastery`, `status`.
+- **Visualization:** Interactive vis-network canvas with dual layout modes (Hierarchical top-down and Organic force-directed), zoom/pan, and Element Inspector drawer.
+- **REST Endpoint:** `GET /api/v1/organizations/{organizationId}/target-roles/{roleId}/graph`
+- **Security RBAC:** Allowed for `DOMAIN_EXPERT` and `LD_MANAGER`; `403 Forbidden` for `LEARNER`.
 
 ## Acceptance Baseline
 
-The expert can inspect assigned role relationships without gaining edit access to unassigned roles.
+The expert and manager can inspect assigned role relationships with 100% architectural schema compliance.

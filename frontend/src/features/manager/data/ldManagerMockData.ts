@@ -215,10 +215,15 @@ export interface MicroSkillModel {
 export interface PrerequisiteEdge {
   id: string
   sourceSkillId: string // Prerequisite skill
+  sourceSkillCode?: string
+  sourceSkillName?: string
   targetSkillId: string // Dependent skill
-  requiredThreshold: number // percentage e.g. 75
-  type: 'hard_prerequisite' | 'recommended'
-  ruleRef: string
+  targetSkillCode?: string
+  targetSkillName?: string
+  minMastery: number // Float [0, 1] e.g. 0.75
+  status?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ProvenanceRecord {
@@ -315,33 +320,29 @@ export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = [
     id: 'pre-1',
     sourceSkillId: 'skill-cypher',
     targetSkillId: 'skill-embeddings',
-    requiredThreshold: 75,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-01',
+    minMastery: 0.75,
+    status: 'ACTIVE',
   },
   {
     id: 'pre-2',
     sourceSkillId: 'skill-embeddings',
     targetSkillId: 'skill-gnn',
-    requiredThreshold: 80,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-02',
+    minMastery: 0.80,
+    status: 'ACTIVE',
   },
   {
     id: 'pre-3',
     sourceSkillId: 'skill-owl-rdf',
     targetSkillId: 'skill-cypher',
-    requiredThreshold: 70,
-    type: 'recommended',
-    ruleRef: 'PREREQ-RULE-03',
+    minMastery: 0.70,
+    status: 'ACTIVE',
   },
   {
     id: 'pre-4',
     sourceSkillId: 'skill-gnn',
     targetSkillId: 'skill-dkt',
-    requiredThreshold: 85,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-04',
+    minMastery: 0.85,
+    status: 'ACTIVE',
   },
 ]
 

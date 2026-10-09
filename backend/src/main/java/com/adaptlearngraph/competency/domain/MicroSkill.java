@@ -54,6 +54,23 @@ public final class MicroSkill {
                 now);
     }
 
+    public MicroSkill update(
+            String newName,
+            String newDescription,
+            String newMacroCompetencyCode,
+            SkillStatus newStatus) {
+        return new MicroSkill(
+                this.id,
+                this.organizationId,
+                this.code,
+                newName != null ? newName : this.name,
+                newDescription != null ? newDescription : this.description,
+                newMacroCompetencyCode != null ? newMacroCompetencyCode : this.macroCompetencyCode,
+                newStatus != null ? newStatus : this.status,
+                this.createdAt,
+                Instant.now());
+    }
+
     private static String requireNonBlank(String value, String message) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(message);

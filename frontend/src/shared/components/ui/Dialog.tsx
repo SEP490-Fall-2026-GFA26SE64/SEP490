@@ -7,9 +7,10 @@ export interface DialogProps {
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
   className?: string
+  containerClassName?: string
 }
 
-export function Dialog({ open, onOpenChange, children, className }: DialogProps) {
+export function Dialog({ open, onOpenChange, children, className, containerClassName }: DialogProps) {
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && open) {
@@ -23,7 +24,7 @@ export function Dialog({ open, onOpenChange, children, className }: DialogProps)
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className={cn('fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto', containerClassName)}>
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"

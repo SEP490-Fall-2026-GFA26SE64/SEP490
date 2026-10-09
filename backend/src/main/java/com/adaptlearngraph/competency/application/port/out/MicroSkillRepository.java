@@ -2,7 +2,8 @@ package com.adaptlearngraph.competency.application.port.out;
 
 import com.adaptlearngraph.competency.domain.MicroSkill;
 import com.adaptlearngraph.competency.domain.MicroSkillId;
-
+import com.adaptlearngraph.competency.domain.SkillStatus;
+import java.util.List;
 import java.util.Optional;
 
 public interface MicroSkillRepository {
@@ -14,5 +15,11 @@ public interface MicroSkillRepository {
 
     Optional<MicroSkill> findByCode(String organizationId, String code);
 
-    java.util.List<MicroSkill> findAll(String organizationId);
+    List<MicroSkill> findAll(String organizationId);
+
+    List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status);
+
+    void delete(String organizationId, MicroSkillId id);
+
+    int countDependencies(String organizationId, MicroSkillId id);
 }

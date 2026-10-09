@@ -1,18 +1,34 @@
 package com.adaptlearngraph.competency.infrastructure;
 
 import com.adaptlearngraph.competency.application.MicroSkillService;
+import com.adaptlearngraph.competency.application.PrerequisiteService;
 import com.adaptlearngraph.competency.application.port.in.CreateMicroSkillUseCase;
+import com.adaptlearngraph.competency.application.port.in.DeleteMicroSkillUseCase;
+import com.adaptlearngraph.competency.application.port.in.GetMicroSkillsUseCase;
+import com.adaptlearngraph.competency.application.port.in.GetTargetRoleGraphUseCase;
+import com.adaptlearngraph.competency.application.port.in.ManagePrerequisiteUseCase;
+import com.adaptlearngraph.competency.application.port.in.UpdateMicroSkillUseCase;
+import com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository;
 import com.adaptlearngraph.competency.application.port.out.MicroSkillRepository;
+import com.adaptlearngraph.competency.application.port.out.PrerequisiteRepository;
+import com.adaptlearngraph.competency.application.port.out.TargetRoleGraphPort;
 import com.adaptlearngraph.competency.domain.MicroSkill;
 import com.adaptlearngraph.competency.domain.MicroSkillId;
+import com.adaptlearngraph.competency.domain.PrerequisiteEdge;
+import com.adaptlearngraph.competency.domain.SkillStatus;
+import com.adaptlearngraph.competency.domain.TargetRoleGraph;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Configuration(proxyBeanMethods = false)
 public class CompetencyConfiguration {
@@ -37,12 +53,22 @@ public class CompetencyConfiguration {
     }
 
     @Bean
-    public com.adaptlearngraph.competency.application.port.in.GetMicroSkillsUseCase getMicroSkillsUseCase(MicroSkillService microSkillService) {
+    public GetMicroSkillsUseCase getMicroSkillsUseCase(MicroSkillService microSkillService) {
         return microSkillService;
     }
 
     @Bean
-    public com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository macroCompetencyRepository(ObjectProvider<Driver> driverProvider) {
+    public UpdateMicroSkillUseCase updateMicroSkillUseCase(MicroSkillService microSkillService) {
+        return microSkillService;
+    }
+
+    @Bean
+    public DeleteMicroSkillUseCase deleteMicroSkillUseCase(MicroSkillService microSkillService) {
+        return microSkillService;
+    }
+
+    @Bean
+    public MacroCompetencyRepository macroCompetencyRepository(ObjectProvider<Driver> driverProvider) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
             return new Neo4jMacroCompetencyRepository(driver);
@@ -52,7 +78,7 @@ public class CompetencyConfiguration {
 
     @Bean
     public com.adaptlearngraph.competency.application.MacroCompetencyService macroCompetencyService(
-            com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository macroCompetencyRepository) {
+            MacroCompetencyRepository macroCompetencyRepository) {
         return new com.adaptlearngraph.competency.application.MacroCompetencyService(macroCompetencyRepository);
     }
 
@@ -62,11 +88,46 @@ public class CompetencyConfiguration {
         return macroCompetencyService;
     }
 
-    private static class InMemoryFallbackMacroCompetencyRepository implements com.adaptlearngraph.competency.application.port.out.MacroCompetencyRepository {
+    @Bean
+    public PrerequisiteRepository prerequisiteRepository(ObjectProvider<Driver> driverProvider) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jPrerequisiteRepository(driver);
+        }
+        return new InMemoryFallbackPrerequisiteRepository();
+    }
+
+    @Bean
+    public TargetRoleGraphPort targetRoleGraphPort(ObjectProvider<Driver> driverProvider) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jTargetRoleGraphAdapter(driver);
+        }
+        return (orgId, roleId) -> Optional.empty();
+    }
+
+    @Bean
+    public PrerequisiteService prerequisiteService(
+            PrerequisiteRepository prerequisiteRepository,
+            TargetRoleGraphPort targetRoleGraphPort) {
+        return new PrerequisiteService(prerequisiteRepository, targetRoleGraphPort);
+    }
+
+    @Bean
+    public ManagePrerequisiteUseCase managePrerequisiteUseCase(PrerequisiteService prerequisiteService) {
+        return prerequisiteService;
+    }
+
+    @Bean
+    public GetTargetRoleGraphUseCase getTargetRoleGraphUseCase(PrerequisiteService prerequisiteService) {
+        return prerequisiteService;
+    }
+
+    private static class InMemoryFallbackMacroCompetencyRepository implements MacroCompetencyRepository {
         @Override
-        public java.util.List<com.adaptlearngraph.competency.domain.MacroCompetency> findAll() {
-            java.time.Instant now = java.time.Instant.now();
-            return java.util.List.of(
+        public List<com.adaptlearngraph.competency.domain.MacroCompetency> findAll() {
+            Instant now = Instant.now();
+            return List.of(
                     new com.adaptlearngraph.competency.domain.MacroCompetency("macro-knowledge", "KNOWLEDGE", "Technical & Domain Knowledge", "Foundational knowledge and operational mastery in domain concepts", "ACTIVE", now, now),
                     new com.adaptlearngraph.competency.domain.MacroCompetency("macro-comm", "COMMUNICATION", "Team Communication & Collaboration", "Interpersonal skills, cross-functional communication, and stakeholder alignment", "ACTIVE", now, now),
                     new com.adaptlearngraph.competency.domain.MacroCompetency("macro-innov", "INNOVATION", "Problem Solving & Innovation", "Algorithmic thinking, architectural innovation, and creative engineering resolution", "ACTIVE", now, now)
@@ -91,7 +152,7 @@ public class CompetencyConfiguration {
         @Override
         public Optional<MicroSkill> findById(String organizationId, MicroSkillId id) {
             MicroSkill skill = store.get(id.toString());
-            if (skill != null && skill.getOrganizationId().equals(organizationId)) {
+            if (skill != null && (skill.getOrganizationId() == null || skill.getOrganizationId().equals(organizationId))) {
                 return Optional.of(skill);
             }
             return Optional.empty();
@@ -100,16 +161,82 @@ public class CompetencyConfiguration {
         @Override
         public Optional<MicroSkill> findByCode(String organizationId, String code) {
             return store.values().stream()
-                    .filter(m -> m.getOrganizationId().equals(organizationId) && m.getCode().equalsIgnoreCase(code))
+                    .filter(m -> (m.getOrganizationId() == null || m.getOrganizationId().equals(organizationId)) && m.getCode().equalsIgnoreCase(code))
                     .findFirst();
         }
 
         @Override
-        public java.util.List<MicroSkill> findAll(String organizationId) {
+        public List<MicroSkill> findAll(String organizationId) {
+            return search(organizationId, null, null, null);
+        }
+
+        @Override
+        public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
             return store.values().stream()
                     .filter(m -> m.getOrganizationId() == null || m.getOrganizationId().equals(organizationId))
+                    .filter(m -> query == null || query.isBlank()
+                            || m.getName().toLowerCase().contains(query.toLowerCase())
+                            || m.getCode().toLowerCase().contains(query.toLowerCase()))
+                    .filter(m -> macroCode == null || macroCode.isBlank() || m.getMacroCompetencyCode().equalsIgnoreCase(macroCode))
+                    .filter(m -> status == null || m.getStatus() == status)
                     .toList();
+        }
+
+        @Override
+        public void delete(String organizationId, MicroSkillId id) {
+            store.remove(id.toString());
+        }
+
+        @Override
+        public int countDependencies(String organizationId, MicroSkillId id) {
+            return 0;
+        }
+    }
+
+    private static class InMemoryFallbackPrerequisiteRepository implements PrerequisiteRepository {
+        private final List<PrerequisiteEdge> edges = new CopyOnWriteArrayList<>();
+
+        @Override
+        public List<PrerequisiteEdge> findAll(String organizationId) {
+            return List.copyOf(edges);
+        }
+
+        @Override
+        public List<PrerequisiteEdge> findForRole(String organizationId, String roleId) {
+            return List.copyOf(edges);
+        }
+
+        @Override
+        public boolean hasPath(String organizationId, String fromSkillId, String toSkillId) {
+            if (fromSkillId.equals(toSkillId)) {
+                return true;
+            }
+            for (PrerequisiteEdge edge : edges) {
+                if (edge.sourceSkillId().equals(fromSkillId)) {
+                    if (edge.targetSkillId().equals(toSkillId) || hasPath(organizationId, edge.targetSkillId(), toSkillId)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public PrerequisiteEdge savePrerequisite(String organizationId, String sourceSkillId, String targetSkillId, double minMastery, SkillStatus status) {
+            deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
+            Instant now = Instant.now();
+            PrerequisiteEdge edge = new PrerequisiteEdge(
+                    sourceSkillId, "SRC", "Source Skill",
+                    targetSkillId, "TGT", "Target Skill",
+                    minMastery, status != null ? status : SkillStatus.ACTIVE,
+                    now, now);
+            edges.add(edge);
+            return edge;
+        }
+
+        @Override
+        public void deletePrerequisite(String organizationId, String sourceSkillId, String targetSkillId) {
+            edges.removeIf(e -> e.sourceSkillId().equals(sourceSkillId) && e.targetSkillId().equals(targetSkillId));
         }
     }
 }
-

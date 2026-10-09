@@ -8,6 +8,8 @@ import {
   Filter,
   GitBranch,
   Layers,
+  Maximize2,
+  Minimize2,
   Network as NetworkIcon,
   Plus,
   RefreshCw,
@@ -47,7 +49,15 @@ import {
 import {
   fetchMicroSkills,
   fetchMacroCompetencies,
+  createMicroSkill,
+  updateMicroSkill,
+  deleteMicroSkill,
 } from '../../../shared/api/microSkillApi'
+import {
+  fetchPrerequisites,
+  createPrerequisite,
+  deletePrerequisite,
+} from '../../../shared/api/prerequisiteApi'
 import {
   type CompetencyModel,
   type MicroSkillModel,
@@ -171,13 +181,24 @@ export function CompetencyOntologyPage() {
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
   const [skillMacroFilter, setSkillMacroFilter] = React.useState('all')
+  const [skillStatusFilter, setSkillStatusFilter] = React.useState('all')
   const [skillSortBy, setSkillSortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
   const [skillCurrentPage, setSkillCurrentPage] = React.useState(1)
   const [skillPageSize] = React.useState(10)
 
+  const formatDate = React.useCallback((isoString?: string): string => {
+    if (!isoString) return 'Recent'
+    try {
+      const d = new Date(isoString)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    } catch {
+      return 'Recent'
+    }
+  }, [])
+
   React.useEffect(() => {
     setSkillCurrentPage(1)
-  }, [skillSearchQuery, skillMacroFilter, skillSortBy])
+  }, [skillSearchQuery, skillMacroFilter, skillStatusFilter, skillSortBy])
 
   // Search, filter, and pagination states for Tab 2 (Prerequisites)
   const [prereqSearchQuery, setPrereqSearchQuery] = React.useState('')
@@ -197,13 +218,15 @@ export function CompetencyOntologyPage() {
       const orgId = active?.id || 'default-org'
 
       try {
-        const [liveSkills, liveMacros] = await Promise.all([
+        const [liveSkills, liveMacros, livePrereqs] = await Promise.all([
           fetchMicroSkills(orgId).catch(() => []),
           fetchMacroCompetencies(orgId).catch(() => []),
+          fetchPrerequisites(orgId).catch(() => []),
         ])
 
+        let resolvedSkills: MicroSkillModel[] = active?.microSkills ?? []
         if (liveSkills && liveSkills.length > 0) {
-          const mappedSkills: MicroSkillModel[] = liveSkills.map((s) => ({
+          resolvedSkills = liveSkills.map((s) => ({
             id: s.id,
             code: s.code,
             name: s.name,
@@ -213,9 +236,9 @@ export function CompetencyOntologyPage() {
             createdAt: s.createdAt,
             updatedAt: s.updatedAt,
           }))
-          setMicroSkills(mappedSkills)
+          setMicroSkills(resolvedSkills)
         } else {
-          setMicroSkills(active?.microSkills ?? [])
+          setMicroSkills(resolvedSkills)
         }
 
         if (liveMacros && liveMacros.length > 0) {
@@ -225,7 +248,7 @@ export function CompetencyOntologyPage() {
             name: m.name,
             description: m.description || '',
             status: (m.status as any) || 'ACTIVE',
-            skillIds: [],
+            skillIds: resolvedSkills.filter((s) => s.macroCompetencyCode === m.code).map((s) => s.id),
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
           }))
@@ -233,12 +256,30 @@ export function CompetencyOntologyPage() {
         } else {
           setCompetencies(active?.competencies ?? [])
         }
+
+        if (livePrereqs && livePrereqs.length > 0) {
+          const mappedPrereqs: PrerequisiteEdge[] = livePrereqs.map((p) => ({
+            id: `edge-${p.sourceSkillId}-${p.targetSkillId}`,
+            sourceSkillId: p.sourceSkillId,
+            sourceSkillCode: p.sourceSkillCode,
+            sourceSkillName: p.sourceSkillName,
+            targetSkillId: p.targetSkillId,
+            targetSkillCode: p.targetSkillCode,
+            targetSkillName: p.targetSkillName,
+            minMastery: p.minMastery,
+            status: p.status,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+          }))
+          setPrerequisites(mappedPrereqs)
+        } else {
+          setPrerequisites(active?.prerequisites ?? [])
+        }
       } catch {
         setMicroSkills(active?.microSkills ?? [])
         setCompetencies(active?.competencies ?? [])
+        setPrerequisites(active?.prerequisites ?? [])
       }
-
-      setPrerequisites(active?.prerequisites ?? [])
     }
 
     handleSync()
@@ -334,7 +375,8 @@ export function CompetencyOntologyPage() {
   const [viewingEdgeDetails, setViewingEdgeDetails] = React.useState<PrerequisiteEdge | null>(null)
 
   // Deletion confirmation state
-  const [deletingEdgeId, setDeletingEdgeId] = React.useState<string | null>(null)
+  const [deletingEdge, setDeletingEdge] = React.useState<PrerequisiteEdge | null>(null)
+  const [deletingSkill, setDeletingSkill] = React.useState<MicroSkillModel | null>(null)
 
   // Selection states
   const [selectedSkill, setSelectedSkill] = React.useState<MicroSkillModel | null>(null)
@@ -347,13 +389,11 @@ export function CompetencyOntologyPage() {
     macroCompetencyCode: 'KNOWLEDGE' as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION',
   })
 
-  // Prerequisite Form
+  // Prerequisite Form (Strictly aligned with neo4j_schema.md PREREQUISITE_OF { minMastery })
   const [prereqForm, setPrereqForm] = React.useState({
     sourceSkillId: '',
     targetSkillId: '',
-    requiredThreshold: 75,
-    type: 'hard_prerequisite' as 'hard_prerequisite' | 'recommended',
-    ruleRef: 'PREREQ-PEDAGOGY-01',
+    minMasteryPercent: 75,
   })
 
   // Graph state
@@ -363,9 +403,10 @@ export function CompetencyOntologyPage() {
   const [graphFilterType, setGraphFilterType] = React.useState<string>('all')
   const [graphLayoutMode, setGraphLayoutMode] = React.useState<'hierarchical' | 'organic'>('hierarchical')
   const [focusCompetencyId, setFocusCompetencyId] = React.useState<string>('all')
+  const [isGraphFullscreen, setIsGraphFullscreen] = React.useState(false)
 
   // ------------------------------------------------------------------
-  // Micro-Skill Handlers
+  // Micro-Skill Handlers (REQ-012)
   // ------------------------------------------------------------------
   const handleOpenCreateSkill = () => {
     setSkillForm({
@@ -379,100 +420,123 @@ export function CompetencyOntologyPage() {
   }
 
   const handleSaveSkill = async () => {
-    if (!skillForm.code.trim() || !skillForm.name.trim() || !skillForm.description.trim()) {
+    if (!skillForm.name.trim() || !skillForm.description.trim()) {
       toast({
         title: 'Validation Error',
-        description: 'Code, Name, and Description are strictly required.',
+        description: 'Name and Description are strictly required.',
         variant: 'destructive',
       })
       return
     }
 
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+
     if (selectedSkill) {
-      saveAndSetMicroSkills((prev) =>
-        prev.map((s) =>
-          s.id === selectedSkill.id
-            ? {
-                ...s,
-                name: skillForm.name.trim(),
-                description: skillForm.description.trim(),
-                macroCompetencyCode: skillForm.macroCompetencyCode,
-                updatedAt: new Date().toISOString(),
-              }
-            : s,
-        ),
-      )
-      toast({ title: 'Micro-skill Updated', description: `Saved changes to ${skillForm.code}.`, variant: 'success' })
-      setIsSkillModalOpen(false)
+      try {
+        const updated = await updateMicroSkill(orgId, selectedSkill.id, {
+          name: skillForm.name.trim(),
+          description: skillForm.description.trim(),
+        })
+
+        saveAndSetMicroSkills((prev) =>
+          prev.map((s) =>
+            s.id === selectedSkill.id
+              ? {
+                  ...s,
+                  name: updated.name,
+                  description: updated.description || '',
+                  updatedAt: updated.updatedAt || new Date().toISOString(),
+                }
+              : s
+          )
+        )
+        toast({ title: 'Micro-skill Updated', description: `Saved changes to ${selectedSkill.code}.`, variant: 'success' })
+        setIsSkillModalOpen(false)
+      } catch (err: any) {
+        toast({
+          title: 'Update Failed',
+          description: err.message || 'Failed to update micro-skill on server.',
+          variant: 'destructive',
+        })
+      }
     } else {
+      if (!skillForm.code.trim()) {
+        toast({ title: 'Validation Error', description: 'Skill code is strictly required.', variant: 'destructive' })
+        return
+      }
+
       if (microSkills.some((s) => s.code.toUpperCase() === skillForm.code.trim().toUpperCase())) {
         toast({ title: 'Duplicate Code', description: 'Skill code must be globally unique.', variant: 'destructive' })
         return
       }
 
-      const active = getActiveCompany()
-      const orgId = active?.id || 'default-org'
-      let generatedId = `skill-${Date.now()}`
-
       try {
-        const res = await fetch(`/api/v1/organizations/${orgId}/micro-skills`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Role': 'DOMAIN_EXPERT',
-          },
-          body: JSON.stringify({
-            code: skillForm.code.trim().toUpperCase(),
-            name: skillForm.name.trim(),
-            description: skillForm.description.trim(),
-            macroCompetencyCode: skillForm.macroCompetencyCode || 'KNOWLEDGE',
-          }),
+        const created = await createMicroSkill(orgId, {
+          code: skillForm.code.trim().toUpperCase(),
+          name: skillForm.name.trim(),
+          description: skillForm.description.trim(),
+          macroCompetencyCode: skillForm.macroCompetencyCode || 'KNOWLEDGE',
         })
 
-        if (res.status === 409) {
-          toast({
-            title: 'Duplicate Micro-skill Code',
-            description: `Micro-skill code ${skillForm.code} already exists for this organization.`,
-            variant: 'destructive',
-          })
-          return
+        const newSkill: MicroSkillModel = {
+          id: created.id,
+          code: created.code,
+          name: created.name,
+          description: created.description || '',
+          macroCompetencyCode: (created.macroCompetencyCode as any) || 'KNOWLEDGE',
+          status: 'ACTIVE',
+          createdAt: created.createdAt || new Date().toISOString(),
+          updatedAt: created.updatedAt || new Date().toISOString(),
         }
 
-        if (res.ok) {
-          const data = await res.json()
-          if (data.id) generatedId = data.id
-        }
-      } catch {
-        // Fallback for standalone offline client
+        saveAndSetMicroSkills([newSkill, ...microSkills])
+        setIsSkillModalOpen(false)
+
+        toast({
+          title: 'Micro-skill Created',
+          description: `Registered ${newSkill.code} under ${skillForm.macroCompetencyCode || 'KNOWLEDGE'}.`,
+          variant: 'success',
+        })
+      } catch (err: any) {
+        toast({
+          title: 'Create Failed',
+          description: err.message || 'Failed to create micro-skill on server.',
+          variant: 'destructive',
+        })
       }
+    }
+  }
 
-      const newSkill: MicroSkillModel = {
-        id: generatedId,
-        code: skillForm.code.trim().toUpperCase(),
-        name: skillForm.name.trim(),
-        description: skillForm.description.trim(),
-        macroCompetencyCode: skillForm.macroCompetencyCode || 'KNOWLEDGE',
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
+  const handleDeleteSkill = async (skill: MicroSkillModel) => {
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
 
-      saveAndSetMicroSkills([newSkill, ...microSkills])
-      setIsSkillModalOpen(false)
-
+    try {
+      await deleteMicroSkill(orgId, skill.id)
+      saveAndSetMicroSkills((prev) => prev.filter((s) => s.id !== skill.id))
+      saveAndSetPrerequisites((prev) => prev.filter((p) => p.sourceSkillId !== skill.id && p.targetSkillId !== skill.id))
       toast({
-        title: 'Micro-skill Created',
-        description: `Registered ${newSkill.code} under ${skillForm.macroCompetencyCode || 'KNOWLEDGE'}.`,
+        title: 'Micro-skill Deleted',
+        description: `Successfully deleted ${skill.code}.`,
         variant: 'success',
       })
+      setDeletingSkill(null)
+    } catch (err: any) {
+      toast({
+        title: 'Cannot Delete Micro-skill',
+        description: err.message || 'Micro-skill is currently in use or required by a target role.',
+        variant: 'destructive',
+      })
+      setDeletingSkill(null)
     }
   }
 
   // ------------------------------------------------------------------
-  // Prerequisite Edge Handlers (Self-edge & Cycle Detection)
+  // Prerequisite Edge Handlers (REQ-018-F02: Self-edge & Cycle Detection)
   // ------------------------------------------------------------------
-  const handleSavePrerequisite = () => {
-    const { sourceSkillId, targetSkillId, requiredThreshold, type, ruleRef } = prereqForm
+  const handleSavePrerequisite = async () => {
+    const { sourceSkillId, targetSkillId, minMasteryPercent } = prereqForm
 
     // 1. Reject self-edges
     if (sourceSkillId === targetSkillId) {
@@ -484,81 +548,80 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    // 2. Reject duplicates
-    const exists = prerequisites.some(
-      (p) => p.sourceSkillId === sourceSkillId && p.targetSkillId === targetSkillId,
-    )
-    if (exists) {
+    // 2. Threshold validation
+    if (minMasteryPercent < 1 || minMasteryPercent > 100) {
       toast({
-        title: 'Duplicate Edge Rejected',
-        description: 'A prerequisite edge between these two skills already exists.',
+        title: 'Invalid Mastery Threshold',
+        description: 'Minimum required mastery must be between 1% and 100%.',
         variant: 'destructive',
       })
       return
     }
 
-    // 3. Cycle Detection
-    // Breadth-first search to check if sourceSkillId is reachable from targetSkillId
-    const isReachable = (start: string, goal: string): boolean => {
-      const visited = new Set<string>()
-      const queue = [start]
-      while (queue.length > 0) {
-        const current = queue.shift()!
-        if (current === goal) return true
-        visited.add(current)
-        for (const edge of prerequisites) {
-          if (edge.sourceSkillId === current && !visited.has(edge.targetSkillId)) {
-            queue.push(edge.targetSkillId)
-          }
-        }
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+    const minMastery = minMasteryPercent / 100.0
+
+    try {
+      const created = await createPrerequisite(orgId, {
+        sourceSkillId,
+        targetSkillId,
+        minMastery,
+      })
+
+      const newEdge: PrerequisiteEdge = {
+        id: `edge-${created.sourceSkillId}-${created.targetSkillId}`,
+        sourceSkillId: created.sourceSkillId,
+        sourceSkillCode: created.sourceSkillCode,
+        sourceSkillName: created.sourceSkillName,
+        targetSkillId: created.targetSkillId,
+        targetSkillCode: created.targetSkillCode,
+        targetSkillName: created.targetSkillName,
+        minMastery: created.minMastery,
+        status: created.status,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
       }
-      return false
-    }
 
-    if (isReachable(targetSkillId, sourceSkillId)) {
+      saveAndSetPrerequisites([...prerequisites, newEdge])
+      setIsPrereqModalOpen(false)
+
+      const sourceSkill = microSkills.find((s) => s.id === sourceSkillId)
+      const targetSkill = microSkills.find((s) => s.id === targetSkillId)
+
       toast({
-        title: 'Cycle Detected & Blocked',
-        description: 'Adding this edge would form a circular prerequisite dependency loop!',
+        title: 'Prerequisite Edge Created',
+        description: `${sourceSkill?.code || created.sourceSkillCode} -> ${targetSkill?.code || created.targetSkillCode} (Min Mastery: ${minMasteryPercent}%).`,
+        variant: 'success',
+      })
+    } catch (err: any) {
+      toast({
+        title: 'Prerequisite Rejected',
+        description: err.message || 'Failed to create prerequisite edge on server.',
         variant: 'destructive',
       })
-      return
     }
-
-    // 4. Threshold validation
-    if (requiredThreshold < 1 || requiredThreshold > 100) {
-      toast({
-        title: 'Invalid Threshold',
-        description: 'Required threshold must be between 1% and 100%.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const newEdge: PrerequisiteEdge = {
-      id: `pre-${Date.now()}`,
-      sourceSkillId,
-      targetSkillId,
-      requiredThreshold,
-      type,
-      ruleRef: ruleRef || 'PEDAGOGY-SEQ',
-    }
-
-    saveAndSetPrerequisites([...prerequisites, newEdge])
-    setIsPrereqModalOpen(false)
-
-    const sourceSkill = microSkills.find((s) => s.id === sourceSkillId)
-    const targetSkill = microSkills.find((s) => s.id === targetSkillId)
-
-    toast({
-      title: 'Prerequisite Edge Created',
-      description: `${sourceSkill?.code} -> ${targetSkill?.code} (Threshold: ${requiredThreshold}%).`,
-      variant: 'success',
-    })
   }
 
-  const handleDeletePrereq = (id: string) => {
-    saveAndSetPrerequisites((prev) => prev.filter((p) => p.id !== id))
-    toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
+  const handleDeletePrereq = async (edge: PrerequisiteEdge) => {
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+
+    try {
+      await deletePrerequisite(orgId, edge.sourceSkillId, edge.targetSkillId)
+      saveAndSetPrerequisites((prev) =>
+        prev.filter((p) => !(p.sourceSkillId === edge.sourceSkillId && p.targetSkillId === edge.targetSkillId))
+      )
+      toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
+      setDeletingEdge(null)
+    } catch (err: any) {
+      toast({
+        title: 'Failed to Delete Edge',
+        description: err.message || 'Could not delete prerequisite edge from server.',
+        variant: 'destructive',
+      })
+      setDeletingEdge(null)
+    }
   }
 
   // ------------------------------------------------------------------
@@ -628,6 +691,8 @@ export function CompetencyOntologyPage() {
     microSkills.forEach((s) => {
       if (!allowedSkillIds.has(s.id)) return
       if (graphFilterType === 'all' || graphFilterType === 'skill') {
+        const hasIncomingPrereq = prerequisites.some((p) => p.targetSkillId === s.id || p.targetSkillCode === s.code)
+        const level = hasIncomingPrereq ? 2 : 1
         nodes.push({
           id: s.id,
           label: `<b>${s.code}</b>\n${s.name}`,
@@ -635,6 +700,7 @@ export function CompetencyOntologyPage() {
           shapeProperties: { borderRadius: 16 },
           widthConstraint: { maximum: 155 },
           margin: { top: 8, right: 12, bottom: 8, left: 12 },
+          level,
           color: {
             background: '#F0FDF4',
             border: '#16A34A',
@@ -654,22 +720,28 @@ export function CompetencyOntologyPage() {
       }
     })
 
-    // HAS_SKILL edges (Uncluttered: sleek line with arrow and tooltip, avoiding heavy text collisions)
+    // HAS_SKILL edges (Connect via c.skillIds or matching macroCompetencyCode)
     activeCompetencies.forEach((c) => {
-      c.skillIds.forEach((sId) => {
-        const hasSource = nodes.some((n) => n.id === c.id)
-        const hasTarget = nodes.some((n) => n.id === sId)
-        if (hasSource && hasTarget) {
-          edges.push({
-            id: `has-skill-${c.id}-${sId}`,
-            from: c.id,
-            to: sId,
-            title: `Relationship: ${c.code} contains skill ${sId}`,
-            color: { color: '#CBD5E1', highlight: '#EA580C', hover: '#94A3B8' },
-            arrows: { to: { enabled: true, scaleFactor: 0.7 } },
-            dashes: false,
-            width: 1.5,
-          })
+      microSkills.forEach((s) => {
+        const belongsToComp =
+          c.skillIds.includes(s.id) ||
+          c.skillIds.includes(s.code) ||
+          (s.macroCompetencyCode && s.macroCompetencyCode.toUpperCase() === c.code.toUpperCase())
+        if (belongsToComp) {
+          const hasSource = nodes.some((n) => n.id === c.id)
+          const hasTarget = nodes.some((n) => n.id === s.id)
+          if (hasSource && hasTarget && !edges.some((e) => e.from === c.id && e.to === s.id)) {
+            edges.push({
+              id: `has-skill-${c.id}-${s.id}`,
+              from: c.id,
+              to: s.id,
+              title: `Domain Scope: ${c.name} includes ${s.code}`,
+              color: { color: '#CBD5E1', highlight: '#EA580C', hover: '#94A3B8' },
+              arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+              dashes: false,
+              width: 1.5,
+            })
+          }
         }
       })
     })
@@ -683,8 +755,8 @@ export function CompetencyOntologyPage() {
           id: `prereq-${p.id}`,
           from: p.sourceSkillId,
           to: p.targetSkillId,
-          label: `≥ ${p.requiredThreshold}%`,
-          title: `Prerequisite Requirement: ${p.requiredThreshold}% mastery required`,
+          label: `≥ ${Math.round(p.minMastery * 100)}%`,
+          title: `Prerequisite Requirement: ${Math.round(p.minMastery * 100)}% mastery required`,
           font: {
             size: 9,
             color: '#DC2626',
@@ -715,54 +787,49 @@ export function CompetencyOntologyPage() {
         hierarchical: {
           enabled: graphLayoutMode === 'hierarchical',
           direction: 'UD',
-          sortMethod: 'directed',
-          levelSeparation: 140,
-          nodeSpacing: 210,
-          treeSpacing: 240,
+          sortMethod: 'hubsize',
+          levelSeparation: 160,
+          nodeSpacing: 280,
+          treeSpacing: 320,
           blockShifting: true,
           edgeMinimization: true,
           parentCentralization: true,
         },
       },
-      physics:
-        graphLayoutMode === 'hierarchical'
-          ? {
-              solver: 'hierarchicalRepulsion',
-              hierarchicalRepulsion: {
-                centralGravity: 0.0,
-                springLength: 160,
-                springConstant: 0.01,
-                nodeDistance: 210,
-                damping: 0.09,
-              },
-              stabilization: {
-                iterations: 150,
-                updateInterval: 25,
-              },
-            }
-          : {
-              solver: 'barnesHut',
-              barnesHut: {
-                gravitationalConstant: -18000,
-                centralGravity: 0.15,
-                springLength: 230,
-                springConstant: 0.03,
-                damping: 0.12,
-                avoidOverlap: 1,
-              },
-              stabilization: {
-                iterations: 180,
-                updateInterval: 25,
-              },
-            },
+      physics: {
+        enabled: true,
+        solver: graphLayoutMode === 'hierarchical' ? 'hierarchicalRepulsion' : 'barnesHut',
+        hierarchicalRepulsion: {
+          nodeDistance: 280,
+          centralGravity: 0.0,
+          springLength: 160,
+          springConstant: 0.01,
+          damping: 0.09,
+          avoidOverlap: 1,
+        },
+        barnesHut: {
+          gravitationalConstant: -4000,
+          centralGravity: 0.2,
+          springLength: 160,
+          springConstant: 0.04,
+          damping: 0.09,
+          avoidOverlap: 1,
+        },
+        stabilization: {
+          iterations: 150,
+          updateInterval: 25,
+        },
+      },
       interaction: {
         hover: true,
-        tooltipDelay: 150,
+        tooltipDelay: 100,
         zoomView: true,
         dragView: true,
         dragNodes: true,
       },
     }
+
+    let resizeObserver: ResizeObserver | null = null
 
     const timer = setTimeout(() => {
       if (!graphContainerRef.current) return
@@ -770,12 +837,13 @@ export function CompetencyOntologyPage() {
       networkRef.current = networkInstance
 
       networkInstance.once('stabilizationIterationsDone', () => {
-        networkInstance?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } })
+        networkInstance?.fit()
       })
 
       setTimeout(() => {
+        networkInstance?.redraw()
         networkInstance?.fit()
-      }, 150)
+      }, 100)
 
       networkInstance.on('click', (params) => {
         if (params.nodes && params.nodes.length > 0) {
@@ -794,10 +862,25 @@ export function CompetencyOntologyPage() {
           setGraphInspectorNode(null)
         }
       })
+
+      if (graphContainerRef.current && window.ResizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+          if (networkInstance && graphContainerRef.current) {
+            if (graphContainerRef.current.clientWidth > 0 && graphContainerRef.current.clientHeight > 0) {
+              networkInstance.redraw()
+              networkInstance.fit()
+            }
+          }
+        })
+        resizeObserver.observe(graphContainerRef.current)
+      }
     }, 40)
 
     return () => {
       clearTimeout(timer)
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+      }
       if (networkInstance) {
         networkInstance.destroy()
       }
@@ -839,15 +922,16 @@ export function CompetencyOntologyPage() {
 
   // Computed filter & pagination for Tab 2 (Prerequisites)
   const filteredPrerequisites = prerequisites.filter((edge) => {
-    const source = microSkills.find((s) => s.id === edge.sourceSkillId)
-    const target = microSkills.find((s) => s.id === edge.targetSkillId)
+    const source = microSkills.find((s) => s.id === edge.sourceSkillId || s.code === edge.sourceSkillId)
+    const target = microSkills.find((s) => s.id === edge.targetSkillId || s.code === edge.targetSkillId)
     const matchesSearch =
       (source?.code.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
       (source?.name.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
       (target?.code.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
       (target?.name.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
-      edge.ruleRef.toLowerCase().includes(prereqSearchQuery.toLowerCase())
-    const matchesType = prereqTypeFilter === 'all' || edge.type === prereqTypeFilter
+      (edge.sourceSkillCode?.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
+      (edge.targetSkillCode?.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false)
+    const matchesType = prereqTypeFilter === 'all' || (edge.status || 'ACTIVE') === prereqTypeFilter
     return matchesSearch && matchesType
   })
 
@@ -963,13 +1047,13 @@ export function CompetencyOntologyPage() {
                       Atomic Micro-skills Catalog
                     </CardTitle>
                     <CardDescription>
-                      Measurable learning outcomes classified by Bloom taxonomy and provenance citation.
+                      Draft and published technical capabilities configured with mastery benchmarks and prerequisite gates.
                     </CardDescription>
                   </div>
 
                   {/* Search and Filter Controls */}
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative min-w-[200px]">
+                    <div className="relative min-w-[210px]">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                       <input
                         type="text"
@@ -999,6 +1083,21 @@ export function CompetencyOntologyPage() {
                       </select>
                     </div>
 
+                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                      <select
+                        value={skillStatusFilter}
+                        onChange={(e) => {
+                          setSkillStatusFilter(e.target.value)
+                          setSkillCurrentPage(1)
+                        }}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="DRAFT">Draft</option>
+                      </select>
+                    </div>
+
                     <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
@@ -1006,9 +1105,9 @@ export function CompetencyOntologyPage() {
                         onChange={(e) => setSkillSortBy(e.target.value as any)}
                         className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="latest">Latest Created</option>
+                        <option value="latest">Latest Created / Updated</option>
                         <option value="title">Skill Title (A–Z)</option>
-                        <option value="code">Skill Code</option>
+                        <option value="code">Skill Code (A–Z)</option>
                       </select>
                     </div>
                   </div>
@@ -1016,7 +1115,7 @@ export function CompetencyOntologyPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {filteredMicroSkills.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center py-16 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
                     <p className="text-sm font-semibold">No micro-skills match your search or filter.</p>
                     <Button
@@ -1026,6 +1125,7 @@ export function CompetencyOntologyPage() {
                       onClick={() => {
                         setSkillSearchQuery('')
                         setSkillMacroFilter('all')
+                        setSkillStatusFilter('all')
                         setSkillCurrentPage(1)
                       }}
                     >
@@ -1038,64 +1138,138 @@ export function CompetencyOntologyPage() {
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
                           <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                            <th className="py-2.5 px-3">Skill Code &amp; Name</th>
-                            <th className="py-2.5 px-3">Macro Competency</th>
-                            <th className="py-2.5 px-3">Description</th>
+                            <th className="py-2.5 px-3">Skill Code</th>
+                            <th className="py-2.5 px-3">Title &amp; Observable Scope</th>
+                            <th className="py-2.5 px-3">Competency</th>
+                            <th className="py-2.5 px-3 text-center">Prerequisites</th>
+                            <th className="py-2.5 px-3 text-center">Role Bindings</th>
+                            <th className="py-2.5 px-3">Status</th>
                             <th className="py-2.5 px-3 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                          {paginatedMicroSkills.map((skill) => (
-                            <tr key={skill.id} className="hover:bg-muted/20">
-                              <td className="py-3 px-3">
-                                <div className="font-mono font-bold text-foreground">{skill.code}</div>
-                                <div className="font-semibold text-foreground">{skill.name}</div>
-                              </td>
-                              <td className="py-3 px-3">
-                                <Badge variant="outline" className="font-mono text-[10px] uppercase font-semibold">
-                                  {skill.macroCompetencyCode || 'KNOWLEDGE'}
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-3 text-muted-foreground max-w-sm">
-                                {skill.description}
-                              </td>
-                              <td className="py-3 px-3 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  {skill.status !== 'draft' && (
+                          {paginatedMicroSkills.map((skill) => {
+                            const prereqCount = prerequisites.filter(
+                              (p) => p.targetSkillId === skill.id || p.targetSkillId === skill.code
+                            ).length
+                            const macro = (skill.macroCompetencyCode || 'KNOWLEDGE').toUpperCase()
+                            const companyRoles = getActiveCompany()?.targetRoles || []
+                            const boundRolesCount = companyRoles.filter((r) =>
+                              (r.skillTargets || []).some(
+                                (st) => st.skillId === skill.id || st.skillCode === skill.code
+                              )
+                            ).length
+
+                            return (
+                              <tr
+                                key={skill.id}
+                                className="hover:bg-muted/20 transition-colors"
+                              >
+                                <td className="py-3 px-3 font-mono font-bold text-foreground">
+                                  <div className="flex items-center gap-1.5">
+                                    <span>{skill.code}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
+                                    <span>{skill.name}</span>
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <span className="truncate max-w-sm">
+                                      {skill.description || 'Verified micro-skill objective and domain scope.'}
+                                    </span>
+                                    <span className="text-muted-foreground/60">• Updated {formatDate(skill.updatedAt || skill.createdAt)}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3 whitespace-nowrap">
+                                  <Badge
+                                    variant={
+                                      macro === 'COMMUNICATION'
+                                        ? 'success'
+                                        : macro === 'INNOVATION'
+                                        ? 'primary'
+                                        : 'secondary'
+                                    }
+                                    className="text-[10px] font-semibold"
+                                  >
+                                    {macro}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                  {prereqCount > 0 ? (
+                                    <Badge variant="primary" className="text-[10px] font-semibold inline-flex items-center gap-1">
+                                      <GitBranch className="h-3 w-3" />
+                                      {prereqCount} {prereqCount === 1 ? 'prereq' : 'prereqs'}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-[11px] text-muted-foreground italic">None</span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                  {boundRolesCount > 0 ? (
+                                    <Badge variant="outline" className="text-[10px] font-semibold font-mono">
+                                      {boundRolesCount} {boundRolesCount === 1 ? 'role' : 'roles'}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-[11px] text-muted-foreground italic">Unassigned</span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-3 whitespace-nowrap">
+                                  <Badge
+                                    variant={skill.status === 'ACTIVE' || skill.status === 'published' ? 'success' : 'secondary'}
+                                    className="text-[10px] font-semibold"
+                                  >
+                                    {skill.status || 'ACTIVE'}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-right whitespace-nowrap">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    {skill.status !== 'draft' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setViewingSkillDetails(skill)}
+                                        title="View Details"
+                                        aria-label="View Details"
+                                      >
+                                        <Eye className="h-4 w-4 text-primary" />
+                                      </Button>
+                                    )}
                                     <Button
                                       variant="outline"
                                       size="sm"
                                       className="h-8 w-8 p-0"
-                                      onClick={() => setViewingSkillDetails(skill)}
-                                      title="View Details"
-                                      aria-label="View Details"
+                                      onClick={() => {
+                                        setSelectedSkill(skill)
+                                        setSkillForm({
+                                          code: skill.code,
+                                          name: skill.name,
+                                          description: skill.description || '',
+                                          macroCompetencyCode: (skill.macroCompetencyCode as any) || 'KNOWLEDGE',
+                                        })
+                                        setIsSkillModalOpen(true)
+                                      }}
+                                      title="Edit Micro-skill"
+                                      aria-label="Edit Micro-skill"
                                     >
-                                      <Eye className="h-4 w-4 text-primary" />
+                                      <Edit3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                                     </Button>
-                                  )}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => {
-                                      setSelectedSkill(skill)
-                                      setSkillForm({
-                                        code: skill.code,
-                                        name: skill.name,
-                                        description: skill.description || '',
-                                        macroCompetencyCode: (skill.macroCompetencyCode as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION') || 'KNOWLEDGE',
-                                      })
-                                      setIsSkillModalOpen(true)
-                                    }}
-                                    title="Edit Micro-skill"
-                                    aria-label="Edit Micro-skill"
-                                  >
-                                    <Edit3 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-colors"
+                                      onClick={() => setDeletingSkill(skill)}
+                                      title="Delete Micro-skill"
+                                      aria-label="Delete Micro-skill"
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -1157,9 +1331,9 @@ export function CompetencyOntologyPage() {
                         }}
                         className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                       >
-                        <option value="all">All Prereq Types</option>
-                        <option value="hard_prerequisite">Hard Prerequisite</option>
-                        <option value="recommended">Recommended</option>
+                        <option value="all">All Statuses</option>
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
                       </select>
                     </div>
                   </div>
@@ -1192,8 +1366,8 @@ export function CompetencyOntologyPage() {
                             <th className="py-2.5 px-3">Source Prerequisite Skill</th>
                             <th className="py-2.5 px-3 text-center">Relationship</th>
                             <th className="py-2.5 px-3">Target Dependent Skill</th>
-                            <th className="py-2.5 px-3 text-center">Required Threshold</th>
-                            <th className="py-2.5 px-3">Rule Reference</th>
+                            <th className="py-2.5 px-3 text-center">Minimum Mastery</th>
+                            <th className="py-2.5 px-3 text-center">Status</th>
                             <th className="py-2.5 px-3 text-right">Action</th>
                           </tr>
                         </thead>
@@ -1205,25 +1379,27 @@ export function CompetencyOntologyPage() {
                             return (
                               <tr key={edge.id} className="hover:bg-muted/20">
                                 <td className="py-3 px-3 font-semibold text-foreground">
-                                  <span className="font-mono text-primary font-bold mr-1.5">{source?.code}</span>
-                                  {source?.name}
+                                  <span className="font-mono text-primary font-bold mr-1.5">{source?.code || edge.sourceSkillCode}</span>
+                                  {source?.name || edge.sourceSkillName}
                                 </td>
                                 <td className="py-3 px-3 text-center">
                                   <span className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                    PREREQUISITE_FOR <ArrowRight className="h-3 w-3 text-primary" />
+                                    PREREQUISITE_OF <ArrowRight className="h-3 w-3 text-primary" />
                                   </span>
                                 </td>
                                 <td className="py-3 px-3 font-semibold text-foreground">
-                                  <span className="font-mono text-primary font-bold mr-1.5">{target?.code}</span>
-                                  {target?.name}
+                                  <span className="font-mono text-primary font-bold mr-1.5">{target?.code || edge.targetSkillCode}</span>
+                                  {target?.name || edge.targetSkillName}
                                 </td>
                                 <td className="py-3 px-3 text-center">
                                   <Badge variant="primary" className="font-bold">
-                                    {edge.requiredThreshold}% Mastery
+                                    {Math.round(edge.minMastery * 100)}% Mastery
                                   </Badge>
                                 </td>
-                                <td className="py-3 px-3 font-mono text-muted-foreground text-[11px]">
-                                  {edge.ruleRef}
+                                <td className="py-3 px-3 text-center">
+                                  <Badge variant={edge.status === 'ACTIVE' ? 'success' : 'outline'} className="font-mono text-[10px]">
+                                    {edge.status || 'ACTIVE'}
+                                  </Badge>
                                 </td>
                                 <td className="py-3 px-3 text-right">
                                   <div className="flex items-center justify-end gap-1.5">
@@ -1241,7 +1417,7 @@ export function CompetencyOntologyPage() {
                                       variant="destructive"
                                       size="sm"
                                       className="h-8 w-8 p-0"
-                                      onClick={() => setDeletingEdgeId(edge.id)}
+                                      onClick={() => setDeletingEdge(edge)}
                                       title="Delete Edge"
                                       aria-label="Delete Edge"
                                     >
@@ -1274,7 +1450,7 @@ export function CompetencyOntologyPage() {
 
           {/* TAB 4: EXPLORE ONTOLOGY GRAPH */}
           <TabsContent value="graph" className="space-y-4">
-            <Card>
+            <Card className={isGraphFullscreen ? 'fixed inset-0 z-50 rounded-none m-0 border-0 flex flex-col p-4 bg-background overflow-hidden shadow-2xl' : ''}>
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                   <div>
@@ -1300,7 +1476,7 @@ export function CompetencyOntologyPage() {
                         }`}
                         title="Top-down structured DAG hierarchy"
                       >
-                        Hierarchical Flow
+                        Hierarchical
                       </button>
                       <button
                         type="button"
@@ -1310,9 +1486,9 @@ export function CompetencyOntologyPage() {
                             ? 'bg-card text-foreground shadow-sm font-semibold'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
-                        title="Force-directed organic network with collision avoidance"
+                        title="Force-directed network with collision avoidance"
                       >
-                        Spacious Network
+                        Network
                       </button>
                     </div>
 
@@ -1324,7 +1500,7 @@ export function CompetencyOntologyPage() {
                         onChange={(e) => setFocusCompetencyId(e.target.value)}
                         className="bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium text-xs max-w-[170px] truncate"
                       >
-                        <option value="all">All Domains (Overview)</option>
+                        <option value="all">All Competencies (Overview)</option>
                         {competencies.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.code} – {c.name}
@@ -1392,14 +1568,26 @@ export function CompetencyOntologyPage() {
                       >
                         Reset View
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        leftIcon={isGraphFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+                        onClick={() => {
+                          setIsGraphFullscreen((prev) => !prev)
+                          setTimeout(() => networkRef.current?.fit(), 100)
+                        }}
+                        title={isGraphFullscreen ? 'Exit Fullscreen' : 'View Fullscreen'}
+                      >
+                        {isGraphFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                      </Button>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <CardContent className={isGraphFullscreen ? 'flex-1 pt-4 overflow-hidden flex flex-col min-h-0' : 'pt-4'}>
+                <div className={`grid grid-cols-1 lg:grid-cols-3 gap-4 ${isGraphFullscreen ? 'flex-1 min-h-0' : ''}`}>
                   {/* Graph Canvas */}
-                  <div className="lg:col-span-2 border border-border rounded-lg bg-background/50 h-[560px] relative overflow-hidden shadow-inner">
+                  <div className={`lg:col-span-2 border border-border rounded-lg bg-background/50 relative overflow-hidden shadow-inner flex flex-col ${isGraphFullscreen ? 'h-full min-h-[400px]' : 'h-[560px]'}`}>
                     <div ref={graphContainerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
                     
                     {/* Visual Legend */}
@@ -1519,8 +1707,8 @@ export function CompetencyOntologyPage() {
                                               key={p.id}
                                               className="flex items-center justify-between text-[10px] bg-destructive/5 text-destructive border border-destructive/20 rounded px-1.5 py-0.5 font-mono"
                                             >
-                                              <span>{source?.code || p.sourceSkillId}</span>
-                                              <span>req ≥{p.requiredThreshold}%</span>
+                                              <span>{source?.code || p.sourceSkillCode || p.sourceSkillId}</span>
+                                              <span>req ≥{Math.round(p.minMastery * 100)}%</span>
                                             </div>
                                           )
                                         })}
@@ -1600,7 +1788,7 @@ export function CompetencyOntologyPage() {
             </div>
 
             <div>
-              <label className="font-semibold text-foreground block mb-1">Macro-Competency Group</label>
+              <label className="font-semibold text-foreground block mb-1">Competency Group</label>
               <select
                 value={skillForm.macroCompetencyCode}
                 onChange={(e) => setSkillForm({ ...skillForm, macroCompetencyCode: e.target.value as any })}
@@ -1701,31 +1889,23 @@ export function CompetencyOntologyPage() {
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Required Threshold (%)</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={prereqForm.requiredThreshold}
-                  onChange={(e) =>
-                    setPrereqForm({ ...prereqForm, requiredThreshold: parseInt(e.target.value) || 0 })
-                  }
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Rule Citation</label>
-                <input
-                  type="text"
-                  value={prereqForm.ruleRef}
-                  onChange={(e) => setPrereqForm({ ...prereqForm, ruleRef: e.target.value })}
-                  placeholder="e.g. PEDAGOGY-SEQ-05"
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+            <div>
+              <label className="font-semibold text-foreground block mb-1">
+                Minimum Required Mastery (%) <span className="text-destructive">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={prereqForm.minMasteryPercent}
+                onChange={(e) =>
+                  setPrereqForm({ ...prereqForm, minMasteryPercent: parseInt(e.target.value) || 0 })
+                }
+                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <span className="text-[11px] text-muted-foreground mt-0.5 block">
+                Learners must achieve at least this mastery score on the source skill before unlocking the dependent skill.
+              </span>
             </div>
 
             <div className="p-2.5 rounded bg-muted/40 border border-border text-[11px] text-muted-foreground flex items-center gap-2">
@@ -1784,7 +1964,7 @@ export function CompetencyOntologyPage() {
                     <strong className="font-mono text-foreground font-bold text-sm">{viewingSkillDetails.code}</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Macro Competency</span>
+                    <span className="text-muted-foreground block text-[11px]">Competency</span>
                     <Badge variant="outline" className="font-semibold text-xs mt-0.5 uppercase">
                       {viewingSkillDetails.macroCompetencyCode || 'KNOWLEDGE'}
                     </Badge>
@@ -1844,11 +2024,11 @@ export function CompetencyOntologyPage() {
                                 className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
                               >
                                 <span className="truncate">
-                                  <strong className="font-mono text-primary mr-1">{srcSkill?.code}</strong>
-                                  {srcSkill?.name}
+                                  <strong className="font-mono text-primary mr-1">{srcSkill?.code || p.sourceSkillCode}</strong>
+                                  {srcSkill?.name || p.sourceSkillName}
                                 </span>
                                 <Badge variant="primary" className="text-[10px] shrink-0">
-                                  {p.requiredThreshold}%
+                                  ≥ {Math.round(p.minMastery * 100)}%
                                 </Badge>
                               </div>
                             )
@@ -1875,11 +2055,11 @@ export function CompetencyOntologyPage() {
                                 className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
                               >
                                 <span className="truncate">
-                                  <strong className="font-mono text-primary mr-1">{tgtSkill?.code}</strong>
-                                  {tgtSkill?.name}
+                                  <strong className="font-mono text-primary mr-1">{tgtSkill?.code || p.targetSkillCode}</strong>
+                                  {tgtSkill?.name || p.targetSkillName}
                                 </span>
                                 <Badge variant="secondary" className="text-[10px] shrink-0">
-                                  {p.requiredThreshold}%
+                                  ≥ {Math.round(p.minMastery * 100)}%
                                 </Badge>
                               </div>
                             )
@@ -1940,10 +2120,10 @@ export function CompetencyOntologyPage() {
                   </DialogTitle>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Badge variant="primary" className="font-bold">
-                      {viewingEdgeDetails.requiredThreshold}% Mastery
+                      ≥ {Math.round(viewingEdgeDetails.minMastery * 100)}% Mastery
                     </Badge>
-                    <Badge variant={viewingEdgeDetails.type === 'hard_prerequisite' ? 'destructive' : 'secondary'}>
-                      {viewingEdgeDetails.type === 'hard_prerequisite' ? 'HARD PREREQUISITE' : 'RECOMMENDED'}
+                    <Badge variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}>
+                      {viewingEdgeDetails.status || 'ACTIVE'}
                     </Badge>
                   </div>
                 </div>
@@ -1957,42 +2137,40 @@ export function CompetencyOntologyPage() {
                 <div className="p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between gap-3">
                   <div className="flex-1 p-2 rounded bg-card border border-border">
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Source Skill</span>
-                    <strong className="font-mono text-primary font-bold block">{source?.code}</strong>
-                    <span className="text-foreground font-semibold text-xs line-clamp-1">{source?.name}</span>
+                    <strong className="font-mono text-primary font-bold block">{source?.code || viewingEdgeDetails.sourceSkillCode}</strong>
+                    <span className="text-foreground font-semibold text-xs line-clamp-1">{source?.name || viewingEdgeDetails.sourceSkillName}</span>
                   </div>
 
                   <div className="flex flex-col items-center shrink-0">
-                    <span className="text-[10px] font-mono text-primary font-bold">{viewingEdgeDetails.requiredThreshold}% req</span>
+                    <span className="text-[10px] font-mono text-primary font-bold">≥ {Math.round(viewingEdgeDetails.minMastery * 100)}% req</span>
                     <ArrowRight className="h-5 w-5 text-primary" />
-                    <span className="text-[9px] text-muted-foreground uppercase">{viewingEdgeDetails.type}</span>
+                    <span className="text-[9px] text-muted-foreground uppercase">{viewingEdgeDetails.status || 'ACTIVE'}</span>
                   </div>
 
                   <div className="flex-1 p-2 rounded bg-card border border-border">
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Target Skill</span>
-                    <strong className="font-mono text-primary font-bold block">{target?.code}</strong>
-                    <span className="text-foreground font-semibold text-xs line-clamp-1">{target?.name}</span>
+                    <strong className="font-mono text-primary font-bold block">{target?.code || viewingEdgeDetails.targetSkillCode}</strong>
+                    <span className="text-foreground font-semibold text-xs line-clamp-1">{target?.name || viewingEdgeDetails.targetSkillName}</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-card border border-border">
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Rule Citation Reference</span>
-                    <strong className="font-mono text-foreground font-bold text-xs">{viewingEdgeDetails.ruleRef}</strong>
+                    <span className="text-muted-foreground block text-[11px]">Minimum Required Mastery</span>
+                    <strong className="font-mono text-primary font-bold text-sm">{Math.round(viewingEdgeDetails.minMastery * 100)}%</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Enforcement Policy</span>
-                    <span className="text-foreground font-medium">
-                      {viewingEdgeDetails.type === 'hard_prerequisite'
-                        ? 'Strict pathway gate blocking unlock'
-                        : 'Advisory guidance warning'}
-                    </span>
+                    <span className="text-muted-foreground block text-[11px]">Relationship Status</span>
+                    <Badge variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'} className="mt-0.5">
+                      {viewingEdgeDetails.status || 'ACTIVE'}
+                    </Badge>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
                     <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="font-mono text-primary font-bold">{source?.code}</span>
+                      <span className="font-mono text-primary font-bold">{source?.code || viewingEdgeDetails.sourceSkillCode}</span>
                       Description:
                     </span>
                     <p className="text-muted-foreground text-xs">{source?.description}</p>
@@ -2000,19 +2178,13 @@ export function CompetencyOntologyPage() {
 
                   <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
                     <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="font-mono text-primary font-bold">{target?.code}</span>
+                      <span className="font-mono text-primary font-bold">{target?.code || viewingEdgeDetails.targetSkillCode}</span>
                       Description:
                     </span>
                     <p className="text-muted-foreground text-xs">{target?.description}</p>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-secondary/40 border border-primary/20 text-foreground space-y-1">
-                  <strong className="text-xs font-semibold text-primary block">Adaptive Engine Behavior</strong>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    When an engineer's diagnostic assessment score on <span className="font-mono font-bold text-foreground">{source?.code}</span> is below {viewingEdgeDetails.requiredThreshold}%, the adaptive pathway generator automatically schedules remediation modules before unlocking <span className="font-mono font-bold text-foreground">{target?.code}</span>.
-                  </p>
-                </div>
               </div>
 
               <DialogFooter>
@@ -2028,17 +2200,31 @@ export function CompetencyOntologyPage() {
       {/* CONFIRMATION PROMPTS */}
 
       <ConfirmationModal
-        open={Boolean(deletingEdgeId)}
-        onOpenChange={(open) => !open && setDeletingEdgeId(null)}
+        open={Boolean(deletingEdge)}
+        onOpenChange={(open) => !open && setDeletingEdge(null)}
         title="Delete Prerequisite Edge?"
-        description="Are you sure you want to remove this directed prerequisite constraint? Learners on adaptive pathways will no longer be gated by this skill sequencing threshold."
+        description={`Are you sure you want to remove the prerequisite relationship between ${deletingEdge?.sourceSkillCode || deletingEdge?.sourceSkillId} and ${deletingEdge?.targetSkillCode || deletingEdge?.targetSkillId}?`}
         confirmText="Delete Edge"
         cancelText="Cancel"
         variant="destructive"
         onConfirm={() => {
-          if (deletingEdgeId) {
-            handleDeletePrereq(deletingEdgeId)
-            setDeletingEdgeId(null)
+          if (deletingEdge) {
+            handleDeletePrereq(deletingEdge)
+          }
+        }}
+      />
+
+      <ConfirmationModal
+        open={Boolean(deletingSkill)}
+        onOpenChange={(open) => !open && setDeletingSkill(null)}
+        title={`Delete Micro-skill ${deletingSkill?.code}?`}
+        description={`Are you sure you want to delete ${deletingSkill?.name}? If this micro-skill is referenced by prerequisite dependencies or assigned to target roles, deletion will be blocked.`}
+        confirmText="Delete Micro-skill"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingSkill) {
+            handleDeleteSkill(deletingSkill)
           }
         }}
       />

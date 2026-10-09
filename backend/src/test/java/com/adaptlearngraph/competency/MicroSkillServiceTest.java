@@ -3,9 +3,11 @@ package com.adaptlearngraph.competency;
 import com.adaptlearngraph.competency.application.DuplicateMicroSkillException;
 import com.adaptlearngraph.competency.application.MicroSkillService;
 import com.adaptlearngraph.competency.application.port.in.CreateMicroSkillCommand;
+import com.adaptlearngraph.competency.application.port.in.UpdateMicroSkillCommand;
 import com.adaptlearngraph.competency.application.port.out.MicroSkillRepository;
 import com.adaptlearngraph.competency.domain.MicroSkill;
 import com.adaptlearngraph.competency.domain.MicroSkillId;
+import com.adaptlearngraph.competency.domain.MicroSkillInUseException;
 import com.adaptlearngraph.competency.domain.SkillStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,8 +20,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisplayName("REQ-012-F01: MicroSkill Application Service Tests")
+@DisplayName("REQ-012: MicroSkill Application Service Tests")
 class MicroSkillServiceTest {
 
     private InMemoryMicroSkillRepository repository;
@@ -87,8 +90,65 @@ class MicroSkillServiceTest {
         assertEquals("JAVA_CORE", result.get(0).getCode());
     }
 
+    @Test
+    @DisplayName("REQ-012-F03: Updates micro-skill attributes successfully")
+    void updatesMicroSkillSuccessfully() {
+        CreateMicroSkillCommand createCmd = new CreateMicroSkillCommand(
+                "org-1",
+                "SPRING_BOOT",
+                "Spring Boot",
+                "Old description",
+                "KNOWLEDGE");
+        MicroSkill created = service.createMicroSkill(createCmd);
+
+        UpdateMicroSkillCommand updateCmd = new UpdateMicroSkillCommand(
+                "org-1",
+                created.getId().toString(),
+                "Spring Boot 3",
+                "Modern Spring Boot 3 framework",
+                "INNOVATION",
+                SkillStatus.ACTIVE);
+
+        MicroSkill updated = service.updateMicroSkill(updateCmd);
+        assertEquals("Spring Boot 3", updated.getName());
+        assertEquals("Modern Spring Boot 3 framework", updated.getDescription());
+        assertEquals("INNOVATION", updated.getMacroCompetencyCode());
+    }
+
+    @Test
+    @DisplayName("REQ-012-F04: Deletes unused micro-skill successfully")
+    void deletesUnusedMicroSkillSuccessfully() {
+        CreateMicroSkillCommand createCmd = new CreateMicroSkillCommand(
+                "org-1",
+                "TO_DELETE",
+                "To Delete Skill",
+                "Description",
+                "KNOWLEDGE");
+        MicroSkill created = service.createMicroSkill(createCmd);
+
+        service.deleteMicroSkill("org-1", created.getId().toString());
+        assertTrue(repository.findById("org-1", created.getId()).isEmpty());
+    }
+
+    @Test
+    @DisplayName("REQ-012-F04: Rejects deletion when micro-skill has active dependencies with 409 exception")
+    void rejectsDeletionWhenReferenced() {
+        CreateMicroSkillCommand createCmd = new CreateMicroSkillCommand(
+                "org-1",
+                "REFERENCED_SKILL",
+                "Referenced Skill",
+                "Description",
+                "KNOWLEDGE");
+        MicroSkill created = service.createMicroSkill(createCmd);
+        repository.dependencyCounts.put(created.getId().toString(), 3);
+
+        assertThrows(MicroSkillInUseException.class,
+                () -> service.deleteMicroSkill("org-1", created.getId().toString()));
+    }
+
     private static class InMemoryMicroSkillRepository implements MicroSkillRepository {
         final List<MicroSkill> skills = new ArrayList<>();
+        final java.util.Map<String, Integer> dependencyCounts = new java.util.HashMap<>();
 
         @Override
         public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
@@ -122,6 +182,28 @@ class MicroSkillServiceTest {
             return skills.stream()
                     .filter(s -> s.getOrganizationId().equals(organizationId))
                     .toList();
+        }
+
+        @Override
+        public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
+            return skills.stream()
+                    .filter(s -> s.getOrganizationId().equals(organizationId))
+                    .filter(s -> query == null || query.isBlank()
+                            || s.getName().toLowerCase().contains(query.toLowerCase())
+                            || s.getCode().toLowerCase().contains(query.toLowerCase()))
+                    .filter(s -> macroCode == null || macroCode.isBlank() || s.getMacroCompetencyCode().equalsIgnoreCase(macroCode))
+                    .filter(s -> status == null || s.getStatus() == status)
+                    .toList();
+        }
+
+        @Override
+        public void delete(String organizationId, MicroSkillId id) {
+            skills.removeIf(s -> s.getOrganizationId().equals(organizationId) && s.getId().equals(id));
+        }
+
+        @Override
+        public int countDependencies(String organizationId, MicroSkillId id) {
+            return dependencyCounts.getOrDefault(id.toString(), 0);
         }
     }
 }
