@@ -1,0 +1,408 @@
+{
+  "datasetVersion": "RQ1_PROFILES_V9",
+  "sourceSha256": "c8fa404559b8bdb886ebf303c8d9d08a9c6da6a4fbb1b61d6d59695e85391509",
+  "expertReferenceStatus": "NOT_ANNOTATED",
+  "instructions": "Expert independently selects 5 distinct relevant module codes per profile, with rationale, without viewing algorithm rankings.",
+  "references": [
+    {
+      "userId": "USR-008",
+      "targetRoleCode": "DEVOPS_ENGINEER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-012",
+      "targetRoleCode": "DEVOPS_ENGINEER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-020",
+      "targetRoleCode": "DEVOPS_ENGINEER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-028",
+      "targetRoleCode": "DEVOPS_ENGINEER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-039",
+      "targetRoleCode": "DEVOPS_ENGINEER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-053",
+      "targetRoleCode": "DEVOPS_ENGINEER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-064",
+      "targetRoleCode": "DEVOPS_ENGINEER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-079",
+      "targetRoleCode": "DEVOPS_ENGINEER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-093",
+      "targetRoleCode": "ICT_ENGINEERING_MANAGER_M3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-095",
+      "targetRoleCode": "ICT_ENGINEERING_MANAGER_M3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-102",
+      "targetRoleCode": "ICT_TECHNOLOGY_EXECUTIVE_M4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-132",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-139",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-147",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-158",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-161",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-173",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-176",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-190",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-193",
+      "targetRoleCode": "JAVA_BACKEND_DEVELOPER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-208",
+      "targetRoleCode": "DATA_ANALYST_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-214",
+      "targetRoleCode": "DATA_ANALYST_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-223",
+      "targetRoleCode": "DATA_ANALYST_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-234",
+      "targetRoleCode": "DATA_ANALYST_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-249",
+      "targetRoleCode": "DATA_ANALYST_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-257",
+      "targetRoleCode": "DATA_ANALYST_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-270",
+      "targetRoleCode": "DATA_ENGINEERING_MANAGER_M3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-279",
+      "targetRoleCode": "DATA_ENGINEER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-285",
+      "targetRoleCode": "DATA_ENGINEER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-295",
+      "targetRoleCode": "DATA_ENGINEER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-308",
+      "targetRoleCode": "DATA_ENGINEER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-320",
+      "targetRoleCode": "DATA_ENGINEER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-330",
+      "targetRoleCode": "DATA_ENGINEER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-332",
+      "targetRoleCode": "DATA_ENGINEER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-339",
+      "targetRoleCode": "DATA_TECHNOLOGY_EXECUTIVE_M4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-360",
+      "targetRoleCode": "AI_ENGINEERING_MANAGER_M3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-365",
+      "targetRoleCode": "AI_TECHNOLOGY_EXECUTIVE_M4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-371",
+      "targetRoleCode": "AI_TECHNOLOGY_EXECUTIVE_M4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-378",
+      "targetRoleCode": "MACHINE_LEARNING_ENGINEER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-390",
+      "targetRoleCode": "MACHINE_LEARNING_ENGINEER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-403",
+      "targetRoleCode": "MACHINE_LEARNING_ENGINEER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-422",
+      "targetRoleCode": "MACHINE_LEARNING_ENGINEER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-433",
+      "targetRoleCode": "MACHINE_LEARNING_ENGINEER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-444",
+      "targetRoleCode": "MLOPS_ENGINEER_P1",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-451",
+      "targetRoleCode": "MLOPS_ENGINEER_P2",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-463",
+      "targetRoleCode": "MLOPS_ENGINEER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-470",
+      "targetRoleCode": "MLOPS_ENGINEER_P3",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-479",
+      "targetRoleCode": "MLOPS_ENGINEER_P4",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-488",
+      "targetRoleCode": "MLOPS_ENGINEER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    },
+    {
+      "userId": "USR-491",
+      "targetRoleCode": "MLOPS_ENGINEER_P5",
+      "relevantModuleCodes": [],
+      "rationale": "",
+      "annotatorId": "",
+      "annotationStatus": "PENDING"
+    }
+  ]
+}

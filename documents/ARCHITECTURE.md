@@ -1,6 +1,6 @@
 # Current Project Architecture
 
-**As of 2026-09-30.** This is a runnable database/deployment baseline plus an implementation base for REQ-001-F01 View Target Roles; it is not an implementation of all 84 drafted functions in [features/README.md](features/README.md). System status remains public. Target-role list/detail routes are enabled only in the local profile with the provisional local actor flag; production security remains deny-by-default until the real Identity authorization contract is integrated.
+**As of 2026-10-02.** This is a runnable database/deployment baseline plus tested local implementation bases for REQ-001-F01 View Target Roles and REQ-001-F02 Choose Target Role; it is not an implementation of all drafted functions. Unit, API/security, PostgreSQL/Neo4j integration, Compose and scoped Playwright evidence for REQ-001 are recorded under `documents/testing`. Production security remains deny-by-default until the real Identity authorization contract is integrated.
 
 ## Runtime topology
 
@@ -10,25 +10,27 @@
 
 - One Spring Boot backend owns HTTP, security, migrations, and the future feature modules. There is no separate Python recommendation service or additional backend framework. PostgreSQL and Neo4j are data stores, not application servers.
 - The `migrate` profile runs Flyway first, then the Neo4j migrator under a PostgreSQL advisory lock, and exits. Compose starts the API only after that process succeeds. The `local` and `prod` API profiles do not run Flyway. A failed graph migration can leave PostgreSQL migrated; rerunning `migrate` is safe and checks Neo4j migration checksums.
-- Development Compose enables a repeatable, **sample-only** graph seed. Production initializes an empty catalog; no sample accounts or billing records are created. Docker named volumes persist both databases across restarts.
+- Development Compose enables a repeatable, **sample-only** cross-store seed: stable Neo4j catalog IDs for two organization-scoped target roles match immutable PostgreSQL catalog references plus the organization/account/learner fixture. The second role supports local change/concurrency/system checks. The seed does not create a target selection or reset learner revisions on an existing volume. Production initializes an empty catalog and never creates sample accounts or billing records. Docker named volumes persist both databases across restarts.
 - [compose.dev.yml](../compose.dev.yml) runs Vite with live source mounts and publishes services on loopback. [compose.prod.yml](../compose.prod.yml) builds static assets into Caddy and publishes only the HTTP web entry point on loopback. Database and API containers have no published production ports.
 
 ## Ownership and data
 
 | Store | Current responsibility | Current baseline |
 | --- | --- | --- |
-| PostgreSQL 17.6 | Organizations, accounts/roles, assessments, question mappings and results, mastery/evidence, learning activity, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V6 in [db/migration](../backend/src/main/resources/db/migration); V6 adds organization identity and the four product actor codes while retaining legacy codes. |
-| Neo4j 5.26 Community | Catalog graph: `JobDomain`, organization-scoped `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule` and the seven relationships in [neo4j_schema.md](neo4j_schema.md) | Ten `id`/`code` uniqueness constraints, one per property per domain label, in [V1__catalog_constraints.cypher](../backend/src/main/resources/db/neo4j/V1__catalog_constraints.cypher). Development seed creates ICT, a Java role with `organizationId`, `seniority` and `responsibilities`, three macros, two skills, two modules, and all seven relationship types. |
+| PostgreSQL 17.6 | Organizations, accounts/roles, target selections, assessments, mastery/evidence, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V7 in [db/migration](../backend/src/main/resources/db/migration); V7 adds F02 command idempotency and immutable role display snapshots. |
+| Neo4j 5.26 Community | Catalog graph: `JobDomain`, organization-scoped `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule` and the seven relationships in [neo4j_schema.md](neo4j_schema.md) | Ten `id`/`code` uniqueness constraints, one per property per domain label, in [V1__catalog_constraints.cypher](../backend/src/main/resources/db/neo4j/V1__catalog_constraints.cypher). Development seed creates ICT, Java Backend Developer P3 and Platform Engineer P4 roles with `organizationId`, `seniority` and `responsibilities`, three macros, two skills, two modules, and all seven relationship types. |
 
 ## Database diagrams
 
 ### PostgreSQL
 
-The three views below include every column of the 52 migrated tables, including V6 changes to earlier tables. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
+The three views below include every column of the 53 migrated tables through V7. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
 
 ![PostgreSQL identity, catalog and processing tables](diagrams/postgresql.svg)
 
 [Identity and catalog PlantUML source](diagrams/postgresql.puml)
+
+The PlantUML source includes V7. Regenerate the checked-in SVG when Docker/PlantUML tooling is available.
 
 ![PostgreSQL assessment and learning tables](diagrams/postgresql-assessment.svg)
 
@@ -52,7 +54,13 @@ All catalog nodes use stable `id` and `code` keys. `TargetRole.organizationId` p
 
 The graph also has a technical `SchemaMigration` label with a uniqueness constraint and checksum record; it is **not** a sixth catalog entity. Neo4j Community constraints cannot by themselves enforce every V5 rule (such as `[0,1]` values, statuses, one active macro per skill, valid module URLs, or no prerequisite cycles). Future graph write services must validate these rules before committing. Dev sample `sourceUrl` values point to public Java and Spring guides; the seed never runs in `prod`.
 
-PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the supplied V5 graph schema uses stable `id`/`code` without graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. Do not treat the seeded graph as a published PostgreSQL catalog release; the reference and historical-snapshot contract needs confirmation before role selection, assessment, or pathway implementation. V6 allows nullable organization IDs for legacy accounts and platform administrators; this is not complete tenant authorization.
+PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the supplied V5 graph schema uses stable `id`/`code` without graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. Successful request outcomes persist the selection, target revision, and original `changed` value so an idempotent replay returns the same observable result. F02 uses the trusted learner as the outbox aggregate, the target revision as source revision, and the request ID as correlation ID; selection, request outcome, audit, and outbox writes share the caller's PostgreSQL transaction. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. The provisional runtime adapter rechecks F01 availability under the trusted organization and then resolves exactly one `TARGET_ROLE` reference from the PostgreSQL release whose catalog guard is `OPEN`; mismatch is a dependency failure and the command never creates a reference. The local migrate flow may seed matching cross-store references, but that seed is not a published production release.
+
+F02's temporary assessment guard and `SUPERSEDED` pathway archive mapping are local/demo adapters behind application ports. They load only with the explicit local-dependency property and are absent from the production profile. The real assessment/pathway adapters must share the learner lock/revision transaction contract or provide an owner-approved equivalent before F02 is production-complete.
+
+F02's HTTP adapter is currently a local-only vertical slice. Its configured-actor security chain permits only GET/PUT on `/api/v1/employee/target-role-selection` when the local actor flag is enabled and excludes that endpoint from CSRF because no browser-authenticated principal exists yet. The production security chain is unchanged and denies the endpoint until the real Identity/Security adapter is delivered.
+
+The local assessment guard is controlled server-side through `TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS`, which Compose passes to the API container with a default of `false`. It exists only to exercise the provisional `AssessmentActivityGuardPort`; production must replace it with the assessment owner's lifecycle query. The frontend repository has a scoped Playwright system runner that targets the Compose web proxy with an installed Chrome executable; Vitest remains limited to `src/**/*.test.{ts,tsx}` so unit/component and browser suites do not cross-discover each other.
 
 ## Backend structure
 
@@ -66,7 +74,7 @@ backend/
     identity/            security boundary; account APIs not yet built
     assessment/          reserved feature package
     competency/          reserved feature package
-    learning/            reserved feature package
+    learning/            F02 target-role selection domain, application ports/service, HTTP and PostgreSQL/local adapters
     recommendation/      reserved feature package
     pathway/             reserved feature package
     synchronization/     reserved feature package
@@ -74,7 +82,7 @@ backend/
     evaluation/          reserved feature package
   src/main/resources/
     application*.yml     local, prod, migrate, starter, worker profiles
-    db/migration/        PostgreSQL Flyway V1-V6
+    db/migration/        PostgreSQL Flyway V1-V7
     db/neo4j/            graph constraints packaged in the backend JAR
   src/test/java/com/adaptlearngraph/
     platform/            unit, security, database and graph tests
@@ -86,7 +94,7 @@ documents/testing/      unit, integration, and system test plans
 compose.dev.yml, compose.prod.yml, .env.example
 ```
 
-Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). `catalog` now applies this structure for REQ-001-F01: controllers call `TargetRoleQueryUseCase`, the application service reads trusted actor context and `TargetRoleCatalogPort`, and the Neo4j adapter maps driver records into domain outputs. Existing placeholders remain placeholders; create real classes within these boundaries as functions become clarified. Billing, notifications, and organization-specific feature packages should be added when their contracts are agreed, not as empty scaffolding. The frontend adds a feature-local target-role API/types/query boundary and browse/detail components while keeping the existing route and isolating legacy selection behavior.
+Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). `catalog` now applies this structure for REQ-001-F01: controllers call `TargetRoleQueryUseCase`, the application service reads trusted actor context and `TargetRoleCatalogPort`, and the Neo4j adapter maps driver records into domain outputs. Existing placeholders remain placeholders; create real classes within these boundaries as functions become clarified. Billing, notifications, and organization-specific feature packages should be added when their contracts are agreed, not as empty scaffolding. The frontend has feature-local target-role browse/detail and selection API/type/query boundaries. The routed F02 page composes an active-selection summary and catalog that share the server selection query; catalog cards and detail use it for active-state and confirmation. The mutation receives one prepared idempotency key and invalidates that query after success. The unreferenced legacy page-level mock hero/write handler was removed; F02 does not synchronize server selection into localStorage. `TargetRoleSelector`, `useEmployeeLearningState`, `NotificationDropdown`, and their overview/assessment/gap/pathway child consumers remain a separate migration follow-up.
 
 ## Technologies
 

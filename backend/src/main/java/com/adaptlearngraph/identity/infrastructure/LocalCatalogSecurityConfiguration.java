@@ -21,13 +21,20 @@ public class LocalCatalogSecurityConfiguration {
         return http
                 .securityMatcher(
                         "/api/v1/employee/target-roles",
-                        "/api/v1/employee/target-roles/**")
+                        "/api/v1/employee/target-roles/**",
+                        "/api/v1/employee/target-role-selection")
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/employee/target-roles",
-                                "/api/v1/employee/target-roles/**")
+                                "/api/v1/employee/target-roles/**",
+                                "/api/v1/employee/target-role-selection")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/employee/target-role-selection")
                         .permitAll()
                         .anyRequest().denyAll())
+                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/api/v1/employee/target-role-selection"))
                 .build();
     }
 

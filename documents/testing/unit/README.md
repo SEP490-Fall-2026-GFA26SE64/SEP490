@@ -14,12 +14,22 @@ Unit testing in this workspace validates pure domain invariants, application ser
 | Requirement ID | Feature Name | Primary Actor | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **REQ-001-F01** | View Target Roles | `LEARNER` | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
+| **REQ-001-F02** | Choose Target Role | `LEARNER` | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |
 | **REQ-011** | Assigned Target Roles | `DOMAIN_EXPERT` | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | **PASSED** |
 | **REQ-012** | Micro-Skill Management | `DOMAIN_EXPERT` | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | **PASSED** |
 | **REQ-015** | Role Requirements | `DOMAIN_EXPERT` | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | **PASSED** |
+| **REQ-018** | Target-Role Graph Editing | `DOMAIN_EXPERT` | [REQ-018-target-role-graph-editing.md](REQ-018-target-role-graph-editing.md) | **PASSED** |
 | **REQ-023** | Target Role Management | `LD_MANAGER` | [REQ-023-target-role-management.md](REQ-023-target-role-management.md) | **PASSED** |
 | **REQ-024** | Expert Assignment | `LD_MANAGER` | [REQ-024-expert-assignment.md](REQ-024-expert-assignment.md) | **PASSED** |
 | **Architecture** | Hexagonal Boundaries & Base | System / ArchUnit | [architecture-boundaries.md](architecture-boundaries.md) | **PASSED** |
+
+---
+
+## Execution Summaries
+
+- The executable-test cluster for `REQ-001-F01` was approved and its domain/application, API/security and frontend component suites passed on 2026-09-30; cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md).
+- `REQ-001-F02` Cluster 2 completed on 2026-10-02: T1 domain/command/hash passed 8 tests, T2 application policy/replay passed 15 tests, T3 HTTP/security passed 16 tests, and T5 frontend selection plus F01 regression passed 30 tests across eight files. Cases, deterministic fake boundaries, MVC/security slices, frontend fetch/hook fakes, and commands are tracked in [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md).
+- Vitest is scoped to `src/**/*.test.{ts,tsx}`; Playwright specs live under `system-tests/` and are system evidence, not unit evidence. Other targets such as REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved.
 
 ---
 

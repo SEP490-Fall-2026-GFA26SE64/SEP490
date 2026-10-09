@@ -4,11 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TargetRoleApiError } from './targetRoleApi'
 import { TargetRoleBrowsePanel } from './TargetRoleBrowsePanel'
 import { useTargetRole, useTargetRoles } from './targetRoleQueries'
+import { useChooseTargetRoleMutation, useTargetRoleSelection } from './targetRoleSelectionQueries'
 import type { TargetRoleDetail, TargetRoleSummary } from './targetRoleTypes'
 
 vi.mock('./targetRoleQueries', () => ({
   useTargetRoles: vi.fn(),
   useTargetRole: vi.fn(),
+}))
+
+vi.mock('./targetRoleSelectionQueries', () => ({
+  useTargetRoleSelection: vi.fn(),
+  useChooseTargetRoleMutation: vi.fn(),
 }))
 
 const SUMMARY: TargetRoleSummary = {
@@ -37,6 +43,8 @@ describe('TargetRoleBrowsePanel', () => {
   beforeEach(() => {
     vi.mocked(useTargetRoles).mockReturnValue(queryResult({ data: [SUMMARY] }))
     vi.mocked(useTargetRole).mockReturnValue(queryResult({ data: DETAIL }))
+    vi.mocked(useTargetRoleSelection).mockReturnValue(queryResult({ data: null }))
+    vi.mocked(useChooseTargetRoleMutation).mockReturnValue(mutationResult())
   })
 
   afterEach(() => {
@@ -44,12 +52,12 @@ describe('TargetRoleBrowsePanel', () => {
     vi.useRealTimers()
   })
 
-  it('renders browse data and opens detail without exposing selection actions', async () => {
+  it('preserves browse data and detail assertions while exposing an eligible selection action', async () => {
     const user = userEvent.setup()
     render(<TargetRoleBrowsePanel />)
 
     expect(screen.getByText('Java Backend Developer')).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /select/i })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Choose' })).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: 'View details' }))
 
@@ -116,6 +124,16 @@ function queryResult(overrides: Record<string, unknown> = {}) {
     isPending: false,
     isError: false,
     refetch: vi.fn(),
+    ...overrides,
+  } as never
+}
+
+function mutationResult(overrides: Record<string, unknown> = {}) {
+  return {
+    error: null,
+    isPending: false,
+    mutate: vi.fn(),
+    reset: vi.fn(),
     ...overrides,
   } as never
 }

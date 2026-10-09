@@ -8,9 +8,10 @@ export interface DialogProps {
   children: React.ReactNode
   className?: string
   containerClassName?: string
+  ariaLabel?: string
 }
 
-export function Dialog({ open, onOpenChange, children, className, containerClassName }: DialogProps) {
+export function Dialog({ open, onOpenChange, children, className, containerClassName, ariaLabel }: DialogProps) {
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && open) {
@@ -32,6 +33,9 @@ export function Dialog({ open, onOpenChange, children, className, containerClass
       />
       {/* Dialog content */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
         className={cn(
           'relative z-50 w-full max-w-lg max-h-[85vh] rounded-2xl border border-border bg-card p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-150 my-auto flex flex-col overflow-hidden',
           className

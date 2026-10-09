@@ -2,7 +2,7 @@
 
 **Function ID:** REQ-001-F01  
 **Actor:** Employee  
-**Status:** Implementation base and executable test suites available; browser system evidence and production identity integration pending
+**Status:** Local implementation/test review complete; catalog/detail browser evidence available; production Identity/Catalog integration remains provisional
 **Feature:** [Target Role Selection](README.md)
 
 ## Description
@@ -54,7 +54,7 @@ The base has no pagination or catalog revision field. Results sort by normalized
 - Backend implements the inbound query use case, trusted actor port, Neo4j catalog adapter/mapper, REST list/detail endpoints and feature-local error mapping.
 - Local development uses a server-configured actor adapter enabled only by the `local` profile and `catalog.local-actor.enabled=true`; production security remains deny-by-default until the Identity owner supplies the real actor/authorization integration.
 - Frontend route `/employee/target-roles` uses TanStack Query for list/detail, search and seniority filtering, with loading, empty, retry and unavailable-detail states. Browse does not call the legacy selection flow.
-- Manual local API smoke was completed on 2026-09-30. This is not executable-test evidence; unit, API/security, Neo4j integration and frontend/system tests belong to the separately approved test cluster.
+- Manual local API smoke was completed on 2026-09-30. Unit, API/security, Neo4j integration and frontend suites passed; the scoped REQ-001 Playwright flow later verified routed catalog/detail behavior on the full Compose stack. Search/filter and dependency recovery are covered below the browser level rather than by a dedicated F01 Playwright scenario.
 
 ## Confirmed Rules
 

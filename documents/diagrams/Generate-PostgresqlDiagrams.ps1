@@ -46,7 +46,7 @@ $groups = @(
         File = 'postgresql.puml'
         Tables = @('organization', 'organizational_unit', 'account', 'application_role',
             'account_role', 'manager_scope', 'session', 'learner_state', 'catalog_guard',
-            'catalog_release', 'catalog_reference', 'target_selection', 'outbox_event',
+            'catalog_release', 'catalog_reference', 'target_selection', 'target_selection_request', 'outbox_event',
             'processing_job', 'processing_receipt', 'audit_event')
     },
     @{
