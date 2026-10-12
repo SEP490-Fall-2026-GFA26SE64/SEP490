@@ -1,23 +1,31 @@
 # Edit Prerequisite Relationships
 
 **Function ID:** REQ-018-F02  
-**Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Actor:** Domain Expert, L&D Manager  
+**Status:** Implemented  
+**Test Evidence:** [unit/REQ-018](../../testing/unit/REQ-018-target-role-graph-editing.md), [integration/REQ-018](../../testing/integration/REQ-018-target-role-graph-editing.md), [system/REQ-018](../../testing/system/REQ-018-target-role-graph-editing.md)  
 **Feature:** [Target-Role Graph Editing](README.md)
 
 ## Description
 
-Create, modify, or remove authorized micro-skill prerequisite relationships used in pathway generation and recalculation.
+Create, inspect, or remove authorized micro-skill prerequisite relationships (`PREREQUISITE_OF`) used in pathway generation and mastery gating.
 
-**Input:** Skill pair, dependency direction, and requested graph change.  
-**Outcome:** An updated prerequisite relationship after applicable validation.
+**Input:** Source micro-skill ID, target micro-skill ID, and minimum mastery threshold (`minMastery`).  
+**Outcome:** An updated directed acyclic prerequisite relationship persisted in Neo4j.
 
-## Open Decisions
+## Confirmed Rules
 
-- Mandatory versus optional prerequisites, weights, and cross-role dependencies.
-- Cycle prevention, minimum proficiency conditions, and missing-node validation.
-- Draft/publish workflow, concurrent edits, and impact on active pathways without expanding automatic recalculation triggers.
+- **Schema Fidelity:** Relationship type `PREREQUISITE_OF` stores:
+  - `minMastery`: Float between `0.0` and `1.0` (default: `0.70`).
+  - `status`: String (`ACTIVE`).
+- **Anti-Cycle Invariant (DAG):** Micro-skill prerequisite relationships form a strict Directed Acyclic Graph (DAG). Neo4j Cypher path query `MATCH path = (target)-[:PREREQUISITE_OF*1..25]->(source)` evaluates whether the proposed dependency would induce a cycle. If a cycle is detected, creation is rejected with `PrerequisiteCycleException` (HTTP `400 Bad Request`).
+- **Self-Loop Invariant:** `sourceSkillId != targetSkillId`. Attempting to link a skill to itself throws `400 Bad Request`.
+- **Endpoints:**
+  - `GET /api/v1/organizations/{organizationId}/prerequisites`
+  - `POST /api/v1/organizations/{organizationId}/prerequisites` (Body: `{sourceSkillId, targetSkillId, minMastery, status}`)
+  - `DELETE /api/v1/organizations/{organizationId}/prerequisites?sourceSkillId=...&targetSkillId=...`
+- **Security RBAC:** Domain Expert and L&D Manager authorized.
 
 ## Acceptance Baseline
 
-The resulting dependency direction is unambiguous and only authorized relationships are changed; exact validity rules remain to be agreed.
+The resulting dependency direction is unambiguous, acyclic, and strictly modeled according to `documents/ARCHITECTURE.md` and `documents/neo4j_schema.md`.

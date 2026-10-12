@@ -159,11 +159,11 @@
 | REQ-008 | [Module assessment](Module%20assessment/README.md) | 1 | 0 |
 | REQ-009 | [Assessment results](Assessment%20results/README.md) | 2 | 0 |
 | REQ-010 | [Recalculation visibility](Recalculation%20visibility/README.md) | 1 | 0 |
-| REQ-011 | [Assigned target roles](Assigned%20target%20roles/README.md) | 1 | 0 |
-| REQ-012 | [Micro-skill management](Micro-skill%20management/README.md) | 4 | 0 |
+| REQ-011 | [Assigned target roles](Assigned%20target%20roles/README.md) | 1 | 1 |
+| REQ-012 | [Micro-skill management](Micro-skill%20management/README.md) | 4 | 1 |
 | REQ-013 | [Learning module management](Learning%20module%20management/README.md) | 4 | 0 |
 | REQ-014 | [Question management](Question%20management/README.md) | 4 | 0 |
-| REQ-015 | [Role requirements](Role%20requirements/README.md) | 3 | 0 |
+| REQ-015 | [Role requirements](Role%20requirements/README.md) | 3 | 3 |
 | REQ-016 | [Module outcomes](Module%20outcomes/README.md) | 2 | 0 |
 | REQ-017 | [Question mapping](Question%20mapping/README.md) | 2 | 0 |
 | REQ-018 | [Target-role graph editing](Target-role%20graph%20editing/README.md) | 2 | 0 |
@@ -171,8 +171,8 @@
 | REQ-020 | [Pathway adjustment](Pathway%20adjustment/README.md) | 2 | 0 |
 | REQ-021 | [AI soft-skill review](AI%20soft-skill%20review/README.md) | 1 | 0 |
 | REQ-022 | [Account management](Account%20management/README.md) | 5 | 0 |
-| REQ-023 | [Target role management](Target%20role%20management/README.md) | 4 | 0 |
-| REQ-024 | [Expert assignment](Expert%20assignment/README.md) | 2 | 0 |
+| REQ-023 | [Target role management](Target%20role%20management/README.md) | 5 | 5 |
+| REQ-024 | [Expert assignment](Expert%20assignment/README.md) | 2 | 2 |
 | REQ-025 | [Employee progress](Employee%20progress/README.md) | 1 | 0 |
 | REQ-026 | [Organizational statistics](Organizational%20statistics/README.md) | 1 | 0 |
 | REQ-027 | [Report export](Report%20export/README.md) | 1 | 0 |

@@ -2,21 +2,24 @@
 
 **Function ID:** REQ-012-F01  
 **Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Status:** Implemented  
+**Test Evidence:** [unit/REQ-012](../../testing/unit/REQ-012-micro-skill-management.md), [integration/REQ-012](../../testing/integration/REQ-012-micro-skill-management.md), [system/REQ-012](../../testing/system/REQ-012-micro-skill-management.md)  
 **Feature:** [Micro-Skill Management](README.md)
 
 ## Description
 
-Create a granular skill within the expert's authorized knowledge scope for later role, module, question, and prerequisite mapping.
+Create a granular skill within the expert's authorized knowledge scope for later role, module, question, and prerequisite mapping. Domain Experts create micro-skills and will subsequently link them to Target Roles (REQ-015 in Sprint 3) and prerequisite graphs (REQ-018 in Sprint 4).
 
-**Input:** Proposed skill attributes and ownership context.  
-**Outcome:** A new micro-skill available to authorized mapping functions.
+**Input:** Skill name, code, description, associated macro-competency (`KNOWLEDGE`, `COMMUNICATION`, `INNOVATION`), and organization context (`organizationId`).  
+**Outcome:** A new `MicroSkill` node in Neo4j with status `ACTIVE`, isolated by `organizationId`, and linked to its parent `MacroCompetency`.
 
-## Open Decisions
+## Confirmed Related Rules
 
-- Required fields, naming rules, categories, and broader competency association.
-- Organization-owned versus shared catalog and duplicate detection.
-- Immediate availability versus draft/publish approval.
+- **Actor Role**: Domain Expert (`DOMAIN_EXPERT` / `EXPERT`).
+- **Tenant Scope**: Strict isolation by `organizationId`.
+- **Competency Grouping**: Every created micro-skill connects to a predefined `MacroCompetency` (`KNOWLEDGE`, `COMMUNICATION`, `INNOVATION`) via `(:MacroCompetency)-[:HAS_SKILL]->(:MicroSkill)`.
+- **Role Decoupling**: Creation does not automatically link the micro-skill to any target role. The Domain Expert explicitly associates micro-skills with target roles in REQ-015 (Sprint 3).
+- **Uniqueness**: Micro-skill code must be unique within the organization. Duplicates return `409 Conflict`.
 
 ## Acceptance Baseline
 

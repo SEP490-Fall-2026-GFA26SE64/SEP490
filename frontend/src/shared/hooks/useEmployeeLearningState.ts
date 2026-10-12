@@ -11,6 +11,15 @@ export interface NotificationItem {
   actionLabel?: string
 }
 
+export interface HistoricalSkill {
+  skillKey: string
+  skillName: string
+  macroCode?: string
+  completedAt: string
+  masteryScore: number
+  status: 'completed' | 'superseded'
+}
+
 export interface HistoricalTargetRole {
   roleKey: string
   roleTitle: string
@@ -28,6 +37,10 @@ export interface LearnerLearningProfile {
   currentRole: string
   targetRole: string | null
   targetRoleVersion: string | null
+  targetSkill?: string | null
+  targetSkillMacroCode?: string | null
+  targetSkillLevel?: string | null
+  targetSkillAssignedAt?: string | null
   deadline: string | null
   assignedByManager: string | null
   assignedAt: string | null
@@ -36,8 +49,11 @@ export interface LearnerLearningProfile {
   diagnosticScore: number | null
   diagnosticCompletedAt: string | null
   managerNotes?: string
+  selectedViewType?: 'role' | 'skill'
   selectedViewRoleKey: string // 'active' or key of historical role
+  selectedViewSkillKey?: string // 'active' or key of historical skill
   previousRoles: HistoricalTargetRole[]
+  previousSkills?: HistoricalSkill[]
 }
 
 // Backwards compatibility alias
@@ -55,6 +71,10 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   currentRole: 'Junior Graph Developer',
   targetRole: 'AI Knowledge Architect',
   targetRoleVersion: 'v2.4 (Latest - Published 2026-06)',
+  targetSkill: 'Google Gemini & LLM Orchestration',
+  targetSkillMacroCode: 'GEN_AI',
+  targetSkillLevel: 'Advanced',
+  targetSkillAssignedAt: '2026-09-25',
   deadline: '2026-12-31',
   assignedByManager: 'Self-Selected (Learner)',
   assignedAt: '2026-09-21 09:30',
@@ -63,7 +83,9 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   diagnosticScore: null,
   diagnosticCompletedAt: null,
   managerNotes: 'Targeting Q4 2026 promotion. Complete diagnostic assessment to calibrate GNN and ontology pathway.',
+  selectedViewType: 'role',
   selectedViewRoleKey: 'active',
+  selectedViewSkillKey: 'active',
   previousRoles: [
     {
       roleKey: 'junior-graph-developer',
@@ -86,6 +108,24 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
       description: 'Distributed persistence, transactional CQRS, and Kafka outbox synchronizations.',
     },
   ],
+  previousSkills: [
+    {
+      skillKey: 'python-core',
+      skillName: 'Python Core & Async Semantics',
+      macroCode: 'PROGRAMMING_LANGUAGES',
+      completedAt: '2026-06-15',
+      masteryScore: 95,
+      status: 'completed',
+    },
+    {
+      skillKey: 'cypher-basics',
+      skillName: 'Neo4j Cypher Fundamentals',
+      macroCode: 'GRAPH_DATABASE',
+      completedAt: '2026-08-10',
+      masteryScore: 92,
+      status: 'completed',
+    },
+  ],
 }
 
 const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
@@ -104,6 +144,10 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
     currentRole: employee ? (employee.department || 'Associate') : 'Associate',
     targetRole,
     targetRoleVersion,
+    targetSkill: null,
+    targetSkillMacroCode: null,
+    targetSkillLevel: null,
+    targetSkillAssignedAt: null,
     deadline: targetRole ? '2026-12-31' : null,
     assignedByManager: 'Self-Selected (Learner)',
     assignedAt: new Date().toISOString().slice(0, 10),
@@ -112,8 +156,11 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
     diagnosticScore: null,
     diagnosticCompletedAt: null,
     managerNotes: targetRole ? `Calibrate your competency pathway for ${targetRole}.` : 'Select a target role to begin learning.',
+    selectedViewType: 'role',
     selectedViewRoleKey: 'active',
+    selectedViewSkillKey: 'active',
     previousRoles: [],
+    previousSkills: [],
   }
 }
 
@@ -419,6 +466,65 @@ export function useEmployeeLearningState() {
     saveProfile(updatedProfile)
   }, [profile, saveProfile])
 
+  const setSelectedViewType = React.useCallback(
+    (type: 'role' | 'skill') => {
+      saveProfile({
+        ...profile,
+        selectedViewType: type,
+      })
+    },
+    [profile, saveProfile]
+  )
+
+  const setSelectedViewSkillKey = React.useCallback(
+    (skillKey: string) => {
+      saveProfile({
+        ...profile,
+        selectedViewSkillKey: skillKey,
+      })
+    },
+    [profile, saveProfile]
+  )
+
+  const selectTargetSkill = React.useCallback(
+    (skillName: string, macroCode?: string, level = 'Intermediate') => {
+      let updatedPrevious = profile.previousSkills || []
+      if (profile.targetSkill && profile.targetSkill !== skillName) {
+        const archiveEntry: HistoricalSkill = {
+          skillKey: `superseded-skill-${Date.now()}`,
+          skillName: profile.targetSkill,
+          macroCode: profile.targetSkillMacroCode || undefined,
+          completedAt: new Date().toISOString().split('T')[0],
+          masteryScore: 88,
+          status: 'superseded',
+        }
+        updatedPrevious = [archiveEntry, ...updatedPrevious]
+      }
+      saveProfile({
+        ...profile,
+        targetSkill: skillName,
+        targetSkillMacroCode: macroCode || null,
+        targetSkillLevel: level,
+        targetSkillAssignedAt: new Date().toISOString().split('T')[0],
+        selectedViewSkillKey: 'active',
+        selectedViewType: 'skill',
+        previousSkills: updatedPrevious,
+      })
+    },
+    [profile, saveProfile]
+  )
+
+  const clearTargetSkill = React.useCallback(() => {
+    saveProfile({
+      ...profile,
+      targetSkill: null,
+      targetSkillMacroCode: null,
+      targetSkillLevel: null,
+      targetSkillAssignedAt: null,
+      selectedViewSkillKey: 'active',
+    })
+  }, [profile, saveProfile])
+
   const clearNotifications = React.useCallback(() => {
     saveNotifications([])
   }, [saveNotifications])
@@ -430,7 +536,11 @@ export function useEmployeeLearningState() {
     unreadNotificationCount,
     notifications,
     setSelectedViewRoleKey,
+    setSelectedViewType,
+    setSelectedViewSkillKey,
     selectTargetRole,
+    selectTargetSkill,
+    clearTargetSkill,
     assignInitialTargetRole,
     replaceTargetRole,
     reviseAssignmentDeadline,

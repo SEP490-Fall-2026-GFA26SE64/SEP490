@@ -1,22 +1,24 @@
 # View Micro-Skills
 
 **Function ID:** REQ-012-F02  
-**Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Actor:** Domain Expert, L&D Manager  
+**Status:** Implemented  
+**Test Evidence:** [unit/REQ-012](../../testing/unit/REQ-012-micro-skill-management.md), [integration/REQ-012](../../testing/integration/REQ-012-micro-skill-management.md), [system/REQ-012](../../testing/system/REQ-012-micro-skill-management.md)  
 **Feature:** [Micro-Skill Management](README.md)
 
 ## Description
 
-Browse and inspect micro-skills that the expert is authorized to access.
+Browse and inspect micro-skills that the expert or manager is authorized to access within their organization.
 
-**Input:** Expert scope and optional catalog query.  
+**Input:** Expert scope and optional search query (`q`).  
 **Outcome:** Skill list and detail information for authorized records.
 
-## Open Decisions
+## Confirmed Rules
 
-- Search, filtering, sorting, and pagination.
-- Whether details include linked roles, modules, questions, and usage counts.
-- Visibility of archived, draft, or shared skills.
+- **Multi-Tenant Isolation:** Cypher queries filter strictly by `organizationId`.
+- **Search Query:** Supports case-insensitive fuzzy filtering across code and name.
+- **Strict Architecture Fields:** Returns `id`, `code`, `name`, `description`, `macroCompetencyCode`, `status`, `createdAt`, `updatedAt`. Legacy mock attributes (`bloomLevel`, `observableOutcome`, `provenance`) are eliminated.
+- **REST Endpoint:** `GET /api/v1/organizations/{organizationId}/micro-skills?q={optional}`
 
 ## Acceptance Baseline
 

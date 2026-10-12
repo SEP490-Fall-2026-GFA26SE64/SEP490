@@ -1,13 +1,15 @@
 import {
+  AlertCircle,
   ArrowRight,
   BookOpen,
   Check,
-  Copy,
   Edit3,
   Eye,
   Filter,
   GitBranch,
   Layers,
+  Maximize2,
+  Minimize2,
   Network as NetworkIcon,
   Plus,
   RefreshCw,
@@ -31,6 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../../shared/components/ui/Dialog'
+import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import {
@@ -44,9 +47,19 @@ import {
   updateActiveCompany,
 } from '../../../shared/stores/companyStore'
 import {
+  fetchMicroSkills,
+  fetchMacroCompetencies,
+  createMicroSkill,
+  updateMicroSkill,
+  deleteMicroSkill,
+} from '../../../shared/api/microSkillApi'
+import {
+  fetchPrerequisites,
+  createPrerequisite,
+  deletePrerequisite,
+} from '../../../shared/api/prerequisiteApi'
+import {
   type CompetencyModel,
-  INITIAL_COMPETENCIES,
-  INITIAL_MICRO_SKILLS,
   type MicroSkillModel,
   type PrerequisiteEdge,
 } from '../data/ldManagerMockData'
@@ -76,73 +89,65 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
       competencies: [
         {
           id: 'comp-llm-01',
-          stableId: 'comp-uuid-llm-01',
           code: 'COMP-LLM-01',
           name: 'Transformer Architectures & Attention Mechanisms',
-          definition: 'Deep understanding of self-attention matrices, positional encodings, and modern transformer layers.',
-          version: '1.0',
-          status: 'draft',
-          derivationRef: 'Stanford CS324 Foundation Models Curriculum 2026',
+          description: 'Deep understanding of self-attention matrices, positional encodings, and modern transformer layers.',
+          status: 'ACTIVE',
           skillIds: ['skill-attn-01', 'skill-kv-01'],
+          createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
         {
           id: 'comp-rag-01',
-          stableId: 'comp-uuid-rag-01',
           code: 'COMP-RAG-01',
           name: 'Retrieval Augmented Generation & Vector Indices',
-          definition: 'Engineering neural search indexing, re-ranking filters, and hybrid lexical-semantic retrieval.',
-          version: '1.0',
-          status: 'draft',
-          derivationRef: 'NeurIPS 2025 Knowledge Grounding Standards',
+          description: 'Engineering neural search indexing, re-ranking filters, and hybrid lexical-semantic retrieval.',
+          status: 'ACTIVE',
           skillIds: ['skill-vec-01', 'skill-rr-01'],
+          createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
       ],
       microSkills: [
         {
           id: 'skill-attn-01',
-          stableId: 'ms-uuid-attn-01',
           code: 'SKILL-ATTN-01',
           name: 'Implement Multi-Head Scaled Dot-Product Attention',
-          observableOutcome: 'Derives queries, keys, values tensors and computes masked softmax weights without memory leakage.',
-          bloomLevel: 'Apply',
-          version: '1.0',
-          status: 'draft',
-          provenance: { source: 'PyTorch Model Zoo', ruleRef: 'ATTN-CORE-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+          description: 'Derives queries, keys, values tensors and computes masked softmax weights without memory leakage.',
+          status: 'ACTIVE',
+          macroCompetencyCode: 'KNOWLEDGE',
+          createdAt: new Date().toISOString().slice(0, 10),
+          updatedAt: new Date().toISOString().slice(0, 10),
         },
         {
           id: 'skill-kv-01',
-          stableId: 'ms-uuid-kv-01',
           code: 'SKILL-KV-01',
           name: 'Configure KV-Cache Quantization & PagedAttention',
-          observableOutcome: 'Profiles vLLM chunked prefill memory allocations under high token concurrency.',
-          bloomLevel: 'Analyze',
-          version: '1.0',
-          status: 'draft',
-          provenance: { source: 'vLLM Systems Paper', ruleRef: 'PAGED-ATTN-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+          description: 'Profiles vLLM chunked prefill memory allocations under high token concurrency.',
+          status: 'ACTIVE',
+          macroCompetencyCode: 'KNOWLEDGE',
+          createdAt: new Date().toISOString().slice(0, 10),
+          updatedAt: new Date().toISOString().slice(0, 10),
         },
         {
           id: 'skill-vec-01',
-          stableId: 'ms-uuid-vec-01',
           code: 'SKILL-VEC-01',
           name: 'Construct HNSW Vector Graph Embedding Pipeline',
-          observableOutcome: 'Builds approximate nearest neighbor graph index with recall@10 >= 0.95.',
-          bloomLevel: 'Create',
-          version: '1.0',
-          status: 'draft',
-          provenance: { source: 'FAISS Benchmarks', ruleRef: 'VEC-IND-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+          description: 'Builds approximate nearest neighbor graph index with recall@10 >= 0.95.',
+          status: 'ACTIVE',
+          macroCompetencyCode: 'KNOWLEDGE',
+          createdAt: new Date().toISOString().slice(0, 10),
+          updatedAt: new Date().toISOString().slice(0, 10),
         },
         {
           id: 'skill-rr-01',
-          stableId: 'ms-uuid-rr-01',
           code: 'SKILL-RR-01',
           name: 'Integrate Cross-Encoder Reciprocal Rank Fusion',
-          observableOutcome: 'Applies reranking scoring to boost precision on complex domain queries.',
-          bloomLevel: 'Evaluate',
-          version: '1.0',
-          status: 'draft',
-          provenance: { source: 'Information Retrieval Council', ruleRef: 'RRF-01', type: 'source-backed', recordedDate: new Date().toISOString().slice(0, 10) },
+          description: 'Applies reranking scoring to boost precision on complex domain queries.',
+          status: 'ACTIVE',
+          macroCompetencyCode: 'KNOWLEDGE',
+          createdAt: new Date().toISOString().slice(0, 10),
+          updatedAt: new Date().toISOString().slice(0, 10),
         },
       ],
       prerequisites: [
@@ -171,46 +176,120 @@ export function CompetencyOntologyPage() {
   const { toast } = useToast()
 
   // State for active tab
-  const [activeTab, setActiveTab] = React.useState('competencies')
+  const [activeTab, setActiveTab] = React.useState('skills')
 
-  // Search & filter states for Tab 2
+  // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
-  const [skillBloomFilter, setSkillBloomFilter] = React.useState('all')
-  const [skillProvenanceFilter, setSkillProvenanceFilter] = React.useState('all')
+  const [skillMacroFilter, setSkillMacroFilter] = React.useState('all')
+  const [skillStatusFilter, setSkillStatusFilter] = React.useState('all')
+  const [skillSortBy, setSkillSortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
+  const [skillCurrentPage, setSkillCurrentPage] = React.useState(1)
+  const [skillPageSize] = React.useState(10)
 
+  const formatDate = React.useCallback((isoString?: string): string => {
+    if (!isoString) return 'Recent'
+    try {
+      const d = new Date(isoString)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    } catch {
+      return 'Recent'
+    }
+  }, [])
+
+  React.useEffect(() => {
+    setSkillCurrentPage(1)
+  }, [skillSearchQuery, skillMacroFilter, skillStatusFilter, skillSortBy])
+
+  // Search, filter, and pagination states for Tab 2 (Prerequisites)
   const [prereqSearchQuery, setPrereqSearchQuery] = React.useState('')
   const [prereqTypeFilter, setPrereqTypeFilter] = React.useState('all')
+  const [prereqCurrentPage, setPrereqCurrentPage] = React.useState(1)
+  const [prereqPageSize] = React.useState(10)
 
   // State for entities
   const [competencies, setCompetencies] = React.useState<CompetencyModel[]>(() => getActiveCompany()?.competencies ?? [])
   const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills ?? [])
   const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>(() => getActiveCompany()?.prerequisites ?? [])
 
-  // Synchronize state when active company scope changes
+  // Synchronize state when active company scope changes & fetch live from Neo4j
   React.useEffect(() => {
-    const handleSync = () => {
+    const handleSync = async () => {
       const active = getActiveCompany()
-      setCompetencies(active?.competencies ?? [])
-      setMicroSkills(active?.microSkills ?? [])
-      setPrerequisites(active?.prerequisites ?? [])
+      const orgId = active?.id || 'default-org'
+
+      try {
+        const [liveSkills, liveMacros, livePrereqs] = await Promise.all([
+          fetchMicroSkills(orgId).catch(() => []),
+          fetchMacroCompetencies(orgId).catch(() => []),
+          fetchPrerequisites(orgId).catch(() => []),
+        ])
+
+        let resolvedSkills: MicroSkillModel[] = active?.microSkills ?? []
+        if (liveSkills && liveSkills.length > 0) {
+          resolvedSkills = liveSkills.map((s) => ({
+            id: s.id,
+            code: s.code,
+            name: s.name,
+            description: s.description || '',
+            status: (s.status as any) || 'ACTIVE',
+            macroCompetencyCode: (s.macroCompetencyCode as any) || 'KNOWLEDGE',
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt,
+          }))
+          setMicroSkills(resolvedSkills)
+        } else {
+          setMicroSkills(resolvedSkills)
+        }
+
+        if (liveMacros && liveMacros.length > 0) {
+          const mappedComps: CompetencyModel[] = liveMacros.map((m) => ({
+            id: m.id,
+            code: m.code,
+            name: m.name,
+            description: m.description || '',
+            status: (m.status as any) || 'ACTIVE',
+            skillIds: resolvedSkills.filter((s) => s.macroCompetencyCode === m.code).map((s) => s.id),
+            createdAt: m.createdAt,
+            updatedAt: m.updatedAt,
+          }))
+          setCompetencies(mappedComps)
+        } else {
+          setCompetencies(active?.competencies ?? [])
+        }
+
+        if (livePrereqs && livePrereqs.length > 0) {
+          const mappedPrereqs: PrerequisiteEdge[] = livePrereqs.map((p) => ({
+            id: `edge-${p.sourceSkillId}-${p.targetSkillId}`,
+            sourceSkillId: p.sourceSkillId,
+            sourceSkillCode: p.sourceSkillCode,
+            sourceSkillName: p.sourceSkillName,
+            targetSkillId: p.targetSkillId,
+            targetSkillCode: p.targetSkillCode,
+            targetSkillName: p.targetSkillName,
+            minMastery: p.minMastery,
+            status: p.status,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+          }))
+          setPrerequisites(mappedPrereqs)
+        } else {
+          setPrerequisites(active?.prerequisites ?? [])
+        }
+      } catch {
+        setMicroSkills(active?.microSkills ?? [])
+        setCompetencies(active?.competencies ?? [])
+        setPrerequisites(active?.prerequisites ?? [])
+      }
     }
+
+    handleSync()
     window.addEventListener('active_company_changed', handleSync)
     return () => {
       window.removeEventListener('active_company_changed', handleSync)
     }
   }, [])
 
-  // Explicit persistence helpers to prevent circular re-render loops
-  const saveAndSetCompetencies = React.useCallback(
-    (updater: CompetencyModel[] | ((prev: CompetencyModel[]) => CompetencyModel[])) => {
-      setCompetencies((prev) => {
-        const next = typeof updater === 'function' ? updater(prev) : updater
-        updateActiveCompany((c) => ({ ...c, competencies: next }))
-        return next
-      })
-    },
-    []
-  )
+
 
   const saveAndSetMicroSkills = React.useCallback(
     (updater: MicroSkillModel[] | ((prev: MicroSkillModel[]) => MicroSkillModel[])) => {
@@ -235,9 +314,7 @@ export function CompetencyOntologyPage() {
   )
 
   // Modals state
-  const [isCompModalOpen, setIsCompModalOpen] = React.useState(false)
   const [isSkillModalOpen, setIsSkillModalOpen] = React.useState(false)
-  const [isHasSkillModalOpen, setIsHasSkillModalOpen] = React.useState(false)
   const [isPrereqModalOpen, setIsPrereqModalOpen] = React.useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
 
@@ -248,32 +325,24 @@ export function CompetencyOntologyPage() {
 
     const normalizedComps: CompetencyModel[] = rawComps.map((c: any, idx: number) => ({
       id: c.id || `comp-${Date.now()}-${idx}`,
-      stableId: c.stableId || `comp-uuid-${Date.now()}-${idx}`,
       code: (c.code || `COMP-${idx + 1}`).trim().toUpperCase(),
       name: (c.name || 'Untitled Competency Domain').trim(),
-      definition: (c.definition || 'Domain definition and scope.').trim(),
-      version: c.version || '1.0',
-      status: (c.status === 'draft' || c.status === 'archived') ? c.status : 'published',
-      derivationRef: c.derivationRef || 'Internal Curriculum Framework 2026',
+      description: (c.description || c.definition || 'Domain description and scope.').trim(),
+      status: (c.status === 'DRAFT' || c.status === 'RETIRED' || c.status === 'draft' || c.status === 'archived') ? c.status : 'ACTIVE',
       skillIds: Array.isArray(c.skillIds) ? c.skillIds : [],
+      createdAt: c.createdAt || new Date().toISOString().slice(0, 10),
       updatedAt: c.updatedAt || new Date().toISOString().slice(0, 10),
     }))
 
     const normalizedSkills: MicroSkillModel[] = rawSkills.map((s: any, idx: number) => ({
       id: s.id || `skill-${Date.now()}-${idx}`,
-      stableId: s.stableId || `ms-uuid-${Date.now()}-${idx}`,
       code: (s.code || `SKILL-${idx + 1}`).trim().toUpperCase(),
       name: (s.name || 'Untitled Micro-skill').trim(),
-      observableOutcome: (s.observableOutcome || 'Applies and demonstrates competency.').trim(),
-      bloomLevel: s.bloomLevel || 'Apply',
-      version: s.version || '1.0',
-      status: (s.status === 'draft' || s.status === 'archived') ? s.status : 'published',
-      provenance: s.provenance || {
-        source: s.provenanceSource || 'Internal Subject Matter Expert',
-        ruleRef: s.provenanceRuleRef || 'EXP-CORE-01',
-        type: 'source-backed',
-        recordedDate: new Date().toISOString().slice(0, 10),
-      },
+      description: (s.description || s.observableOutcome || 'Skill description and scope.').trim(),
+      status: (s.status === 'DRAFT' || s.status === 'RETIRED' || s.status === 'draft' || s.status === 'archived') ? s.status : 'ACTIVE',
+      macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
+      createdAt: s.createdAt || new Date().toISOString().slice(0, 10),
+      updatedAt: s.updatedAt || new Date().toISOString().slice(0, 10),
     }))
 
     const normalizedPrereqs: PrerequisiteEdge[] = rawPrereqs.map((p: any, idx: number) => ({
@@ -302,286 +371,172 @@ export function CompetencyOntologyPage() {
   }
 
   // Details Modals state (Miro Flow)
-  const [viewingCompDetails, setViewingCompDetails] = React.useState<CompetencyModel | null>(null)
   const [viewingSkillDetails, setViewingSkillDetails] = React.useState<MicroSkillModel | null>(null)
   const [viewingEdgeDetails, setViewingEdgeDetails] = React.useState<PrerequisiteEdge | null>(null)
 
   // Deletion confirmation state
-  const [deletingDraftComp, setDeletingDraftComp] = React.useState<CompetencyModel | null>(null)
-  const [deletingEdgeId, setDeletingEdgeId] = React.useState<string | null>(null)
+  const [deletingEdge, setDeletingEdge] = React.useState<PrerequisiteEdge | null>(null)
+  const [deletingSkill, setDeletingSkill] = React.useState<MicroSkillModel | null>(null)
 
   // Selection states
-  const [selectedComp, setSelectedComp] = React.useState<CompetencyModel | null>(null)
   const [selectedSkill, setSelectedSkill] = React.useState<MicroSkillModel | null>(null)
 
-  // Competency Form
-  const [compForm, setCompForm] = React.useState({
-    code: '',
-    name: '',
-    definition: '',
-    derivationRef: '',
-  })
-
-  // Micro-Skill Form
+  // Micro-Skill Form (Strictly aligned with neo4j_schema.md)
   const [skillForm, setSkillForm] = React.useState({
     code: '',
     name: '',
-    observableOutcome: '',
-    bloomLevel: 'Apply' as MicroSkillModel['bloomLevel'],
-    source: '',
-    ruleRef: '',
-    type: 'source-backed' as 'source-backed' | 'derived' | 'synthetic',
+    description: '',
+    macroCompetencyCode: 'KNOWLEDGE' as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION',
   })
 
-  // Prerequisite Form
+  // Prerequisite Form (Strictly aligned with neo4j_schema.md PREREQUISITE_OF { minMastery })
   const [prereqForm, setPrereqForm] = React.useState({
-    sourceSkillId: INITIAL_MICRO_SKILLS[0]?.id || '',
-    targetSkillId: INITIAL_MICRO_SKILLS[1]?.id || '',
-    requiredThreshold: 75,
-    type: 'hard_prerequisite' as 'hard_prerequisite' | 'recommended',
-    ruleRef: 'PREREQ-PEDAGOGY-01',
+    sourceSkillId: '',
+    targetSkillId: '',
+    minMasteryPercent: 75,
   })
 
   // Graph state
   const graphContainerRef = React.useRef<HTMLDivElement>(null)
   const networkRef = React.useRef<Network | null>(null)
-  const [graphInspectorNode, setGraphInspectorNode] = React.useState<any | null>(() => ({
-    ...INITIAL_COMPETENCIES[0],
-    nodeCategory: 'Competency',
-  }))
+  const [graphInspectorNode, setGraphInspectorNode] = React.useState<any | null>(null)
   const [graphFilterType, setGraphFilterType] = React.useState<string>('all')
   const [graphLayoutMode, setGraphLayoutMode] = React.useState<'hierarchical' | 'organic'>('hierarchical')
   const [focusCompetencyId, setFocusCompetencyId] = React.useState<string>('all')
+  const [isGraphFullscreen, setIsGraphFullscreen] = React.useState(false)
 
   // ------------------------------------------------------------------
-  // Competency Handlers
-  // ------------------------------------------------------------------
-  const handleOpenCreateComp = () => {
-    setCompForm({
-      code: `COMP-${Math.random().toString(36).substring(2, 5).toUpperCase()}-01`,
-      name: '',
-      definition: '',
-      derivationRef: 'ACM Computing Curricula 2023 / Knowledge Engineering',
-    })
-    setSelectedComp(null)
-    setIsCompModalOpen(true)
-  }
-
-  const handleSaveCompetency = () => {
-    if (!compForm.code.trim() || !compForm.name.trim() || !compForm.definition.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Code, Name, and Definition are required fields.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    if (selectedComp) {
-      // Editing draft
-      saveAndSetCompetencies((prev) =>
-        prev.map((c) =>
-          c.id === selectedComp.id
-            ? {
-                ...c,
-                name: compForm.name,
-                definition: compForm.definition,
-                derivationRef: compForm.derivationRef,
-                updatedAt: new Date().toISOString().slice(0, 10),
-              }
-            : c,
-        ),
-      )
-      toast({ title: 'Competency Updated', description: `Saved changes to ${compForm.code}.`, variant: 'success' })
-    } else {
-      // Create new draft
-      if (competencies.some((c) => c.code.toUpperCase() === compForm.code.trim().toUpperCase())) {
-        toast({ title: 'Duplicate Code', description: 'Competency code must be globally unique.', variant: 'destructive' })
-        return
-      }
-      const newC: CompetencyModel = {
-        id: `comp-${Date.now()}`,
-        stableId: `comp-uuid-${Date.now()}`,
-        code: compForm.code.trim().toUpperCase(),
-        name: compForm.name.trim(),
-        definition: compForm.definition.trim(),
-        version: '1.0',
-        status: 'draft',
-        derivationRef: compForm.derivationRef || 'Internal Derivation',
-        skillIds: [],
-        updatedAt: new Date().toISOString().slice(0, 10),
-      }
-      saveAndSetCompetencies([newC, ...competencies])
-
-      toast({
-        title: 'Draft Competency Created',
-        description: `Created ${newC.code} (${newC.name}) with derivation reference.`,
-        variant: 'success',
-      })
-    }
-    setIsCompModalOpen(false)
-  }
-
-  // Create Successor Draft for published competency
-  const handleCreateSuccessorComp = (comp: CompetencyModel) => {
-    const curVer = parseFloat(comp.version) || 1.0
-    const nextVer = (curVer + 0.1).toFixed(1)
-
-    const existingDraft = competencies.find((c) => c.stableId === comp.stableId && c.status === 'draft')
-    if (existingDraft) {
-      toast({
-        title: 'Successor Draft Exists',
-        description: `Draft v${existingDraft.version} is already open for this competency.`,
-        variant: 'warning',
-      })
-      return
-    }
-
-    const successor: CompetencyModel = {
-      ...comp,
-      id: `comp-${Date.now()}`,
-      version: nextVer,
-      status: 'draft',
-      updatedAt: new Date().toISOString().slice(0, 10),
-      definition: `${comp.definition} (Successor revision v${nextVer})`,
-    }
-
-    saveAndSetCompetencies([successor, ...competencies])
-    toast({
-      title: 'Successor Draft Created',
-      description: `Draft v${nextVer} spawned for ${comp.code}. Preserved stable ID and history.`,
-      variant: 'success',
-    })
-  }
-
-  // Delete draft competency (initial or successor)
-  const handleDeleteDraftComp = (comp: CompetencyModel) => {
-    if (comp.status !== 'draft') {
-      toast({
-        title: 'Action Rejected',
-        description: 'Only draft competencies or successor drafts can be deleted. Published competencies are immutable.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    saveAndSetCompetencies(competencies.filter((c) => c.id !== comp.id))
-    toast({
-      title: 'Draft Deleted',
-      description: `Draft competency ${comp.code} (v${comp.version}) was permanently deleted.`,
-      variant: 'default',
-    })
-  }
-
-  // Toggle HAS_SKILL link
-  const handleToggleHasSkill = (comp: CompetencyModel, skillId: string) => {
-    if (comp.status === 'published') {
-      toast({
-        title: 'Published Version Locked',
-        description: 'Cannot modify mappings on a published competency. Create a successor draft.',
-        variant: 'warning',
-      })
-      return
-    }
-
-    const hasLink = comp.skillIds.includes(skillId)
-    const updatedSkills = hasLink ? comp.skillIds.filter((id) => id !== skillId) : [...comp.skillIds, skillId]
-
-    saveAndSetCompetencies((prev) =>
-      prev.map((c) => (c.id === comp.id ? { ...c, skillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : c)),
-    )
-
-    if (selectedComp && selectedComp.id === comp.id) {
-      setSelectedComp({ ...selectedComp, skillIds: updatedSkills })
-    }
-
-    toast({
-      title: hasLink ? 'HAS_SKILL Unlinked' : 'HAS_SKILL Linked',
-      description: `${hasLink ? 'Removed' : 'Attached'} micro-skill link for ${comp.code}.`,
-      variant: 'info',
-    })
-  }
-
-  // ------------------------------------------------------------------
-  // Micro-Skill Handlers
+  // Micro-Skill Handlers (REQ-012)
   // ------------------------------------------------------------------
   const handleOpenCreateSkill = () => {
     setSkillForm({
       code: `SKILL-${Math.random().toString(36).substring(2, 5).toUpperCase()}-01`,
       name: '',
-      observableOutcome: '',
-      bloomLevel: 'Apply',
-      source: 'Industry Standard Syllabus 2026',
-      ruleRef: 'SKILL-OBS-2026',
-      type: 'source-backed',
+      description: '',
+      macroCompetencyCode: 'KNOWLEDGE',
     })
     setSelectedSkill(null)
     setIsSkillModalOpen(true)
   }
 
-  const handleSaveSkill = () => {
-    if (!skillForm.code.trim() || !skillForm.name.trim() || !skillForm.observableOutcome.trim()) {
+  const handleSaveSkill = async () => {
+    if (!skillForm.name.trim() || !skillForm.description.trim()) {
       toast({
         title: 'Validation Error',
-        description: 'Code, Name, and Observable Learning Outcome are strictly required.',
+        description: 'Name and Description are strictly required.',
         variant: 'destructive',
       })
       return
     }
 
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+
     if (selectedSkill) {
-      saveAndSetMicroSkills((prev) =>
-        prev.map((s) =>
-          s.id === selectedSkill.id
-            ? {
-                ...s,
-                name: skillForm.name,
-                observableOutcome: skillForm.observableOutcome,
-                bloomLevel: skillForm.bloomLevel,
-              }
-            : s,
-        ),
-      )
-      toast({ title: 'Micro-skill Updated', description: `Saved changes to ${skillForm.code}.`, variant: 'success' })
+      try {
+        const updated = await updateMicroSkill(orgId, selectedSkill.id, {
+          name: skillForm.name.trim(),
+          description: skillForm.description.trim(),
+        })
+
+        saveAndSetMicroSkills((prev) =>
+          prev.map((s) =>
+            s.id === selectedSkill.id
+              ? {
+                  ...s,
+                  name: updated.name,
+                  description: updated.description || '',
+                  updatedAt: updated.updatedAt || new Date().toISOString(),
+                }
+              : s
+          )
+        )
+        toast({ title: 'Micro-skill Updated', description: `Saved changes to ${selectedSkill.code}.`, variant: 'success' })
+        setIsSkillModalOpen(false)
+      } catch (err: any) {
+        toast({
+          title: 'Update Failed',
+          description: err.message || 'Failed to update micro-skill on server.',
+          variant: 'destructive',
+        })
+      }
     } else {
+      if (!skillForm.code.trim()) {
+        toast({ title: 'Validation Error', description: 'Skill code is strictly required.', variant: 'destructive' })
+        return
+      }
+
       if (microSkills.some((s) => s.code.toUpperCase() === skillForm.code.trim().toUpperCase())) {
         toast({ title: 'Duplicate Code', description: 'Skill code must be globally unique.', variant: 'destructive' })
         return
       }
 
-      const newSkill: MicroSkillModel = {
-        id: `skill-${Date.now()}`,
-        stableId: `ms-uuid-${Date.now()}`,
-        code: skillForm.code.trim().toUpperCase(),
-        name: skillForm.name.trim(),
-        observableOutcome: skillForm.observableOutcome.trim(),
-        bloomLevel: skillForm.bloomLevel,
-        version: '1.0',
-        status: 'draft',
-        provenance: {
-          source: skillForm.source || 'Curriculum Council',
-          ruleRef: skillForm.ruleRef || 'OBS-OUTCOME-01',
-          type: skillForm.type,
-          recordedDate: new Date().toISOString().slice(0, 10),
-        },
+      try {
+        const created = await createMicroSkill(orgId, {
+          code: skillForm.code.trim().toUpperCase(),
+          name: skillForm.name.trim(),
+          description: skillForm.description.trim(),
+          macroCompetencyCode: skillForm.macroCompetencyCode || 'KNOWLEDGE',
+        })
+
+        const newSkill: MicroSkillModel = {
+          id: created.id,
+          code: created.code,
+          name: created.name,
+          description: created.description || '',
+          macroCompetencyCode: (created.macroCompetencyCode as any) || 'KNOWLEDGE',
+          status: 'ACTIVE',
+          createdAt: created.createdAt || new Date().toISOString(),
+          updatedAt: created.updatedAt || new Date().toISOString(),
+        }
+
+        saveAndSetMicroSkills([newSkill, ...microSkills])
+        setIsSkillModalOpen(false)
+
+        toast({
+          title: 'Micro-skill Created',
+          description: `Registered ${newSkill.code} under ${skillForm.macroCompetencyCode || 'KNOWLEDGE'}.`,
+          variant: 'success',
+        })
+      } catch (err: any) {
+        toast({
+          title: 'Create Failed',
+          description: err.message || 'Failed to create micro-skill on server.',
+          variant: 'destructive',
+        })
       }
+    }
+  }
 
-      saveAndSetMicroSkills([newSkill, ...microSkills])
+  const handleDeleteSkill = async (skill: MicroSkillModel) => {
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
 
+    try {
+      await deleteMicroSkill(orgId, skill.id)
+      saveAndSetMicroSkills((prev) => prev.filter((s) => s.id !== skill.id))
+      saveAndSetPrerequisites((prev) => prev.filter((p) => p.sourceSkillId !== skill.id && p.targetSkillId !== skill.id))
       toast({
-        title: 'Micro-skill Created',
-        description: `Registered ${newSkill.code} with observable outcome statement.`,
+        title: 'Micro-skill Deleted',
+        description: `Successfully deleted ${skill.code}.`,
         variant: 'success',
       })
+      setDeletingSkill(null)
+    } catch (err: any) {
+      toast({
+        title: 'Cannot Delete Micro-skill',
+        description: err.message || 'Micro-skill is currently in use or required by a target role.',
+        variant: 'destructive',
+      })
+      setDeletingSkill(null)
     }
-    setIsSkillModalOpen(false)
   }
 
   // ------------------------------------------------------------------
-  // Prerequisite Edge Handlers (Self-edge & Cycle Detection)
+  // Prerequisite Edge Handlers (REQ-018-F02: Self-edge & Cycle Detection)
   // ------------------------------------------------------------------
-  const handleSavePrerequisite = () => {
-    const { sourceSkillId, targetSkillId, requiredThreshold, type, ruleRef } = prereqForm
+  const handleSavePrerequisite = async () => {
+    const { sourceSkillId, targetSkillId, minMasteryPercent } = prereqForm
 
     // 1. Reject self-edges
     if (sourceSkillId === targetSkillId) {
@@ -593,81 +548,80 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    // 2. Reject duplicates
-    const exists = prerequisites.some(
-      (p) => p.sourceSkillId === sourceSkillId && p.targetSkillId === targetSkillId,
-    )
-    if (exists) {
+    // 2. Threshold validation
+    if (minMasteryPercent < 1 || minMasteryPercent > 100) {
       toast({
-        title: 'Duplicate Edge Rejected',
-        description: 'A prerequisite edge between these two skills already exists.',
+        title: 'Invalid Mastery Threshold',
+        description: 'Minimum required mastery must be between 1% and 100%.',
         variant: 'destructive',
       })
       return
     }
 
-    // 3. Cycle Detection
-    // Breadth-first search to check if sourceSkillId is reachable from targetSkillId
-    const isReachable = (start: string, goal: string): boolean => {
-      const visited = new Set<string>()
-      const queue = [start]
-      while (queue.length > 0) {
-        const current = queue.shift()!
-        if (current === goal) return true
-        visited.add(current)
-        for (const edge of prerequisites) {
-          if (edge.sourceSkillId === current && !visited.has(edge.targetSkillId)) {
-            queue.push(edge.targetSkillId)
-          }
-        }
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+    const minMastery = minMasteryPercent / 100.0
+
+    try {
+      const created = await createPrerequisite(orgId, {
+        sourceSkillId,
+        targetSkillId,
+        minMastery,
+      })
+
+      const newEdge: PrerequisiteEdge = {
+        id: `edge-${created.sourceSkillId}-${created.targetSkillId}`,
+        sourceSkillId: created.sourceSkillId,
+        sourceSkillCode: created.sourceSkillCode,
+        sourceSkillName: created.sourceSkillName,
+        targetSkillId: created.targetSkillId,
+        targetSkillCode: created.targetSkillCode,
+        targetSkillName: created.targetSkillName,
+        minMastery: created.minMastery,
+        status: created.status,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
       }
-      return false
-    }
 
-    if (isReachable(targetSkillId, sourceSkillId)) {
+      saveAndSetPrerequisites([...prerequisites, newEdge])
+      setIsPrereqModalOpen(false)
+
+      const sourceSkill = microSkills.find((s) => s.id === sourceSkillId)
+      const targetSkill = microSkills.find((s) => s.id === targetSkillId)
+
       toast({
-        title: 'Cycle Detected & Blocked',
-        description: 'Adding this edge would form a circular prerequisite dependency loop!',
+        title: 'Prerequisite Edge Created',
+        description: `${sourceSkill?.code || created.sourceSkillCode} -> ${targetSkill?.code || created.targetSkillCode} (Min Mastery: ${minMasteryPercent}%).`,
+        variant: 'success',
+      })
+    } catch (err: any) {
+      toast({
+        title: 'Prerequisite Rejected',
+        description: err.message || 'Failed to create prerequisite edge on server.',
         variant: 'destructive',
       })
-      return
     }
-
-    // 4. Threshold validation
-    if (requiredThreshold < 1 || requiredThreshold > 100) {
-      toast({
-        title: 'Invalid Threshold',
-        description: 'Required threshold must be between 1% and 100%.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const newEdge: PrerequisiteEdge = {
-      id: `pre-${Date.now()}`,
-      sourceSkillId,
-      targetSkillId,
-      requiredThreshold,
-      type,
-      ruleRef: ruleRef || 'PEDAGOGY-SEQ',
-    }
-
-    saveAndSetPrerequisites([...prerequisites, newEdge])
-    setIsPrereqModalOpen(false)
-
-    const sourceSkill = microSkills.find((s) => s.id === sourceSkillId)
-    const targetSkill = microSkills.find((s) => s.id === targetSkillId)
-
-    toast({
-      title: 'Prerequisite Edge Created',
-      description: `${sourceSkill?.code} -> ${targetSkill?.code} (Threshold: ${requiredThreshold}%).`,
-      variant: 'success',
-    })
   }
 
-  const handleDeletePrereq = (id: string) => {
-    saveAndSetPrerequisites((prev) => prev.filter((p) => p.id !== id))
-    toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
+  const handleDeletePrereq = async (edge: PrerequisiteEdge) => {
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+
+    try {
+      await deletePrerequisite(orgId, edge.sourceSkillId, edge.targetSkillId)
+      saveAndSetPrerequisites((prev) =>
+        prev.filter((p) => !(p.sourceSkillId === edge.sourceSkillId && p.targetSkillId === edge.targetSkillId))
+      )
+      toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
+      setDeletingEdge(null)
+    } catch (err: any) {
+      toast({
+        title: 'Failed to Delete Edge',
+        description: err.message || 'Could not delete prerequisite edge from server.',
+        variant: 'destructive',
+      })
+      setDeletingEdge(null)
+    }
   }
 
   // ------------------------------------------------------------------
@@ -737,6 +691,8 @@ export function CompetencyOntologyPage() {
     microSkills.forEach((s) => {
       if (!allowedSkillIds.has(s.id)) return
       if (graphFilterType === 'all' || graphFilterType === 'skill') {
+        const hasIncomingPrereq = prerequisites.some((p) => p.targetSkillId === s.id || p.targetSkillCode === s.code)
+        const level = hasIncomingPrereq ? 2 : 1
         nodes.push({
           id: s.id,
           label: `<b>${s.code}</b>\n${s.name}`,
@@ -744,6 +700,7 @@ export function CompetencyOntologyPage() {
           shapeProperties: { borderRadius: 16 },
           widthConstraint: { maximum: 155 },
           margin: { top: 8, right: 12, bottom: 8, left: 12 },
+          level,
           color: {
             background: '#F0FDF4',
             border: '#16A34A',
@@ -763,22 +720,28 @@ export function CompetencyOntologyPage() {
       }
     })
 
-    // HAS_SKILL edges (Uncluttered: sleek line with arrow and tooltip, avoiding heavy text collisions)
+    // HAS_SKILL edges (Connect via c.skillIds or matching macroCompetencyCode)
     activeCompetencies.forEach((c) => {
-      c.skillIds.forEach((sId) => {
-        const hasSource = nodes.some((n) => n.id === c.id)
-        const hasTarget = nodes.some((n) => n.id === sId)
-        if (hasSource && hasTarget) {
-          edges.push({
-            id: `has-skill-${c.id}-${sId}`,
-            from: c.id,
-            to: sId,
-            title: `Relationship: ${c.code} contains skill ${sId}`,
-            color: { color: '#CBD5E1', highlight: '#EA580C', hover: '#94A3B8' },
-            arrows: { to: { enabled: true, scaleFactor: 0.7 } },
-            dashes: false,
-            width: 1.5,
-          })
+      microSkills.forEach((s) => {
+        const belongsToComp =
+          c.skillIds.includes(s.id) ||
+          c.skillIds.includes(s.code) ||
+          (s.macroCompetencyCode && s.macroCompetencyCode.toUpperCase() === c.code.toUpperCase())
+        if (belongsToComp) {
+          const hasSource = nodes.some((n) => n.id === c.id)
+          const hasTarget = nodes.some((n) => n.id === s.id)
+          if (hasSource && hasTarget && !edges.some((e) => e.from === c.id && e.to === s.id)) {
+            edges.push({
+              id: `has-skill-${c.id}-${s.id}`,
+              from: c.id,
+              to: s.id,
+              title: `Domain Scope: ${c.name} includes ${s.code}`,
+              color: { color: '#CBD5E1', highlight: '#EA580C', hover: '#94A3B8' },
+              arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+              dashes: false,
+              width: 1.5,
+            })
+          }
         }
       })
     })
@@ -792,8 +755,8 @@ export function CompetencyOntologyPage() {
           id: `prereq-${p.id}`,
           from: p.sourceSkillId,
           to: p.targetSkillId,
-          label: `≥ ${p.requiredThreshold}%`,
-          title: `Prerequisite Requirement: ${p.requiredThreshold}% mastery required`,
+          label: `≥ ${Math.round(p.minMastery * 100)}%`,
+          title: `Prerequisite Requirement: ${Math.round(p.minMastery * 100)}% mastery required`,
           font: {
             size: 9,
             color: '#DC2626',
@@ -824,54 +787,49 @@ export function CompetencyOntologyPage() {
         hierarchical: {
           enabled: graphLayoutMode === 'hierarchical',
           direction: 'UD',
-          sortMethod: 'directed',
-          levelSeparation: 140,
-          nodeSpacing: 210,
-          treeSpacing: 240,
+          sortMethod: 'hubsize',
+          levelSeparation: 160,
+          nodeSpacing: 280,
+          treeSpacing: 320,
           blockShifting: true,
           edgeMinimization: true,
           parentCentralization: true,
         },
       },
-      physics:
-        graphLayoutMode === 'hierarchical'
-          ? {
-              solver: 'hierarchicalRepulsion',
-              hierarchicalRepulsion: {
-                centralGravity: 0.0,
-                springLength: 160,
-                springConstant: 0.01,
-                nodeDistance: 210,
-                damping: 0.09,
-              },
-              stabilization: {
-                iterations: 150,
-                updateInterval: 25,
-              },
-            }
-          : {
-              solver: 'barnesHut',
-              barnesHut: {
-                gravitationalConstant: -18000,
-                centralGravity: 0.15,
-                springLength: 230,
-                springConstant: 0.03,
-                damping: 0.12,
-                avoidOverlap: 1,
-              },
-              stabilization: {
-                iterations: 180,
-                updateInterval: 25,
-              },
-            },
+      physics: {
+        enabled: true,
+        solver: graphLayoutMode === 'hierarchical' ? 'hierarchicalRepulsion' : 'barnesHut',
+        hierarchicalRepulsion: {
+          nodeDistance: 280,
+          centralGravity: 0.0,
+          springLength: 160,
+          springConstant: 0.01,
+          damping: 0.09,
+          avoidOverlap: 1,
+        },
+        barnesHut: {
+          gravitationalConstant: -4000,
+          centralGravity: 0.2,
+          springLength: 160,
+          springConstant: 0.04,
+          damping: 0.09,
+          avoidOverlap: 1,
+        },
+        stabilization: {
+          iterations: 150,
+          updateInterval: 25,
+        },
+      },
       interaction: {
         hover: true,
-        tooltipDelay: 150,
+        tooltipDelay: 100,
         zoomView: true,
         dragView: true,
         dragNodes: true,
       },
     }
+
+    let resizeObserver: ResizeObserver | null = null
 
     const timer = setTimeout(() => {
       if (!graphContainerRef.current) return
@@ -879,12 +837,13 @@ export function CompetencyOntologyPage() {
       networkRef.current = networkInstance
 
       networkInstance.once('stabilizationIterationsDone', () => {
-        networkInstance?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } })
+        networkInstance?.fit()
       })
 
       setTimeout(() => {
+        networkInstance?.redraw()
         networkInstance?.fit()
-      }, 150)
+      }, 100)
 
       networkInstance.on('click', (params) => {
         if (params.nodes && params.nodes.length > 0) {
@@ -903,10 +862,25 @@ export function CompetencyOntologyPage() {
           setGraphInspectorNode(null)
         }
       })
+
+      if (graphContainerRef.current && window.ResizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+          if (networkInstance && graphContainerRef.current) {
+            if (graphContainerRef.current.clientWidth > 0 && graphContainerRef.current.clientHeight > 0) {
+              networkInstance.redraw()
+              networkInstance.fit()
+            }
+          }
+        })
+        resizeObserver.observe(graphContainerRef.current)
+      }
     }, 40)
 
     return () => {
       clearTimeout(timer)
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+      }
       if (networkInstance) {
         networkInstance.destroy()
       }
@@ -921,13 +895,59 @@ export function CompetencyOntologyPage() {
     focusCompetencyId,
   ])
 
+  // Computed filter & pagination for Tab 1 (Micro-skills)
+  const filteredMicroSkills = React.useMemo(() => {
+    return microSkills
+      .filter((skill) => {
+        const matchesSearch =
+          skill.code.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
+          skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
+          (skill.description || '').toLowerCase().includes(skillSearchQuery.toLowerCase())
+        const matchesMacro =
+          skillMacroFilter === 'all' || (skill.macroCompetencyCode || 'KNOWLEDGE') === skillMacroFilter
+        return matchesSearch && matchesMacro
+      })
+      .sort((a, b) => {
+        if (skillSortBy === 'title') return a.name.localeCompare(b.name)
+        if (skillSortBy === 'code') return a.code.localeCompare(b.code)
+        return b.id.localeCompare(a.id)
+      })
+  }, [microSkills, skillSearchQuery, skillMacroFilter, skillSortBy])
+
+  const skillTotalPages = Math.ceil(filteredMicroSkills.length / skillPageSize) || 1
+  const paginatedMicroSkills = filteredMicroSkills.slice(
+    (skillCurrentPage - 1) * skillPageSize,
+    skillCurrentPage * skillPageSize
+  )
+
+  // Computed filter & pagination for Tab 2 (Prerequisites)
+  const filteredPrerequisites = prerequisites.filter((edge) => {
+    const source = microSkills.find((s) => s.id === edge.sourceSkillId || s.code === edge.sourceSkillId)
+    const target = microSkills.find((s) => s.id === edge.targetSkillId || s.code === edge.targetSkillId)
+    const matchesSearch =
+      (source?.code.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
+      (source?.name.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
+      (target?.code.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
+      (target?.name.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
+      (edge.sourceSkillCode?.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
+      (edge.targetSkillCode?.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false)
+    const matchesType = prereqTypeFilter === 'all' || (edge.status || 'ACTIVE') === prereqTypeFilter
+    return matchesSearch && matchesType
+  })
+
+  const prereqTotalPages = Math.ceil(filteredPrerequisites.length / prereqPageSize) || 1
+  const paginatedPrerequisites = filteredPrerequisites.slice(
+    (prereqCurrentPage - 1) * prereqPageSize,
+    prereqCurrentPage * prereqPageSize
+  )
+
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         {/* Actions Bar */}
         <PageHeader
           actions={
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -937,43 +957,40 @@ export function CompetencyOntologyPage() {
               >
                 Import
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={handleOpenCreateSkill}
-              >
-                Create Micro-skill
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={handleOpenCreateComp}
-              >
-                Create Competency
-              </Button>
+              {activeTab === 'skills' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  onClick={handleOpenCreateSkill}
+                  className="font-semibold shadow-2xs"
+                >
+                  Create Micro-skill
+                </Button>
+              )}
+              {activeTab === 'prerequisites' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  onClick={() => setIsPrereqModalOpen(true)}
+                  className="font-semibold shadow-2xs"
+                >
+                  Create Prerequisite Edge
+                </Button>
+              )}
             </div>
           }
         />
 
         {/* Aggregate KPI StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             variant="gradient"
-            icon={<BookOpen className="h-4 w-4 text-primary" />}
-            title="Macro Competencies"
-            value={competencies.length.toString()}
-            valueClassName="text-primary"
-            description="Knowledge domains mapped"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<Layers className="h-4 w-4 text-success" />}
+            icon={<Layers className="h-4 w-4 text-primary" />}
             title="Atomic Micro-skills"
             value={microSkills.length.toString()}
-            valueClassName="text-success"
+            valueClassName="text-primary"
             description="With observable learning outcomes"
           />
 
@@ -985,311 +1002,227 @@ export function CompetencyOntologyPage() {
             valueClassName="text-warning"
             description="Acyclic dependency relationships"
           />
+
+          <StatCard
+            variant="gradient"
+            icon={<BookOpen className="h-4 w-4 text-success" />}
+            title="Macro Competencies"
+            value="3"
+            valueClassName="text-success"
+            description="Knowledge · Communication · Innovation"
+          />
+
+          <StatCard
+            variant="gradient"
+            icon={<Filter className="h-4 w-4 text-primary" />}
+            title="Taxonomy Depth"
+            value="6 Levels"
+            valueClassName="text-primary"
+            description="Bloom: Remember to Create"
+          />
         </div>
 
         {/* Tabbed Console - Natural flex-wrap width prevents overlap */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="inline-flex flex-wrap h-auto p-1 bg-muted/80 rounded-lg gap-1 border border-border">
-            <TabsTrigger value="competencies" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
-              Competencies
-            </TabsTrigger>
             <TabsTrigger value="skills" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
-              Micro-skills &amp; Prereqs
+              Micro-skills
+            </TabsTrigger>
+            <TabsTrigger value="prerequisites" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
+              Skill Prerequisites
             </TabsTrigger>
             <TabsTrigger value="graph" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Explore Graph
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: COMPETENCIES CATALOG */}
-          <TabsContent value="competencies" className="space-y-4">
+          {/* TAB 1: ATOMIC MICRO-SKILLS */}
+          <TabsContent value="skills" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      Macro Competency Catalog
+                      <Layers className="h-4 w-4 text-primary" />
+                      Atomic Micro-skills Catalog
                     </CardTitle>
                     <CardDescription>
-                      Formal competency bodies of knowledge with derivation citations and HAS_SKILL relationships.
+                      Draft and published technical capabilities configured with mastery benchmarks and prerequisite gates.
                     </CardDescription>
                   </div>
-                  <Button variant="primary" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={handleOpenCreateComp}>
-                    New Competency
-                  </Button>
+
+                  {/* Search and Filter Controls */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative min-w-[210px]">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search skills or outcomes..."
+                        value={skillSearchQuery}
+                        onChange={(e) => {
+                          setSkillSearchQuery(e.target.value)
+                          setSkillCurrentPage(1)
+                        }}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                      <select
+                        value={skillMacroFilter}
+                        onChange={(e) => {
+                          setSkillMacroFilter(e.target.value)
+                          setSkillCurrentPage(1)
+                        }}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                      >
+                        <option value="all">All Competencies ({microSkills.length})</option>
+                        <option value="KNOWLEDGE">Knowledge</option>
+                        <option value="COMMUNICATION">Communication</option>
+                        <option value="INNOVATION">Innovation</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                      <select
+                        value={skillStatusFilter}
+                        onChange={(e) => {
+                          setSkillStatusFilter(e.target.value)
+                          setSkillCurrentPage(1)
+                        }}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="DRAFT">Draft</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1">
+                      <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
+                      <select
+                        value={skillSortBy}
+                        onChange={(e) => setSkillSortBy(e.target.value as any)}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                      >
+                        <option value="latest">Latest Created / Updated</option>
+                        <option value="title">Skill Title (A–Z)</option>
+                        <option value="code">Skill Code (A–Z)</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                        <th className="py-2.5 px-3">Code &amp; Name</th>
-                        <th className="py-2.5 px-3">Definition</th>
-                        <th className="py-2.5 px-3">Derivation Reference</th>
-                        <th className="py-2.5 px-3 text-center">Mapped Skills</th>
-                        <th className="py-2.5 px-3">Status</th>
-                        <th className="py-2.5 px-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {competencies.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="text-center py-10 text-muted-foreground text-xs">
-                            No competencies registered yet for this company. Click "+ New Competency" or import a blueprint to get started.
-                          </td>
-                        </tr>
-                      ) : (
-                        competencies.map((comp) => {
-                        const isDraft = comp.status === 'draft'
-                        const isPublished = comp.status === 'published'
-
-                        return (
-                          <tr key={comp.id} className="hover:bg-muted/20">
-                            <td className="py-3 px-3">
-                              <div className="font-mono font-bold text-foreground">{comp.code}</div>
-                              <div className="font-semibold text-foreground">{comp.name}</div>
-                              <Badge variant="secondary" className="font-mono text-[10px] mt-0.5 py-0 px-1">
-                                v{comp.version}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-3 text-muted-foreground max-w-xs line-clamp-2">
-                              {comp.definition}
-                            </td>
-                            <td className="py-3 px-3">
-                              <span className="font-mono text-[11px] text-muted-foreground">
-                                {comp.derivationRef}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedComp(comp)
-                                  setIsHasSkillModalOpen(true)
-                                }}
-                                className="inline-flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
-                              >
-                                <Layers className="h-3 w-3" />
-                                {comp.skillIds.length} HAS_SKILL
-                              </button>
-                            </td>
-                            <td className="py-3 px-3">
-                              <Badge variant={isPublished ? 'success' : isDraft ? 'warning' : 'outline'}>
-                                {comp.status.toUpperCase()}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {!isDraft && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => setViewingCompDetails(comp)}
-                                    title="View Details"
-                                    aria-label="View Details"
-                                  >
-                                    <Eye className="h-4 w-4 text-primary" />
-                                  </Button>
-                                )}
-                                {isDraft ? (
-                                  <div className="flex items-center justify-end gap-1.5">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => {
-                                        setSelectedComp(comp)
-                                        setCompForm({
-                                          code: comp.code,
-                                          name: comp.name,
-                                          definition: comp.definition,
-                                          derivationRef: comp.derivationRef,
-                                        })
-                                        setIsCompModalOpen(true)
-                                      }}
-                                      title="Edit Draft"
-                                      aria-label="Edit Draft"
-                                    >
-                                      <Edit3 className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => setDeletingDraftComp(comp)}
-                                      title="Delete Draft"
-                                      aria-label="Delete Draft"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => handleCreateSuccessorComp(comp)}
-                                    title="Create Draft"
-                                    aria-label="Create Draft"
-                                  >
-                                    <Copy className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </td>
+              <CardContent className="p-0">
+                {filteredMicroSkills.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
+                    <p className="text-sm font-semibold">No micro-skills match your search or filter.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => {
+                        setSkillSearchQuery('')
+                        setSkillMacroFilter('all')
+                        setSkillStatusFilter('all')
+                        setSkillCurrentPage(1)
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
+                            <th className="py-2.5 px-3">Skill Code</th>
+                            <th className="py-2.5 px-3">Title &amp; Observable Scope</th>
+                            <th className="py-2.5 px-3">Competency</th>
+                            <th className="py-2.5 px-3 text-center">Prerequisites</th>
+                            <th className="py-2.5 px-3 text-center">Role Bindings</th>
+                            <th className="py-2.5 px-3">Status</th>
+                            <th className="py-2.5 px-3 text-right">Actions</th>
                           </tr>
-                        )
-                      }))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {paginatedMicroSkills.map((skill) => {
+                            const prereqCount = prerequisites.filter(
+                              (p) => p.targetSkillId === skill.id || p.targetSkillId === skill.code
+                            ).length
+                            const macro = (skill.macroCompetencyCode || 'KNOWLEDGE').toUpperCase()
+                            const companyRoles = getActiveCompany()?.targetRoles || []
+                            const boundRolesCount = companyRoles.filter((r) =>
+                              (r.skillTargets || []).some(
+                                (st) => st.skillId === skill.id || st.skillCode === skill.code
+                              )
+                            ).length
 
-          {/* TAB 2: MICRO-SKILLS & PREREQUISITES */}
-          {(() => {
-            const filteredMicroSkills = microSkills.filter((skill) => {
-              const matchesSearch =
-                skill.code.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
-                skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
-                skill.observableOutcome.toLowerCase().includes(skillSearchQuery.toLowerCase())
-              const matchesBloom = skillBloomFilter === 'all' || skill.bloomLevel === skillBloomFilter
-              const matchesProv = skillProvenanceFilter === 'all' || skill.provenance.type === skillProvenanceFilter
-              return matchesSearch && matchesBloom && matchesProv
-            })
-
-            const filteredPrerequisites = prerequisites.filter((edge) => {
-              const source = microSkills.find((s) => s.id === edge.sourceSkillId)
-              const target = microSkills.find((s) => s.id === edge.targetSkillId)
-              const matchesSearch =
-                (source?.code.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
-                (source?.name.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
-                (target?.code.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
-                (target?.name.toLowerCase().includes(prereqSearchQuery.toLowerCase()) ?? false) ||
-                edge.ruleRef.toLowerCase().includes(prereqSearchQuery.toLowerCase())
-              const matchesType = prereqTypeFilter === 'all' || edge.type === prereqTypeFilter
-              return matchesSearch && matchesType
-            })
-
-            return (
-              <TabsContent value="skills" className="space-y-6">
-                {/* Section A: Micro-skills */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Layers className="h-4 w-4 text-primary" />
-                          Atomic Micro-skills ({filteredMicroSkills.length})
-                        </CardTitle>
-                        <CardDescription>
-                          Measurable learning outcomes classified by Bloom taxonomy and provenance citation.
-                        </CardDescription>
-                      </div>
-
-                      {/* Search & Filter Controls for Micro-skills */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="relative min-w-[190px]">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                          <input
-                            type="text"
-                            placeholder="Search skills or outcomes..."
-                            value={skillSearchQuery}
-                            onChange={(e) => setSkillSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
-                          <Filter className="h-3 w-3 text-muted-foreground" />
-                          <select
-                            value={skillBloomFilter}
-                            onChange={(e) => setSkillBloomFilter(e.target.value)}
-                            className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
-                          >
-                            <option value="all">All Bloom Levels</option>
-                            <option value="Remember">Remember</option>
-                            <option value="Understand">Understand</option>
-                            <option value="Apply">Apply</option>
-                            <option value="Analyze">Analyze</option>
-                            <option value="Evaluate">Evaluate</option>
-                            <option value="Create">Create</option>
-                          </select>
-                        </div>
-
-                        <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
-                          <select
-                            value={skillProvenanceFilter}
-                            onChange={(e) => setSkillProvenanceFilter(e.target.value)}
-                            className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
-                          >
-                            <option value="all">All Provenance</option>
-                            <option value="source-backed">Source-Backed</option>
-                            <option value="derived">Derived</option>
-                            <option value="synthetic">Synthetic</option>
-                          </select>
-                        </div>
-
-                        <Button variant="primary" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={handleOpenCreateSkill}>
-                          New Micro-skill
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {filteredMicroSkills.length === 0 ? (
-                      <div className="text-center py-10 text-muted-foreground text-xs">
-                        <Search className="h-7 w-7 mx-auto mb-2 opacity-50" />
-                        <p className="font-semibold">No micro-skills match your search or filter.</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2.5"
-                          onClick={() => {
-                            setSkillSearchQuery('')
-                            setSkillBloomFilter('all')
-                            setSkillProvenanceFilter('all')
-                          }}
-                        >
-                          Clear Skill Filters
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead>
-                            <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                              <th className="py-2.5 px-3">Skill Code &amp; Name</th>
-                              <th className="py-2.5 px-3">Observable Learning Outcome</th>
-                              <th className="py-2.5 px-3 text-center">Bloom Level</th>
-                              <th className="py-2.5 px-3">Provenance Reference</th>
-                              <th className="py-2.5 px-3 text-right">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {filteredMicroSkills.map((skill) => (
-                              <tr key={skill.id} className="hover:bg-muted/20">
+                            return (
+                              <tr
+                                key={skill.id}
+                                className="hover:bg-muted/20 transition-colors"
+                              >
+                                <td className="py-3 px-3 font-mono font-bold text-foreground">
+                                  <div className="flex items-center gap-1.5">
+                                    <span>{skill.code}</span>
+                                  </div>
+                                </td>
                                 <td className="py-3 px-3">
-                                  <div className="font-mono font-bold text-foreground">{skill.code}</div>
-                                  <div className="font-semibold text-foreground">{skill.name}</div>
-                                  <span className="text-[10px] text-muted-foreground font-mono">v{skill.version}</span>
+                                  <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
+                                    <span>{skill.name}</span>
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <span className="truncate max-w-sm">
+                                      {skill.description || 'Verified micro-skill objective and domain scope.'}
+                                    </span>
+                                    <span className="text-muted-foreground/60">• Updated {formatDate(skill.updatedAt || skill.createdAt)}</span>
+                                  </div>
                                 </td>
-                                <td className="py-3 px-3 text-muted-foreground max-w-sm">
-                                  {skill.observableOutcome}
-                                </td>
-                                <td className="py-3 px-3 text-center">
-                                  <Badge variant="secondary" className="font-semibold text-[10px]">
-                                    {skill.bloomLevel}
+                                <td className="py-3 px-3 whitespace-nowrap">
+                                  <Badge
+                                    variant={
+                                      macro === 'COMMUNICATION'
+                                        ? 'success'
+                                        : macro === 'INNOVATION'
+                                        ? 'primary'
+                                        : 'secondary'
+                                    }
+                                    className="text-[10px] font-semibold"
+                                  >
+                                    {macro}
                                   </Badge>
                                 </td>
-                                <td className="py-3 px-3 text-[11px] font-mono text-muted-foreground">
-                                  {skill.provenance.source}
+                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                  {prereqCount > 0 ? (
+                                    <Badge variant="primary" className="text-[10px] font-semibold inline-flex items-center gap-1">
+                                      <GitBranch className="h-3 w-3" />
+                                      {prereqCount} {prereqCount === 1 ? 'prereq' : 'prereqs'}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-[11px] text-muted-foreground italic">None</span>
+                                  )}
                                 </td>
-                                <td className="py-3 px-3 text-right">
+                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                  {boundRolesCount > 0 ? (
+                                    <Badge variant="outline" className="text-[10px] font-semibold font-mono">
+                                      {boundRolesCount} {boundRolesCount === 1 ? 'role' : 'roles'}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-[11px] text-muted-foreground italic">Unassigned</span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-3 whitespace-nowrap">
+                                  <Badge
+                                    variant={skill.status === 'ACTIVE' || skill.status === 'published' ? 'success' : 'secondary'}
+                                    className="text-[10px] font-semibold"
+                                  >
+                                    {skill.status || 'ACTIVE'}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-right whitespace-nowrap">
                                   <div className="flex items-center justify-end gap-1.5">
                                     {skill.status !== 'draft' && (
                                       <Button
@@ -1312,181 +1245,212 @@ export function CompetencyOntologyPage() {
                                         setSkillForm({
                                           code: skill.code,
                                           name: skill.name,
-                                          observableOutcome: skill.observableOutcome,
-                                          bloomLevel: skill.bloomLevel,
-                                          source: skill.provenance.source,
-                                          ruleRef: skill.provenance.ruleRef,
-                                          type: skill.provenance.type,
+                                          description: skill.description || '',
+                                          macroCompetencyCode: (skill.macroCompetencyCode as any) || 'KNOWLEDGE',
                                         })
                                         setIsSkillModalOpen(true)
                                       }}
                                       title="Edit Micro-skill"
                                       aria-label="Edit Micro-skill"
                                     >
-                                      <Edit3 className="h-4 w-4" />
+                                      <Edit3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-colors"
+                                      onClick={() => setDeletingSkill(skill)}
+                                      title="Delete Micro-skill"
+                                      aria-label="Delete Micro-skill"
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
                                   </div>
                                 </td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Section B: Prerequisite Edges */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <GitBranch className="h-4 w-4 text-primary" />
-                          Skill Prerequisite Edges &amp; Thresholds ({filteredPrerequisites.length})
-                        </CardTitle>
-                        <CardDescription>
-                          Directed dependency constraints. System automatically blocks self-edges, duplicates, and cycles.
-                        </CardDescription>
-                      </div>
-
-                      {/* Search & Filter Controls for Prerequisites */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="relative min-w-[180px]">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                          <input
-                            type="text"
-                            placeholder="Filter prereq edges..."
-                            value={prereqSearchQuery}
-                            onChange={(e) => setPrereqSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
-                          <Filter className="h-3 w-3 text-muted-foreground" />
-                          <select
-                            value={prereqTypeFilter}
-                            onChange={(e) => setPrereqTypeFilter(e.target.value)}
-                            className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
-                          >
-                            <option value="all">All Prereq Types</option>
-                            <option value="hard_prerequisite">Hard Prerequisite</option>
-                            <option value="recommended">Recommended</option>
-                          </select>
-                        </div>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          leftIcon={<Plus className="h-3.5 w-3.5" />}
-                          onClick={() => setIsPrereqModalOpen(true)}
-                        >
-                          Add Prerequisite Edge
-                        </Button>
-                      </div>
+                            )
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    {filteredPrerequisites.length === 0 ? (
-                      <div className="text-center py-10 text-muted-foreground text-xs">
-                        <Search className="h-7 w-7 mx-auto mb-2 opacity-50" />
-                        <p className="font-semibold">No prerequisite edges match search.</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2.5"
-                          onClick={() => {
-                            setPrereqSearchQuery('')
-                            setPrereqTypeFilter('all')
-                          }}
-                        >
-                          Clear Prereq Filters
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead>
-                            <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                              <th className="py-2.5 px-3">Source Prerequisite Skill</th>
-                              <th className="py-2.5 px-3 text-center">Relationship</th>
-                              <th className="py-2.5 px-3">Target Dependent Skill</th>
-                              <th className="py-2.5 px-3 text-center">Required Threshold</th>
-                              <th className="py-2.5 px-3">Rule Reference</th>
-                              <th className="py-2.5 px-3 text-right">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {filteredPrerequisites.map((edge) => {
-                              const source = microSkills.find((s) => s.id === edge.sourceSkillId)
-                              const target = microSkills.find((s) => s.id === edge.targetSkillId)
 
-                              return (
-                                <tr key={edge.id} className="hover:bg-muted/20">
-                                  <td className="py-3 px-3 font-semibold text-foreground">
-                                    <span className="font-mono text-primary font-bold mr-1.5">{source?.code}</span>
-                                    {source?.name}
-                                  </td>
-                                  <td className="py-3 px-3 text-center">
-                                    <span className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                      PREREQUISITE_FOR <ArrowRight className="h-3 w-3 text-primary" />
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-3 font-semibold text-foreground">
-                                    <span className="font-mono text-primary font-bold mr-1.5">{target?.code}</span>
-                                    {target?.name}
-                                  </td>
-                                  <td className="py-3 px-3 text-center">
-                                    <Badge variant="primary" className="font-bold">
-                                      {edge.requiredThreshold}% Mastery
-                                    </Badge>
-                                  </td>
-                                  <td className="py-3 px-3 font-mono text-muted-foreground text-[11px]">
-                                    {edge.ruleRef}
-                                  </td>
-                                  <td className="py-3 px-3 text-right">
-                                    <div className="flex items-center justify-end gap-1.5">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={() => setViewingEdgeDetails(edge)}
-                                        title="View Details"
-                                        aria-label="View Details"
-                                      >
-                                        <Eye className="h-4 w-4 text-primary" />
-                                      </Button>
-                                      <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={() => setDeletingEdgeId(edge.id)}
-                                        title="Delete Edge"
-                                        aria-label="Delete Edge"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                    {filteredMicroSkills.length > 0 && (
+                      <Pagination
+                        currentPage={skillCurrentPage}
+                        totalPages={skillTotalPages}
+                        totalItems={filteredMicroSkills.length}
+                        pageSize={skillPageSize}
+                        onPageChange={setSkillCurrentPage}
+                        itemLabel="micro-skills"
+                      />
                     )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            )
-          })()}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
+          {/* TAB 2: SKILL PREREQUISITES */}
+          <TabsContent value="prerequisites" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <GitBranch className="h-4 w-4 text-primary" />
+                      Skill Prerequisite Edges &amp; Thresholds
+                    </CardTitle>
+                    <CardDescription>
+                      Directed dependency constraints. System automatically blocks self-edges, duplicates, and cycles.
+                    </CardDescription>
+                  </div>
 
+                  {/* Search and Filters */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative min-w-[200px]">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Filter prereq edges..."
+                        value={prereqSearchQuery}
+                        onChange={(e) => {
+                          setPrereqSearchQuery(e.target.value)
+                          setPrereqCurrentPage(1)
+                        }}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                      <Filter className="h-3 w-3 text-muted-foreground" />
+                      <select
+                        value={prereqTypeFilter}
+                        onChange={(e) => {
+                          setPrereqTypeFilter(e.target.value)
+                          setPrereqCurrentPage(1)
+                        }}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {filteredPrerequisites.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
+                    <p className="text-sm font-semibold">No prerequisite edges match your search or filter.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => {
+                        setPrereqSearchQuery('')
+                        setPrereqTypeFilter('all')
+                        setPrereqCurrentPage(1)
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
+                            <th className="py-2.5 px-3">Source Prerequisite Skill</th>
+                            <th className="py-2.5 px-3 text-center">Relationship</th>
+                            <th className="py-2.5 px-3">Target Dependent Skill</th>
+                            <th className="py-2.5 px-3 text-center">Minimum Mastery</th>
+                            <th className="py-2.5 px-3 text-center">Status</th>
+                            <th className="py-2.5 px-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {paginatedPrerequisites.map((edge) => {
+                            const source = microSkills.find((s) => s.id === edge.sourceSkillId || s.code === edge.sourceSkillId)
+                            const target = microSkills.find((s) => s.id === edge.targetSkillId || s.code === edge.targetSkillId)
+
+                            return (
+                              <tr key={edge.id} className="hover:bg-muted/20">
+                                <td className="py-3 px-3 font-semibold text-foreground">
+                                  <span className="font-mono text-primary font-bold mr-1.5">{source?.code || edge.sourceSkillCode}</span>
+                                  {source?.name || edge.sourceSkillName}
+                                </td>
+                                <td className="py-3 px-3 text-center">
+                                  <span className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                                    PREREQUISITE_OF <ArrowRight className="h-3 w-3 text-primary" />
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3 font-semibold text-foreground">
+                                  <span className="font-mono text-primary font-bold mr-1.5">{target?.code || edge.targetSkillCode}</span>
+                                  {target?.name || edge.targetSkillName}
+                                </td>
+                                <td className="py-3 px-3 text-center">
+                                  <Badge variant="primary" className="font-bold">
+                                    {Math.round(edge.minMastery * 100)}% Mastery
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-center">
+                                  <Badge variant={edge.status === 'ACTIVE' ? 'success' : 'outline'} className="font-mono text-[10px]">
+                                    {edge.status || 'ACTIVE'}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setViewingEdgeDetails(edge)}
+                                      title="View Details"
+                                      aria-label="View Details"
+                                    >
+                                      <Eye className="h-4 w-4 text-primary" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setDeletingEdge(edge)}
+                                      title="Delete Edge"
+                                      aria-label="Delete Edge"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {filteredPrerequisites.length > 0 && (
+                      <Pagination
+                        currentPage={prereqCurrentPage}
+                        totalPages={prereqTotalPages}
+                        totalItems={filteredPrerequisites.length}
+                        pageSize={prereqPageSize}
+                        onPageChange={setPrereqCurrentPage}
+                        itemLabel="prerequisite edges"
+                      />
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* TAB 4: EXPLORE ONTOLOGY GRAPH */}
           <TabsContent value="graph" className="space-y-4">
-            <Card>
+            <Card className={isGraphFullscreen ? 'fixed inset-0 z-50 rounded-none m-0 border-0 flex flex-col p-4 bg-background overflow-hidden shadow-2xl' : ''}>
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                   <div>
@@ -1512,7 +1476,7 @@ export function CompetencyOntologyPage() {
                         }`}
                         title="Top-down structured DAG hierarchy"
                       >
-                        Hierarchical Flow
+                        Hierarchical
                       </button>
                       <button
                         type="button"
@@ -1522,9 +1486,9 @@ export function CompetencyOntologyPage() {
                             ? 'bg-card text-foreground shadow-sm font-semibold'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
-                        title="Force-directed organic network with collision avoidance"
+                        title="Force-directed network with collision avoidance"
                       >
-                        Spacious Network
+                        Network
                       </button>
                     </div>
 
@@ -1536,7 +1500,7 @@ export function CompetencyOntologyPage() {
                         onChange={(e) => setFocusCompetencyId(e.target.value)}
                         className="bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium text-xs max-w-[170px] truncate"
                       >
-                        <option value="all">All Domains (Overview)</option>
+                        <option value="all">All Competencies (Overview)</option>
                         {competencies.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.code} – {c.name}
@@ -1604,14 +1568,26 @@ export function CompetencyOntologyPage() {
                       >
                         Reset View
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        leftIcon={isGraphFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+                        onClick={() => {
+                          setIsGraphFullscreen((prev) => !prev)
+                          setTimeout(() => networkRef.current?.fit(), 100)
+                        }}
+                        title={isGraphFullscreen ? 'Exit Fullscreen' : 'View Fullscreen'}
+                      >
+                        {isGraphFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                      </Button>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <CardContent className={isGraphFullscreen ? 'flex-1 pt-4 overflow-hidden flex flex-col min-h-0' : 'pt-4'}>
+                <div className={`grid grid-cols-1 lg:grid-cols-3 gap-4 ${isGraphFullscreen ? 'flex-1 min-h-0' : ''}`}>
                   {/* Graph Canvas */}
-                  <div className="lg:col-span-2 border border-border rounded-lg bg-background/50 h-[560px] relative overflow-hidden shadow-inner">
+                  <div className={`lg:col-span-2 border border-border rounded-lg bg-background/50 relative overflow-hidden shadow-inner flex flex-col ${isGraphFullscreen ? 'h-full min-h-[400px]' : 'h-[560px]'}`}>
                     <div ref={graphContainerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
                     
                     {/* Visual Legend */}
@@ -1660,39 +1636,22 @@ export function CompetencyOntologyPage() {
                               {graphInspectorNode.name}
                             </span>
                             <div className="flex items-center gap-1.5 mt-1.5">
-                              <Badge variant="secondary" className="text-[10px] font-mono">
-                                v{graphInspectorNode.version}
-                              </Badge>
                               <Badge
-                                variant={graphInspectorNode.status === 'published' ? 'success' : 'warning'}
+                                variant={graphInspectorNode.status === 'ACTIVE' || graphInspectorNode.status === 'published' ? 'success' : 'warning'}
                                 className="text-[10px]"
                               >
-                                {graphInspectorNode.status}
+                                {graphInspectorNode.status || 'ACTIVE'}
                               </Badge>
-                              {graphInspectorNode.bloomLevel && (
-                                <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20">
-                                  Bloom: {graphInspectorNode.bloomLevel}
-                                </Badge>
-                              )}
                             </div>
                           </div>
 
                           <div className="p-3 rounded-md bg-card border border-border">
                             <span className="text-[11px] text-muted-foreground block font-semibold mb-1">
-                              {graphInspectorNode.nodeCategory === 'Competency'
-                                ? 'Domain Definition'
-                                : 'Observable Outcome Statement'}
+                              Description
                             </span>
                             <p className="text-foreground text-[11px] leading-relaxed">
-                              {graphInspectorNode.definition || graphInspectorNode.observableOutcome}
+                              {graphInspectorNode.description || 'No description provided.'}
                             </p>
-                          </div>
-
-                          <div className="p-3 rounded-md bg-card border border-border space-y-1 text-[11px]">
-                            <div className="text-muted-foreground font-semibold">Provenance &amp; Source Citation</div>
-                            <div className="text-foreground font-medium">
-                              {graphInspectorNode.derivationRef || graphInspectorNode.provenance?.source || 'Internal Enterprise Standard'}
-                            </div>
                           </div>
 
                           {/* Connected Relationships */}
@@ -1748,8 +1707,8 @@ export function CompetencyOntologyPage() {
                                               key={p.id}
                                               className="flex items-center justify-between text-[10px] bg-destructive/5 text-destructive border border-destructive/20 rounded px-1.5 py-0.5 font-mono"
                                             >
-                                              <span>{source?.code || p.sourceSkillId}</span>
-                                              <span>req ≥{p.requiredThreshold}%</span>
+                                              <span>{source?.code || p.sourceSkillCode || p.sourceSkillId}</span>
+                                              <span>req ≥{Math.round(p.minMastery * 100)}%</span>
                                             </div>
                                           )
                                         })}
@@ -1784,84 +1743,6 @@ export function CompetencyOntologyPage() {
         </Tabs>
       </div>
 
-      {/* CREATE / EDIT COMPETENCY MODAL */}
-      <Dialog open={isCompModalOpen} onOpenChange={setIsCompModalOpen}>
-        <div className="space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              {selectedComp ? `Edit Competency (${selectedComp.code})` : 'Create Draft Competency'}
-            </DialogTitle>
-            <DialogDescription>
-              Enter a unique code, name, and definition with authoritative source or derivation citation.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 text-xs">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Unique Code <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. COMP-SEM-01"
-                  disabled={Boolean(selectedComp)}
-                  value={compForm.code}
-                  onChange={(e) => setCompForm({ ...compForm, code: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-60"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Competency Name <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Graph Semantic Architecture"
-                  value={compForm.name}
-                  onChange={(e) => setCompForm({ ...compForm, name: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Definition / Learning Scope <span className="text-destructive">*</span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Formal domain definition, expected mastery boundaries, and applied context..."
-                value={compForm.definition}
-                onChange={(e) => setCompForm({ ...compForm, definition: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">Source / Derivation Reference</label>
-              <input
-                type="text"
-                placeholder="e.g. ACM Computing Curricula 2023 / Knowledge Representation"
-                value={compForm.derivationRef}
-                onChange={(e) => setCompForm({ ...compForm, derivationRef: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setIsCompModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSaveCompetency}>
-              {selectedComp ? 'Save Changes' : 'Create Competency'}
-            </Button>
-          </DialogFooter>
-        </div>
-      </Dialog>
 
       {/* CREATE / EDIT MICRO-SKILL MODAL */}
       <Dialog open={isSkillModalOpen} onOpenChange={setIsSkillModalOpen}>
@@ -1872,7 +1753,7 @@ export function CompetencyOntologyPage() {
               {selectedSkill ? `Edit Micro-skill (${selectedSkill.code})` : 'Create Micro-skill'}
             </DialogTitle>
             <DialogDescription>
-              Define an atomic micro-skill with an observable learning outcome and recorded provenance citation.
+              Define an atomic micro-skill with an observable learning outcome categorized under its parent macro-competency.
             </DialogDescription>
           </DialogHeader>
 
@@ -1907,58 +1788,39 @@ export function CompetencyOntologyPage() {
             </div>
 
             <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Observable Learning Outcome <span className="text-destructive">*</span>
-              </label>
-              <textarea
-                rows={2}
-                placeholder="Measurable action-oriented outcome statement (e.g. Formulate declarative Cypher queries including MATCH and MERGE)..."
-                value={skillForm.observableOutcome}
-                onChange={(e) => setSkillForm({ ...skillForm, observableOutcome: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Bloom Taxonomy Level</label>
-                <select
-                  value={skillForm.bloomLevel}
-                  onChange={(e) => setSkillForm({ ...skillForm, bloomLevel: e.target.value as any })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="Remember">Remember</option>
-                  <option value="Understand">Understand</option>
-                  <option value="Apply">Apply</option>
-                  <option value="Analyze">Analyze</option>
-                  <option value="Evaluate">Evaluate</option>
-                  <option value="Create">Create</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Provenance Type</label>
-                <select
-                  value={skillForm.type}
-                  onChange={(e) => setSkillForm({ ...skillForm, type: e.target.value as any })}
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="source-backed">Source-Backed</option>
-                  <option value="derived">Derived</option>
-                  <option value="synthetic">Synthetic</option>
-                </select>
-              </div>
+              <label className="font-semibold text-foreground block mb-1">Competency Group</label>
+              <select
+                value={skillForm.macroCompetencyCode}
+                onChange={(e) => setSkillForm({ ...skillForm, macroCompetencyCode: e.target.value as any })}
+                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
+              >
+                <option value="KNOWLEDGE">KNOWLEDGE (Cognitive / Technical)</option>
+                <option value="COMMUNICATION">COMMUNICATION (Interpersonal)</option>
+                <option value="INNOVATION">INNOVATION (Creative / Problem Solving)</option>
+              </select>
             </div>
 
             <div>
-              <label className="font-semibold text-foreground block mb-1">Source Reference / Citation</label>
-              <input
-                type="text"
-                placeholder="e.g. Neo4j Certified Professional Framework v5.12"
-                value={skillForm.source}
-                onChange={(e) => setSkillForm({ ...skillForm, source: e.target.value })}
+              <label className="font-semibold text-foreground block mb-1">
+                Description <span className="text-destructive">*</span>
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Description of what learner needs to know or do (e.g. Formulate declarative Cypher queries including MATCH and MERGE)..."
+                value={skillForm.description}
+                onChange={(e) => setSkillForm({ ...skillForm, description: e.target.value })}
                 className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
               />
+            </div>
+
+            <div className="p-3 rounded-lg bg-secondary border border-border/80 text-[11.5px] text-foreground space-y-1">
+              <div className="font-semibold text-primary flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-primary" />
+                Domain Expert Micro-Skill Scope (REQ-012-F01)
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                As a Domain Expert, you are defining an atomic skill categorized under <strong>{skillForm.macroCompetencyCode}</strong>. Linking this micro-skill to Target Roles and setting required proficiencies will be handled in Sprint 3 (REQ-015).
+              </p>
             </div>
           </div>
 
@@ -1972,63 +1834,6 @@ export function CompetencyOntologyPage() {
           </DialogFooter>
         </div>
       </Dialog>
-
-      {/* MAINTAIN HAS_SKILL LINKS MODAL */}
-      {selectedComp && (
-        <Dialog open={isHasSkillModalOpen} onOpenChange={setIsHasSkillModalOpen}>
-          <div className="space-y-4">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Layers className="h-5 w-5 text-primary" />
-                Maintain HAS_SKILL Links: {selectedComp.name} ({selectedComp.code})
-              </DialogTitle>
-              <DialogDescription>
-                Attach or detach micro-skills. One skill may belong to multiple competencies. Duplicate and dangling
-                links are rejected.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 text-xs">
-              {microSkills.map((ms) => {
-                const isLinked = selectedComp.skillIds.includes(ms.id)
-
-                return (
-                  <div
-                    key={ms.id}
-                    className={`p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
-                      isLinked ? 'border-primary/40 bg-primary/5' : 'border-border bg-card'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-foreground">{ms.code}</span>
-                        <span className="font-semibold text-foreground">{ms.name}</span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                        {ms.observableOutcome}
-                      </p>
-                    </div>
-
-                    <Button
-                      variant={isLinked ? 'outline' : 'primary'}
-                      size="sm"
-                      onClick={() => handleToggleHasSkill(selectedComp, ms.id)}
-                    >
-                      {isLinked ? 'Remove HAS_SKILL' : 'Add HAS_SKILL'}
-                    </Button>
-                  </div>
-                )
-              })}
-            </div>
-
-            <DialogFooter>
-              <Button variant="primary" size="sm" onClick={() => setIsHasSkillModalOpen(false)}>
-                Done
-              </Button>
-            </DialogFooter>
-          </div>
-        </Dialog>
-      )}
 
       {/* ADD PREREQUISITE EDGE MODAL (WITH CYCLE PREVENTION) */}
       <Dialog open={isPrereqModalOpen} onOpenChange={setIsPrereqModalOpen}>
@@ -2084,31 +1889,23 @@ export function CompetencyOntologyPage() {
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Required Threshold (%)</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={prereqForm.requiredThreshold}
-                  onChange={(e) =>
-                    setPrereqForm({ ...prereqForm, requiredThreshold: parseInt(e.target.value) || 0 })
-                  }
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Rule Citation</label>
-                <input
-                  type="text"
-                  value={prereqForm.ruleRef}
-                  onChange={(e) => setPrereqForm({ ...prereqForm, ruleRef: e.target.value })}
-                  placeholder="e.g. PEDAGOGY-SEQ-05"
-                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+            <div>
+              <label className="font-semibold text-foreground block mb-1">
+                Minimum Required Mastery (%) <span className="text-destructive">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={prereqForm.minMasteryPercent}
+                onChange={(e) =>
+                  setPrereqForm({ ...prereqForm, minMasteryPercent: parseInt(e.target.value) || 0 })
+                }
+                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <span className="text-[11px] text-muted-foreground mt-0.5 block">
+                Learners must achieve at least this mastery score on the source skill before unlocking the dependent skill.
+              </span>
             </div>
 
             <div className="p-2.5 rounded bg-muted/40 border border-border text-[11px] text-muted-foreground flex items-center gap-2">
@@ -2126,140 +1923,6 @@ export function CompetencyOntologyPage() {
             </Button>
           </DialogFooter>
         </div>
-      </Dialog>
-
-      {/* 5. VIEW COMPETENCY DETAILS MODAL (Miro Flow) */}
-      <Dialog
-        open={Boolean(viewingCompDetails)}
-        onOpenChange={(open) => !open && setViewingCompDetails(null)}
-        className="max-w-2xl"
-      >
-        {viewingCompDetails && (
-          <div className="space-y-4">
-            <DialogHeader>
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <DialogTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary shrink-0" />
-                  <span>Competency Details: {viewingCompDetails.name}</span>
-                </DialogTitle>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Badge variant="secondary" className="font-mono text-xs">
-                    v{viewingCompDetails.version}
-                  </Badge>
-                  <Badge
-                    variant={
-                      viewingCompDetails.status === 'published'
-                        ? 'success'
-                        : viewingCompDetails.status === 'draft'
-                        ? 'warning'
-                        : 'outline'
-                    }
-                  >
-                    {viewingCompDetails.status.toUpperCase()}
-                  </Badge>
-                </div>
-              </div>
-              <DialogDescription>
-                Formal curriculum definition, version lineage, and ontological micro-skill bindings.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-muted/40 border border-border">
-                <div>
-                  <span className="text-muted-foreground block text-[11px]">Competency Code</span>
-                  <strong className="font-mono text-foreground font-bold text-sm">{viewingCompDetails.code}</strong>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-[11px]">Stable Entity ID</span>
-                  <span className="font-mono text-muted-foreground text-[11px] truncate block">{viewingCompDetails.stableId}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-[11px]">Last Updated</span>
-                  <span className="text-foreground font-semibold">{viewingCompDetails.updatedAt}</span>
-                </div>
-                <div className="col-span-2 sm:col-span-3">
-                  <span className="text-muted-foreground block text-[11px]">Competency Name</span>
-                  <strong className="text-foreground text-sm font-semibold">{viewingCompDetails.name}</strong>
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Formal Curriculum Definition</label>
-                <div className="p-3 rounded-lg bg-card border border-border text-foreground leading-relaxed text-xs">
-                  {viewingCompDetails.definition}
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block mb-1">Academic &amp; Industry Derivation Reference</label>
-                <div className="p-2.5 rounded bg-muted/30 border border-border font-mono text-[11px] text-muted-foreground">
-                  {viewingCompDetails.derivationRef}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Layers className="h-3.5 w-3.5 text-primary" />
-                    Mapped Micro-skills ({viewingCompDetails.skillIds.length} HAS_SKILL)
-                  </label>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-[11px]"
-                    onClick={() => {
-                      const comp = viewingCompDetails
-                      setViewingCompDetails(null)
-                      setSelectedComp(comp)
-                      setIsHasSkillModalOpen(true)
-                    }}
-                  >
-                    Manage Bindings
-                  </Button>
-                </div>
-
-                {viewingCompDetails.skillIds.length === 0 ? (
-                  <div className="p-4 rounded-lg bg-muted/20 border border-border text-center text-muted-foreground">
-                    No micro-skills currently bound to this competency.
-                  </div>
-                ) : (
-                  <div className="border border-border rounded-lg overflow-hidden divide-y divide-border max-h-56 overflow-y-auto">
-                    {viewingCompDetails.skillIds.map((sId) => {
-                      const skill = microSkills.find((s) => s.id === sId)
-                      if (!skill) return null
-                      return (
-                        <div key={sId} className="p-2.5 flex items-start justify-between gap-3 hover:bg-muted/10">
-                          <div className="space-y-0.5">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-primary">{skill.code}</span>
-                              <span className="font-semibold text-foreground">{skill.name}</span>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground line-clamp-1">{skill.observableOutcome}</p>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <Badge variant="secondary" className="text-[10px] py-0">
-                              {skill.bloomLevel}
-                            </Badge>
-                            <Badge variant="outline" className="text-[10px] py-0 font-mono">
-                              v{skill.version}
-                            </Badge>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" size="sm" onClick={() => setViewingCompDetails(null)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
       </Dialog>
 
       {/* 6. VIEW MICRO-SKILL DETAILS MODAL (Miro Flow) */}
@@ -2282,24 +1945,15 @@ export function CompetencyOntologyPage() {
                     <span>Micro-skill Details: {viewingSkillDetails.name}</span>
                   </DialogTitle>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <Badge variant="secondary" className="font-mono text-xs">
-                      v{viewingSkillDetails.version}
-                    </Badge>
                     <Badge
-                      variant={
-                        viewingSkillDetails.provenance.type === 'source-backed'
-                          ? 'success'
-                          : viewingSkillDetails.provenance.type === 'derived'
-                          ? 'primary'
-                          : 'warning'
-                      }
+                      variant={viewingSkillDetails.status === 'ACTIVE' || viewingSkillDetails.status === 'published' ? 'success' : 'warning'}
                     >
-                      {viewingSkillDetails.provenance.type.toUpperCase()}
+                      {viewingSkillDetails.status || 'ACTIVE'}
                     </Badge>
                   </div>
                 </div>
                 <DialogDescription>
-                  Atomic, verifiable learning outcome telemetry with provenance citations and pedagogical graph position.
+                  Atomic micro-skill definition following the Neo4j schema.
                 </DialogDescription>
               </DialogHeader>
 
@@ -2310,14 +1964,14 @@ export function CompetencyOntologyPage() {
                     <strong className="font-mono text-foreground font-bold text-sm">{viewingSkillDetails.code}</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Bloom Taxonomy</span>
-                    <Badge variant="secondary" className="font-semibold text-xs mt-0.5">
-                      {viewingSkillDetails.bloomLevel}
+                    <span className="text-muted-foreground block text-[11px]">Competency</span>
+                    <Badge variant="outline" className="font-semibold text-xs mt-0.5 uppercase">
+                      {viewingSkillDetails.macroCompetencyCode || 'KNOWLEDGE'}
                     </Badge>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Recorded Date</span>
-                    <span className="text-foreground font-semibold">{viewingSkillDetails.provenance.recordedDate}</span>
+                    <span className="text-muted-foreground block text-[11px]">Status</span>
+                    <span className="text-foreground font-semibold">{viewingSkillDetails.status || 'ACTIVE'}</span>
                   </div>
                   <div className="col-span-2 sm:col-span-3">
                     <span className="text-muted-foreground block text-[11px]">Skill Name</span>
@@ -2326,20 +1980,9 @@ export function CompetencyOntologyPage() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-foreground block mb-1">Observable Learning Outcome</label>
+                  <label className="font-semibold text-foreground block mb-1">Description</label>
                   <div className="p-3 rounded-lg bg-card border border-border text-foreground leading-relaxed text-xs">
-                    {viewingSkillDetails.observableOutcome}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1">
-                    <span className="text-muted-foreground block text-[11px] font-semibold">Provenance Source</span>
-                    <p className="font-mono text-[11px] text-foreground">{viewingSkillDetails.provenance.source}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1">
-                    <span className="text-muted-foreground block text-[11px] font-semibold">Curriculum Rule Ref</span>
-                    <p className="font-mono text-[11px] text-foreground">{viewingSkillDetails.provenance.ruleRef}</p>
+                    {viewingSkillDetails.description || 'No description provided.'}
                   </div>
                 </div>
 
@@ -2381,11 +2024,11 @@ export function CompetencyOntologyPage() {
                                 className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
                               >
                                 <span className="truncate">
-                                  <strong className="font-mono text-primary mr-1">{srcSkill?.code}</strong>
-                                  {srcSkill?.name}
+                                  <strong className="font-mono text-primary mr-1">{srcSkill?.code || p.sourceSkillCode}</strong>
+                                  {srcSkill?.name || p.sourceSkillName}
                                 </span>
                                 <Badge variant="primary" className="text-[10px] shrink-0">
-                                  {p.requiredThreshold}%
+                                  ≥ {Math.round(p.minMastery * 100)}%
                                 </Badge>
                               </div>
                             )
@@ -2412,11 +2055,11 @@ export function CompetencyOntologyPage() {
                                 className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
                               >
                                 <span className="truncate">
-                                  <strong className="font-mono text-primary mr-1">{tgtSkill?.code}</strong>
-                                  {tgtSkill?.name}
+                                  <strong className="font-mono text-primary mr-1">{tgtSkill?.code || p.targetSkillCode}</strong>
+                                  {tgtSkill?.name || p.targetSkillName}
                                 </span>
                                 <Badge variant="secondary" className="text-[10px] shrink-0">
-                                  {p.requiredThreshold}%
+                                  ≥ {Math.round(p.minMastery * 100)}%
                                 </Badge>
                               </div>
                             )
@@ -2443,11 +2086,8 @@ export function CompetencyOntologyPage() {
                     setSkillForm({
                       code: skill.code,
                       name: skill.name,
-                      observableOutcome: skill.observableOutcome,
-                      bloomLevel: skill.bloomLevel,
-                      source: skill.provenance.source,
-                      ruleRef: skill.provenance.ruleRef,
-                      type: skill.provenance.type,
+                      description: skill.description || '',
+                      macroCompetencyCode: (skill.macroCompetencyCode as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION') || 'KNOWLEDGE',
                     })
                     setIsSkillModalOpen(true)
                   }}
@@ -2480,10 +2120,10 @@ export function CompetencyOntologyPage() {
                   </DialogTitle>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Badge variant="primary" className="font-bold">
-                      {viewingEdgeDetails.requiredThreshold}% Mastery
+                      ≥ {Math.round(viewingEdgeDetails.minMastery * 100)}% Mastery
                     </Badge>
-                    <Badge variant={viewingEdgeDetails.type === 'hard_prerequisite' ? 'destructive' : 'secondary'}>
-                      {viewingEdgeDetails.type === 'hard_prerequisite' ? 'HARD PREREQUISITE' : 'RECOMMENDED'}
+                    <Badge variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}>
+                      {viewingEdgeDetails.status || 'ACTIVE'}
                     </Badge>
                   </div>
                 </div>
@@ -2497,62 +2137,54 @@ export function CompetencyOntologyPage() {
                 <div className="p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between gap-3">
                   <div className="flex-1 p-2 rounded bg-card border border-border">
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Source Skill</span>
-                    <strong className="font-mono text-primary font-bold block">{source?.code}</strong>
-                    <span className="text-foreground font-semibold text-xs line-clamp-1">{source?.name}</span>
+                    <strong className="font-mono text-primary font-bold block">{source?.code || viewingEdgeDetails.sourceSkillCode}</strong>
+                    <span className="text-foreground font-semibold text-xs line-clamp-1">{source?.name || viewingEdgeDetails.sourceSkillName}</span>
                   </div>
 
                   <div className="flex flex-col items-center shrink-0">
-                    <span className="text-[10px] font-mono text-primary font-bold">{viewingEdgeDetails.requiredThreshold}% req</span>
+                    <span className="text-[10px] font-mono text-primary font-bold">≥ {Math.round(viewingEdgeDetails.minMastery * 100)}% req</span>
                     <ArrowRight className="h-5 w-5 text-primary" />
-                    <span className="text-[9px] text-muted-foreground uppercase">{viewingEdgeDetails.type}</span>
+                    <span className="text-[9px] text-muted-foreground uppercase">{viewingEdgeDetails.status || 'ACTIVE'}</span>
                   </div>
 
                   <div className="flex-1 p-2 rounded bg-card border border-border">
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Target Skill</span>
-                    <strong className="font-mono text-primary font-bold block">{target?.code}</strong>
-                    <span className="text-foreground font-semibold text-xs line-clamp-1">{target?.name}</span>
+                    <strong className="font-mono text-primary font-bold block">{target?.code || viewingEdgeDetails.targetSkillCode}</strong>
+                    <span className="text-foreground font-semibold text-xs line-clamp-1">{target?.name || viewingEdgeDetails.targetSkillName}</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-card border border-border">
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Rule Citation Reference</span>
-                    <strong className="font-mono text-foreground font-bold text-xs">{viewingEdgeDetails.ruleRef}</strong>
+                    <span className="text-muted-foreground block text-[11px]">Minimum Required Mastery</span>
+                    <strong className="font-mono text-primary font-bold text-sm">{Math.round(viewingEdgeDetails.minMastery * 100)}%</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Enforcement Policy</span>
-                    <span className="text-foreground font-medium">
-                      {viewingEdgeDetails.type === 'hard_prerequisite'
-                        ? 'Strict pathway gate blocking unlock'
-                        : 'Advisory guidance warning'}
-                    </span>
+                    <span className="text-muted-foreground block text-[11px]">Relationship Status</span>
+                    <Badge variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'} className="mt-0.5">
+                      {viewingEdgeDetails.status || 'ACTIVE'}
+                    </Badge>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
                     <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="font-mono text-primary font-bold">{source?.code}</span>
-                      Observable Outcome:
+                      <span className="font-mono text-primary font-bold">{source?.code || viewingEdgeDetails.sourceSkillCode}</span>
+                      Description:
                     </span>
-                    <p className="text-muted-foreground text-xs">{source?.observableOutcome}</p>
+                    <p className="text-muted-foreground text-xs">{source?.description}</p>
                   </div>
 
                   <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
                     <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="font-mono text-primary font-bold">{target?.code}</span>
-                      Observable Outcome:
+                      <span className="font-mono text-primary font-bold">{target?.code || viewingEdgeDetails.targetSkillCode}</span>
+                      Description:
                     </span>
-                    <p className="text-muted-foreground text-xs">{target?.observableOutcome}</p>
+                    <p className="text-muted-foreground text-xs">{target?.description}</p>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-secondary/40 border border-primary/20 text-foreground space-y-1">
-                  <strong className="text-xs font-semibold text-primary block">Adaptive Engine Behavior</strong>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    When an engineer's diagnostic assessment score on <span className="font-mono font-bold text-foreground">{source?.code}</span> is below {viewingEdgeDetails.requiredThreshold}%, the adaptive pathway generator automatically schedules remediation modules before unlocking <span className="font-mono font-bold text-foreground">{target?.code}</span>.
-                  </p>
-                </div>
               </div>
 
               <DialogFooter>
@@ -2566,49 +2198,33 @@ export function CompetencyOntologyPage() {
       </Dialog>
 
       {/* CONFIRMATION PROMPTS */}
+
       <ConfirmationModal
-        open={Boolean(deletingDraftComp)}
-        onOpenChange={(open) => !open && setDeletingDraftComp(null)}
-        title="Discard Draft Competency?"
-        description={
-          deletingDraftComp ? (
-            <div className="space-y-2 text-xs">
-              <p>
-                Are you sure you want to discard the draft version for{' '}
-                <strong className="text-foreground font-semibold">
-                  {deletingDraftComp.code} - {deletingDraftComp.name} (v{deletingDraftComp.version})
-                </strong>
-                ?
-              </p>
-              <p className="text-muted-foreground">
-                All uncommitted curriculum definitions and micro-skill bindings for this draft will be removed.
-              </p>
-            </div>
-          ) : null
-        }
-        confirmText="Delete Draft"
-        cancelText="Keep Draft"
+        open={Boolean(deletingEdge)}
+        onOpenChange={(open) => !open && setDeletingEdge(null)}
+        title="Delete Prerequisite Edge?"
+        description={`Are you sure you want to remove the prerequisite relationship between ${deletingEdge?.sourceSkillCode || deletingEdge?.sourceSkillId} and ${deletingEdge?.targetSkillCode || deletingEdge?.targetSkillId}?`}
+        confirmText="Delete Edge"
+        cancelText="Cancel"
         variant="destructive"
         onConfirm={() => {
-          if (deletingDraftComp) {
-            handleDeleteDraftComp(deletingDraftComp)
-            setDeletingDraftComp(null)
+          if (deletingEdge) {
+            handleDeletePrereq(deletingEdge)
           }
         }}
       />
 
       <ConfirmationModal
-        open={Boolean(deletingEdgeId)}
-        onOpenChange={(open) => !open && setDeletingEdgeId(null)}
-        title="Delete Prerequisite Edge?"
-        description="Are you sure you want to remove this directed prerequisite constraint? Learners on adaptive pathways will no longer be gated by this skill sequencing threshold."
-        confirmText="Delete Edge"
+        open={Boolean(deletingSkill)}
+        onOpenChange={(open) => !open && setDeletingSkill(null)}
+        title={`Delete Micro-skill ${deletingSkill?.code}?`}
+        description={`Are you sure you want to delete ${deletingSkill?.name}? If this micro-skill is referenced by prerequisite dependencies or assigned to target roles, deletion will be blocked.`}
+        confirmText="Delete Micro-skill"
         cancelText="Cancel"
         variant="destructive"
         onConfirm={() => {
-          if (deletingEdgeId) {
-            handleDeletePrereq(deletingEdgeId)
-            setDeletingEdgeId(null)
+          if (deletingSkill) {
+            handleDeleteSkill(deletingSkill)
           }
         }}
       />
@@ -2621,7 +2237,7 @@ export function CompetencyOntologyPage() {
         description="Select an industry blueprint to rapidly provision competencies, micro-skills, and prerequisite dependencies for your organization."
         presets={ONTOLOGY_PRESETS}
         onImport={handleImportOntology}
-        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "definition": "Deep understanding of self-attention matrices and transformer layers.",\n      "derivationRef": "Stanford CS324 Foundation Models Curriculum 2026"\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "observableOutcome": "Derives queries, keys, values tensors and computes masked softmax weights.",\n      "bloomLevel": "Apply",\n      "provenanceSource": "PyTorch Model Zoo",\n      "provenanceRuleRef": "ATTN-CORE-01"\n    }\n  ]\n}`}
+        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "description": "Deep understanding of self-attention matrices and transformer layers."\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "description": "Derives queries, keys, values tensors and computes masked softmax weights.",\n      "macroCompetencyCode": "KNOWLEDGE"\n    }\n  ]\n}`}
       />
     </WorkspaceLayout>
   )

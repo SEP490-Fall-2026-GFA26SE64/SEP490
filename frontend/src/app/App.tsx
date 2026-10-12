@@ -12,6 +12,7 @@ import { EmployeeTargetRolesPage } from '../features/employee/target-roles/Emplo
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
+import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
 import { LearningOutcomesPage } from '../features/manager/learning-outcomes/LearningOutcomesPage'
 import { RoiForecastPage } from '../features/manager/roi-forecast/RoiForecastPage'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
@@ -67,8 +68,10 @@ export default function App() {
             <Route path="/learner/profile" element={<Navigate to="/profile" replace />} />
             <Route path="/assessment" element={<Navigate to="/employee/assessment" replace />} />
 
-            {/* 2. Expert routes (Ontology, Modules, Assessment Bank) */}
-            <Route path="/expert" element={<Navigate to="/expert/ontology" replace />} />
+            {/* 2. Expert routes (Target Roles, Ontology, Modules, Assessment Bank) */}
+            <Route path="/expert" element={<Navigate to="/expert/target-roles" replace />} />
+            <Route path="/expert/target-roles" element={<ExpertAssignedRolesPage />} />
+            <Route path="/expert/assigned-roles" element={<Navigate to="/expert/target-roles" replace />} />
             <Route path="/expert/ontology" element={<CompetencyOntologyPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />

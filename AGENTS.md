@@ -40,3 +40,24 @@ Always check and reuse components in `src/shared/components/ui/` and `src/shared
 - `<StatCard />` for all metric / KPI cards
 - `<Heading />`, `<Text />`, `<Button />`, `<Badge />`, `<Card />`, `<Tabs />`, `<Accordion />`, `<Dialog />`, `<Input />`, `<Progress />`
 - If a component is shared across actors (Learner, Manager, Admin), place it in `src/shared/components/ui/`.
+
+---
+
+## Mandatory AI Feature Implementation Lifecycle (Always Active)
+
+When implementing any feature, enhancement, or bug fix using AI, all agents must strictly follow the 5-step lifecycle in sequence:
+
+1. **Clear Requirement of Function Using AI**: Find and read the function specification in `documents/features/<Feature>/<Function>.md` (extract ID `REQ-nnn-Fnn`, rules, inputs/outcomes, and open decisions). **Architectural Schema Inventory & Primary Source of Truth**: Treat [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) and [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md) as the **primary source of truth FIRST**. Note that the frontend is a UI created beforehand to visualize the system and may contain legacy mock attributes (`provenance`, `bloomLevel`, `observableOutcome`, etc.) not in the schema. Never alter backend/domain schemas to match mock UI fields; instead, refactor the frontend to strictly follow the architecture. Proactively discuss and align with the user; do not touch code until requirements and architectural field scope are cleared.
+2. **Implement Using AI**: Start implementation only after user alignment.
+   - **Zero Blank Architecture Fields & Strict Schema Compliance**: Under NO circumstances should any field defined in [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) (or [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md)) be left empty, unmapped, unseeded, or ignored. Remove legacy mock attributes not defined in the architecture. All database seeders (`DevelopmentCatalogSeeder`, Flyway), persistence mappers (`Neo4jTargetRoleMapper`, `Neo4jMicroSkillRepository`), domain models, DTOs, and frontend UI forms/tables/modals MUST fully populate, map, and utilize every defined field without omissions.
+   - **UI-UX Pro Max Enforcement**: Strictly adhere to `tokens.css` (zero hardcoded hex colors), standard typography scale, snug modern density, and surface elevation.
+   - **Shared Components First**: Always reuse shared components from `src/shared/components/ui/` (`<PageHeader />`, `<StatCard />`, `<Button />`, `<Badge />`, `<Card />`, `<Pagination />`, etc.).
+   - **Clean Architecture**: Strict hexagonal boundaries (no unauthorized cross-layer dependencies, enforced by ArchUnit).
+   - **Zero Frontend Mock Data**: Remove all mock data related to the task on the frontend and migrate initial/seed data into PostgreSQL or Neo4j per architecture.
+3. **Test Using AI**: Read and strictly follow the testing documentation in `documents/testing/` ([README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/README.md), [unit/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/unit/README.md), [integration/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/integration/README.md), and [system/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/system/README.md)). Perform all relevant testing levels (Unit, Integration with Testcontainers, and System with Compose stack). Explicitly assert that all architecturally defined fields are persisted, retrieved, and non-empty. Maintain dedicated test evidence files per REQ in `unit/`, `integration/`, and `system/` folders (do not use README.md as a monolithic central registry).
+4. **Test Manual**: Interactively verify visual behavior, user flows, and field completeness (ensure all architectural fields are displayed and populated with meaningful data). Always provide the user with a structured Manual Test Checklist (URL, prerequisites, steps, expected results).
+5. **Update Document**: Update everything related to that task in the `documents/` folder. This strictly includes [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) (entity schemas, field definitions, and store responsibilities) and [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md), feature specifications (`documents/features/`), dedicated test evidence (`documents/testing/<level>/<REQ-ID>-<feature>.md`), and manual browser procedures (`documents/testing/system/`).
+
+Detailed guide: [.agents/rules/ai-feature-workflow.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/.agents/rules/ai-feature-workflow.md).
+
+

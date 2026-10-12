@@ -1,23 +1,26 @@
 # Assign Target Role to Expert
 
 **Function ID:** REQ-024-F01  
-**Actor:** Organization Administrator  
-**Status:** Pending clarification  
+**Actor:** L&D Manager / Organization Administrator  
+**Status:** Implemented  
 **Feature:** [Expert Assignment](README.md)
 
 ## Description
 
-Assign a target role to a permitted Domain Expert who will manage its detailed knowledge and authorized employee reviews.
+Assign an organization target role to an eligible Domain Expert (`assignedExpertId`) who will author its detailed micro-skill proficiency benchmarks and maintain diagnostic gap requirements.
 
-**Input:** Organization target role and eligible expert account.  
-**Outcome:** A role-management assignment used by expert access control.
+**Input:** Organization target role and selected domain expert ID from eligible experts (`assignedExpertId`).  
+**Outcome:** A target role record with attached `assignedExpertId` determining workspace access control.
 
-## Open Decisions
+## Confirmed Related Rules
 
-- One expert per role versus several; lead reviewer versus equal contributors.
-- Eligibility, workload limits, and whether acceptance is required.
-- Scope of employee evidence access and assignment notifications.
+- **One Primary Expert per Role**: Each target role has one assigned Domain Expert (`assignedExpertId`) responsible for micro-skill threshold authoring and graph publication.
+- **Searchable Dropdown Selection**: In Create and Edit modals, the expert selector uses a searchable combobox with expert title and name details.
+- **Strict Role Scoping**: Only the assigned expert can view and author micro-skills for the role (`assignedExpertId == authenticatedExpertId`).
 
 ## Acceptance Baseline
 
 The assignment grants only the agreed role-scoped authority and cannot cross private organization boundaries.
+
+- **Unit Test Evidence:** `TargetRoleServiceTest.listsRolesFilteredByAssignedExpert`, `TargetRoleControllerTest.createTargetRoleReturns201`
+- **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation` (Neo4j Cypher filter on `assignedExpertId`)
