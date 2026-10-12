@@ -1,0 +1,653 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Fea412de3-9d7a-4943-8d8c-c6d3c7495d0e&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e",
+    "title": "execute integration testing",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Integrationsprüfung durchführen",
+      "no": "utføre integrasjonstesting",
+      "fi": "suorittaa integrointitestausta",
+      "pt": "executar testes de integração",
+      "bg": "извършване на интеграционно тестване",
+      "lt": "atlikti integracijos testavimą",
+      "lv": "veikt integrācijas testēšanu",
+      "hr": "provesti integrativno testiranje",
+      "fr": "exécuter un test d’intégration",
+      "hu": "integrációs tesztelést végez",
+      "uk": "проводити інтеграційне тестування",
+      "sk": "vykonať integračný test",
+      "sl": "preskušanje integracije",
+      "ga": "tástáil comhtháthaithe a dhéanamh",
+      "sv": "utföra testning av integration",
+      "mt": "tittestja l-integrazzjoni tas-sistema",
+      "el": "εκτέλεση δοκιμής ολοκλήρωσης",
+      "en": "execute integration testing",
+      "is": "gera samþættingarprófun",
+      "it": "eseguire test d’integrazione",
+      "es": "ejecutar pruebas de integración",
+      "et": "integratsiooniteste tegema",
+      "cs": "provádět integrační testování",
+      "ar": "تنفيذ اختبار التكامل",
+      "pl": "przeprowadzać testy integracyjne",
+      "da": "udføre integrationsafprøvning",
+      "ro": "execută testarea integrării",
+      "nl": "integratietesten uitvoeren"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Integrationsprüfung ausführen",
+        "Integration prüfen",
+        "Integrationsprüfungen durchführen",
+        "Systemintegration prüfen",
+        "Schnittstellen zwischen Softwarekomponenten prüfen",
+        "Netzwerkintegration prüfen"
+      ],
+      "sv": [
+        "testa integrationen",
+        "utför integrationstestning",
+        "utförde integrationstestning"
+      ],
+      "fi": [
+        "suorittaa integrointitestejä",
+        "testata ohjelmistokomponenttien välistä liittymää",
+        "suorittaa integroinnin testausta",
+        "testata integrointia",
+        "vastata integrointitestauksesta"
+      ],
+      "pt": [
+        "executar teste de integração",
+        "realizar testes de integração",
+        "testar interface entre componentes de software",
+        "efetuar testes de integração",
+        "executar testes em integração"
+      ],
+      "bg": [
+        "тестване на интерфейс между софтуерни компоненти",
+        "извършване на интеграционното тестване",
+        "извършване на интеграционно изпитване",
+        "извършване на интеграционно изпробване",
+        "извършването на интеграционно тестване"
+      ],
+      "el": [
+        "εκτελώ δοκιμή εφαρμογής",
+        "διενεργώ ελέγχους ενσωμάτωσης",
+        "εκτελώ δοκιμή ενοποίησης",
+        "ελέγχω τη σύνδεση των διεπαφών μεταξύ συνιστωσών του λογισμικού",
+        "πραγματοποιώ δοκιμές ενοποίησης",
+        "διεξάγω δοκιμή ολοκλήρωσης"
+      ],
+      "mt": [
+        "twettaq ittestjar tal-integrazzjoni tas-sistema",
+        "tivverifika l-integrazzjoni tas-sistema",
+        "tittestja l-interkonnessjoni tal-komponenti tas-sistema"
+      ],
+      "lt": [
+        "testuoti integraciją"
+      ],
+      "en": [
+        "test interface between software components"
+      ],
+      "is": [
+        "vinna samþættingarprófun",
+        "gerir samþættingarprófun",
+        "gerum samþættingarprófun",
+        "prófa samþættingarkosti"
+      ],
+      "lv": [
+        "aparatūras-programmatūras integrācijas testēšana",
+        "aparatūras-programmatūras integrācijas testēšanas veikšana",
+        "integrācijas testu veikšana"
+      ],
+      "hr": [
+        "izvršiti testiranje sustava ili softvera",
+        "provesti testiranje sustava ili softvera",
+        "izvršiti integrativno testiranje"
+      ],
+      "it": [
+        "svolgere test d'integrazione",
+        "sottoporre il software testing integrato",
+        "eseguire il testing integrato",
+        "effettuare test d'integrazione",
+        "eseguire i test d'integrazione"
+      ],
+      "fr": [
+        "effectuer un test d’intégration",
+        "tester les interfaces entre les composants logiciels",
+        "procéder à un test d’intégration",
+        "exécuter des tests unitaires",
+        "réaliser un test d’intégration",
+        "exécuter des tests d’intégration"
+      ],
+      "hu": [
+        "elvégzi az integrációs tesztelést",
+        "komponensek közötti integrációs tesztet végez",
+        "integrációs tesztelést hajt végre",
+        "szoftverkomponensek közötti interfészeket tesztel",
+        "szoftverkomponensek közötti interfészeket teszteli",
+        "integrációs tesztelést elvégzi"
+      ],
+      "es": [
+        "llevar a cabo pruebas de integración",
+        "participar en efectuar pruebas de integración",
+        "realizar pruebas de integración",
+        "supervisar pruebas de integración",
+        "efectuar pruebas de integración"
+      ],
+      "et": [
+        "tarkvara katsetama",
+        "tarkvara testima",
+        "tarkvara integreerimise teste tegema",
+        "tarkvaraliideseid testima",
+        "integratsioonitestimist tegema",
+        "tarkvarasüsteemi testima"
+      ],
+      "cs": [
+        "provést integrační testování",
+        "testovat rozhraní mezi softwarovými komponentami",
+        "provádět testy integrity",
+        "testovat integritu systému"
+      ],
+      "sk": [
+        "preveriť integrovanie",
+        "zabezpečiť skúšku integrácie",
+        "vykonať testovanie integrácie",
+        "vykonať integračné testovanie",
+        "vykonávať integračné testy",
+        "uskutočniť integračné skúšky",
+        "odskúšať integráciu"
+      ],
+      "sl": [
+        "izvajati preizkušanje integracije",
+        "preskusi integracije",
+        "preskušanja integracije",
+        "izvajati preizkušanje združevanja",
+        "testirati integracije",
+        "preizkušati vmesnike med programskimi komponentami"
+      ],
+      "pl": [
+        "testować relacje między elementami oprogramowania",
+        "testowanie integracyjne",
+        "przeprowadzać testy integracji",
+        "testowanie integracji",
+        "przeprowadzać testowanie integracji"
+      ],
+      "ro": [
+        "realizează testarea integrării",
+        "testează integrarea",
+        "efectuează testarea integrării componentelor software",
+        "testează interfața dintre componentele software"
+      ],
+      "da": [
+        "udføre test af integration af software",
+        "gennemføre afprøvning af integration",
+        "afprøve softwareintegration",
+        "udføre integrationstests",
+        "afprøve integration mellem softwarekomponenter",
+        "udføre test af integration mellem softwarekomponenter"
+      ],
+      "nl": [
+        "systeemintegratie testen",
+        "testen of een integratie correct is uitgevoerd",
+        "software-integratie testen",
+        "interface-integratie uitvoeren",
+        "integratie testen",
+        "interface tussen softwarecomponenten testen"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Utføre testing av system- eller programvarekomponenter som er sammensatt på flere måter, for å evaluere i hvilken grad de kan kobles sammen, hvordan grensesnittet fungerer, og i hvilken de sammenkoblede komponentene gir den tiltenkte generelle funksjonaliteten.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Prüfung von Systemen oder Softwarekomponenten, die auf vielfältige Weise gruppiert werden, um zu bewerten, inwieweit sie integriert werden können, wie ihre Schnittstellen beschaffen sind und ob sie gemeinsame Funktionen unterstützen.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Testata sellaisia järjestelmä- tai ohjelmistokomponentteja, jotka on ryhmitetty eri tavoin, jotta voidaan arvioida niiden yhteenliitettävyyttä, käyttöliittymää ja kykyä tarjota globaalia toiminnallisuutta.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Realizar testes de componentes de sistemas ou software agrupados de múltiplas formas para avaliar a sua capacidade de interligação, a sua interface e a sua aptidão para oferecer uma funcionalidade global.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Извършва изпитване на системни или софтуерни компоненти, групирани по няколко начина, за да се оцени способността им за връзка, техният интерфейс и способността им да осигурят обща функционалност.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Įvairiais aspektais testuoti sistemą arba sugrupuotus programinės įrangos komponentus, kad būtų galima įvertinti jų galimybes prisijungti, jų sąsają ir galimybes veikti pasauliniu mastu.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Provoditi testiranje komponenti sustava ili softvera koje se grupira na više načina kako bi se ocijenila njihova sposobnost međusobnog povezivanja, njihovo sučelje i mogućnosti pružanja globalne funkcionalnosti.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Veikt sistēmu vai programmatūras sastāvdaļu testēšanu vairākos veidos, lai izvērtētu to savstarpējo savietojamību, saskarni un spēju nodrošināt vispārējo funkcionalitāti.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Tester les composants du système ou des logiciels regroupés de différentes manières pour évaluer leur capacité à s’interconnecter, leur interface et leur capacité à offrir une fonctionnalité globale.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "A többféle módon csoportosított rendszer- vagy szoftverösszetevők tesztelését végzi el, hogy felmérje azok összekapcsolódási képességét, az interfészüket és a globális funkcionalitás biztosítását.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Тестувати системи або компоненти програмного забезпечення, об’єднані в групи різними способами, з метою оцінки їх здатності до взаємодії, оцінки інтерфейсу й можливості функціонувати на глобальному рівні.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vykonávať testy systémov alebo softvérových komponentov zoskupených rôznymi spôsobmi s cieľom hodnotiť ich schopnosť vzájomného prepojenia, ich rozhranie a schopnosť zabezpečiť globálnu funkčnosť.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Preskušati sestavne dele sistema ali programske opreme, razvrščene na različne načine, za oceno njihove sposobnosti medomrežnega povezovanja, njihovega vmesnika in njihove zmožnosti zagotavljanja splošne funkcionalnosti.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Tástáil a dhéanamh ar chomhpháirteanna córais nó bogearraí, agus iad grúpáilte ar bhealaí éagsúla chun a gcumas a idirnascadh, a gcomhéadan agus a gcumas feidhmiúlacht dhomhanda a sholáthar.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Utföra testning av system- eller programvarukomponenter grupperade på flera olika sätt i syfte att bedöma deras förmåga att kopplas samman, deras gränssnitt och förmåga att tillhandahålla global funktionalitet.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Εκτέλεση δοκιμής των στοιχείων του συστήματος ή του λογισμικού που ομαδοποιούνται με πολλαπλούς τρόπους για την αξιολόγηση της ικανότητάς τους να διασυνδέονται, της διεπαφής τους και της ικανότητάς τους να παρέχουν καθολική λειτουργικότητα.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "It-twettiq ta’ ttestjar ta’ komponenti ta’ sistema jew ta’ softwer miġbura f’diversi modi biex tiġi vvalutata l-kapaċità tagħhom li joħolqu interkonnessjoni, l-interfaċċja tagħhom u l-kapaċità tagħhom li jipprovdu funzjonalità globali.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Perform testing of system or software components grouped in multiple ways to evaluate their ability to interconnect, their interface and their ability to provide global functionality.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Framkvæmir prófun á kerfis- eða hugbúnaðaríhlutum sem eru flokkaðir á marga vegu til að meta getu þeirra til samtengingar, tengi þeirra og get  til að veita alþjóðlega virkni.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Eseguire test di componenti di sistemi o software raggruppati in diversi modi per valutare la loro capacità di interconnettersi, la loro interfaccia e la loro capacità di fornire funzionalità a livello globale.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Realizar pruebas de componentes del sistema o de software agrupados de múltiples maneras para evaluar su capacidad de interconexión, su interfaz y su capacidad de ofrecer una funcionalidad global.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Eri viisidel rühmitatud süsteemi- või tarkvarakomponentide testimine, et hinnata nende koostalitlusvõimet, liidest ja suutlikkust pakkuda üldist funktsionaalsust.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Provádět testování systémových nebo softwarových součástí seskupených v několika směrech, aby bylo možné zhodnotit jejich schopnost vzájemně se propojit, jejich rozhraní a schopnost zajistit celkovou funkčnost.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إجراء اختبار لمكونات النظام أو البرامج المجمَّعة بطرق متعددة لتقييم قدرتها على الاتصال البيني وتداخلها وقدرتها على توفير وظائف عالمية.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Przeprowadzanie badań komponentów systemu lub oprogramowania zgrupowanych na wiele sposobów, aby ocenić ich zdolność do łączenia się, interfejsy oraz możliwość zapewnienia globalnej funkcjonalności.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Udføre prøvning af systemer eller softwarekomponenter, der er grupperet på flere måder, for at evaluere deres mulighed for sammenkobling, deres grænseflade og evne til at levere globale funktioner.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Efectuează testarea componentelor de sistem sau de software grupate în mai multe moduri, pentru a evalua capacitatea lor de a se interconecta, interfața și capacitatea de a asigura funcționalitatea globală.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Tests uitvoeren van systeem- of softwarecomponenten die op verschillende manieren zijn gegroepeerd om te beoordelen in hoeverre ze met elkaar kunnen communiceren en om hun interface en algemene functionaliteit te beoordelen.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e&language=en",
+        "uri": "http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e",
+        "title": "execute integration testing"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20",
+          "title": "setting up computer systems",
+          "code": "S5.2.1"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+          "title": "execute software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasEssentialSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6fa1c2c0-a012-4ca0-9642-e01569ba322c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6fa1c2c0-a012-4ca0-9642-e01569ba322c",
+          "title": "ICT system integration",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f",
+          "title": "tools for ICT test automation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67",
+          "title": "database integrator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d",
+          "title": "database developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fe4a72af-6206-4d86-90c1-b5fb4b5ba2b2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/fe4a72af-6206-4d86-90c1-b5fb4b5ba2b2",
+          "title": "broadcast technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9e2e6e1e-363b-4e1b-a673-7bc0f7343300&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/9e2e6e1e-363b-4e1b-a673-7bc0f7343300",
+          "title": "ICT system administrator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "execute integration testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+            "http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20"
+          ]
+        },
+        {
+          "title": "execute software tests",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+              "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4",
+            "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db",
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "manage system testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db&language=en",
+              "uri": "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+          ]
+        },
+        {
+          "title": "installing wooden and metal components",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba"
+          ]
+        },
+        {
+          "title": "building and repairing structures",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba&language=en",
+              "uri": "http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63"
+          ]
+        },
+        {
+          "title": "constructing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63&language=en",
+              "uri": "http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "perform test run",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+          ]
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "planning production processes",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+          ]
+        },
+        {
+          "title": "organising, planning and scheduling work and activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+          ]
+        },
+        {
+          "title": "management skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2&language=en",
+              "uri": "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "setting up computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20&language=en",
+              "uri": "http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1"
+          ]
+        },
+        {
+          "title": "setting up and protecting computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        }
+      ]
+    }
+  }
+}

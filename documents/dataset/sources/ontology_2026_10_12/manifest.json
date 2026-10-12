@@ -1,0 +1,175 @@
+{
+  "retrievedAt": "2026-10-12",
+  "escoRequestedVersion": "v1.2.1",
+  "purpose": "Official ESCO API evidence for ontology_dataset_specification.md",
+  "files": [
+    {
+      "file": "esco_AI.json",
+      "sha256": "b09d718480acd92a51c35b4bf602984b80d6ad39911a9100a8b012caf1032592",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F35553663-deab-4d9a-bf22-15c1625d28e8&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+      "label": "artificial intelligence engineer"
+    },
+    {
+      "file": "esco_DE.json",
+      "sha256": "368b1073138b6b8aed4dfa0136d25461123bb6bdd4d87a1b045766f2da7d112a",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F2079755f-d809-49e6-8037-4de6180e54c0&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+      "label": "data engineer"
+    },
+    {
+      "file": "esco_FS.json",
+      "sha256": "f601f2dd4817fa33ce7e31b1b9dcdd6c28bd07c3e400a2602842ccabc9fee2cb",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2Ff2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+      "label": "software developer"
+    },
+    {
+      "file": "esco_QA.json",
+      "sha256": "015997c7f61b32941d84c93e752270b3e329b8acc7077246d2f8ccaaf9e1782c",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F106f79e4-6264-45f1-9e7a-297435cd684b&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+      "label": "software tester"
+    },
+    {
+      "file": "skill_2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1.json",
+      "sha256": "fc07cbcc907149c92b7b6e4ce9e21cc1f2b20301da187bbe257bfc08b13f259c",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+      "label": "debug software"
+    },
+    {
+      "file": "skill_38d49d88-9069-467b-b29e-3cae739bdd4d.json",
+      "sha256": "8a32fb7a222d44aeaceb8b290f8dc60fdbaacd4a7f590d7fcc77ce80edeb9752",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F38d49d88-9069-467b-b29e-3cae739bdd4d&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d",
+      "label": "build predictive models"
+    },
+    {
+      "file": "skill_561c2525-5bd8-4d86-8f45-820f4be7db93.json",
+      "sha256": "ef6bdb1220a46da2a0391408df7911424a08298a2e3623fcaa2bfcbf6ca1654b",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F561c2525-5bd8-4d86-8f45-820f4be7db93&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93",
+      "label": "report test findings"
+    },
+    {
+      "file": "skill_5d74614d-32c8-4ca4-9818-6980e52424b1.json",
+      "sha256": "5801be8899ab52aded5415309f8aa80b605036167667e2f035095ec19a91aef4",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F5d74614d-32c8-4ca4-9818-6980e52424b1&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+      "label": "plan software testing"
+    },
+    {
+      "file": "skill_6a322874-e32f-4cd8-9683-badce67a7f73.json",
+      "sha256": "f43f02507f84ee43955c42f52dda47347173eb04a868f0a2cb851e833987ba13",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F6a322874-e32f-4cd8-9683-badce67a7f73&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+      "label": "develop automated software tests"
+    },
+    {
+      "file": "skill_7253d98c-4a6d-4e37-8b6c-accca9f4b639.json",
+      "sha256": "8035b7502e1dccff99badad954ea82e2d3e2fe48ea0d71679c88ed4c12d712df",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639",
+      "label": "develop ICT test suite"
+    },
+    {
+      "file": "skill_75f839c2-fd9a-4ad3-8921-6e734608568d.json",
+      "sha256": "3326786f6bede28c096149b4d7834784007f92a9b68f3f9a0fe2054b019b00e0",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F75f839c2-fd9a-4ad3-8921-6e734608568d&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d",
+      "label": "use query languages"
+    },
+    {
+      "file": "skill_7961413f-61d0-4722-9cd9-20a050a29899.json",
+      "sha256": "35c188e313be17beeeaa30819f81494b4bb5bc4c66ed3c52a91caf5f8e01ab5f",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F7961413f-61d0-4722-9cd9-20a050a29899&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899",
+      "label": "perform software unit testing"
+    },
+    {
+      "file": "skill_8369c2d6-c100-4cf6-bd83-9668d8678433.json",
+      "sha256": "3739a3efca12e52e6d8207d21258f35b6c07961138c154beec2dbb81f0ac5e24",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F8369c2d6-c100-4cf6-bd83-9668d8678433&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433",
+      "label": "utilise machine learning"
+    },
+    {
+      "file": "skill_906323f4-00c4-4c3b-ab5a-8af77be3456e.json",
+      "sha256": "7b63145cf0eae6b24683ba82907550ed33e76363c29c2765af69837e06003c94",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F906323f4-00c4-4c3b-ab5a-8af77be3456e&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e",
+      "label": "create data sets"
+    },
+    {
+      "file": "skill_913e7e83-b8f8-4574-b1ca-1b38f3fd974a.json",
+      "sha256": "3ed320f90062f9962f93432338507eacb93b6ecbeef851301fb267948ebd1abe",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+      "label": "execute software tests"
+    },
+    {
+      "file": "skill_9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0.json",
+      "sha256": "5d286c1c02404452af1c9df1228c84d6718c0c651ca06e3b5abc4b9f0e44b590",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0",
+      "label": "conduct ICT code review"
+    },
+    {
+      "file": "skill_b0096dc5-2e2d-4bc1-8172-05bf486c3968.json",
+      "sha256": "ebfef06b6ce83ebc6fc5792d2fe0582f1a4cbddbbde2112b205b519f8a8f5ece",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Fb0096dc5-2e2d-4bc1-8172-05bf486c3968&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968",
+      "label": "design application interfaces"
+    },
+    {
+      "file": "skill_ea412de3-9d7a-4943-8d8c-c6d3c7495d0e.json",
+      "sha256": "b917da4d23ae26f0ce67bbe90fd2e8216c8ab8759c0bc2aacf6202f179c5ed76",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Fea412de3-9d7a-4943-8d8c-c6d3c7495d0e&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e",
+      "label": "execute integration testing"
+    },
+    {
+      "file": "skill_eb3aa8c1-fb14-47b4-a352-b7975abd2480.json",
+      "sha256": "2314e7df88658bc6163b424b59085656164c21eb8e6bbf887b8575c1f77f7675",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Feb3aa8c1-fb14-47b4-a352-b7975abd2480&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480",
+      "label": "replicate customer software issues"
+    },
+    {
+      "file": "skill_ed8de897-adbe-4f0e-b4d2-534953e64c72.json",
+      "sha256": "a1fc7a58e75d016e75d31c7127ef770b1adb8c26e90d6bfd8beb172cd1d3e701",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Fed8de897-adbe-4f0e-b4d2-534953e64c72&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72",
+      "label": "integrate system components"
+    },
+    {
+      "file": "skill_f9670490-8aa4-4540-b121-d440a8294aab.json",
+      "sha256": "7eff20b30140df312b55c1746eec3d482b35b21457fa17c7a4bcac8bbd51af23",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ff9670490-8aa4-4540-b121-d440a8294aab&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/f9670490-8aa4-4540-b121-d440a8294aab",
+      "label": "develop data processing applications"
+    },
+    {
+      "file": "skill_fbafa41f-cd05-4109-a649-8b44d306d779.json",
+      "sha256": "fa334e4a71674bd28bdb6b5ad0ce7ab1b2f3e9a4c73778731b11b071339bdffc",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ffbafa41f-cd05-4109-a649-8b44d306d779&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/fbafa41f-cd05-4109-a649-8b44d306d779",
+      "label": "create data models"
+    },
+    {
+      "file": "skill_fd33c66c-70c4-40e6-b87c-5495bd3bf26e.json",
+      "sha256": "440f52a5d93d1d584cc794ad492275f7ee28146210e27ca955aee8100a7aa777",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ffd33c66c-70c4-40e6-b87c-5495bd3bf26e&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e",
+      "label": "design user interface"
+    },
+    {
+      "file": "skill_fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd.json",
+      "sha256": "ae3763f5cf1b08672d84a0891ff223bc81d9d545659970f406c3b0c1e4f52f93",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ffd6d2981-3d4a-4ce2-9741-cfc98c5b74bd&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/skill/fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd",
+      "label": "implement data warehousing techniques"
+    }
+  ]
+}

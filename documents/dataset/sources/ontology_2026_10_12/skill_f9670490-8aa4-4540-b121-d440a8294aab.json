@@ -1,0 +1,338 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ff9670490-8aa4-4540-b121-d440a8294aab&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/f9670490-8aa4-4540-b121-d440a8294aab",
+    "title": "develop data processing applications",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Datenverarbeitungsanwendungen entwickeln",
+      "no": "utvikle databehandlingsapplikasjoner",
+      "fi": "kehittää tietojen käsittelysovelluksia",
+      "pt": "desenvolver aplicações de tratamento de dados",
+      "bg": "разработване на приложения за обработване на данни",
+      "lt": "kurti duomenų apdorojimo taikomąsias programas",
+      "hr": "razviti aplikacije za obradu podataka",
+      "lv": "datu apstrādes lietojumprogrammu izstrāde",
+      "fr": "développer des applications de traitement des données",
+      "hu": "adatfeldolgozó alkalmazásokat fejleszt",
+      "uk": "розробляти додатки для обробки даних",
+      "sk": "vyvinúť aplikácie na spracovanie údajov",
+      "sl": "razvijati aplikacije za obdelavo podatkov",
+      "ga": "feidhmchláir phróiseála sonraí a fhorbairt",
+      "sv": "utveckla databehandlingsprogram",
+      "mt": "żvilupp ta' applikazzjonijiet għall-ipproċessar tad-data",
+      "el": "ανάπτυξη εφαρμογών επεξεργασίας δεδομένων",
+      "en": "develop data processing applications",
+      "is": "þróa gagnaúrvinnsluforrit",
+      "it": "sviluppare applicazioni di elaborazione dei dati",
+      "es": "desarrollar aplicaciones de procesamiento de datos",
+      "et": "andmetöötlusrakendusi arendama",
+      "cs": "vyvíjet aplikace pro zpracování dat",
+      "ar": "تطوير تطبيقات معالجة البيانات",
+      "pl": "opracowywać aplikacje przetwarzania danych",
+      "ro": "dezvoltă aplicații de procesare de date",
+      "da": "udvikle databehandlingsapplikationer",
+      "nl": "toepassingen ontwikkelen voor gegevensverwerking"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "vyvíjet aplikaci pro zpracování dat",
+        "vyvinout aplikaci pro zpracování dat",
+        "vytvářet aplikace pro zpracování dat",
+        "tvořit aplikace pro zpracování dat"
+      ],
+      "el": [
+        "δημιουργία προγράμματος επεξεργασίας δεδομένων",
+        "ανάπτυξη λογισμικού επεξεργασίας δεδομένων",
+        "ανάπτυξη προγράμματος διεργασίας δεδομένων"
+      ],
+      "mt": [
+        "tipprovdi applikazzjonijiet għall-ipproċessar tad-data",
+        "tipprogramma applikazzjonijiet għall-ipproċessar tad-dejta",
+        "tipprovdi applikazzjonijiet li jipproċessaw id-dejta",
+        "tiżviluppa applikazzjonijiet għall-ipproċessar ta' dejta",
+        "tiżviluppa applikazzjonijiet għall-ipproċessar tal-informazzjoni"
+      ],
+      "en": [
+        "design data processing software",
+        "create data processing applications",
+        "build data processing applications",
+        "design data processing applications",
+        "develop data processing software"
+      ],
+      "nl": [
+        "toepassingen beheren voor gegevensverwerking",
+        "toepassingen voor gegevensverwerking bedienen",
+        "applicaties ontwikkelen voor gegevensverwerking",
+        "applicaties ontwikkelen voor dataverwerking",
+        "toepassingen ontwikkelen voor dataverwerking",
+        "gegevensverwerking uitvoeren",
+        "dataverwerking uitvoeren"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Lage tilpasset programvare for behandling av data ved å velge og bruke riktig dataprogrammeringsspråk for at et IKT-system skal kunne produsere etterspurte utdata basert på forventede inndata.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Erstellung einer maßgeschneiderten Software für die Verarbeitung von Daten durch Auswahl und Verwendung der entsprechenden Programmiersprache, damit ein IKT-System den gewünschten Output auf Basis des erwarteten Inputs erzeugen kann.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Luoda räätälöity ohjelmisto tietojenkäsittelyä varten valitsemalla asianmukainen ohjelmointikieli ja käyttämällä sitä, jotta tietojärjestelmä pystyisi tuottamaan vaaditun tuotoksen odotuksenmukaisen panoksen perusteella.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar um software personalizado para tratamento de dados, selecionando e utilizando a linguagem de programação informática adequada para que um sistema TIC produza os resultados exigidos com base num input previsto.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава персонализиран софтуер за обработка на данни, като избира и използва съответния език за компютърно програмиране, за да може дадена ИКТ система да произведе желаната изходяща информация въз основа на очакваната входяща информация.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Sukurti specialiai pritaikytą programinę įrangą duomenims apdoroti, parinkus ir naudojant tinkamą kompiuterio programavimo kalbą, kad IRT sistema galėtų gaminti reikiamą produkciją, pagrįstą tikėtinomis sąnaudomis.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izveidot pielāgotu datu apstrādes programmatūru, izvēloties un izmantojot attiecīgo datorprogrammēšanas valodu, lai IKT sistēma radītu pieprasītos izvaddatus, pamatojoties uz sagaidāmajiem ievaddatiem.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izraditi prilagođeni softver za obradu podataka odabirom i upotrebom odgovarajućeg jezika računalnog programiranja kako bi IKT sustav proizveo tražene proizvode koji se temelje na očekivanom unosu.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer un logiciel personnalisé pour le traitement des données en sélectionnant et en utilisant le langage de programmation informatique approprié pour qu’un système informatique puisse produire les résultats demandés sur la base des entrées attendues.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Személyre szabott szoftvert fejleszt az adatok feldolgozására a megfelelő számítógépes programozási nyelv kiválasztásával és használatával annak érdekében, hogy egy IKT-rendszer a bemenetre alapuló elvárt outputot adjon ki.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати індивідуально адаптоване програмне забезпечення для обробки даних, обираючи та використовуючи відповідну мову програмування, щоб система ІКТ видала необхідний результат на основі очікуваних вхідних даних.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvoriť prispôsobený softvér na spracovanie údajov prostredníctvom výberu a použitia vhodného počítačového programovacieho jazyka, aby systém IKT mohol zabezpečovať požadovaný výstup na základe očakávaných vstupov.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Razviti prilagojeno programsko opremo za obdelavo podatkov z izbiro in uporabo ustreznega računalniškega jezika za programiranje, da lahko sistem IKT zagotovi zahtevane rezultate na podlagi vnosov.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Bogearraí saincheaptha a chruthú chun sonraí a phróiseáil tríd an teanga chláraithe ríomhaire iomchuí a roghnú agus a úsáid ionas gur féidir le córas TFC aschur éilithe a tháirgeadh bunaithe ar an ionchur a bhfuiltear ag súil leis.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Utforma specialanpassad programvara för databehandling genom att välja ut och använda lämpligt datorprogrammeringsspråk, så att ett IKT-system kan producera begärda resultat utifrån förväntade indata.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ħolqien ta’ softwer personalizzat għall-ipproċessar tad-data billi tintgħażel u tintuża l-lingwa ta’ programmar tal-kompjuter adattata sabiex sistema tal-ICT tipproduċi output mitlub abbażi tal-input mistenni.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία ειδικού λογισμικού για την επεξεργασία δεδομένων, μέσω επιλογής και χρήσης της κατάλληλης γλώσσας προγραμματισμού, προκειμένου ένα σύστημα ΤΠΕ να παράγει την απαιτούμενη εξαγωγή δεδομένων βάσει των αναμενόμενων εισαχθέντων δεδομένων.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create a customised software for processing data by selecting and using the appropriate computer programming language in order for an ICT system to produce demanded output based on expected input.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Býr til sérsniðinn hugbúnað fyrir gagnavinnslu með því að velja og nota viðeigandi tölvuforritunarmál til að upplýsingakerfi geti framleitt eftir þeim afköstum sem krafist er.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Creare un software personalizzato per l’elaborazione dei dati, selezionando e utilizzando il linguaggio di programmazione informatico appropriato, affinché un sistema TIC produca risultati richiesti sulla base dei dati inseriti previsti.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear un software personalizado para el procesamiento de datos, seleccionando y utilizando el lenguaje de programación informático adecuado para que un sistema de TIC produzca los datos solicitados sobre la base de las entradas esperadas.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Kohandatud andmetöötlustarkvara koostamine, valides asjakohase programmeerimiskeele ja kasutades seda, et IKT-süsteem tagaks soovitud väljundi vastavalt eeldatavale sisendile.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet přizpůsobený software pro zpracování dat, vybírat a používat vhodný počítačový programovací jazyk, aby systém ICT mohl produkovat požadovaný výstup na základě očekávaného přínosu.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إنشاء برنامج مخصص لمعالجة البيانات باختيار لغة البرمجة الحاسوبية المناسبة واستخدامها لتمكين نظام تكنولوجيا المعلومات والاتصالات من إنتاج المخرجات المطلوبة بناءً على المدخلات المتوقعة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć oprogramowanie do przetwarzania danych dostosowane do indywidualnych potrzeb poprzez wybór i stosowanie odpowiedniego języka programowania komputerowego w celu uzyskania przez system ICT wymaganego produktu w oparciu o oczekiwany wkład.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Oprette skræddersyet software til behandling af data ved at vælge og anvende det relevante computerprogrammeringssprog, således at et IKT-system kan producere krævet output baseret på det forventede input.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Creează software personalizat pentru prelucrarea datelor prin selectarea și utilizarea limbajului de programare informatică adecvat, pentru ca un sistem TIC să producă rezultate cerute pe baza contribuțiilor preconizate.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Creëren van software op maat voor de verwerking van gegevens door de juiste programmeertaal voor de computer te selecteren en te gebruiken, zodat een ICT-systeem de gevraagde output kan produceren op basis van de verwachte input.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f9670490-8aa4-4540-b121-d440a8294aab&language=en",
+        "uri": "http://data.europa.eu/esco/skill/f9670490-8aa4-4540-b121-d440a8294aab",
+        "title": "develop data processing applications"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/occupation-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/occupation-specific",
+          "title": "occupation specific skills and competences",
+          "code": "Level 4"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "title": "data engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341",
+          "title": "computer vision engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/258e46f9-0075-4a2e-adae-1ff0477e0f30&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/258e46f9-0075-4a2e-adae-1ff0477e0f30",
+          "title": "data scientist"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8edd8bff-cb59-4c9c-ab0f-59e77d18be48&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/8edd8bff-cb59-4c9c-ab0f-59e77d18be48",
+          "title": "predictive maintenance expert"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "develop data processing applications",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f9670490-8aa4-4540-b121-d440a8294aab&language=en",
+              "uri": "http://data.europa.eu/esco/skill/f9670490-8aa4-4540-b121-d440a8294aab"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}
