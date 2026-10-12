@@ -427,19 +427,32 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               </span>
             </Link>
 
-            {/* My Learning link (Coursera style - Employee only) */}
+            {/* Home + My Learning links (Coursera style - Employee only) */}
             {isEmployee && (
-              <Link
-                to="/employee/pathway"
-                className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
-                  path === '/employee/pathway'
-                    ? 'bg-secondary text-primary font-bold shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                }`}
-                title="My Learning (Adaptive Pathway)"
-              >
-                My Learning
-              </Link>
+              <>
+                <Link
+                  to="/employee/target-roles"
+                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
+                    path === '/employee/target-roles'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                  title="Home (Target Roles)"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/employee/pathway"
+                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
+                    path === '/employee/pathway'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                  title="My Learning (Adaptive Pathway)"
+                >
+                  My Learning
+                </Link>
+              </>
             )}
           </div>
 
