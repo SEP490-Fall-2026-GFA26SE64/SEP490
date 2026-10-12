@@ -153,7 +153,8 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
 
         cypher.append("""
                 OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                WITH s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+                WITH s, collect(macro.code) AS macroCodes
+                WITH s, coalesce(macroCodes[0], s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
                 """);
 
         if (macroCode != null && !macroCode.isBlank()) {

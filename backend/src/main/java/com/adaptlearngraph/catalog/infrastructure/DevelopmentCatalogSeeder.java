@@ -31,7 +31,12 @@ public final class DevelopmentCatalogSeeder {
                         """
                                 UNWIND [{id: '30000000-0000-0000-0000-000000000001', code: 'KNOWLEDGE', name: 'Knowledge', description: 'Core technical and conceptual domain knowledge'},
                                         {id: '30000000-0000-0000-0000-000000000002', code: 'COMMUNICATION', name: 'Communication', description: 'Interpersonal, technical communication, and collaboration'},
-                                        {id: '30000000-0000-0000-0000-000000000003', code: 'INNOVATION', name: 'Innovation', description: 'Creative problem solving and novel architectural solutions'}] AS item
+                                        {id: '30000000-0000-0000-0000-000000000003', code: 'INNOVATION', name: 'Innovation', description: 'Creative problem solving and novel architectural solutions'},
+                                        {id: '30000000-0000-0000-0000-000000000004', code: 'RESPONSIBLE_AI', name: 'Responsible AI', description: 'AI safety, governance, transparency, and ethical machine learning deployments'},
+                                        {id: '30000000-0000-0000-0000-000000000005', code: 'AI_LITERACY', name: 'AI literacy', description: 'Foundations of artificial intelligence, LLM capabilities, and organizational enablement'},
+                                        {id: '30000000-0000-0000-0000-000000000006', code: 'GEN_AI', name: 'Generative AI', description: 'Modern generative AI architectures, prompt patterns, multimodal reasoning, and foundation models'},
+                                        {id: '30000000-0000-0000-0000-000000000007', code: 'MACHINE_LEARNING', name: 'Machine Learning', description: 'Statistical learning, model training pipelines, deep learning, and evaluation'},
+                                        {id: '30000000-0000-0000-0000-000000000008', code: 'LEADERSHIP', name: 'Leadership and Management', description: 'Engineering leadership, strategic technology management, and team empowerment'}] AS item
                                 MERGE (macro:MacroCompetency {code: item.code})
                                 SET macro.id = item.id, macro.name = item.name, macro.description = item.description,
                                     macro.status = 'ACTIVE',
@@ -44,19 +49,33 @@ public final class DevelopmentCatalogSeeder {
                                          description: 'Core Java programming language fundamentals, OOP, collections, multithreading, and streams API'},
                                         {id: '40000000-0000-0000-0000-000000000002', code: 'SPRING_BOOT', name: 'Spring Boot', macro: 'KNOWLEDGE',
                                          description: 'Enterprise Spring Boot microservices, dependency injection, and REST endpoints'},
-                                        {id: '40000000-0000-0000-0000-000000000003', code: 'MS-PY-001', name: 'Python for Machine Learning', macro: 'KNOWLEDGE',
+                                        {id: '40000000-0000-0000-0000-000000000003', code: 'MS-PY-001', name: 'Python for Machine Learning', macro: 'MACHINE_LEARNING',
                                          description: 'Python data science stack: NumPy, Pandas, and data processing for ML'},
-                                        {id: '40000000-0000-0000-0000-000000000004', code: 'MS-DL-001', name: 'Deep Learning & PyTorch', macro: 'KNOWLEDGE',
+                                        {id: '40000000-0000-0000-0000-000000000004', code: 'MS-DL-001', name: 'Deep Learning & PyTorch', macro: 'MACHINE_LEARNING',
                                          description: 'Neural network architectures, tensors, autograd, and training pipelines in PyTorch'},
                                         {id: '40000000-0000-0000-0000-000000000005', code: 'MS-OPS-001', name: 'Containerization with Docker', macro: 'KNOWLEDGE',
                                          description: 'Building Docker container images, multi-stage builds, and container networking'},
                                         {id: '40000000-0000-0000-0000-000000000006', code: 'MS-OPS-002', name: 'Kubernetes Cluster Orchestration', macro: 'KNOWLEDGE',
-                                         description: 'Deployments, services, ingress, and cluster orchestration in Kubernetes'}] AS item
+                                         description: 'Deployments, services, ingress, and cluster orchestration in Kubernetes'},
+                                        {id: '40000000-0000-0000-0000-000000000007', code: 'GEMINI_MODELS', name: 'Google Gemini', macro: 'GEN_AI',
+                                         description: 'Building with Gemini 1.5/2.0 multimodal models, function calling, structured outputs, and Gemini Live API'},
+                                        {id: '40000000-0000-0000-0000-000000000008', code: 'AI_ENABLEMENT', name: 'AI Enablement', macro: 'AI_LITERACY',
+                                         description: 'Adopting AI tools in enterprise workflows, developer productivity optimization, and transformation'},
+                                        {id: '40000000-0000-0000-0000-000000000009', code: 'PROMPT_PATTERNS', name: 'Prompt Patterns', macro: 'GEN_AI',
+                                         description: 'Chain-of-thought, few-shot conditioning, structured schema induction, and advanced prompt engineering'},
+                                        {id: '40000000-0000-0000-0000-000000000010', code: 'RESPONSIBLE_AI_PRIN', name: 'Responsible AI Principles', macro: 'RESPONSIBLE_AI',
+                                         description: 'Guardrails, bias mitigation, red-teaming, alignment, and responsible AI system auditing'},
+                                        {id: '40000000-0000-0000-0000-000000000011', code: 'ENG_LEADERSHIP', name: 'Engineering Leadership', macro: 'LEADERSHIP',
+                                         description: 'Technical direction, cross-functional mentorship, agile delivery orchestration, and architectural leadership'}] AS item
                                 MERGE (skill:MicroSkill {code: item.code})
                                 SET skill.id = item.id, skill.name = item.name, skill.description = item.description,
                                     skill.status = 'ACTIVE',
                                     skill.createdAt = datetime('2026-10-01T00:00:00Z'),
                                     skill.updatedAt = datetime('2026-10-01T00:00:00Z')
+                                WITH skill, item
+                                OPTIONAL MATCH (oldMacro:MacroCompetency)-[oldRel:HAS_SKILL]->(skill)
+                                WHERE oldMacro.code <> item.macro
+                                DELETE oldRel
                                 WITH skill, item
                                 MATCH (macro:MacroCompetency {code: item.macro})
                                 MERGE (macro)-[mapping:HAS_SKILL]->(skill)
