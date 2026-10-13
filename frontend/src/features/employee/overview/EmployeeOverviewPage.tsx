@@ -77,7 +77,7 @@ export function EmployeeOverviewPage() {
       return {
         id: ms.id,
         name: ms.name,
-        category: (ms.bloomLevel === 'Create' ? 'AI & Knowledge Tracing' : 'Graph Architecture') as any,
+        category: (ms.macroCompetencyCode || 'KNOWLEDGE') as any,
         estimatedMastery: isMastered ? 82 : 55,
         targetRoleRequirement: 85,
         status: isMastered ? 'mastered' : 'in_progress',
@@ -92,7 +92,7 @@ export function EmployeeOverviewPage() {
             date: '2026-09-20',
             scoreOrLevel: isMastered ? '85%' : '55%',
             verificationStatus: isMastered ? 'verified' : 'pending',
-            notes: ms.observableOutcome,
+            notes: ms.description || ms.name,
           },
         ],
         recommendedModule: activeCompany.modules[idx % (activeCompany.modules.length || 1)]?.title || 'Core Foundation Module',

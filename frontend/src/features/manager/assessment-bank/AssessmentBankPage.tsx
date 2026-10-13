@@ -43,7 +43,6 @@ import {
 import {
   type AssessmentBlueprintModel,
   type BlueprintSkillRequirement,
-  INITIAL_MICRO_SKILLS,
   INITIAL_MODULES,
   INITIAL_TARGET_ROLES,
   type QuizQuestionModel,
@@ -78,7 +77,7 @@ const QUESTION_PRESETS: ImportPreset[] = [
         ],
         correctAnswerIndex: 0,
         feedback: 'For large values of d_k, the dot products grow large in magnitude, pushing the softmax into regions with extremely small gradients. Dividing by sqrt(d_k) counters this effect.',
-        assessedSkillId: INITIAL_MICRO_SKILLS[0]?.id || 'skill-attn-01',
+        assessedSkillId: 'skill-attn-01',
         difficulty: 'Medium' as const,
         version: '1.0',
         status: 'published' as const,
@@ -97,7 +96,7 @@ const QUESTION_PRESETS: ImportPreset[] = [
         ],
         correctAnswerIndex: 0,
         feedback: 'PagedAttention partitions the continuous key-value cache into discrete virtual blocks, allowing non-contiguous allocation and near-zero memory waste.',
-        assessedSkillId: INITIAL_MICRO_SKILLS[1]?.id || 'skill-kv-01',
+        assessedSkillId: 'skill-kv-01',
         difficulty: 'Hard' as const,
         version: '1.0',
         status: 'published' as const,
@@ -116,7 +115,7 @@ const QUESTION_PRESETS: ImportPreset[] = [
         ],
         correctAnswerIndex: 0,
         feedback: 'Hierarchical Navigable Small World (HNSW) uses multiple layers of graphs where top layers have long-range links for fast coarse navigation and bottom layers have short-range links for fine precision.',
-        assessedSkillId: INITIAL_MICRO_SKILLS[2]?.id || 'skill-vec-01',
+        assessedSkillId: 'skill-vec-01',
         difficulty: 'Hard' as const,
         version: '1.0',
         status: 'published' as const,
@@ -278,7 +277,7 @@ export function AssessmentBankPage() {
       options: ['', '', '', ''],
       correctAnswerIndex: 0,
       feedback: '',
-      assessedSkillId: INITIAL_MICRO_SKILLS[0]?.id || '',
+      assessedSkillId: companyMicroSkills[0]?.id || '',
       difficulty: 'Intermediate',
       provenance: 'Internal Curriculum Assessment Bank 2026',
     })
@@ -437,9 +436,9 @@ export function AssessmentBankPage() {
       passThreshold: 80,
       requirements: [
         {
-          skillId: companyMicroSkills[0]?.id || INITIAL_MICRO_SKILLS[0]?.id || '',
-          skillCode: companyMicroSkills[0]?.code || INITIAL_MICRO_SKILLS[0]?.code || '',
-          skillName: companyMicroSkills[0]?.name || INITIAL_MICRO_SKILLS[0]?.name || '',
+          skillId: companyMicroSkills[0]?.id || '',
+          skillCode: companyMicroSkills[0]?.code || '',
+          skillName: companyMicroSkills[0]?.name || '',
           questionCount: 2,
         },
       ],
@@ -462,7 +461,7 @@ export function AssessmentBankPage() {
 
   const handleAddBlueprintReq = () => {
     // Find skill not yet added
-    const unused = INITIAL_MICRO_SKILLS.find(
+    const unused = companyMicroSkills.find(
       (ms) => !blueprintForm.requirements.some((r) => r.skillId === ms.id),
     )
     if (!unused) {
@@ -724,7 +723,7 @@ export function AssessmentBankPage() {
                         className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                       >
                         <option value="all">All Micro-skills</option>
-                        {INITIAL_MICRO_SKILLS.map((ms) => (
+                        {companyMicroSkills.map((ms) => (
                           <option key={ms.id} value={ms.id}>
                             {ms.code}
                           </option>
@@ -797,12 +796,12 @@ export function AssessmentBankPage() {
                                       <span className="font-mono font-bold text-xs text-foreground tracking-tight">
                                         {skill?.code || q.assessedSkillId}
                                       </span>
-                                      {skill?.bloomLevel && (
+                                      {skill?.macroCompetencyCode && (
                                         <Badge
                                           variant="secondary"
                                           className="text-[9px] font-semibold uppercase tracking-wider py-0 px-1 bg-secondary text-primary border-primary/20"
                                         >
-                                          {skill.bloomLevel}
+                                          {skill.macroCompetencyCode}
                                         </Badge>
                                       )}
                                     </div>

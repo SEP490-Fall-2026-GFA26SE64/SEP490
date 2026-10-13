@@ -411,6 +411,21 @@ export const viPhrases: Record<string, string> = {
   'Target End Date': 'Ngày kết thúc dự kiến',
 
   // ==========================================
+  // EXPERT: ASSIGNED ROLES
+  // ==========================================
+  'Assigned Target Roles': 'Vai trò mục tiêu được giao',
+  'Assigned Target Roles Catalog': 'Danh mục vai trò mục tiêu được giao',
+  'Review target roles assigned to your domain expertise by L&D Managers and configure required micro-skill proficiency thresholds.': 'Xem xét các vai trò mục tiêu được Quản lý Đào tạo giao cho chuyên môn của bạn và thiết lập ngưỡng chuẩn vi kỹ năng.',
+  'Drafts Awaiting Skills': 'Bản nháp chờ cấu hình kỹ năng',
+  'Configured Skill Targets': 'Mục tiêu kỹ năng đã cấu hình',
+  'Assigned Domain Focus': 'Lĩnh vực chuyên môn phụ trách',
+  'Configure Micro-skills': 'Cấu hình vi kỹ năng',
+  'View Skill Targets': 'Xem mục tiêu kỹ năng',
+  'Add Micro-skill Target': 'Thêm mục tiêu vi kỹ năng',
+  'Micro-skill Authoring': 'Thiết lập vi kỹ năng',
+  'Publish Role to Graph': 'Xuất bản vai trò lên Đồ thị',
+
+  // ==========================================
   // EXPERT: ONTOLOGY & SKILLS
   // ==========================================
   'Competency & Micro-Skills Ontology': 'Bản thể năng lực & Vi kỹ năng',

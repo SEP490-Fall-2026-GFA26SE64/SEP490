@@ -1,0 +1,594 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639",
+    "title": "develop ICT test suite",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "utvikle IKT-testverktøy",
+      "de": "IKT-Testsuite entwickeln",
+      "fi": "kehittää ICT-testivalikoimaa",
+      "pt": "desenvolver conjunto de testes informáticos",
+      "bg": "разработване на набор за тестване на ИКТ",
+      "lt": "sukurti informacinių ir ryšių technologijų testavimo komplektą",
+      "lv": "IKT testa komplekta izveide",
+      "hr": "razviti IKT paket testova",
+      "fr": "développer une suite de tests TIC",
+      "hu": "IKT tesztsorozatot fejleszt",
+      "uk": "розробляти ІКТ-тести",
+      "sk": "vyvinúť skúšobnú zostavu IKT",
+      "sl": "razviti preskusni programski paket IKT",
+      "ga": "sraith tástálacha TFC a fhorbairt",
+      "sv": "utveckla IT-testsekvenser",
+      "mt": "tiżviluppa ġabra ta' testijiet tal-ICT",
+      "el": "ανάπτυξη ακολουθίας δοκιμών ΤΠΕ",
+      "en": "develop ICT test suite",
+      "is": "þróa prófunarröð upplýsinga- og fjarskiptatækni",
+      "it": "sviluppare suite di test TIC",
+      "es": "desarrollar un conjunto de pruebas de TIC",
+      "et": "IKT testikomplekte arendama",
+      "cs": "vyvíjet soubory testů pro ICT",
+      "ar": "تطوير مجموعة اختبارات تكنولوجيا المعلومات والاتصالات",
+      "pl": "opracować zestaw testowy ICT",
+      "ro": "dezvoltă seria de teste privind TIC",
+      "da": "udvikle IKT-testpakke",
+      "nl": "ICT-testsuite ontwikkelen"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Testsuite für IKT entwickeln",
+        "IT-Testsuite entwickeln",
+        "IKT-Testsuites entwickeln",
+        "IKT-Testsequenz entwickeln",
+        "Softwaretests entwickeln",
+        "IKT-Testfälle entwickeln",
+        "IKT-Test-Suite entwickeln",
+        "Software-Testsuite entwickeln",
+        "IKT-Testszenario entwickeln"
+      ],
+      "fi": [
+        "laatia ICT-testejä",
+        "suunnitella ohjelmistotestejä",
+        "suunnitella ohjelmistojen testausta",
+        "kehittää ict-testivalikoimaa",
+        "suunnitella ohjelmiston testausta",
+        "suunnitella ohjelmistotestausta",
+        "kehittää ICT-testien valikoimaa",
+        "kehittää ict-testien valikoimaa"
+      ],
+      "sv": [
+        "utvecklat IT-testsekvenser",
+        "ta fram IT-testsekvenser",
+        "skapa IT-testsekvenser",
+        "utvecklar IT-testsekvenser",
+        "framställa IT-testsekvenser",
+        "utvecklade IT-testsekvenser",
+        "utarbeta IT-testsekvenser"
+      ],
+      "pt": [
+        "desenvolver conjunto de testes de informática",
+        "conceber testes de software",
+        "criar testes de programas informáticos",
+        "desenvolver conjuntos de testes informáticos",
+        "desenhar testes de software",
+        "criar conjunto de testes de software"
+      ],
+      "bg": [
+        "разработване на набор за изпитване на ИКТ",
+        "изпитателен комплект за ИКТ",
+        "разработването на набор за тестване на ИКТ",
+        "разработване на набор за тестване на ИТ",
+        "разработване на инструмент за тестване на ИКТ",
+        "разработване на набори за тестване на ИКТ"
+      ],
+      "el": [
+        "ανάπτυξη σειράς δοκιμών για τον έλεγχο του λογισμικού",
+        "δημιουργία σειρών δοκιμών σε συστήματα πληροφορικής",
+        "σχεδιασμός ακολουθίας δοκιμών λογισμικού",
+        "ανάπτυξη ακολουθιών δοκιμών στον τομέα των ΤΠΕ"
+      ],
+      "mt": [
+        "tiżviluppa suites għall-ittestjar tal-ICT",
+        "tiżviluppa test suites tal-ICT",
+        "tiżviluppa ġabra ta' testijiet fl-ICT",
+        "toħloq ġabra ta' testijiet tal-ICT"
+      ],
+      "en": [
+        "design software testing"
+      ],
+      "hr": [
+        "razraditi IKT paket testova",
+        "razviti IKT testni paket",
+        "razraditi IKT testni paket"
+      ],
+      "is": [
+        "móta prófunarsvítu tölvukerfis",
+        "þróa prófunarsvítu á sviði upplýsingatækni",
+        "þróar UT-prófunarsvítu",
+        "þróum UT-prófunarsvítu"
+      ],
+      "lv": [
+        "izveidot IKT testa komplektu",
+        "sagatavot IKT testa komplektu",
+        "IKT testa komplekta sagatavošana",
+        "programmatūras testa komplekta izveide",
+        "IKT testa komplekta izstrāde"
+      ],
+      "it": [
+        "progettare suite di test TIC",
+        "elaborare suite di test TIC",
+        "sviluppare test suite TIC",
+        "sviluppare una suite di test TIC",
+        "creare suite di test TIC"
+      ],
+      "fr": [
+        "concevoir une séquence de tests",
+        "concevoir une suite de tests TIC",
+        "concevoir des tests logiciels",
+        "développer une suite de tests informatiques",
+        "concevoir une batterie de tests",
+        "élaborer une suite de tests TIC"
+      ],
+      "hu": [
+        "IT tesztsorozatot fejleszt",
+        "szoftvertesztelést tervez",
+        "ICT tesztsorozatot fejleszt",
+        "szoftvertesztelést fejleszt"
+      ],
+      "es": [
+        "desarrollar pruebas de TIC",
+        "elaborar pruebas de TIC",
+        "diseñar un conjunto de pruebas de TIC",
+        "elaborar un conjunto de pruebas de TIC",
+        "crear un conjunto de pruebas de TIC"
+      ],
+      "et": [
+        "tarkvara testimise komplekte arendama",
+        "tarkvarateste koostama",
+        "IKT testide komplekte arendama",
+        "tarkvarateste arendama",
+        "IKT teste välja töötama"
+      ],
+      "cs": [
+        "vyvíjet soubory testů pro IKT",
+        "navrhovat testy software",
+        "vytvářet sady softwarových testů",
+        "vyvinout soubor testů pro ICT",
+        "vytvářet testy pro software"
+      ],
+      "sk": [
+        "vyvinúť skúšobnú zostavu IT",
+        "vyvinúť zostavu skúšok IKT",
+        "navrhnúť modul testovania softvéru",
+        "zostaviť testovaciu zostavu",
+        "vytvoriť súbor testov IT"
+      ],
+      "sl": [
+        "razviti preskusni programski paket informacijske in komunikacijske tehnologije",
+        "razvijati preskusni programski paket IKT",
+        "razviti programski paket za preskušanje programov",
+        "razviti programski paket za testiranje na področju IKT",
+        "razviti program za testiranje programske opreme",
+        "razviti testni programski paket IKT"
+      ],
+      "pl": [
+        "opracowywać procedury testowe ICT opracowywać metody testowe ICT",
+        "przygotowywać testowanie oprogramowania",
+        "opracowywać pakiet testów ICT",
+        "tworzyć zestaw testów"
+      ],
+      "da": [
+        "lave IKT-testpakke",
+        "udarbejde IKT-testpakke",
+        "udvikle sæt af IKT-test",
+        "udvikle IKT-testsuite",
+        "udvikle testpakke til software",
+        "designe softwaretesting"
+      ],
+      "ro": [
+        "elaborează seria de testare a sistemelor informatice",
+        "concepe seria de teste privind sistemele IT",
+        "dezvoltă seria de teste TIC",
+        "realizează seria de teste privind TIC",
+        "compune seria de teste privind sistemele de computere",
+        "dezvoltă seria de teste în TIC"
+      ],
+      "nl": [
+        "testsuite ontwikkelen",
+        "ICT-testsuite ontwerpen",
+        "softwaretest ontwerpen",
+        "testsuites ontwerpen voor ICT-gebruik",
+        "ICT-suite ontwikkelen"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Opprette en serie med testtilfeller for å kontrollere programvareatferd opp mot spesifikasjonene. Disse testtilfellene skal deretter brukes i påfølgende tester.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Erstellen einer Reihe von Testfällen, um das Softwareverhalten in Abhängigkeit von den Spezifikationen zu überprüfen. Diese Testfälle werden dann bei der anschließenden Prüfung verwendet.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Laatia sarja testitapauksia, joilla tarkastetaan ohjelmiston käyttäytymistä suhteessa eritelmiin. Näitä testitapauksia on tarkoitus käyttää myöhempien testien aikana.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar uma série de casos de teste para verificar o comportamento do software face às especificações. Esses casos de teste devem ser utilizados em testes posteriores.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава серия от изпитвания за проверка на поведението на софтуера спрямо спецификациите. Тези тестове трябва да се използват по време на последващи изпитвания.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Sukurti bandymo atvejų seriją programinės įrangos veikimui patikrinti pagal specifikacijas. Šie bandymo atvejai vėliau naudojami tolesniems bandymams atlikti.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izrađivati niz slučajeva testiranja za provjeru ponašanja softvera s obzirom na specifikacije. Ti se slučajevi testiranja upotrebljavaju tijekom sljedećeg testiranja.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izveidot virkni testu, lai pārbaudītu programmatūras darbību atbilstoši specifikācijām. Izmantot šos testus turpmākajās pārbaudēs.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer une série de cas d’essai pour vérifier le comportement et les spécifications du logiciel. Ces cas doivent ensuite être utilisés lors des essais suivants.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Tesztelési eseteket hoz létre a szoftveres viselkedés és a specifikációk ellenőrzésére. Ezt követően ezeket a vizsgálati eseteket használja a későbbi vizsgálatok során.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати тестовий набір, щоб перевірити поведінку програмного забезпечення в порівнянні з технічними характеристиками. Потім цей тестовий набір слід використовувати під час наступного тестування.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvoriť sériu skúšobných prípadov na kontrolu správania softvéru v porovnaní so špecifikáciami. Tieto skúšobné prípady sa potom použijú počas následného testovania.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Oblikovati vrsto preskusnih primerov za preverjanje delovanja programske opreme v primerjavi s specifikacijami. Ti preskusni postopki se nato uporabijo med naknadnim preskušanjem.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Sraith cásanna tástála a chruthú chun seiceáil a dhéanamh ar iompraíocht bogearraí i gcomparáid le sonraíochtaí. Úsáidfear na cásanna sin ansin le linn na tástála ina dhiaidh sin.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Skapa en serie testfall för att kontrollera programvarans beteende i förhållande till specifikationerna. Dessa testfall ska därefter användas vid efterföljande testning.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ħolqien ta’ serje ta’ każijiet ta’ testijiet sabiex tiġi vverifikata l-imġiba tas-softwer kontra l-ispeċifikazzjonijiet. Imbagħad dawn il-każijiet ta’ ttestjar għandhom jintużaw waqt l-ittestjar sussegwenti.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία σειράς δοκιμαστικών υποθέσεων για τον έλεγχο της συμπεριφοράς του λογισμικού έναντι των προδιαγραφών. Οι εν λόγω υποθέσεις δοκιμών θα χρησιμοποιούνται στη συνέχεια κατά τη διάρκεια των επόμενων δοκιμών.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create a series of test cases to check software behaviour versus specifications. These test cases are then to be used during subsequent testing.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Skapa röð prófunartilvika til að kanna hugbúnaðarhegðun samanborið við forskriftir. Þessi prófunartilvik eru síðan notuð við síðari prófanir.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Creare una serie di casi di test per controllare il comportamento software rispetto alle specifiche. Questi casi di test devono essere poi utilizzati durante le prove successive.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear una serie de casos de prueba para comprobar el comportamiento del software cotejándolo con las especificaciones. Estos casos analíticos se utilizarán durante los ensayos posteriores.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Tarkvara toimimise ja spetsifikatsioonide võrdlemiseks testimisjuhtude kogumi loomine. Nende testimisjuhtude kasutamine järgneva testimise ajal.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet soubor zkušebních případů pro kontrolu chování softwaru oproti specifikacím. Tyto zkušební případy se pak použijí při následných zkouškách.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إنشاء سلسلة حالات اختبار للتحقق من سلوك البرامج مقابل المواصفات. تُستخدم حالات الاختبار بعد ذلك أثناء الاختبارات اللاحقة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć serię przypadków testowych, aby sprawdzić zachowanie oprogramowania w porównaniu ze specyfikacjami. Te przypadki testowe należy następnie wykorzystać podczas kolejnych testów.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Oprette en række prøvesager for at kontrollere softwarens adfærd i forhold til specifikationer. Disse prøvesager skal derefter anvendes under den efterfølgende testning.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Creează o serie de cazuri de testare pentru verificarea comportamentul software-ului în raport cu specificațiile. Aceste cazuri de testare sunt apoi utilizate în timpul testelor ulterioare.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Een reeks testcases creëren om het gedrag van de software tegen de specificaties te controleren. Deze testcases moeten vervolgens tijdens de volgende tests worden gebruikt.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en",
+        "uri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639",
+        "title": "develop ICT test suite"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+          "title": "designing ict systems or applications",
+          "code": "S1.11.1"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+          "title": "plan software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+          "title": "develop automated software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f",
+          "title": "tools for ICT test automation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/76a1a76c-b014-4600-8901-56cb936de7ed&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/76a1a76c-b014-4600-8901-56cb936de7ed",
+          "title": "ICT auditor manager"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c8fa93eb-7c2c-42c3-b135-c2e825a6615e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c8fa93eb-7c2c-42c3-b135-c2e825a6615e",
+          "title": "test engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "develop ICT test suite",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en",
+              "uri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+            "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "designing ict systems or applications",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+          ]
+        },
+        {
+          "title": "designing systems and products",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+          ]
+        },
+        {
+          "title": "communication, collaboration and creativity",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8&language=en",
+              "uri": "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "develop automated software tests",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "planning production processes",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+          ]
+        },
+        {
+          "title": "organising, planning and scheduling work and activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+          ]
+        },
+        {
+          "title": "management skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2&language=en",
+              "uri": "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        }
+      ]
+    }
+  }
+}

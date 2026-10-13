@@ -165,12 +165,15 @@ TargetRole {
     familyCode,
     track,
     organizationId,
-    seniority,
+    seniority?,
+    assignedExpertId?,
+    version,
     description?,
     responsibilities?,
     status,
     createdAt,
-    updatedAt
+    updatedAt,
+    rejectionReason?
 }
 ```
 
@@ -179,21 +182,26 @@ TargetRole {
 | Field | Kiểu | Bắt buộc | Giải thích |
 |---|---|---:|---|
 | `id` | String/UUID | Có | ID kỹ thuật duy nhất |
-| `code` | String | Có | Mã role, ví dụ `JAVA_BACKEND_P3` |
+| `code` | String | Có | Mã role, ví dụ `JAVA_BACKEND_P3`, `ROLE-AI-ARCH` |
 | `name` | String | Có | Tên role hiển thị |
-| `familyCode` | String | Có | Nhóm các role cùng nghề, ví dụ `JAVA_BACKEND` |
+| `familyCode` | String | Có | Nhóm các role cùng nghề, ví dụ `JAVA_BACKEND`, `AI_ML` |
 | `track` | Enum | Có | Nhánh `PROFESSIONAL` hoặc `MANAGEMENT` |
 | `organizationId` | String/UUID | Có | Organization sở hữu và được phép sử dụng role |
-| `seniority` | Enum | Có | Grade nghề nghiệp: `P1`–`P5` cho `PROFESSIONAL`, `M3`–`M4` cho `MANAGEMENT` |
+| `seniority` | Enum | Không | Grade nghề nghiệp: `P1`–`P5` cho `PROFESSIONAL`, `M3`–`M4` cho `MANAGEMENT` |
+| `assignedExpertId` | String | Không | ID của Domain Expert được phân công thiết lập micro-skills |
+| `version` | String | Có | Phiên bản role (`1.0`, `1.1`), hỗ trợ successor draft |
 | `description` | String | Không | Mô tả trách nhiệm hoặc phạm vi công việc |
 | `responsibilities` | List<String> | Không | Danh sách trách nhiệm chính để hiển thị ở role detail |
-| `status` | Enum | Có | Trạng thái role |
+| `status` | Enum | Có | `DRAFT`, `SENT`, `REJECTED`, `ACTIVE`, hoặc `RETIRED` |
 | `createdAt` | DateTime | Có | Thời điểm tạo |
 | `updatedAt` | DateTime | Có | Thời điểm cập nhật |
+| `rejectionReason` | String | Không | Lý do từ chối và phản hồi từ Domain Expert khi trạng thái là `REJECTED` |
 
 Field `level` đã bị loại bỏ. `code` và `name` vẫn có thể chứa grade nghiệp vụ như `JAVA_BACKEND_P3`, nhưng runtime phải dùng field `seniority` riêng để hiển thị và filter cấp độ.
 
 `seniority` là grade code dùng cho discovery/filter và không thay thế `track`. `PROFESSIONAL` chỉ dùng `P1`–`P5`; `MANAGEMENT` chỉ dùng `M3`–`M4`. Cùng một grade có thể mang mô tả năng lực/chức danh khác nhau giữa Finance, IT hoặc các domain khác; catalog của từng domain/role family sở hữu ý nghĩa chi tiết đó. Hậu tố như `P3` trong `code` vẫn không được dùng để suy luận seniority ở runtime.
+
+`version` và `assignedExpertId` hỗ trợ quy trình phân công Domain Expert và tạo successor draft (phiên bản kế nhiệm) cho target role mà không làm gãy các ràng buộc lộ trình của học viên đã đăng ký phiên bản trước.
 
 ### Ví dụ
 
@@ -206,6 +214,8 @@ Field `level` đã bị loại bỏ. `code` và `name` vẫn có thể chứa gr
   "track": "PROFESSIONAL",
   "organizationId": "00000000-0000-0000-0000-000000000001",
   "seniority": "P3",
+  "assignedExpertId": "expert-rivera",
+  "version": "1.0",
   "description": "Develops and maintains Java backend applications",
   "responsibilities": [
     "Build and maintain Java backend services",

@@ -12,11 +12,14 @@ import {
   Compass,
   FileQuestion,
   GraduationCap,
+  HelpCircle,
   Layers,
   LayoutDashboard,
   LogOut,
   Network,
   Palette,
+  PanelLeftClose,
+  PanelLeftOpen,
   ShieldCheck,
   Sparkles,
   Target,
@@ -25,6 +28,7 @@ import {
   Users,
 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { GlobalSearchbar } from '../components/ui/GlobalSearchbar'
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
 import { useToast } from '../hooks/useToast'
@@ -190,6 +194,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isExpert) {
     actorTabs = [
       {
+        label: t('nav.targetRoles'),
+        href: '/expert/target-roles',
+        icon: <Briefcase size={15} />,
+      },
+      {
         label: t('nav.ontology'),
         href: '/expert/ontology',
         icon: <Network size={15} />,
@@ -311,6 +320,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
       return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
     }
+    if (itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
+      return path === '/expert/target-roles' || path === '/expert/assigned-roles'
+    }
     if (itemHref === '/expert/ontology') {
       return path === '/expert/ontology' || path === '/ld-manager/ontology' || path === '/manager/ontology'
     }
@@ -355,75 +367,122 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     return path === itemHref
   }
 
+  // Collapsible sidebar state (persisted per actor; default: collapsed for employee, expanded for other actors)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<boolean>(() => {
+    const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
+    if (saved !== null) {
+      return saved === 'true'
+    }
+    return isEmployee
+  })
+
+  // Synchronize state when switching actor roles
+  React.useEffect(() => {
+    const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
+    if (saved !== null) {
+      setIsSidebarCollapsed(saved === 'true')
+    } else {
+      setIsSidebarCollapsed(isEmployee)
+    }
+  }, [activeActor, isEmployee])
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev
+      localStorage.setItem(`sidebar_collapsed_${activeActor}`, String(next))
+      return next
+    })
+  }
+
   const brandHomeUrl = isGuest
     ? '/packages'
     : isEmployee
-    ? '/employee/overview'
+    ? '/employee/target-roles'
     : isExpert
-    ? '/expert/ontology'
+    ? '/expert/assigned-roles'
     : isLdManager
     ? '/ld-manager/learning-outcomes'
     : '/admin/dashboard'
 
   return (
     <div className="workspace">
-      {/* Top Navigation Header with Tabs directly in Navbar and Far-Right Account */}
+      {/* Top Header */}
       <header className="workspace-header">
         <div className="workspace-topbar">
-          {/* Left: Brand + Active Company Badge */}
-          <div className="flex items-center justify-start gap-3 min-w-0">
+          {/* Left: Sidebar Collapse/Expand Toggle + Brand + My Learning link */}
+          <div className="flex items-center justify-start gap-2.5 sm:gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+            </button>
             <Link className="brand shrink-0" to={brandHomeUrl}>
               <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
-              <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate">
+              <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate hidden md:inline">
                 Adapt-Learn-Graph
               </span>
             </Link>
 
-            {/* Active Company & Seat Quota Pill */}
-            {!isGuest ? (
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
-                <Building size={13} className="text-primary" />
-                <span className="truncate max-w-[140px]" title={activeCompany.name}>
-                  {activeCompany.name}
-                </span>
-                <span className="text-muted-foreground">•</span>
-                <span className="font-mono text-primary text-[11px]">
-                  {activeCompany.packageTier} ({activeCompany.users.length}/{activeCompany.maxUsers})
-                </span>
-              </div>
-            ) : (
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary/80 border border-primary/20 text-xs font-semibold text-foreground">
-                <Building size={13} className="text-primary" />
-                <span className="truncate max-w-[160px]">
-                  New Organization
-                </span>
-                <span className="text-muted-foreground">•</span>
-                <span className="font-mono text-primary text-[11px]">
-                  Select Package
-                </span>
-              </div>
+            {/* Home + My Learning links (Coursera style - Employee only) */}
+            {isEmployee && (
+              <>
+                <Link
+                  to="/employee/target-roles"
+                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
+                    path === '/employee/target-roles'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                  title="Home (Target Roles)"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/employee/pathway"
+                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
+                    path === '/employee/pathway'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                  title="My Learning (Adaptive Pathway)"
+                >
+                  My Learning
+                </Link>
+              </>
             )}
           </div>
 
-          {/* Center: Feature Tabs Directly in Navbar */}
-          <nav className="workspace-tabs-nav" aria-label="Feature navigation tabs">
-            {actorTabs.map((item) => {
-              const active = isTabActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`workspace-nav-tab ${active ? 'active' : ''}`}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
+          {/* Center: Coursera-style Global Searchbar (Employee only) */}
+          {isEmployee && (
+            <div className="flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
+              <GlobalSearchbar />
+            </div>
+          )}
 
-          {/* Far-Right: Language Switcher, Notifications & User Account Card */}
-          <div className="flex items-center justify-end gap-2">
+          {/* Far-Right: Help, Language Switcher, Notifications & User Account Card */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
+            {/* Help / Support Icon Button */}
+            <button
+              type="button"
+              onClick={() => {
+                toast({
+                  title: 'Help & Knowledge Center',
+                  description: isEmployee
+                    ? 'Search skills or target roles to set milestones, or navigate to My Learning for your adaptive pathway.'
+                    : 'Access system documentation, manage competency ontologies, or consult role catalogs.',
+                })
+              }}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              title="Help & Support"
+              aria-label="Help & Support"
+            >
+              <HelpCircle size={18} />
+            </button>
+
             {/* Language Switcher (EN / VI) */}
             <LanguageSwitcher />
 
@@ -497,7 +556,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 2. Expert */}
                         <Link
-                          to="/expert/ontology"
+                          to="/expert/assigned-roles"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isExpert
@@ -628,8 +687,35 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      {/* Main Content Area */}
+      {/* Workspace Body: Sidebar + Main Content */}
       <div className="workspace-body">
+        {/* Collapsible Left Sidebar */}
+        <aside
+          className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
+          aria-label="Sidebar navigation"
+        >
+          {/* Actor-specific feature navigation items */}
+          <nav className="workspace-sidebar-nav" aria-label="Portal feature tabs">
+            {actorTabs.map((item) => {
+              const active = isTabActive(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`workspace-sidebar-link ${active ? 'active' : ''}`}
+                  title={isSidebarCollapsed ? item.label : undefined}
+                >
+                  <span className="sidebar-link-icon">{item.icon}</span>
+                  {!isSidebarCollapsed && (
+                    <span className="sidebar-link-label">{item.label}</span>
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content Area */}
         <main className="workspace-main">{children}</main>
       </div>
     </div>

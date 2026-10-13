@@ -42,7 +42,6 @@ import {
   updateActiveCompany,
 } from '../../../shared/stores/companyStore'
 import {
-  INITIAL_MICRO_SKILLS,
   type LearningModuleModel,
 } from '../data/ldManagerMockData'
 
@@ -72,7 +71,7 @@ const MODULE_PRESETS: ImportPreset[] = [
         status: 'published' as const,
         durationMinutes: 60,
         sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/attention.html',
-        teachesSkillIds: [INITIAL_MICRO_SKILLS[0]?.id || 'skill-attn-01'],
+        teachesSkillIds: ['skill-attn-01'],
         activePlanEnrollments: 8,
         updatedAt: new Date().toISOString().slice(0, 10),
       },
@@ -85,7 +84,7 @@ const MODULE_PRESETS: ImportPreset[] = [
         status: 'draft' as const,
         durationMinutes: 75,
         sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/vllm.html',
-        teachesSkillIds: [INITIAL_MICRO_SKILLS[1]?.id || 'skill-kv-01'],
+        teachesSkillIds: ['skill-kv-01'],
         activePlanEnrollments: 0,
         updatedAt: new Date().toISOString().slice(0, 10),
       },
@@ -98,7 +97,7 @@ const MODULE_PRESETS: ImportPreset[] = [
         status: 'published' as const,
         durationMinutes: 90,
         sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/rag.html',
-        teachesSkillIds: [INITIAL_MICRO_SKILLS[2]?.id || 'skill-vec-01'],
+        teachesSkillIds: ['skill-vec-01'],
         activePlanEnrollments: 5,
         updatedAt: new Date().toISOString().slice(0, 10),
       },
@@ -864,7 +863,7 @@ export function LearningModulesPage() {
                         <span className="font-semibold text-foreground">{skill.name}</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                        {skill.observableOutcome}
+                        {skill.description}
                       </p>
                     </div>
 
@@ -1154,11 +1153,11 @@ export function LearningModulesPage() {
                             <span className="font-semibold text-foreground">{skill?.name}</span>
                           </div>
                           <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            {skill?.observableOutcome}
+                            {skill?.description}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="shrink-0 text-[10px] font-semibold">
-                          Bloom: {skill?.bloomLevel || 'Apply'}
+                        <Badge variant="outline" className="shrink-0 text-[10px] font-semibold">
+                          {skill?.status || 'ACTIVE'}
                         </Badge>
                       </div>
                     )

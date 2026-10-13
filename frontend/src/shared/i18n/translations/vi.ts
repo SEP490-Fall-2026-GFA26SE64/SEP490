@@ -8,6 +8,7 @@ export const vi: TranslationKeys = {
     gapAnalysis: 'Phân tích khoảng cách',
     assessmentQuiz: 'Bài đánh giá',
     serverStatus: 'Trạng thái máy chủ',
+    assignedRoles: 'Vai trò mục tiêu',
     ontology: 'Bản thể tri thức',
     modules: 'Mô-đun học tập',
     assessmentBank: 'Ngân hàng câu hỏi',

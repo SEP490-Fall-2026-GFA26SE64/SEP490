@@ -2,22 +2,28 @@
 
 **Function ID:** REQ-015-F03  
 **Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Status:** Implemented  
 **Feature:** [Role Requirements](README.md)
 
 ## Description
 
-Maintain the expected proficiency for a role's required micro-skill so gap analysis can compare employee evidence with a defined target.
+Maintain the benchmark proficiency threshold for a role's required micro-skill so diagnostic gap analysis and adaptive pathway generation can compare employee mastery with the defined target.
 
-**Input:** Role-skill requirement and target proficiency.  
-**Outcome:** A validated expected proficiency attached to the requirement.
+**Input:** Authorized draft target role, linked micro-skill requirement, and threshold percentage (1–100%).  
+**Outcome:** A validated `targetMastery: Float [0, 1]` property stored on the `[:REQUIRES_SKILL]` relationship in Neo4j.
 
-## Open Decisions
+## Confirmed Related Rules
 
-- Numeric scale, named levels, mastery probability, or another representation.
-- Allowed ranges, defaults, weighting, and consistency with assessment scoring.
-- Effective date and behavior for existing employees when the target changes.
+- **Scale Representation & Storage**:
+  - UI Input: integer percentage between `1%` and `100%` with slider and numerical step inputs.
+  - Neo4j Graph Storage: normalized `targetMastery: Float` ranging from `0.01` to `1.0`.
+- **Elimination of Weights**: All linked micro-skills have benchmark thresholds; weighting has been eliminated per Schema V5.
+- **Publication Requirement**: All micro-skill requirements linked to a role must possess a valid threshold (&ge; 1%) before the role can be published.
+- **In-Progress Attempt Isolation**: Ongoing baseline attempts retain their starting skill requirements and thresholds; updated thresholds apply to new diagnostic attempts.
 
 ## Acceptance Baseline
 
-Gap analysis can identify both the employee evidence and the role's required level in compatible terms.
+Gap analysis can compare employee proficiency against the role's required benchmark on a unified `[0, 1]` mastery scale.
+
+- **Acceptance Criteria**: Validation blocks publication if any linked threshold is outside `[1, 100]%`.
+- **Test Evidence**: Target role authoring modal validation and publication checklist modal.

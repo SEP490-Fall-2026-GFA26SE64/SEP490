@@ -2,9 +2,7 @@ export interface SkillTargetConfig {
   skillId: string
   skillCode: string
   skillName: string
-  threshold: number // e.g. 80 (%)
-  weight: number // positive weight e.g. 1.0, 1.5, 2.0
-  mandatory: boolean
+  threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
 }
 
 export interface TargetRoleModel {
@@ -12,54 +10,220 @@ export interface TargetRoleModel {
   stableId: string
   code: string
   title: string
-  department: string
+  department?: string
+  domainCode?: string // 'ICT' | 'DATA' | 'AI'
+  familyCode?: string // 'JAVA_BACKEND' | 'DATA_AI' | ...
+  track?: 'PROFESSIONAL' | 'MANAGEMENT'
+  seniority?: string
+  assignedExpertId?: string
+  assignedExpertName?: string
   description: string
+  responsibilities?: string[]
   version: string
-  status: 'draft' | 'published' | 'archived'
+  status: 'draft' | 'sent' | 'rejected' | 'published'
+  rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
   activeEnrollments: number
+  createdAt?: string
   updatedAt: string
-  provenanceRef: string
 }
+
+/**
+ * Compares semantic or numeric versions, e.g. "1.0" < "1.1" < "1.2" < "2.0".
+ */
+export function compareRoleVersions(vA?: string, vB?: string): number {
+  const partsA = (vA || '0').split('.').map((p) => parseInt(p, 10) || 0)
+  const partsB = (vB || '0').split('.').map((p) => parseInt(p, 10) || 0)
+  const maxLen = Math.max(partsA.length, partsB.length)
+  for (let i = 0; i < maxLen; i++) {
+    const a = partsA[i] || 0
+    const b = partsB[i] || 0
+    if (a !== b) {
+      return a - b
+    }
+  }
+  return 0
+}
+
+/**
+ * Formats an ISO datetime or date string into DD/MM/YYYY format.
+ * e.g. "2026-10-01T06:20:59.069533368Z" -> "01/10/2026"
+ */
+export function formatDate(dateStr?: string): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0')
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const year = d.getFullYear()
+      return `${day}/${month}/${year}`
+    }
+  } catch {}
+
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`
+  }
+  return dateStr
+}
+
+/**
+ * Ensures that within each role lineage (grouped by stableId/code):
+ * 1. The newest published version always appears first as the primary row (e.g. v2.0).
+ * 2. Older published versions appear immediately below the newest version, ordered by version ascending (e.g. v1.0, v1.1, v1.2).
+ * 3. Any draft / sent / rejected successor versions appear directly below the published group.
+ * 4. Lineage groups are sorted by newest creation/update date descending by default so new/updated roles appear at the top.
+ */
+export function sortTargetRolesWithDraftsBelowPublished(
+  roles: TargetRoleModel[],
+  sortBy: 'latest' | 'code' | 'title' = 'latest'
+): TargetRoleModel[] {
+  const groups = new Map<string, TargetRoleModel[]>()
+  for (const r of roles) {
+    const key = r.stableId || r.code
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key)!.push(r)
+  }
+
+  const getGroupLatestTime = (groupRoles: TargetRoleModel[]): number => {
+    let latest = 0
+    for (const r of groupRoles) {
+      const updatedTime = r.updatedAt ? new Date(r.updatedAt).getTime() : 0
+      const createdTime = r.createdAt ? new Date(r.createdAt).getTime() : 0
+      const best = Math.max(
+        isNaN(updatedTime) ? 0 : updatedTime,
+        isNaN(createdTime) ? 0 : createdTime
+      )
+      if (best > latest) {
+        latest = best
+      }
+    }
+    return latest
+  }
+
+  const result: TargetRoleModel[] = []
+
+  // Sort groups by selected criteria
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    const rolesA = groups.get(a)!
+    const rolesB = groups.get(b)!
+    const roleA = rolesA[0]
+    const roleB = rolesB[0]
+
+    if (sortBy === 'latest') {
+      const timeA = getGroupLatestTime(rolesA)
+      const timeB = getGroupLatestTime(rolesB)
+      if (timeB !== timeA) {
+        return timeB - timeA // Latest created or updated at the very top
+      }
+      // Priority 1: Newly dispatched / sent roles should be at the absolute top of the queue
+      const hasSentA = rolesA.some((r) => r.status === 'sent')
+      const hasSentB = rolesB.some((r) => r.status === 'sent')
+      if (hasSentA && !hasSentB) return -1
+      if (hasSentB && !hasSentA) return 1
+
+      // Priority 2: In-flight draft roles take precedence over older published roles
+      const hasDraftA = rolesA.some((r) => r.status === 'draft')
+      const hasDraftB = rolesB.some((r) => r.status === 'draft')
+      if (hasDraftA && !hasDraftB) return -1
+      if (hasDraftB && !hasDraftA) return 1
+
+      // Fallback: reverse ID so newer entries go to top
+      return (roleB?.id || '').localeCompare(roleA?.id || '')
+    }
+
+    if (sortBy === 'title') {
+      return (roleA?.title || '').localeCompare(roleB?.title || '')
+    }
+
+    return (roleA?.code || '').localeCompare(roleB?.code || '')
+  })
+
+  for (const key of sortedKeys) {
+    const groupRoles = groups.get(key)!
+    const published = groupRoles
+      .filter((r) => r.status === 'published')
+      .sort((a, b) => compareRoleVersions(b.version, a.version))
+
+    const newestPublished = published[0]
+    // Older published versions ordered ascending: v1.0 -> v1.1 -> v1.2
+    const olderPublished = published.slice(1).sort((a, b) => compareRoleVersions(a.version, b.version))
+
+    // Draft / sent / rejected versions placed immediately below published
+    const nonPublished = groupRoles
+      .filter((r) => r.status !== 'published')
+      .sort((a, b) => compareRoleVersions(a.version, b.version))
+
+    if (newestPublished) {
+      result.push(newestPublished, ...olderPublished, ...nonPublished)
+    } else {
+      result.push(...nonPublished)
+    }
+  }
+
+  return result
+}
+
+export const JOB_DOMAINS = [
+  { code: 'ICT', name: 'Information & Communication Technology' },
+  { code: 'DATA', name: 'Data Engineering & Analytics' },
+  { code: 'AI', name: 'Artificial Intelligence & Cognitive Computing' },
+] as const
+
+export const CAREER_FAMILIES = [
+  { code: 'JAVA_BACKEND', name: 'Java Backend Engineering', domain: 'ICT' },
+  { code: 'PYTHON_DATA', name: 'Python & Data Engineering', domain: 'DATA' },
+  { code: 'AI_ML', name: 'Machine Learning & LLM Systems', domain: 'AI' },
+  { code: 'CLOUD_DEVOPS', name: 'Cloud & Infrastructure DevOps', domain: 'ICT' },
+  { code: 'FRONTEND_WEB', name: 'Modern Web & UI Architecture', domain: 'ICT' },
+  { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust', domain: 'ICT' },
+] as const
+
+export const ELIGIBLE_EXPERTS = [
+  { id: 'expert-chen', name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
+  { id: 'expert-vance', name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
+  { id: 'expert-rivera', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
+  { id: 'expert-nguyen', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
+] as const
 
 export interface CompetencyModel {
   id: string
-  stableId: string
   code: string
   name: string
-  definition: string
-  version: string
-  status: 'draft' | 'published' | 'archived'
-  derivationRef: string
+  description?: string
+  status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
   skillIds: string[] // HAS_SKILL links
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface MicroSkillModel {
   id: string
-  stableId: string
   code: string
   name: string
-  observableOutcome: string
-  bloomLevel: 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create'
-  version: string
-  status: 'draft' | 'published' | 'archived'
-  provenance: {
-    source: string
-    ruleRef: string
-    type: 'source-backed' | 'derived' | 'synthetic'
-    recordedDate: string
-  }
+  description?: string
+  status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
+  macroCompetencyCode?: 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION' | string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface PrerequisiteEdge {
   id: string
   sourceSkillId: string // Prerequisite skill
+  sourceSkillCode?: string
+  sourceSkillName?: string
   targetSkillId: string // Dependent skill
-  requiredThreshold: number // percentage e.g. 75
-  type: 'hard_prerequisite' | 'recommended'
-  ruleRef: string
+  targetSkillCode?: string
+  targetSkillName?: string
+  minMastery: number // Float [0, 1] e.g. 0.75
+  status?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ProvenanceRecord {
@@ -148,244 +312,42 @@ export interface SkillAcquisitionMetric {
 }
 
 // ----------------------------------------------------
-// INITIAL MOCK DATA
+// INITIAL PREREQUISITES & PROTOTYPE MOCK DATA
 // ----------------------------------------------------
-
-export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = [
-  {
-    id: 'skill-cypher',
-    stableId: 'ms-001',
-    code: 'SKILL-CYPHER-01',
-    name: 'Neo4j Cypher DDL & Pattern Matching',
-    observableOutcome: 'Formulate declarative Cypher queries including MATCH, MERGE, and index constraints against multi-relational graphs.',
-    bloomLevel: 'Apply',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Neo4j Certified Professional Framework v5.12',
-      ruleRef: 'GRAPH-DDL-2025.1',
-      type: 'source-backed',
-      recordedDate: '2025-11-15',
-    },
-  },
-  {
-    id: 'skill-gnn',
-    stableId: 'ms-002',
-    code: 'SKILL-GNN-02',
-    name: 'Graph Neural Networks & Message Passing',
-    observableOutcome: 'Construct spatial graph convolutional layers with neighborhood aggregation using PyTorch Geometric.',
-    bloomLevel: 'Create',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Stanford CS224W Machine Learning with Graphs (2024)',
-      ruleRef: 'GNN-ARCH-03',
-      type: 'source-backed',
-      recordedDate: '2025-10-20',
-    },
-  },
-  {
-    id: 'skill-embeddings',
-    stableId: 'ms-003',
-    code: 'SKILL-EMB-03',
-    name: 'Random Walk & Node2Vec Embeddings',
-    observableOutcome: 'Generate low-dimensional continuous vector representations for nodes using biased second-order random walks.',
-    bloomLevel: 'Analyze',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'KDD Grover & Leskovec Node2Vec Specification',
-      ruleRef: 'EMB-PROV-99',
-      type: 'derived',
-      recordedDate: '2025-09-12',
-    },
-  },
-  {
-    id: 'skill-owl-rdf',
-    stableId: 'ms-004',
-    code: 'SKILL-RDF-04',
-    name: 'RDF Schema & OWL 2 DL Ontologies',
-    observableOutcome: 'Define formal description logic axioms, subsumption hierarchies, and inverse functional object properties.',
-    bloomLevel: 'Evaluate',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'W3C OWL 2 Web Ontology Language Recommendation',
-      ruleRef: 'W3C-REC-OWL2-2012',
-      type: 'source-backed',
-      recordedDate: '2025-08-01',
-    },
-  },
-  {
-    id: 'skill-dkt',
-    stableId: 'ms-005',
-    code: 'SKILL-DKT-05',
-    name: 'Dynamic Deep Knowledge Tracing',
-    observableOutcome: 'Implement LSTM/Transformer architectures to track longitudinal learner skill mastery over chronological exercise logs.',
-    bloomLevel: 'Create',
-    version: '1.1',
-    status: 'draft',
-    provenance: {
-      source: 'NeurIPS Deep Knowledge Tracing Adaptation Matrix',
-      ruleRef: 'AIED-DKT-2024',
-      type: 'synthetic',
-      recordedDate: '2026-01-10',
-    },
-  },
-  {
-    id: 'skill-vector-db',
-    stableId: 'ms-006',
-    code: 'SKILL-VEC-06',
-    name: 'HNSW Indexing & Vector Search Optimization',
-    observableOutcome: 'Configure hierarchical navigable small world graphs for sub-millisecond approximate nearest neighbor retrieval.',
-    bloomLevel: 'Apply',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Malkov & Yashunin HNSW Technical Whitepaper',
-      ruleRef: 'VEC-INDEX-01',
-      type: 'source-backed',
-      recordedDate: '2025-12-04',
-    },
-  },
-]
-
-export const INITIAL_COMPETENCIES: CompetencyModel[] = [
-  {
-    id: 'comp-semantic-arch',
-    stableId: 'comp-uuid-01',
-    code: 'COMP-SEM-01',
-    name: 'Graph Semantic Architecture & Modeling',
-    definition: 'Engineering formal semantic data schemas, ontologies, and property graph representations for corporate enterprise data.',
-    version: '1.0',
-    status: 'published',
-    derivationRef: 'ACM Computing Curricula 2023 / Knowledge Representation & Reasoning',
-    skillIds: ['skill-cypher', 'skill-owl-rdf'],
-    updatedAt: '2026-02-14',
-  },
-  {
-    id: 'comp-graph-ml',
-    stableId: 'comp-uuid-02',
-    code: 'COMP-GML-02',
-    name: 'Graph Machine Learning & Embeddings',
-    definition: 'Applying geometric deep learning, representation learning, and neural message passing over connected topology networks.',
-    version: '1.0',
-    status: 'published',
-    derivationRef: 'IEEE Computational Intelligence Society AI Taxonomy 2025',
-    skillIds: ['skill-gnn', 'skill-embeddings'],
-    updatedAt: '2026-02-18',
-  },
-  {
-    id: 'comp-adaptive-sys',
-    stableId: 'comp-uuid-03',
-    code: 'COMP-ADP-03',
-    name: 'Adaptive Learning Engines & Cognitive Diagnostics',
-    definition: 'Designing personalized Bayesian and neural knowledge tracing architectures for prescriptive recommendation loops.',
-    version: '1.1',
-    status: 'draft',
-    derivationRef: 'International Artificial Intelligence in Education Society Standard',
-    skillIds: ['skill-dkt', 'skill-vector-db'],
-    updatedAt: '2026-03-01',
-  },
-]
 
 export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = [
   {
     id: 'pre-1',
     sourceSkillId: 'skill-cypher',
     targetSkillId: 'skill-embeddings',
-    requiredThreshold: 75,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-01',
+    minMastery: 0.75,
+    status: 'ACTIVE',
   },
   {
     id: 'pre-2',
     sourceSkillId: 'skill-embeddings',
     targetSkillId: 'skill-gnn',
-    requiredThreshold: 80,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-02',
+    minMastery: 0.80,
+    status: 'ACTIVE',
   },
   {
     id: 'pre-3',
     sourceSkillId: 'skill-owl-rdf',
     targetSkillId: 'skill-cypher',
-    requiredThreshold: 70,
-    type: 'recommended',
-    ruleRef: 'PREREQ-RULE-03',
+    minMastery: 0.70,
+    status: 'ACTIVE',
   },
   {
     id: 'pre-4',
     sourceSkillId: 'skill-gnn',
     targetSkillId: 'skill-dkt',
-    requiredThreshold: 85,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-04',
+    minMastery: 0.85,
+    status: 'ACTIVE',
   },
 ]
 
-export const INITIAL_TARGET_ROLES: TargetRoleModel[] = [
-  {
-    id: 'role-ai-arch-v1',
-    stableId: 'role-uuid-001',
-    code: 'ROLE-AI-ARCH',
-    title: 'AI Knowledge Architect',
-    department: 'Machine Learning & Cognitive Architecture',
-    description: 'Enterprise architect responsible for multi-modal knowledge modeling, graph ML pipelines, and ontological integration.',
-    version: '1.0',
-    status: 'published',
-    competencyIds: ['comp-semantic-arch', 'comp-graph-ml'],
-    skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85, weight: 1.5, mandatory: true },
-      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 75, weight: 1.0, mandatory: true },
-      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 80, weight: 2.0, mandatory: true },
-      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 70, weight: 1.0, mandatory: false },
-    ],
-    activeEnrollments: 24,
-    updatedAt: '2026-02-10',
-    provenanceRef: 'Corporate Job Architecture Level 6 / Tech Spec 2026',
-  },
-  {
-    id: 'role-ai-arch-v1.1-draft',
-    stableId: 'role-uuid-001',
-    code: 'ROLE-AI-ARCH',
-    title: 'AI Knowledge Architect',
-    department: 'Machine Learning & Cognitive Architecture',
-    description: 'Updated draft incorporating Vector Search Optimization and Deep Knowledge Tracing into core requirements.',
-    version: '1.1',
-    status: 'draft',
-    competencyIds: ['comp-semantic-arch', 'comp-graph-ml', 'comp-adaptive-sys'],
-    skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85, weight: 1.5, mandatory: true },
-      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 80, weight: 1.2, mandatory: true },
-      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 85, weight: 2.0, mandatory: true },
-      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 75, weight: 1.0, mandatory: false },
-      { skillId: 'skill-dkt', skillCode: 'SKILL-DKT-05', skillName: 'Dynamic Deep Knowledge Tracing', threshold: 75, weight: 1.8, mandatory: true },
-      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 80, weight: 1.5, mandatory: false },
-    ],
-    activeEnrollments: 0,
-    updatedAt: '2026-03-02',
-    provenanceRef: 'Corporate Job Architecture Level 6 (Draft Revision Q1)',
-  },
-  {
-    id: 'role-mlops-v2',
-    stableId: 'role-uuid-002',
-    code: 'ROLE-MLOPS-02',
-    title: 'Senior MLOps & Graph Systems Engineer',
-    department: 'Platform Engineering',
-    description: 'Infrastructure specialist maintaining distributed vector stores, graph databases, and continuous model inference services.',
-    version: '2.0',
-    status: 'published',
-    competencyIds: ['comp-semantic-arch'],
-    skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 90, weight: 2.0, mandatory: true },
-      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 85, weight: 1.5, mandatory: true },
-    ],
-    activeEnrollments: 18,
-    updatedAt: '2026-01-22',
-    provenanceRef: 'Infrastructure Engineering Matrix v2.0',
-  },
-]
+export const INITIAL_TARGET_ROLES: TargetRoleModel[] = []
+
 
 export const INITIAL_MODULES: LearningModuleModel[] = [
   {

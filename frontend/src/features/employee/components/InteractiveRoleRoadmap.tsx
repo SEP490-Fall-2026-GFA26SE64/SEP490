@@ -62,7 +62,7 @@ export function InteractiveRoleRoadmap() {
         id: ms.id,
         skillCode: ms.code,
         name: ms.name,
-        description: ms.observableOutcome || 'Verified operational skill competency.',
+        description: ms.description || 'Verified operational skill competency.',
         status: ms.status === 'published' ? 'achieved' : 'not_achieved',
         masteryPercentage: ms.status === 'published' ? 90 : 50,
         estimatedMinutes: 30,
@@ -236,12 +236,10 @@ export function InteractiveRoleRoadmap() {
                               <span className="text-left flex-1 font-medium">{skill.name}</span>
                               {isAchieved ? (
                                 <Check size={14} className="text-success shrink-0 stroke-[2.5]" />
-                              ) : (
-                                <span className="h-2 w-2 rounded-full bg-primary/40 shrink-0" />
-                              )}
+                              ) : null}
                             </div>
 
-                            {/* Dotted Connector Line to Center Module */}
+                            {/* Solid Connector Line to Center Module */}
                             <svg
                               className="absolute top-1/2 -right-8 w-8 h-4 pointer-events-none overflow-visible"
                               style={{ transform: 'translateY(-50%)' }}
@@ -253,7 +251,6 @@ export function InteractiveRoleRoadmap() {
                                 y2="8"
                                 stroke={isAchieved ? 'hsl(var(--success))' : 'hsl(var(--primary) / 0.35)'}
                                 strokeWidth="1.8"
-                                strokeDasharray="3 3"
                               />
                             </svg>
                           </div>
@@ -311,7 +308,7 @@ export function InteractiveRoleRoadmap() {
 
                         return (
                           <div key={skill.id} className="relative group">
-                            {/* Dotted Connector Line from Center Module */}
+                            {/* Solid Connector Line from Center Module */}
                             <svg
                               className="absolute top-1/2 -left-8 w-8 h-4 pointer-events-none overflow-visible"
                               style={{ transform: 'translateY(-50%)' }}
@@ -323,7 +320,6 @@ export function InteractiveRoleRoadmap() {
                                 y2="8"
                                 stroke={isAchieved ? 'hsl(var(--success))' : 'hsl(var(--primary) / 0.35)'}
                                 strokeWidth="1.8"
-                                strokeDasharray="3 3"
                               />
                             </svg>
 
@@ -346,9 +342,7 @@ export function InteractiveRoleRoadmap() {
                               <span className="text-left flex-1 font-medium">{skill.name}</span>
                               {isAchieved ? (
                                 <Check size={14} className="text-success shrink-0 stroke-[2.5]" />
-                              ) : (
-                                <span className="h-2 w-2 rounded-full bg-primary/40 shrink-0" />
-                              )}
+                              ) : null}
                             </div>
                           </div>
                         )

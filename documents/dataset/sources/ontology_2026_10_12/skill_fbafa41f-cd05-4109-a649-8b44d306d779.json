@@ -1,0 +1,536 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ffbafa41f-cd05-4109-a649-8b44d306d779&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/fbafa41f-cd05-4109-a649-8b44d306d779",
+    "title": "create data models",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "lage datamodeller",
+      "de": "Datenmodelle erstellen",
+      "fi": "luoda tietomalleja",
+      "pt": "criar modelos de dados",
+      "bg": "създаване на модели за данни",
+      "lt": "kurti duomenų modelius",
+      "lv": "datu modeļu radīšana",
+      "hr": "kreirati modele podataka",
+      "fr": "créer des modèles de données",
+      "hu": "adatmodelleket készít",
+      "uk": "створювати моделі даних",
+      "sk": "vytvoriť dátové modely",
+      "sl": "ustvariti podatkovne modele",
+      "ga": "samhlacha sonraí a chruthú",
+      "sv": "skapa datamodeller",
+      "el": "δημιουργία μοντέλων δεδομένων",
+      "mt": "toħloq mudelli tad-data",
+      "en": "create data models",
+      "is": "búa til gagnalíkön",
+      "it": "creare modelli di dati",
+      "es": "crear modelos de datos",
+      "et": "andmemudeleid looma",
+      "cs": "vytvářet datové modely",
+      "ar": "إنشاء نماذج البيانات",
+      "pl": "tworzyć modele danych",
+      "da": "oprette datamodeller",
+      "ro": "creează modele de date",
+      "nl": "gegevensmodellen creëren"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Datenmodellierung durchführen",
+        "Datenmodelle verwalten",
+        "Daten-Modelle erstellen",
+        "Datenmodell erstellen",
+        "Datenmodelle entwickeln",
+        "Datenmodelle anlegen"
+      ],
+      "fi": [
+        "luoda datamalleja",
+        "hallita datamalleja",
+        "hallita tietomalleja",
+        "hallita datan malleja",
+        "hallita tiedon malleja"
+      ],
+      "sv": [
+        "bygga datamodeller",
+        "göra datamodeller",
+        "skapade datamodeller",
+        "skapar datamodeller"
+      ],
+      "pt": [
+        "criar modelação de dados",
+        "criar modelos com dados",
+        "gerir modelos de dados",
+        "gerir modelos de informações",
+        "desenvolver modelos de dados",
+        "desenvolver modelos de informações"
+      ],
+      "bg": [
+        "създаване на модел за данни",
+        "управление на модели за данни",
+        "управление на информационни модели",
+        "създаване на модели за информация",
+        "създаването на модели за данни"
+      ],
+      "mt": [
+        "tiżviluppa mudelli tad-dejta",
+        "toħloq mudelli tad-dejta",
+        "toħloq mudelli għad-data"
+      ],
+      "el": [
+        "δημιουργία μοντέλου δεδομένων",
+        "ανάπτυξη μοντέλων δεδομένων",
+        "δημιουργία διαφορετικών μοντέλων δεδομένων"
+      ],
+      "lt": [
+        "sukurti duomenų modelį",
+        "valdyti duomenų modelius",
+        "sukurti duomenų modelius",
+        "taikyti duomenų modelių kūrimo metodus"
+      ],
+      "en": [
+        "manage data models"
+      ],
+      "lv": [
+        "modelēt datus",
+        "datu modeļu attīstīšana",
+        "datu modeļu izstrāde",
+        "datu modeļu izveide",
+        "radīt datu modeļus"
+      ],
+      "is": [
+        "hanna tölvugagnalíkön",
+        "bjó til gagnalíkön",
+        "búðu til gagnalíkön",
+        "gera tölvugagnalíkön"
+      ],
+      "hr": [
+        "kreirati model podataka",
+        "stvoriti modele podataka",
+        "stvoriti model podataka"
+      ],
+      "it": [
+        "progettare modelli di dati",
+        "sviluppare modelli di dati",
+        "creare un modello di dati",
+        "creare dei modelli di dati",
+        "ideare modelli di dati"
+      ],
+      "fr": [
+        "mettre en place des modèles de données",
+        "développer des modèles de données",
+        "concevoir des modèles de données",
+        "créer des modèles informatiques",
+        "créer un modèle de données",
+        "établir des modèles de données"
+      ],
+      "hu": [
+        "adatmodelleket tervez",
+        "adatmodellezéssel foglalkozik",
+        "adatmodell-kezelés",
+        "adatmodell-tervezés",
+        "adatmodellezés",
+        "adatmodelleket kezel"
+      ],
+      "es": [
+        "disponer modelos de datos",
+        "construir modelos de datos",
+        "producir modelos de datos",
+        "elaborar modelos de datos",
+        "desarrollar modelos de datos"
+      ],
+      "et": [
+        "andmemudeleid haldama",
+        "andmemudeleid koostama",
+        "andmeid modelleerima",
+        "andmete mudeleid looma"
+      ],
+      "cs": [
+        "produkovat datové modely",
+        "vytvořit datové modely",
+        "spravovat datové modely",
+        "vytvářet datový model"
+      ],
+      "sk": [
+        "tvoriť dátové modely",
+        "vytvárať dátové modely",
+        "zostaviť dátové modely",
+        "vytvoriť dátový model",
+        "vytvoriť model dát",
+        "definovať model údajov",
+        "vytvoriť údajové modely"
+      ],
+      "sl": [
+        "ustvarjati podatkovne modele",
+        "upravljati s podatkovnimi modeli",
+        "organizirati podatkovne modele",
+        "modelirati podatke",
+        "ustvariti modele podatkov",
+        "oblikovati podatkovne modele"
+      ],
+      "pl": [
+        "projektować modele danych",
+        "tworzyć zasady opisujące parametry danych",
+        "zarządzać modelami danych",
+        "tworzyć modele danych dla systemów ICT"
+      ],
+      "ro": [
+        "creează model de date",
+        "creează modele privind datele",
+        "realizează modele de date",
+        "concepe modele de date",
+        "elaborează modele de date"
+      ],
+      "da": [
+        "skabe datamodeller",
+        "oprette datasystemer",
+        "oprette databasemodeller",
+        "lave datamodeller",
+        "administrere datamodeller"
+      ],
+      "nl": [
+        "gegevensmodellen beheren",
+        "datamodellen maken",
+        "gegevensmodellen maken",
+        "datamodellen creëren",
+        "gegevensmodellen opzetten"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Bruke spesifikke teknikker og metoder for å analysere datakravene for en organisasjons forretningsprosesser for å lage modeller for disse dataene, som konseptuelle, logiske og fysiske modeller. Disse modellene har en spesifikk struktur og et særlig format.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Einsatz spezifischer Techniken und Methoden zur Analyse der Datenanforderungen für die Geschäftsprozesse einer Organisation, um konzeptionelle, logische und physische Modelle für diesen Daten zu erstellen. Diese Modelle haben eine spezifische Struktur und ein spezifisches Format.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Käyttää erityisiä tekniikoita ja menetelmiä, joilla analysoidaan organisaation liiketoimintaprosessien tietovaatimuksia, jotta voitaisiin luoda näitä tietoja koskevia malleja, esimerkiksi käsitteellisiä, loogisia ja fyysisiä malleja. Näillä malleilla on erityinen rakenne ja muoto.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Utilizar técnicas e metodologias específicas para analisar os requisitos em matéria de dados dos processos empresariais de uma organização, a fim de criar modelos para estes dados, como sejam modelos conceptuais, lógicos e físicos. Estes modelos têm uma estrutura e um formato específicos.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Използва специфични техники и методики за анализ на изискванията за данни на бизнес процесите на дадена организация, за да се създадат модели за тези данни, например концептуални, логически и физически модели. Тези модели имат специфична структура и формат.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Naudoti specialius metodus ir metodikas organizacijos veiklos procesų duomenų reikalavimams analizuoti, siekiant sukurti tiems duomenims modelius, tokius kaip konceptualūs, loginiai ir fiziniai modeliai. Šie modeliai yra konkrečios struktūros ir formato.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izmantot īpašus paņēmienus un metodes, lai analizētu organizācijas darījumdarbības procesu datu prasības ar mērķi radīt šo datu modeļus, piemēram, konceptuālus, loģiskus un fiziskus modeļus. Šiem modeļiem ir īpaša struktūra un formāts.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Upotrebljavati posebne tehnike i metodologije za analizu zahtjeva podataka u poslovnim procesima organizacije kako bi se izradili modeli za te podatke poput konceptualnih, logičkih i fizičkih modela. Ti modeli imaju posebnu strukturu i oblik.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Utiliser des techniques et méthodologies spécifiques pour analyser les besoins en données des procédés d’une entreprise afin de créer des modèles pour ces données, tels que des modèles conceptuels, logiques et physiques. Ces modèles présentent une structure et un format particuliers.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Speciális technikákat és módszertanokat használ a szervezet üzleti folyamatainak adatszükségletének elemzésére, és ezen adatok modelleinek, például fogalmi, logikai és fizikai modellek készítéséhez. Ezek a modellek sajátos struktúrával és formátummal rendelkeznek.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Використовувати спеціальні методи та методології для аналізу потреб у даних для бізнес-процесів організації з метою створення моделей цих даних, таких як концептуальні, логічні та фізичні моделі. Ці моделі мають певну структуру та формат.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Používať osobitné techniky a metodiky na analýzu požiadaviek na údaje v rámci podnikových procesov organizácie s cieľom vytvoriť modely pre tieto údaje, ako sú koncepčné, logické a fyzikálne modely. Tieto modely majú špecifickú štruktúru a formát.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Uporabiti posebne tehnike in metodologije za analizo podatkov po poslovnih procesih organizacije, da ustvarite modele za te podatke, kot so konceptualni, logični in fizični modeli. Ti modeli imajo določeno strukturo in obliko.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Úsáid a bhaint as teicnící agus modheolaíochtaí sonracha chun anailís a dhéanamh ar na riachtanais sonraí a bhaineann le próisis ghnó eagraíochta chun samhlacha a chruthú do na sonraí sin, amhail múnlaí coincheapa, loighciúla agus fisiceacha. Tá struchtúr agus formáid ar leith ar na múnlaí sin.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Använda specifika tekniker och metoder för att analysera datakraven i en organisations affärsprocesser i syfte att skapa modeller för dessa data, t.ex. konceptuella, logiska och fysiska modeller. De olika modellerna har särskilda strukturer och format.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Χρήση ειδικών τεχνικών και μεθοδολογιών για την ανάλυση των απαιτήσεων δεδομένων των επιχειρηματικών διαδικασιών ενός οργανισμού με σκοπό τη δημιουργία μοντέλων για τα δεδομένα αυτά, όπως εννοιολογικά, λογικά και φυσικά μοντέλα. Τα μοντέλα αυτά έχουν ειδική δομή και μορφή.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Użu ta’ tekniki u metodoloġiji speċifiċi biex jiġu analizzati r-rekwiżiti tad-data tal-proċessi tan-negozju ta’ organizzazzjoni sabiex jinħolqu mudelli għal din id-data, bħal mudelli kunċettwali, loġiċi u fiżiċi. Dawn il-mudelli għandhom struttura u format speċifiċi.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Use specific techniques and methodologies to analyse the data requirements of an organisation's business processes in order to create models for these data, such as conceptual, logical and physical models. These models have a specific structure and format.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Nota skal sértæka tækni og aðferðafræði til að greina kröfur um gögn yfir viðskiptaferla stofnunar í því skyni að skapa líkön fyrir þessi gögn, s.s. hugtaka-, rökfræði og efnisleg líkön. Þessi líkön hafa sérstakt skipulag og snið.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Utilizzare tecniche e metodologie specifiche per analizzare i requisiti in materia di dati dei processi aziendali di un’organizzazione, al fine di creare modelli per tali dati, come modelli concettuali, logici e fisici. Questi modelli hanno una struttura e un formato specifici.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Utilizar técnicas y metodologías específicas para analizar los requisitos de datos de los procesos empresariales de una organización con el fin de crear modelos para estos datos, como modelos conceptuales, lógicos y físicos. Estos modelos tienen una estructura y un formato específicos.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Eritehnikate ja meetodite kasutamine organisatsioonide äriprotsesside andmevajaduste analüüsimiseks, et luua selliste andmete jaoks mudeleid (nt kontseptuaalseid, loogilisi ja füüsilisi mudeleid). Nendel mudelitel on eristruktuur ja vorming.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Používat specifické techniky a metodiky pro analýzu požadavků na data o podnikových procesech organizace za účelem vytvoření datových modelů, jako jsou koncepční, logické a fyzikální modely. Tyto modely mají specifickou strukturu a formát.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "استخدام تقنيات ومنهجيات محددة لتحليل متطلبات البيانات لعمليات المؤسسة التجارية من أجل إنشاء نماذج لتلك البيانات مثل النماذج النظرية والمنطقية والمادية. تتمتع تلك النماذج ببنية وتنسيق محددين.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Stosować określone techniki i metody w celu analizy wymogów dotyczących danych w procesach biznesowych danej organizacji celem tworzenia modeli dla tych danych, takich jak modele koncepcyjne, logiczne i fizyczne. Modele te mają specyficzną strukturę i format.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Anvende særlige teknikker og metoder til at analysere datakravene i en organisations virksomhedsprocesser for at skabe modeller for disse data, såsom konceptuelle, logiske og fysiske modeller. Disse modeller har en særlig struktur og et bestemt format.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Utilizează tehnici și metodologii specifice pentru a analiza cerințele în materie de date ale proceselor operaționale ale unei organizații, în scopul de a crea modele pentru aceste date, cum ar fi modelele conceptuale, logice și fizice. Aceste modele au o structură și un format specific.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Gebruiken van specifieke technieken en methodologieën om de gegevensvereisten van de bedrijfsprocessen van een organisatie te analyseren om modellen voor deze gegevens te creëren, zoals conceptuele, logische en fysieke modellen. Deze modellen hebben een specifieke structuur en opmaak.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fbafa41f-cd05-4109-a649-8b44d306d779&language=en",
+        "uri": "http://data.europa.eu/esco/skill/fbafa41f-cd05-4109-a649-8b44d306d779",
+        "title": "create data models"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77&language=en",
+          "uri": "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77",
+          "title": "managing information",
+          "code": "S2.3.0"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9ff9db9d-d14b-426e-83f3-e7449af6c79f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9ff9db9d-d14b-426e-83f3-e7449af6c79f",
+          "title": "manage data",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fecf8a0d-62c4-4e71-9b03-0f4fc2ad7bf5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/fecf8a0d-62c4-4e71-9b03-0f4fc2ad7bf5",
+          "title": "data models",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8213b4bc-60ce-4ffc-9e00-9758fb2003c6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/8213b4bc-60ce-4ffc-9e00-9758fb2003c6",
+          "title": "monitoring and evaluation officer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a6a0b60f-08da-4faa-bf54-942987efb471&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a6a0b60f-08da-4faa-bf54-942987efb471",
+          "title": "ICT system analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/e1c72b5f-4c5c-487c-a6df-e84b64a51dae&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/e1c72b5f-4c5c-487c-a6df-e84b64a51dae",
+          "title": "ICT system architect"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8c57af09-719c-42b3-be40-6ed4946236cc&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/8c57af09-719c-42b3-be40-6ed4946236cc",
+          "title": "database administrator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/04ba4d6c-957d-417f-bf63-5b9e015a9f86&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/04ba4d6c-957d-417f-bf63-5b9e015a9f86",
+          "title": "software analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/810e5e67-acd5-499a-b307-cf5bea330859&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/810e5e67-acd5-499a-b307-cf5bea330859",
+          "title": "ICT information and knowledge manager"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d",
+          "title": "database developer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341",
+          "title": "computer vision engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/258e46f9-0075-4a2e-adae-1ff0477e0f30&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/258e46f9-0075-4a2e-adae-1ff0477e0f30",
+          "title": "data scientist"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "title": "data engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d3edb8f8-3a06-47a0-8fb9-9b212c006aa2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/d3edb8f8-3a06-47a0-8fb9-9b212c006aa2",
+          "title": "data analyst"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "create data models",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fbafa41f-cd05-4109-a649-8b44d306d779&language=en",
+              "uri": "http://data.europa.eu/esco/skill/fbafa41f-cd05-4109-a649-8b44d306d779"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77",
+            "http://data.europa.eu/esco/skill/9ff9db9d-d14b-426e-83f3-e7449af6c79f"
+          ]
+        },
+        {
+          "title": "manage data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9ff9db9d-d14b-426e-83f3-e7449af6c79f&language=en",
+              "uri": "http://data.europa.eu/esco/skill/9ff9db9d-d14b-426e-83f3-e7449af6c79f"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77"
+          ]
+        },
+        {
+          "title": "managing information",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77&language=en",
+              "uri": "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54"
+          ]
+        },
+        {
+          "title": "managing information",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54&language=en",
+              "uri": "http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+          ]
+        },
+        {
+          "title": "information skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "managing information",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77&language=en",
+              "uri": "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54"
+          ]
+        }
+      ]
+    }
+  }
+}

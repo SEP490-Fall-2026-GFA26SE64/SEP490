@@ -1,0 +1,449 @@
+package com.adaptlearngraph.catalog.infrastructure;
+
+import com.adaptlearngraph.catalog.application.port.in.TargetRoleFilter;
+import com.adaptlearngraph.catalog.application.port.out.TargetRoleRepository;
+import com.adaptlearngraph.catalog.domain.RoleStatus;
+import com.adaptlearngraph.catalog.domain.RoleTrack;
+import com.adaptlearngraph.catalog.domain.Seniority;
+import com.adaptlearngraph.catalog.domain.TargetRole;
+import com.adaptlearngraph.catalog.domain.TargetRoleId;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.types.Node;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+public class Neo4jTargetRoleRepository implements TargetRoleRepository {
+    private final Driver driver;
+    private final ObjectMapper objectMapper;
+
+    public Neo4jTargetRoleRepository(Driver driver) {
+        this.driver = Objects.requireNonNull(driver, "Driver cannot be null");
+        this.objectMapper = new ObjectMapper();
+    }
+
+    @Override
+    public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
+        String cypher = """
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
+                RETURN count(r) > 0 AS exists
+                """;
+        try (var session = driver.session()) {
+            return session.run(cypher, Map.of("organizationId", organizationId, "code", code))
+                    .single()
+                    .get("exists")
+                    .asBoolean();
+        }
+    }
+
+    @Override
+    public boolean existsByOrganizationIdAndCodeAndVersion(String organizationId, String code, String version) {
+        String cypher = """
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId
+                  AND (r.code = $code OR r.baseCode = $code)
+                  AND coalesce(r.version, '1.0') = $version
+                RETURN count(r) > 0 AS exists
+                """;
+        try (var session = driver.session()) {
+            return session.run(cypher, Map.of(
+                    "organizationId", organizationId,
+                    "code", code,
+                    "version", (version != null && !version.isBlank()) ? version.trim() : "1.0"))
+                    .single()
+                    .get("exists")
+                    .asBoolean();
+        }
+    }
+
+    @Override
+    public TargetRole save(TargetRole targetRole) {
+        String rawCode = targetRole.getCode();
+        String roleIdStr = targetRole.getId().toString();
+        String version = (targetRole.getVersion() != null && !targetRole.getVersion().isBlank())
+                ? targetRole.getVersion().trim()
+                : "1.0";
+
+        // Determine unique graph code to satisfy Neo4j's target_role_code constraint when versions or orgs differ
+        String graphCode = resolveGraphCode(roleIdStr, targetRole.getOrganizationId(), rawCode, version);
+
+        String cypher = """
+                MERGE (r:TargetRole {id: $id})
+                ON CREATE SET
+                    r.organizationId = $organizationId,
+                    r.code = $graphCode,
+                    r.baseCode = $rawCode,
+                    r.name = $name,
+                    r.domainCode = $domainCode,
+                    r.familyCode = $familyCode,
+                    r.track = $track,
+                    r.seniority = $seniority,
+                    r.assignedExpertId = $assignedExpertId,
+                    r.description = $description,
+                    r.responsibilities = $responsibilities,
+                    r.status = $status,
+                    r.version = $version,
+                    r.skillTargets = $skillTargets,
+                    r.createdAt = datetime($createdAt),
+                    r.updatedAt = datetime($updatedAt),
+                    r.rejectionReason = $rejectionReason
+                ON MATCH SET
+                    r.code = $graphCode,
+                    r.baseCode = $rawCode,
+                    r.name = $name,
+                    r.domainCode = $domainCode,
+                    r.familyCode = $familyCode,
+                    r.track = $track,
+                    r.seniority = $seniority,
+                    r.assignedExpertId = $assignedExpertId,
+                    r.description = $description,
+                    r.responsibilities = $responsibilities,
+                    r.status = $status,
+                    r.version = $version,
+                    r.skillTargets = $skillTargets,
+                    r.updatedAt = datetime($updatedAt),
+                    r.rejectionReason = $rejectionReason
+                WITH r
+                WHERE $domainCode IS NOT NULL AND $domainCode <> ''
+                MERGE (d:JobDomain {code: $domainCode})
+                ON CREATE SET d.id = randomUUID(), d.name = $domainCode, d.status = 'ACTIVE', d.createdAt = datetime($updatedAt), d.updatedAt = datetime($updatedAt)
+                MERGE (d)-[hr:HAS_ROLE]->(r)
+                ON CREATE SET hr.status = 'ACTIVE', hr.createdAt = datetime($updatedAt), hr.updatedAt = datetime($updatedAt)
+                ON MATCH SET hr.status = 'ACTIVE', hr.updatedAt = datetime($updatedAt)
+                RETURN r
+                """;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", roleIdStr);
+        params.put("organizationId", targetRole.getOrganizationId());
+        params.put("graphCode", graphCode);
+        params.put("rawCode", rawCode);
+        params.put("name", targetRole.getName());
+        params.put("domainCode", targetRole.getDomainCode());
+        params.put("familyCode", targetRole.getFamilyCode());
+        params.put("track", targetRole.getTrack().name());
+        params.put("seniority", targetRole.getSeniority() != null ? targetRole.getSeniority().name() : null);
+        params.put("assignedExpertId", targetRole.getAssignedExpertId());
+        params.put("description", targetRole.getDescription());
+        params.put("responsibilities", targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of());
+        params.put("status", targetRole.getStatus().name());
+        params.put("version", version);
+        params.put("skillTargets", targetRole.getSkillTargets());
+        params.put("createdAt", targetRole.getCreatedAt().toString());
+        params.put("updatedAt", targetRole.getUpdatedAt().toString());
+        params.put("rejectionReason", targetRole.getRejectionReason());
+
+        try (var session = driver.session()) {
+            session.run(cypher, params).consume();
+
+            // Synchronize REQUIRES_SKILL graph edges
+            syncSkillRelationships(session, roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
+
+            return targetRole;
+        }
+    }
+
+    private String resolveGraphCode(String roleId, String orgId, String rawCode, String version) {
+        String checkCypher = """
+                MATCH (r:TargetRole)
+                WHERE r.code = $code AND r.id <> $roleId
+                RETURN count(r) AS count
+                """;
+        try (var session = driver.session()) {
+            int collisionCount = session.run(checkCypher, Map.of("code", rawCode, "roleId", roleId))
+                    .single()
+                    .get("count")
+                    .asInt();
+            if (collisionCount == 0) {
+                return rawCode;
+            }
+            // Code is already claimed by another node, append unique suffix for this version/tenant
+            return rawCode + "#" + orgId + "#v" + version;
+        }
+    }
+
+    private void syncSkillRelationships(org.neo4j.driver.Session session, String roleId, String skillTargetsJson, Instant updatedAt) {
+        List<Map<String, Object>> skillItems = parseSkillTargetsJson(skillTargetsJson);
+        List<String> activeCodes = new ArrayList<>();
+        List<Map<String, Object>> processedSkills = new ArrayList<>();
+
+        for (Map<String, Object> item : skillItems) {
+            String code = Objects.toString(item.get("skillCode"), "").trim();
+            if (!code.isBlank()) {
+                activeCodes.add(code);
+                Map<String, Object> skillData = new HashMap<>();
+                skillData.put("skillCode", code);
+                skillData.put("skillName", Objects.toString(item.get("skillName"), code));
+                skillData.put("skillId", Objects.toString(item.get("skillId"), java.util.UUID.randomUUID().toString()));
+                Number threshold = 70;
+                if (item.get("threshold") instanceof Number n) {
+                    threshold = n;
+                }
+                skillData.put("threshold", threshold.intValue());
+                processedSkills.add(skillData);
+            }
+        }
+
+        // 1. Delete removed REQUIRES_SKILL edges
+        String deleteOldRelCypher = """
+                MATCH (r:TargetRole {id: $roleId})
+                OPTIONAL MATCH (r)-[oldRel:REQUIRES_SKILL]->(s:MicroSkill)
+                WHERE NOT (s.code IN $activeCodes)
+                DELETE oldRel
+                """;
+        session.run(deleteOldRelCypher, Map.of("roleId", roleId, "activeCodes", activeCodes)).consume();
+
+        // 2. Merge current REQUIRES_SKILL edges
+        if (!processedSkills.isEmpty()) {
+            String mergeRelCypher = """
+                    UNWIND $skills AS item
+                    MATCH (r:TargetRole {id: $roleId})
+                    MERGE (s:MicroSkill {code: item.skillCode})
+                    ON CREATE SET s.id = item.skillId, s.name = item.skillName, s.status = 'ACTIVE',
+                        s.createdAt = datetime($updatedAt), s.updatedAt = datetime($updatedAt)
+                    MERGE (r)-[req:REQUIRES_SKILL]->(s)
+                    ON CREATE SET req.createdAt = datetime($updatedAt)
+                    SET req.targetMastery = toFloat(item.threshold) / 100.0,
+                        req.status = 'ACTIVE',
+                        req.updatedAt = datetime($updatedAt)
+                    """;
+            session.run(mergeRelCypher, Map.of(
+                    "roleId", roleId,
+                    "skills", processedSkills,
+                    "updatedAt", updatedAt.toString()
+            )).consume();
+        }
+    }
+
+    @Override
+    public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
+        StringBuilder cypher = new StringBuilder("""
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId
+                """);
+        Map<String, Object> params = new HashMap<>();
+        params.put("organizationId", organizationId);
+
+        if (filter.track() != null) {
+            cypher.append(" AND r.track = $track");
+            params.put("track", filter.track().name());
+        }
+        if (filter.status() != null) {
+            cypher.append(" AND r.status = $status");
+            params.put("status", filter.status().name());
+        }
+        if (filter.domainCode() != null && !filter.domainCode().isBlank()) {
+            cypher.append(" AND r.domainCode = $domainCode");
+            params.put("domainCode", filter.domainCode().trim().toUpperCase());
+        }
+        if (filter.assignedExpertId() != null && !filter.assignedExpertId().isBlank()) {
+            cypher.append(" AND r.assignedExpertId = $assignedExpertId");
+            params.put("assignedExpertId", filter.assignedExpertId().trim());
+        }
+        if (filter.search() != null && !filter.search().isBlank()) {
+            cypher.append(" AND (toLower(r.name) CONTAINS toLower($search) OR toLower(r.code) CONTAINS toLower($search) OR (r.baseCode IS NOT NULL AND toLower(r.baseCode) CONTAINS toLower($search)))");
+            params.put("search", filter.search().trim());
+        }
+
+        cypher.append("""
+                 OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+                 WITH r, collect(CASE WHEN s IS NOT NULL THEN {
+                     skillId: s.id,
+                     skillCode: s.code,
+                     skillName: s.name,
+                     threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100))
+                 } END) AS graphSkills
+                 RETURN r, graphSkills ORDER BY r.name ASC
+                """);
+
+        try (var session = driver.session()) {
+            var result = session.run(cypher.toString(), params);
+            List<TargetRole> roles = new ArrayList<>();
+            while (result.hasNext()) {
+                Record record = result.next();
+                roles.add(mapRecordToTargetRole(record));
+            }
+            return roles;
+        }
+    }
+
+    @Override
+    public Optional<TargetRole> findById(String organizationId, TargetRoleId id) {
+        String cypher = """
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId AND r.id = $id
+                OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+                WITH r, collect(CASE WHEN s IS NOT NULL THEN {
+                    skillId: s.id,
+                    skillCode: s.code,
+                    skillName: s.name,
+                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100))
+                } END) AS graphSkills
+                RETURN r, graphSkills
+                """;
+        try (var session = driver.session()) {
+            var result = session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString()));
+            if (result.hasNext()) {
+                return Optional.of(mapRecordToTargetRole(result.next()));
+            }
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<TargetRole> findByCode(String organizationId, String code) {
+        String cypher = """
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
+                OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+                WITH r, collect(CASE WHEN s IS NOT NULL THEN {
+                    skillId: s.id,
+                    skillCode: s.code,
+                    skillName: s.name,
+                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100))
+                } END) AS graphSkills
+                RETURN r, graphSkills
+                """;
+        try (var session = driver.session()) {
+            var result = session.run(cypher, Map.of("organizationId", organizationId, "code", code));
+            if (result.hasNext()) {
+                return Optional.of(mapRecordToTargetRole(result.next()));
+            }
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public void deleteById(String organizationId, TargetRoleId id) {
+        String cypher = """
+                MATCH (r:TargetRole)
+                WHERE r.organizationId = $organizationId AND r.id = $id
+                DETACH DELETE r
+                """;
+        try (var session = driver.session()) {
+            session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString())).consume();
+        }
+    }
+
+    private TargetRole mapRecordToTargetRole(Record record) {
+        Node node = record.get("r").asNode();
+        List<Object> rawGraphSkills = record.get("graphSkills").asList();
+        List<Map<String, Object>> graphSkills = new ArrayList<>();
+        for (Object item : rawGraphSkills) {
+            if (item instanceof Map<?, ?> m) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) m;
+                graphSkills.add(map);
+            }
+        }
+        return mapNodeToTargetRole(node, graphSkills);
+    }
+
+    private TargetRole mapNodeToTargetRole(Node node, List<Map<String, Object>> graphSkills) {
+        String idStr = node.get("id").asString();
+        String orgId = node.get("organizationId").asString();
+        String code = node.containsKey("baseCode") && !node.get("baseCode").isNull()
+                ? node.get("baseCode").asString()
+                : node.get("code").asString();
+        // Strip synthetic unique suffix if present
+        if (code.contains("#")) {
+            code = code.substring(0, code.indexOf("#"));
+        }
+
+        String name = node.get("name").asString();
+        String domainCode = node.containsKey("domainCode") && !node.get("domainCode").isNull()
+                ? node.get("domainCode").asString()
+                : "ICT";
+        String familyCode = node.containsKey("familyCode") && !node.get("familyCode").isNull()
+                ? node.get("familyCode").asString()
+                : "JAVA_BACKEND";
+        String trackStr = node.containsKey("track") && !node.get("track").isNull()
+                ? node.get("track").asString()
+                : "PROFESSIONAL";
+        Seniority seniority = node.containsKey("seniority") && !node.get("seniority").isNull()
+                ? Seniority.fromString(node.get("seniority").asString())
+                : null;
+        String assignedExpertId = node.containsKey("assignedExpertId") && !node.get("assignedExpertId").isNull()
+                ? node.get("assignedExpertId").asString()
+                : "";
+        String desc = node.containsKey("description") && !node.get("description").isNull()
+                ? node.get("description").asString()
+                : "";
+        List<String> responsibilities = node.containsKey("responsibilities") && !node.get("responsibilities").isNull()
+                ? node.get("responsibilities").asList(org.neo4j.driver.Value::asString)
+                : List.of();
+        String statusStr = node.containsKey("status") && !node.get("status").isNull()
+                ? node.get("status").asString()
+                : "DRAFT";
+
+        Instant createdAt = node.containsKey("createdAt") && !node.get("createdAt").isNull()
+                ? node.get("createdAt").asZonedDateTime().toInstant()
+                : Instant.now();
+        Instant updatedAt = node.containsKey("updatedAt") && !node.get("updatedAt").isNull()
+                ? node.get("updatedAt").asZonedDateTime().toInstant()
+                : Instant.now();
+
+        String version = node.containsKey("version") && !node.get("version").isNull()
+                ? node.get("version").asString()
+                : "1.0";
+
+        String rejectionReason = node.containsKey("rejectionReason") && !node.get("rejectionReason").isNull()
+                ? node.get("rejectionReason").asString()
+                : null;
+
+        String skillTargets;
+        if (graphSkills != null && !graphSkills.isEmpty()) {
+            try {
+                skillTargets = objectMapper.writeValueAsString(graphSkills);
+            } catch (Exception e) {
+                skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
+                        ? node.get("skillTargets").asString()
+                        : "[]";
+            }
+        } else {
+            skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
+                    ? node.get("skillTargets").asString()
+                    : "[]";
+        }
+
+        return new TargetRole(
+                TargetRoleId.fromString(idStr),
+                orgId,
+                code,
+                name,
+                domainCode,
+                familyCode,
+                RoleTrack.fromString(trackStr),
+                seniority,
+                assignedExpertId,
+                desc,
+                responsibilities,
+                RoleStatus.fromString(statusStr),
+                version,
+                skillTargets,
+                createdAt,
+                updatedAt,
+                rejectionReason);
+    }
+
+    private List<Map<String, Object>> parseSkillTargetsJson(String json) {
+        if (json == null || json.isBlank() || json.trim().equals("[]")) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+}

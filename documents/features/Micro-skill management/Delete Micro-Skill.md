@@ -2,22 +2,26 @@
 
 **Function ID:** REQ-012-F04  
 **Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Status:** Implemented  
+**Test Evidence:** [unit/REQ-012](../../testing/unit/REQ-012-micro-skill-management.md), [integration/REQ-012](../../testing/integration/REQ-012-micro-skill-management.md), [system/REQ-012](../../testing/system/REQ-012-micro-skill-management.md)  
 **Feature:** [Micro-Skill Management](README.md)
 
 ## Description
 
-Remove a micro-skill from use within authorized scope without breaking recorded assessments or graph references.
+Remove a micro-skill from use within authorized scope without breaking recorded assessments, role requirements, or prerequisite relationships.
 
-**Input:** Selected micro-skill and deletion request.  
-**Outcome:** Deletion, archival, or a blocked request according to the policy to be agreed.
+**Input:** Selected micro-skill ID and deletion request.  
+**Outcome:** Physical deletion of unused node, or rejection with HTTP 409 Conflict if actively referenced.
 
-## Open Decisions
+## Confirmed Rules
 
-- Hard deletion for unused skills versus archival for referenced skills.
-- Dependency checks, confirmation, and required replacement mappings.
-- Restore support and the effect on active roles/pathways.
+- **Referential Integrity Guard:** Prior to deletion, the system queries Neo4j for:
+  1. Role requirement edges: `MATCH (:TargetRole)-[:REQUIRES_SKILL]->(s:MicroSkill {id: $skillId})`
+  2. Prerequisite edges: `MATCH (s:MicroSkill {id: $skillId})-[:PREREQUISITE_OF]-()`
+  If any reference exists, deletion is rejected with `MicroSkillInUseException` (HTTP `409 Conflict`).
+- **Unreferenced Deletion:** If zero references exist, node is cleanly detached and deleted from Neo4j.
+- **REST Endpoint:** `DELETE /api/v1/organizations/{organizationId}/micro-skills/{skillId}`
 
 ## Acceptance Baseline
 
-A deletion cannot silently leave invalid role, module, question, or historical evidence references.
+A deletion cannot silently leave invalid role, prerequisite, or historical evidence references.

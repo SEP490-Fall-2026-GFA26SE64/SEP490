@@ -1,0 +1,28 @@
+{
+  "nodeCounts": {
+    "TargetRoles": 4,
+    "Levels": 12,
+    "Competencies": 36,
+    "MicroSkills": 64,
+    "Courses": 36,
+    "LearningModules": 72
+  },
+  "relationshipCounts": {
+    "HAS_LEVEL": 12,
+    "REQUIRES_COMPETENCY": 36,
+    "REQUIRES_SKILL": 201,
+    "HAS_COURSE": 36,
+    "HAS_MODULE": 72,
+    "TEACHES": 201,
+    "HAS_PREREQUISITE": 20
+  },
+  "totalRelationships": 578,
+  "publishableRecords": 0,
+  "moduleFiles": 72,
+  "topicFiles": 12,
+  "skillGraphAcyclic": true,
+  "moduleOrderGraphAcyclicPerLevel": true,
+  "original558EdgesPreserved": true,
+  "rubricVersion": "1.1",
+  "validation": "PASS"
+}
