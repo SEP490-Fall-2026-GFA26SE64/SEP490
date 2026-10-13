@@ -1,0 +1,446 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Fed8de897-adbe-4f0e-b4d2-534953e64c72&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72",
+    "title": "integrate system components",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "integrere systemkomponenter",
+      "de": "Systemkomponenten integrieren",
+      "fi": "integroida järjestelmän komponentit",
+      "pt": "integrar componentes de sistemas",
+      "bg": "интегриране на системни компоненти",
+      "lt": "integruoti sistemų komponentus",
+      "lv": "sistēmas komponentu integrācija",
+      "hr": "integrirati komponente sustava",
+      "fr": "intégrer les composants d’un système",
+      "hu": "rendszerkomponenseket integrál",
+      "uk": "інтегрувати системні компоненти",
+      "sk": "integrovať systémové komponenty",
+      "sl": "povezovati sestavne dele sistema",
+      "ga": "comhpháirteanna córais a chomhtháthú",
+      "sv": "integrera systemkomponenter",
+      "mt": "integrazzjoni tal-komponenti tas-sistema",
+      "el": "ενσωμάτωση συνιστωσών συστήματος",
+      "en": "integrate system components",
+      "is": "samþætta kerfishluta",
+      "it": "integrare componenti di sistema",
+      "es": "integrar componentes del sistema",
+      "et": "süsteemikomponente integreerima",
+      "cs": "integrovat systémové součásti",
+      "ar": "دمج مكونات النظام",
+      "pl": "integrować elementy składowe systemu",
+      "da": "integrere systemkomponenter",
+      "ro": "integrează componente de sistem",
+      "nl": "systeemcomponenten integreren"
+    },
+    "alternativeLabel": {
+      "el": [
+        "εντάσσω συνιστώσες στο σύστημα",
+        "ενσωματώνω υλισμικό και λογισμικό",
+        "συναρμολογώ το σύστημα",
+        "ενσωματώνω συνιστώσες λογισμικού και υλισμικού",
+        "ρυθμίζω το σύστημα"
+      ],
+      "en": [
+        "assemble system",
+        "setup system"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Velge og bruke integrasjonsteknikker og verktøy for å planlegge og implementere integrasjon av maskinvare- og programvaremoduler og komponenter i et system.\n\t",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Auswahl und Anwendung von Integrationstechniken und -werkzeugen für die Planung und Durchführung der Integration von Hardware- und Softwaremodulen und -komponenten in ein System.\n\t",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Valita ja käyttää integrointitekniikoita ja -välineitä, joilla voidaan suunnitella ja toteuttaa laitteisto- ja ohjelmistomoduulien ja -komponenttien integrointi järjestelmään.\n\t",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Selecionar e utilizar técnicas e ferramentas de integração para planear e implementar a integração de módulos e componentes de hardware e software num sistema.\n\t",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Подбира и използва интеграционни методи и инструменти за планиране и осъществяване на интегрирането на хардуерни и софтуерни модули и компоненти в системата.\n\t",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Pasirinkti ir naudoti integravimo metodus ir priemones, kad būtų galima planuoti ir įgyvendinti aparatinės ir programinės įrangos modulių ir komponentų integravimą į sistemą.\n\t",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Odabirati i upotrebljavati tehnike integracije i alate za planiranje i provedbu integracije hardverskih i softverskih modula i komponenata u sustav.\n\t",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izvēlēties un izmantot integrācijas metodes un rīkus, lai plānotu un īstenotu aparatūras un programmatūras moduļu un komponentu integrāciju sistēmā.\n\t",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Sélectionner et utiliser des techniques et outils d’intégration pour planifier et mettre en œuvre l’intégration des modules et composants matériels et logiciels dans un système.\n\t",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Integrációs technikákat és eszközöket választ ki és alkalmaz a hardver- és szoftvermodulok és alkatrészek rendszer integrálásának megtervezéséhez és végrehajtásához.\n\t",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Обирати й використовувати способи й інструменти інтеграції для планування та запровадження інтеграції в систему апаратних і програмних модулів та компонентів.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vybrať a používať integračné techniky a nástroje na plánovanie a vykonávanie integrácie hardvérových a softvérových modulov a komponentov do systému.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Izbrati in uporabiti integracijske tehnike in orodja za načrtovanje in izvajanje povezovanja modulov strojne in programske opreme ter komponent v sistem.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Teicnící agus uirlisí comhtháthaithe a roghnú agus a úsáid chun comhtháthú na modúl crua‑earraí agus bogearraí agus comhpháirteanna i gcóras a phleanáil agus a chur chun feidhme.\n   ",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Välja ut och använda integrationstekniker och verktyg för att planera och genomföra integrering av maskin- och programvarumoduler och komponenter i ett system.\n\t",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Επιλογή και χρήση τεχνικών και εργαλείων ενσωμάτωσης για τον σχεδιασμό και την εφαρμογή της ενσωμάτωσης μονάδων υλικού και λογισμικού και στοιχείων σε ένα σύστημα.\n\t",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Għażla u użu ta’ tekniki u għodod ta’ integrazzjoni biex tiġi ppjanata u implimentata l-integrazzjoni ta’ moduli u komponenti ta’ hardware u software f’sistema.\n\t",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Select and use integration techniques and tools to plan and implement integration of hardware and software modules and components in a system.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Velja og nota aðferðir til að samþætta tækni og verkfæri til að skipuleggja og koma í framkvæmd samþættingu vélbúnaðar- og hugbúnaðareininga í kerfi.\n\t",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Selezionare e utilizzare tecniche e strumenti di integrazione per pianificare e attuare l'integrazione di moduli e componenti hardware e software in un sistema.\n\t",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Seleccionar y utilizar técnicas y herramientas de integración para planificar y llevar a cabo la integración de módulos y componentes de equipos informáticos y software en un sistema.\n\t",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Integratsioonitehnikate ja vahendite valimine ja kasutamine, et kavandada ja rakendada riistvara- ja tarkvaramoodulite ja komponentide integreerimist süsteemis.\n\t",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Zajišťovat výběr a využití technik a nástrojů integrace s cílem naplánovat a provést integraci hardwarových a softwarových modulů a součástí do systému.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "اختيار تقنيات وأدوات الدمج واستخدامها لتخطيط وتحقيق دمج وحدات وعناصر الأجهزة والبرامج في النظام.\n   ",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Wybierać i stosować techniki i narzędzia integracji w celu zaplanowania i wdrożenia integracji modułów i komponentów sprzętu i oprogramowania w systemie.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Selectează și utilizează tehnici și instrumente de integrare pentru a planifica și a pune în aplicare integrarea modulelor și a componentelor hardware și software într-un sistem.\n\t",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Udvælge og anvende integrationsteknikker og -redskaber til at planlægge og gennemføre integration af hardware- og softwaremoduler og komponenter i et system.\n\t",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Integratietechnieken en -hulpmiddelen selecteren en gebruiken om de integratie van hardware- en softwaremodules en -componenten in een systeem te plannen en uit te voeren.\n\t",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72&language=en",
+        "uri": "http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72",
+        "title": "integrate system components"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20",
+          "title": "setting up computer systems",
+          "code": "S5.2.1"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4b51e76e-9e8a-455f-a289-5b48246345c4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4b51e76e-9e8a-455f-a289-5b48246345c4",
+          "title": "hardware components",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6fa1c2c0-a012-4ca0-9642-e01569ba322c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6fa1c2c0-a012-4ca0-9642-e01569ba322c",
+          "title": "ICT system integration",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a44a1dc5-be08-4840-8bd5-770c4ac1ca6d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a44a1dc5-be08-4840-8bd5-770c4ac1ca6d",
+          "title": "ICT security technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d84bf1d7-ef99-40c4-a407-3791d6531b44&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/d84bf1d7-ef99-40c4-a407-3791d6531b44",
+          "title": "telecommunications engineering technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bd9d395a-d587-45c6-8d72-ceef226df9e1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bd9d395a-d587-45c6-8d72-ceef226df9e1",
+          "title": "ICT system integration consultant"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/81480b40-a318-47f3-9b2c-56b69ed67d95&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/81480b40-a318-47f3-9b2c-56b69ed67d95",
+          "title": "ICT network administrator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/7b4744a8-a4e3-4104-9b74-4ec54108af7b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/7b4744a8-a4e3-4104-9b74-4ec54108af7b",
+          "title": "microelectronics designer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/456ed487-02f2-45c9-9213-d0fd8e9a069d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/456ed487-02f2-45c9-9213-d0fd8e9a069d",
+          "title": "ICT application configurator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/e1c72b5f-4c5c-487c-a6df-e84b64a51dae&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/e1c72b5f-4c5c-487c-a6df-e84b64a51dae",
+          "title": "ICT system architect"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/98c3d8f8-e3a8-49b7-9e58-236f25a6f6a0&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/98c3d8f8-e3a8-49b7-9e58-236f25a6f6a0",
+          "title": "system configurator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7",
+          "title": "application engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/07e60525-1aad-4099-aaf3-2c7014c92212&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/07e60525-1aad-4099-aaf3-2c7014c92212",
+          "title": "integration engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9e2e6e1e-363b-4e1b-a673-7bc0f7343300&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/9e2e6e1e-363b-4e1b-a673-7bc0f7343300",
+          "title": "ICT system administrator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3b1ea27c-781c-41eb-821f-214285260dd2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3b1ea27c-781c-41eb-821f-214285260dd2",
+          "title": "ICT change and configuration manager"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7",
+          "title": "ICT application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ec5b72d1-0206-4179-9abd-570c66bc44b9&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ec5b72d1-0206-4179-9abd-570c66bc44b9",
+          "title": "e-learning developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d",
+          "title": "database developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9729c0f3-c9bc-482e-ac59-a82ec3b67ba3&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/9729c0f3-c9bc-482e-ac59-a82ec3b67ba3",
+          "title": "data centre operator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
+          "title": "industrial mobile devices software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02",
+          "title": "embedded systems software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/423f4021-322b-4257-9a4e-d6ee5d166fbc&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/423f4021-322b-4257-9a4e-d6ee5d166fbc",
+          "title": "marine upholsterer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c",
+          "title": "mobile application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c932109b-3e4f-43aa-b346-1ea421da0adb&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c932109b-3e4f-43aa-b346-1ea421da0adb",
+          "title": "aircraft interior technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/02eb0ae6-ecdd-4602-9c8e-60ffe6dbe1e2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/02eb0ae6-ecdd-4602-9c8e-60ffe6dbe1e2",
+          "title": "telecommunications engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81",
+          "title": "digital games developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+          "title": "software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "title": "embedded systems security engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135",
+          "title": "ICT system developer"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "integrate system components",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72&language=en",
+              "uri": "http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20"
+          ]
+        },
+        {
+          "title": "setting up computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20&language=en",
+              "uri": "http://data.europa.eu/esco/skill/f839b1da-78b6-4466-86f4-a5798821ea20"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1"
+          ]
+        },
+        {
+          "title": "setting up and protecting computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}
