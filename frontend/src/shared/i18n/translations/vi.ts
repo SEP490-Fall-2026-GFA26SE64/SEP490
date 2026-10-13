@@ -3,6 +3,7 @@ import type { TranslationKeys } from './en'
 export const vi: TranslationKeys = {
   nav: {
     overview: 'Tổng quan',
+    upskilling: 'Nâng cao kỹ năng',
     targetRoles: 'Vai trò mục tiêu',
     pathway: 'Lộ trình thích ứng',
     gapAnalysis: 'Phân tích khoảng cách',

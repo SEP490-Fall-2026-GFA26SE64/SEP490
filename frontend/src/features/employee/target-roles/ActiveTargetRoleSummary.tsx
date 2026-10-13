@@ -1,7 +1,9 @@
-import { AlertCircle, CheckCircle2, RefreshCw, Target } from 'lucide-react'
+import * as React from 'react'
+import { AlertCircle, CheckCircle2, ChevronDown, RefreshCw, Target } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { cn } from '../../../shared/lib/utils'
 import { useTargetRoleSelection } from './targetRoleSelectionQueries'
 
 const selectedAtFormatter = new Intl.DateTimeFormat(undefined, {
@@ -11,6 +13,7 @@ const selectedAtFormatter = new Intl.DateTimeFormat(undefined, {
 
 export function ActiveTargetRoleSummary() {
   const selection = useTargetRoleSelection()
+  const [isExpanded, setIsExpanded] = React.useState(false)
 
   if (selection.isPending) {
     return (
@@ -57,7 +60,7 @@ export function ActiveTargetRoleSummary() {
           <div>
             <p className="text-sm font-semibold text-foreground">No active target role</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Choose an available role from the catalog to establish your learning target.
+              Choose an available role from the catalog below to establish your career target.
             </p>
           </div>
         </CardContent>
@@ -68,37 +71,85 @@ export function ActiveTargetRoleSummary() {
   const { roleSnapshot } = selection.data
 
   return (
-    <Card className="border-success/40" aria-labelledby="active-target-role-heading">
-      <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 border-b border-border/70 pb-4">
-        <div>
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge variant="success" className="gap-1 text-[10px]">
-              <CheckCircle2 size={12} />
-              Active target role
-            </Badge>
-            <Badge variant="outline" className="text-[10px]">Revision {selection.data.targetRevision}</Badge>
+    <Card className="border-border bg-card shadow-2xs transition-all duration-150" aria-labelledby="active-target-role-heading">
+      <CardHeader
+        className={cn(
+          "flex-row items-center justify-between gap-3 space-y-0 py-3.5 px-5 transition-colors cursor-pointer select-none",
+          isExpanded && "border-b border-border/70"
+        )}
+        onClick={() => setIsExpanded((prev) => !prev)}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Target size={16} />
           </div>
-          <CardTitle id="active-target-role-heading" className="text-lg">{roleSnapshot.name}</CardTitle>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">{roleSnapshot.code}</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle id="active-target-role-heading" className="text-sm sm:text-base font-bold text-foreground">
+                Active Target Role
+              </CardTitle>
+              <Badge variant="success" className="gap-1 text-[10px] font-semibold py-0.5 whitespace-nowrap">
+                <CheckCircle2 size={11} />
+                <span>{roleSnapshot.name}</span>
+              </Badge>
+              <Badge variant="outline" className="text-[10px] whitespace-nowrap">
+                Revision {selection.data.targetRevision}
+              </Badge>
+            </div>
+            {!isExpanded && (
+              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">{roleSnapshot.track}</span>
+                <span>•</span>
+                <span>Seniority: {roleSnapshot.seniority}</span>
+              </div>
+            )}
+          </div>
         </div>
-        <Target size={22} className="shrink-0 text-success" aria-hidden="true" />
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsExpanded((prev) => !prev)
+            }}
+            rightIcon={
+              <ChevronDown
+                size={14}
+                className={cn("transition-transform duration-200", isExpanded && "rotate-180")}
+              />
+            }
+            className="text-xs text-muted-foreground hover:text-foreground h-7.5 px-2 cursor-pointer whitespace-nowrap"
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'Collapse active target role' : 'Expand active target role'}
+          >
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="grid gap-4 pt-4 text-xs sm:grid-cols-3">
-        <div>
-          <p className="text-muted-foreground">Track</p>
-          <p className="mt-1 font-semibold text-foreground">{roleSnapshot.track}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground">Seniority</p>
-          <p className="mt-1 font-semibold text-foreground">{roleSnapshot.seniority}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground">Selected</p>
-          <p className="mt-1 font-semibold text-foreground">
-            {selectedAtFormatter.format(new Date(selection.data.selectedAt))}
-          </p>
-        </div>
-      </CardContent>
+
+      {isExpanded && (
+        <CardContent className="p-4 sm:p-5 space-y-3">
+          <div className="grid gap-4 text-xs sm:grid-cols-3">
+            <div>
+              <p className="text-muted-foreground">Track</p>
+              <p className="mt-1 font-semibold text-foreground">{roleSnapshot.track}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Seniority</p>
+              <p className="mt-1 font-semibold text-foreground">{roleSnapshot.seniority}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Selected</p>
+              <p className="mt-1 font-semibold text-foreground">
+                {selectedAtFormatter.format(new Date(selection.data.selectedAt))}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      )}
     </Card>
   )
 }

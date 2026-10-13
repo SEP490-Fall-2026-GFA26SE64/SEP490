@@ -1,6 +1,7 @@
 export const en = {
   nav: {
     overview: 'Overview',
+    upskilling: 'Upskilling',
     targetRoles: 'Target Roles',
     pathway: 'Adaptive Pathway',
     gapAnalysis: 'Gap Analysis',

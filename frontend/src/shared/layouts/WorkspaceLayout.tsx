@@ -166,8 +166,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <LayoutDashboard size={15} />,
       },
       {
-        label: t('nav.targetRoles'),
-        href: '/employee/target-roles',
+        label: t('nav.upskilling'),
+        href: '/employee/upskilling',
         icon: <Target size={15} />,
       },
       {
@@ -308,8 +308,18 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/'
       )
     }
-    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
-      return path === '/employee/target-roles' || path === '/learner/target-roles'
+    if (
+      itemHref === '/employee/upskilling' ||
+      itemHref === '/employee/target-roles' ||
+      itemHref === '/learner/target-roles' ||
+      itemHref === '/learner/upskilling'
+    ) {
+      return (
+        path === '/employee/upskilling' ||
+        path === '/employee/target-roles' ||
+        path === '/learner/target-roles' ||
+        path === '/learner/upskilling'
+      )
     }
     if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
       return path === '/employee/pathway' || path === '/learner/pathway'
@@ -397,7 +407,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const brandHomeUrl = isGuest
     ? '/packages'
     : isEmployee
-    ? '/employee/target-roles'
+    ? '/employee/upskilling'
     : isExpert
     ? '/expert/assigned-roles'
     : isLdManager
@@ -431,13 +441,13 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             {isEmployee && (
               <>
                 <Link
-                  to="/employee/target-roles"
+                  to="/employee/upskilling"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
-                    path === '/employee/target-roles'
-                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                    path === '/employee/upskilling' || path === '/employee/target-roles'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
-                  title="Home (Target Roles)"
+                  title="Home (Upskilling)"
                 >
                   Home
                 </Link>
@@ -445,7 +455,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                   to="/employee/pathway"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
                     path === '/employee/pathway'
-                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
                   title="My Learning (Adaptive Pathway)"

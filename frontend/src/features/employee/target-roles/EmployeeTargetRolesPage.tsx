@@ -34,30 +34,31 @@ export function EmployeeTargetRolesPage() {
 
   return (
     <WorkspaceLayout>
-      <div className="space-y-6">
-        <PageHeader
-          title="Skills & Target Roles"
-          description="Explore recommended micro-skills to upskill or set and manage your active target role."
-          icon={<Target size={24} />}
-        />
-
+      <div className="space-y-6 pb-16">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="bg-muted/80 p-1 rounded-xl max-w-md border border-border">
-            <TabsTrigger
-              value="upskill"
-              className="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg"
-            >
-              <Sparkles size={15} className="text-primary" />
-              <span>Skills</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="target-roles"
-              className="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg"
-            >
-              <Target size={15} className="text-primary" />
-              <span>Roles</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Actions Bar: Right-aligned tabs */}
+          <PageHeader
+            actions={
+              <div className="w-full flex items-center justify-end gap-2.5">
+                <TabsList className="w-auto bg-muted/70 p-1">
+                  <TabsTrigger
+                    value="upskill"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
+                  >
+                    <Sparkles size={15} className="text-primary" />
+                    <span>Skills</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="target-roles"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
+                  >
+                    <Target size={15} className="text-primary" />
+                    <span>Roles</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            }
+          />
 
           <TabsContent value="upskill" className="mt-6 space-y-6">
             <ActiveSkillSummary />

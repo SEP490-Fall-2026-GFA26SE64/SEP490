@@ -49,7 +49,8 @@ export default function App() {
             {/* 1. Employee routes (Primary) */}
             <Route path="/employee" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/employee/overview" element={<EmployeeOverviewPage />} />
-            <Route path="/employee/target-roles" element={<EmployeeTargetRolesPage />} />
+            <Route path="/employee/upskilling" element={<EmployeeTargetRolesPage />} />
+            <Route path="/employee/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/employee/gap-analysis" element={<CompetencyGapAnalysisPage />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
@@ -61,7 +62,8 @@ export default function App() {
             {/* Backwards compatibility for Learner routes */}
             <Route path="/learner" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/overview" element={<Navigate to="/employee/overview" replace />} />
-            <Route path="/learner/target-roles" element={<Navigate to="/employee/target-roles" replace />} />
+            <Route path="/learner/upskilling" element={<Navigate to="/employee/upskilling" replace />} />
+            <Route path="/learner/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/learner/gap-analysis" element={<Navigate to="/employee/gap-analysis" replace />} />
             <Route path="/learner/assessment" element={<Navigate to="/employee/assessment" replace />} />

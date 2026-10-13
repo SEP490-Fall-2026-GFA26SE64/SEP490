@@ -12,7 +12,7 @@
   z-index: 40;
   background: hsl(var(--card));
   border-bottom: 1px solid hsl(var(--border));
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 2px 6px -2px rgba(15, 23, 42, 0.05);
 }
 
 /* Single Topbar: Brand (Left), Nav Tabs (Center), and Account (Far-Right) */
@@ -88,7 +88,8 @@
   color: hsl(var(--primary));
   font-weight: 600;
   background-color: hsl(var(--secondary));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .workspace-nav-tab svg {
@@ -106,14 +107,14 @@
   gap: 8px;
   padding: 4px 10px;
   border-radius: 12px;
-  background-color: hsl(var(--card));
+  background-color: hsl(var(--muted) / 0.5);
   border: 1px solid hsl(var(--border));
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .workspace-account-btn:hover {
-  background-color: hsl(var(--muted) / 0.6);
+  background-color: hsl(var(--muted));
   border-color: hsl(var(--border));
 }
 
@@ -148,7 +149,7 @@
   position: sticky;
   top: 58px;
   height: calc(100vh - 58px);
-  background: hsl(var(--card));
+  background: hsl(var(--muted) / 0.65);
   border-right: 1px solid hsl(var(--border));
   display: flex;
   flex-direction: column;
@@ -201,14 +202,16 @@
 
 .workspace-sidebar-link:hover {
   color: hsl(var(--foreground));
-  background-color: hsl(var(--muted) / 0.7);
+  background-color: hsl(var(--card));
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .workspace-sidebar-link.active {
   color: hsl(var(--primary));
   font-weight: 600;
   background-color: hsl(var(--secondary));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid hsl(var(--primary) / 0.25);
+  box-shadow: 0 1px 3px rgba(234, 88, 12, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .sidebar-divider {
@@ -249,7 +252,7 @@
   padding: 16px 28px;
   font-size: 12px;
   color: hsl(var(--muted-foreground));
-  background: hsl(var(--card));
+  background: hsl(var(--muted) / 0.45);
 }
 
 /* Mobile & Tablet Optimizations */
