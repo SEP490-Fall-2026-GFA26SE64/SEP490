@@ -1,0 +1,43 @@
+# Middle Test design and planning - Module 1: Independent implementation
+
+Module ID: MOD-QA-M-DESIGN-01. Content version: 1.1. Review: NEEDS_EXPERT_REVIEW.
+
+## Learn
+
+Read [the local lesson: Selecting informative test cases](../topics/QA-DESIGN.md). It includes a conceptual explanation, worked example and a self-check with an answer. Then use the linked official resources for additional detail.
+
+## Skill focus
+
+- **MS-QA01: plan software testing** — Set test scope, approach, resources and completion conditions.
+- **MS-QA02: develop ICT test suite** — Organise test cases into a suite linked to intended behaviours.
+- **MS-QA08: Perform structured exploratory testing** — Investigate software using a defined exploratory testing charter.
+
+## Study and practice sequence
+
+1. Read the linked local explanation and work through its example.
+2. Answer the self-check before looking at the answer.
+3. Inspect the official learning resources below for the techniques used in this module.
+4. Complete the assigned tasks below and record checks and evidence.
+
+## Assigned tasks and submission evidence
+
+
+In Test design and planning, demonstrate the following middle tasks:
+
+- MS-QA01: Define scope, approach, resources and completion conditions independently based on product risks.
+- MS-QA02: Design a maintainable test suite independently; justify coverage and remove redundant cases.
+- MS-QA08: Design and run exploratory sessions independently based on risks and prior findings.
+
+Submit evidence:
+
+- MS-QA01: Test plan, risk mapping, resource assumptions and completion criteria.
+- MS-QA02: Test suite, requirement traceability, coverage rationale and review results.
+- MS-QA08: Charters, session notes, findings and follow-up rationale.
+
+## Official learning resources
+
+- [ISTQB CTFL 4.0.1 syllabus](https://istqb.org/?download_id=3345&sdm_process_download=1)
+
+## Assessment boundary
+
+Completion is not an attainment decision. Rubric 1.2, level-specific evidence and approved catalog dependencies are required for official assessment. This lesson has not yet received that approval.

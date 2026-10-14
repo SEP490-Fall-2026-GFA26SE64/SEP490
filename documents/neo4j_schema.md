@@ -1,8 +1,8 @@
-# NEO4J SCHEMA V5 — GIẢI THÍCH NODE VÀ RELATIONSHIP
+# Neo4j ontology — catalog 0.7.0
 
 ## Current Scope Alignment
 
-**Product authority:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-14. This document inventories the existing V5 technical schema; it does not assert that all revised product concepts are represented or implemented.
+**Product authority:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-14. This document separates the proposed ontology 0.7.0 from the existing V5 runtime schema; it does not assert that all revised product concepts are represented or implemented.
 
 - The product serves one organization with System Administrator, L&D Manager, Expert, and Employee. Existing `organizationId` is compatibility/scope metadata, not a requirement for multi-organization registration or billing.
 - L&D manages disciplines and Expert assignments, creates/assigns target roles, configures baseline rules, publishes completed roles, and approves learning offerings. Expert owns assigned-discipline content and assigned-role requirements. These permissions are not enforced merely by graph labels.
@@ -12,11 +12,125 @@
 - Baseline/RIASEC evidence, reviewed AI role guidance, competency estimates, progress and pathways are transactional concerns. Initial Expert confirmation gates pathway start; new evidence can change remaining learning needs. RIASEC is interest evidence, not knowledge mastery.
 - Required proficiency/relative importance, skill descriptions and prerequisites must be mapped under an agreed model. Do not add mock/dataset attributes to runtime entities without architecture approval.
 
-No properties, nullability, constraints or node/relationship inventories below are changed by this documentation alignment. [Architecture](ARCHITECTURE.md) records the design gaps; [feature catalog](features/README.md) records current requirements. Released ontology datasets use their own preview schema and are not automatically a replacement for V5.
+No runtime properties, nullability or data are migrated by this documentation alignment. [Architecture](ARCHITECTURE.md) records the design gaps; [feature catalog](features/README.md) records current requirements. Released ontology datasets use their own preview schema and are not automatically a replacement for V5.
 
-## Technical Baseline Snapshot
 
-## 1. Phạm vi schema
+## Proposed ontology catalog
+
+Catalog 0.7.0 and its Excel/JSON/import scripts implement this model. The current dataset is consolidated under dataset/. No live database has been modified.
+
+![Ontology](diagrams/neo4j.svg)
+
+[PlantUML source](diagrams/neo4j.puml).
+
+## Structure and cardinality
+
+| Relationship | Direction | Meaning |
+|---|---|---|
+| HAS_ROLE | Occupation → TargetRole | One Occupation owns many TargetRoles; each TargetRole has exactly one owning Occupation. |
+| HAS_LEVEL | TargetRole → Level | Each role owns many Levels; each Level belongs to exactly one role. |
+| HAS_COMPETENCY | Level → Competency | Each Level owns its own competencies; each competency belongs to exactly one Level. |
+| HAS_SKILL | Competency → MicroSkill | Each competency groups one or more skills. Skill definitions can be reused by different competencies and Levels. |
+| REQUIRES_SKILL | Level → MicroSkill | Each Level defines its own skill set and assessment requirements. Sets may overlap across Levels but need not be identical. |
+| HAS_COURSE | Level → Course | Each Level selects one or more courses. Courses may be reused across Levels. |
+| HAS_MODULE | Course → LearningModule | Each Course contains one or more modules, ordered by sequence. Modules may be reused. |
+| TEACHES | LearningModule → MicroSkill | Each module teaches one or more skills. A skill may be taught by multiple modules. |
+| HAS_COURSE_PREREQUISITE | Course → Course | A → B means B must be passed before learning A. |
+| HAS_SKILL_PREREQUISITE | MicroSkill → MicroSkill | A → B means foundation B must be demonstrated before learning A. |
+
+HAS_SKILL_PREREQUISITE allows only MicroSkill → MicroSkill; HAS_COURSE_PREREQUISITE allows only Course → Course. The shared HAS_PREREQUISITE type is retired and rejected by the importer. FOR_LEVEL and Competency → HAS_COURSE are replaced by Level → HAS_COURSE. Competency ownership moves from TargetRole to Level.
+
+Reported titles shared by different O*NET occupations now create separate TargetRole records per owning occupation, even when their names match. Use distinct IDs and codes; do not enforce global name uniqueness.
+
+## Fields
+
+Every node and relationship carries id, version, status, reviewStatus, reviewedBy and reviewedAt. Status describes lifecycle; reviewStatus describes actual review. Publication requires ACTIVE and APPROVED with a real reviewer and review time.
+
+| Node | Business fields | Explanation |
+|---|---|---|
+| Occupation | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional | O*NET occupation anchor with six normalized RIASEC scores; jobZone is not the role's Junior/Middle/Senior grade. |
+| TargetRole | code, name, scope, canonicalProfileKey | Reported title and locally defined work scope. Flat exports use occupationId; the graph represents ownership with HAS_ROLE. |
+| Level | code, name, rank, context, attainmentRule | Role-specific tier and expected autonomy/context. Flat exports use targetRoleId. attainmentRule=ALL_MANDATORY_SKILLS. |
+| Competency | name, description, attainmentRule | Level-specific skill grouping. Flat exports use levelId. attainmentRule=ALL_MEMBER_SKILLS_AT_OWNING_LEVEL. No separate score, threshold or rubric. |
+| MicroSkill | name, definition | Reusable definition. Learner score and Level threshold are not properties of this node. |
+| Course | title, description | Learning collection; flat exports may use levelIds representing HAS_COURSE links. |
+| LearningModule | title, learningOutcome, moduleType, contentUri, contentType, contentVersion | Lesson/practice with content stored outside the graph and referenced by contentUri. |
+
+Parent IDs in flat exports are import conveniences, not duplicate graph ownership fields.
+
+| Relationship field | Type | Explanation |
+|---|---|---|
+| REQUIRES_SKILL.requiredScore | Float [0,1] | Passing threshold for this particular Level and skill. |
+| REQUIRES_SKILL.isMandatory | Boolean | Whether this skill is required for overall Level attainment. |
+| REQUIRES_SKILL.expectedOutcome | String | Evidence/task and performance expected in this Level's context. |
+| REQUIRES_SKILL.rubricId, rubricVersion | String | Exact assessment configuration references; rubric lives outside the ontology. |
+| HAS_MODULE.sequence | Positive Integer | Module order within this Course; unique within the Course. |
+| HAS_COURSE_PREREQUISITE.requiredCompletionStatus | Enum PASSED | Learner must pass the prerequisite Course before the dependent Course is unlocked. Completion is a learner record outside the ontology. |
+| HAS_SKILL_PREREQUISITE.readinessOutcome | String | Foundation performance needed to learn the dependent skill. This is a learning dependency, not an implicit Level assessment requirement. |
+
+## Competency and Level attainment
+
+Competency is a derived capability grouping, not an independently scored assessment. Evaluate it for a learner using the requirements of its owning Level and the selected catalog/rubric versions.
+
+1. Resolve every HAS_SKILL member against the owning Level's REQUIRES_SKILL edges.
+2. If any requirement is absent or unapproved, return CATALOG_NOT_READY.
+3. All member skills PASS → ACHIEVED. A known failed member → NOT_YET_ACHIEVED. Otherwise incomplete compatible evidence → NOT_ASSESSED.
+
+Having a skill means a compatible assessment passes the owning Level's threshold and outcome; a course completion or a profile checkbox alone is insufficient. No competency score is averaged or added to the Level score. Store learner results separately from shared ontology definitions.
+
+Level attainment requires every mandatory REQUIRES_SKILL to pass. Competency adds no second assessment gate. Optional skills can still be required for a particular competency without becoming mandatory for the entire Level.
+
+## Pathway validation
+
+Every competency member must have a requirement under its owning Level. Require non-empty competency skill sets and non-empty mandatory Level requirements. Levels may have different skills and courses; do not generate identical sets merely by copying another tier. SFIA and UK descriptions inform local scope; numerical thresholds remain local proposals pending expert calibration.
+
+Prerequisite edges point from the dependent item to its prerequisite. Reject self-loops, duplicate edges, wrong endpoint types and cycles independently in both Course and MicroSkill graphs. Expand transitive prerequisites, including prerequisites outside the selected Level's course set.
+
+HAS_MODULE.sequence is module order within one Course. It does not replace Course prerequisites or skill prerequisites. Validate that the combined Course, module-order and skill dependencies admit a feasible pathway; reject incompatible ordering. A prerequisite skill taught only in a dependent course can create an infeasible pathway even when each individual graph is acyclic.
+
+Course completion does not imply skill mastery or Level attainment. A skill assessment can independently demonstrate mastery; Course prerequisites control course access. Missing course/module teaching coverage produces PATHWAY_UNRESOLVED, not fabricated learning content.
+
+## Source and migration boundary
+
+O*NET remains the source for occupations and sample reported titles; SFIA and UK role frameworks support local Level and skill design. Source locators and verification evidence stay in documentation and evidence manifests, outside database seed fields. The ontology structure and numeric cutoffs are project design decisions, not an official framework schema.
+
+The current seed in dataset/import/ontology_seed.json implements occupation-owned roles, Level-owned competencies and Level HAS_COURSE links. Superseded dataset snapshots were removed during cleanup. The backend's legacy catalog adapters and live databases have not been migrated. Keep historical learner evidence pinned to its original catalog version.
+
+## RIASEC storage
+
+The six interest fields on Occupation are Float [0,1]. O*NET 31.0 OI values use 1–7; normalize (raw − 1)/6 and store to six decimals. R, I, A, S, E, C mean Realistic, Investigative, Artistic, Social, Enterprising and Conventional. These are occupational-interest descriptors, not assessed competence. All six values must exist; missing data must remain unavailable rather than become zero. Source raw values, URLs, dates and verification evidence stay in the source package, outside graph properties. See [source specification](dataset/ONTOLOGY.md).
+
+## Scoring and readiness fields (0.7.0)
+
+The [scoring contract](dataset/ONTOLOGY.md#assessment-calculation-and-readiness-contract) defines actualScore, evidence completeness, minimum ratings, exact version context and state precedence. See Rubric Guide in Excel for the same rules.
+
+| Location | Fields | Storage/meaning |
+|---|---|---|
+| TargetRole | canonicalProfileKey | Real graph property for local profile grouping; 48 title records belong to 20 groups. It is not an assessment equivalence or an official O*NET profile ID. |
+| HAS_SKILL_PREREQUISITE | requiredScore, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId, readinessAssessmentVersion | Readiness threshold and exact foundation task/rubric references; endpoints must both be MicroSkill. |
+| HAS_COURSE_PREREQUISITE | requiredCompletionStatus=PASSED | Required completion state of the prerequisite Course; endpoints must both be Course. No skill score/rubric fields. |
+| rubricDefinitions | isRequired, minimumPassingRating, weight, score0..score4, evidenceRule | Versioned criterion configuration outside Neo4j. All current criteria are required. |
+| assessmentPolicies | actualScoreFormula, rating range/type, missing-evidence policy, comparison, criticalCheckIds | Explicit calculation configuration outside Neo4j. No additional critical checks in these versions. |
+| readinessAssessments | assessmentId/version, forSkillId, dependentSkillId, taskPrompt, outcome, evidenceRequirements, supportPolicy | Eleven locally proposed tasks outside Neo4j, referenced by Skill prerequisite edges. |
+
+actualScore = SUM(weight * rating / 4). Missing assessable evidence for any required criterion returns NOT_ASSESSED and null, never zero or a partial average. Scores are compared before rounding. All scoring policies, tasks and definitions require actual expert approval before official decisions.
+
+## Flat export versus graph properties
+
+| Excel/JSON field | Graph relationship | Import behaviour |
+|---|---|---|
+| TargetRoles.occupationId | Occupation HAS_ROLE TargetRole | Validate the single parent, then omit occupationId from node properties. |
+| Levels.targetRoleId | TargetRole HAS_LEVEL Level | Validate the parent, then omit targetRoleId. |
+| Competencies.levelId | Level HAS_COMPETENCY Competency | Validate the parent, then omit levelId. |
+| Courses.levelIds | Level HAS_COURSE Course | Parse as an array in JSON; compare against all incoming HAS_COURSE links, then omit levelIds. Never store a JSON-encoded string on Course. |
+
+The relationship records are imported after these ID-to-edge consistency checks. Missing or conflicting links are rejected, not silently inferred. After import, graph edges are the authoritative query model. Rubric/configuration and expert review tabs are not imported into graph entities. Learner results and learner RIASEC assessments remain separate from the catalog.
+
+## Legacy V5 runtime technical inventory
+
+This section preserves the technical inventory received from origin/main. It describes the legacy runtime contract and is not the import contract of dataset 0.7.0. Use [dataset/ONTOLOGY.md](dataset/ONTOLOGY.md) for the source-backed catalog and [import guide](dataset/NEO4J_IMPORT_GUIDE.md) for the isolated review graph.
+
+### 1. Phạm vi schema
 
 Schema Neo4j hiện tại gồm:
 
@@ -47,7 +161,7 @@ primary
 
 ---
 
-## 2. Sơ đồ tổng quát
+### 2. Sơ đồ tổng quát
 
 ```mermaid
 flowchart TD
@@ -62,9 +176,9 @@ flowchart TD
 
 ---
 
-## 3. Quy ước chung
+### 3. Quy ước chung
 
-### 3.1 Ký hiệu
+#### 3.1 Ký hiệu
 
 | Ký hiệu | Ý nghĩa |
 |---|---|
@@ -72,7 +186,7 @@ flowchart TD
 | `?` | Field tùy chọn, có thể `null` |
 | `[0,1]` | Số thực từ `0.0` đến `1.0` |
 
-### 3.2 Phân biệt `id` và `code`
+#### 3.2 Phân biệt `id` và `code`
 
 | Field | Giải thích |
 |---|---|
@@ -90,7 +204,7 @@ Ví dụ:
 
 Không dùng `name` làm khóa vì tên hiển thị có thể thay đổi.
 
-### 3.3 `status`
+#### 3.3 `status`
 
 Đề xuất dùng ba trạng thái:
 
@@ -100,7 +214,7 @@ Không dùng `name` làm khóa vì tên hiển thị có thể thay đổi.
 | `ACTIVE` | Đã được phép sử dụng |
 | `RETIRED` | Ngừng dùng cho dữ liệu mới nhưng vẫn giữ để tra cứu lịch sử |
 
-### 3.4 Field thời gian
+#### 3.4 Field thời gian
 
 | Field | Giải thích |
 |---|---|
@@ -115,15 +229,15 @@ Nên lưu theo UTC và ISO 8601:
 
 ---
 
-# 4. Chi tiết node
+## 4. Chi tiết node
 
-## 4.1 `JobDomain`
+### 4.1 `JobDomain`
 
-### Mục đích
+#### Mục đích
 
 Phân nhóm các target role theo domain. Phạm vi dữ liệu hiện tại có thể gồm `ICT`, `DATA` và `AI`.
 
-### Cấu trúc
+#### Cấu trúc
 
 ```text
 JobDomain {
@@ -137,7 +251,7 @@ JobDomain {
 }
 ```
 
-### Giải thích field
+#### Giải thích field
 
 | Field | Kiểu | Bắt buộc | Giải thích |
 |---|---|---:|---|
@@ -149,7 +263,7 @@ JobDomain {
 | `createdAt` | DateTime | Có | Thời điểm tạo |
 | `updatedAt` | DateTime | Có | Thời điểm cập nhật gần nhất |
 
-### Ví dụ
+#### Ví dụ
 
 ```json
 {
@@ -165,13 +279,13 @@ JobDomain {
 
 ---
 
-## 4.2 `TargetRole`
+### 4.2 `TargetRole`
 
-### Mục đích
+#### Mục đích
 
 Biểu diễn vị trí nghề nghiệp mà learner chọn làm mục tiêu.
 
-### Cấu trúc
+#### Cấu trúc
 
 ```text
 TargetRole {
@@ -193,7 +307,7 @@ TargetRole {
 }
 ```
 
-### Giải thích field
+#### Giải thích field
 
 | Field | Kiểu | Bắt buộc | Giải thích |
 |---|---|---:|---|
@@ -219,7 +333,7 @@ Field `level` đã bị loại bỏ. `code` và `name` vẫn có thể chứa gr
 
 `version` và `assignedExpertId` hỗ trợ quy trình phân công Domain Expert và tạo successor draft (phiên bản kế nhiệm) cho target role mà không làm gãy các ràng buộc lộ trình của học viên đã đăng ký phiên bản trước.
 
-### Ví dụ
+#### Ví dụ
 
 ```json
 {
@@ -245,9 +359,9 @@ Field `level` đã bị loại bỏ. `code` và `name` vẫn có thể chứa gr
 
 ---
 
-## 4.3 `MacroCompetency`
+### 4.3 `MacroCompetency`
 
-### Mục đích
+#### Mục đích
 
 Phân nhóm các micro-skill thành ba nhóm năng lực lớn:
 
@@ -257,7 +371,7 @@ COMMUNICATION
 INNOVATION
 ```
 
-### Cấu trúc
+#### Cấu trúc
 
 ```text
 MacroCompetency {
@@ -271,7 +385,7 @@ MacroCompetency {
 }
 ```
 
-### Giải thích field
+#### Giải thích field
 
 | Field | Kiểu | Bắt buộc | Giải thích |
 |---|---|---:|---|
@@ -287,13 +401,13 @@ Macro không lưu `weight` hoặc `targetLevel`. Khi cần điểm macro, backen
 
 ---
 
-## 4.4 `MicroSkill`
+### 4.4 `MicroSkill`
 
-### Mục đích
+#### Mục đích
 
 Đây là tầng tính toán chính cho skill gap, prerequisite, recommendation và learner mastery.
 
-### Cấu trúc
+#### Cấu trúc
 
 ```text
 MicroSkill {
@@ -307,7 +421,7 @@ MicroSkill {
 }
 ```
 
-### Giải thích field
+#### Giải thích field
 
 | Field | Kiểu | Bắt buộc | Giải thích |
 |---|---|---:|---|
@@ -323,13 +437,13 @@ Mastery của learner không nằm trên node này vì mỗi learner có mastery
 
 ---
 
-## 4.5 `LearningModule`
+### 4.5 `LearningModule`
 
-### Mục đích
+#### Mục đích
 
 Biểu diễn một đơn vị học có thể được Recommendation Engine đưa vào pathway.
 
-### Cấu trúc
+#### Cấu trúc
 
 ```text
 LearningModule {
@@ -348,7 +462,7 @@ LearningModule {
 }
 ```
 
-### Giải thích field
+#### Giải thích field
 
 | Field | Kiểu | Bắt buộc | Giải thích |
 |---|---|---:|---|
@@ -373,9 +487,9 @@ Quy tắc giá:
 
 ---
 
-# 5. Chi tiết relationship
+## 5. Chi tiết relationship
 
-## 5.1 Quy tắc chung
+### 5.1 Quy tắc chung
 
 Relationship không có `id`. Neo4j tìm relationship bằng:
 
@@ -393,7 +507,7 @@ Tất cả relationship giữ ba field quản trị:
 
 ---
 
-## 5.2 `HAS_ROLE`
+### 5.2 `HAS_ROLE`
 
 ```text
 (:JobDomain)-[:HAS_ROLE]->(:TargetRole)
@@ -417,7 +531,7 @@ Mỗi role chỉ nên thuộc một domain đang `ACTIVE`.
 
 ---
 
-## 5.3 `REQUIRES_MACRO`
+### 5.3 `REQUIRES_MACRO`
 
 ```text
 (:TargetRole)-[:REQUIRES_MACRO]->(:MacroCompetency)
@@ -435,7 +549,7 @@ Relationship này không chứa `weight` hoặc `targetLevel`.
 
 ---
 
-## 5.4 `HAS_SKILL`
+### 5.4 `HAS_SKILL`
 
 ```text
 (:MacroCompetency)-[:HAS_SKILL]->(:MicroSkill)
@@ -453,7 +567,7 @@ Do `primary` đã bị loại bỏ, schema hiện tại hiểu mỗi micro-skill
 
 ---
 
-## 5.5 `REQUIRES_SKILL`
+### 5.5 `REQUIRES_SKILL`
 
 ```text
 (:TargetRole)-[:REQUIRES_SKILL]->(:MicroSkill)
@@ -468,7 +582,7 @@ Cho biết role yêu cầu skill nào và cần đạt mức nào.
 | `createdAt` | DateTime | Thời điểm tạo |
 | `updatedAt` | DateTime | Thời điểm cập nhật |
 
-### Skill gap
+#### Skill gap
 
 ```text
 gap = max(0, targetMastery - currentMastery)
@@ -486,7 +600,7 @@ Do `mandatory` đã bị loại bỏ, mọi `REQUIRES_SKILL` đang `ACTIVE` đ�
 
 ---
 
-## 5.6 `PREREQUISITE_OF`
+### 5.6 `PREREQUISITE_OF`
 
 ```text
 (:MicroSkill)-[:PREREQUISITE_OF]->(:MicroSkill)
@@ -518,7 +632,7 @@ Vòng cong trên diagram chỉ biểu diễn relationship giữa hai node cùng 
 
 ---
 
-## 5.7 `TEACHES`
+### 5.7 `TEACHES`
 
 ```text
 (:LearningModule)-[:TEACHES]->(:MicroSkill)
@@ -534,7 +648,7 @@ Cho biết module dạy skill nào và mức độ bao phủ của skill đó tr
 | `createdAt` | DateTime | Thời điểm tạo |
 | `updatedAt` | DateTime | Thời điểm cập nhật |
 
-### Giá trị `coverage`
+#### Giá trị `coverage`
 
 | Giá trị | Mức gợi ý | Ý nghĩa |
 |---|---:|---|
@@ -557,7 +671,7 @@ Spring Boot Fundamentals
 
 ---
 
-## 5.8 `HAS_ENTRY_REQUIREMENT`
+### 5.8 `HAS_ENTRY_REQUIREMENT`
 
 ```text
 (:LearningModule)-[:HAS_ENTRY_REQUIREMENT]->(:MicroSkill)
@@ -589,9 +703,9 @@ Khác biệt:
 
 ---
 
-# 6. Ràng buộc dữ liệu cần validate
+## 6. Ràng buộc dữ liệu cần validate
 
-## 6.1 Node
+### 6.1 Node
 
 | Rule | Mục đích |
 |---|---|
@@ -607,7 +721,7 @@ Khác biệt:
 | `priceAmount >= 0` nếu có | Giá không được âm |
 | Có `currency` khi có `priceAmount` | Giá phải có đơn vị tiền tệ |
 
-## 6.2 Relationship
+### 6.2 Relationship
 
 | Rule | Mục đích |
 |---|---|
@@ -620,7 +734,7 @@ Khác biệt:
 
 ---
 
-# 7. Ví dụ Cypher hoàn chỉnh
+## 7. Ví dụ Cypher hoàn chỉnh
 
 ```cypher
 CREATE (domain:JobDomain {
@@ -675,7 +789,7 @@ CREATE (role)-[:REQUIRES_SKILL {
 
 ---
 
-# 8. Luồng sử dụng schema
+## 8. Luồng sử dụng schema
 
 ```text
 Learner chọn TargetRole

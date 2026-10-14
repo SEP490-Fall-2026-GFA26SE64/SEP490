@@ -1,0 +1,105 @@
+[
+  {
+    "code": "15-1252.00",
+    "name": "Software Developers",
+    "sourceUrl": "https://www.onetonline.org/link/summary/15-1252.00",
+    "sourceLocator": "Sample of reported job titles",
+    "reportedTitles": [
+      "Application Developer",
+      "Application Integration Engineer",
+      "Developer",
+      "DevOps Engineer (Development Operations Engineer)",
+      "Infrastructure Engineer",
+      "Software Architect",
+      "Software Developer",
+      "Software Development Engineer",
+      "Software Engineer",
+      "Systems Engineer"
+    ],
+    "sourceVerification": "SOURCE_REVIEWED",
+    "reviewDate": "2026-10-14",
+    "note": "Reported examples, not an exhaustive job-title taxonomy."
+  },
+  {
+    "code": "15-1243.00",
+    "name": "Database Architects",
+    "sourceUrl": "https://www.onetonline.org/link/summary/15-1243.00",
+    "sourceLocator": "Sample of reported job titles",
+    "reportedTitles": [
+      "Data Architect",
+      "Data Engineer",
+      "Data Officer",
+      "Database Analyst",
+      "Database Architect",
+      "Database Consultant",
+      "Database Developer",
+      "Database Programmer",
+      "Enterprise Architect",
+      "Information Architect"
+    ],
+    "sourceVerification": "SOURCE_REVIEWED",
+    "reviewDate": "2026-10-14",
+    "note": "Reported examples, not an exhaustive job-title taxonomy."
+  },
+  {
+    "code": "15-1253.00",
+    "name": "Software Quality Assurance Analysts and Testers",
+    "sourceUrl": "https://www.onetonline.org/link/summary/15-1253.00",
+    "sourceLocator": "Sample of reported job titles",
+    "reportedTitles": [
+      "Automation Tester",
+      "Information Technology Analyst (IT Analyst)",
+      "Quality Assurance Analyst (QA Analyst)",
+      "Quality Assurance Engineer (QA Engineer)",
+      "Quality Engineer",
+      "Software Quality Assurance Analyst (SQA Analyst)",
+      "Software Quality Assurance Engineer (SQA Engineer)",
+      "Software Quality Engineer",
+      "Software Test Engineer",
+      "Test Engineer"
+    ],
+    "sourceVerification": "SOURCE_REVIEWED",
+    "reviewDate": "2026-10-14",
+    "note": "Reported examples, not an exhaustive job-title taxonomy."
+  },
+  {
+    "code": "15-1299.08",
+    "name": "Computer Systems Engineers/Architects",
+    "sourceUrl": "https://www.onetonline.org/link/summary/15-1299.08",
+    "sourceLocator": "Sample of reported job titles",
+    "reportedTitles": [
+      "Infrastructure Engineer",
+      "IT Architect (Information Technology Architect)",
+      "IT Engineer (Information Technology Engineer)",
+      "Network and Infrastructure Engineer",
+      "Solutions Architect",
+      "Systems Application Engineer",
+      "Systems Architect",
+      "Systems Consultant",
+      "Systems Engineer",
+      "Web Architect"
+    ],
+    "sourceVerification": "SOURCE_REVIEWED",
+    "reviewDate": "2026-10-14",
+    "note": "Reported examples, not an exhaustive job-title taxonomy."
+  },
+  {
+    "code": "15-1212.00",
+    "name": "Information Security Analysts",
+    "sourceUrl": "https://www.onetonline.org/link/summary/15-1212.00",
+    "sourceLocator": "Sample of reported job titles",
+    "reportedTitles": [
+      "Information Security Officer",
+      "Information Security Specialist",
+      "Information Systems Security Analyst",
+      "Information Systems Security Officer (ISSO)",
+      "Information Technology Security Analyst (IT Security Analyst)",
+      "Network Security Analyst",
+      "Security Analyst",
+      "Systems Analyst"
+    ],
+    "sourceVerification": "SOURCE_REVIEWED",
+    "reviewDate": "2026-10-14",
+    "note": "Reported examples, not an exhaustive job-title taxonomy."
+  }
+]
