@@ -22,7 +22,7 @@
 | REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | Employee | Initial Expert confirmation required |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | Employee | Retained; detail draft |
 | REQ-006 | [Competency graph](Competency%20graph/README.md) | Employee | Retained; detail draft |
-| REQ-007 | [Learning modules and courses](Dummy%20learning%20modules/README.md) | Employee | Dummy-only limit removed |
+| REQ-007 | [Learning modules](Dummy%20learning%20modules/README.md) | Employee | Dummy-only limit removed |
 | REQ-008 | [Module assessment](Module%20assessment/README.md) | Employee; Expert configures | Approval and independent learning need detail |
 | REQ-009 | [Assessment results](Assessment%20results/README.md) | Employee | Baseline/RIASEC/module history |
 | REQ-010 | [Recalculation visibility](Recalculation%20visibility/README.md) | Employee | New-evidence adaptation |
@@ -56,7 +56,7 @@
 | REQ-051 | [Discipline Expert assignment](Discipline%20Expert%20assignment/README.md) | L&D Manager | New scope draft |
 | REQ-052 | [Target role publication](Target%20role%20publication/README.md) | L&D Manager | New scope draft |
 | REQ-053 | [Learning offering approval](Learning%20offering%20approval/README.md) | Expert submits; L&D decides | New scope draft |
-| REQ-054 | [Courses and learning content](Courses%20and%20learning%20content/README.md) | Expert | New scope draft |
+| REQ-054 | [Learning content](Courses%20and%20learning%20content/README.md) | Expert | New scope draft |
 | REQ-055 | [Individual skill learning](Individual%20skill%20learning/README.md) | Employee; system | New scope draft |
 | REQ-056 | [Personal profile](Personal%20profile/README.md) | Employee | New scope draft |
 | REQ-057 | [System configuration](System%20configuration/README.md) | System Administrator | New scope draft |

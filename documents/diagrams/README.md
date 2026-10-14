@@ -3,7 +3,7 @@
 ## Current Scope Alignment
 
 The [System Overview](../adapt_learn_graph_system_overview.md) controls product scope; [architecture](../ARCHITECTURE.md) distinguishes revised responsibilities from the recorded technical baseline. These database/runtime diagrams inventory existing storage, not an approved model for all new capabilities. Legacy organization/billing/evaluation structures do not reinstate excluded SaaS functionality.
-Discipline membership/assignments, course/content storage, L&D role publication/offering approval, RIASEC/reviewed role guidance and independent progress need agreed mappings before regenerating schema diagrams. Documentation alignment does not change migrations or generated images.
+Discipline membership/assignments, module/content storage, L&D role publication/offering approval, RIASEC/reviewed role guidance and independent progress need agreed mappings before regenerating schema diagrams. Documentation alignment does not change migrations or generated images.
 
 ## Technical Baseline Snapshot
 
@@ -25,6 +25,6 @@ docker compose -f compose.dev.yml up --build -d
 java -jar path\to\plantuml.jar -tsvg documents/diagrams
 ```
 
-Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows seven entity types; Course and MicroSkill self-links represent prerequisites. Its current PlantUML and SVG describe ontology 0.7.0. The SVG and PNG are rendered directly from neo4j.puml using PlantUML 1.2025.10. A PNG preview is available at neo4j.png. The legacy V5 files are retained under ../dataset/archive/neo4j_schema_v5/.
+Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
 
 The V7 PlantUML sources are updated. Regenerate `postgresql.svg` and `runtime-topology.svg` when Docker and PlantUML are available; the checked-in SVGs may temporarily show the pre-V7 view.

@@ -1,4 +1,4 @@
-"""Import catalog 0.7.0 into an empty or identical isolated Neo4j graph."""
+"""Import catalog 0.8.0 into an empty or identical isolated Neo4j graph."""
 import argparse,getpass,json,os
 from pathlib import Path
 from collections import defaultdict
@@ -48,7 +48,7 @@ def import_graph(tx):
                      f"MATCH (b:{end} {{id: row.toId}}) CREATE (a)-[r:{kind}]->(b) SET r = row.props")
             tx.run(query, rows=rows).consume()
     require(snapshot(tx) == (nodes, edges), "Graph differs from input; transaction rolled back")
-    return "Imported and verified: 875 nodes and 5431 relationships."
+    return "Imported and verified: 827 nodes and 4536 relationships."
 
 with GraphDatabase.driver(uri, auth=(user, password)) as driver:
     driver.verify_connectivity()
@@ -56,6 +56,6 @@ with GraphDatabase.driver(uri, auth=(user, password)) as driver:
         session.execute_read(preflight)
         # Schema statements commit separately from the data transaction.
         for label in LABELS.values():
-            session.run(f"CREATE CONSTRAINT ontology_v07_{label.lower()}_id IF NOT EXISTS "
+            session.run(f"CREATE CONSTRAINT ontology_v08_{label.lower()}_id IF NOT EXISTS "
                         f"FOR (n:{label}) REQUIRE n.id IS UNIQUE").consume()
         print(session.execute_write(import_graph))

@@ -1,11 +1,12 @@
-# Ontology — framework, fields and data provenance (0.7.0)
+# Ontology — framework, fields and data provenance (0.8.0)
 
-Updated 14 October 2026. English catalog. Skill rubric 1.2. All graph definitions and learning collections await expert review. No live database has been changed.
+Updated 14 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
 
+## Files and framework
 
-## Files and interpretation
+[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed.json](import/ontology_seed.json) describe the same catalog: **827 nodes and 4,536 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
 
-The current catalog has 875 nodes and 5,431 relationships. [ontology_dataset.xlsx](ontology_dataset.xlsx) contains the seven entity tables, ten relationship tables, assessment configuration and expert review inputs. It is the editable data review artifact. The runnable seed is [import/ontology_seed.json](import/ontology_seed.json). Import preparation must synchronize any approved workbook edits with the seed before Neo4j import. See [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md).
+O*NET supplies Occupations, sample reported titles and occupation RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
 
 ```mermaid
 flowchart LR
@@ -14,49 +15,32 @@ flowchart LR
  L -->|HAS_COMPETENCY| C[Competency]
  C -->|HAS_SKILL| S[MicroSkill]
  L -->|REQUIRES_SKILL| S
- L -->|HAS_COURSE| K[Course]
- K -->|HAS_MODULE| M[LearningModule]
- M -->|TEACHES| S
- K -->|HAS_COURSE_PREREQUISITE| K
+ M[LearningModule] -->|TEACHES 1–1| S
  S -->|HAS_SKILL_PREREQUISITE| S
 ```
 
-Source-backed names and definitions must be distinguished from local design decisions: O*NET supplies occupation/title/interest data, ESCO and SFIA/UK support skill alignment; competency grouping, local tiers, mandatory flags, numeric thresholds and curriculum prerequisites are proposals pending expert review.
-
-## Source responsibilities
-
-Five O*NET occupations and their Sample of reported job titles anchor the dataset. SFIA 9 and UK Government Digital and Data role/skill descriptions support skill definitions and local work-scope interpretations. ESCO concept identifiers support the retained skill mappings below; SKOS informs concept alignment, not numeric proficiency scoring.
-
-Occupation ownership is now one-to-many: each TargetRole has one Occupation. The 48 reported-title occurrences create 48 role records, including separate Infrastructure Engineer and Systems Engineer records under their respective occupations. These are source-reported names with locally proposed scopes, not an official title-to-skill crosswalk.
-
-Each role owns three local readiness Levels: Junior, Middle, Senior. Each Level owns its own competencies, skill requirements and course selection. Competencies group at least two skills and have no score or separate assessment. All member skills must PASS the owning Level's requirements for the competency to be ACHIEVED.
+Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. Each skill has exactly one Module and each Module teaches exactly one skill. There is no Course, Level–Module link or global module sequence.
 
 ## Counts
 
 | Entity | Records |
 |---|---:|
-| Occupations | 5 |
-| TargetRoles | 48 |
-| Levels | 144 |
-| Competencies | 472 |
-| MicroSkills | 79 |
-| Courses | 42 |
-| LearningModules | 85 |
+| Occupation | 5 |
+| TargetRole | 48 |
+| Level | 144 |
+| Competency | 472 |
+| MicroSkill | 79 |
+| LearningModule | 79 |
 
 | Relationship | Records |
 |---|---:|
 | HAS_ROLE | 48 |
 | HAS_LEVEL | 144 |
-| REQUIRES_SKILL | 1891 |
 | HAS_COMPETENCY | 472 |
 | HAS_SKILL | 1891 |
-| HAS_MODULE | 133 |
-| TEACHES | 181 |
+| REQUIRES_SKILL | 1891 |
+| TEACHES | 79 |
 | HAS_SKILL_PREREQUISITE | 11 |
-| HAS_COURSE_PREREQUISITE | 28 |
-| HAS_COURSE | 632 |
-
-Total: **875 nodes, 5,431 relationships**. HAS_COURSE_PREREQUISITE contains 28 dependencies; HAS_SKILL_PREREQUISITE contains 11 readiness dependencies. Seven criteria across attainment and readiness rubrics remain outside the graph.
 
 ## Occupation Interests / RIASEC
 
@@ -139,7 +123,7 @@ The local progression separates guided bounded execution, independent defined-sc
 
 Competency group membership is intersected with its owning Level's selected skills. Groups with one surviving skill are merged into a supporting group or an existing group so every competency retains multiple skills. This grouping is a local modeling choice, not an official competency taxonomy.
 
-Existing requiredScore, isMandatory and expectedOutcome are retained for requirements still included. Attainment rubric references are explicitly migrated to version 1.2 in release 0.7.0. Removed lower-tier requirements are recorded as deferred skills; Data Engineer no longer has all 16 skills at every Level. Relationship IDs are regenerated for the new snapshot; historical learner results must remain tied to their original snapshot.
+Existing requiredScore and isMandatory are retained for included requirements. Assessment descriptions and rubric references are retained only as historical documentation outside the graph. Removed lower-tier requirements are recorded as deferred skills; Data Engineer no longer has all 16 skills at every Level. Relationship IDs are regenerated for the new snapshot; historical learner results must remain tied to their original snapshot.
 
 | Tier | Typical threshold | Security/control threshold |
 |---|---:|---:|
@@ -396,156 +380,45 @@ All edges below are internally synthesized LEARNING_READINESS proposals with NEE
 | T-VCS | [source](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control) |
 
 
-## Learning collections and Course dependencies
 
-The 27 previously authored DE/FS/QA courses and 54 lesson/practice modules are retained. Fifteen additional collections cover architecture, delivery foundations, governance, infrastructure and security at the three local tiers. Their 31 reusable modules provide official-resource links and locally authored guided-reading/practice scaffolds. They are not official courses or full reviewed tool-specific lessons. Detailed teaching/labs and role-specific examples remain pending organization authoring. A reference or module completion is not proof of assessed skill mastery.
+## Module consolidation and source provenance
 
-Level HAS_COURSE selects same-tier collections by intersection with required skills; this is an explicitly local recommendation mapping. Some collections include additional skills beyond that Level's assessment set. A course is not guaranteed to cover all skills for the Level by itself. All 79 skill definitions have at least one teaching/reference module, but edge coverage does not demonstrate pedagogical adequacy or approval.
+The 85 earlier module definitions have been consolidated into 79 skill-specific modules with stable IDs `MOD-<skillId>`. [Consolidation manifest](sources/local_review/module_consolidation_v08.json) maps each new module to all earlier teaching providers. Current module content preserves relevant official resource links and extracts practice/evidence statements for its one skill; integrated topic examples are supporting context, not additional TEACHES relationships.
 
-For each of the 14 course topics, Middle requires the Junior course, and Senior requires the Middle course: 28 dependencies. This is a local curriculum policy supported by increasing autonomy/complexity in SFIA, not an official prerequisite asserted by SFIA or O*NET. [Course dependency evidence](sources/ontology_v06_design/course_prerequisite_evidence.json) records every proposal. Users must pass the prerequisite course before accessing the dependent course. Skill mastery can also be demonstrated through independent approved assessment; course completion is not a Level attainment gate.
+Earlier content and removed Course records are retained under [historical catalog](sources/ontology_v07_history/retired_catalog.json), together with the original module/topic files. These are provenance, not active import records. The older Course audit and course-prerequisite evidence are historical only and must not drive current recommendations. No Course prerequisite has been automatically converted into a skill prerequisite.
 
-A HAS_SKILL_PREREQUISITE B and A HAS_COURSE_PREREQUISITE B each point from dependent A to foundation B, with different typed conditions. Cross-type links, self-loops and cycles are invalid. Expand prerequisites outside selected course lists. HAS_MODULE.sequence is order within a Course; reused modules must be evaluated in their Course context, not treated as one global completion/order instance.
+One shared module may contain foundation and advanced practice, but its existence does not prove adequate content for every role/Level. Existing short reading scaffolds still require detailed lab authoring and review. Expert review must confirm role context, difficulty and evidence suitability before use; no approval has been fabricated.
 
-## Deterministic scoring and prerequisite contracts in 0.7.0
+## Graph field and import boundary
 
-[Scoring contract](#assessment-calculation-and-readiness-contract) is the normative calculation and evidence specification. `actualScore = SUM(weight_i * rating_i / 4)`, with integer ratings 0–4 and positive weights summing to 1. A missing required criterion gives NOT_ASSESSED and actualScore=null before considering failures in other criteria. Do not fill zero or renormalize; compare unrounded scores using >=. Attainment rubric RUB-SKILL-01 is now version 1.2. Its weights remain 0.40/0.25/0.20/0.15 and correctness/autonomy minima are explicitly 3. The VERIFICATION zero anchor now describes observed invalid checks; missing evidence is not zero.
+Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node business fields and types are detailed in [schema](../neo4j_schema.md).
 
-The separate RUB-READINESS-01 v1.0 has foundation correctness/verification/reasoning weights 0.50/0.30/0.20 and minimum correctness rating 3. Eleven versioned readiness tasks specify the foundation outcome, bounded prompt and required evidence. Proposed readiness threshold is 0.75 on each HAS_SKILL_PREREQUISITE edge. These tasks, weights and cutoffs are local proposals requiring expert calibration; none is an official ESCO/SFIA threshold. The readiness result must match the exact learner, edge, foundation skill, task, rubric and catalog context. Course prerequisites separately require PASSED for the prerequisite Course. All definitions remain pending review.
+- REQUIRES_SKILL: requiredScore in [0,1], isMandatory.
+- HAS_SKILL_PREREQUISITE: requiredScore in [0,1], interpreted as foundation readiness.
+- Other relationships: common metadata only.
+- learningOutcome, expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
+- TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
+- Sources/provenance, rubric definitions, assessment prompts, results and learner state stay outside Neo4j. The seed now contains only six node sections and relationships.
 
-`rubricDefinitions`, `assessmentPolicies` and `readinessAssessments` are external assessment configuration, not ontology nodes or Neo4j properties. The calculation and import boundaries were checked with 14 contract tests. Production backend integration is not included.
+ID uniqueness does not enforce 1–1 TEACHES. The import validator explicitly rejects missing, duplicate or multiple providers/targets, wrong endpoints, unknown types, retired fields, cycles and invalid thresholds. Future catalog write APIs must enforce the same invariants transactionally.
 
-## Canonical profiles and recommendation diversity
+## Recommendation and adaptive pathway
 
-Keep all 48 occupation-owned reported-title records, and add `canonicalProfileKey` as a real TargetRole property. Twenty existing local skill profiles now define twenty canonical presentation groups. Titles are retained to preserve provenance; this does not assert that similar job titles are universally interchangeable. Infrastructure Engineer and Systems Engineer keep separate occupation-owned IDs while sharing the appropriate profile keys.
+Resolve the learner's selected Level and REQUIRES_SKILL. Distinguish confirmed skill gaps from unassessed skills. For each confirmed gap, find its sole Module through incoming TEACHES; require published definitions/content and role/Level suitability. Unknown skills first require diagnosis or an explicit choice to learn them.
 
-[Canonical audit](#canonical-profiles-and-recommendation-diversity) confirms one skill/threshold/mandatory vector across J/M/S within each group and no identical vectors across the twenty groups in this release. ExpectedOutcome wording and occupation context may differ, so assessment evidence is not automatically interchangeable. These are authored profiles, not evidence of twenty empirically distinct occupations.
+Expand HAS_SKILL_PREREQUISITE from dependent skill to foundation skill and check readiness using assessment-service evidence. Unmet readiness introduces the foundation Module or diagnosis before the dependent Module. Topologically order dependencies; already-satisfied prerequisites do not require repeated learning. Record the selected order in the learner pathway, not on the module definition.
 
-For RQ1, group candidates by (canonicalProfileKey, selected Level code) before presenting top-k. Emit one profile result with matching occupation/role alternatives. Preserve per-occupation interest similarity and the actual role selected for assessment. Do not sum votes/scores simply because a profile has more reported titles. Do not randomly split aliases of the same profile across training/test sets or count 48 title records as 48 independent skill profiles. The specific ranking formula remains a separate research decision.
+No suitable approved content or assessment mapping produces PATHWAY_UNRESOLVED/CATALOG_NOT_READY, never assumed readiness. Passing a Module does not automatically pass every Level requirement. A one-module-per-skill catalog permits remedial sections/practice in that Module, not an alternative Module for the same skill. Recalculation considers new assessment evidence; one incorrect answer alone does not require rewriting the pathway. Expert initial-pathway review remains applicable.
 
-## Expert review package
+## Canonical profiles and expert review
 
-Workbook sheets Requirement Review, Level Review and Profile Review provide editable pending decisions. The editable review templates are preserved in the Excel workbook. These rows are review artifacts only; the importer ignores them and never applies them automatically. Require a reason, reviewer, review time and supporting example before publishing an adopted decision. A new reviewed seed must be regenerated and validated after decisions are accepted.
+canonicalProfileKey groups 48 reported-title records into 20 local requirement profiles. Group alternatives to avoid duplicate recommendations; do not claim all grouped titles are universal synonyms. [Profile audit](sources/local_review/canonical_profile_audit.json) records the earlier grouping analysis; skill/threshold vectors are unchanged.
 
-All 1,891 isMandatory flags and 0.60–0.95 attainment thresholds remain unchanged proposals. Skill counts range from 3 to 20 because local profiles have different scope and the tier filter excludes advanced actions; counts do not establish completeness or equal granularity. Junior Information Security Officer and Information Systems Security Officer have only 3 selected skills, with 5 at Middle, and are specifically marked HIGH coverage-review priority. Their broad professional scope is not validated by these short inventories. Experts should add missing outcomes, remove redundant requirements, assess mandatory/optional status and score representative task evidence before approving these profiles.
-
-Occupation RIASEC is a career-interest reference vector. Learner instrument, answers/results, scoring version and assessment timestamp must be stored separately; compare only after explicit compatible normalization. Interest similarity never contributes to proficiency actualScore or a mandatory skill threshold.
-
-## Course content and skill-gap matching review
-
-The 632 proposed HAS_COURSE associations were audited against module teaching content and Level requirements. There are 151 one-skill intersections and 326 intersections of at most two skills. Low overlap alone is not a rejection criterion. Generic reading collections and transferred domain-specific scenarios require role/tier content review before publication.
-
-HAS_COURSE is candidate membership only. A Course must contain a Module teaching an actual required learner gap; return the matching Module/Skill IDs as the reason. Then check content-context approval, publication, Course PASSED prerequisites and Skill readiness PASS results. All current records remain pending review.
-
-[Course recommendation contract](#course-recommendation-rules) · [Content audit](#course-content-audit) · [632-pair expert review](#course-content-audit).
-
-
-## Graph model and fields
-
-| Relationship | Direction | Meaning |
-|---|---|---|
-| HAS_ROLE | Occupation → TargetRole | One Occupation owns many TargetRoles; each TargetRole has exactly one owning Occupation. |
-| HAS_LEVEL | TargetRole → Level | Each role owns many Levels; each Level belongs to exactly one role. |
-| HAS_COMPETENCY | Level → Competency | Each Level owns its own competencies; each competency belongs to exactly one Level. |
-| HAS_SKILL | Competency → MicroSkill | Each competency groups one or more skills. Skill definitions can be reused by different competencies and Levels. |
-| REQUIRES_SKILL | Level → MicroSkill | Each Level defines its own skill set and assessment requirements. Sets may overlap across Levels but need not be identical. |
-| HAS_COURSE | Level → Course | Each Level selects one or more courses. Courses may be reused across Levels. |
-| HAS_MODULE | Course → LearningModule | Each Course contains one or more modules, ordered by sequence. Modules may be reused. |
-| TEACHES | LearningModule → MicroSkill | Each module teaches one or more skills. A skill may be taught by multiple modules. |
-| HAS_COURSE_PREREQUISITE | Course → Course | A → B means B must be passed before learning A. |
-| HAS_SKILL_PREREQUISITE | MicroSkill → MicroSkill | A → B means foundation B must be demonstrated before learning A. |
-
-HAS_SKILL_PREREQUISITE allows only MicroSkill → MicroSkill; HAS_COURSE_PREREQUISITE allows only Course → Course. The shared HAS_PREREQUISITE type is retired and rejected by the importer. FOR_LEVEL and Competency → HAS_COURSE are replaced by Level → HAS_COURSE. Competency ownership moves from TargetRole to Level.
-
-Reported titles shared by different O*NET occupations now create separate TargetRole records per owning occupation, even when their names match. Use distinct IDs and codes; do not enforce global name uniqueness.
-
-## Fields
-
-Every node and relationship carries id, version, status, reviewStatus, reviewedBy and reviewedAt. Status describes lifecycle; reviewStatus describes actual review. Publication requires ACTIVE and APPROVED with a real reviewer and review time.
-
-| Node | Business fields | Explanation |
-|---|---|---|
-| Occupation | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional | O*NET occupation anchor with six normalized RIASEC scores; jobZone is not the role's Junior/Middle/Senior grade. |
-| TargetRole | code, name, scope, canonicalProfileKey | Reported title and locally defined work scope. Flat exports use occupationId; the graph represents ownership with HAS_ROLE. |
-| Level | code, name, rank, context, attainmentRule | Role-specific tier and expected autonomy/context. Flat exports use targetRoleId. attainmentRule=ALL_MANDATORY_SKILLS. |
-| Competency | name, description, attainmentRule | Level-specific skill grouping. Flat exports use levelId. attainmentRule=ALL_MEMBER_SKILLS_AT_OWNING_LEVEL. No separate score, threshold or rubric. |
-| MicroSkill | name, definition | Reusable definition. Learner score and Level threshold are not properties of this node. |
-| Course | title, description | Learning collection; flat exports may use levelIds representing HAS_COURSE links. |
-| LearningModule | title, learningOutcome, moduleType, contentUri, contentType, contentVersion | Lesson/practice with content stored outside the graph and referenced by contentUri. |
-
-Parent IDs in flat exports are import conveniences, not duplicate graph ownership fields.
-
-| Relationship field | Type | Explanation |
-|---|---|---|
-| REQUIRES_SKILL.requiredScore | Float [0,1] | Passing threshold for this particular Level and skill. |
-| REQUIRES_SKILL.isMandatory | Boolean | Whether this skill is required for overall Level attainment. |
-| REQUIRES_SKILL.expectedOutcome | String | Evidence/task and performance expected in this Level's context. |
-| REQUIRES_SKILL.rubricId, rubricVersion | String | Exact assessment configuration references; rubric lives outside the ontology. |
-| HAS_MODULE.sequence | Positive Integer | Module order within this Course; unique within the Course. |
-| HAS_COURSE_PREREQUISITE.requiredCompletionStatus | Enum PASSED | Learner must pass the prerequisite Course before the dependent Course is unlocked. Completion is a learner record outside the ontology. |
-| HAS_SKILL_PREREQUISITE.readinessOutcome | String | Foundation performance needed to learn the dependent skill. This is a learning dependency, not an implicit Level assessment requirement. |
-
-## Competency and Level attainment
-
-Competency is a derived capability grouping, not an independently scored assessment. Evaluate it for a learner using the requirements of its owning Level and the selected catalog/rubric versions.
-
-1. Resolve every HAS_SKILL member against the owning Level's REQUIRES_SKILL edges.
-2. If any requirement is absent or unapproved, return CATALOG_NOT_READY.
-3. All member skills PASS → ACHIEVED. A known failed member → NOT_YET_ACHIEVED. Otherwise incomplete compatible evidence → NOT_ASSESSED.
-
-Having a skill means a compatible assessment passes the owning Level's threshold and outcome; a course completion or a profile checkbox alone is insufficient. No competency score is averaged or added to the Level score. Store learner results separately from shared ontology definitions.
-
-Level attainment requires every mandatory REQUIRES_SKILL to pass. Competency adds no second assessment gate. Optional skills can still be required for a particular competency without becoming mandatory for the entire Level.
-
-## Pathway validation
-
-Every competency member must have a requirement under its owning Level. Require non-empty competency skill sets and non-empty mandatory Level requirements. Levels may have different skills and courses; do not generate identical sets merely by copying another tier. SFIA and UK descriptions inform local scope; numerical thresholds remain local proposals pending expert calibration.
-
-Prerequisite edges point from the dependent item to its prerequisite. Reject self-loops, duplicate edges, wrong endpoint types and cycles independently in both Course and MicroSkill graphs. Expand transitive prerequisites, including prerequisites outside the selected Level's course set.
-
-HAS_MODULE.sequence is module order within one Course. It does not replace Course prerequisites or skill prerequisites. Validate that the combined Course, module-order and skill dependencies admit a feasible pathway; reject incompatible ordering. A prerequisite skill taught only in a dependent course can create an infeasible pathway even when each individual graph is acyclic.
-
-Course completion does not imply skill mastery or Level attainment. A skill assessment can independently demonstrate mastery; Course prerequisites control course access. Missing course/module teaching coverage produces PATHWAY_UNRESOLVED, not fabricated learning content.
-
-## Source and migration boundary
-
-O*NET remains the source for occupations and sample reported titles; SFIA and UK role frameworks support local Level and skill design. Source locators and verification evidence stay in documentation and evidence manifests, outside database seed fields. The ontology structure and numeric cutoffs are project design decisions, not an official framework schema.
-
-The current 0.7.0 seed implements occupation-owned roles, Level-owned competencies and Level HAS_COURSE links. The 0.5 snapshot is archived. The backend's legacy catalog adapters and live databases have not been migrated. Keep historical learner evidence pinned to its original catalog version.
-
-## RIASEC storage
-
-The six interest fields on Occupation are Float [0,1]. O*NET 31.0 OI values use 1–7; normalize (raw − 1)/6 and store to six decimals. R, I, A, S, E, C mean Realistic, Investigative, Artistic, Social, Enterprising and Conventional. These are occupational-interest descriptors, not assessed competence. All six values must exist; missing data must remain unavailable rather than become zero. Source raw values, URLs, dates and verification evidence stay in the source package, outside graph properties. See [source specification](#source-responsibilities).
-
-## Scoring and readiness fields (0.7.0)
-
-The [scoring contract](#assessment-calculation-and-readiness-contract) defines actualScore, evidence completeness, minimum ratings, exact version context and state precedence. See Rubric Guide in Excel for the same rules.
-
-| Location | Fields | Storage/meaning |
-|---|---|---|
-| TargetRole | canonicalProfileKey | Real graph property for local profile grouping; 48 title records belong to 20 groups. It is not an assessment equivalence or an official O*NET profile ID. |
-| HAS_SKILL_PREREQUISITE | requiredScore, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId, readinessAssessmentVersion | Readiness threshold and exact foundation task/rubric references; endpoints must both be MicroSkill. |
-| HAS_COURSE_PREREQUISITE | requiredCompletionStatus=PASSED | Required completion state of the prerequisite Course; endpoints must both be Course. No skill score/rubric fields. |
-| rubricDefinitions | isRequired, minimumPassingRating, weight, score0..score4, evidenceRule | Versioned criterion configuration outside Neo4j. All current criteria are required. |
-| assessmentPolicies | actualScoreFormula, rating range/type, missing-evidence policy, comparison, criticalCheckIds | Explicit calculation configuration outside Neo4j. No additional critical checks in these versions. |
-| readinessAssessments | assessmentId/version, forSkillId, dependentSkillId, taskPrompt, outcome, evidenceRequirements, supportPolicy | Eleven locally proposed tasks outside Neo4j, referenced by Skill prerequisite edges. |
-
-actualScore = SUM(weight * rating / 4). Missing assessable evidence for any required criterion returns NOT_ASSESSED and null, never zero or a partial average. Scores are compared before rounding. All scoring policies, tasks and definitions require actual expert approval before official decisions.
-
-## Flat export versus graph properties
-
-| Excel/JSON field | Graph relationship | Import behaviour |
-|---|---|---|
-| TargetRoles.occupationId | Occupation HAS_ROLE TargetRole | Validate the single parent, then omit occupationId from node properties. |
-| Levels.targetRoleId | TargetRole HAS_LEVEL Level | Validate the parent, then omit targetRoleId. |
-| Competencies.levelId | Level HAS_COMPETENCY Competency | Validate the parent, then omit levelId. |
-| Courses.levelIds | Level HAS_COURSE Course | Parse as an array in JSON; compare against all incoming HAS_COURSE links, then omit levelIds. Never store a JSON-encoded string on Course. |
-
-The relationship records are imported after these ID-to-edge consistency checks by import/import_neo4j.py. Missing or conflicting links are rejected, not silently inferred. After import, graph edges are the authoritative query model. Rubric/configuration and expert review tabs are not imported into graph entities. Learner results and learner RIASEC assessments remain separate from the catalog.
-
+All 1,891 isMandatory flags and 0.60–0.95 attainment thresholds remain proposals. Level inventories range from 3 to 20 skills; the shortest security-role inventories require completeness review. The Requirement Review, Level Review and Profile Review workbook sheets retain expert inputs. They do not automatically update seed data or approve records. Official use requires ACTIVE + APPROVED with actual reviewer and review time.
 
 ## Assessment calculation and readiness contract
 
-## Formula and typed inputs
+Rubrics are documented outside the graph. [Historical assessment reference](sources/ontology_v07_history/assessment_reference.json) preserves earlier task descriptions, evidence requirements and rubric anchors for author review, not automatic runtime loading. Backend assessment configuration must explicitly select the task/rubric version for each Level–Skill requirement or dependent–foundation skill pair before scoring. Graph thresholds alone cannot select a test.
 
 For an assessment using an exact rubric version:
 
@@ -558,7 +431,7 @@ Each rating is an integer in {0,1,2,3,4}; a missing rating is null. Every weight
 | RUB-SKILL-01 | 1.2 | CORRECTNESS 0.40; VERIFICATION 0.25; AUTONOMY 0.20; REASONING 0.15 | CORRECTNESS >=3 and AUTONOMY >=3 |
 | RUB-READINESS-01 | 1.0 | FOUNDATION_CORRECTNESS 0.50; FOUNDATION_VERIFICATION 0.30; FOUNDATION_REASONING 0.20 | FOUNDATION_CORRECTNESS >=3 |
 
-`rubricDefinitions` contains criterion anchors, evidence rules, isRequired and minimumPassingRating. `assessmentPolicies` contains formula, scale, comparison and missing-evidence semantics. Both are configuration outside Neo4j. No extra critical checks are declared in either policy version (`criticalCheckIds=[]`). Additional safety/security/task gates require an explicitly versioned approved task/policy; the backend must not invent them. Existing minimum correctness/autonomy gates remain explicit.
+The historical assessment reference contains `rubricDefinitions` with criterion anchors, evidence rules, isRequired and minimumPassingRating. `assessmentPolicies` contains formula, scale, comparison and missing-evidence semantics. These are draft reference material outside the import seed; implementing an assessment service still requires an explicit versioned mapping. No extra critical checks are declared in either policy version (`criticalCheckIds=[]`). Additional safety/security/task gates require an explicitly versioned approved task/policy; the backend must not invent them. Existing minimum correctness/autonomy gates remain explicit.
 
 ## Evidence contract and decision precedence
 
@@ -583,115 +456,13 @@ Future explicit critical-check contracts must supply the complete check list, wi
 
 Example: C=3, V=4, A=3, R=2 yields `(0.40*3 + 0.25*4 + 0.20*3 + 0.15*2)/4 = 0.775`. It passes threshold 0.775 and fails 0.77501. If V has no assessable evidence, return NOT_ASSESSED and null regardless of the other ratings.
 
+
 ## Skill readiness
 
-`(dependent:MicroSkill)-[p:HAS_SKILL_PREREQUISITE]->(foundation:MicroSkill)` means the learner needs foundation readiness before learning the dependent skill.
+A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A. Only requiredScore remains on this edge, with a proposed 0.75 threshold on the 11 retained pairs. Task/rubric lookup is external and must identify both skill endpoints and catalog version. Missing mapping or unapproved task gives CATALOG_NOT_READY; missing evidence gives NOT_ASSESSED. Neither grants readiness. Attainment scores and readiness scores are not interchangeable without an explicit approved equivalence.
 
-Resolve p.readinessAssessmentId and p.readinessAssessmentVersion in `readinessAssessments`. Confirm forSkillId equals the foundation ID and dependentSkillId equals the dependent ID. Use p.rubricId/version to score its explicit taskPrompt, outcome and evidence requirements. The eleven proposed thresholds are p.requiredScore=0.75, pending expert calibration. Use the same formula and missing-evidence rules above with the readiness rubric's own criteria.
+## Release and runtime boundary
 
-Readiness PASS unlocks this dependency; FAIL or NOT_ASSESSED does not. CATALOG_NOT_READY means readiness cannot be decided. Do not silently substitute the foundation skill's Junior/Middle/Senior attainment score, because task context and rubric differ. No expiry is imposed in this snapshot; reuse requires the same learner, prerequisite edge/catalog, task and rubric versions, and non-revoked evidence. If adding an expiry policy later, version and apply it explicitly.
+Excel, JSON, import validation, schema and diagram now describe 0.8.0. Historic migrations V1–V3 remain immutable; the backend adds a forward schema migration to retire the Course constraint. Existing legacy role/skill APIs still use their earlier JobDomain/MacroCompetency contract and must not be pointed at this isolated catalog until their domain/API and cross-store references are converted. The legacy development seeder rejects occupation-based catalogs to prevent mixing snapshots. This release does not rewrite learner results or a running database.
 
-## Course prerequisite
-
-`(dependent:Course)-[p:HAS_COURSE_PREREQUISITE]->(foundation:Course)` requires a completion record for the same learner and foundation Course with status `PASSED`, at the selected catalog/content context. IN_PROGRESS, FAILED, COMPLETED without PASSED, and missing records do not satisfy it. There is no score/rubric on this edge. Course completion is an external service contract and cannot be inferred from module visits or skill readiness. Authors must approve the actual Course completion policy before issuing PASSED.
-
-Both dependency graphs must be acyclic. Expand transitive prerequisites. Module ordering is scoped to (Course, LearningModule), allowing a module definition to be reused across courses without pretending one global order or completion record applies everywhere.
-
-## Derived competency and Level
-
-Competency ACHIEVED requires all member skills to PASS under its owning Level. No competency score is calculated. Level attainment requires every isMandatory=true requirement to pass; do not average skill scores to compensate for a failed mandatory skill. Unapproved/incomplete catalog definitions produce CATALOG_NOT_READY. For otherwise valid definitions, all required outcomes PASS gives MET/ACHIEVED; a known failure gives NOT_YET_MET/NOT_YET_ACHIEVED; otherwise missing assessments gives NOT_ASSESSED. This aggregation rule is distinct from missing-criterion precedence inside one skill assessment.
-
-## Learner Interests are separate
-
-Occupation.interest* values are occupational RIASEC reference vectors, not learner results. Store each learner assessment separately with learnerId, assessmentId, instrumentId, instrumentVersion, assessedAt, rawScores, normalizedScores and normalizationMethodVersion. A validated instrument/scoring procedure must define how its six raw scores are converted. Do not assume learner raw ranges equal O*NET OI 1–7, and never write learner results onto Occupation nodes. Career-interest similarity may support recommendation; it must not change actualScore or serve as a skill pass threshold.
-
-
-
-## Course recommendation rules
-
-## Candidate matching
-
-For the selected role and exact Level, load its complete REQUIRES_SKILL set. Construct the confirmed gap set from compatible skill assessment results under those requirements: FAIL means an assessed gap. NOT_ASSESSED means assessment is missing; present an assessment action or an explicitly labelled learning option rather than silently treating it as demonstrated failure. CATALOG_NOT_READY blocks official decisions.
-
-For each linked Course traverse HAS_MODULE and then TEACHES. Compute:
-
-`matchedGaps = requiredSkillGaps ∩ UNION(module.TEACHES)`
-
-Keep the Course only if matchedGaps is non-empty. Return each matching Module ID, its matched skill IDs and contentUri so the reason can be shown and reviewed. An overlap of one is sufficient when it addresses the actual learner gap. Counts of linked Levels/profiles and overlap with the entire Level inventory are audit indicators, not substitutes for learner gap matching.
-
-Example: if the only gap is MS-CORE02 (version control), CRS-CORE-J-READ matches through MOD-READ-CORE02. The same Course is not a gap match when the only gap is MS-FS06 (debugging), even when it has HAS_COURSE for the selected Level. Matching a version-control module does not make the programming/release modules equally relevant.
-
-The matching rules were checked with six tests for empty gaps, single-skill coverage, wrong-Level skills and actual Course–Module–Skill traversal.
-
-## Final eligibility
-
-Before returning an official recommendation require:
-
-1. Complete selected role/Level/catalog and assessment configuration are approved and context-compatible. Do not discard unapproved requirements to shrink the gap set.
-2. Course, relevant Module/content version and all traversed associations are published. Require ACTIVE, APPROVED, a real reviewer/time, and deployed content matching the reviewed version.
-3. An actual content review confirms the matching Module's outcome, task scenario, tool assumptions and depth fit the role and Level. A shared skill ID or framework link alone is insufficient. Record approval at the (Level, Course, matching Module, matched Skill) context so approval for one skill is not stretched to all others. The Course content audit below supplies local findings; expert approval remains required.
-4. All Course prerequisites have compatible PASSED records and all required Skill prerequisites have readiness PASS under their versioned assessment contracts. Expand dependencies transitively. Unmet prerequisites produce a labelled preparation step or blocked candidate, never an unlocked Course.
-5. The Course/module sequence and skill dependencies admit a feasible pathway. Highlighting a matched Module does not authorize skipping required Course modules. If focusing a Module requires a lighter route, authors must define and approve that route explicitly.
-
-The current seed is pending review, so no official Course recommendation is eligible. The current local audit found plausible conceptual reuse as well as context/depth gaps; none of its local classifications changes reviewStatus to APPROVED.
-
-## Context adaptation and ranking boundary
-
-The current CORE collections are general source-reading/practice scaffolds. They can support foundation gaps across roles, but role-specific labs and Middle/Senior depth remain pending authoring. QA automation, application services and data engineering collections have specific examples and tools; inspect their fit when transferred to another profile.
-
-Prefer approved role/outcome fit and demonstrated gap coverage in ranking. Do not boost a Course because it appears under many role titles. Group role alternatives by canonicalProfileKey/tier as defined in the canonical-profile contract. Total Course relevance and workload/prerequisite cost may differ from the relevance of one matching Module; the exact ranking weights are outside this dataset contract.
-
-If no approved content covers a confirmed gap, return PATHWAY_UNRESOLVED for that gap. Keep unknown/blocked and covered gaps visible; an unrelated Course is not a substitute.
-
-[Content audit](#course-content-audit) and [632-pair content evidence](sources/local_review/course_link_content_audit.json).
-
-
-
-## Course content audit
-
-## Verified coverage
-
-632 Level–Course pairs; 151 intersect exactly one required skill; 326 intersect at most two. All 85 module content files and nine linked local topic lessons were read; declared teaching skills appear in the associated content. This verifies stated scope, not depth, learning effectiveness or role suitability.
-
-A one-skill match can be useful for a one-skill learner gap. Do not remove a link solely for low overlap, or rank a course by the number of Level links it has.
-
-## Broadest course reuse
-
-| Course | Levels | Profiles | One-skill pairs | At most two | Content finding |
-|---|---:|---:|---:|---:|---|
-| CRS-CORE-J-READ | 30 | 12 | 7 | 22 | Modules are generic source-reading/practice scaffolds for programming, version control, requirements and controlled release. These foundations can transfer across technical roles; no role-specific worked lab is embedded. |
-| CRS-CORE-M-READ | 30 | 12 | 7 | 22 | Modules are generic source-reading/practice scaffolds for programming, version control, requirements and controlled release. These foundations can transfer across technical roles; no role-specific worked lab is embedded. |
-| CRS-CORE-S-READ | 30 | 12 | 7 | 22 | Modules are generic source-reading/practice scaffolds for programming, version control, requirements and controlled release. These foundations can transfer across technical roles; no role-specific worked lab is embedded. |
-| CRS-FS-M-QUALITY | 20 | 9 | 2 | 14 | Lessons use application interfaces, request/authorization/transaction flows and automated code checks. A query/unit-test gap can justify a targeted module, but a software-service scenario needs review for database/security/QA work. |
-| CRS-FS-S-QUALITY | 20 | 9 | 2 | 14 | Lessons use application interfaces, request/authorization/transaction flows and automated code checks. A query/unit-test gap can justify a targeted module, but a software-service scenario needs review for database/security/QA work. |
-| CRS-DE-J-MODEL | 17 | 9 | 1 | 7 | Lessons use data models, warehouse/pipeline operations and data-quality fixtures. Adapt the exercise to the linked role when its primary task is architecture, integration or systems analysis. |
-| CRS-DE-M-MODEL | 17 | 9 | 1 | 7 | Lessons use data models, warehouse/pipeline operations and data-quality fixtures. Adapt the exercise to the linked role when its primary task is architecture, integration or systems analysis. |
-| CRS-DE-S-MODEL | 17 | 9 | 1 | 7 | Lessons use data models, warehouse/pipeline operations and data-quality fixtures. Adapt the exercise to the linked role when its primary task is architecture, integration or systems analysis. |
-| CRS-INF-J-READ | 20 | 8 | 3 | 4 | Modules are source-reading/practice scaffolds for infrastructure outcomes; provide an approved sandbox and role/tier-specific operational lab before approval. |
-| CRS-INF-M-READ | 20 | 8 | 3 | 4 | Modules are source-reading/practice scaffolds for infrastructure outcomes; provide an approved sandbox and role/tier-specific operational lab before approval. |
-| CRS-INF-S-READ | 20 | 8 | 3 | 4 | Modules are source-reading/practice scaffolds for infrastructure outcomes; provide an approved sandbox and role/tier-specific operational lab before approval. |
-| CRS-SEC-M-READ | 20 | 8 | 1 | 12 | Modules are source-reading/practice scaffolds for security outcomes; provide an approved sandbox, role-specific control/incident scenario and tier-specific exercise before approval. |
-| CRS-SEC-S-READ | 20 | 8 | 1 | 12 | Modules are source-reading/practice scaffolds for security outcomes; provide an approved sandbox, role-specific control/incident scenario and tier-specific exercise before approval. |
-| CRS-FS-J-SERVICE | 19 | 8 | 8 | 11 | Lessons use application interfaces, request/authorization/transaction flows and automated code checks. A query/unit-test gap can justify a targeted module, but a software-service scenario needs review for database/security/QA work. |
-| CRS-FS-M-SERVICE | 19 | 8 | 8 | 11 | Lessons use application interfaces, request/authorization/transaction flows and automated code checks. A query/unit-test gap can justify a targeted module, but a software-service scenario needs review for database/security/QA work. |
-
-## Findings and required changes
-
-- CORE J/M/S: generic programming/version-control/requirements/release foundations can transfer across the twelve linked profiles. For example, a QA role with a version-control gap should match the version-control module, not be assigned programming modules merely because the whole Course is linked. The shared modules contain a general sandbox instruction, not role-specific worked labs. Middle/Senior rely on Level.expectedOutcome outside the Course; tier-specific exercises must be authored and approved.
-- ARC/CORE/GOV/INF/SEC reading collections: provide framework scope and a practice scaffold. They support candidate discovery but need detailed teaching and role/tier-specific labs before publication. The report flags reading-only collections and missing tier-specific labs.
-- QA-AUTO mapped to developer/database/integration profiles: unit-test or integration-test concepts can transfer, but the provided worked example and resources centre on test automation/Playwright. Review test object and framework fit; one shared MS-FS07 skill does not justify treating every module as relevant.
-- FS-SERVICE mapped to database/security/QA profiles: query, authorization or interface checks may target a real gap. The current inventory-transfer/API scenario needs adaptation when the target work is database architecture or security analysis.
-- DE courses mapped to architecture/integration/system-analysis profiles: data models and mappings can be relevant, but warehouse/pipeline exercises may exceed the actual selected skill gap or use a different role context. Identify the exact matching module and an appropriate evidence task.
-
-These are content adaptation findings, not claims that the associated concepts are irrelevant. No link has been expert-approved by this audit. Content suitability requires an assessor to confirm the matched outcome, scenario, tool assumptions, depth and prerequisite burden.
-
-## Recommendation rule
-
-Treat HAS_COURSE as candidate membership only. Resolve Level REQUIRES_SKILL, Course HAS_MODULE and Module TEACHES. Retain a candidate only when at least one module teaches a confirmed missing skill required by the selected Level. Return matching module IDs and skill IDs as the explanation. Unassessed skills are diagnostic needs unless the product explicitly asks the learner to learn them; do not silently label them demonstrated failures.
-
-After gap matching, check actual content-context approval, publication states and both prerequisite types. Current definitions are pending review, so matching results are preview candidates, not official recommendations. Expand course/skill prerequisites separately and preserve module sequence; relevant-module highlighting does not authorize skipping required course modules. Additional prerequisite courses can be returned as labelled preparation steps even when they do not address the original gap directly.
-
-
-## Retained supporting files
-
-`import/` contains the JSON seed, three import/validation scripts and referenced lesson content. `sources/` preserves official O*NET/ESCO snapshots and local mapping/tier/prerequisite evidence. `sources/local_review/` contains the current [canonical profile audit](sources/local_review/canonical_profile_audit.json) and [Course content audit](sources/local_review/course_link_content_audit.json); these are local review findings, not official source datasets or expert approval. The Excel workbook retains requirement/Level/profile review sheets. Superseded snapshots, release ZIPs, previews, duplicate Markdown files and intermediate checks have been removed.
+Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed.json supplies active graph data.

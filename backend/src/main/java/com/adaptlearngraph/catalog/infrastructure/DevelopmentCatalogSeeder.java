@@ -14,6 +14,12 @@ public final class DevelopmentCatalogSeeder {
     public void seed() {
         try (var session = driver.session()) {
             session.executeWrite(transaction -> {
+                // This fixture belongs to the legacy API contract; never mix it with the ontology dataset.
+                if (transaction.run("MATCH (o:Occupation) RETURN count(o) AS count")
+                        .single().get("count").asLong() > 0) {
+                    throw new IllegalStateException(
+                            "Legacy development seed cannot run against an occupation-based ontology catalog");
+                }
                 for (String statement : List.of(
                         // 1. Domains
                         """
