@@ -1,5 +1,7 @@
 # Configure Baseline Assessment
 
+> **Superseded for the active implementation (2026-10-14):** The user-approved [baseline database define](../../../../../.project/requirements/active/REQ-002-003-009-assessment/2026-10-13-baseline-config-generation-define.md) assigns this configuration to L&D and uses a versioned `role -> skill -> Easy/Medium/Hard exact counts` blueprint. Enabled role/skill references are checked against the active catalog, and insufficient published-question coverage blocks saving with required/available/missing details; disabled roles are retained without participating in validation. L&D can generate an immutable draft manifest from an exact blueprint version; retry reloads the same manifest and regenerate creates the next assessment version. L&D reviews the exact current content hash before publishing; review freezes the manifest and publication freezes the version. The generated/review/publish APIs expose question presentation data but not answer keys. The Domain Expert, adaptive depth, uniform cap and immediate-activation rules below are retained only as historical requirements until a dedicated cleanup pass classifies and moves them; they are not the current API contract.
+
 **Function ID:** REQ-002-F02  
 **Actor:** Domain Expert  
 **Status:** In clarification  

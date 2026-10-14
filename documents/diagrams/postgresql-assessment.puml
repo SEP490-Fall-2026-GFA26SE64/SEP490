@@ -36,6 +36,9 @@ class item_version {
     prompt : text
     response_schema : jsonb
     protected_key : jsonb
+    micro_skill_id? : text
+    micro_skill_name_snapshot? : text
+    difficulty? : text
     publication_state : text
     content_hash : platform.content_hash
 }
@@ -45,10 +48,20 @@ class assessment_version {
     version : integer
     title : text
     purpose : text
-    pass_threshold : platform.unit_interval
+    pass_threshold? : platform.unit_interval
     scoring_version : text
     publication_state : text
     content_hash : platform.content_hash
+    blueprint_id? : uuid [FK]
+    blueprint_version? : integer [FK]
+    generation_seed? : bigint
+    created_by? : uuid [FK]
+    created_at? : timestamp with time zone
+    generation_idempotency_key? : text
+    generation_request_hash? : platform.content_hash
+    reviewed_by? : uuid [FK]
+    reviewed_at? : timestamp with time zone
+    reviewed_content_hash? : platform.content_hash
 }
 class assessment_availability {
     assessment_version_id : uuid [PK, FK]
@@ -63,6 +76,8 @@ class assessment_item {
     item_version_id : uuid [FK]
     required : boolean
     scoring_weight : numeric
+    role_id? : text
+    role_name_snapshot? : text
 }
 class item_skill_mapping {
     mapping_version_id : uuid [PK]
@@ -70,6 +85,38 @@ class item_skill_mapping {
     skill_ref_id : uuid [FK]
     skill_kind : text [FK]
     evidence_weight : platform.positive_weight
+}
+class baseline_blueprint_version {
+    blueprint_id : uuid [PK]
+    version : integer [PK]
+    name : text
+    occupation_id? : text
+    occupation_name_snapshot? : text
+    created_by : uuid [FK]
+    idempotency_key : text
+    request_hash : platform.content_hash
+    created_at : timestamp with time zone
+}
+class baseline_blueprint_role {
+    blueprint_id : uuid [PK, FK]
+    blueprint_version : integer [PK, FK]
+    role_id : text [PK]
+    role_name_snapshot : text
+    enabled : boolean
+    total_question_count : integer
+    easy_score_weight : platform.unit_interval
+    medium_score_weight : platform.unit_interval
+    hard_score_weight : platform.unit_interval
+}
+class baseline_blueprint_skill {
+    blueprint_id : uuid [PK, FK]
+    blueprint_version : integer [PK, FK]
+    role_id : text [PK, FK]
+    micro_skill_id : text [PK]
+    micro_skill_name_snapshot : text
+    easy_question_count : integer
+    medium_question_count : integer
+    hard_question_count : integer
 }
 class module_assessment_binding {
     module_ref_id : uuid [PK, FK]
@@ -210,6 +257,9 @@ class completion_pass {
 }
 activity_requirement --> assessment_assignment
 activity_requirement --> completion_pass
+baseline_blueprint_version --> baseline_blueprint_role
+baseline_blueprint_version --> assessment_version
+baseline_blueprint_role --> baseline_blueprint_skill
 assessment_assignment --> assessment_attempt
 assessment_attempt --> assessment_result
 assessment_attempt --> evidence_observation

@@ -1,5 +1,7 @@
 # Baseline Knowledge Assessment
 
+> **Current implementation direction (2026-10-14):** The user-approved L&D blueprint contract in the active [database define](../../../../../.project/requirements/active/REQ-002-003-009-assessment/2026-10-13-baseline-config-generation-define.md) supersedes the legacy Domain Expert/adaptive-settings description below for the current implementation. L&D configures exact Easy/Medium/Hard counts per TargetRole and MicroSkill; every edit creates a new immutable version. Enabled roles and skills must match the active catalog, and save is rejected with required/available/missing details when published-question coverage is insufficient. An exact blueprint version can generate a persisted assessment draft whose item versions and role positions remain stable across retry/reload; regenerate creates the next assessment version. L&D must review the exact current content hash before publishing, after which the version is immutable. The local L&D screen at `/ld-manager/assessment-bank` now drives this API flow; its development-only catalog fixture remains provisional until the Catalog owner provides an L&D query contract. The older content is retained as historical input pending a dedicated feature-document cleanup and must not be treated as the implemented contract.
+
 Establish knowledge evidence for target-role micro-skills and their prerequisites, using adaptive questions grouped by micro-skill and baseline settings configured by the Domain Expert for the role.
 
 **Source:** [REQ-002](../../PRODUCT_OVERVIEW.md)  
