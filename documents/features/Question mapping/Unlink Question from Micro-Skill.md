@@ -1,5 +1,11 @@
 # Unlink Question from Micro-Skill
 
+## Current Scope Alignment
+Expert unlinks question mappings within assigned assessment scope while respecting approved/versioned content and evidence history; policy remains open. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-017-F02  
 **Actor:** Domain Expert  
 **Status:** Pending clarification  

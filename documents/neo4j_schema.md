@@ -1,5 +1,21 @@
 # NEO4J SCHEMA V5 — GIẢI THÍCH NODE VÀ RELATIONSHIP
 
+## Current Scope Alignment
+
+**Product authority:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-14. This document inventories the existing V5 technical schema; it does not assert that all revised product concepts are represented or implemented.
+
+- The product serves one organization with System Administrator, L&D Manager, Expert, and Employee. Existing `organizationId` is compatibility/scope metadata, not a requirement for multi-organization registration or billing.
+- L&D manages disciplines and Expert assignments, creates/assigns target roles, configures baseline rules, publishes completed roles, and approves learning offerings. Expert owns assigned-discipline content and assigned-role requirements. These permissions are not enforced merely by graph labels.
+- `JobDomain` groups roles in V5. Do not silently rename it to Discipline or infer discipline assignments/membership: that mapping remains a design decision.
+- Separate Expert configuration completion from L&D publication. Existing `TargetRole.status`/`assignedExpertId` do not alone establish this workflow or authorize Employee availability.
+- Modules now contain courses/content and require L&D organizational approval. V5 `LearningModule.sourceUrl` is retained; course membership, content versions, submission/approval and independent learning availability require an agreed extension/mapping.
+- Baseline/RIASEC evidence, reviewed AI role guidance, competency estimates, progress and pathways are transactional concerns. Initial Expert confirmation gates pathway start; new evidence can change remaining learning needs. RIASEC is interest evidence, not knowledge mastery.
+- Required proficiency/relative importance, skill descriptions and prerequisites must be mapped under an agreed model. Do not add mock/dataset attributes to runtime entities without architecture approval.
+
+No properties, nullability, constraints or node/relationship inventories below are changed by this documentation alignment. [Architecture](ARCHITECTURE.md) records the design gaps; [feature catalog](features/README.md) records current requirements. Released ontology datasets use their own preview schema and are not automatically a replacement for V5.
+
+## Technical Baseline Snapshot
+
 ## 1. Phạm vi schema
 
 Schema Neo4j hiện tại gồm:

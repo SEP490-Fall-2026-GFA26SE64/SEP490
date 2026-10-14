@@ -1,5 +1,11 @@
 # Generate Initial Adaptive Pathway
 
+## Current Scope Alignment
+System proposes ordered modules using gaps, outcomes and prerequisites and sends the first Employee/role pathway for Expert review/adjustment/confirmation before learning starts. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-042-F01  
 **Actor:** Automated system  
 **Status:** Pending clarification  

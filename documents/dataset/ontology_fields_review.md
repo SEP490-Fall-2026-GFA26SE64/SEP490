@@ -1,5 +1,13 @@
 # Ontology fields, publication and assessment rules
 
+## Current Scope Alignment
+
+**Product authority:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-14. The release-specific fields/rubric below are preview design, not automatically approved runtime schema or current assessment policy.
+Expert reviews subject-matter definitions and calibrates evidence; L&D publishes Expert-completed target roles and approves learning modules/courses/assessments. Dataset `APPROVED` metadata does not by itself prove L&D publication or organizational approval. L&D owns baseline competency coverage/question selection/scoring; Expert configures module assessments. Proficiency/tracing models and RIASEC instruments remain open.
+Preserve released values/history and reconcile discipline membership, separate publication/approval, courses and independent learning with [architecture](../ARCHITECTURE.md) before implementation. Do not silently copy preview fields into V5 or rewrite archived approvals.
+
+## Dataset Release Baseline
+
 Catalog version: 0.3.1. Rubric version: 1.1. Updated 12 October 2026.
 
 The supplied `ontology_v03_high_priority_fixed.xlsx` is the baseline for this release. Its detailed requirement tasks and rubric 1.1 supersede the earlier generated v0.3 wording. The reviewed workbook, this document, the dataset specification and `ontology_v031_en.json` form one release. Earlier v0.3 exports are historical and must not be mixed with this release.

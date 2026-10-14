@@ -1,5 +1,11 @@
 # Authenticate User
 
+## Current Scope Alignment
+Authenticate System Administrator, L&D Manager, Expert, and Employee within the internal single-organization system. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md). Legacy actor codes require explicit migration design.
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-037-F01  
 **Actor:** Employee, Domain Expert, Organization Administrator, Platform Administrator  
 **Status:** Pending clarification  

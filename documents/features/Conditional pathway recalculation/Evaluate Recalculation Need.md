@@ -1,5 +1,11 @@
 # Evaluate Recalculation Need
 
+## Current Scope Alignment
+System evaluates whether new assessment evidence changes remaining learning needs. A failed question is not the sole allowed trigger; a passed result does not categorically forbid reevaluation. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md). Thresholds/no-change criteria remain open.
+
+## Historical Failure-Driven Specification
+Conflicting triggers and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-043-F01  
 **Actor:** Automated system  
 **Status:** Pending clarification  

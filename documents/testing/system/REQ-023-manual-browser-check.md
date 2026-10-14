@@ -1,5 +1,10 @@
 # REQ-023 Manual Browser System Check
 
+## Current Scope Alignment
+This is the old-contract browser procedure, not proof of revised acceptance. Follow [current system criteria](README.md#current-scope-alignment); revalidate Expert configuration/completion, separate L&D publication/approval and current actor permissions after implementation.
+
+## Historical Manual Procedure
+
 Use this checklist against the local development Compose stack to verify the browser-observed end-to-end target role management and expert authoring workflows (REQ-023-F01 through REQ-023-F05).
 
 ---

@@ -1,5 +1,13 @@
 # Role-centred ontology dataset and source evidence
 
+## Current Scope Alignment
+
+**Scope authority:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-14. This release supplies single-organization source evidence and preview learning content, not completed product implementation.
+Experts validate discipline knowledge; L&D publishes role configurations completed by Experts and approves learning offerings. Release technical review labels, thresholds and rubric are not a substitute for these distinct organizational decisions. Baseline/RIASEC role guidance, discipline assignments and independent learning use the current [feature catalog](../features/README.md); old benchmark workspace commitments do not apply.
+No released source, JSON/workbook, content or hash is changed by this alignment. Runtime storage mapping remains subject to [architecture](../ARCHITECTURE.md), not inferred from release fields.
+
+## Dataset Release Baseline
+
 Catalog version 0.3.1. Rubric version 1.1. Updated 12 October 2026.
 
 ## Authoritative release and scope

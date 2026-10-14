@@ -1,5 +1,11 @@
 # View Subscription Offerings
 
+## Current Scope Alignment
+Retired SaaS scope; follow the [disposition](README.md#current-scope-alignment). No current subscription selection workflow is required.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-028-F01  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

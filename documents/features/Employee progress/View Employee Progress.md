@@ -1,5 +1,11 @@
 # View Employee Progress
 
+## Current Scope Alignment
+L&D Manager monitors employee profiles, gaps, assessment results and progress, including independent skill learning. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); detailed record access requires privacy agreement.
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-025-F01  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

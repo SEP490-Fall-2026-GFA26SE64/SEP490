@@ -1,5 +1,11 @@
 # Recalculate Adaptive Pathway
 
+## Current Scope Alignment
+System revises remaining system-selected modules when new evidence changes learning needs. Exact revision criteria and override preservation remain open; automatic revision after every result is not inferred. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Failure-Driven Specification
+Conflicting triggers and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-043-F02  
 **Actor:** Automated system  
 **Status:** Pending clarification  

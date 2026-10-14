@@ -1,5 +1,11 @@
 # Send Email Notification
 
+## Current Scope Alignment
+System sends only separately agreed account/learning/review events to authorized current actors. Billing events are excluded; prior baseline-blocked Expert notifications require revalidation for L&D ownership. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-039-F01  
 **Actor:** Automated system; authorized account holders are recipients  
 **Status:** Pending clarification  

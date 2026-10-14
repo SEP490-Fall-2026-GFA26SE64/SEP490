@@ -1,5 +1,11 @@
 # Update Account
 
+## Current Scope Alignment
+System Administrator updates account information and activation/deactivation status. Employee-editable personal fields belong to REQ-056. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-022-F03  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

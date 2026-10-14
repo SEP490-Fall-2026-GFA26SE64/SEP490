@@ -1,5 +1,11 @@
 # Review Initial Adaptive Pathway
 
+## Current Scope Alignment
+Expert reviews the first Employee/role pathway and its evidence, includes/excludes modules through REQ-020, and confirms it before Employee starts. Initial review is mandatory, not an unresolved advisory choice. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); reviewer allocation/re-review/reasons remain open.
+
+## Historical Specification
+The earlier mandatory-versus-advisory open question below is resolved by current scope; other details need clarification.
+
 **Function ID:** REQ-019-F01  
 **Actor:** Domain Expert  
 **Status:** Pending clarification  

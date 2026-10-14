@@ -1,5 +1,10 @@
 # REQ-001-F02 Choose Target Role — Test Plan
 
+## Current Scope Alignment
+This is evidence of the recorded contract, not revised scope. [Current test criteria](README.md#current-scope-alignment) require baseline/RIASEC -> Expert-reviewed guidance -> selection of a published role. Previous selection/idempotency runs retain their dates/counts but do not certify that revised sequence.
+
+## Historical Test Plan and Evidence
+
 **Status:** Clusters 2–4 complete/pass and evidence synchronized 2026-10-02; production owner-adapter gate remains
 **Gate:** Approved by the user on 2026-10-02
 

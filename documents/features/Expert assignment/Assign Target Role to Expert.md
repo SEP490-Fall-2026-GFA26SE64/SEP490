@@ -1,5 +1,11 @@
 # Assign Target Role to Expert
 
+## Current Scope Alignment
+L&D Manager assigns a target role to an eligible Expert for competency configuration. Discipline assignment is separate, not automatically granted. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-024-F01  
 **Actor:** L&D Manager / Organization Administrator  
 **Status:** Implemented  

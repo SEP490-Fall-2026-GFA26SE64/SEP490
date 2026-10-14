@@ -1,5 +1,12 @@
 # Import ontology 0.3.1 into Neo4j
 
+## Current Scope Alignment
+
+**Scope authority:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-14. The procedure below targets an isolated review instance and the release-specific preview schema, not production V5.
+Importing or retaining `ACTIVE`/review metadata does not publish a role or approve organizational learning use. L&D must publish Expert-completed role configurations and approve modules/courses/assessments through agreed workflows; discipline authorization is separately required. Review [architecture](../ARCHITECTURE.md) and [schema](../neo4j_schema.md) before runtime integration. No current PayOS/subscription or multi-organization workspace is implied.
+
+## Dataset Release Baseline
+
 This guide imports [ontology_v031_en.json](ontology_v031_en.json) into a dedicated Neo4j database for dataset review and graph exploration. It preserves the six ontology node types, seven relationship types and all review statuses. It does not implement the platform's assessment engine.
 
 ## 1. Choose the correct input and database

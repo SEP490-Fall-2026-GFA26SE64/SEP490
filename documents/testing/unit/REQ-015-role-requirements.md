@@ -1,5 +1,10 @@
 # REQ-015 — Role Requirements Unit Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current unit criteria](README.md#current-scope-alignment). Revalidate Expert competency/skill proficiency/importance, completion submission and L&D publication without requirement editing. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contracts:**
 - [REQ-015-F01 Link Micro-Skill to Target Role](../../features/Role%20requirements/Link%20Micro-Skill%20to%20Target%20Role.md)
 - [REQ-015-F02 Unlink Micro-Skill from Target Role](../../features/Role%20requirements/Unlink%20Micro-Skill%20from%20Target%20Role.md)

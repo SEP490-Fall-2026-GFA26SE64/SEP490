@@ -1,5 +1,10 @@
 # REQ-011 — Assigned Target Roles System Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current system criteria](README.md#current-scope-alignment). Revalidate L&D-assigned roles, separate discipline authoring scope and authorized review access. Dates/counts below certify only their recorded contract.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)  
 **Level:** System (Docker Compose Stack & UI Workspace Persona Isolation)  
 **Status:** PASSED (2026-10-01)

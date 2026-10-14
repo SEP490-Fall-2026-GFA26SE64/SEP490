@@ -1,5 +1,11 @@
 # Create Target Role
 
+## Current Scope Alignment
+L&D Manager creates a role and assigns an Expert for competency configuration; creation does not publish it. Expert completes requirements and L&D controls later publication. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-023-F01  
 **Actor:** L&D Manager  
 **Status:** Implemented  

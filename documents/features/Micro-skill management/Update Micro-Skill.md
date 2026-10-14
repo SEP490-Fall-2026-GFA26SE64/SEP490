@@ -1,5 +1,11 @@
 # Update Micro-Skill
 
+## Current Scope Alignment
+Expert updates skills in assigned disciplines, including descriptions and agreed proficiency representation; assess history/version impacts before changes. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-012-F03  
 **Actor:** Domain Expert  
 **Status:** Implemented  

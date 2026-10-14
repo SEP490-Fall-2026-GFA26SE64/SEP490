@@ -1,5 +1,11 @@
 # View Cancellation Status
 
+## Current Scope Alignment
+Retired SaaS scope; follow the [disposition](README.md#current-scope-alignment). No current subscription/cancellation workflow or actor is required.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-029-F02  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

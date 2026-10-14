@@ -1,5 +1,13 @@
 # Role-centred ontology dataset
 
+## Current Scope Alignment
+
+**Scope authority:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-14. This is a single-organization preview dataset, not proof of production schema or approval implementation.
+Expert technical review/calibration does not replace L&D organizational authority: L&D publishes roles after completed Expert configuration and approves modules, courses and assessments. Existing release review metadata must not be interpreted as already implementing those distinct permissions/workflows. Baseline rules belong to L&D; module assessment rules belong to Expert. RIASEC/guidance and discipline assignments require separate design.
+Release JSON, source evidence, workbooks, hashes and content IDs remain unchanged. Benchmark outputs are separate historical research, not a committed product workspace. Reconcile preview fields/course membership with [runtime architecture](../ARCHITECTURE.md) and [V5 schema](../neo4j_schema.md) before any runtime migration.
+
+## Dataset Release Baseline
+
 Current catalog: **0.3.1**. Assessment rubric: **1.1**.
 
 This directory is the authoritative working copy for the ontology dataset. Start with the [review workbook](exports/ontology_v031_reviewed.xlsx), [field definitions and assessment rules](ontology_fields_review.md), and [dataset specification and source evidence](ontology_dataset_specification.md).

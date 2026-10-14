@@ -1,5 +1,10 @@
 # REQ-001-F01 — View Target Roles test plan and evidence
 
+## Current Scope Alignment
+This is evidence of the recorded contract, not revised scope. [Current test criteria](README.md#current-scope-alignment) require published-role availability and reviewed-guidance flow; earlier `ACTIVE`-only catalog tests do not certify those gates. Dates/counts below are preserved.
+
+## Historical Test Plan and Evidence
+
 **Status:** Cluster 2 executable tests passed; full-stack catalog/detail browser flow passed through the shared REQ-001 Playwright suite; broader F01-only browser coverage remains partial  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-001-F01-view-target-roles.md) | [Integration Test](integration/REQ-001-F01-view-target-roles.md) | [System Test](system/REQ-001-F01-view-target-roles.md)
 **Feature contract:** [View Target Roles](../features/Target%20role%20selection/View%20Target%20Roles.md)

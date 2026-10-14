@@ -1,5 +1,11 @@
 # Configure Baseline Assessment
 
+## Current Scope Alignment
+**Current actor:** L&D Manager. Define baseline competencies covered, question selection and scoring. Expert ownership of baseline configuration is superseded; Expert configures module assessments separately. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md). Earlier per-role settings/defaults/limits/model/coverage and blocked-start notifications require revalidation against baseline before role guidance/selection.
+
+## Historical Specification and Decision Log
+Conflicting confirmed rules, actors and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-002-F02  
 **Actor:** Domain Expert  
 **Status:** In clarification  

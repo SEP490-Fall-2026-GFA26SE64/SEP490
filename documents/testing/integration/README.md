@@ -1,8 +1,15 @@
 # Integration Testing Directory & Standards
 
+## Current Scope Alignment
+
+Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Test agreed discipline/role assignment, L&D publication/approval, reviewed guidance, independent progress/evidence, retained versions and idempotent tracing/pathways against disposable stores. Assert every agreed architectural field after round-trip; do not invent new fields from preview datasets.
+Existing organization isolation fixtures and legacy actor-code checks remain technical baseline evidence. They do not require multi-organization registration or certify new actor permissions. PASSED labels below refer to prior contracts only.
+
+## Existing Execution Guides and Historical Evidence
+
 **Location:** `backend/src/test/java/com/adaptlearngraph/`
 
-Integration testing in this workspace validates real database round-trips, graph edge creation, multi-tenant isolation, and constraint enforcement using disposable Testcontainers (PostgreSQL 16/17 and Neo4j 5.26-community), completely independent of shared development Compose volumes.
+Integration testing validates real database round-trips, graph relationships, authorized organization/assignment scope, and constraints using disposable Testcontainers (PostgreSQL 16/17 and Neo4j 5.26-community), independent of shared development Compose volumes. Historical cross-organization fixtures remain defense-in-depth, not a SaaS registration workflow.
 
 > [!NOTE]
 > Detailed test cases, database fixtures, and execution evidence are maintained in **dedicated markdown files per requirement (REQ)** below. This README serves as the index and execution guide, not the central registry.

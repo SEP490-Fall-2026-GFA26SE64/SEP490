@@ -1,5 +1,11 @@
 # Protect Recoverable Sensitive Data
 
+## Current Scope Alignment
+System protects profiles, baseline/RIASEC/module evidence and private reviews using appropriate encryption/access rules; AI disclosure and retention remain open. Billing is not current scope. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-040-F02  
 **Actor:** Automated system  
 **Status:** Pending clarification  

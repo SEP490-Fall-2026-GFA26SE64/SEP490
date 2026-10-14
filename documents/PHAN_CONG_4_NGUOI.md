@@ -1,5 +1,39 @@
 # Phân công feature/function cho 4 người
 
+## Phân công hiện hành - 2026-10-14
+
+Nguồn phạm vi: [System Overview](adapt_learn_graph_system_overview.md), [Product Overview](PRODUCT_OVERVIEW.md) và [danh mục feature](features/README.md). Đây là đề xuất phân công kỹ thuật cho 4 người, không phải 4 actor của sản phẩm, không xác nhận công việc đã hoàn thành hoặc ước lượng đã được duyệt.
+
+| Người | Sở hữu chính | REQ hiện hành / hỗ trợ |
+| --- | --- | --- |
+| 1 | Danh tính, bảo mật, hồ sơ cá nhân, cấu hình kỹ thuật và audit | 022, 037, 038, 039, 040, 056, 057, 058 |
+| 2 | Discipline, Expert assignment, role/configuration/publication; skill/prerequisite, module/course/question và L&D approval | 011, 012, 013, 014, 015, 016, 017, 018, 023, 024, 050, 051, 052, 053, 054 |
+| 3 | Baseline/RIASEC, role guidance và Expert review, assessment/evidence, knowledge tracing, gap/recommendation/recalculation, L&D monitoring | 001, 002, 008, 009, 025, 026, 041, 042, 043, 046, 047, 048, 049, 059 |
+| 4 | Trải nghiệm pathway/explanations/competency graph/content, Expert initial review/confirmation và individual skill learning | 004, 005, 006, 007, 010, 019, 020, 055 |
+
+Mỗi REQ có một owner chính; giao diện và API được phối hợp qua contract, không nhân đôi thuật toán hoặc quyền truy cập. REQ-038/039 và metrics REQ-026 vẫn cần chốt policy; phân công không biến chúng thành quyết định đã xác nhận.
+
+### Hợp đồng bàn giao hiện hành
+
+1. Người 1 cung cấp danh tính/quyền của System Administrator, L&D Manager, Expert, Employee; phối hợp Người 2 kiểm tra discipline/role assignment và review access. Mã actor cũ không tự động được đổi quyền.
+2. Người 2 cung cấp role đã được L&D publish, Expert requirements, prerequisite, approved module/course/assessment và mappings có version. Discipline assignment khác target-role assignment. L&D không chỉnh Expert requirements.
+3. Người 3 sở hữu baseline configuration do L&D thao tác, baseline/RIASEC evidence, AI guidance/Expert review, role selection sau review, knowledge tracing và engine. Module assessment configuration do Expert thao tác; L&D duyệt offering.
+4. Người 3 bàn giao pathway đề xuất và lý do cho Người 4; Người 4 cung cấp thao tác Expert review/include/exclude/confirm. Employee chỉ bắt đầu initial pathway sau confirmation. Independent skill learning không sửa target-role pathway; assessment evidence quay về owner tracing.
+5. Người 2-4 thống nhất completion/publication/approval/review/evidence history trước tích hợp; mọi field runtime phải theo architecture/schema đã duyệt. Không lấy mock UI hoặc schema dataset preview làm migration tự động.
+
+### Loại khỏi phân công hiện hành
+
+REQ-003/021/044 được thay bởi 047/048/049. REQ-028 đến 032 và 045 là SaaS/billing ngoài phạm vi. REQ-033 đến 036 chỉ giữ nghiên cứu lịch sử, không phải product workspace cam kết. REQ-027 export chưa được xác nhận. Không tái sử dụng ID cũ cho capability mới.
+
+Không giữ tổng 46 feature/84 function hoặc 200 ngày-công cũ như ước lượng hiện hành; cần ước lượng lại sau clarification. Thứ tự tích hợp: account/access -> discipline/assignment -> Expert role configuration -> L&D publication và learning approval -> baseline/RIASEC -> AI guidance/Expert review -> Employee role selection -> gap/pathway -> Expert confirmation -> learning/assessment/tracing/adaptation; individual skill learning là nhánh độc lập.
+
+## Phân công lịch sử trước thay đổi phạm vi
+
+<details>
+<summary>Phân công SaaS cũ, chỉ giữ để truy vết</summary>
+
+Các bảng, số lượng và hợp đồng bên dưới đã được thay thế bởi phân công hiện hành.
+
 Nguồn: [Danh mục feature](features/README.md) và [Tổng quan sản phẩm](PRODUCT_OVERVIEW.md). Phân công theo **người sở hữu chính**; mỗi feature và function chỉ có một người chịu trách nhiệm triển khai và kiểm thử. Tên function giữ nguyên theo tên tài liệu trong `features/`. Đây là phân công công việc, không phải phân quyền của bốn vai trò người dùng trong sản phẩm.
 
 | Người | Phạm vi sở hữu | Feature | Function |
@@ -94,3 +128,5 @@ Sở hữu giao diện lộ trình, phiên bản lộ trình, phần hiển th�
 Có thể làm song song sau khi thống nhất ID, schema/sự kiện và dữ liệu mẫu. Thứ tự tích hợp cần kiểm chứng: xác thực -> tạo role/skill/question/module -> chọn role và baseline -> gap -> lộ trình ban đầu -> module assessment -> đánh giá điều kiện tính lại. Sau luồng cốt lõi, tích hợp thanh toán, báo cáo và benchmark theo từng vertical slice.
 
 **Lưu ý ước lượng:** số function không phản ánh độ khó. Người 3 gánh cả Bayesian baseline/knowledge tracing, gap analysis và thuật toán đề xuất/tính lại; người 4 gánh benchmark RQ1-RQ3 và quy trình duyệt lộ trình. Cần ước lượng độ phức tạp từng mảng, không cân tải chỉ theo số function. Các tài liệu hiện là bản nháp; những quy tắc còn để mở phải được thống nhất trước khi khóa contract và cam kết sprint.
+
+</details>

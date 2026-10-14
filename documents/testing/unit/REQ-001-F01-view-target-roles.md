@@ -1,5 +1,10 @@
 # REQ-001-F01 — View Target Roles Unit Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current unit criteria](README.md#current-scope-alignment). Historical `ACTIVE`/catalog-valid tests do not certify L&D publication or reviewed guidance. Original dates/counts are preserved; revised scope needs new acceptance/tests.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Target%20role%20selection/View%20Target%20Roles.md)  
 **Level:** Unit (Domain Invariants, Application Services, Controller Contracts & Frontend Components)  
 **Status:** PASSED (2026-09-30)

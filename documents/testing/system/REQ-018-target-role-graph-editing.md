@@ -1,5 +1,10 @@
 # REQ-018 — Target-Role Graph Editing System Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current system criteria](README.md#current-scope-alignment). Revalidate assigned-discipline/role graph access and separate L&D publication. Dates/counts below certify only their recorded contract.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:**
 - [REQ-018-F01 View Target-Role Graph](../../features/Target-role%20graph%20editing/View%20Target-Role%20Graph.md)
 - [REQ-018-F02 Edit Prerequisite Relationships](../../features/Target-role%20graph%20editing/Edit%20Prerequisite%20Relationships.md)

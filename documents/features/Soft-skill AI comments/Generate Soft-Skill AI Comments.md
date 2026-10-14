@@ -1,5 +1,11 @@
 # Generate Soft-Skill AI Comments
 
+## Current Scope Alignment
+Retired REQ-044-F01; follow the [disposition](README.md#current-scope-alignment) and [target role guidance](../Target%20role%20guidance/README.md), REQ-048, generated from baseline/RIASEC for Expert review.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-044-F01  
 **Actor:** Automated system  
 **Status:** Pending clarification  

@@ -1,5 +1,10 @@
 # REQ-015 — Role Requirements Test Plan and Evidence
 
+## Current Scope Alignment
+Follow [current test criteria](README.md#current-scope-alignment). Revalidate assigned-Expert competency/skill proficiency/importance configuration, submission of completion and L&D publication without requirement editing. Original dates/counts are unchanged and do not certify revised scope.
+
+## Historical Test Plan and Evidence
+
 **Status:** Domain, Application, Neo4j Testcontainers Integration, and System API tests passed; interactive authoring modal verified.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-015-role-requirements.md) | [Integration Test](integration/REQ-015-role-requirements.md) | [System Test](system/REQ-015-role-requirements.md)  
 **Feature contracts:**

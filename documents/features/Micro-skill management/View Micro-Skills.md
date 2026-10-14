@@ -1,5 +1,11 @@
 # View Micro-Skills
 
+## Current Scope Alignment
+Expert views micro-skills within assigned subject-matter scope. Employee skill discovery for independent learning is REQ-055, not authoring access. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-012-F02  
 **Actor:** Domain Expert, L&D Manager  
 **Status:** Implemented  

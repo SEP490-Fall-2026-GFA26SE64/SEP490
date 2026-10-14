@@ -1,5 +1,11 @@
 # Expert Assigned Target Roles & Micro-skill Authoring
 
+## Current Scope Alignment
+Expert configures assigned-role competency/micro-skill requirements, proficiency and importance and submits completion to L&D. L&D reviews/publishes without editing requirements; discipline content authoring still needs separate assignment. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-023-F05  
 **Actor:** Domain Expert  
 **Status:** Implemented  
