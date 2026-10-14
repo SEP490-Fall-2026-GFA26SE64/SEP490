@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertCircle, Award, ChevronDown, RefreshCw, Search, Target, X } from 'lucide-react'
+import { AlertCircle, Award, ChevronDown, RefreshCw, Search, Sparkles, Target, X } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
@@ -281,6 +281,41 @@ export function TargetRoleBrowsePanel() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Expert-Reviewed AI Role Guidance Banner (Section 4.4) */}
+      <div className="p-4 rounded-xl border border-primary/20 bg-secondary/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Expert-Reviewed AI Role Guidance
+              </span>
+              <Badge variant="success" className="text-[10px] py-0 px-1.5 font-semibold">
+                Confirmed by Dr. Sarah Chen
+              </Badge>
+            </div>
+            <p className="text-xs text-foreground mt-0.5">
+              Based on your <strong>Baseline Diagnostic (92%)</strong> and <strong>Investigative RIASEC Profile</strong>, the recommended target role is <strong>AI Knowledge Architect</strong>.
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="primary"
+          className="text-xs font-semibold shadow-2xs shrink-0 whitespace-nowrap self-start sm:self-center"
+          onClick={() => {
+            const match = roles.data?.find((r) => r.code === 'TR-001' || r.name.includes('AI Knowledge Architect')) || roles.data?.[0]
+            if (match) {
+              openConfirmation(match)
+            }
+          }}
+        >
+          Select Recommended Role
+        </Button>
       </div>
 
       {roles.isPending ? (

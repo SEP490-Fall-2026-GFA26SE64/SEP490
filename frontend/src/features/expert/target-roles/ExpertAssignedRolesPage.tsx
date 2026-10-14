@@ -17,7 +17,6 @@ import {
   Search,
   Sliders,
   Trash2,
-  UserCheck,
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
@@ -32,7 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../../shared/components/ui/Dialog'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -50,12 +48,6 @@ import {
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
 import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
-
-const EXPERT_PERSONA_OPTIONS: ComboboxOption[] = ELIGIBLE_EXPERTS.map((exp) => ({
-  value: exp.id,
-  label: exp.name,
-  description: exp.title,
-}))
 
 export function ExpertAssignedRolesPage() {
   const { toast } = useToast()
@@ -93,8 +85,8 @@ export function ExpertAssignedRolesPage() {
   // Strictly 100% real data fetched from Neo4j database via /api/v1/organizations/{orgId}/micro-skills
   const companyMicroSkills = realMicroSkills
 
-  // Active Expert identity switcher (to demonstrate data isolation in demo/manual testing)
-  const [selectedExpertId, setSelectedExpertId] = React.useState<string>(() => {
+  // Active Expert identity
+  const [selectedExpertId] = React.useState<string>(() => {
     return localStorage.getItem('expert_active_id') || ELIGIBLE_EXPERTS[0].id
   })
 
@@ -166,17 +158,6 @@ export function ExpertAssignedRolesPage() {
       window.removeEventListener('active_company_changed', handleSync)
     }
   }, [fetchAssignedRoles])
-
-  // Persist chosen expert
-  const handleSelectExpert = (expertId: string) => {
-    setSelectedExpertId(expertId)
-    localStorage.setItem('expert_active_id', expertId)
-    toast({
-      title: 'Expert Persona Switched',
-      description: `Now viewing workspace as ${ELIGIBLE_EXPERTS.find((e) => e.id === expertId)?.name}. Target roles are strictly isolated to this expert.`,
-      variant: 'info',
-    })
-  }
 
   // Save roles update helper
   const saveAndSetRoles = React.useCallback(
@@ -556,48 +537,6 @@ export function ExpertAssignedRolesPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Page Header */}
-        <PageHeader
-          title="Target Roles"
-          description="Review target roles assigned to your domain expertise by L&D Managers, configure required micro-skill proficiency thresholds, and publish or reject target roles."
-          actions={
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">
-                Viewing as:
-              </span>
-              <Combobox
-                size="sm"
-                clearable={false}
-                options={EXPERT_PERSONA_OPTIONS}
-                value={selectedExpertId}
-                onChange={(val) => val && handleSelectExpert(val)}
-                className="w-56"
-                placeholder="Switch persona..."
-                searchPlaceholder="Search expert..."
-              />
-            </div>
-          }
-        />
-
-        {/* Expert Isolation Notice Banner */}
-        <div className="p-3.5 rounded-lg border border-primary/25 bg-secondary/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <UserCheck className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <span className="font-semibold text-foreground">
-                Domain Expert Workspace:{' '}
-                <span className="text-primary font-bold">{activeExpert.name}</span>
-              </span>
-              <p className="text-muted-foreground text-[11px] mt-0.5">
-                Strict data isolation is enforced. You are viewing roles assigned exclusively to your profile. Other domain experts cannot view or modify these assignments.
-              </p>
-            </div>
-          </div>
-          <Badge variant="primary" className="shrink-0 self-start sm:self-auto font-mono text-[10px]">
-            {activeExpert.id}
-          </Badge>
-        </div>
-
         {/* Aggregate KPI StatCards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard

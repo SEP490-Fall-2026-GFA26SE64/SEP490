@@ -98,6 +98,8 @@ export function ActiveTargetRoleSummary() {
             </div>
             {!isExpanded && (
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                <span className="font-semibold text-primary">{roleSnapshot.code}</span>
+                <span>•</span>
                 <span className="font-medium text-foreground">{roleSnapshot.track}</span>
                 <span>•</span>
                 <span>Seniority: {roleSnapshot.seniority}</span>

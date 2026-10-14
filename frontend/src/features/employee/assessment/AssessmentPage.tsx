@@ -545,6 +545,34 @@ export interface PathwayQuiz {
 
 const PATHWAY_QUIZZES: PathwayQuiz[] = [
   {
+    id: 'quiz-baseline',
+    moduleCode: 'DIAG-BASE',
+    moduleTitle: 'Baseline Competency Diagnostic Assessment',
+    quizTitle: 'Initial Baseline Diagnostic Assessment',
+    description:
+      'Evaluates initial knowledge states across foundational graph algorithms, data structures, and architecture to initialize Bayesian knowledge tracing.',
+    status: 'completed',
+    durationMinutes: 30,
+    questionCount: 15,
+    passingScore: 70,
+    lastScore: 92,
+    skills: ['Baseline Competencies', 'Graph Theory', 'Neural Networks', 'Database Querying'],
+  },
+  {
+    id: 'quiz-riasec',
+    moduleCode: 'CAREER-RIASEC',
+    moduleTitle: 'Holland RIASEC Vocational Profile Inventory',
+    quizTitle: 'RIASEC Interest & Vocational Orientation Assessment',
+    description:
+      'Informs AI-assisted target role suggestions by assessing vocational traits (Realistic, Investigative, Artistic, Social, Enterprising, Conventional).',
+    status: 'completed',
+    durationMinutes: 15,
+    questionCount: 12,
+    passingScore: 0,
+    lastScore: 88,
+    skills: ['Investigative Reasoning', 'Artistic Innovation', 'Technical Realism'],
+  },
+  {
     id: 'quiz-mod-101',
     moduleCode: 'MOD-101',
     moduleTitle: 'Foundations of Knowledge Graphs & RDF Triples',

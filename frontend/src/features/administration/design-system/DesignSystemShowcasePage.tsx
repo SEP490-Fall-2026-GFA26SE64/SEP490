@@ -495,7 +495,7 @@ export function DesignSystemShowcasePage() {
                   <Badge variant="success">Certificate Completed</Badge>
                   <Badge variant="warning" className="font-medium">Assignment Pending</Badge>
                   <Badge variant="destructive">Submission Overdue</Badge>
-                  <Badge variant="outline">Guest Learner</Badge>
+                  <Badge variant="outline">Enterprise Learner</Badge>
                 </div>
               </div>
             </CardContent>

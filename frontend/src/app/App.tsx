@@ -13,12 +13,13 @@ import { AssessmentBankPage } from '../features/manager/assessment-bank/Assessme
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
+import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
+import { DisciplinesManagementPage } from '../features/manager/disciplines/DisciplinesManagementPage'
+import { ContentApprovalQueuePage } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { LearningOutcomesPage } from '../features/manager/learning-outcomes/LearningOutcomesPage'
-import { RoiForecastPage } from '../features/manager/roi-forecast/RoiForecastPage'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
 import { UserManagementPage } from '../features/manager/user-management/UserManagementPage'
-import { PackageSelectionPage } from '../features/packages/PackageSelectionPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
 import { SystemStatusPage } from '../features/system/SystemStatusPage'
 import { Toaster } from '../shared/components/ui/Toast'
@@ -41,10 +42,10 @@ export default function App() {
             <Route path="/home" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Guest Package Selection & Purchase */}
-            <Route path="/packages" element={<PackageSelectionPage />} />
-            <Route path="/guest/packages" element={<Navigate to="/packages" replace />} />
-            <Route path="/guest" element={<Navigate to="/packages" replace />} />
+            {/* Out-of-scope package & guest routes redirect to login */}
+            <Route path="/packages" element={<Navigate to="/login" replace />} />
+            <Route path="/guest/packages" element={<Navigate to="/login" replace />} />
+            <Route path="/guest" element={<Navigate to="/login" replace />} />
 
             {/* 1. Employee routes (Primary) */}
             <Route path="/employee" element={<Navigate to="/employee/overview" replace />} />
@@ -74,17 +75,21 @@ export default function App() {
             <Route path="/expert" element={<Navigate to="/expert/target-roles" replace />} />
             <Route path="/expert/target-roles" element={<ExpertAssignedRolesPage />} />
             <Route path="/expert/assigned-roles" element={<Navigate to="/expert/target-roles" replace />} />
+            <Route path="/expert/pathway-review" element={<ExpertPathwayReviewPage />} />
+            <Route path="/expert/guidance-review" element={<Navigate to="/expert/pathway-review" replace />} />
             <Route path="/expert/ontology" element={<CompetencyOntologyPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />
 
-            {/* 3. L&D Manager routes (Outcomes, Target Roles, Users, Team Matrix, ROI) */}
-            <Route path="/ld-manager" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
-            <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
+            {/* 3. L&D Manager routes (Disciplines, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
+            <Route path="/ld-manager" element={<Navigate to="/ld-manager/disciplines" replace />} />
+            <Route path="/ld-manager/disciplines" element={<DisciplinesManagementPage />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
-            <Route path="/ld-manager/users" element={<UserManagementPage />} />
+            <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
-            <Route path="/ld-manager/roi-forecast" element={<RoiForecastPage />} />
+            <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
+            <Route path="/ld-manager/users" element={<UserManagementPage />} />
+            <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
             <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
             {/* Redirects from old L&D Manager / Manager routes to new Expert and L&D locations */}
@@ -99,7 +104,7 @@ export default function App() {
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />
             <Route path="/manager/users" element={<Navigate to="/ld-manager/users" replace />} />
             <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/team-matrix" replace />} />
-            <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/roi-forecast" replace />} />
+            <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
             {/* 4. Administrator routes (Taxonomy, Knowledge Graph, Design System) */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -108,7 +113,7 @@ export default function App() {
             <Route path="/knowledge-graph" element={<Navigate to="/admin/knowledge-graph" replace />} />
             <Route path="/admin/design-system" element={<DesignSystemShowcasePage />} />
             <Route path="/design-system" element={<Navigate to="/admin/design-system" replace />} />
-            <Route path="/admin/users" element={<Navigate to="/ld-manager/users" replace />} />
+            <Route path="/admin/users" element={<UserManagementPage />} />
 
             {/* System Status route */}
             <Route path="/system-status" element={<SystemStatusPage />} />

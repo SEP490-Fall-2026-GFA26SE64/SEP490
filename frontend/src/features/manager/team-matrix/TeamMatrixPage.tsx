@@ -26,8 +26,10 @@ import {
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Dialog } from '../../../shared/components/ui/Dialog'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
@@ -35,7 +37,6 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
   LEARNER_TELEMETRY,
-  TEAM_MEMBERS,
   type TeamMemberGap,
 } from '../data/managerData'
 import { getActiveCompany, type CompanyRecord } from '../../../shared/stores/companyStore'
@@ -60,9 +61,15 @@ export function TeamMatrixPage() {
 
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'ready' | 'on_track' | 'needs_attention'>('all')
   const [searchQuery, setSearchQuery] = React.useState('')
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const pageSize = 10
   const [selectedLearner, setSelectedLearner] = React.useState<TeamMemberGap | null>(null)
   const [learnerModalTab, setLearnerModalTab] = React.useState<'overview' | 'pathway' | 'quiz'>('overview')
   const [reviewAttemptId, setReviewAttemptId] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, searchQuery])
 
   // Scope team members strictly to the active company's employees
   const companyEmployees = (activeCompany.users || []).filter((u) => u.role === 'Employee')
@@ -98,6 +105,8 @@ export function TeamMatrixPage() {
     return matchesFilter && matchesSearch
   })
 
+  const paginatedMembers = filteredMembers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
   // Dynamic calculations for active company
   const totalHoursSaved = companyMembers.reduce((acc, m) => acc + m.hoursSaved, 0)
   const averageReadiness =
@@ -111,19 +120,7 @@ export function TeamMatrixPage() {
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         {/* Actions Bar */}
-        <PageHeader
-          actions={
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-mono text-xs">
-                {activeCompany.packageTier} Plan
-              </Badge>
-              <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 border border-primary/20">
-                <Users className="h-3.5 w-3.5 text-primary" />
-                <span>{companyMembers.length} Members Scoped</span>
-              </Badge>
-            </div>
-          }
-        />
+        <PageHeader />
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -160,225 +157,194 @@ export function TeamMatrixPage() {
           />
         </div>
 
-        {/* Team Matrix Table - Unified Big Container Design */}
-        <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
-          {/* Big Container Header: Title, Description, and Integrated Filter Pills */}
-          <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary shrink-0" />
-                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+        {/* Team Matrix Table - Target Roles Standard Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
                   Team Role Progression & Gap Identification
-                </h2>
+                </CardTitle>
+                <CardDescription>
+                  Live competency scores mapped against target role ontologies from the Neo4j Knowledge Graph.
+                </CardDescription>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Live competency scores mapped against target role ontologies from the Neo4j Knowledge Graph
-              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative min-w-[200px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Filter by employee, role, or gap..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    aria-label="Filter by Status"
+                    className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                  >
+                    <option value="all">All Statuses ({companyMembers.length})</option>
+                    <option value="ready">Ready ({companyMembers.filter((m) => m.status === 'ready').length})</option>
+                    <option value="on_track">On Track ({companyMembers.filter((m) => m.status === 'on_track').length})</option>
+                    <option value="needs_attention">Needs Support ({companyMembers.filter((m) => m.status === 'needs_attention').length})</option>
+                  </select>
+                </div>
+              </div>
             </div>
+          </CardHeader>
 
-            {/* Interactive Filter Pills Embedded in Header */}
-            <div className="flex items-center gap-1.5 flex-wrap p-1 rounded-xl bg-card border border-border shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setStatusFilter('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  statusFilter === 'all'
-                    ? 'bg-secondary text-primary shadow-2xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                All ({TEAM_MEMBERS.length})
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStatusFilter('ready')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'ready'
-                    ? 'bg-success/15 text-success font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                <span>Ready ({TEAM_MEMBERS.filter((m) => m.status === 'ready').length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStatusFilter('on_track')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'on_track'
-                    ? 'bg-warning/20 text-warning font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                <span>On Track ({TEAM_MEMBERS.filter((m) => m.status === 'on_track').length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStatusFilter('needs_attention')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'needs_attention'
-                    ? 'bg-destructive/15 text-destructive font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                <span>Needs Support ({TEAM_MEMBERS.filter((m) => m.status === 'needs_attention').length})</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Search Bar within Container */}
-          <div className="p-3.5 border-b border-border bg-muted/5 flex items-center gap-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Filter by employee, role, or skill gap..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/25 transition-colors"
-              />
-            </div>
-            <span className="text-[11px] text-muted-foreground font-mono ml-auto pr-2">
-              Showing {filteredMembers.length} of {companyMembers.length} members
-            </span>
-          </div>
-
-          {/* Table Surface */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-muted/40 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-bold">
-                  <th className="px-5 py-3.5 font-bold">Employee</th>
-                  <th className="px-5 py-3.5 font-bold">Current Role</th>
-                  <th className="px-5 py-3.5 font-bold">Target Role</th>
-                  <th className="px-5 py-3.5 font-bold">Readiness Score</th>
-                  <th className="px-5 py-3.5 font-bold">Critical Skill Gap</th>
-                  <th className="px-5 py-3.5 font-bold">Status</th>
-                  <th className="px-5 py-3.5 font-bold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {companyMembers.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-12 text-center text-xs text-muted-foreground">
-                      <div className="max-w-md mx-auto space-y-3">
-                        <Users className="h-8 w-8 text-muted-foreground/60 mx-auto" />
-                        <p className="font-semibold text-foreground text-sm">No Employees Registered in {activeCompany.name}</p>
-                        <p className="text-muted-foreground text-xs leading-relaxed">
-                          Provision employees in the User Directory to track competency readiness, progression thresholds, and diagnostic gap telemetry.
-                        </p>
-                        <Link to="/ld-manager/users" className="inline-block pt-1">
-                          <Button variant="primary" size="sm">Go to User Directory</Button>
-                        </Link>
-                      </div>
-                    </td>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold uppercase text-[11px] tracking-wider">
+                    <th className="py-2.5 px-3">EMPLOYEE</th>
+                    <th className="py-2.5 px-3">CURRENT ROLE</th>
+                    <th className="py-2.5 px-3">TARGET ROLE</th>
+                    <th className="py-2.5 px-3">READINESS SCORE</th>
+                    <th className="py-2.5 px-3">CRITICAL SKILL GAP</th>
+                    <th className="py-2.5 px-3">STATUS</th>
+                    <th className="py-2.5 px-3 text-right">ACTIONS</th>
                   </tr>
-                ) : filteredMembers.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-xs text-muted-foreground">
-                      No team members match the active filters.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMembers.map((member) => (
-                    <tr key={member.id} className="hover:bg-muted/30 transition-colors group">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                            {member.name
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')}
-                          </div>
-                          <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                            {member.name}
-                          </span>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {companyMembers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-5 py-12 text-center text-xs text-muted-foreground">
+                        <div className="max-w-md mx-auto space-y-3">
+                          <Users className="h-8 w-8 text-muted-foreground/60 mx-auto" />
+                          <p className="font-semibold text-foreground text-sm">No Employees Registered in {activeCompany.name}</p>
+                          <p className="text-muted-foreground text-xs leading-relaxed">
+                            Provision employees in the User Directory to track competency readiness, progression thresholds, and diagnostic gap telemetry.
+                          </p>
+                          <Link to="/ld-manager/users" className="inline-block pt-1">
+                            <Button variant="primary" size="sm">Go to User Directory</Button>
+                          </Link>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-muted-foreground font-medium text-xs">
-                        {member.currentRole}
+                    </tr>
+                  ) : filteredMembers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-5 py-8 text-center text-xs text-muted-foreground">
+                        No team members match the active filters.
                       </td>
-                      <td className="px-5 py-4">
-                        <Badge variant="outline" className="font-semibold text-primary border-primary/30 bg-secondary/30 text-xs">
-                          {member.targetRole}
-                        </Badge>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="w-32 space-y-1.5">
-                          <div className="flex justify-between text-xs font-mono font-bold">
-                            <span
-                              className={
-                                member.readinessScore >= 80
-                                  ? 'text-success'
-                                  : member.readinessScore >= 50
-                                    ? 'text-warning'
-                                    : 'text-destructive'
-                              }
-                            >
-                              {member.readinessScore}%
+                    </tr>
+                  ) : (
+                    paginatedMembers.map((member) => (
+                      <tr key={member.id} className="hover:bg-muted/30 transition-colors group">
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                              {member.name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')}
+                            </div>
+                            <span className="font-bold text-foreground group-hover:text-primary transition-colors text-xs">
+                              {member.name}
                             </span>
                           </div>
-                          <Progress
-                            value={member.readinessScore}
+                        </td>
+                        <td className="py-3 px-3 text-muted-foreground font-medium text-xs">
+                          {member.currentRole}
+                        </td>
+                        <td className="py-3 px-3">
+                          <Badge variant="outline" className="font-semibold text-primary border-primary/30 bg-secondary/30 text-[11px]">
+                            {member.targetRole}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="w-28 space-y-1">
+                            <div className="flex justify-between text-xs font-mono font-bold">
+                              <span
+                                className={
+                                  member.readinessScore >= 80
+                                    ? 'text-success'
+                                    : member.readinessScore >= 50
+                                      ? 'text-warning'
+                                      : 'text-destructive'
+                                }
+                              >
+                                {member.readinessScore}%
+                              </span>
+                            </div>
+                            <Progress
+                              value={member.readinessScore}
+                              variant={
+                                member.readinessScore >= 80
+                                  ? 'success'
+                                  : member.readinessScore >= 50
+                                    ? 'warning'
+                                    : 'destructive'
+                              }
+                            />
+                          </div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-muted text-foreground border border-border">
+                            {member.criticalGap}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <Badge
                             variant={
-                              member.readinessScore >= 80
+                              member.status === 'ready'
                                 ? 'success'
-                                : member.readinessScore >= 50
+                                : member.status === 'on_track'
                                   ? 'warning'
                                   : 'destructive'
                             }
-                          />
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-muted text-foreground border border-border">
-                          {member.criticalGap}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <Badge
-                          variant={
-                            member.status === 'ready'
-                              ? 'success'
+                            className="font-bold text-[11px] shadow-2xs"
+                          >
+                            {member.status === 'ready'
+                              ? 'Ready for Promotion'
                               : member.status === 'on_track'
-                                ? 'warning'
-                                : 'destructive'
-                          }
-                          className="font-bold text-xs shadow-2xs"
-                        >
-                          {member.status === 'ready'
-                            ? 'Ready for Promotion'
-                            : member.status === 'on_track'
-                              ? 'On Track'
-                              : 'Needs Support'}
-                        </Badge>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => {
-                            setSelectedLearner(member)
-                            setLearnerModalTab('overview')
-                            setReviewAttemptId(null)
-                          }}
-                          title="View Learner Progress"
-                          aria-label="View Learner Progress"
-                        >
-                          <Eye className="h-4 w-4 text-primary" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                                ? 'On Track'
+                                : 'Needs Support'}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => {
+                              setSelectedLearner(member)
+                              setLearnerModalTab('overview')
+                              setReviewAttemptId(null)
+                            }}
+                            title="View Learner Progress"
+                            aria-label="View Learner Progress"
+                          >
+                            <Eye className="h-4 w-4 text-primary" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredMembers.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(filteredMembers.length / pageSize) || 1}
+                totalItems={filteredMembers.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                itemLabel="members"
+              />
+            )}
+          </CardContent>
+        </Card>
 
         {/* VIEW LEARNER PROGRESS MODAL (Miro Flow: Team Matrix Screen -> View Learner Progress Modal) */}
         {selectedLearner && (() => {

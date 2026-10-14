@@ -1,6 +1,6 @@
 import { getActiveCompany } from './companyStore'
 
-export type ActorRole = 'employee' | 'expert' | 'ld-manager' | 'admin' | 'guest' | 'learner'
+export type ActorRole = 'employee' | 'expert' | 'ld-manager' | 'admin' | 'learner'
 
 export interface UserProfileData {
   actor: ActorRole
@@ -84,21 +84,6 @@ const DEFAULT_PROFILES: Record<
       { label: 'Cluster Connectivity', value: 'Neo4j Bolt: Active' },
     ],
   },
-  guest: {
-    name: 'Guest Administrator',
-    email: 'guest.user@example.com',
-    roleTitle: 'Guest / Purchaser',
-    portal: 'Guest',
-    department: 'Organization Provisioning',
-    scope: 'Elevates to L&D Manager upon package selection',
-    status: 'Sandbox Provisioning • Instant Activation',
-    details: [
-      { label: 'Account Scope', value: 'Organization Provisioning' },
-      { label: 'Assigned Role', value: 'Elevates to L&D Manager upon package selection' },
-      { label: 'Trial Mode', value: 'Sandbox Provisioning • Instant Activation' },
-      { label: 'Access Level', value: '100% Complete Feature Parity' },
-    ],
-  },
 }
 
 export function computeInitials(name: string): string {
@@ -116,16 +101,10 @@ export function getUserProfile(actor: ActorRole): UserProfileData {
   // 1. Resolve Display Name
   const customName =
     localStorage.getItem(`user_name_${effectiveKey}`) ||
-    (effectiveKey === 'guest'
-      ? localStorage.getItem('auth_display_name')
-      : null) ||
     defaults.name
 
   // 2. Resolve Email
-  let customEmail = localStorage.getItem(`user_email_${effectiveKey}`)
-  if (!customEmail && effectiveKey === 'guest') {
-    customEmail = localStorage.getItem('auth_user')
-  }
+  const customEmail = localStorage.getItem(`user_email_${effectiveKey}`)
   const email = customEmail || defaults.email
 
   // 3. Resolve Initials
