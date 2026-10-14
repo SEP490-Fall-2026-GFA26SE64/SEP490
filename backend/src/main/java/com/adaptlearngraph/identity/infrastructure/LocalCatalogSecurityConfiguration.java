@@ -22,7 +22,9 @@ public class LocalCatalogSecurityConfiguration {
                 .securityMatcher(
                         "/api/v1/employee/target-roles",
                         "/api/v1/employee/target-roles/**",
-                        "/api/v1/employee/target-role-selection")
+                        "/api/v1/employee/target-role-selection",
+                        "/api/v1/ld/baseline-blueprints",
+                        "/api/v1/ld/baseline-blueprints/**")
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/employee/target-roles",
@@ -32,9 +34,21 @@ public class LocalCatalogSecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT,
                                 "/api/v1/employee/target-role-selection")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/ld/baseline-blueprints/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/ld/baseline-blueprints",
+                                "/api/v1/ld/baseline-blueprints/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/ld/baseline-blueprints/**")
+                        .permitAll()
                         .anyRequest().denyAll())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        "/api/v1/employee/target-role-selection"))
+                        "/api/v1/employee/target-role-selection",
+                        "/api/v1/ld/baseline-blueprints",
+                        "/api/v1/ld/baseline-blueprints/**"))
                 .build();
     }
 

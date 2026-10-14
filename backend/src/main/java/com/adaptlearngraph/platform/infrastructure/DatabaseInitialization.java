@@ -1,5 +1,6 @@
 package com.adaptlearngraph.platform.infrastructure;
 
+import com.adaptlearngraph.assessment.infrastructure.DevelopmentQuestionBankImporter;
 import com.adaptlearngraph.catalog.infrastructure.GraphSchemaMigrator;
 import com.adaptlearngraph.catalog.infrastructure.DevelopmentCatalogSeeder;
 import com.adaptlearngraph.learning.infrastructure.DevelopmentTargetSelectionSeeder;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 @Component
 @Profile("migrate")
@@ -44,7 +44,7 @@ public final class DatabaseInitialization implements ApplicationRunner {
                 new GraphSchemaMigrator(driver).migrate();
                 if (seedEnabled && environment.acceptsProfiles(Profiles.of("local"))) {
                     new DevelopmentCatalogSeeder(driver).seed();
-                    seedTargetSelectionDependencies(connection);
+                    seedPostgresDevelopmentData(connection);
                 }
             } finally {
                 statement.execute("SELECT pg_advisory_unlock(49020260916)");
@@ -53,13 +53,14 @@ public final class DatabaseInitialization implements ApplicationRunner {
         context.close();
     }
 
-    private static void seedTargetSelectionDependencies(Connection connection) throws SQLException {
+    private void seedPostgresDevelopmentData(Connection connection) throws Exception {
         boolean previousAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
         try {
             new DevelopmentTargetSelectionSeeder(connection).seed();
+            new DevelopmentQuestionBankImporter(connection, driver).importManifest();
             connection.commit();
-        } catch (SQLException | RuntimeException failure) {
+        } catch (Exception failure) {
             connection.rollback();
             throw failure;
         } finally {

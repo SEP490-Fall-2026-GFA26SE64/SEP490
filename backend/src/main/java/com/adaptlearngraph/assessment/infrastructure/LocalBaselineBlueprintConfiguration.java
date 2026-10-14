@@ -1,0 +1,62 @@
+package com.adaptlearngraph.assessment.infrastructure;
+
+import com.adaptlearngraph.assessment.application.BaselineAssessmentDraftService;
+import com.adaptlearngraph.assessment.application.BaselineBlueprintService;
+import com.adaptlearngraph.assessment.application.port.in.BaselineAssessmentDraftUseCase;
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase;
+import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentDraftStore;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.Actor;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.ActorPort;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort;
+import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
+import com.adaptlearngraph.catalog.infrastructure.LocalEmployeeContextProperties;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+@Configuration(proxyBeanMethods = false)
+@Profile("local")
+@ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
+public class LocalBaselineBlueprintConfiguration {
+    @Bean
+    BaselineBlueprintStore baselineBlueprintStore(NamedParameterJdbcTemplate jdbc) {
+        return new JdbcBaselineBlueprintStore(jdbc);
+    }
+
+    @Bean
+    BaselineAssessmentDraftStore baselineAssessmentDraftStore(NamedParameterJdbcTemplate jdbc) {
+        return new JdbcBaselineAssessmentDraftStore(jdbc);
+    }
+
+    @Bean
+    ActorPort baselineBlueprintActor(LocalEmployeeContextProperties properties) {
+        Actor actor = new Actor(
+                UUID.fromString(properties.accountId()), properties.organizationId(),
+                properties.active(), Set.of("LD_MANAGER"));
+        return () -> Optional.of(actor);
+    }
+
+    @Bean
+    BaselineBlueprintValidationPort baselineBlueprintValidation(
+            TargetRoleCatalogPort catalog, NamedParameterJdbcTemplate jdbc) {
+        return new BaselineBlueprintValidationAdapter(catalog, jdbc);
+    }
+
+    @Bean
+    BaselineBlueprintUseCase baselineBlueprintUseCase(
+            ActorPort actor, BaselineBlueprintStore store, BaselineBlueprintValidationPort validation) {
+        return new BaselineBlueprintService(actor, store, validation);
+    }
+
+    @Bean
+    BaselineAssessmentDraftUseCase baselineAssessmentDraftUseCase(
+            ActorPort actor, BaselineBlueprintStore blueprints, BaselineAssessmentDraftStore drafts) {
+        return new BaselineAssessmentDraftService(actor, blueprints, drafts);
+    }
+}

@@ -69,6 +69,11 @@ public final class DevelopmentTargetSelectionSeeder {
                     ON CONFLICT (account_id, role_code) DO NOTHING
                     """,
             """
+                    INSERT INTO platform.account_role (account_id, role_code)
+                    VALUES ('00000000-0000-0000-0000-000000000001', 'LD_MANAGER')
+                    ON CONFLICT (account_id, role_code) DO NOTHING
+                    """,
+            """
                     INSERT INTO platform.learner_state (learner_id)
                     VALUES ('00000000-0000-0000-0000-000000000001')
                     ON CONFLICT (learner_id) DO NOTHING

@@ -66,7 +66,17 @@ public final class DevelopmentCatalogSeeder {
                                         {id: '40000000-0000-0000-0000-000000000010', code: 'RESPONSIBLE_AI_PRIN', name: 'Responsible AI Principles', macro: 'RESPONSIBLE_AI',
                                          description: 'Guardrails, bias mitigation, red-teaming, alignment, and responsible AI system auditing'},
                                         {id: '40000000-0000-0000-0000-000000000011', code: 'ENG_LEADERSHIP', name: 'Engineering Leadership', macro: 'LEADERSHIP',
-                                         description: 'Technical direction, cross-functional mentorship, agile delivery orchestration, and architectural leadership'}] AS item
+                                         description: 'Technical direction, cross-functional mentorship, agile delivery orchestration, and architectural leadership'},
+                                        {id: '40000000-0000-0000-0000-000000000012', code: 'POSTGRESQL', name: 'PostgreSQL Data Persistence', macro: 'KNOWLEDGE',
+                                         description: 'Relational modeling, SQL queries, transactions, indexes, constraints, and PostgreSQL operations'},
+                                        {id: '40000000-0000-0000-0000-000000000013', code: 'REST_API_DESIGN', name: 'REST API Design', macro: 'KNOWLEDGE',
+                                         description: 'Resource-oriented HTTP APIs, validation, status codes, idempotency, and contract evolution'},
+                                        {id: '40000000-0000-0000-0000-000000000014', code: 'LINUX_SYSTEMS', name: 'Linux Systems', macro: 'KNOWLEDGE',
+                                         description: 'Linux processes, permissions, filesystems, networking, services, and operational diagnostics'},
+                                        {id: '40000000-0000-0000-0000-000000000015', code: 'CI_CD', name: 'CI/CD Delivery Automation', macro: 'KNOWLEDGE',
+                                         description: 'Repeatable build, verification, artifact promotion, deployment, rollback, and delivery pipelines'},
+                                        {id: '40000000-0000-0000-0000-000000000016', code: 'OBSERVABILITY', name: 'System Observability', macro: 'KNOWLEDGE',
+                                         description: 'Metrics, logs, traces, service-level objectives, alerting, and production diagnosis'}] AS item
                                 MERGE (skill:MicroSkill {code: item.code})
                                 SET skill.id = item.id, skill.name = item.name, skill.description = item.description,
                                     skill.status = 'ACTIVE',
@@ -235,10 +245,22 @@ public final class DevelopmentCatalogSeeder {
                                 """,
                         // 9. TargetRole REQUIRES_SKILL relationships
                         """
+                                MATCH (role:TargetRole)-[mapping:REQUIRES_SKILL]->(:MicroSkill)
+                                WHERE role.code IN ['JAVA_BACKEND_P3', 'PLATFORM_ENGINEER_P4']
+                                DELETE mapping
+                                """,
+                        """
                                 UNWIND [
                                     {roleCode: 'JAVA_BACKEND_P3', skillCode: 'JAVA_CORE', target: 0.60},
                                     {roleCode: 'JAVA_BACKEND_P3', skillCode: 'SPRING_BOOT', target: 0.70},
-                                    {roleCode: 'PLATFORM_ENGINEER_P4', skillCode: 'SPRING_BOOT', target: 0.80},
+                                    {roleCode: 'JAVA_BACKEND_P3', skillCode: 'POSTGRESQL', target: 0.65},
+                                    {roleCode: 'JAVA_BACKEND_P3', skillCode: 'REST_API_DESIGN', target: 0.70},
+                                    {roleCode: 'JAVA_BACKEND_P3', skillCode: 'ENG_LEADERSHIP', target: 0.50},
+                                    {roleCode: 'PLATFORM_ENGINEER_P4', skillCode: 'MS-OPS-001', target: 0.85},
+                                    {roleCode: 'PLATFORM_ENGINEER_P4', skillCode: 'MS-OPS-002', target: 0.85},
+                                    {roleCode: 'PLATFORM_ENGINEER_P4', skillCode: 'LINUX_SYSTEMS', target: 0.80},
+                                    {roleCode: 'PLATFORM_ENGINEER_P4', skillCode: 'CI_CD', target: 0.80},
+                                    {roleCode: 'PLATFORM_ENGINEER_P4', skillCode: 'OBSERVABILITY', target: 0.80},
                                     {roleCode: 'ROLE-AI-ARCH', skillCode: 'MS-PY-001', target: 0.85},
                                     {roleCode: 'ROLE-AI-ARCH', skillCode: 'MS-DL-001', target: 0.80},
                                     {roleCode: 'ROLE-MLOPS-02', skillCode: 'MS-OPS-001', target: 0.80},
