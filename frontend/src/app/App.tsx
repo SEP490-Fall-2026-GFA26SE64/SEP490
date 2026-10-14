@@ -10,6 +10,7 @@ import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOver
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { EmployeeTargetRolesPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
+import { BaselineBlueprintPage } from '../features/manager/baseline-blueprints/BaselineBlueprintPage'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
@@ -83,15 +84,15 @@ export default function App() {
             <Route path="/ld-manager/users" element={<UserManagementPage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
             <Route path="/ld-manager/roi-forecast" element={<RoiForecastPage />} />
+            <Route path="/ld-manager/assessment-bank" element={<BaselineBlueprintPage />} />
             <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
             {/* Redirects from old L&D Manager / Manager routes to new Expert and L&D locations */}
             <Route path="/ld-manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/ld-manager/modules" element={<Navigate to="/expert/modules" replace />} />
-            <Route path="/ld-manager/assessment-bank" element={<Navigate to="/expert/assessment-bank" replace />} />
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />
-            <Route path="/manager/assessment-bank" element={<Navigate to="/expert/assessment-bank" replace />} />
+            <Route path="/manager/assessment-bank" element={<Navigate to="/ld-manager/assessment-bank" replace />} />
             <Route path="/manager" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
             <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />

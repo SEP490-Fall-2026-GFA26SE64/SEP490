@@ -232,6 +232,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
+        label: t('nav.assessmentBank'),
+        href: '/ld-manager/assessment-bank',
+        icon: <FileQuestion size={15} />,
+      },
+      {
         label: t('nav.userDirectory'),
         href: '/ld-manager/users',
         icon: <Users size={15} />,
@@ -342,6 +347,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
+    }
+    if (itemHref === '/ld-manager/assessment-bank') {
+      return path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
     }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'
