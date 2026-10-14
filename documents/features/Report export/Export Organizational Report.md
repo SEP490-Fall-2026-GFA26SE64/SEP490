@@ -1,5 +1,11 @@
 # Export Organizational Report
 
+## Current Scope Alignment
+Deferred REQ-027-F01; follow the [disposition](README.md#current-scope-alignment). Current overview does not specify exports; need/access/formats require agreement.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-027-F01  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

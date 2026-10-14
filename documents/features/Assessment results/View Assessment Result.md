@@ -1,5 +1,11 @@
 # View Assessment Result
 
+## Current Scope Alignment
+Employee views own baseline, RIASEC and module results, distinguishing interest scores from competency estimates. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-009-F01  
 **Actor:** Employee  
 **Status:** Pending clarification  

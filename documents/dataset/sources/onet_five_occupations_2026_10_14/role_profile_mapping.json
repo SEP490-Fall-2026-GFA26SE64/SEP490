@@ -1,0 +1,681 @@
+[
+  {
+    "roleId": "ROLE-F72E5464F9B3",
+    "reportedTitle": "Application Developer",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "DEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-58B047D9053E",
+    "reportedTitle": "Application Integration Engineer",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "INTEGRATION",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-88FA0D759F84",
+    "reportedTitle": "Developer",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "DEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-2F3EE4DCB9A3",
+    "reportedTitle": "DevOps Engineer (Development Operations Engineer)",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "DEVOPS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/development-operations-devops-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-8C851BC1DBAC",
+    "reportedTitle": "Infrastructure Engineer",
+    "occupationIds": [
+      "OCC-15-1252.00",
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "INFRA",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+      "https://sfia-online.org/en/sfia-9/skills/network-support"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-DC8BCD8CC9FA",
+    "reportedTitle": "Software Architect",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "SWARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-15F02B2EC48A",
+    "reportedTitle": "Software Developer",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "DEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-7838A77B1320",
+    "reportedTitle": "Software Development Engineer",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "DEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-CBAF88DF6DE7",
+    "reportedTitle": "Software Engineer",
+    "occupationIds": [
+      "OCC-15-1252.00"
+    ],
+    "profileKey": "DEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-6B89F39CA50C",
+    "reportedTitle": "Systems Engineer",
+    "occupationIds": [
+      "OCC-15-1252.00",
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "SYSARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-84156EF4FF37",
+    "reportedTitle": "Data Architect",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DATARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-DE",
+    "reportedTitle": "Data Engineer",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DATAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-677AE5E25939",
+    "reportedTitle": "Data Officer",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DATAGOV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-262E99D33528",
+    "reportedTitle": "Database Analyst",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DBANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-5A07C8E3F89B",
+    "reportedTitle": "Database Architect",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DATARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-683035F817DC",
+    "reportedTitle": "Database Consultant",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DBANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-826EF8FFB24A",
+    "reportedTitle": "Database Developer",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DBDEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-6C905B8EE52A",
+    "reportedTitle": "Database Programmer",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DBDEV",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-B0C017CA7D49",
+    "reportedTitle": "Enterprise Architect",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "ENTERPRISE",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/enterprise-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-D4665145D9A0",
+    "reportedTitle": "Information Architect",
+    "occupationIds": [
+      "OCC-15-1243.00"
+    ],
+    "profileKey": "DATARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-3594A031F678",
+    "reportedTitle": "Automation Tester",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAAUTO",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/development-operations-devops-engineer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-39F74565946B",
+    "reportedTitle": "Information Technology Analyst (IT Analyst)",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAA",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-B94440938DCB",
+    "reportedTitle": "Quality Assurance Analyst (QA Analyst)",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAA",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-1947F95DA9EB",
+    "reportedTitle": "Quality Assurance Engineer (QA Engineer)",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-140C2EA5BCFA",
+    "reportedTitle": "Quality Engineer",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-600114606368",
+    "reportedTitle": "Software Quality Assurance Analyst (SQA Analyst)",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAA",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-6E51A03B5F7F",
+    "reportedTitle": "Software Quality Assurance Engineer (SQA Engineer)",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-B2B4EB364379",
+    "reportedTitle": "Software Quality Engineer",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-B0E1A3444426",
+    "reportedTitle": "Software Test Engineer",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-6A2A26EB8380",
+    "reportedTitle": "Test Engineer",
+    "occupationIds": [
+      "OCC-15-1253.00"
+    ],
+    "profileKey": "QAENG",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/test-engineer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/quality-assurance-test-analyst/"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-56B826705119",
+    "reportedTitle": "IT Architect (Information Technology Architect)",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "SYSARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-BE3E290AD0CA",
+    "reportedTitle": "IT Engineer (Information Technology Engineer)",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "INFRA",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+      "https://sfia-online.org/en/sfia-9/skills/network-support"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-919BDC0216B4",
+    "reportedTitle": "Network and Infrastructure Engineer",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "INFRA",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+      "https://sfia-online.org/en/sfia-9/skills/network-support"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-B01510AF5F34",
+    "reportedTitle": "Solutions Architect",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "SYSARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-D047DF7D12BA",
+    "reportedTitle": "Systems Application Engineer",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "INTEGRATION",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-7A06376BE513",
+    "reportedTitle": "Systems Architect",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "SYSARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-4C23110A9ACE",
+    "reportedTitle": "Systems Consultant",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "SYSANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-E53C178E5BA6",
+    "reportedTitle": "Web Architect",
+    "occupationIds": [
+      "OCC-15-1299.08"
+    ],
+    "profileKey": "WEBARCH",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-BC681F40F67B",
+    "reportedTitle": "Information Security Officer",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECOFFICER",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-9E24DD1E0AE6",
+    "reportedTitle": "Information Security Specialist",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-AF49BFEFFAE0",
+    "reportedTitle": "Information Systems Security Analyst",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-AAF660DA34D9",
+    "reportedTitle": "Information Systems Security Officer (ISSO)",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECOFFICER",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-AC875FDD2CC1",
+    "reportedTitle": "Information Technology Security Analyst (IT Security Analyst)",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-39DE5AAEA190",
+    "reportedTitle": "Network Security Analyst",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "NETSEC",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/network-support",
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/skills/information-security"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-FE0775936B97",
+    "reportedTitle": "Security Analyst",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  },
+  {
+    "roleId": "ROLE-410E150F21A9",
+    "reportedTitle": "Systems Analyst",
+    "occupationIds": [
+      "OCC-15-1212.00"
+    ],
+    "profileKey": "SECANALYSIS",
+    "profileSources": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment"
+    ],
+    "mappingType": "EXACT_SAMPLE_TITLE_WITH_LOCAL_SKILL_PROFILE",
+    "note": "Role skill selection and Junior/Middle/Senior templates are local interpretations pending expert review; reported title alone does not prove these requirements."
+  }
+]

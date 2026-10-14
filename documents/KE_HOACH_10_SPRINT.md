@@ -1,5 +1,44 @@
 # Kế hoạch 10 sprint (4 người)
 
+## Kế hoạch phạm vi hiện hành - 2026-10-14
+
+Nguồn: [System Overview](adapt_learn_graph_system_overview.md), [phân công hiện hành](PHAN_CONG_4_NGUOI.md) và [feature catalog](features/README.md). Đây là đề xuất reprioritization, không phải báo cáo sprint đã hoàn thành hoặc cam kết lịch/ngày-công mới. Giữ ngày cũ để tham chiếu; sprint 1-2 đã qua, cần đối chiếu actual progress trước khi rebaseline backlog. Không tự gán kết quả triển khai mới cho sprint lịch sử.
+
+Ưu tiên: P0 discipline/role publication và content approval, baseline/RIASEC -> reviewed role guidance -> selected role -> gap -> initial pathway/Expert confirmation -> assessment/tracing/adaptation; P1 account/security, independent skill learning, profile và monitoring. Billing/PayOS bị loại; benchmark workspace và exports không nằm trong delivery hiện hành.
+
+| Sprint tham chiếu | Ngày | Nhóm capability và gate đề xuất |
+| --- | --- | --- |
+| 1 | 28/09 - 04/10 | Account/access, actor responsibility và schema inventory; đối chiếu actual, không xác nhận hoàn thành |
+| 2 | 05/10 - 11/10 | Discipline/Expert assignment, role creation/assignment; đối chiếu actual, không xác nhận hoàn thành |
+| 3 | 12/10 - 18/10 | Chốt baseline L&D scope, discipline authorization, Expert requirements/completion và L&D publication |
+| 4 | 19/10 - 25/10 | Module/course/question và Expert module assessment configuration; L&D submission/approval contracts |
+| 5 | 26/10 - 01/11 | Baseline/RIASEC evidence, own results/history và knowledge tracing đã chốt model |
+| 6 | 02/11 - 08/11 | AI role guidance -> Expert confirm/revise/reject -> Employee role selection/confirmation |
+| 7 | 09/11 - 15/11 | Gap/initial pathway -> Expert include/exclude/confirm -> Employee learning access |
+| 8 | 16/11 - 22/11 | Approved module/course learning, assessment/progress; independent micro-skill learning |
+| 9 | 23/11 - 29/11 | New-evidence tracing/recalculation, override/history và L&D monitoring |
+| 10 | 30/11 - 06/12 | System configuration/audit, privacy/consistency regression, manual end-to-end evidence và demo |
+
+### Gate bắt buộc
+
+1. Chốt identity/actor-code migration, discipline mapping, course/content storage và lifecycle; không đổi schema để khớp mock/dataset preview.
+2. Expert chỉ author assigned-discipline content và assigned-role requirements; L&D configure baseline, publish role, approve offerings nhưng không sửa Expert requirements.
+3. Role mới cho Employee phải được publish; assessment/guidance order là baseline và RIASEC -> Expert-reviewed AI suggestions -> Employee selects/confirms. Attempt/scoring/reuse policy cũ cần reclarification.
+4. Initial pathway chỉ bắt đầu sau Expert confirmation. Revised pathway policy dùng new evidence/changed learning needs, không khóa theo failed-only trigger; exact thresholds và override handling phải được duyệt trước implementation.
+5. Individual skill selection/content access không tạo/sửa target-role pathway; assessment evidence có thể cập nhật competency estimate. Thống nhất tương tác với subsequent recalculation riêng.
+6. Chạy Unit, Integration/Testcontainers, System/Compose và manual theo REQ khi implementation sẵn sàng; historical pass không chứng minh revised scope. Không nghiệm thu bằng mock UI hoặc chỉ database table tồn tại.
+
+### Capacity và rủi ro
+
+Phân công owner trong tài liệu liên kết là đề xuất. Chưa có effort mới cho RIASEC/AI review, discipline/publication, courses/approval hoặc independent learning; không chuyển nguyên ngày-công billing/benchmark sang capability mới và coi là đủ capacity. Re-estimate sau clarification, giữ dependency gates và test evidence; khi trễ, replan công khai thay vì bỏ gate.
+
+## Kế hoạch lịch sử trước thay đổi phạm vi
+
+<details>
+<summary>Kế hoạch SaaS cũ và ước lượng lịch sử, không phải backlog hiện hành</summary>
+
+Các ưu tiên, function counts, billing/benchmark allocations và mock acceptance bên dưới đã được thay thế bởi kế hoạch hiện hành.
+
 Nguồn phân công: [Phân công 4 người](PHAN_CONG_4_NGUOI.md); mục tiêu sản phẩm: [Product overview](PRODUCT_OVERVIEW.md). Bắt đầu **28/09/2026**, mỗi sprint là **thứ Hai - Chủ nhật**, 5 ngày làm việc/người (20 ngày-công/sprint). Sprint 10 kết thúc **06/12/2026**. Mỗi mục `tên (n)` là ước lượng **n ngày-công**, bao gồm lập trình, unit test và kiểm thử tích hợp cơ bản; không phải số ngày lịch. REQ-F là function, REQ là feature. Ưu tiên P0: graph editing, baseline -> gap -> initial pathway -> failed-question-driven recalculation; P1: bảo mật, duyệt, thanh toán và vận hành; P2: benchmark, thống kê, xuất báo cáo và CRUD bổ sung.
 
 **Giới hạn:** 84 function chưa được chốt đặc tả (theo `features/README.md` tại thời điểm lập kế hoạch). Đây là ước lượng tham khảo, không phải cam kết giao hàng. Không thể làm cho các function thật sự độc lập: baseline cần question/skill/role; pathway cần gap và module; recalculation cần module assessment; PayOS confirmation cần giao dịch. Công việc cùng sprint được làm **theo thứ tự ghi trong ô**, với bàn giao sau từng mục; công việc giao diện/benchmark được phát triển với contract và dữ liệu synthetic, chỉ nghiệm thu tích hợp sau khi producer sẵn sàng. Nếu gate chưa đạt, chuyển function phụ thuộc sang sprint sau, không tính là hoàn thành bằng mock.
@@ -84,3 +123,5 @@ Nguồn phân công: [Phân công 4 người](PHAN_CONG_4_NGUOI.md); mục tiêu
 3. **Cuối sprint 5/7/9:** lần lượt demo baseline + evidence; gap + initial pathway có lý do; và failed question -> giữ hoặc tính lại pathway (có version và idempotency). UI mock của Người 4 không tính là hoàn thành cho đến khi kiểm thử trên contract thật ở sprint 8-9.
 4. **Thanh toán:** Verify PayOS (sprint 7) phải được kiểm thử trước Apply Confirmed Payment (sprint 8); redirect không kích hoạt subscription. Benchmark RQ1/RQ3 chỉ được xem là hoàn tất sau khi chạy trên engine versioned với dữ liệu synthetic (sprint 9).
 5. **Sức chứa:** 4 x 5 x 10 = 200 ngày-công; các bảng dự kiến dùng hết 200, gần như **không có dự phòng**. Bayesian baseline, cross-store consistency, PayOS và RQ1/RQ3 có thể cần hơn ước lượng. Nếu trễ, giữ P0 và gate an toàn; đẩy P2 (thống kê, report, benchmark comparison, destructive CRUD) ra ngoài mốc 10 sprint thay vì bỏ qua test hay cho phép function phụ thuộc chạy trên dữ liệu giả.
+
+</details>

@@ -1,5 +1,11 @@
 # View Learning Module
 
+## Current Scope Alignment
+Employee accesses approved module/course content through a confirmed pathway or independent skill learning, including mapped outcomes and assessments. Dummy-only content is superseded. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Dummy-Only Specification
+Conflicting constraints below are superseded; delivery/completion policy remains open.
+
 **Function ID:** REQ-007-F01  
 **Actor:** Employee  
 **Status:** Pending clarification  

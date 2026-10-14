@@ -1,5 +1,11 @@
 # Link Micro-Skill to Target Role
 
+## Current Scope Alignment
+Assigned Expert adds competency/micro-skill requirements with proficiency/importance and submits completed configuration; L&D reviews/publishes, not edits requirements. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-015-F01  
 **Actor:** Domain Expert  
 **Status:** Implemented  

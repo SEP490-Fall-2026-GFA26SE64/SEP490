@@ -1,5 +1,13 @@
 # Target Role Selection
 
+## Current Scope Alignment
+
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-001. **Actor:** Employee. **Status:** Reclarification required.
+Employee views available published roles and selects/confirms a role after Expert-reviewed baseline/RIASEC guidance. Publication-independent browsing and immediate selection before assessment/guidance are superseded. Revisit role-change, attempt, availability, and history rules without inventing new policies.
+
+## Historical Contract and Evidence
+The retained details below describe the prior contract, not acceptance of revised scope.
+
 **Requirement:** REQ-001
 **Actor:** Employee
 

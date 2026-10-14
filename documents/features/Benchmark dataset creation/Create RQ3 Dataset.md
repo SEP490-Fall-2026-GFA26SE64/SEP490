@@ -1,5 +1,11 @@
 # Create RQ3 Dataset
 
+## Current Scope Alignment
+Historical research only; follow the [disposition](README.md#current-scope-alignment). Not a committed current product workflow or administrator permission.
+
+## Historical Research Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-033-F03  
 **Actor:** Platform Administrator  
 **Status:** Dataset fixture created; simulation execution remains separate

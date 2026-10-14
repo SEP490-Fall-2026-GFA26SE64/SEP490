@@ -1,5 +1,11 @@
 # Review AI Soft-Skill Comments
 
+## Current Scope Alignment
+Retired REQ-021-F01. Use [the disposition](README.md#current-scope-alignment) and [AI role guidance review](../AI%20role%20guidance%20review/README.md), REQ-049. Old soft-skill comments and visibility decisions are not baseline/RIASEC guidance.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-021-F01  
 **Actor:** Domain Expert  
 **Status:** Pending clarification  

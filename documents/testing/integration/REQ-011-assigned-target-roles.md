@@ -1,5 +1,10 @@
 # REQ-011 — Assigned Target Roles Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Revalidate L&D role assignment, separate discipline authorization and review access. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)  
 **Level:** Integration (Neo4j Testcontainers Database Adapter & Cypher Queries)  
 **Status:** PASSED (2026-09-30)

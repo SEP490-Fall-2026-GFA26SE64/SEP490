@@ -1,5 +1,11 @@
 # Configure Subscription Offerings
 
+## Current Scope Alignment
+Retired SaaS scope; follow the [disposition](README.md#current-scope-alignment). Technical System Administrator settings are separately REQ-057, not subscription offerings.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-032-F01  
 **Actor:** Platform Administrator  
 **Status:** Pending clarification  

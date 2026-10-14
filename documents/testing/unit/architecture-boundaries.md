@@ -1,5 +1,10 @@
 # Hexagonal Architecture & Boundary Unit Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current unit criteria](README.md#current-scope-alignment). Existing architectural checks remain dated technical evidence; new authorization/storage ownership must follow approved architecture contracts. No application boundary changed in this docs-only task.
+
+## Historical Test Plan and Evidence
+
 **Scope:** Architectural Integrity, Layer Decoupling & Framework Independence  
 **Level:** Unit / Static Architecture Checks  
 **Status:** PASSED (2026-10-01)

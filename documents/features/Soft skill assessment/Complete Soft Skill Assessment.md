@@ -1,5 +1,11 @@
 # Complete Soft Skill Assessment
 
+## Current Scope Alignment
+Retired REQ-003-F01; follow the [disposition](README.md#current-scope-alignment) and [RIASEC assessment](../RIASEC%20assessment/README.md), REQ-047. Old evidence is not converted into RIASEC by renaming it.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-003-F01  
 **Actor:** Employee  
 **Status:** Pending clarification  

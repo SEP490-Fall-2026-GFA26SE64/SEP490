@@ -1,5 +1,11 @@
 # View Payment and Subscription Status
 
+## Current Scope Alignment
+Retired SaaS scope; follow the [disposition](README.md#current-scope-alignment). No current payment/subscription status workflow is required.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-028-F03  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

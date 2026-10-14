@@ -1,5 +1,11 @@
 # Enforce Permissions and Organization Isolation
 
+## Current Scope Alignment
+Enforce the four actors' responsibility, discipline/role assignment and authorized review boundaries within one organization. Existing organization identifiers can remain technical isolation fields, not a multi-organization registration requirement. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-037-F02  
 **Actor:** Automated system, serving the four human actors  
 **Status:** Pending clarification  

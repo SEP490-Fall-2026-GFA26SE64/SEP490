@@ -1,5 +1,10 @@
 # REQ-018 — Target-Role Graph Editing Master Test Plan
 
+## Current Scope Alignment
+Follow [current test criteria](README.md#current-scope-alignment). Revalidate assigned-discipline/role graph access and separate Expert prerequisite authoring from L&D publication. Original dates/counts and legacy references remain historical, not revised acceptance.
+
+## Historical Test Plan and Evidence
+
 **Requirement:** [REQ-018 Target-Role Graph Editing](../../PRODUCT_OVERVIEW.md)  
 **Feature Specifications:**
 - [REQ-018-F01 View Target-Role Graph](../features/Target-role%20graph%20editing/View%20Target-Role%20Graph.md)

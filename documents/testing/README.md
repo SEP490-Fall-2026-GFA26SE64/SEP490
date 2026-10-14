@@ -1,5 +1,25 @@
 # Test Documentation
 
+## Current Scope Alignment
+
+**Scope baseline:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-14. Test actors are System Administrator, L&D Manager, Expert and Employee within one organization. Existing test IDs, fixtures, actor codes, dated results and manual procedures remain evidence of their recorded contract, not revised acceptance certification.
+
+The [current feature catalog](../features/README.md) supersedes old SaaS acceptance. Requalify REQ-001/002 for published roles, L&D baseline configuration and reviewed baseline/RIASEC guidance; REQ-011 through 018 for discipline/role authorization; REQ-019/020/042 for Expert confirmation before initial learning; REQ-007/008/013/014 for courses/assessment approval; REQ-043 for evidence-driven learning needs. New REQ-047 through 059 have draft acceptance scenarios, not passing runtime evidence.
+
+### Revised Verification Criteria
+
+- Unit/API: deny wrong-actor operations; test L&D baseline/publication/approval versus Expert authoring/review; reviewed guidance and initial confirmation gates; configured evidence/tracing decisions and independent learning without pathway mutation.
+- Integration/Testcontainers: persist/retrieve every agreed runtime field and review/approval/history version; discipline/role assignment boundaries; independent progress/evidence mapping; idempotent updates and cross-store failure recovery. Existing organization isolation tests remain technical defense, not a multi-organization product flow.
+- System/Compose/manual: accounts -> discipline/assignments -> Expert requirements -> L&D publication and learning approval -> baseline/RIASEC -> AI guidance/Expert confirm/revise/reject -> Employee role selection -> gap/pathway -> Expert confirm -> learning/assessment/tracing/adaptation. Also exercise independent skill learning and L&D monitoring without changing a target-role pathway through manual Employee module selection.
+- Exclude subscription/PayOS/cancellation, platform organization statistics, and benchmark workspace acceptance from current product gates. Exports and supporting notification/activation policies require separate confirmation.
+- Preserve per-REQ evidence files. Do not mark new tests PASSED until executed against an approved contract; do not derive coverage from tables/endpoints or historical status alone.
+
+Documentation-only checks do not establish backend/frontend behavior. Revised runtime acceptance requires the relevant feature suites and per-REQ evidence after implementation.
+
+## Existing Test Guides and Evidence
+
+The guides and matrices below retain prior executions. PASSED refers only to the original recorded scope/date; revised behavior needs its own approved acceptance and new evidence.
+
 All runnable test code is kept next to its source code (`backend/src/test/java` and `frontend/src/`). Test documentation and verification evidence are organized into three dedicated testing tiers under this folder.
 
 > [!IMPORTANT]

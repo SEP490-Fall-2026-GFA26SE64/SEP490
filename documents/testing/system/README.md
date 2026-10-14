@@ -1,5 +1,12 @@
 # System Testing Directory & Standards
 
+## Current Scope Alignment
+
+Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). New end-to-end gates cover L&D disciplines/assignments/publication/approval, baseline/RIASEC -> Expert-reviewed role guidance -> Employee selection, generated pathway -> Expert confirmation -> learning, new-evidence adaptation, independent skill learning and L&D monitoring. Billing/PayOS/platform benchmark workflows are not current product gates.
+Older browser checklists and PASSED labels below retain their original scope and require revision before they certify new workflows. No new runtime/browser result is claimed by this documentation-only update.
+
+## Existing Execution Guides and Historical Evidence
+
 **Location:** Docker Compose Environment (`compose.dev.yml`) and Browser Workflows
 
 System testing validates complete end-to-end integration across all system tiers (PostgreSQL database, Neo4j graph database, Flyway/graph migrations, Spring Boot REST API, Vite frontend web client, and Nginx reverse proxy).
@@ -28,7 +35,7 @@ System testing validates complete end-to-end integration across all system tiers
 
 - **REQ-001-F01**: The first approved workflow test cluster; its full-stack scenario is tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md).
 - **REQ-001-F02**: System evidence ran on 2026-10-02 and is tracked in [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md). Compose API checks cover initial/replay/no-op/conflict/validation/unavailable/outage recovery plus stale, competing change, and assessment-active state preservation with a deterministic two-role local fixture. `npm.cmd run test:system:f02` passes two Playwright/headless-Chrome scenarios: a state-independent catalog/detail/Cancel/Confirm/UI flow and an API stale/competing-change flow.
-- When user workflows exist, add end-to-end cases for employee role selection and baseline, expert graph editing and pathway review, organization-scoped account access, module assessment/recalculation, and subscription payment confirmation. Pin each scenario to a clarified `REQ-nnn-Fnn` rule, specify actor/organization and setup data, and capture outcome and date. REQ-001-F02 introduces a pinned Playwright runner using an installed Chrome executable; reuse or extend it deliberately rather than mixing browser specs into Vitest.
+- For revised user workflows, add end-to-end cases from the current scope section after the owning contracts are clarified. Pin each scenario to a `REQ-nnn-Fnn` acceptance rule, specify actor/assignment/setup data, and record outcome/date. Reuse the existing Playwright runner deliberately; do not mix browser specs into Vitest or treat earlier role-selection coverage as proof of reviewed guidance/publication.
 
 ---
 

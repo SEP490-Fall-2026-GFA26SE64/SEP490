@@ -1,5 +1,10 @@
 # Database Schema & Migration Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Existing migrations and actor codes remain technical history, not proof of the revised product schema/permissions. No migration changed in this documentation task; new scope mappings need approved contracts and fresh tests.
+
+## Historical Test Plan and Evidence
+
 **Scope:** PostgreSQL Flyway Migrations (V1–V6) and Neo4j Graph Schema / Constraints Migration  
 **Level:** Integration (Testcontainers PostgreSQL 16 & Neo4j 5.26-community)  
 **Status:** PASSED (2026-09-30)

@@ -1,5 +1,13 @@
 # Sensitive Data Protection
 
+## Current Scope Alignment
+
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-040. **Performer:** System. **Status:** Supporting security detail pending.
+Protect credentials, profiles, baseline/RIASEC/module responses, guidance and reviews through appropriate hashing/encryption and authorized access. Do not expose secrets in activity monitoring or technical settings. Billing/payment data is not a new product requirement.
+
+## Historical Specification
+Use the alignment above where older details conflict.
+
 Protect important information using hashing where recovery is unnecessary and encryption/access controls where recovery is required.
 
 **Source:** [REQ-040](../../PRODUCT_OVERVIEW.md)  

@@ -1,5 +1,11 @@
 # Update Learning Module
 
+## Current Scope Alignment
+Expert updates/organizes an assigned-discipline module and submits revisions for L&D approval; version effects on learning remain open. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-013-F03  
 **Actor:** Domain Expert  
 **Status:** Pending clarification  

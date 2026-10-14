@@ -1,5 +1,11 @@
 # View Assessment History
 
+## Current Scope Alignment
+Employee views own baseline, RIASEC and module history, including independent learning evidence. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); old soft-skill records retain their original meaning.
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-009-F02  
 **Actor:** Employee  
 **Status:** Pending clarification  

@@ -1,5 +1,11 @@
 # Complete Baseline Assessment
 
+## Current Scope Alignment
+Employee completes baseline assessment using L&D-defined competency coverage, question selection and scoring before baseline/RIASEC-informed role guidance and selection/confirmation. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md). Prior per-selected-role attempts, adaptive defaults, evidence reuse, coverage and notification decisions require reclarification; no new scoring/attempt policy is invented here.
+
+## Historical Specification and Decision Log
+Conflicting confirmed rules, actors and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-002-F01  
 **Actor:** Employee  
 **Status:** In clarification  

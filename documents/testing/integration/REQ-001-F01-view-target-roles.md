@@ -1,5 +1,10 @@
 # REQ-001-F01 — View Target Roles Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Recorded catalog/organization fixtures do not certify L&D publication or reviewed guidance. Preserve original test dates/counts and revalidate new gates after implementation.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Target%20role%20selection/View%20Target%20Roles.md)  
 **Level:** Integration (Neo4j Testcontainers Catalog Adapter)  
 **Status:** PASSED (2026-09-30)

@@ -1,5 +1,11 @@
 # Unlink Micro-Skill from Target Role
 
+## Current Scope Alignment
+Assigned Expert removes role competency/micro-skill requirements under agreed configuration/history rules; L&D controls publication separately. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-015-F02  
 **Actor:** Domain Expert  
 **Status:** Implemented  

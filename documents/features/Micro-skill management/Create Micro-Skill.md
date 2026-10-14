@@ -1,5 +1,11 @@
 # Create Micro-Skill
 
+## Current Scope Alignment
+Expert creates micro-skills within assigned disciplines, with descriptions and proficiency representation under an agreed schema. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-012-F01  
 **Actor:** Domain Expert  
 **Status:** Implemented  

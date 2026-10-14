@@ -1,6 +1,15 @@
 # Baseline Knowledge Assessment
 
-> **Current implementation direction (2026-10-14):** The user-approved L&D blueprint contract in the active [database define](../../../../../.project/requirements/active/REQ-002-003-009-assessment/2026-10-13-baseline-config-generation-define.md) supersedes the legacy Domain Expert/adaptive-settings description below for the current implementation. L&D configures exact Easy/Medium/Hard counts per TargetRole and MicroSkill; every edit creates a new immutable version. Enabled roles and skills must match the active catalog, and save is rejected with required/available/missing details when published-question coverage is insufficient. An exact blueprint version can generate a persisted assessment draft whose item versions and role positions remain stable across retry/reload; regenerate creates the next assessment version. L&D must review the exact current content hash before publishing, after which the version is immutable. The local L&D screen at `/ld-manager/assessment-bank` now drives this API flow; its development-only catalog fixture remains provisional until the Catalog owner provides an L&D query contract. The older content is retained as historical input pending a dedicated feature-document cleanup and must not be treated as the implemented contract.
+## Current Scope Alignment
+
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-002. **Actors:** Employee completes; L&D Manager configures. **Status:** Authoring Cụm 1 implemented locally; Employee lifecycle and revised-scope acceptance still require clarification.
+
+The user-approved L&D blueprint contract in the active [database define](../../../../../.project/requirements/active/REQ-002-003-009-assessment/2026-10-13-baseline-config-generation-define.md) supersedes the legacy Domain Expert/adaptive-settings description below for the current implementation. L&D configures exact Easy/Medium/Hard counts per TargetRole and MicroSkill; every edit creates a new immutable version. Enabled roles and skills must match the active catalog, and save is rejected with required/available/missing details when published-question coverage is insufficient. An exact blueprint version can generate a persisted assessment draft whose item versions and role positions remain stable across retry/reload; regenerate creates the next assessment version. L&D must review the exact current content hash before publishing, after which the version is immutable. The local L&D screen at `/ld-manager/assessment-bank` drives this API flow; its development-only catalog fixture remains provisional until the Catalog owner provides an L&D query contract.
+
+Baseline evidence supports role guidance together with RIASEC before Employee role selection/confirmation. Expert-owned per-role baseline configuration is superseded; attempt limits, adaptive parameters, defaults, evidence reuse, and notifications need revalidation. Expert still configures module assessments.
+
+## Historical Contract and Decisions
+The retained details below describe the prior contract, not acceptance of revised scope or the implemented authoring API.
 
 Establish knowledge evidence for target-role micro-skills and their prerequisites, using adaptive questions grouped by micro-skill and baseline settings configured by the Domain Expert for the role.
 

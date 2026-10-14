@@ -1,5 +1,10 @@
 # REQ-011 — Assigned Target Roles Unit Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current unit criteria](README.md#current-scope-alignment). Revalidate assigned-role access separately from discipline authorization and publication. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)  
 **Level:** Unit (Domain Invariants, Application Services, Controller Contracts & Security RBAC)  
 **Status:** PASSED (2026-10-01)
