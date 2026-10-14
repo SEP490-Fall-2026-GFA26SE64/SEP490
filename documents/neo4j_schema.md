@@ -1,6 +1,6 @@
-# Schema Neo4j — Ontology v0.8
+# Schema Neo4j — Ontology v0.8.0
 
-Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả schema đích. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
+Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.8.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ![Sơ đồ ontology](diagrams/neo4j.svg)
 
@@ -17,7 +17,7 @@ flowchart LR
  L -->|HAS_COMPETENCY| C[Competency]
  C -->|HAS_SKILL| S[MicroSkill]
  L -->|REQUIRES_SKILL| S
- M -->|TEACHES| S
+ M[LearningModule] -->|TEACHES 1–1| S
  S -->|HAS_SKILL_PREREQUISITE| S
 ```
 
@@ -133,7 +133,7 @@ MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm
 | `name` | String | Tên skill; ví dụ `Manage source changes with version control`. |
 | `definition` | String | Giải thích hành vi/phạm vi của skill, giúp phân biệt với skill khác. Đây là định nghĩa chung, không phải nhiệm vụ riêng của mọi Level. |
 
-Node không lưu `actualScore` hoặc `requiredScore`. `requiredScore` nằm trên quan hệ từ Level; `actualScore` thuộc kết quả đánh giá của từng learner. Như vậy một skill có thể yêu cầu mức thực hiện khác nhau ở Junior và Senior.
+Node không lưu `actualScore` hoặc `requiredScore`. `requiredScore` nằm trên `REQUIRES_SKILL` để đánh giá đạt Level và trên `HAS_SKILL_PREREQUISITE` để kiểm tra sẵn sàng học; `actualScore` thuộc kết quả đánh giá của từng learner. Như vậy một skill có thể yêu cầu mức thực hiện khác nhau ở Junior và Senior.
 
 ### 3.6. LearningModule — Đơn vị nội dung học
 
@@ -172,32 +172,17 @@ Quan hệ này chỉ có `requiredScore` và metadata chung; mô tả readiness 
 
 Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL`, `TEACHES` chỉ có metadata chung.
 
-## 5. Công thức actualScore và cấu hình ngoài graph
+## 5. Dữ liệu đánh giá nằm ngoài Neo4j
 
-`rubricId` và `rubricVersion` không còn là property trên các relationship Neo4j. Định nghĩa rubric và quy tắc chọn phiên bản được quản lý trong tài liệu/cấu hình assessment ngoài graph. Khi triển khai chấm tự động, backend phải có mapping rõ ràng từ skill và ngữ cảnh Level hoặc bài readiness sang rubric tương ứng; không tự suy đoán rubric từ `requiredScore`. Kết quả assessment phải giữ phiên bản rubric đã dùng để truy nguyên điểm.
+Neo4j lưu định nghĩa catalog và ngưỡng `requiredScore`. Các dữ liệu sau thuộc phần assessment/tài liệu nghiệp vụ, không phải property của schema này:
 
-```text
-actualScore = Σ(weight_i × rating_i / 4)
-```
+- Mục tiêu thực hành, nhiệm vụ, bằng chứng cần nộp và hướng dẫn chấm.
+- Rubric, tiêu chí, trọng số, phiên bản và mapping bài đánh giá với Level–Skill hoặc cặp skill tiên quyết.
+- `actualScore`, kết quả đánh giá, tiến độ và lịch sử học của từng learner.
 
-`rating_i` là số nguyên 0–4; các trọng số dương và tổng bằng 1. So sánh điểm chưa làm tròn với `requiredScore` bằng `>=`.
+Quy tắc đã thống nhất: `actualScore = Σ(weight_i × rating_i / 4)`; thiếu bằng chứng ở tiêu chí bắt buộc thì `NOT_ASSESSED`, điểm là null. Backend assessment phải xác định rõ bài đánh giá và phiên bản tiêu chí trước khi so sánh với ngưỡng trong graph. Ngưỡng điểm không tự xác định được bài kiểm tra.
 
-| Rubric | Trọng số | Điều kiện tối thiểu |
-|---|---|---|
-| Đạt skill — `RUB-SKILL-01` v1.2 | CORRECTNESS 0.40; VERIFICATION 0.25; AUTONOMY 0.20; REASONING 0.15 | CORRECTNESS và AUTONOMY đều có rating >=3. |
-| Readiness — `RUB-READINESS-01` v1.0 | FOUNDATION_CORRECTNESS 0.50; FOUNDATION_VERIFICATION 0.30; FOUNDATION_REASONING 0.20 | FOUNDATION_CORRECTNESS có rating >=3. |
-
-Thiếu bằng chứng chấm được hoặc rating ở bất kỳ tiêu chí bắt buộc nào → `NOT_ASSESSED`, `actualScore = null`. Không điền 0, bỏ tiêu chí hay chuẩn hóa lại trọng số. Quy tắc thiếu dữ liệu này có ưu tiên trước một lỗi đã biết ở tiêu chí khác trong cùng bài đánh giá. Một thất bại quan sát được với bằng chứng chấm được có thể nhận rating 0.
-
-Với đầu vào đầy đủ, đạt các điều kiện tối thiểu và ngưỡng điểm → `PASS`; không đạt → `FAIL`. Định nghĩa bắt buộc chưa duyệt hoặc không tương thích → `CATALOG_NOT_READY`; cấu hình sai → `INVALID_CONFIGURATION`; đầu vào sai → `INVALID_INPUT`.
-
-| Tài liệu cấu hình tham khảo | Nội dung | Nơi lưu |
-|---|---|---|
-| `rubricDefinitions` | Các tiêu chí: `criterionId`, `weight`, `isRequired`, `minimumPassingRating`, mốc `score0`–`score4`, `evidenceRule` và metadata duyệt. | Tài liệu assessment ngoài Neo4j, lưu trong sources/ontology_v07_history/assessment_reference.json; không nằm trong seed hiện tại. |
-| `assessmentPolicies` | Công thức, thang rating, cách xử lý thiếu bằng chứng, phép so sánh và `criticalCheckIds`. Hai phiên bản hiện không có critical check bổ sung. | Tài liệu assessment ngoài Neo4j, lưu trong sources/ontology_v07_history/assessment_reference.json; không nằm trong seed hiện tại. |
-| `readinessAssessments` | Mã/phiên bản task, skill nền tảng và skill phụ thuộc, prompt, outcome, evidence requirements và mức hỗ trợ cho phép. | Cấu hình assessment ngoài Neo4j; mapping bài đánh giá với cặp skill phụ thuộc–skill nền tảng được quản lý ngoài graph, không lưu ID/phiên bản bài đánh giá trên cạnh. |
-
-`actualScore`, kết quả learner, bằng chứng, tiến độ và completion không lưu trên các node định nghĩa chung. Quy tắc tính điểm đầy đủ nằm trong [tài liệu ontology](dataset/ONTOLOGY.md#assessment-calculation-and-readiness-contract).
+Xem [quy tắc assessment và minh chứng](dataset/ONTOLOGY.md#assessment-calculation-and-readiness-contract). Các đề xuất rubric cũ được giữ làm tài liệu tham khảo, không phải cấu hình runtime đã được duyệt.
 
 ## 6. Ranh giới field Excel/JSON và property Neo4j
 
@@ -233,6 +218,31 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 O*NET cung cấp Occupation, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
 
-[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **827 node, 4.536 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 79 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.8. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong ARCHITECTURE.md. Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **827 node, 4.536 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 79 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.8. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
 
 File nguồn, URI đối chiếu và minh chứng được giữ trong [ONTOLOGY.md](dataset/ONTOLOGY.md) và thư mục `dataset/sources/`, không đưa thành các property `sourceConceptUri`, `sourceLocator`, `sourceVerification` trên graph.
+
+## 9. Tóm tắt property để triển khai
+
+Mọi node và relationship đều có metadata chung: `id`, `version`, `status`, `reviewStatus`, `reviewedBy`, `reviewedAt`. Giá trị null không được lưu thành property Neo4j.
+
+| Node | Property nghiệp vụ ngoài metadata |
+|---|---|
+| Occupation | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional |
+| TargetRole | code, name, scope, canonicalProfileKey |
+| Level | code, name, rank, context, attainmentRule |
+| Competency | name, description, attainmentRule |
+| MicroSkill | name, definition |
+| LearningModule | title, moduleType, contentUri, contentType, contentVersion |
+
+| Relationship | Property nghiệp vụ ngoài metadata | Số bản ghi |
+|---|---|---:|
+| HAS_ROLE | Không có | 48 |
+| HAS_LEVEL | Không có | 144 |
+| HAS_COMPETENCY | Không có | 472 |
+| HAS_SKILL | Không có | 1.891 |
+| REQUIRES_SKILL | requiredScore, isMandatory | 1.891 |
+| TEACHES | Không có | 79 |
+| HAS_SKILL_PREREQUISITE | requiredScore | 11 |
+
+Các field đã bỏ khỏi graph: `learningOutcome`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.
