@@ -1,5 +1,12 @@
 # Payment Confirmation
 
+## Current Scope Alignment
+
+**Disposition:** REQ-045 retired, outside [System Overview](../../adapt_learn_graph_system_overview.md). No PayOS webhook, subscription activation or payment-confirmation product workflow is required.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 Verify PayOS payment evidence and apply subscription changes safely and idempotently.
 
 **Source:** [REQ-045](../../PRODUCT_OVERVIEW.md)  

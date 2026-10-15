@@ -1,5 +1,10 @@
 # REQ-012 — Micro-Skill Management Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Revalidate assigned-discipline skill persistence, descriptions/proficiency representation and deactivation/history. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-012-F01 Create Micro-Skill](../../features/Micro-skill%20management/Create%20Micro-Skill.md)  
 **Level:** Integration (Neo4j Testcontainers Graph Persistence & Ontological Edges)  
 **Status:** PASSED (2026-09-30)

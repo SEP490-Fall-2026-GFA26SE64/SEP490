@@ -1,5 +1,11 @@
 # View Assigned Target Roles
 
+## Current Scope Alignment
+Expert views L&D-assigned roles for competency configuration and authorized reviews; discipline assignments separately govern content authoring. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-011-F01  
 **Actor:** Domain Expert  
 **Status:** Implemented  

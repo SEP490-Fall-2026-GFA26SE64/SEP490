@@ -1,5 +1,11 @@
 # View Platform Organization Statistics
 
+## Current Scope Alignment
+Retired platform/multi-organization scope; follow the [disposition](README.md#current-scope-alignment). L&D learning monitoring is separately REQ-025/026.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-031-F01  
 **Actor:** Platform Administrator  
 **Status:** Pending clarification  

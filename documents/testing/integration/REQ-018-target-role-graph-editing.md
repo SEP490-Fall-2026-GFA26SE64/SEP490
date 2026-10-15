@@ -1,5 +1,10 @@
 # REQ-018 — Target-Role Graph Editing Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Revalidate discipline/role authorization, prerequisite versioning and separate publication. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:**
 - [REQ-018-F01 View Target-Role Graph](../../features/Target-role%20graph%20editing/View%20Target-Role%20Graph.md)
 - [REQ-018-F02 Edit Prerequisite Relationships](../../features/Target-role%20graph%20editing/Edit%20Prerequisite%20Relationships.md)

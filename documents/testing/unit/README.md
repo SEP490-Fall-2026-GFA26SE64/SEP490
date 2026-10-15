@@ -1,5 +1,12 @@
 # Unit Testing Directory & Standards
 
+## Current Scope Alignment
+
+Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Revised unit/API contracts must cover the four actors, discipline/role assignments, L&D baseline/publication/approval, Expert reviewed guidance and initial confirmation, and independent learning/evidence. Existing PASSED labels and runtime actor codes below are historical evidence, not revised-scope acceptance.
+New feature specs keep open scoring/state/field choices open until agreed. Use per-REQ documents for real future runs; documentation checks do not replace runtime tests.
+
+## Existing Execution Guides and Historical Evidence
+
 **Location:** `backend/src/test/java/com/adaptlearngraph/<feature>/` and `frontend/src/`
 
 Unit testing in this workspace validates pure domain invariants, application service logic, Spring MVC/Security endpoint contracts, and frontend presentation components in total isolation from persistent infrastructure.

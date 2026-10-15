@@ -1,5 +1,11 @@
 # Update Target Role
 
+## Current Scope Alignment
+L&D updates role details and assignment/configuration status, not Expert-authored competency requirements. Publication remains a separate action after completed configuration. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-023-F03  
 **Actor:** L&D Manager  
 **Status:** Implemented  
@@ -28,4 +34,4 @@ Administrative metadata changes do not silently modify the role's skill requirem
 
 - **Unit Test Evidence:** `TargetRoleDomainTest.updateDetailsModifiesMetadata`, `TargetRoleServiceTest.updatesTargetRoleSuccessfully`, `TargetRoleControllerTest.updateTargetRoleReturns200`, `TargetRoleControllerTest.updateTargetRoleReturns403ForLearner`, `TargetRoleControllerTest.updateTargetRoleReturns200ForAssignedExpert`, `TargetRoleControllerTest.updateTargetRoleReturns403ForUnassignedExpert`
 - **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation`, `PostgresTargetRoleRepositoryTest.saveUpdatesExistingRole` (verifies `status` and metadata updates persist to PostgreSQL)
-
+

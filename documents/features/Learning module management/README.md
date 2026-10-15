@@ -1,5 +1,16 @@
 # Learning Module Management
 
+**Ontology 0.8.0:** LearningModule–MicroSkill uses exactly one-to-one TEACHES. Course is removed. Learning objectives and assessment evidence may be authored in content/assessment documentation; learningOutcome/expectedOutcome and rubric/readiness-assessment references are not graph properties. Both sides of the mapping must be checked when publishing or replacing a module. Historical many-skill mapping descriptions below are superseded.
+
+
+## Current Scope Alignment
+
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-013. **Actor:** Expert. **Status:** Reclarification required.
+Create/update/view/organize modules in assigned disciplines, map their skill outcomes, and submit new/revised modules to L&D for approval. Dummy-only content and immediate authoring-to-Employee availability are superseded. Removal/history and approval versioning remain open.
+
+## Historical Specification
+Use the alignment above where older details conflict.
+
 Maintain dummy learning items used by the recommendation engine.
 
 **Source:** [REQ-013](../../PRODUCT_OVERVIEW.md)  

@@ -1,5 +1,13 @@
 # Baseline Knowledge Assessment
 
+## Current Scope Alignment
+
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-002. **Actors:** Employee completes; L&D Manager configures. **Status:** Reclarification required.
+L&D defines competencies covered, question selection, and scoring. Baseline evidence supports role guidance together with RIASEC before Employee role selection/confirmation. Expert-owned per-role baseline configuration is superseded; attempt limits, adaptive parameters, defaults, coverage, evidence reuse, and notifications need revalidation. Expert still configures module assessments.
+
+## Historical Contract and Decisions
+The retained details below describe the prior contract, not acceptance of revised scope.
+
 Establish knowledge evidence for target-role micro-skills and their prerequisites, using adaptive questions grouped by micro-skill and baseline settings configured by the Domain Expert for the role.
 
 **Source:** [REQ-002](../../PRODUCT_OVERVIEW.md)  

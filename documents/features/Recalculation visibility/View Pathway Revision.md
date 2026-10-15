@@ -1,5 +1,11 @@
 # View Pathway Revision
 
+## Current Scope Alignment
+Employee views remaining-pathway revisions/explanations driven by new evidence and learning needs, not only failed questions. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-010-F01  
 **Actor:** Employee  
 **Status:** Pending clarification  

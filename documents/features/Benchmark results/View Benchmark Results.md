@@ -1,5 +1,11 @@
 # View Benchmark Results
 
+## Current Scope Alignment
+Historical research only; follow the [disposition](README.md#current-scope-alignment). Not a committed current product workflow or administrator permission.
+
+## Historical Research Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-035-F01  
 **Actor:** Platform Administrator  
 **Status:** Pending clarification  

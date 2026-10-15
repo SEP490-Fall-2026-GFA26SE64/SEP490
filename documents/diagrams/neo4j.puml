@@ -2,79 +2,86 @@
 !pragma layout smetana
 left to right direction
 hide empty members
+hide circle
 skinparam shadowing false
-
-class "JobDomain" as Domain {
-	id : String/UUID
-	code : String
-	name : String
-	description? : String
-	status : Status
-	createdAt : DateTime
-	updatedAt : DateTime
+skinparam roundcorner 10
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #F8FAFC
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #64748B
+skinparam ArrowColor #475569
+skinparam noteBackgroundColor #FFF7ED
+skinparam noteBorderColor #D97706
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+title Ontology v0.8 — One LearningModule per MicroSkill
+class Occupation {
+ code : String
+ name : String
+ jobZone : Integer
+ interestRealistic : Float [0,1]
+ interestInvestigative : Float [0,1]
+ interestArtistic : Float [0,1]
+ interestSocial : Float [0,1]
+ interestEnterprising : Float [0,1]
+ interestConventional : Float [0,1]
 }
-class "TargetRole" as Role {
-	id : String/UUID
-	code : String
-	name : String
-	familyCode : String
-	track : Track
-	organizationId : String/UUID
-	seniority : Seniority
-	description? : String
-	responsibilities? : List<String>
-	status : Status
-	createdAt : DateTime
-	updatedAt : DateTime
+class TargetRole {
+ code : String
+ name : String
+ scope : String
+ canonicalProfileKey : String
 }
-class "MacroCompetency" as Macro {
-	id : String/UUID
-	code : String
-	name : String
-	description? : String
-	status : Status
-	createdAt : DateTime
-	updatedAt : DateTime
+class Level {
+ code : String
+ name : String
+ rank : Integer
+ context : String
+ attainmentRule = ALL_MANDATORY_SKILLS
 }
-class "MicroSkill\n(prerequisite)" as Foundation {
-	id : String/UUID
-	code : String
-	name : String
-	description? : String
-	status : Status
-	createdAt : DateTime
-	updatedAt : DateTime
+class Competency {
+ name : String
+ description : String
+ attainmentRule = ALL_MEMBER_SKILLS_AT_OWNING_LEVEL
 }
-class "MicroSkill\n(target)" as Destination {
-	id : String/UUID
-	code : String
-	name : String
-	description? : String
-	status : Status
-	createdAt : DateTime
-	updatedAt : DateTime
+class MicroSkill {
+ name : String
+ definition : String
 }
-class "LearningModule" as Module {
-	id : String/UUID
-	code : String
-	title : String
-	provider : String
-	platform : String
-	sourceUrl : String/URL
-	durationHours? : Decimal
-	priceAmount? : Decimal
-	currency? : String
-	status : Status
-	createdAt : DateTime
-	updatedAt : DateTime
+class LearningModule {
+ title : String
+ contentUri : String
+ contentType : String
+ contentVersion : String
 }
-
-Domain --> Role : HAS_ROLE\nstatus, createdAt, updatedAt
-Role --> Macro : REQUIRES_MACRO\nstatus, createdAt, updatedAt
-Macro --> Foundation : HAS_SKILL\nstatus, createdAt, updatedAt
-Macro --> Destination : HAS_SKILL\nstatus, createdAt, updatedAt
-Role --> Destination : REQUIRES_SKILL\ntargetMastery, status, createdAt, updatedAt
-Foundation --> Destination : PREREQUISITE_OF\nminMastery, status, createdAt, updatedAt
-Module --> Destination : TEACHES\noutcomeMastery, coverage, status, createdAt, updatedAt
-Module --> Foundation : HAS_ENTRY_REQUIREMENT\nminMastery, status, createdAt, updatedAt
+Occupation "1" --> "1..*" TargetRole : HAS_ROLE
+TargetRole "1" --> "1..*" Level : HAS_LEVEL
+Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
+Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
+Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL\nrequiredScore [0,1], isMandatory
+LearningModule "1" -up-> "1" MicroSkill : TEACHES
+MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE\nrequiredScore [0,1]
+note top of Competency
+Owned by one Level.
+All member skills PASS under that Level's requirements
+=> Competency ACHIEVED.
+No independent score or assessment.
+end note
+note bottom of Level
+Each Level has its own skill requirements and competencies.
+A Competency member must be required by its owning Level.
+end note
+note bottom of LearningModule
+Exactly one Module per Skill and one Skill per Module.
+Select learning content through missing skills.
+Check content depth against the selected Level.
+Skill prerequisites determine learning readiness.
+Module completion does not automatically prove skill mastery.
+end note
+note top of Occupation
+Each TargetRole has one owning Occupation.
+Repeated reported titles use distinct role IDs per Occupation.
+Shared metadata: id, version, status, reviewStatus,
+reviewedBy?, reviewedAt?
+end note
 @enduml

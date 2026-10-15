@@ -1,5 +1,107 @@
 # Adapt-Learn-Graph: Product Overview
 
+**Current scope baseline:** [Adapt-Learn-Graph System Overview](adapt_learn_graph_system_overview.md)  
+**Aligned:** 2026-10-14  
+**Product model:** Internal enterprise system serving one organization  
+**Status:** Scope and traceability baseline, not a finalized SRS or claim of implementation.
+
+## Current Product Purpose
+
+Adapt-Learn-Graph manages employee competencies and personalized learning within one organization. Its knowledge graph connects disciplines, target roles, competencies, micro-skills, learning modules, courses, and assessment mappings. Evidence supports competency estimates, gap analysis, Expert-reviewed AI role guidance, and adaptive pathways.
+
+The System Overview controls current scope and responsibilities. Older requirements, clarification logs, registration material, and test results below are historical where they conflict. Architecture and schema documents remain the authority for existing technical fields; this update does not change code or databases.
+
+## Actors and Boundaries
+
+There are exactly four human actors. Automated services are not actors.
+
+| Actor | Responsibilities | Boundary |
+| --- | --- | --- |
+| System Administrator | Accounts, roles/permissions, organization-wide technical configuration, audit and operational activity. | Assessment business rules remain with L&D/Expert. |
+| L&D Manager | Disciplines, discipline Expert assignments, target-role creation and Expert assignment, baseline assessment configuration, role publication, learning approval, employee monitoring. | Does not edit the Expert's role competency requirements. |
+| Expert | Assigned-discipline skills, prerequisites, modules, courses, questions/module assessments; assigned-role competency requirements; AI guidance and initial pathway review. | Does not publish target roles or approve organizational learning offerings on behalf of L&D. |
+| Employee | Personal profile, baseline/RIASEC and learning assessments, reviewed role guidance and role selection/confirmation, reviewed pathways, independent skill learning, progress tracking. | Does not author graph definitions or manually alter target-role pathway modules. |
+
+Single-organization deployment does not imply unrestricted access. Assignment, authorized review, and personal-record permissions still apply. Multiple roles per person and reviewer delegation remain open.
+
+## Scope and Business Flows
+
+1. System Administrator maintains accounts, permissions, system settings, and activity records.
+2. L&D creates/updates/deactivates disciplines and assigns/removes Experts from disciplines.
+3. L&D creates a target role and assigns an Expert. The Expert configures competencies, micro-skills, required proficiency and importance, and submits the configuration as complete. L&D reviews and publishes/unpublishes it without editing those requirements.
+4. Experts maintain assigned-discipline skills, prerequisites, modules, courses/content, and module assessments. L&D approves submitted modules, courses, and assessments or returns them for revision.
+5. L&D defines baseline competencies covered, question selection, and scoring. Employee completes baseline and RIASEC assessments; the system suggests roles/comments; an Expert confirms, revises, or rejects guidance; Employee views reviewed guidance and selects/confirms a role.
+6. The system calculates gaps and proposes an ordered pathway. An Expert reviews it, includes/excludes modules, and confirms it before Employee learning starts.
+7. Learning and assessments update progress and competency estimates through configured knowledge-tracing rules. New evidence can change remaining learning needs and cause pathway recalculation; exact triggers remain open, not a confirmed failure-only restriction.
+8. Employee can independently browse/select a micro-skill and learn its mapped modules/courses without starting or changing a target-role pathway. Assessment evidence can update competency estimates.
+9. L&D monitors profiles, gaps, assessment results, and learning progress.
+
+**Out of scope:** Multi-organization registration/workspaces, subscriptions, payment processing, PayOS, cancellation, and SaaS billing. Platform Administrator and Organization Administrator are not current actors. Soft-skill comments are not a replacement for baseline/RIASEC role guidance. Learning content is not restricted to dummy modules. A research benchmark workspace and report exports are not committed by the System Overview.
+
+## Current Requirement Traceability
+
+Existing IDs remain stable; obsolete IDs are retired rather than reused. New capabilities receive new IDs. See [features/README.md](features/README.md) for function links and clarification status.
+
+| IDs | Current capability and ownership |
+| --- | --- |
+| REQ-001 | Employee role selection/confirmation after Expert-reviewed guidance; publication must gate availability. Earlier immediate-selection/publication-independent rules need revision. |
+| REQ-002 | Employee baseline assessment; configuration (F02) belongs to L&D. Previous per-role attempts, coverage/defaults, and adaptive scoring require revalidation against assessment before role selection. |
+| REQ-004, REQ-005, REQ-006 | Employee adaptive pathway, recommendation explanation, and competency graph; initial pathway starts only after Expert confirmation. |
+| REQ-007, REQ-008, REQ-009, REQ-010 | Module/course access, module assessments, own baseline/RIASEC/module results, and recalculation visibility. REQ-007's legacy folder name does not impose dummy-only scope. |
+| REQ-011 through REQ-018 | Expert assigned-role access; assigned-discipline skill/module/question management, role requirements, module outcomes, mappings, and graph prerequisites. Module assessment configuration belongs to Expert, not baseline configuration. |
+| REQ-019, REQ-020 | Expert initial pathway review and confirmation, with module inclusion/exclusion before Employee starts. |
+| REQ-022, REQ-037 | System Administrator account/role management and system-enforced access control for the four current actors. |
+| REQ-023, REQ-024 | L&D target-role creation/update and assigned-Expert management; discipline assignments are separate. |
+| REQ-025, REQ-026 | L&D employee development monitoring and supporting learning statistics; exact metrics remain open. |
+| REQ-038, REQ-039, REQ-040 | Supporting account activation, operational notifications, and sensitive-data protection; policies remain open and exclude subscription events. |
+| REQ-041, REQ-042, REQ-043, REQ-046 | Automated competency/gap analysis, initial pathway generation for review, evidence-driven recalculation, and consistent learning state. |
+| REQ-047 | Employee RIASEC assessment for interest-based guidance, not knowledge mastery. |
+| REQ-048 | System-generated, Expert-reviewed target-role guidance viewed by Employee before role selection/confirmation. |
+| REQ-049 | Expert confirms, revises, or rejects baseline/RIASEC-based AI role guidance. |
+| REQ-050 | L&D discipline create/view/update/deactivate. |
+| REQ-051 | L&D discipline Expert assignment/removal and assignment viewing. |
+| REQ-052 | L&D review of completed role configuration and publication/unpublication. |
+| REQ-053 | L&D module/course/assessment approval or return for revision. |
+| REQ-054 | Expert course/content authoring, organization within modules, removal, and submission for approval. |
+| REQ-055 | Employee independent micro-skill learning through mapped content; system progress/evidence updates. |
+| REQ-056 | Employee personal/work profile viewing and updating. |
+| REQ-057 | System Administrator technical system configuration. |
+| REQ-058 | System Administrator audit/operational activity viewing. |
+| REQ-059 | Automated knowledge tracing from assessment evidence using configured rules. |
+
+### Superseded and Deferred IDs
+
+| IDs | Disposition |
+| --- | --- |
+| REQ-003, REQ-021, REQ-044 | Retired soft-skill assessment/comments/review. Replaced in current scope by REQ-047/048/049; old responses must not be relabeled as RIASEC. |
+| REQ-028 through REQ-032, REQ-045 | Retired SaaS billing/payment/platform organization capabilities. |
+| REQ-033 through REQ-036 | Registration-era research workspace, not committed current product functionality or a new administrator permission. |
+| REQ-027 | Export capability deferred; need, access, and formats require separate agreement. |
+
+## Architecture and Acceptance
+
+Neo4j remains the catalog relationship store; PostgreSQL remains the transactional store. [ARCHITECTURE.md](ARCHITECTURE.md) and [neo4j_schema.md](neo4j_schema.md) distinguish implemented fields from design gaps for disciplines, courses, publication/approval, RIASEC, guidance reviews, and knowledge tracing. Do not infer new fields or database migrations from this overview alone.
+
+Acceptance must verify actor/assignment boundaries, L&D publication and approval, Expert-reviewed guidance before selection, Expert-confirmed initial pathways before learning, independent skill learning without pathway modification, and consistent evidence/progress updates. Historical test results apply only to their recorded contract versions; they do not prove the revised requirements are implemented. Documentation checks validate links, scope coverage, ownership, and traceability; runtime verification follows future implementation.
+
+## Open Decisions
+
+- Baseline scope before role selection, attempt limits, question selection/scoring, proficiency levels, evidence reuse, and RIASEC instrument/scoring/versioning.
+- AI provider/input minimization, review assignment, revision/rejection workflow, Employee visibility, and role-change behavior.
+- Discipline membership/history, role configuration completion/publication checks, and withdrawal effects on existing learning.
+- Course/content delivery, approval/versioning, module assessment eligibility, and independent learning progress rules.
+- Knowledge-tracing parameters, mastery/gap thresholds, recalculation criteria, prerequisite validation, and interaction with Expert overrides.
+- Activation, notifications, privacy/retention, monitoring metrics, and migration of legacy actor codes/organization fields without historical data loss.
+
+Registration performance/research targets remain historical until adopted for the current scope; no measured outcome is claimed.
+
+## Historical Product Baseline
+
+<details>
+<summary>Superseded 2026-09-25 enterprise SaaS overview and decision history</summary>
+
+The following material is retained for historical requirement/test traceability only. It is not the current product model, actor matrix, scope, or acceptance contract. Conflicting confirmed/proposed statements below are superseded by the current sections above.
+
 **Full name:** Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform  
 **Domain:** Software Engineering  
 **Product model:** Subscription-based platform serving enterprises  
@@ -254,3 +356,5 @@ The following do not block this overview, but must be agreed before their detail
 
 - [Capstone registration letter](Copy%20of%20FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43.md).
 - Stakeholder product clarification supplied in this conversation on 2026-09-25.
+
+</details>

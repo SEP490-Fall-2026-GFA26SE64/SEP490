@@ -1,5 +1,11 @@
 # Apply Confirmed Subscription Payment
 
+## Current Scope Alignment
+Retired SaaS billing scope; follow the [disposition](README.md#current-scope-alignment). No subscription activation is required by current scope.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-045-F02  
 **Actor:** Automated system  
 **Status:** Pending clarification  

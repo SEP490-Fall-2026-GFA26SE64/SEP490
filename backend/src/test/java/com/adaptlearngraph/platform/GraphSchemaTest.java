@@ -25,9 +25,9 @@ class GraphSchemaTest {
                 seeder.seed();
                 seeder.seed();
                 try (var session = driver.session()) {
-                    assertEquals(11, session.run("SHOW CONSTRAINTS YIELD name RETURN count(*) AS count").single()
+                    assertEquals(15, session.run("SHOW CONSTRAINTS YIELD name RETURN count(*) AS count").single()
                             .get("count").asInt());
-                    assertEquals(1, session.run("MATCH (migration:SchemaMigration) RETURN count(migration) AS count")
+                    assertEquals(4, session.run("MATCH (migration:SchemaMigration) RETURN count(migration) AS count")
                             .single().get("count").asInt());
                     assertEquals(2, session.run("MATCH (module:LearningModule) RETURN count(module) AS count")
                             .single().get("count").asInt());
@@ -48,6 +48,20 @@ class GraphSchemaTest {
                     assertThrows(ClientException.class,
                             () -> session.run("CREATE (:MicroSkill {id: 'skill-1', code: 'OTHER_SKILL'})").consume());
                     session.run("CREATE (:TargetRole {id: 'role-1', code: 'SYNTHETIC_SKILL'})").consume();
+                    for (String label : java.util.List.of("Occupation", "Level", "Competency")) {
+                        session.run("CREATE (node:" + label + " {id: 'unique-" + label + "'})").consume();
+                        assertThrows(ClientException.class,
+                                () -> session.run("CREATE (node:" + label + " {id: 'unique-" + label + "'})")
+                                        .consume());
+                    }
+                    session.run("CREATE (:Occupation {id: 'occupation-code-1', code: '15-1252.00'})")
+                            .consume();
+                    assertThrows(ClientException.class,
+                            () -> session.run("CREATE (:Occupation {id: 'occupation-code-2', code: '15-1252.00'})")
+                                    .consume());
+                    assertEquals(0, session.run("SHOW CONSTRAINTS YIELD name WHERE name = 'course_id' RETURN count(*) AS count")
+                            .single().get("count").asInt());
+                    assertThrows(IllegalStateException.class, seeder::seed);
                     session.run("MATCH (migration:SchemaMigration) SET migration.checksum = 'changed'").consume();
                     assertThrows(IllegalStateException.class, migrator::migrate);
                 }

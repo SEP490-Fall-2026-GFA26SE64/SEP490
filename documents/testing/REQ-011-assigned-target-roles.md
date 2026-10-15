@@ -1,5 +1,10 @@
 # REQ-011 — Assigned Target Roles Test Plan and Evidence
 
+## Current Scope Alignment
+Follow [current test criteria](README.md#current-scope-alignment). Retained runs concern their recorded contract; revalidate L&D role assignment separately from discipline content authorization and publication. Original dates/counts are unchanged.
+
+## Historical Test Plan and Evidence
+
 **Status:** Unit, Controller/Security, Neo4j Testcontainers Integration, and System API tests passed; manual browser verification checklist verified.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-011-assigned-target-roles.md) | [Integration Test](integration/REQ-011-assigned-target-roles.md) | [System Test](system/REQ-011-assigned-target-roles.md)  
 **Feature contracts:**

@@ -1,5 +1,11 @@
 # View Platform Payment Statistics
 
+## Current Scope Alignment
+Retired SaaS billing scope; follow the [disposition](README.md#current-scope-alignment). Platform payment statistics are not a current administrator function.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-030-F01  
 **Actor:** Platform Administrator  
 **Status:** Pending clarification  

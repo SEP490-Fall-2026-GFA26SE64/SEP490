@@ -1,5 +1,10 @@
 # REQ-023 — Target Role Management test plan and evidence
 
+## Current Scope Alignment
+Follow [current test criteria](README.md#current-scope-alignment). Revalidate L&D creation/assignment, Expert configuration completion and separate L&D publish/unpublish gates; older lifecycle/actor tests do not certify all new boundaries. Dates/counts are unchanged.
+
+## Historical Test Plan and Evidence
+
 **Status:** Unit, Controller/Security, Neo4j Testcontainers Integration, and System API tests passed; manual browser verification checklist completed.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-023-target-role-management.md) | [Integration Test](integration/REQ-023-target-role-management.md) | [System Test](system/REQ-023-target-role-management.md)  
 **Feature contracts:**

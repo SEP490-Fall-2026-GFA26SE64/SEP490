@@ -1,0 +1,254 @@
+[
+  {
+    "dependentCourseId": "CRS-ARC-M-READ",
+    "prerequisiteCourseId": "CRS-ARC-J-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-ARC-S-READ",
+    "prerequisiteCourseId": "CRS-ARC-M-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-CORE-M-READ",
+    "prerequisiteCourseId": "CRS-CORE-J-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-CORE-S-READ",
+    "prerequisiteCourseId": "CRS-CORE-M-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-DE-M-MODEL",
+    "prerequisiteCourseId": "CRS-DE-J-MODEL",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-DE-M-PIPE",
+    "prerequisiteCourseId": "CRS-DE-J-PIPE",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-DE-M-QUAL",
+    "prerequisiteCourseId": "CRS-DE-J-QUAL",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-DE-S-MODEL",
+    "prerequisiteCourseId": "CRS-DE-M-MODEL",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-DE-S-PIPE",
+    "prerequisiteCourseId": "CRS-DE-M-PIPE",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-DE-S-QUAL",
+    "prerequisiteCourseId": "CRS-DE-M-QUAL",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-FS-M-QUALITY",
+    "prerequisiteCourseId": "CRS-FS-J-QUALITY",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-FS-M-SERVICE",
+    "prerequisiteCourseId": "CRS-FS-J-SERVICE",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-FS-M-UI",
+    "prerequisiteCourseId": "CRS-FS-J-UI",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-FS-S-QUALITY",
+    "prerequisiteCourseId": "CRS-FS-M-QUALITY",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-FS-S-SERVICE",
+    "prerequisiteCourseId": "CRS-FS-M-SERVICE",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-FS-S-UI",
+    "prerequisiteCourseId": "CRS-FS-M-UI",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-GOV-M-READ",
+    "prerequisiteCourseId": "CRS-GOV-J-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-GOV-S-READ",
+    "prerequisiteCourseId": "CRS-GOV-M-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-INF-M-READ",
+    "prerequisiteCourseId": "CRS-INF-J-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-INF-S-READ",
+    "prerequisiteCourseId": "CRS-INF-M-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-QA-M-AUTO",
+    "prerequisiteCourseId": "CRS-QA-J-AUTO",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-QA-M-DESIGN",
+    "prerequisiteCourseId": "CRS-QA-J-DESIGN",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-QA-M-EXEC",
+    "prerequisiteCourseId": "CRS-QA-J-EXEC",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-QA-S-AUTO",
+    "prerequisiteCourseId": "CRS-QA-M-AUTO",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-QA-S-DESIGN",
+    "prerequisiteCourseId": "CRS-QA-M-DESIGN",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-QA-S-EXEC",
+    "prerequisiteCourseId": "CRS-QA-M-EXEC",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-SEC-M-READ",
+    "prerequisiteCourseId": "CRS-SEC-J-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  },
+  {
+    "dependentCourseId": "CRS-SEC-S-READ",
+    "prerequisiteCourseId": "CRS-SEC-M-READ",
+    "basis": "LOCAL_CURRICULUM_PROGRESSION",
+    "rationale": "Complete the earlier guided practice in the same topic before the more autonomous/complex course. Not an official framework prerequisite; pending expert review.",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ]
+  }
+]

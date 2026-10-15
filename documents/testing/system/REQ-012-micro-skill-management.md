@@ -1,5 +1,10 @@
 # REQ-012 — Micro-Skill Management System Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current system criteria](README.md#current-scope-alignment). Revalidate assigned-discipline skills, descriptions/proficiency and deactivation/history. Dates/counts below certify only their recorded contract.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:**
 - [REQ-012-F01 Create Micro-Skill](../../features/Micro-skill%20management/Create%20Micro-Skill.md)
 - [REQ-012-F02 View Micro-Skills](../../features/Micro-skill%20management/View%20Micro-Skills.md)

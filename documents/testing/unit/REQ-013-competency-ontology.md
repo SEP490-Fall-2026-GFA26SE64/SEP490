@@ -1,5 +1,10 @@
 # REQ-013 — Macro-Competency & Competency Ontology Unit Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current unit criteria](README.md#current-scope-alignment). This historical filename/ID associates competency ontology tests with REQ-013, while the stable current catalog assigns REQ-013 to learning module management. Do not treat ontology coverage as module/course/approval acceptance or silently reassign the ID; reconcile the historical traceability explicitly when requalifying tests.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-013 Competency Ontology / Macro-Competency](../../features/README.md)  
 **Level:** Unit (Domain Record, Service Layer, Controller Contracts & Security RBAC)  
 **Status:** PASSED (2026-10-01)

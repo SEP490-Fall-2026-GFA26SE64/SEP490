@@ -1,5 +1,10 @@
 # REQ-024 — Expert Assignment Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Revalidate role assignment/removal/history separately from discipline assignments. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contracts:**
 - [REQ-024-F01 Assign Target Role to Expert](../../features/Expert%20assignment/Assign%20Target%20Role%20to%20Expert.md)
 - [REQ-024-F02 Reassign Target Role Expert](../../features/Expert%20assignment/Reassign%20Target%20Role%20Expert.md)

@@ -1,5 +1,11 @@
 # Verify PayOS Payment
 
+## Current Scope Alignment
+Retired SaaS billing scope; follow the [disposition](README.md#current-scope-alignment). No PayOS integration is required by current scope.
+
+## Historical Specification
+The material below is not a current implementation requirement.
+
 **Function ID:** REQ-045-F01  
 **Actor:** Automated system receiving PayOS payment information  
 **Status:** Pending clarification  

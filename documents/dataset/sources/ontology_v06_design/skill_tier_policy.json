@@ -1,0 +1,792 @@
+[
+  {
+    "skillId": "MS-ARC01",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-ARC02",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-ARC03",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-ARC04",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-ARC05",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-ARC06",
+    "minimumLocalLevelRank": 3,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-CORE01",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-CORE02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-CORE03",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-CORE04",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/development-operations-devops-engineer/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-DE01",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE03",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE04",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE05",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE06",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE07",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE08",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE09",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE10",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE11",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE12",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE13",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE14",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE15",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-DE16",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS01",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS03",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS04",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS05",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS06",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS07",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS08",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS09",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS10",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS11",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS12",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS13",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS14",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS15",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-FS16",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-GOV01",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-GOV02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-GOV03",
+    "minimumLocalLevelRank": 3,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF01",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/network-support",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF03",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF04",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/configuration-management",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF05",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF06",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF07",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/storage-management",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-INF08",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-QA01",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA03",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA04",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA05",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA06",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA07",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA08",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA09",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA10",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA11",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA12",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA13",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA14",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA15",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-QA16",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping.",
+    "skillDefinitionEvidence": "See ontology_dataset_specification.md skill catalogue and ESCO concept mappings."
+  },
+  {
+    "skillId": "MS-SEC01",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC02",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC03",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/identity-and-access-management",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC04",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC05",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC06",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC07",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/security-operations",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC08",
+    "minimumLocalLevelRank": 2,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC09",
+    "minimumLocalLevelRank": 1,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  },
+  {
+    "skillId": "MS-SEC10",
+    "minimumLocalLevelRank": 3,
+    "basis": "LOCAL_SCOPE_PROPOSAL",
+    "sourceUrls": [
+      "https://sfia-online.org/en/sfia-9/skills/information-security",
+      "https://sfia-online.org/en/sfia-9/responsibilities"
+    ],
+    "rationale": "Broader design, automation, optimization and assurance are introduced after bounded guided execution. This is not an official title-to-grade mapping."
+  }
+]

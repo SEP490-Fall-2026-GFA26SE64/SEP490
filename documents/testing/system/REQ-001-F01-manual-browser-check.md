@@ -1,5 +1,10 @@
 # REQ-001-F01 manual browser system check
 
+## Current Scope Alignment
+This is the old-contract browser procedure, not proof of revised acceptance. Follow [current system criteria](README.md#current-scope-alignment); rework publication and reviewed-guidance prerequisites after implementation.
+
+## Historical Manual Procedure
+
 Use this checklist only against the local development Compose stack. It verifies the browser-observed part of F01-S01; it does not validate production Identity integration.
 
 ## 1. Start and verify the stack

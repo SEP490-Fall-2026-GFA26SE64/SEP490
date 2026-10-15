@@ -1,5 +1,11 @@
 # Delete Target Role
 
+## Current Scope Alignment
+Role withdrawal uses L&D publication/lifecycle ownership; physical deletion, retention and impact on existing learning need agreement. Legacy ID remains for traceability, not a mandated destructive operation. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-023-F04  
 **Actor:** L&D Manager  
 **Status:** Implemented  
@@ -27,4 +33,4 @@ Permanently remove an organization target role from the catalog (both `DRAFT` an
 - API returns `204 No Content` on successful deletion.
 - Unit and integration tests verify deletion of both draft and published roles.
 - **Unit Test Evidence:** `TargetRoleServiceTest.deletesDraftAndPublishedRolesSuccessfully`, `TargetRoleControllerTest.deleteTargetRoleReturns204`, `TargetRoleControllerTest.deleteTargetRoleReturns403ForLearner`
-- **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation` (verifies `roleRepo.deleteById` removes node from Neo4j)
+- **Integration Test Evidence:** `TargetRoleAndMicroSkillNeo4jIntegrationTest.testNeo4jPersistenceAndIsolation` (verifies `roleRepo.deleteById` removes node from Neo4j)

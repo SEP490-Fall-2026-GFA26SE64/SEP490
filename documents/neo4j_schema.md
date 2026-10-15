@@ -1,684 +1,248 @@
-# NEO4J SCHEMA V5 — GIẢI THÍCH NODE VÀ RELATIONSHIP
+# Schema Neo4j — Ontology v0.8.0
 
-## 1. Phạm vi schema
+Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.8.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Schema Neo4j hiện tại gồm:
+![Sơ đồ ontology](diagrams/neo4j.svg)
 
-- 5 node: `JobDomain`, `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule`.
-- 7 relationship: `HAS_ROLE`, `REQUIRES_MACRO`, `HAS_SKILL`, `REQUIRES_SKILL`, `PREREQUISITE_OF`, `TEACHES`, `HAS_ENTRY_REQUIREMENT`.
-- Không có node `LearningProgram`.
-- User, assessment result, learner mastery và learning pathway được lưu trong PostgreSQL.
+[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
 
-Các field đã loại bỏ:
+## 1. Cấu trúc tổng quát
 
-```text
-mandatory
-sourceRefs
-configVersion
-datasetVersion
-basis
-evidenceStatus
-moduleType
-level
-enrollmentModel
-priceStatus
-lastVerifiedAt
-durationStatus
-primary
-```
-
-`coverageType` đã được đổi tên thành `coverage`.
-
----
-
-## 2. Sơ đồ tổng quát
+Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.8.0.
 
 ```mermaid
-flowchart TD
-    D[JobDomain] -->|HAS_ROLE| R[TargetRole]
-    R -->|REQUIRES_MACRO| C[MacroCompetency]
-    C -->|HAS_SKILL| S[MicroSkill]
-    R -->|REQUIRES_SKILL| S
-    S -->|PREREQUISITE_OF| S
-    M[LearningModule] -->|TEACHES| S
-    M -->|HAS_ENTRY_REQUIREMENT| S
+flowchart LR
+ O[Occupation] -->|HAS_ROLE| R[TargetRole]
+ R -->|HAS_LEVEL| L[Level]
+ L -->|HAS_COMPETENCY| C[Competency]
+ C -->|HAS_SKILL| S[MicroSkill]
+ L -->|REQUIRES_SKILL| S
+ M[LearningModule] -->|TEACHES 1–1| S
+ S -->|HAS_SKILL_PREREQUISITE| S
 ```
 
----
+| Relationship | Hướng | Ý nghĩa |
+|---|---|---|
+| `HAS_ROLE` | Occupation → TargetRole | Một nghề có nhiều chức danh; mỗi TargetRole thuộc đúng một Occupation. |
+| `HAS_LEVEL` | TargetRole → Level | Một role có nhiều cấp độ; mỗi Level thuộc đúng một role. Dataset hiện có Junior, Middle, Senior cho mỗi role. |
+| `HAS_COMPETENCY` | Level → Competency | Mỗi Level sở hữu các năng lực riêng; mỗi Competency thuộc đúng một Level. |
+| `HAS_SKILL` | Competency → MicroSkill | Năng lực được cấu thành từ các skill. Mỗi Competency hiện có ít nhất hai skill; một skill có thể thuộc nhiều năng lực. |
+| `REQUIRES_SKILL` | Level → MicroSkill | Xác định skill và yêu cầu đánh giá để đạt Level. Ngưỡng điểm nằm trên quan hệ này. |
+| `TEACHES` | LearningModule → MicroSkill | Quan hệ 1–1: mỗi Module dạy đúng một MicroSkill; mỗi MicroSkill được dạy bởi đúng một Module. |
+| `HAS_SKILL_PREREQUISITE` | MicroSkill → MicroSkill | A → B nghĩa là phải xác nhận readiness của skill B trước khi học skill A. |
 
-## 3. Quy ước chung
+Bộ skill của các Level được xác định riêng, có thể giao nhau. MicroSkill dùng chung định nghĩa; yêu cầu thực hiện và ngưỡng điểm có thể khác theo từng Level.
 
-### 3.1 Ký hiệu
+## 2. Các field chung của mọi node và relationship
 
-| Ký hiệu | Ý nghĩa |
+Các field dưới đây được lưu trực tiếp thành property trên graph. Các bảng node ở phần sau liệt kê field nghiệp vụ bổ sung.
+
+| Field | Kiểu | Ý nghĩa và cách dùng |
+|---|---|---|
+| `id` | String | ID ổn định của bản ghi. Dùng để nối và truy vấn; không dùng tên hiển thị làm khóa. Import kiểm tra ID không trùng trong từng tập bản ghi node/relationship. |
+| `version` | String | Phiên bản catalog. Phiên bản hiện tại là `0.8.0`. Giúp xác định bộ định nghĩa mà dữ liệu thuộc về; không đồng nghĩa với phiên bản rubric hay nội dung học. |
+| `status` | Enum/String | Trạng thái vòng đời: `DRAFT`, `ACTIVE`, `ARCHIVED`. Dataset hiện dùng `ACTIVE` cho các node và relationship. |
+| `reviewStatus` | Enum/String | Trạng thái chuyên gia duyệt: `NEEDS_EXPERT_REVIEW`, `APPROVED`, `REJECTED`. Dataset hiện đang chờ duyệt. |
+| `reviewedBy` | String hoặc null | Danh tính người thực sự phê duyệt/rà soát. Không tự điền người duyệt khi dữ liệu chưa được duyệt. |
+| `reviewedAt` | Chuỗi datetime ISO 8601 hoặc null | Thời điểm duyệt, có múi giờ; ví dụ `2026-10-14T10:00:00+07:00`. Khi dùng kiểu thời gian Neo4j trong tương lai cần thống nhất với bộ import; seed hiện dùng chuỗi. |
+
+Điều kiện xuất bản: `status = ACTIVE`, `reviewStatus = APPROVED`, có `reviewedBy` và `reviewedAt` hợp lệ. `ACTIVE` không tự chứng minh đã được chuyên gia duyệt.
+
+Neo4j không lưu property có giá trị null; bộ import bỏ các field null khỏi node/relationship. `version` là metadata của snapshot hiện tại, không tạo thêm node phiên bản. Việc dùng lại cùng ID cho nhiều snapshot trong một graph cần một thiết kế lịch sử riêng; bộ import hiện chỉ nhận graph trống hoặc đúng snapshot đã có.
+
+## 3. Giải thích field trong từng node
+
+### 3.1. Occupation — Nghề nghiệp
+
+Occupation là nghề theo O*NET, ví dụ `Software Developers`, mã `15-1252.00`. Nó là điểm neo để truy nguyên các reported job title và hồ sơ sở thích nghề nghiệp.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `code` | String | Mã O*NET-SOC của nghề; ví dụ `15-1252.00`. Giữ nguyên mã nguồn để đối chiếu. |
+| `name` | String | Tên nghề từ O*NET; ví dụ `Software Developers`. |
+| `jobZone` | Integer | Nhóm mức chuẩn bị nghề nghiệp theo O*NET, phản ánh yêu cầu tổng quát về đào tạo, kinh nghiệm và giáo dục. Không dùng để suy ra Junior/Middle/Senior. |
+| `interestRealistic` | Float [0,1] | R — sở thích hoạt động thực tế, kỹ thuật, thiết bị hoặc xây dựng/sửa chữa. |
+| `interestInvestigative` | Float [0,1] | I — sở thích nghiên cứu, phân tích và tìm hiểu vấn đề. |
+| `interestArtistic` | Float [0,1] | A — sở thích sáng tạo và biểu đạt nghệ thuật. |
+| `interestSocial` | Float [0,1] | S — sở thích hỗ trợ, hướng dẫn và giúp đỡ người khác. |
+| `interestEnterprising` | Float [0,1] | E — sở thích lãnh đạo, thuyết phục, quản lý hoặc hoạt động kinh doanh. |
+| `interestConventional` | Float [0,1] | C — sở thích làm việc với dữ liệu, quy trình, quy tắc và tổ chức thông tin. |
+
+Sáu điểm là **hồ sơ sở thích của nghề**, lấy từ O*NET 31.0, không phải kết quả RIASEC của một learner. Thang OI nguồn là 1–7; quy đổi bằng `(điểm gốc − 1) / 6`, lưu sáu chữ số thập phân. Ví dụ Investigative của Software Developers: `6.05 → 0.841667`. Không thay điểm thiếu bằng 0; không dùng RIASEC làm ngưỡng đạt skill.
+
+Kết quả RIASEC của learner phải lưu riêng theo learner, công cụ/phiên bản và phương pháp tính điểm. Khi so sánh với nghề phải có quy tắc chuẩn hóa phù hợp với công cụ đó.
+
+### 3.2. TargetRole — Chức danh mục tiêu
+
+TargetRole biểu diễn chức danh người học hướng tới trong một Occupation, ví dụ `Application Developer`.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
+| `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
+| `scope` | String | Phạm vi công việc của role: làm gì, phụ trách phần nào. Đây là mô tả do nhóm tổng hợp theo nguồn và cần chuyên gia xác nhận. |
+| `canonicalProfileKey` | String | Mã nhóm profile do nhóm định nghĩa, ví dụ `PROFILE-DEV`. Gom các role có cùng bộ yêu cầu skill để tránh recommendation lặp; 48 role hiện thuộc 20 nhóm. |
+
+`canonicalProfileKey` là property nghiệp vụ thực sự trên node. Nó không phải mã O*NET và không tự xác nhận các tên role đồng nghĩa trong mọi organization. Khi learner chọn role, đánh giá vẫn dùng requirement của Level thuộc role đó; bằng chứng đánh giá giữa các role không tự động thay thế cho nhau.
+
+`occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
+
+### 3.3. Level — Cấp độ của role
+
+Level mô tả kỳ vọng năng lực và mức tự chủ trong một TargetRole cụ thể. Junior của role này là một node khác Junior của role khác.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `code` | String | Mã cấp độ: `J`, `M`, `S`. Duy nhất trong phạm vi role sở hữu. |
+| `name` | String | Tên hiển thị: `Junior`, `Middle`, `Senior`. |
+| `rank` | Integer | Thứ bậc: Junior = 1, Middle = 2, Senior = 3. Dùng để sắp xếp; không phải điểm đánh giá. |
+| `context` | String | Ngữ cảnh thực hiện công việc và mức hỗ trợ/tự chủ được phép ở cấp độ này. Giúp assessor hiểu kỳ vọng khi chấm. |
+| `attainmentRule` | Enum/String | Hiện là `ALL_MANDATORY_SKILLS`: chỉ đạt Level khi tất cả skill bắt buộc của Level đều đạt. |
+
+Skill thuộc Level và ngưỡng điểm được xác định qua `REQUIRES_SKILL`. Level không lưu điểm trung bình để bù cho một skill bắt buộc bị trượt. `targetRoleId` chỉ dùng nối Excel/JSON; sau import ownership nằm trên `HAS_LEVEL`.
+
+Junior/Middle/Senior là các tier của nhóm, tham khảo SFIA và UK; không phải phép ánh xạ chính thức một-một sang cấp SFIA hoặc ngạch công việc UK.
+
+### 3.4. Competency — Năng lực thuộc Level
+
+Competency nhóm những MicroSkill cùng tạo nên một năng lực của Level. Mỗi Competency thuộc đúng một Level và được suy ra từ kết quả skill của learner.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `name` | String | Tên năng lực để trình bày cho người học và người quản lý. |
+| `description` | String | Giải thích phạm vi và ý nghĩa của nhóm skill. |
+| `attainmentRule` | Enum/String | Hiện là `ALL_MEMBER_SKILLS_AT_OWNING_LEVEL`: đạt tất cả skill thành viên theo yêu cầu của Level sở hữu thì đạt Competency. |
+
+Competency không có điểm, ngưỡng điểm hoặc bài đánh giá độc lập. Mỗi skill trong `HAS_SKILL` phải có `REQUIRES_SKILL` tương ứng ở Level sở hữu. `levelId` chỉ dùng nối Excel/JSON; ownership trên graph là `HAS_COMPETENCY`.
+
+Kết quả suy ra cho một learner:
+
+- Đủ tất cả kết quả `PASS` hợp lệ → `ACHIEVED`.
+- Có skill đã xác định trượt → `NOT_YET_ACHIEVED`.
+- Chưa có đủ kết quả tương thích và chưa có skill trượt → `NOT_ASSESSED`.
+- Thiếu hoặc chưa duyệt định nghĩa bắt buộc → `CATALOG_NOT_READY`.
+
+Các kết quả này được lưu trong dữ liệu learner, không gắn thành trạng thái chung của node Competency.
+
+### 3.5. MicroSkill — Kỹ năng cụ thể
+
+MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm chứng, dùng lại giữa nhiều role và Level; mỗi skill có đúng một Module giảng dạy.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `name` | String | Tên skill; ví dụ `Manage source changes with version control`. |
+| `definition` | String | Giải thích hành vi/phạm vi của skill, giúp phân biệt với skill khác. Đây là định nghĩa chung, không phải nhiệm vụ riêng của mọi Level. |
+
+Node không lưu `actualScore` hoặc `requiredScore`. `requiredScore` nằm trên `REQUIRES_SKILL` để đánh giá đạt Level và trên `HAS_SKILL_PREREQUISITE` để kiểm tra sẵn sàng học; `actualScore` thuộc kết quả đánh giá của từng learner. Như vậy một skill có thể yêu cầu mức thực hiện khác nhau ở Junior và Senior.
+
+### 3.6. LearningModule — Đơn vị nội dung học
+
+LearningModule chứa tham chiếu nội dung bài học/thực hành. Module dạy skill qua `TEACHES` và được chọn trực tiếp vào pathway dựa trên skill gap.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `title` | String | Tên Module hiển thị trong lộ trình học. |
+| `moduleType` | Enum/String | Loại nội dung. `LESSON_AND_PRACTICE`: bài học kèm thực hành; `RESOURCE_GUIDED_PRACTICE`: hướng dẫn đọc nguồn và thực hành mẫu. |
+| `contentUri` | String | Đường dẫn hoặc định danh nội dung thực tế. Seed hiện dùng đường dẫn tương đối tính từ thư mục chứa JSON seed, ví dụ `content/modules/MOD-MS-CORE02.md`. |
+| `contentType` | String | Định dạng nội dung; hiện là `text/markdown`, giúp ứng dụng chọn cách đọc/hiển thị. |
+| `contentVersion` | String | Phiên bản của nội dung được tham chiếu, ví dụ `2.0`. Cần khớp bản nội dung đã được duyệt và triển khai. |
+
+`contentVersion` khác `version`: field chung `version` chỉ phiên bản catalog, còn `contentVersion` chỉ bản bài học. Nội dung bài học lưu ngoài Neo4j; database lưu tham chiếu. Thứ tự học nằm trong pathway của learner, dựa trên skill gap và prerequisite; không đặt thứ tự toàn cục trên Module.
+
+## 4. Field riêng trên các relationship
+
+Mọi relationship cũng có bộ field chung ở mục 2. Các field `type`, `fromId`, `toId` trong JSON chỉ phục vụ xác định loại và hai đầu cạnh khi import, không trở thành property dư trên cạnh.
+
+### 4.1. REQUIRES_SKILL
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `requiredScore` | Float [0,1] | Ngưỡng điểm để skill đạt trong Level này. Dataset hiện đề xuất 0.60–0.95, chờ hiệu chuẩn. |
+| `isMandatory` | Boolean | Skill có bắt buộc để đạt Level hay không. Tất cả 1.891 requirement hiện là true và đang chờ chuyên gia rà. |
+
+### 4.2. HAS_SKILL_PREREQUISITE
+
+A → B nghĩa là xác nhận skill nền tảng B trước khi học skill A. Đây là điều kiện sẵn sàng học, không tự thêm B vào tập skill bắt buộc để đạt Level.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `requiredScore` | Float [0,1] | Ngưỡng điểm readiness; cả 11 cạnh hiện đề xuất `0.75`, chờ chuyên gia duyệt. |
+
+Quan hệ này chỉ có `requiredScore` và metadata chung; mô tả readiness và tham chiếu bài đánh giá được quản lý ngoài Neo4j. Backend cần mapping assessment rõ ràng cho cặp skill phụ thuộc–skill nền tảng trước khi xác nhận readiness. Kết quả phải khớp learner, skill nền tảng, quan hệ tiên quyết và phiên bản task/rubric/catalog. Readiness `PASS` đáp ứng điều kiện; `FAIL` hoặc `NOT_ASSESSED` chưa đáp ứng. Không tự dùng kết quả đánh giá skill theo Level thay cho readiness vì rubric và nhiệm vụ khác nhau.
+
+Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL`, `TEACHES` chỉ có metadata chung.
+
+## 5. Dữ liệu đánh giá nằm ngoài Neo4j
+
+Neo4j lưu định nghĩa catalog và ngưỡng `requiredScore`. Các dữ liệu sau thuộc phần assessment/tài liệu nghiệp vụ, không phải property của schema này:
+
+- Mục tiêu thực hành, nhiệm vụ, bằng chứng cần nộp và hướng dẫn chấm.
+- Rubric, tiêu chí, trọng số, phiên bản và mapping bài đánh giá với Level–Skill hoặc cặp skill tiên quyết.
+- `actualScore`, kết quả đánh giá, tiến độ và lịch sử học của từng learner.
+
+Quy tắc đã thống nhất: `actualScore = Σ(weight_i × rating_i / 4)`; thiếu bằng chứng ở tiêu chí bắt buộc thì `NOT_ASSESSED`, điểm là null. Backend assessment phải xác định rõ bài đánh giá và phiên bản tiêu chí trước khi so sánh với ngưỡng trong graph. Ngưỡng điểm không tự xác định được bài kiểm tra.
+
+Xem [quy tắc assessment và minh chứng](dataset/ONTOLOGY.md#assessment-calculation-and-readiness-contract). Các đề xuất rubric cũ được giữ làm tài liệu tham khảo, không phải cấu hình runtime đã được duyệt.
+
+## 6. Ranh giới field Excel/JSON và property Neo4j
+
+| Field nối dữ liệu | Relationship tương ứng | Sau import |
+|---|---|---|
+| `TargetRoles.occupationId` | Occupation → HAS_ROLE → TargetRole | Bỏ field khỏi node; dùng cạnh để truy vấn nghề sở hữu. |
+| `Levels.targetRoleId` | TargetRole → HAS_LEVEL → Level | Bỏ field khỏi node; dùng cạnh để truy vấn role sở hữu. |
+| `Competencies.levelId` | Level → HAS_COMPETENCY → Competency | Bỏ field khỏi node; dùng cạnh để truy vấn Level sở hữu. |
+
+Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau import, quan hệ graph là nguồn chính thức cho truy vấn cấu trúc. `canonicalProfileKey` và sáu field RIASEC là property nghiệp vụ thực sự, được giữ trên node tương ứng.
+
+## 7. Các quy tắc nhất quán và recommendation
+
+- Mỗi TargetRole thuộc đúng một Occupation; mỗi Level thuộc một role; mỗi Competency thuộc một Level.
+- Role cùng tên trong các Occupation khác nhau có ID/code riêng. Không đặt ràng buộc tên role duy nhất toàn hệ thống.
+- Mỗi Competency hiện có ít nhất hai skill; mọi skill thành viên có requirement tại Level sở hữu. Tập skill bắt buộc để đạt Level phải có ít nhất một phần tử.
+- Đồ thị skill prerequisite phải không có chu trình, cạnh tự trỏ hoặc sai loại node. Mở rộng cả prerequisite gián tiếp.
+- Sắp xếp Module theo skill prerequisite và trạng thái readiness của learner. Không chuyển tự động prerequisite Course cũ thành prerequisite skill.
+- Tìm Module qua `Level → REQUIRES_SKILL → MicroSkill ← TEACHES ← LearningModule`, rồi kiểm tra nội dung phù hợp role/Level, publication và prerequisite. Không có cạnh trực tiếp từ Level tới Module.
+- Thiếu nội dung phù hợp cho một gap → `PATHWAY_UNRESOLVED`. Một cạnh `TEACHES` hoặc tài liệu tham khảo không tự chứng minh nội dung đủ sâu hay đã được duyệt.
+- Competency được suy ra từ skill; Level đạt khi đủ các skill bắt buộc. Module completion không tự thay thế kết quả đánh giá skill.
+
+### Ràng buộc TEACHES 1–1 và nội dung theo cấp độ
+
+- Mỗi MicroSkill có đúng một cạnh `TEACHES` đi vào từ LearningModule; mỗi LearningModule có đúng một cạnh `TEACHES` đi ra tới MicroSkill.
+- Bộ kiểm tra import và thao tác ghi catalog phải kiểm tra cả hai phía, kể cả node không có cạnh. Constraint duy nhất trên ID không tự đảm bảo cardinality này. Importer v0.8 đã kiểm tra cả hai phía; API ghi catalog trong tương lai cũng phải thực thi ràng buộc này.
+- Một Module dùng chung cho các Level yêu cầu cùng skill. Nội dung có thể chia thành phần nền tảng, thực hành và nâng cao trong cùng Module; nhiệm vụ và bằng chứng đánh giá được định nghĩa trong cấu hình assessment ngoài graph, gắn với skill và ngữ cảnh Level tương ứng.
+- Hoàn thành Module không đồng nghĩa đạt skill ở mọi Level. Nếu nội dung chưa đáp ứng ngữ cảnh/độ sâu của Level, trả về `PATHWAY_UNRESOLVED`, không suy ra đủ năng lực chỉ vì tồn tại cạnh `TEACHES`.
+- Khi learner chưa đạt skill, có thể học lại phần liên quan và thực hiện bài thực hành/đánh giá khác trong cùng Module; thiết kế này không có Module thay thế cho cùng skill.
+- Bỏ Course đồng thời bỏ `HAS_COURSE`, `HAS_MODULE`, `HAS_COURSE_PREREQUISITE` và `sequence` thuộc Course. Không chuyển bằng chứng hoàn thành Course cũ thành bằng chứng đạt skill.
+
+## 8. Nguồn dữ liệu và trạng thái hiện tại
+
+O*NET cung cấp Occupation, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
+
+[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **827 node, 4.536 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 79 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.8. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+
+File nguồn, URI đối chiếu và minh chứng được giữ trong [ONTOLOGY.md](dataset/ONTOLOGY.md) và thư mục `dataset/sources/`, không đưa thành các property `sourceConceptUri`, `sourceLocator`, `sourceVerification` trên graph.
+
+## 9. Tóm tắt property để triển khai
+
+Mọi node và relationship đều có metadata chung: `id`, `version`, `status`, `reviewStatus`, `reviewedBy`, `reviewedAt`. Giá trị null không được lưu thành property Neo4j.
+
+| Node | Property nghiệp vụ ngoài metadata |
 |---|---|
-| Không có `?` | Field bắt buộc |
-| `?` | Field tùy chọn, có thể `null` |
-| `[0,1]` | Số thực từ `0.0` đến `1.0` |
-
-### 3.2 Phân biệt `id` và `code`
-
-| Field | Giải thích |
-|---|---|
-| `id` | ID kỹ thuật duy nhất, thường dùng UUID |
-| `code` | Mã nghiệp vụ ổn định, dùng để import và truy vấn |
-
-Ví dụ:
-
-```json
-{
-  "id": "6c77c6cb-f33f-4447-b619-30c06ec38283",
-  "code": "SPRING_BOOT"
-}
-```
-
-Không dùng `name` làm khóa vì tên hiển thị có thể thay đổi.
-
-### 3.3 `status`
-
-Đề xuất dùng ba trạng thái:
-
-| Giá trị | Ý nghĩa |
-|---|---|
-| `DRAFT` | Đang chuẩn bị, thuật toán chưa sử dụng |
-| `ACTIVE` | Đã được phép sử dụng |
-| `RETIRED` | Ngừng dùng cho dữ liệu mới nhưng vẫn giữ để tra cứu lịch sử |
-
-### 3.4 Field thời gian
-
-| Field | Giải thích |
-|---|---|
-| `createdAt` | Thời điểm tạo node hoặc relationship |
-| `updatedAt` | Thời điểm cập nhật gần nhất |
-
-Nên lưu theo UTC và ISO 8601:
-
-```text
-2026-09-24T14:30:00Z
-```
-
----
-
-# 4. Chi tiết node
-
-## 4.1 `JobDomain`
-
-### Mục đích
-
-Phân nhóm các target role theo domain. Phạm vi dữ liệu hiện tại có thể gồm `ICT`, `DATA` và `AI`.
-
-### Cấu trúc
-
-```text
-JobDomain {
-    id,
-    code,
-    name,
-    description?,
-    status,
-    createdAt,
-    updatedAt
-}
-```
-
-### Giải thích field
-
-| Field | Kiểu | Bắt buộc | Giải thích |
-|---|---|---:|---|
-| `id` | String/UUID | Có | ID kỹ thuật duy nhất của domain |
-| `code` | String | Có | Mã ổn định như `ICT`, `DATA`, `AI` |
-| `name` | String | Có | Tên domain hiển thị |
-| `description` | String | Không | Mô tả phạm vi của domain |
-| `status` | Enum | Có | `DRAFT`, `ACTIVE` hoặc `RETIRED` |
-| `createdAt` | DateTime | Có | Thời điểm tạo |
-| `updatedAt` | DateTime | Có | Thời điểm cập nhật gần nhất |
-
-### Ví dụ
-
-```json
-{
-  "id": "domain-001",
-  "code": "ICT",
-  "name": "Information and Communication Technology",
-  "description": "Software and information technology roles",
-  "status": "ACTIVE",
-  "createdAt": "2026-09-01T00:00:00Z",
-  "updatedAt": "2026-09-24T00:00:00Z"
-}
-```
-
----
-
-## 4.2 `TargetRole`
-
-### Mục đích
-
-Biểu diễn vị trí nghề nghiệp mà learner chọn làm mục tiêu.
-
-### Cấu trúc
-
-```text
-TargetRole {
-    id,
-    code,
-    name,
-    familyCode,
-    track,
-    organizationId,
-    seniority?,
-    assignedExpertId?,
-    version,
-    description?,
-    responsibilities?,
-    status,
-    createdAt,
-    updatedAt,
-    rejectionReason?
-}
-```
-
-### Giải thích field
-
-| Field | Kiểu | Bắt buộc | Giải thích |
-|---|---|---:|---|
-| `id` | String/UUID | Có | ID kỹ thuật duy nhất |
-| `code` | String | Có | Mã role, ví dụ `JAVA_BACKEND_P3`, `ROLE-AI-ARCH` |
-| `name` | String | Có | Tên role hiển thị |
-| `familyCode` | String | Có | Nhóm các role cùng nghề, ví dụ `JAVA_BACKEND`, `AI_ML` |
-| `track` | Enum | Có | Nhánh `PROFESSIONAL` hoặc `MANAGEMENT` |
-| `organizationId` | String/UUID | Có | Organization sở hữu và được phép sử dụng role |
-| `seniority` | Enum | Không | Grade nghề nghiệp: `P1`–`P5` cho `PROFESSIONAL`, `M3`–`M4` cho `MANAGEMENT` |
-| `assignedExpertId` | String | Không | ID của Domain Expert được phân công thiết lập micro-skills |
-| `version` | String | Có | Phiên bản role (`1.0`, `1.1`), hỗ trợ successor draft |
-| `description` | String | Không | Mô tả trách nhiệm hoặc phạm vi công việc |
-| `responsibilities` | List<String> | Không | Danh sách trách nhiệm chính để hiển thị ở role detail |
-| `status` | Enum | Có | `DRAFT`, `SENT`, `REJECTED`, `ACTIVE`, hoặc `RETIRED` |
-| `createdAt` | DateTime | Có | Thời điểm tạo |
-| `updatedAt` | DateTime | Có | Thời điểm cập nhật |
-| `rejectionReason` | String | Không | Lý do từ chối và phản hồi từ Domain Expert khi trạng thái là `REJECTED` |
-
-Field `level` đã bị loại bỏ. `code` và `name` vẫn có thể chứa grade nghiệp vụ như `JAVA_BACKEND_P3`, nhưng runtime phải dùng field `seniority` riêng để hiển thị và filter cấp độ.
-
-`seniority` là grade code dùng cho discovery/filter và không thay thế `track`. `PROFESSIONAL` chỉ dùng `P1`–`P5`; `MANAGEMENT` chỉ dùng `M3`–`M4`. Cùng một grade có thể mang mô tả năng lực/chức danh khác nhau giữa Finance, IT hoặc các domain khác; catalog của từng domain/role family sở hữu ý nghĩa chi tiết đó. Hậu tố như `P3` trong `code` vẫn không được dùng để suy luận seniority ở runtime.
-
-`version` và `assignedExpertId` hỗ trợ quy trình phân công Domain Expert và tạo successor draft (phiên bản kế nhiệm) cho target role mà không làm gãy các ràng buộc lộ trình của học viên đã đăng ký phiên bản trước.
-
-### Ví dụ
-
-```json
-{
-  "id": "role-001",
-  "code": "JAVA_BACKEND_P3",
-  "name": "Java Backend Developer P3",
-  "familyCode": "JAVA_BACKEND",
-  "track": "PROFESSIONAL",
-  "organizationId": "00000000-0000-0000-0000-000000000001",
-  "seniority": "P3",
-  "assignedExpertId": "expert-rivera",
-  "version": "1.0",
-  "description": "Develops and maintains Java backend applications",
-  "responsibilities": [
-    "Build and maintain Java backend services",
-    "Review API and persistence designs"
-  ],
-  "status": "ACTIVE",
-  "createdAt": "2026-09-01T00:00:00Z",
-  "updatedAt": "2026-09-24T00:00:00Z"
-}
-```
-
----
-
-## 4.3 `MacroCompetency`
-
-### Mục đích
-
-Phân nhóm các micro-skill thành ba nhóm năng lực lớn:
-
-```text
-KNOWLEDGE
-COMMUNICATION
-INNOVATION
-```
-
-### Cấu trúc
-
-```text
-MacroCompetency {
-    id,
-    code,
-    name,
-    description?,
-    status,
-    createdAt,
-    updatedAt
-}
-```
-
-### Giải thích field
-
-| Field | Kiểu | Bắt buộc | Giải thích |
-|---|---|---:|---|
-| `id` | String/UUID | Có | ID kỹ thuật duy nhất |
-| `code` | String | Có | Mã như `KNOWLEDGE` |
-| `name` | String | Có | Tên hiển thị |
-| `description` | String | Không | Giới hạn và phạm vi của macro |
-| `status` | Enum | Có | Trạng thái macro |
-| `createdAt` | DateTime | Có | Thời điểm tạo |
-| `updatedAt` | DateTime | Có | Thời điểm cập nhật |
-
-Macro không lưu `weight` hoặc `targetLevel`. Khi cần điểm macro, backend tổng hợp từ mastery của các micro-skill thuộc macro đó.
-
----
-
-## 4.4 `MicroSkill`
-
-### Mục đích
-
-Đây là tầng tính toán chính cho skill gap, prerequisite, recommendation và learner mastery.
-
-### Cấu trúc
-
-```text
-MicroSkill {
-    id,
-    code,
-    name,
-    description?,
-    status,
-    createdAt,
-    updatedAt
-}
-```
-
-### Giải thích field
-
-| Field | Kiểu | Bắt buộc | Giải thích |
-|---|---|---:|---|
-| `id` | String/UUID | Có | ID kỹ thuật duy nhất |
-| `code` | String | Có | Mã skill như `SPRING_BOOT` |
-| `name` | String | Có | Tên skill hiển thị |
-| `description` | String | Không | Mô tả learner cần biết hoặc làm được gì |
-| `status` | Enum | Có | Trạng thái skill |
-| `createdAt` | DateTime | Có | Thời điểm tạo |
-| `updatedAt` | DateTime | Có | Thời điểm cập nhật |
-
-Mastery của learner không nằm trên node này vì mỗi learner có mastery khác nhau. Mastery được lưu trong PostgreSQL.
-
----
-
-## 4.5 `LearningModule`
-
-### Mục đích
-
-Biểu diễn một đơn vị học có thể được Recommendation Engine đưa vào pathway.
-
-### Cấu trúc
-
-```text
-LearningModule {
-    id,
-    code,
-    title,
-    provider,
-    platform,
-    sourceUrl,
-    durationHours?,
-    priceAmount?,
-    currency?,
-    status,
-    createdAt,
-    updatedAt
-}
-```
-
-### Giải thích field
-
-| Field | Kiểu | Bắt buộc | Giải thích |
-|---|---|---:|---|
-| `id` | String/UUID | Có | ID kỹ thuật duy nhất |
-| `code` | String | Có | Mã module ổn định |
-| `title` | String | Có | Tên khóa học/module |
-| `provider` | String | Có | Đơn vị tạo nội dung, ví dụ IBM |
-| `platform` | String | Có | Nền tảng cung cấp, ví dụ Coursera |
-| `sourceUrl` | String/URL | Có | URL gốc của module thật |
-| `durationHours` | Decimal | Không | Số giờ ước lượng, dùng để xếp hạng hoặc tối ưu pathway |
-| `priceAmount` | Decimal | Không | Giá module tại thời điểm thu thập dữ liệu |
-| `currency` | String | Không | Mã tiền tệ, ví dụ `USD`, `VND` |
-| `status` | Enum | Có | Trạng thái module |
-| `createdAt` | DateTime | Có | Thời điểm tạo |
-| `updatedAt` | DateTime | Có | Thời điểm cập nhật |
-
-Quy tắc giá:
-
-- `priceAmount = 0` nghĩa là đã xác nhận module miễn phí.
-- `priceAmount = null` nghĩa là chưa có dữ liệu giá.
-- Nếu `priceAmount` khác `null`, `currency` phải có giá trị.
-
----
-
-# 5. Chi tiết relationship
-
-## 5.1 Quy tắc chung
-
-Relationship không có `id`. Neo4j tìm relationship bằng:
-
-```text
-node nguồn + relationship type + node đích
-```
-
-Tất cả relationship giữ ba field quản trị:
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `status` | Enum | Relationship đang `DRAFT`, `ACTIVE` hay `RETIRED` |
-| `createdAt` | DateTime | Thời điểm tạo relationship |
-| `updatedAt` | DateTime | Thời điểm cập nhật relationship |
-
----
-
-## 5.2 `HAS_ROLE`
-
-```text
-(:JobDomain)-[:HAS_ROLE]->(:TargetRole)
-```
-
-Cho biết role thuộc domain nào.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `status` | Enum | Trạng thái mapping domain–role |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-Ví dụ:
-
-```text
-ICT ──HAS_ROLE──> Java Backend Developer P3
-```
-
-Mỗi role chỉ nên thuộc một domain đang `ACTIVE`.
-
----
-
-## 5.3 `REQUIRES_MACRO`
-
-```text
-(:TargetRole)-[:REQUIRES_MACRO]->(:MacroCompetency)
-```
-
-Cho biết role sử dụng macro nào để tổ chức và tổng hợp skill.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `status` | Enum | Trạng thái mapping role–macro |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-Relationship này không chứa `weight` hoặc `targetLevel`.
-
----
-
-## 5.4 `HAS_SKILL`
-
-```text
-(:MacroCompetency)-[:HAS_SKILL]->(:MicroSkill)
-```
-
-Cho biết micro-skill thuộc macro nào.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `status` | Enum | Trạng thái mapping macro–skill |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-Do `primary` đã bị loại bỏ, schema hiện tại hiểu mỗi micro-skill chỉ thuộc một macro.
-
----
-
-## 5.5 `REQUIRES_SKILL`
-
-```text
-(:TargetRole)-[:REQUIRES_SKILL]->(:MicroSkill)
-```
-
-Cho biết role yêu cầu skill nào và cần đạt mức nào.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `targetMastery` | Float `[0,1]` | Mức mastery role yêu cầu |
-| `status` | Enum | Trạng thái requirement |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-### Skill gap
-
-```text
-gap = max(0, targetMastery - currentMastery)
-```
-
-Ví dụ:
-
-```text
-targetMastery  = 0.70
-currentMastery = 0.45
-gap            = 0.25
-```
-
-Do `mandatory` đã bị loại bỏ, mọi `REQUIRES_SKILL` đang `ACTIVE` đều được xem là skill bắt buộc của role.
-
----
-
-## 5.6 `PREREQUISITE_OF`
-
-```text
-(:MicroSkill)-[:PREREQUISITE_OF]->(:MicroSkill)
-```
-
-Biểu diễn dependency tổng quát giữa hai skill.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `minMastery` | Float `[0,1]` | Mức tối thiểu của skill nguồn trước khi học skill đích |
-| `status` | Enum | Trạng thái dependency |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-Ví dụ:
-
-```text
-Java Core
-    ──PREREQUISITE_OF {minMastery: 0.60}
-    ──> Spring Boot
-```
-
-Không cho phép:
-
-- Self-loop thật: `Skill A → Skill A`.
-- Cycle: `A → B → C → A`.
-
-Vòng cong trên diagram chỉ biểu diễn relationship giữa hai node cùng label `MicroSkill`.
-
----
-
-## 5.7 `TEACHES`
-
-```text
-(:LearningModule)-[:TEACHES]->(:MicroSkill)
-```
-
-Cho biết module dạy skill nào và mức độ bao phủ của skill đó trong module.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `outcomeMastery` | Float `[0,1]` | Mức kiến thức module được kỳ vọng hỗ trợ đối với skill |
-| `coverage` | Enum | Mức độ skill được bao phủ trong module |
-| `status` | Enum | Trạng thái mapping module–skill |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-### Giá trị `coverage`
-
-| Giá trị | Mức gợi ý | Ý nghĩa |
-|---|---:|---|
-| `INTRODUCTION_OR_REVIEW` | `0.30` | Giới thiệu hoặc ôn lại skill |
-| `SUPPORTING` | `0.50` | Skill đóng vai trò hỗ trợ |
-| `CORE` | `0.70` | Skill là nội dung chính |
-| `ADVANCED` | `0.85` | Module dạy skill chuyên sâu |
-
-Ví dụ một module dạy nhiều skill:
-
-```text
-Spring Boot Fundamentals
-  ├──TEACHES {outcomeMastery: 0.70, coverage: CORE}
-  │  └──> Spring Boot
-  └──TEACHES {outcomeMastery: 0.30, coverage: INTRODUCTION_OR_REVIEW}
-     └──> REST API
-```
-
-`outcomeMastery` không được gán trực tiếp thành learner mastery. Learner vẫn cần assessment; Knowledge Tracing cập nhật mastery thật trong PostgreSQL.
-
----
-
-## 5.8 `HAS_ENTRY_REQUIREMENT`
-
-```text
-(:LearningModule)-[:HAS_ENTRY_REQUIREMENT]->(:MicroSkill)
-```
-
-Cho biết learner cần đạt skill đầu vào nào trước khi bắt đầu một module cụ thể.
-
-| Field | Kiểu | Giải thích |
-|---|---|---|
-| `minMastery` | Float `[0,1]` | Mức learner cần đạt ở skill đầu vào |
-| `status` | Enum | Trạng thái entry requirement |
-| `createdAt` | DateTime | Thời điểm tạo |
-| `updatedAt` | DateTime | Thời điểm cập nhật |
-
-Ví dụ:
-
-```text
-Advanced Spring Boot
-    ──HAS_ENTRY_REQUIREMENT {minMastery: 0.80}
-    ──> Java Core
-```
-
-Khác biệt:
-
-| Relationship | Phạm vi |
-|---|---|
-| `PREREQUISITE_OF` | Dependency chung giữa hai skill |
-| `HAS_ENTRY_REQUIREMENT` | Điều kiện riêng của một module |
-
----
-
-# 6. Ràng buộc dữ liệu cần validate
-
-## 6.1 Node
-
-| Rule | Mục đích |
-|---|---|
-| `id` unique | Không có hai node cùng ID |
-| `code` unique trong cùng label | Không có hai skill hoặc role trùng code |
-| `status` thuộc enum cho phép | Tránh trạng thái tự do |
-| `TargetRole.organizationId` là UUID hợp lệ | Giữ tenant scope có thể kiểm tra trực tiếp |
-| `TargetRole.seniority` thuộc `P1`–`P5` hoặc `M3`–`M4` và khớp `track` | Search/filter không phụ thuộc tên/code; professional và management không trộn grade |
-| Mỗi phần tử `TargetRole.responsibilities` không rỗng | Không trả nội dung detail hỏng |
-| `updatedAt >= createdAt` | Dữ liệu thời gian hợp lệ |
-| `sourceUrl` hợp lệ | Module phải trỏ đến nguồn học thật |
-| `durationHours > 0` nếu có | Thời lượng phải hợp lệ |
-| `priceAmount >= 0` nếu có | Giá không được âm |
-| Có `currency` khi có `priceAmount` | Giá phải có đơn vị tiền tệ |
-
-## 6.2 Relationship
-
-| Rule | Mục đích |
-|---|---|
-| Không duplicate cùng type giữa cùng hai node | Không tính trùng requirement hoặc outcome |
-| `targetMastery`, `minMastery`, `outcomeMastery` thuộc `[0,1]` | Chuẩn hóa điểm |
-| Không prerequisite cycle | Tránh pathway lặp vô hạn |
-| Role `ACTIVE` có ít nhất một `REQUIRES_SKILL` active | Role phải có yêu cầu skill |
-| Module `ACTIVE` có ít nhất một `TEACHES` active | Module phải dạy ít nhất một skill |
-| Mỗi skill thuộc một macro active | Phù hợp việc đã bỏ `primary` |
-
----
-
-# 7. Ví dụ Cypher hoàn chỉnh
-
-```cypher
-CREATE (domain:JobDomain {
-  id: randomUUID(),
-  code: 'ICT',
-  name: 'Information and Communication Technology',
-  status: 'ACTIVE',
-  createdAt: datetime(),
-  updatedAt: datetime()
-})
-
-CREATE (role:TargetRole {
-  id: randomUUID(),
-  code: 'JAVA_BACKEND_P3',
-  name: 'Java Backend Developer P3',
-  familyCode: 'JAVA_BACKEND',
-  track: 'PROFESSIONAL',
-  organizationId: '00000000-0000-0000-0000-000000000001',
-  seniority: 'P3',
-  description: 'Develops and maintains Java backend applications',
-  responsibilities: [
-    'Build and maintain Java backend services',
-    'Review API and persistence designs'
-  ],
-  status: 'ACTIVE',
-  createdAt: datetime(),
-  updatedAt: datetime()
-})
-
-CREATE (skill:MicroSkill {
-  id: randomUUID(),
-  code: 'SPRING_BOOT',
-  name: 'Spring Boot',
-  status: 'ACTIVE',
-  createdAt: datetime(),
-  updatedAt: datetime()
-})
-
-CREATE (domain)-[:HAS_ROLE {
-  status: 'ACTIVE',
-  createdAt: datetime(),
-  updatedAt: datetime()
-}]->(role)
-
-CREATE (role)-[:REQUIRES_SKILL {
-  targetMastery: 0.70,
-  status: 'ACTIVE',
-  createdAt: datetime(),
-  updatedAt: datetime()
-}]->(skill);
-```
-
----
-
-# 8. Luồng sử dụng schema
-
-```text
-Learner chọn TargetRole
-        ↓
-Đọc REQUIRES_SKILL.targetMastery
-        ↓
-So sánh với learner mastery trong PostgreSQL
-        ↓
-Tính skill gap
-        ↓
-Duyệt PREREQUISITE_OF
-        ↓
-Tìm LearningModule qua TEACHES
-        ↓
-Kiểm tra HAS_ENTRY_REQUIREMENT
-        ↓
-Xếp hạng module bằng gap, durationHours và priceAmount
-        ↓
-Tạo pathway và lưu trong PostgreSQL
-```
-
-Schema này giữ lại các field trực tiếp phục vụ catalog, quản trị lifecycle và thuật toán; các field evidence và version đã được loại bỏ theo phạm vi mới nhất.
+| Occupation | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional |
+| TargetRole | code, name, scope, canonicalProfileKey |
+| Level | code, name, rank, context, attainmentRule |
+| Competency | name, description, attainmentRule |
+| MicroSkill | name, definition |
+| LearningModule | title, moduleType, contentUri, contentType, contentVersion |
+
+| Relationship | Property nghiệp vụ ngoài metadata | Số bản ghi |
+|---|---|---:|
+| HAS_ROLE | Không có | 48 |
+| HAS_LEVEL | Không có | 144 |
+| HAS_COMPETENCY | Không có | 472 |
+| HAS_SKILL | Không có | 1.891 |
+| REQUIRES_SKILL | requiredScore, isMandatory | 1.891 |
+| TEACHES | Không có | 79 |
+| HAS_SKILL_PREREQUISITE | requiredScore | 11 |
+
+Các field đã bỏ khỏi graph: `learningOutcome`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.

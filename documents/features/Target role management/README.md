@@ -1,5 +1,13 @@
 # Target Role Management
 
+## Current Scope Alignment
+
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-023. **Actors:** L&D Manager creates/manages; Expert configures assigned requirements. **Status:** Existing evidence requires scope review.
+L&D creates/updates roles, assigns an Expert, and views configuration status. Expert owns competency/micro-skill requirements, proficiency and importance. Completed configuration is submitted to L&D for separate publication (REQ-052). Organization Administrator/`ADMIN` is not an additional product actor; runtime codes require migration design.
+
+## Historical Contract and Evidence
+Existing implementation claims below are not recertified by this documentation update.
+
 Maintain the organization's Software Engineering development goals and career pathways; Domain Experts author detailed micro-skill proficiency benchmarks and validate graph readiness.
 
 **Source:** [REQ-023](../../PRODUCT_OVERVIEW.md)  

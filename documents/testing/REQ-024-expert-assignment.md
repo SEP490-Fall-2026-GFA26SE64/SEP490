@@ -1,5 +1,10 @@
 # REQ-024 — Expert Assignment Test Plan and Evidence
 
+## Current Scope Alignment
+Follow [current test criteria](README.md#current-scope-alignment). Revalidate L&D target-role assignment/removal separately from discipline Expert assignments (REQ-051). Dates/counts below remain evidence of the original contract.
+
+## Historical Test Plan and Evidence
+
 **Status:** Domain, Application, Controller/Security, Neo4j Testcontainers Integration, and UI modal tests passed; manual browser verification checklist verified.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-024-expert-assignment.md) | [Integration Test](integration/REQ-024-expert-assignment.md) | [System Test](system/REQ-024-expert-assignment.md)  
 **Feature contracts:**

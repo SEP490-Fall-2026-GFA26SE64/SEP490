@@ -1,5 +1,11 @@
 # View Target-Role Graph
 
+## Current Scope Alignment
+Expert views authorized assigned-role requirements/prerequisites and discipline content relationships. Employee personal graph and L&D publication review are separate access contexts. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-018-F01  
 **Actor:** Domain Expert, L&D Manager  
 **Status:** Implemented  

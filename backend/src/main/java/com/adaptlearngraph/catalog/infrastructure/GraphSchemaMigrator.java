@@ -24,7 +24,11 @@ public final class GraphSchemaMigrator {
             session.run(
                     "CREATE CONSTRAINT schema_migration_version IF NOT EXISTS FOR (migration:SchemaMigration) REQUIRE migration.version IS UNIQUE")
                     .consume();
-            for (String filename : List.of("V1__catalog_constraints.cypher")) {
+            for (String filename : List.of(
+                    "V1__catalog_constraints.cypher",
+                    "V2__role_centred_ontology_constraints.cypher",
+                    "V3__occupation_constraints.cypher",
+                    "V4__module_centred_ontology_constraints.cypher")) {
                 String script;
                 try (var stream = new ClassPathResource("db/neo4j/" + filename).getInputStream()) {
                     script = new String(stream.readAllBytes(), StandardCharsets.UTF_8).replace("\r\n", "\n");
@@ -43,7 +47,8 @@ public final class GraphSchemaMigrator {
                 }
                 for (String line : script.lines().filter(value -> !value.isBlank()).toList()) {
                     String statement = line.strip();
-                    if (!(statement.startsWith("CREATE CONSTRAINT ") || statement.startsWith("CREATE INDEX "))
+                    if (!(statement.startsWith("CREATE CONSTRAINT ") || statement.startsWith("CREATE INDEX ")
+                            || statement.equals("DROP CONSTRAINT course_id IF EXISTS;"))
                             || !statement.endsWith(";") || statement.indexOf(';') != statement.length() - 1) {
                         throw new IllegalStateException("Expected one schema DDL statement per line: " + filename);
                     }

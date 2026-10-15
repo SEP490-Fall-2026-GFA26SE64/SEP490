@@ -1,5 +1,10 @@
 # Manual Browser Verification Checklist: REQ-012 & REQ-018
 
+## Current Scope Alignment
+This is the old-contract browser procedure, not proof of revised acceptance. Follow [current system criteria](README.md#current-scope-alignment); revalidate discipline/role assignments and publication boundaries after implementation.
+
+## Historical Manual Procedure
+
 **Features Covered:**
 - **REQ-012**: Micro-skill Management (Create, View, Update, Delete)
 - **REQ-018**: Target-Role Graph Editing (View Target-Role Graph, Edit Prerequisite Relationships)

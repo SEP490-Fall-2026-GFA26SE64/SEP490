@@ -1,5 +1,11 @@
 # View Organization Target Roles
 
+## Current Scope Alignment
+L&D views organization roles, assigned Experts and configuration/publication status for management. Employee browsing follows separate published-role/reviewed-guidance rules. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-023-F02  
 **Actor:** L&D Manager  
 **Status:** Implemented  

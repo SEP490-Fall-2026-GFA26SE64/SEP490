@@ -1,5 +1,10 @@
 # REQ-012 — Micro-Skill Management Unit Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current unit criteria](README.md#current-scope-alignment). Revalidate assigned-discipline descriptions/proficiency, lifecycle and reference retention. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:**
 - [REQ-012-F01 Create Micro-Skill](../../features/Micro-skill%20management/Create%20Micro-Skill.md)
 - [REQ-012-F02 View Micro-Skills](../../features/Micro-skill%20management/View%20Micro-Skills.md)

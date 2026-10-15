@@ -1,5 +1,10 @@
 # REQ-023 — Target Role Management Integration Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current integration criteria](README.md#current-scope-alignment). Revalidate L&D management, Expert configuration completion and L&D publication persistence/access. Original dates/counts below describe the recorded contract only.
+
+## Historical Test Plan and Evidence
+
 **Feature Contracts:**
 - [REQ-023-F01 Create Target Role](../../features/Target%20role%20management/Create%20Target%20Role.md)
 - [REQ-023-F02 View Organization Target Roles](../../features/Target%20role%20management/View%20Organization%20Target%20Roles.md)

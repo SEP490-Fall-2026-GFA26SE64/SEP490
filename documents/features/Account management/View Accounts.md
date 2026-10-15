@@ -1,5 +1,11 @@
 # View Accounts
 
+## Current Scope Alignment
+System Administrator views accounts and their status under authorized access rules. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); this is not a platform multi-organization dashboard.
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-022-F02  
 **Actor:** Organization Administrator  
 **Status:** Pending clarification  

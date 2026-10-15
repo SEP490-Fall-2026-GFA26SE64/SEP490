@@ -1,5 +1,10 @@
 # REQ-001-F01 — View Target Roles System Testing Plan & Evidence
 
+## Current Scope Alignment
+Follow [current system criteria](README.md#current-scope-alignment). Historical catalog/detail runs do not certify L&D publication or reviewed role guidance. Preserve original dates/counts; new acceptance needs new evidence.
+
+## Historical Test Plan and Evidence
+
 **Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Target%20role%20selection/View%20Target%20Roles.md)  
 **Level:** System (Docker Compose Stack, Health Probes & Browser-Facing API Proxy)  
 **Status:** PARTIAL (API/Compose Passed 2026-09-30; Automated Browser Suite Pending; Manual Check Procedure Available)

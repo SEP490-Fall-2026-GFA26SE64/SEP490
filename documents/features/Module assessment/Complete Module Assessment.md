@@ -1,5 +1,11 @@
 # Complete Module Assessment
 
+## Current Scope Alignment
+Employee completes approved Expert-configured module assessments for pathway or independent learning. Record mapped evidence for tracing/progress and evaluate learning needs under new evidence, not solely failures. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+## Historical Specification
+Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+
 **Function ID:** REQ-008-F01  
 **Actor:** Employee  
 **Status:** Pending clarification  
