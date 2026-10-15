@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-**Adapt-Learn-Graph** is an internal enterprise system for managing employee competencies and supporting personalized learning within one organization. It connects target roles, competencies, micro-skills, learning modules, courses, and assessments through a knowledge graph. The system identifies skill gaps, recommends learning pathways, and updates those pathways based on assessment outcomes.
+**Adapt-Learn-Graph** is an internal enterprise system for managing employee competencies and supporting personalized learning within one organization. It connects target roles, competencies, micro-skills, learning modules and assessments through a knowledge graph. The system identifies skill gaps, recommends learning pathways, and updates those pathways based on assessment outcomes.
 
 The system has four human actors: **System Administrator, L&D Manager, Expert, and Employee**. AI-assisted role guidance, competency gap analysis, and pathway recommendation are automated system functions.
 
@@ -12,7 +12,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 
 - User account and access administration.
 - Discipline, target role, and competency requirement management.
-- Micro-skill, prerequisite, learning module, course, question bank, and assessment management.
+- Micro-skill, prerequisite, learning module, question bank, and assessment management.
 - Baseline and RIASEC assessments.
 - AI-assisted target role guidance reviewed by an Expert.
 - Competency profile and skill gap analysis.
@@ -54,7 +54,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Manage target roles:** Create and update target role details, assign each target role to an Expert for competency configuration, and view its configuration status.
 - **Manage target role publication:** Review the Expert’s completed competency configuration, then publish or unpublish the target role. L&D does not edit the Expert’s competency requirements.
 - **Manage baseline assessment configuration:** Define the competencies covered and configure the baseline assessment’s question selection and scoring rules.
-- **Approve learning offerings:** Review submitted modules, courses, and assessments; approve them for organizational use or return them for revision.
+- **Approve learning offerings:** Review submitted modules and assessments; approve them for organizational use or return them for revision.
 - **Monitor employee development:** View employee competency profiles, skill gaps, assessment results, and learning progress.
 
 ### 4.3 Expert (Subject Matter Expert)
@@ -65,11 +65,11 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Manage role competency requirements:** For target roles assigned by the L&D Manager, add or remove required competencies and micro-skills, and set their required proficiency levels and relative importance.
 - **Manage skill prerequisites:** Define, update, or remove prerequisite relationships between micro-skills.
 - **Manage learning modules:** Create, update, organize, and submit modules for approval; map modules to the micro-skills they teach.
-- **Manage courses and learning content:** Add, update, organize, and remove courses or course content within a learning module.
+- **Manage learning content:** Add, update, organize, and remove lesson/practice content within a learning module. Each module teaches exactly one micro-skill, and each skill has exactly one module.
 - **Manage module assessments:** Create and update assessment questions for assigned learning modules, classify questions by micro-skill and difficulty, configure module assessment rules, and submit assessments for approval.
 - **Review AI role guidance:** Review AI-suggested target roles and comments based on an employee’s baseline and RIASEC assessments; confirm, revise, or reject the guidance.
 - **Review initial learning pathways:** Review the first pathway generated for an employee and target role before the employee starts it; include or exclude suggested modules and confirm the reviewed pathway.
-- **Submit content for approval:** Send new or revised modules, courses, and assessments to the L&D Manager for organizational approval.
+- **Submit content for approval:** Send new or revised modules and assessments to the L&D Manager for organizational approval.
 
 ### 4.4 Employee
 
@@ -81,8 +81,8 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Review target role guidance:** View Expert-reviewed AI suggestions and comments, then select or confirm a target role.
 - **Review competency profile and gaps:** View estimated competency levels and gaps against the selected target role.
 - **Follow a learning pathway:** View and follow the pathway after Expert review.
-- **Learn an individual skill:** Browse available micro-skills, choose one to learn, and access its mapped modules and courses without starting or changing a target role pathway.
-- **Complete learning and assessments:** Access assigned modules and courses, take their assessments, and submit responses.
+- **Learn an individual skill:** Browse available micro-skills, choose one to learn, and access its one mapped module without starting or changing a target role pathway.
+- **Complete learning and assessments:** Access assigned modules, take their assessments, and submit responses.
 - **Track learning progress:** View completed activities, assessment outcomes, and pathway status.
 
 ## 5. Main Business Flows
@@ -109,8 +109,8 @@ These functions are performed by the system and are not separate actors:
 - **Pathway generation:** Proposes an ordered set of learning modules from the Employee’s competency gaps and the knowledge graph; the Expert reviews the initial pathway, includes or excludes modules, and confirms it before the Employee starts. Later pathway recalculations respond to new assessment evidence.
 - **Knowledge tracing:** Updates estimated skill mastery using assessment evidence and configured rules.
 - **Pathway recalculation:** Revises the remaining pathway when new evidence changes the Employee’s learning needs.
-- **Progress tracking:** Records assessment, module, course, and pathway completion status.
-- **Skill-based content discovery:** Shows modules and courses mapped to an Employee-selected micro-skill, independent of target role pathway recommendations.
+- **Progress tracking:** Records assessment, module, and pathway completion status.
+- **Skill-based content discovery:** Shows the module mapped to an Employee-selected micro-skill, independent of target role pathway recommendations.
 
 ## 7. Responsibility Boundaries
 
@@ -118,7 +118,7 @@ These functions are performed by the system and are not separate actors:
 |---|---|
 | Accounts, permissions, and system settings | System Administrator |
 | Disciplines, target role creation, Expert assignment, baseline assessment configuration, and publication status | L&D Manager |
-| Micro-skills, prerequisites, modules, courses, module assessments, and competency requirements for assigned target roles | Expert |
+| Micro-skills, prerequisites, modules, module assessments, and competency requirements for assigned target roles | Expert |
 | Organizational approval of learning offerings | L&D Manager |
 | AI-generated target role suggestions and comments | System generates; Expert reviews; Employee selects or confirms |
 | Initial pathway review and module inclusion or exclusion | Expert |

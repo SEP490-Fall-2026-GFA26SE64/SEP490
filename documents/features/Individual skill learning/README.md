@@ -9,7 +9,7 @@
 | --- | --- | --- | --- |
 | REQ-055-F01 | Browse Available Micro-Skills | Employee and discovery criteria | Available skills for optional learning |
 | REQ-055-F02 | Choose Individual Skill | Employee and available micro-skill | Independent learning context, not a role pathway edit |
-| REQ-055-F03 | Access Mapped Learning Content | Selected skill and available approved mappings | Modules/courses mapped to the skill |
+| REQ-055-F03 | Access Mapped Learning Content | Selected skill and available approved mappings | The single approved Module mapped to the skill |
 | REQ-055-F04 | Complete Independent Learning and Assessment | Independent content activity and assessment answers | Progress and mapped evidence recorded through owning assessment/tracing functions |
 
 **Acceptance:** An Employee can select a skill and access mapped content without starting/changing a target-role pathway. Completing its assessment can update competency estimates; opening content alone is not mastery. Independent selection is not manual pathway module inclusion.
