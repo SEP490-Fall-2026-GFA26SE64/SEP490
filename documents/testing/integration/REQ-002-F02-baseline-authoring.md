@@ -1,5 +1,9 @@
 # REQ-002-F02 — PostgreSQL integration evidence
 
+## Occupation-scoped integration — executed 2026-10-15
+
+The PostgreSQL suite now applies V1–V13 and proves one logical blueprint per Occupation, immutable version compatibility, latest-by-Occupation lookup and zero-role round-trip. A separate disposable Neo4j case proves real `HAS_ROLE` plus multi-Level skill-union traversal and dependency-failure mapping.
+
 ## Environment and fixture
 
 - Test file: `backend/src/test/java/com/adaptlearngraph/assessment/infrastructure/BaselineAssessmentPostgresIntegrationTest.java`.
@@ -11,9 +15,29 @@
 
 | Method | Expected result | Rules |
 | :--- | :--- | :--- |
-| `migratesThroughV12AndSecondMigrationRunIsNoOp` | V1–V12 apply on a clean database; rerun applies no migration. | R7 |
-| `persistsVersionedBlueprintAndIdempotentGenerationWithUtcTimestamps` | Blueprint versions and replay records round-trip; generation pins the latest eligible item version; timestamps remain UTC; protected answer material is not reconstructed into the public manifest. | R3–R5, R7 |
+| `migratesThroughV13AndSecondMigrationRunIsNoOp` | V1–V13 apply on a clean database; rerun applies no migration. | R7, R9 |
+| `persistsVersionedBlueprintAndIdempotentGenerationWithUtcTimestamps` | Occupation identity, all roles including a zero role, versions and replay records round-trip; generation pins the latest eligible item version; timestamps remain UTC; protected answer material is not reconstructed into the public manifest. | R3–R5, R7, R9, R11 |
 | `reviewAndPublishPersistExactHashAndDatabaseFreezesHeaderAndManifest` | Exact hash is persisted; review freezes item changes; publish freezes header and items. | R6 |
+| `rejectsSecondLogicalBlueprintForSameOccupation` | Database uniqueness prevents a second logical blueprint identity for one Occupation. | R9 |
+
+Neo4j file: `Neo4jBaselineOccupationCatalogAdapterIntegrationTest.java`.
+
+| Case | Expected result | Rules |
+| :--- | :--- | :--- |
+| active Occupation list | Active Occupations are ordered and count only active role memberships. | R10 |
+| Occupation detail | All active roles are retained; skills are the de-duplicated union across active Levels; inactive memberships/nodes are filtered. | R10, R12 |
+| driver failure | A real Neo4j connection failure maps to dependency unavailable rather than an empty catalog. | R12 |
+
+## Run evidence — 2026-10-15
+
+```powershell
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock `
+  -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal `
+  adapt-learn-graph-backend-teststage:local mvn -B -ntp test `
+  "-Dtest=BaselineAssessmentPostgresIntegrationTest,Neo4jBaselineOccupationCatalogAdapterIntegrationTest,GraphSchemaTest"
+```
+
+Results after correcting the stale seed-count assertion: PostgreSQL **4 passed**, Neo4j Occupation adapter **3 passed**, graph schema **1 passed**. The complete backend regression then passed **174/174** in 2 minutes 35 seconds with the same Docker/Testcontainers configuration.
 
 ## Run evidence — 2026-10-14
 

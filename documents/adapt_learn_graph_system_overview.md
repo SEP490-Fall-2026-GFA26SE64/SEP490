@@ -53,7 +53,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Assign Experts:** Assign or remove Experts from disciplines and review current assignments.
 - **Manage target roles:** Create and update target role details, assign each target role to an Expert for competency configuration, and view its configuration status.
 - **Manage target role publication:** Review the Expert’s completed competency configuration, then publish or unpublish the target role. L&D does not edit the Expert’s competency requirements.
-- **Manage baseline assessment configuration:** Define the competencies covered and configure the baseline assessment’s question selection and scoring rules.
+- **Manage baseline assessment configuration:** Maintain one versioned baseline blueprint per Occupation. Each blueprint includes every TargetRole in that Occupation and keeps question counts and scoring rules at role/skill/difficulty level; a role may be retained with zero questions when it should not contribute to that baseline.
 - **Approve learning offerings:** Review submitted modules and assessments; approve them for organizational use or return them for revision.
 - **Monitor employee development:** View employee competency profiles, skill gaps, assessment results, and learning progress.
 

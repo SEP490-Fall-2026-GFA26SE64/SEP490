@@ -1,5 +1,9 @@
 # REQ-002-F02 — Unit, API and frontend evidence
 
+## Occupation-scoped cases — executed 2026-10-15
+
+Executable cases now cover one blueprint per Occupation, exact full-role membership, zero-question role retention/exclusion, all-zero rejection, aggregate shared-skill coverage, unique generated questions and Occupation-first UI behavior. Neo4j Level-union traversal is recorded in the integration evidence.
+
 ## Fixtures and scope
 
 - Backend services use deterministic in-memory ports and fixed UUID/clock values; they do not use development Compose data.
@@ -11,11 +15,31 @@
 | Test file | Cases | Rules |
 | :--- | :--- | :--- |
 | `BaselineBlueprintServiceTest` | trusted actor/catalog snapshot normalization; unauthenticated/inactive/wrong-role rejection; complete shortage reporting/no persist; disabled-role preservation; idempotent replay/conflict; immutable successor/stale conflict; dependency failure mapping | R1–R3 |
+| `OccupationBaselineBlueprintPolicyTest` | exact all-and-only role/skill membership; canonical snapshots; zero-role retention; all-zero rejection; aggregate shared-skill demand; one logical Occupation identity across revisions | R9–R13 |
 | `BaselineAssessmentDraftServiceTest` | exact manifest/weights/pinned metadata; replay and successor generation; idempotency conflict; changed coverage/no partial persist; exact-hash review/publish and retry; invalid hash/missing draft; authorization before dependencies | R1, R4–R6 |
+| `BaselineAssessmentGeneratorOccupationTest` | zero roles do not produce items; shared question versions are unique across role allocations; aggregate shortage retains per-role contributions | R11, R13 |
 | `BaselineBlueprintControllerTest` | local create contract; 422 structured shortage; generated response excludes protected answer material | R1, R2, R4 |
 | `BaselineBlueprintProductionBoundaryTest` | starter profile rejects a CSRF-valid unauthenticated authoring POST with 401 | R1 |
-| `baselineBlueprintApi.test.ts` | idempotency/expected-version requests; shortage parsing; safe manifest parsing; distinct review/publish endpoints; malformed publication-state rejection | R2–R6 |
-| `BaselineBlueprintPage.test.tsx` | ordered save/generate/review/publish flow; actionable shortage with generation disabled | R8 |
+| `baselineBlueprintApi.test.ts` | Occupation list/detail/latest parsing; idempotency/expected-version requests; aggregate shortage parsing; safe manifest parsing; distinct review/publish endpoints; malformed publication-state rejection | R2–R6, R9, R13–R14 |
+| `BaselineBlueprintPage.test.tsx` | ordered save/generate/review/publish flow; actionable shortage; all roles visible without include checkboxes; zero role submitted as retained/non-participating | R8, R11, R14 |
+
+## Run evidence — 2026-10-15
+
+Backend scoped command (executed in the Maven build-stage image because a Windows process held the host `backend/target` output):
+
+```powershell
+docker run --rm adapt-learn-graph-backend-teststage:local mvn -B -ntp test "-Dtest=BaselineBlueprintServiceTest,OccupationBaselineBlueprintPolicyTest,BaselineAssessmentDraftServiceTest,BaselineAssessmentGeneratorOccupationTest,BaselineBlueprintControllerTest,BaselineBlueprintProductionBoundaryTest"
+```
+
+Result: **24 passed**, 0 failures/errors/skips.
+
+```powershell
+cd frontend
+npm.cmd test -- src/features/manager/baseline-blueprints/baselineBlueprintApi.test.ts src/features/manager/baseline-blueprints/BaselineBlueprintPage.test.tsx
+npm.cmd test
+```
+
+Results: scoped **9 passed** across 2 files; full regression **39 passed** across 10 files.
 
 ## Run evidence — 2026-10-14
 

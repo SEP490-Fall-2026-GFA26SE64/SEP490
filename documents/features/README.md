@@ -110,13 +110,13 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 
 ## Clarification Tracker
 
-**Latest clarified function:** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02. Its local BE–FE implementation, executable tests, Compose/Playwright evidence and final review are complete; production owner adapters remain pending.
+**Active contract review:** [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, is being realigned from an ungrouped role-scoped blueprint to one logical blueprint per Occupation. Existing BE–FE and executable evidence applies only to the earlier local contract.
 
-**Current clarification question:** What should the Domain Expert review workflow allow for AI-generated soft-skill comments? This belongs to the AI soft-skill review flow, not REQ-001-F01.
+**Current clarification question:** Approve the Occupation-scoped rules: every Occupation role is present, role total `0` excludes only its questions, at least one role is non-zero, role skills are the de-duplicated union across Levels, and shared-skill coverage is aggregated without repeating a question version.
 
-**Progress:** 2 of 84 functions clarified. F01/F02 local implementation, executable-test, documentation and final review clusters are complete; production integration remains gated on owner adapters.
+**Progress:** 2 of 84 functions remain clarified under the current contract. REQ-002-F02 is reopened at documentation review because its acceptance scope changed; its earlier evidence is retained but does not certify Occupation behavior.
 
-**Next target-role follow-up:** REQ-001 production completion waits for real Identity/Catalog/Assessment/Pathway adapters; local review is complete. The next planned clarification sequence is [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, then the remaining [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) questions, REQ-002-F01, followed by Complete Soft Skill Assessment, REQ-003-F01.
+**REQ-002-F02 status (2026-10-15):** One Occupation has one logical baseline blueprint containing all current roles; counts and weights remain per role/skill/difficulty, and a zero-total role stays visible without participating in coverage, generation or scoring. Cụm 1-4 are complete and the Function is surface-complete for the approved local/demo scope. Production Identity/Catalog/importer contracts, Employee lifecycle and RIASEC remain separate follow-ups before production-ready status.
 
 **Confirmed soft-skill readiness effect (2026-09-27):** Option A: Baseline readiness loss does not block a separate, otherwise eligible soft-skill assessment. The assessment remains subject to its own configuration and authorization rules. Baseline-start and evidence-only closure rules remain independent.
 **Confirmed AI comment visibility (2026-09-27):** Option B: Before expert review is complete, employees see only the summarized result, clearly labeled as AI-generated and pending expert review. The raw comment remains visible only to authorized experts and administrators.

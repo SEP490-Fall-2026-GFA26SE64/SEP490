@@ -7,7 +7,7 @@ Discipline membership/assignments, module/content storage, L&D role publication/
 
 ## Technical Baseline Snapshot
 
-These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers, which do not render PlantUML code blocks directly. PostgreSQL source files are generated from the migrated database catalog; the sources currently describe all 56 tables through V12.
+These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers, which do not render PlantUML code blocks directly. PostgreSQL source files describe all 57 tables through V13.
 
 | Diagram | Source | Rendered image |
 | --- | --- | --- |
@@ -27,4 +27,4 @@ java -jar path\to\plantuml.jar -tsvg documents/diagrams
 
 Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
 
-The PlantUML sources are updated through V12. The assessment source and SVG include the V8 item metadata, all three V9 blueprint tables, V10 blueprint write-idempotency fields, V11 blueprint-to-assessment generation metadata, and V12 review evidence; the SVG was rendered with PlantUML 1.2025.10. Regenerate all PostgreSQL views from a migrated database when Docker is available. `postgresql.svg` and `runtime-topology.svg` may still temporarily show the pre-V7 identity view.
+The PlantUML sources are updated through V13. The assessment source and SVG include the V13 logical blueprint identity in addition to V8-V12 authoring data; the SVG was rendered with PlantUML 1.2025.10. `postgresql.svg` may still temporarily show the pre-V7 identity view.

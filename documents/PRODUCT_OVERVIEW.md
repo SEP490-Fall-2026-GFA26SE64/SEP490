@@ -45,7 +45,7 @@ Existing IDs remain stable; obsolete IDs are retired rather than reused. New cap
 | IDs | Current capability and ownership |
 | --- | --- |
 | REQ-001 | Employee role selection/confirmation after Expert-reviewed guidance; publication must gate availability. Earlier immediate-selection/publication-independent rules need revision. |
-| REQ-002 | Employee baseline assessment; configuration (F02) belongs to L&D. Previous per-role attempts, coverage/defaults, and adaptive scoring require revalidation against assessment before role selection. |
+| REQ-002 | Employee baseline assessment; configuration (F02) belongs to L&D. One logical blueprint is grouped by Occupation and contains per-role/skill/difficulty configuration for every role in that Occupation; a role may contribute zero questions. Employee attempt, coverage/defaults and adaptive scoring still require revalidation before role selection. |
 | REQ-004, REQ-005, REQ-006 | Employee adaptive pathway, recommendation explanation, and competency graph; initial pathway starts only after Expert confirmation. |
 | REQ-007, REQ-008, REQ-009, REQ-010 | Module/course access, module assessments, own baseline/RIASEC/module results, and recalculation visibility. REQ-007's legacy folder name does not impose dummy-only scope. |
 | REQ-011 through REQ-018 | Expert assigned-role access; assigned-discipline skill/module/question management, role requirements, module outcomes, mappings, and graph prerequisites. Module assessment configuration belongs to Expert, not baseline configuration. |
@@ -172,7 +172,7 @@ Each requirement ID identifies a function for later SRS and test traceability. C
 | ID | Feature | Function / expected behavior |
 | --- | --- | --- |
 | REQ-001 | Target role selection | View same-organization, active, catalog-valid target roles and choose one active development goal. Selection rechecks availability, is idempotent and concurrency-safe, snapshots minimal role display data, and preserves history. Role change is blocked during an active assessment and archives the old pathway through its owner boundary. Baseline, gap, new pathway generation, soft-skill reuse, and notification delivery remain separate functions; see [Target Role Selection](features/Target%20role%20selection/README.md). |
-| REQ-002 | Baseline knowledge assessment | Allow one baseline attempt per employee per target role, consumed at successful test start rather than submission. Evidence-only fulfillment separately closes the allowance without a test attempt or fabricated score: for an already-selected role, require valid requirements and prerequisites, saved settings, and no unknown skills, but skip question coverage. This does not bypass coverage for catalog visibility, new selection, configuration saving, or question-based tests. An interruption permits resume of the same attempt, not a fresh start; role switching, configuration changes, and readiness repair do not reset the allowance. A request blocked before successful start does not consume it. Cover role micro-skills and prerequisites using Expert-configured depth, question maximum, and starting difficulty. Defaults are depth 3, maximum 5 questions per skill, and Medium difficulty; upper limits are depth 5 and 10 questions per skill. A permitted first baseline after a role change assesses only unknown skills; reuse evidence and retain known gaps for pathway planning. Group single-answer multiple-choice questions by micro-skill with Easy/Medium/Hard difficulty; deliver one at a time and select the next based on the preceding result. Record competency evidence. Newly unknown skills on return to a fulfilled role and adaptive transitions remain open; see the [assessment function](features/Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md). |
+| REQ-002 | Baseline knowledge assessment | L&D maintains one versioned blueprint per Occupation, containing all roles in that Occupation and exact per-role/skill/difficulty question counts and weights. A role configured with zero total questions remains visible but does not contribute questions, coverage demand or scoring. Employee attempt, evidence reuse, adaptive delivery and result rules remain open/revalidation work; the earlier Expert-configured depth/cap contract is historical. See [Configure Baseline Assessment](features/Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md) and [Complete Baseline Assessment](features/Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md). |
 | REQ-003 | Soft skill assessment | Complete the configured soft skill assessment; retain responses and results for target-role matching and expert review of AI comments. |
 | REQ-004 | Adaptive pathway | View the generated sequence of system-selected modules and their current statuses. The employee cannot manually select or modify pathway modules. |
 | REQ-005 | Recommendation explanation | View why a module is recommended, including the relevant target-role gap or prerequisite dependency. |
@@ -184,7 +184,7 @@ Each requirement ID identifies a function for later SRS and test traceability. C
 
 ### 4.2 Domain Expert Workspace
 
-**Baseline assessment configuration (REQ-002-F02):** View and configure prerequisite assessment depth, questions per micro-skill, and starting difficulty for an authorized target role. New configurations default to depth 3, a maximum of 5 questions per micro-skill, and Medium starting difficulty. Depth ranges from 0 through 5; depth 0 includes only directly required role skills, without prerequisite expansion. The question maximum ranges from 3 through 10 per micro-skill; this is not a minimum-answer requirement before early stopping. The Expert can change starting difficulty before saving; existing saved values are preserved. One question maximum and one starting difficulty apply uniformly across all assessed role and prerequisite skills, without per-skill overrides; actual question counts and later difficulty sequences may still differ through confidence-based stopping and adaptive selection. These settings govern the Employee baseline workflow under REQ-002. Successful saves activate settings for new attempts without a separate activation step; in-progress attempts retain their original settings, including on resume. If no role configuration is saved, block attempt start until an authorized Expert saves one; do not automatically use defaults. Remaining validation, blocked-state messaging and notifications, configuration requirements for evidence-only completion, historical retention, and minimum evidence before early stopping remain open; see [Configure Baseline Assessment](features/Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md).
+**Historical baseline configuration:** The former Domain Expert contract for per-role prerequisite depth, uniform question caps and starting difficulty is superseded. REQ-002-F02 now belongs to L&D and groups one blueprint by Occupation while retaining per-role/skill/difficulty configuration inside it. Expert ownership continues only for module assessments and assigned-domain content. See [Configure Baseline Assessment](features/Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md).
 
 | ID | Feature | Function / expected behavior |
 | --- | --- | --- |
@@ -201,6 +201,8 @@ Each requirement ID identifies a function for later SRS and test traceability. C
 | REQ-021 | AI soft-skill review | Review AI-generated comments about an employee's soft skills and their match to the selected target role. Editing, approval, and employee publication rules remain open. |
 
 ### 4.3 Organization Administration
+
+**Baseline assessment configuration (REQ-002-F02):** An active L&D Manager selects an Occupation and maintains its single logical blueprint. The system displays every TargetRole belonging to that Occupation; L&D enters Easy/Medium/Hard counts and score weights for each role's skills. Setting every count for a role to zero keeps the role in the configuration but excludes it from coverage, generation and scoring. Each save creates an immutable version; generated content is reviewed by exact hash before publication. This flow is implemented and executable-tested on the local opt-in Identity/Catalog boundary; production tenant visibility, publication/release snapshots and the Employee attempt lifecycle remain open dependencies.
 
 | ID | Feature | Function / expected behavior |
 | --- | --- | --- |
@@ -354,7 +356,7 @@ The following do not block this overview, but must be agreed before their detail
 
 ## 11. Source
 
-- [Capstone registration letter](Copy%20of%20FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43.md).
+- Capstone registration letter (historical source is not checked into this repository).
 - Stakeholder product clarification supplied in this conversation on 2026-09-25.
 
 </details>

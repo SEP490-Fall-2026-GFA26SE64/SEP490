@@ -97,6 +97,12 @@ class baseline_blueprint_version {
     request_hash : platform.content_hash
     created_at : timestamp with time zone
 }
+class baseline_blueprint {
+    blueprint_id : uuid [PK]
+    occupation_id? : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+}
 class baseline_blueprint_role {
     blueprint_id : uuid [PK, FK]
     blueprint_version : integer [PK, FK]
@@ -257,6 +263,7 @@ class completion_pass {
 }
 activity_requirement --> assessment_assignment
 activity_requirement --> completion_pass
+baseline_blueprint --> baseline_blueprint_version
 baseline_blueprint_version --> baseline_blueprint_role
 baseline_blueprint_version --> assessment_version
 baseline_blueprint_role --> baseline_blueprint_skill

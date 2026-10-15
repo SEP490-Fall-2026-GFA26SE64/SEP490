@@ -54,7 +54,9 @@ $groups = @(
         File = 'postgresql-assessment.puml'
         Tables = @('evidence_policy_version', 'model_version', 'question_bank', 'item_version',
             'assessment_version', 'assessment_availability', 'assessment_item',
-            'item_skill_mapping', 'module_assessment_binding', 'learning_activity',
+            'item_skill_mapping', 'baseline_blueprint', 'baseline_blueprint_version',
+            'baseline_blueprint_role', 'baseline_blueprint_skill',
+            'module_assessment_binding', 'learning_activity',
             'activity_requirement', 'assessment_assignment', 'assessment_attempt',
             'item_response', 'assessment_result', 'evidence_observation',
             'processing_stream', 'profile_revision', 'mastery_estimate',
