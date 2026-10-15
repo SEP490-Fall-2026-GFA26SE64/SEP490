@@ -8,21 +8,24 @@ The earlier mandatory-versus-advisory open question below is resolved by current
 
 **Function ID:** REQ-019-F01  
 **Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Status:** Implemented  
 **Feature:** [Initial Pathway Review](README.md)
 
 ## Description
 
-Review an authorized employee's initial pathway using baseline evidence, target-role requirements, identified gaps, and recommendation explanations. Module inclusion/exclusion is documented separately.
+Review an authorized employee's initial pathway generated from their assigned occupation and chosen target role (selected directly or guided by baseline and optional RIASEC assessment). The expert inspects the curriculum evidence, includes/excludes learning modules (REQ-020-F01), requests algorithmic regeneration with feedback, or approves the pathway for the employee to begin learning.
 
-**Input:** Employee baseline result and generated pathway for an assigned role.  
-**Outcome:** Expert inspection and any review outcome defined during clarification.
+**Input:** Employee baseline assessment result, assigned occupation, target role, and generated initial adaptive pathway.  
+**Outcome:** Expert inspection, module inclusion/exclusion customization, pathway regeneration requests, or pathway approval.
 
-## Open Decisions
+## Confirmed Workflow Rules
 
-- Review assignment, queue, priority, and multiple-expert coordination.
-- Mandatory approval before employee access versus advisory review.
-- Review outcomes, required comments, notifications, and re-review after revisions.
+- **Review Queue**: All generated pathways (regardless of whether role was selected directly or via optional RIASEC guidance) are routed to `/expert/pathway-review`.
+- **Dedicated Desk**: The pathway review view contains strictly initial learning pathways without extraneous tabs.
+- **Actions**:
+  - *Include / Exclude Modules*: Expert toggles module inclusion before confirmation.
+  - *Regenerate Pathway*: Expert provides replanning instructions for the system to generate an updated draft.
+  - *Approve for Learning*: Expert approval unlocks the learning pathway for the employee in `/employee/pathway`.
 
 ## Acceptance Baseline
 

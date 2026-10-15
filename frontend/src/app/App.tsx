@@ -9,6 +9,7 @@ import { CompetencyGapAnalysisPage } from '../features/employee/gap-analysis/Com
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { EmployeeTargetRolesPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
+import { EmployeeRoleGuidancePage } from '../features/employee/guidance/EmployeeRoleGuidancePage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/employee/overview" element={<EmployeeOverviewPage />} />
             <Route path="/employee/upskilling" element={<EmployeeTargetRolesPage />} />
             <Route path="/employee/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
+            <Route path="/employee/guidance" element={<EmployeeRoleGuidancePage />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/employee/gap-analysis" element={<CompetencyGapAnalysisPage />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />

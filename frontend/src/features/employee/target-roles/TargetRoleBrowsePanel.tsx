@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertCircle, Award, ChevronDown, RefreshCw, Search, Sparkles, Target, X } from 'lucide-react'
+import { AlertCircle, ArrowRight, Award, ChevronDown, RefreshCw, Search, Sparkles, Target, X } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
@@ -188,6 +188,23 @@ export function TargetRoleBrowsePanel() {
 
   return (
     <section ref={catalogRef} className="space-y-4" aria-labelledby="target-role-catalog-heading">
+      {/* Subtle compact link to dedicated AI Role Guidance tab */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-border bg-card/60 text-xs">
+        <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+          <Sparkles size={14} className="text-primary shrink-0" />
+          <span className="truncate">
+            Looking for AI career direction? Get recommendations based on your occupation baseline &amp; RIASEC profile.
+          </span>
+        </div>
+        <a
+          href="/employee/guidance"
+          className="text-primary hover:text-primary-hover font-semibold shrink-0 flex items-center gap-1 hover:underline"
+        >
+          <span>Open AI Role Guidance</span>
+          <ArrowRight size={13} />
+        </a>
+      </div>
+
       <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xs md:flex-row md:items-center">
         <label className="relative flex-1" htmlFor="target-role-search">
           <span className="sr-only">Search target roles by name</span>

@@ -163,6 +163,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Target size={15} />,
       },
       {
+        label: t('nav.roleGuidance', 'AI Role Guidance'),
+        href: '/employee/guidance',
+        icon: <Sparkles size={15} />,
+      },
+      {
         label: t('nav.pathway'),
         href: '/employee/pathway',
         icon: <Compass size={15} />,
@@ -314,6 +319,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/learner/target-roles' ||
         path === '/learner/upskilling'
       )
+    }
+    if (itemHref === '/employee/guidance') {
+      return path === '/employee/guidance'
     }
     if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
       return path === '/employee/pathway' || path === '/learner/pathway'
