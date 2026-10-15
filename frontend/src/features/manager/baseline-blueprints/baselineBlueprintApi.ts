@@ -18,8 +18,8 @@ export interface BlueprintRole {
 
 export interface BlueprintDraft {
   name: string
-  occupationId: null
-  occupationNameSnapshot: null
+  occupationId: string | null
+  occupationNameSnapshot: string | null
   roles: BlueprintRole[]
 }
 
@@ -30,12 +30,42 @@ export interface BaselineBlueprint extends BlueprintDraft {
 }
 
 export interface CoverageShortage {
-  roleId: string
+  roleId: string | null
   microSkillId: string
   difficulty: string
   required: number
   available: number
   missing: number
+  roleRequirements?: RoleCoverageRequirement[]
+}
+
+export interface RoleCoverageRequirement {
+  roleId: string
+  required: number
+}
+
+export interface OccupationSummary {
+  id: string
+  name: string
+  catalogVersion: string
+  roleCount: number
+}
+
+export interface OccupationDetail extends Omit<OccupationSummary, 'roleCount'> {
+  roles: OccupationRole[]
+}
+
+export interface OccupationRole {
+  id: string
+  name: string
+  catalogVersion: string
+  skills: OccupationSkill[]
+}
+
+export interface OccupationSkill {
+  id: string
+  name: string
+  catalogVersion: string
 }
 
 export interface AssessmentItem {
@@ -88,6 +118,26 @@ export class BaselineBlueprintApiError extends Error {
 }
 
 const BASE_URL = '/api/v1/ld/baseline-blueprints'
+const CATALOG_URL = '/api/v1/ld/baseline-blueprint-catalog/occupations'
+
+export async function listOccupations(): Promise<OccupationSummary[]> {
+  const payload = await requestJson(CATALOG_URL, { method: 'GET' })
+  return requiredArray(payload, 'occupations').map(parseOccupationSummary)
+}
+
+export async function getOccupation(occupationId: string): Promise<OccupationDetail> {
+  return parseOccupation(await requestJson(
+    `${CATALOG_URL}/${encodeURIComponent(occupationId)}`,
+    { method: 'GET' },
+  ))
+}
+
+export async function getLatestBlueprintByOccupation(occupationId: string): Promise<BaselineBlueprint> {
+  return parseBlueprint(await requestJson(
+    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}`,
+    { method: 'GET' },
+  ))
+}
 
 export async function createBlueprint(draft: BlueprintDraft, idempotencyKey: string): Promise<BaselineBlueprint> {
   return requestBlueprint(BASE_URL, 'POST', draft, idempotencyKey)
@@ -169,8 +219,8 @@ function parseBlueprint(value: unknown): BaselineBlueprint {
     blueprintId: requiredString(item.blueprintId, 'blueprintId'),
     version: positiveInteger(item.version, 'version'),
     name: requiredString(item.name, 'name'),
-    occupationId: null,
-    occupationNameSnapshot: null,
+    occupationId: optionalString(item.occupationId, 'occupationId'),
+    occupationNameSnapshot: optionalString(item.occupationNameSnapshot, 'occupationNameSnapshot'),
     createdAt: requiredString(item.createdAt, 'createdAt'),
     roles: requiredArray(item.roles, 'roles').map(parseRole),
   }
@@ -237,17 +287,59 @@ function parseAssessment(value: unknown): AssessmentDraft {
   }
 }
 
+function parseOccupationSummary(value: unknown): OccupationSummary {
+  const item = record(value)
+  return {
+    id: requiredString(item.id, 'id'),
+    name: requiredString(item.name, 'name'),
+    catalogVersion: requiredString(item.catalogVersion, 'catalogVersion'),
+    roleCount: nonNegativeInteger(item.roleCount, 'roleCount'),
+  }
+}
+
+function parseOccupation(value: unknown): OccupationDetail {
+  const item = record(value)
+  return {
+    id: requiredString(item.id, 'id'),
+    name: requiredString(item.name, 'name'),
+    catalogVersion: requiredString(item.catalogVersion, 'catalogVersion'),
+    roles: requiredArray(item.roles, 'roles').map((role) => {
+      const row = record(role)
+      return {
+        id: requiredString(row.id, 'role.id'),
+        name: requiredString(row.name, 'role.name'),
+        catalogVersion: requiredString(row.catalogVersion, 'role.catalogVersion'),
+        skills: requiredArray(row.skills, 'role.skills').map((skill) => {
+          const entry = record(skill)
+          return {
+            id: requiredString(entry.id, 'skill.id'),
+            name: requiredString(entry.name, 'skill.name'),
+            catalogVersion: requiredString(entry.catalogVersion, 'skill.catalogVersion'),
+          }
+        }),
+      }
+    }),
+  }
+}
+
 function parseShortages(value: unknown): CoverageShortage[] {
   if (!Array.isArray(value)) return []
   return value.map((entry) => {
     const row = record(entry)
     return {
-      roleId: requiredString(row.roleId, 'roleId'),
+      roleId: optionalString(row.roleId, 'roleId'),
       microSkillId: requiredString(row.microSkillId, 'microSkillId'),
       difficulty: requiredString(row.difficulty, 'difficulty'),
       required: nonNegativeInteger(row.required, 'required'),
       available: nonNegativeInteger(row.available, 'available'),
       missing: nonNegativeInteger(row.missing, 'missing'),
+      roleRequirements: requiredArray(row.roleRequirements ?? [], 'roleRequirements').map((requirement) => {
+        const item = record(requirement)
+        return {
+          roleId: requiredString(item.roleId, 'roleRequirements.roleId'),
+          required: nonNegativeInteger(item.required, 'roleRequirements.required'),
+        }
+      }),
     }
   })
 }

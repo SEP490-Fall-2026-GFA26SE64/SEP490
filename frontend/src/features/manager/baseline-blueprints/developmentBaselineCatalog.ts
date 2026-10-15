@@ -1,4 +1,8 @@
-import type { BlueprintRole } from './baselineBlueprintApi'
+import type {
+  BlueprintRole,
+  OccupationDetail,
+  OccupationSummary,
+} from './baselineBlueprintApi'
 
 type CatalogRole = Omit<BlueprintRole, 'totalQuestionCount'>
 
@@ -42,6 +46,38 @@ const developmentRoles: CatalogRole[] = [
   ]),
 ]
 
+const developmentOccupation: OccupationDetail = {
+  id: '10000000-0000-0000-0000-000000000001',
+  name: 'Software Engineering',
+  catalogVersion: 'development-fixture-v1',
+  roles: developmentRoles.map((item) => ({
+    id: item.roleId,
+    name: item.roleNameSnapshot,
+    catalogVersion: 'development-fixture-v1',
+    skills: item.skills.map((skill) => ({
+      id: skill.microSkillId,
+      name: skill.microSkillNameSnapshot,
+      catalogVersion: 'development-fixture-v1',
+    })),
+  })),
+}
+
+export function developmentBaselineOccupations(): OccupationSummary[] {
+  if (!import.meta.env.DEV) return []
+  return [{
+    id: developmentOccupation.id,
+    name: developmentOccupation.name,
+    catalogVersion: developmentOccupation.catalogVersion,
+    roleCount: developmentOccupation.roles.length,
+  }]
+}
+
+export function developmentBaselineOccupation(occupationId: string): OccupationDetail | null {
+  if (!import.meta.env.DEV || occupationId !== developmentOccupation.id) return null
+  return structuredClone(developmentOccupation)
+}
+
+/** Compatibility export for the executable tests of the previous role-scoped contract. */
 export function developmentBaselineRoles(): BlueprintRole[] {
   if (!import.meta.env.DEV) return []
   return structuredClone(developmentRoles)
