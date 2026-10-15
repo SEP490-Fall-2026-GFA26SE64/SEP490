@@ -9,6 +9,7 @@ import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCa
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogOccupation;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogRole;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CoverageKey;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 class BaselineBlueprintServiceTest {
     private static final UUID ACTOR_ID = UUID.fromString("00000000-0000-0000-0000-000000000101");
     private static final String ORGANIZATION_ID = "org-alpha";
+    private static final String OCCUPATION_ID = "occupation-engineering";
     private static final String ROLE_ID = "role-java";
     private static final String SKILL_ID = "skill-java";
     private static final Instant NOW = Instant.parse("2026-10-14T15:00:00Z");
@@ -89,22 +91,14 @@ class BaselineBlueprintServiceTest {
     }
 
     @Test
-    void disabledRoleSkipsCatalogAndCoverageButKeepsConfiguration() {
+    void rejectsAllZeroOccupationBeforeCoverageLookup() {
         var fixture = new Fixture();
-        fixture.validation.roles.clear();
-        fixture.validation.coverage.clear();
-        BlueprintDraft input = new BlueprintDraft("Disabled role blueprint", null, null, List.of(
-                role(false, "Unresolved snapshot", 7, 8, 9)));
 
-        BaselineBlueprint created = fixture.service.create("disabled-role", input);
+        assertCode(Code.INVALID_REQUEST, () -> fixture.service.create(
+                "zero-role", draft("Role", 0, 0, 0)));
 
-        assertThat(created.roles()).singleElement().satisfies(role -> {
-            assertThat(role.enabled()).isFalse();
-            assertThat(role.roleNameSnapshot()).isEqualTo("Unresolved snapshot");
-            assertThat(role.totalQuestionCount()).isEqualTo(24);
-        });
-        assertThat(fixture.validation.catalogCalls).isZero();
-        assertThat(fixture.validation.requestedCoverageSkillIds).isEmpty();
+        assertThat(fixture.validation.coverageCalls).isZero();
+        assertThat(fixture.store.inserted).isEmpty();
     }
 
     @Test
@@ -150,7 +144,8 @@ class BaselineBlueprintServiceTest {
     }
 
     private static BlueprintDraft draft(String name, int easy, int medium, int hard) {
-        return new BlueprintDraft(name, null, null, List.of(role(true, "Client snapshot", easy, medium, hard)));
+        return new BlueprintDraft(name, OCCUPATION_ID, "Client occupation",
+                List.of(role(true, "Client snapshot", easy, medium, hard)));
     }
 
     private static RoleConfig role(boolean enabled, String name, int easy, int medium, int hard) {
@@ -197,6 +192,13 @@ class BaselineBlueprintServiceTest {
         }
 
         @Override
+        public Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
+            return inserted.stream()
+                    .filter(item -> occupationId.equals(item.occupationId()))
+                    .max(java.util.Comparator.comparingInt(BaselineBlueprint::version));
+        }
+
+        @Override
         public Optional<BaselineBlueprint> findByRequest(UUID actorId, String idempotencyKey) {
             return inserted.stream()
                     .filter(item -> item.createdBy().equals(actorId)
@@ -219,6 +221,7 @@ class BaselineBlueprintServiceTest {
         private String requestedOrganizationId;
         private Set<String> requestedCoverageSkillIds = Set.of();
         private int catalogCalls;
+        private int coverageCalls;
 
         private FakeValidation() {
             for (Difficulty difficulty : Difficulty.values()) {
@@ -237,7 +240,21 @@ class BaselineBlueprintServiceTest {
         }
 
         @Override
+        public Optional<CatalogOccupation> findAvailableOccupation(String organizationId, String occupationId) {
+            catalogCalls++;
+            requestedOrganizationId = organizationId;
+            if (failure != null) {
+                throw failure;
+            }
+            return OCCUPATION_ID.equals(occupationId)
+                    ? Optional.of(new CatalogOccupation(
+                            OCCUPATION_ID, "Software Engineering", List.copyOf(roles.values())))
+                    : Optional.empty();
+        }
+
+        @Override
         public Map<CoverageKey, Integer> findPublishedCoverage(Set<String> microSkillIds) {
+            coverageCalls++;
             requestedCoverageSkillIds = Set.copyOf(microSkillIds);
             if (failure != null) {
                 throw failure;

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -7,13 +7,20 @@ import {
   BaselineBlueprintApiError,
   createBlueprint,
   generateAssessment,
+  getLatestBlueprintByOccupation,
+  getOccupation,
+  listOccupations,
   publishAssessment,
   reviewAssessment,
   reviseBlueprint,
   type AssessmentDraft,
   type BaselineBlueprint,
 } from './baselineBlueprintApi'
-import { developmentBaselineRoles } from './developmentBaselineCatalog'
+import {
+  developmentBaselineOccupation,
+  developmentBaselineOccupations,
+  developmentBaselineRoles,
+} from './developmentBaselineCatalog'
 
 const toast = vi.fn()
 
@@ -31,6 +38,9 @@ vi.mock('./baselineBlueprintApi', async (importOriginal) => {
     ...original,
     createBlueprint: vi.fn(),
     reviseBlueprint: vi.fn(),
+    listOccupations: vi.fn(),
+    getOccupation: vi.fn(),
+    getLatestBlueprintByOccupation: vi.fn(),
     generateAssessment: vi.fn(),
     reviewAssessment: vi.fn(),
     publishAssessment: vi.fn(),
@@ -39,8 +49,16 @@ vi.mock('./baselineBlueprintApi', async (importOriginal) => {
 
 describe('BaselineBlueprintPage', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
       '00000000-0000-0000-0000-000000000901',
+    )
+    vi.mocked(listOccupations).mockResolvedValue(developmentBaselineOccupations())
+    vi.mocked(getOccupation).mockResolvedValue(
+      developmentBaselineOccupation('10000000-0000-0000-0000-000000000001')!,
+    )
+    vi.mocked(getLatestBlueprintByOccupation).mockRejectedValue(
+      new BaselineBlueprintApiError(404, 'NOT_FOUND', 'No blueprint'),
     )
   })
 
@@ -68,8 +86,17 @@ describe('BaselineBlueprintPage', () => {
 
     render(<BaselineBlueprintPage />)
 
+    await configureFirstSkill(user)
+
     await user.click(screen.getByRole('button', { name: 'Save blueprint' }))
     await waitFor(() => expect(createBlueprint).toHaveBeenCalledOnce())
+    expect(createBlueprint).toHaveBeenCalledWith(expect.objectContaining({
+      occupationId: '10000000-0000-0000-0000-000000000001',
+      occupationNameSnapshot: 'Software Engineering',
+      roles: expect.arrayContaining([
+        expect.objectContaining({ roleId: '20000000-0000-0000-0000-000000000002', enabled: false }),
+      ]),
+    }), expect.any(String))
     expect(screen.getByText('Catalog and coverage validated')).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: 'Generate assessment' }))
@@ -107,6 +134,7 @@ describe('BaselineBlueprintPage', () => {
     ))
 
     render(<BaselineBlueprintPage />)
+    await configureFirstSkill(user)
     await user.click(screen.getByRole('button', { name: 'Save blueprint' }))
 
     expect(await screen.findByText('Question coverage shortages')).toBeTruthy()
@@ -115,7 +143,29 @@ describe('BaselineBlueprintPage', () => {
       .toBe(true)
     expect(generateAssessment).not.toHaveBeenCalled()
   })
+
+  it('shows every Occupation role without include checkboxes and marks zero roles excluded', async () => {
+    render(<BaselineBlueprintPage />)
+
+    expect(await screen.findByText('Java Backend Developer P3')).toBeTruthy()
+    expect(screen.getByText('Platform Engineer P4')).toBeTruthy()
+    expect(screen.getAllByText('0 questions · not included')).toHaveLength(2)
+    expect(screen.queryByRole('checkbox')).toBeNull()
+    expect(screen.getByText('All roles remain visible in this blueprint.')).toBeTruthy()
+  })
 })
+
+async function configureFirstSkill(user: ReturnType<typeof userEvent.setup>) {
+  await screen.findByText('Java Backend Developer P3')
+  const skillDetails = screen.getByText('Java Core').closest('details')
+  expect(skillDetails).not.toBeNull()
+  await user.click(within(skillDetails!).getByText('Java Core'))
+  for (const difficulty of ['Easy', 'Medium', 'Hard']) {
+    const input = within(skillDetails!).getByLabelText(new RegExp(`^${difficulty} questions`, 'i'))
+    await user.clear(input)
+    await user.type(input, '1')
+  }
+}
 
 function blueprintPayload(): BaselineBlueprint {
   const roles = developmentBaselineRoles().map((role) => ({
@@ -127,8 +177,8 @@ function blueprintPayload(): BaselineBlueprint {
     blueprintId: 'blueprint-1',
     version: 1,
     name: 'Development baseline assessment',
-    occupationId: null,
-    occupationNameSnapshot: null,
+    occupationId: '10000000-0000-0000-0000-000000000001',
+    occupationNameSnapshot: 'Software Engineering',
     createdAt: '2026-10-14T15:00:00Z',
     roles,
   }

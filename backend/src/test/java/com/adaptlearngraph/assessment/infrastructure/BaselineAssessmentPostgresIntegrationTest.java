@@ -10,6 +10,12 @@ import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCa
 import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentDraftStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.Actor;
+import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort;
+import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort.CatalogOccupation;
+import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort.CatalogRole;
+import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort.CatalogSkill;
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Code;
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft.PublicationState;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.RoleConfig;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.SkillConfig;
@@ -48,7 +54,10 @@ class BaselineAssessmentPostgresIntegrationTest {
     private static final UUID ACTOR_ID = uuid(2);
     private static final UUID QUESTION_BANK_ID = uuid(3);
     private static final String ROLE_ID = uuid(11).toString();
+    private static final String ZERO_ROLE_ID = uuid(13).toString();
     private static final String SKILL_ID = uuid(12).toString();
+    private static final String ZERO_SKILL_ID = uuid(14).toString();
+    private static final String OCCUPATION_ID = uuid(15).toString();
     private static boolean dockerAvailable;
 
     private Flyway flyway;
@@ -96,18 +105,18 @@ class BaselineAssessmentPostgresIntegrationTest {
                 new JdbcBaselineAssessmentDraftStore(namedJdbc), transactions);
         var actor = (BaselineBlueprintStore.ActorPort) () -> Optional.of(
                 new Actor(ACTOR_ID, ORGANIZATION_ID.toString(), true, Set.of("LD_MANAGER")));
-        var validation = new BaselineBlueprintValidationAdapter(catalog(), namedJdbc);
+        var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(), namedJdbc);
         blueprintService = new BaselineBlueprintService(actor, blueprints, validation);
         draftService = new BaselineAssessmentDraftService(actor, blueprints, drafts);
         seedIdentityAndQuestionBank();
     }
 
     @Test
-    void migratesThroughV12AndSecondMigrationRunIsNoOp() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");
+    void migratesThroughV13AndSecondMigrationRunIsNoOp() {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE success", Long.class)).isEqualTo(12L);
+                "SELECT count(*) FROM flyway_schema_history WHERE success", Long.class)).isEqualTo(13L);
     }
 
     @Test
@@ -123,11 +132,19 @@ class BaselineAssessmentPostgresIntegrationTest {
         assertThat(blueprints.findLatest(first.blueprintId())).contains(second);
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM platform.baseline_blueprint_version", Long.class)).isEqualTo(2L);
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM platform.baseline_blueprint", Long.class)).isOne();
+        assertThat(blueprints.findLatestByOccupation(OCCUPATION_ID)).contains(second);
         assertThat(jdbc.queryForObject("""
                 SELECT total_question_count
                 FROM platform.baseline_blueprint_role
-                WHERE blueprint_id = ? AND blueprint_version = 2
-                """, Integer.class, first.blueprintId())).isEqualTo(3);
+                WHERE blueprint_id = ? AND blueprint_version = 2 AND role_id = ?
+                """, Integer.class, first.blueprintId(), ROLE_ID)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("""
+                SELECT total_question_count
+                FROM platform.baseline_blueprint_role
+                WHERE blueprint_id = ? AND blueprint_version = 2 AND role_id = ?
+                """, Integer.class, first.blueprintId(), ZERO_ROLE_ID)).isZero();
 
         var generated = draftService.generate(first.blueprintId(), 2, "generate-key");
         var generationReplay = draftService.generate(first.blueprintId(), 2, "generate-key");
@@ -141,6 +158,18 @@ class BaselineAssessmentPostgresIntegrationTest {
                 assertThat(item.responseSchemaJson()).doesNotContain("correctOption", "protected"));
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM platform.assessment_version", Long.class)).isOne();
+    }
+
+    @Test
+    void databaseAndServiceRejectSecondLogicalBlueprintForOccupation() {
+        var first = blueprintService.create("create-one", blueprintDraft("Baseline one"));
+
+        assertThatThrownBy(() -> blueprintService.create("create-two", blueprintDraft("Baseline two")))
+                .isInstanceOfSatisfying(Failure.class,
+                        failure -> assertThat(failure.code()).isEqualTo(Code.VERSION_CONFLICT));
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM platform.baseline_blueprint", Long.class)).isOne();
+        assertThat(blueprints.findLatestByOccupation(OCCUPATION_ID)).contains(first);
     }
 
     @Test
@@ -179,10 +208,15 @@ class BaselineAssessmentPostgresIntegrationTest {
     }
 
     private BlueprintDraft blueprintDraft(String name) {
-        return new BlueprintDraft(name, null, null, List.of(new RoleConfig(
-                ROLE_ID, "Client role snapshot", true,
-                new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"),
-                List.of(new SkillConfig(SKILL_ID, "Client skill snapshot", 1, 1, 1)))));
+        return new BlueprintDraft(name, OCCUPATION_ID, "Client occupation", List.of(
+                new RoleConfig(
+                        ROLE_ID, "Client role snapshot", true,
+                        new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"),
+                        List.of(new SkillConfig(SKILL_ID, "Client skill snapshot", 1, 1, 1))),
+                new RoleConfig(
+                        ZERO_ROLE_ID, "Client zero role", true,
+                        new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"),
+                        List.of(new SkillConfig(ZERO_SKILL_ID, "Client zero skill", 0, 0, 0)))));
     }
 
     private TargetRoleCatalogPort catalog() {
@@ -201,6 +235,32 @@ class BaselineAssessmentPostgresIntegrationTest {
                 return ORGANIZATION_ID.toString().equals(organizationId) && ROLE_ID.equals(roleId)
                         ? Optional.of(detail)
                         : Optional.empty();
+            }
+        };
+    }
+
+    private BaselineOccupationCatalogPort occupationCatalog() {
+        return new BaselineOccupationCatalogPort() {
+            @Override
+            public List<CatalogOccupationSummary> findAvailableOccupations(String organizationId) {
+                return List.of(new CatalogOccupationSummary(
+                        OCCUPATION_ID, "Software Engineering", "test-v1", 2));
+            }
+
+            @Override
+            public Optional<CatalogOccupation> findAvailableOccupation(
+                    String organizationId, String occupationId) {
+                if (!ORGANIZATION_ID.toString().equals(organizationId)
+                        || !OCCUPATION_ID.equals(occupationId)) {
+                    return Optional.empty();
+                }
+                return Optional.of(new CatalogOccupation(
+                        OCCUPATION_ID, "Software Engineering", "test-v1", List.of(
+                                new CatalogRole(ROLE_ID, "Java Backend Engineer", "role-v1",
+                                        List.of(new CatalogSkill(SKILL_ID, "Java Core", "skill-v1"))),
+                                new CatalogRole(ZERO_ROLE_ID, "Platform Engineer", "role-v1",
+                                        List.of(new CatalogSkill(
+                                                ZERO_SKILL_ID, "Platform Operations", "skill-v1"))))));
             }
         };
     }
@@ -261,6 +321,12 @@ class BaselineAssessmentPostgresIntegrationTest {
         public Optional<com.adaptlearngraph.assessment.domain.BaselineBlueprint> findVersion(
                 UUID blueprintId, int version) {
             return delegate.findVersion(blueprintId, version);
+        }
+
+        @Override
+        public Optional<com.adaptlearngraph.assessment.domain.BaselineBlueprint> findLatestByOccupation(
+                String occupationId) {
+            return delegate.findLatestByOccupation(occupationId);
         }
 
         @Override

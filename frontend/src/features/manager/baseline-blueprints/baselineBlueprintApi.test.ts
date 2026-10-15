@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createBlueprint,
   generateAssessment,
+  getLatestBlueprintByOccupation,
+  getOccupation,
+  listOccupations,
   publishAssessment,
   reviewAssessment,
   reviseBlueprint,
@@ -10,8 +13,8 @@ import {
 
 const DRAFT: BlueprintDraft = {
   name: 'Java baseline',
-  occupationId: null,
-  occupationNameSnapshot: null,
+  occupationId: 'occupation-engineering',
+  occupationNameSnapshot: 'Software Engineering',
   roles: [{
     roleId: 'role-java',
     roleNameSnapshot: 'Java Backend Engineer',
@@ -57,20 +60,59 @@ describe('baselineBlueprintApi', () => {
     expect(JSON.parse(second[1].body)).toMatchObject({ expectedLatestVersion: 1, name: 'Revised' })
   })
 
+  it('lists and resolves Occupations then loads the latest logical blueprint', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(response([{
+        id: 'occupation-engineering', name: 'Software Engineering',
+        catalogVersion: 'v1', roleCount: 2,
+      }]))
+      .mockResolvedValueOnce(response({
+        id: 'occupation-engineering', name: 'Software Engineering', catalogVersion: 'v1',
+        roles: [{
+          id: 'role-java', name: 'Java Engineer', catalogVersion: 'v1',
+          skills: [{ id: 'skill-java', name: 'Java Core', catalogVersion: 'v1' }],
+        }],
+      }))
+      .mockResolvedValueOnce(response(blueprintPayload(2)))
+    vi.stubGlobal('fetch', fetchMock)
+
+    expect(await listOccupations()).toEqual([expect.objectContaining({ roleCount: 2 })])
+    expect(await getOccupation('occupation-engineering')).toEqual(expect.objectContaining({
+      roles: [expect.objectContaining({ id: 'role-java' })],
+    }))
+    expect(await getLatestBlueprintByOccupation('occupation-engineering'))
+      .toEqual(expect.objectContaining({ version: 2, occupationId: 'occupation-engineering' }))
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/api/v1/ld/baseline-blueprint-catalog/occupations',
+      '/api/v1/ld/baseline-blueprint-catalog/occupations/occupation-engineering',
+      '/api/v1/ld/baseline-blueprints/occupations/occupation-engineering',
+    ])
+  })
+
   it('preserves structured coverage shortages from API errors', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({
       code: 'INSUFFICIENT_QUESTION_COVERAGE',
       message: 'Published question coverage is insufficient',
       coverageShortages: [{
-        roleId: 'role-java', microSkillId: 'skill-java', difficulty: 'HARD',
-        required: 3, available: 1, missing: 2,
+        roleId: null, microSkillId: 'skill-java', difficulty: 'HARD',
+        required: 4, available: 1, missing: 3,
+        roleRequirements: [
+          { roleId: 'role-java', required: 2 },
+          { roleId: 'role-platform', required: 2 },
+        ],
       }],
     }, 422)))
 
     await expect(createBlueprint(DRAFT, 'shortage-key')).rejects.toMatchObject({
       status: 422,
       code: 'INSUFFICIENT_QUESTION_COVERAGE',
-      coverageShortages: [expect.objectContaining({ difficulty: 'HARD', missing: 2 })],
+      coverageShortages: [expect.objectContaining({
+        difficulty: 'HARD', missing: 3,
+        roleRequirements: [
+          { roleId: 'role-java', required: 2 },
+          { roleId: 'role-platform', required: 2 },
+        ],
+      })],
     })
   })
 
@@ -123,7 +165,7 @@ describe('baselineBlueprintApi', () => {
 function blueprintPayload(version: number) {
   return {
     blueprintId: 'blueprint-1', version, name: DRAFT.name,
-    occupationId: null, occupationNameSnapshot: null,
+    occupationId: DRAFT.occupationId, occupationNameSnapshot: DRAFT.occupationNameSnapshot,
     createdAt: '2026-10-14T15:00:00Z',
     roles: DRAFT.roles.map((role) => ({ ...role, totalQuestionCount: 3 })),
   }

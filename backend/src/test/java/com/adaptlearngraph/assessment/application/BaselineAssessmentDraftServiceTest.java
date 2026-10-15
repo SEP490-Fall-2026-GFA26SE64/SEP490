@@ -101,10 +101,14 @@ class BaselineAssessmentDraftServiceTest {
                 .isInstanceOfSatisfying(Failure.class, failure -> {
                     assertThat(failure.code()).isEqualTo(Code.INSUFFICIENT_QUESTION_COVERAGE);
                     assertThat(failure.coverageShortages()).singleElement().satisfies(shortage -> {
-                        assertThat(shortage.roleId()).isEqualTo(ROLE_ID);
+                        assertThat(shortage.roleId()).isNull();
                         assertThat(shortage.microSkillId()).isEqualTo(SKILL_ID);
                         assertThat(shortage.difficulty()).isEqualTo("HARD");
                         assertThat(shortage.missing()).isOne();
+                        assertThat(shortage.roleRequirements()).singleElement().satisfies(requirement -> {
+                            assertThat(requirement.roleId()).isEqualTo(ROLE_ID);
+                            assertThat(requirement.required()).isOne();
+                        });
                     });
                 });
         assertThat(fixture.drafts.byId).isEmpty();
@@ -163,7 +167,8 @@ class BaselineAssessmentDraftServiceTest {
 
     private static BaselineBlueprint blueprint(int version) {
         return new BaselineBlueprint(
-                BLUEPRINT_ID, version, "Java baseline", null, null, ACTOR_ID,
+                BLUEPRINT_ID, version, "Java baseline", "occupation-engineering",
+                "Software Engineering", ACTOR_ID,
                 "blueprint-key-" + version, "request-hash-" + version, NOW.minusSeconds(60),
                 List.of(new RoleConfig(
                         ROLE_ID, "Java Backend Engineer", true,

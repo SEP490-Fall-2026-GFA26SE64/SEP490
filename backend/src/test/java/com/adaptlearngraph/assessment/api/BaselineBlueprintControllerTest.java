@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +13,7 @@ import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCa
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Code;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.CoverageShortage;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Failure;
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.RoleCoverageRequirement;
 import com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft;
 import com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft.Item;
 import com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft.PublicationState;
@@ -68,11 +70,25 @@ class BaselineBlueprintControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Java baseline",
+                                "occupationId", "occupation-engineering",
+                                "occupationNameSnapshot", "Software Engineering",
                                 "roles", List.of(roleRequest(1, 1, 1))))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.blueprintId").value(BLUEPRINT_ID.toString()))
                 .andExpect(jsonPath("$.version").value(1))
+                .andExpect(jsonPath("$.occupationId").value("occupation-engineering"))
                 .andExpect(jsonPath("$.roles[0].totalQuestionCount").value(3));
+    }
+
+    @Test
+    void getsLatestBlueprintByOccupation() throws Exception {
+        when(blueprints.getLatestByOccupation("occupation-engineering")).thenReturn(blueprint());
+
+        mvc.perform(get("/api/v1/ld/baseline-blueprints/occupations/{occupationId}",
+                        "occupation-engineering"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.blueprintId").value(BLUEPRINT_ID.toString()))
+                .andExpect(jsonPath("$.occupationNameSnapshot").value("Software Engineering"));
     }
 
     @Test
@@ -80,18 +96,25 @@ class BaselineBlueprintControllerTest {
         when(blueprints.create(eq("shortage-key"), any())).thenThrow(new Failure(
                 Code.INSUFFICIENT_QUESTION_COVERAGE,
                 "Published question coverage is insufficient",
-                List.of(new CoverageShortage("role-java", "skill-java", "HARD", 3, 1, 2))));
+                List.of(new CoverageShortage(null, "skill-java", "HARD", 4, 1, 3,
+                        List.of(new RoleCoverageRequirement("role-java", 2),
+                                new RoleCoverageRequirement("role-platform", 2))))));
 
         mvc.perform(post("/api/v1/ld/baseline-blueprints")
                         .header("Idempotency-Key", "shortage-key")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Java baseline",
+                                "occupationId", "occupation-engineering",
+                                "occupationNameSnapshot", "Software Engineering",
                                 "roles", List.of(roleRequest(1, 1, 3))))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("INSUFFICIENT_QUESTION_COVERAGE"))
                 .andExpect(jsonPath("$.coverageShortages[0].difficulty").value("HARD"))
-                .andExpect(jsonPath("$.coverageShortages[0].missing").value(2));
+                .andExpect(jsonPath("$.coverageShortages[0].missing").value(3))
+                .andExpect(jsonPath("$.coverageShortages[0].roleId").doesNotExist())
+                .andExpect(jsonPath("$.coverageShortages[0].roleRequirements[1].roleId")
+                        .value("role-platform"));
     }
 
     @Test
@@ -111,7 +134,8 @@ class BaselineBlueprintControllerTest {
 
     private static BaselineBlueprint blueprint() {
         return new BaselineBlueprint(
-                BLUEPRINT_ID, 1, "Java baseline", null, null, ACTOR_ID,
+                BLUEPRINT_ID, 1, "Java baseline", "occupation-engineering",
+                "Software Engineering", ACTOR_ID,
                 "create-key", HASH, NOW, List.of(role()));
     }
 

@@ -3,6 +3,11 @@ import { expect, test } from '@playwright/test'
 interface BlueprintResponse {
   blueprintId: string
   version: number
+  occupationId: string
+  roles: Array<{
+    roleId: string
+    totalQuestionCount: number
+  }>
 }
 
 interface AssessmentResponse {
@@ -10,7 +15,7 @@ interface AssessmentResponse {
   contentHash: string
   publicationState: 'DRAFT' | 'PUBLISHED'
   reviewedContentHash: string | null
-  items: unknown[]
+  items: Array<{ roleId: string }>
 }
 
 test('L&D saves, generates, retries, reloads, reviews and publishes a baseline assessment', async ({ page, request }) => {
@@ -18,6 +23,15 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   await expect(page.getByRole('heading', { name: 'Baseline assessment blueprint' })).toBeVisible()
   await expect(page.getByText('Java Backend Developer P3')).toBeVisible()
   await expect(page.getByText('Platform Engineer P4')).toBeVisible()
+  await expect(page.getByRole('checkbox')).toHaveCount(0)
+
+  const javaRole = page.locator('[data-value="20000000-0000-0000-0000-000000000001"]')
+  const javaCore = javaRole.locator('details').filter({ hasText: 'Java Core' })
+  await javaCore.locator('summary').click()
+  const javaCoreCounts = javaCore.locator('input[type="number"]')
+  await expect(javaCoreCounts).toHaveCount(3)
+  for (const count of await javaCoreCounts.all()) await count.fill('1')
+  await expect(page.getByText(/0 questions.*not included/)).toBeVisible()
 
   const saveResponsePromise = page.waitForResponse((response) =>
     response.url().endsWith('/api/v1/ld/baseline-blueprints')
@@ -28,7 +42,20 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   expect(saveResponse.status()).toBe(201)
   const blueprint = await saveResponse.json() as BlueprintResponse
   expect(blueprint.version).toBe(1)
+  expect(blueprint.occupationId).toBe('10000000-0000-0000-0000-000000000001')
+  expect(blueprint.roles).toHaveLength(2)
+  expect(blueprint.roles.find((role) => role.roleId === '20000000-0000-0000-0000-000000000002')
+    ?.totalQuestionCount).toBe(0)
   await expect(page.getByText('Catalog and coverage validated')).toBeVisible()
+
+  const reloadedBlueprintResponse = await request.get(
+    `/api/v1/ld/baseline-blueprints/occupations/${blueprint.occupationId}`,
+  )
+  expect(reloadedBlueprintResponse.ok()).toBeTruthy()
+  const reloadedBlueprint = await reloadedBlueprintResponse.json() as BlueprintResponse
+  expect(reloadedBlueprint.blueprintId).toBe(blueprint.blueprintId)
+  expect(reloadedBlueprint.roles.find((role) => role.roleId === '20000000-0000-0000-0000-000000000002')
+    ?.totalQuestionCount).toBe(0)
 
   const generateResponsePromise = page.waitForResponse((response) =>
     response.url().includes('/assessment-drafts')
@@ -38,9 +65,11 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   const generateResponse = await generateResponsePromise
   expect(generateResponse.status()).toBe(201)
   const generated = await generateResponse.json() as AssessmentResponse
-  expect(generated.items).toHaveLength(30)
+  expect(generated.items).toHaveLength(3)
+  expect(generated.items.every((item) =>
+    item.roleId === '20000000-0000-0000-0000-000000000001')).toBeTruthy()
   await expect(page.getByText('Assessment draft v1', { exact: true })).toBeVisible()
-  await expect(page.getByText(/Items:\s*30/)).toBeVisible()
+  await expect(page.getByText(/Items:\s*3/)).toBeVisible()
 
   const generationKey = generateResponse.request().headers()['idempotency-key']
   expect(generationKey).toBeTruthy()
