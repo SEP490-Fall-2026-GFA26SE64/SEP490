@@ -34,11 +34,12 @@ final class BaselineAssessmentGenerator {
                     new CandidateKey(candidate.microSkillId(), candidate.difficulty()), ignored -> new ArrayList<>())
                     .add(candidate);
         }
+        BaselineAssessmentCandidateCoverageValidator.requireCoverage(blueprint, candidates);
         Set<UUID> used = new HashSet<>();
         List<NewItem> selected = new ArrayList<>();
         List<CoverageShortage> shortages = new ArrayList<>();
         for (BaselineBlueprint.RoleConfig role : blueprint.roles()) {
-            if (!role.enabled()) {
+            if (!role.participates()) {
                 continue;
             }
             for (BaselineBlueprint.SkillConfig skill : role.skills()) {
@@ -107,6 +108,10 @@ final class BaselineAssessmentGenerator {
         append(canonical, blueprint.blueprintId());
         append(canonical, blueprint.version());
         append(canonical, blueprint.name());
+        if (blueprint.occupationId() != null) {
+            append(canonical, blueprint.occupationId());
+            append(canonical, blueprint.occupationNameSnapshot());
+        }
         append(canonical, "BASELINE_BLUEPRINT_WEIGHT_V1");
         int position = 1;
         for (NewItem item : items) {
@@ -145,4 +150,5 @@ final class BaselineAssessmentGenerator {
     record Manifest(String contentHash, List<NewItem> items) {}
 
     private record CandidateKey(String microSkillId, Difficulty difficulty) {}
+
 }

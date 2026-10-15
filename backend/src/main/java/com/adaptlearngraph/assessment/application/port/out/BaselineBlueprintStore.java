@@ -8,6 +8,10 @@ import java.util.UUID;
 public interface BaselineBlueprintStore {
     Optional<BaselineBlueprint> findLatest(UUID blueprintId);
 
+    default Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
+        return Optional.empty();
+    }
+
     Optional<BaselineBlueprint> findVersion(UUID blueprintId, int version);
 
     Optional<BaselineBlueprint> findByRequest(UUID actorId, String idempotencyKey);

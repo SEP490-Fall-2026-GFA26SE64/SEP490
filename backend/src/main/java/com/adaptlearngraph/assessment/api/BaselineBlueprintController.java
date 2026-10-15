@@ -81,6 +81,11 @@ public class BaselineBlueprintController {
         return toResponse(blueprints.getLatest(blueprintId));
     }
 
+    @GetMapping("/occupations/{occupationId}")
+    BlueprintResponse latestByOccupation(@PathVariable String occupationId) {
+        return toResponse(blueprints.getLatestByOccupation(occupationId));
+    }
+
     @GetMapping("/{blueprintId}/versions/{version}")
     BlueprintResponse version(@PathVariable UUID blueprintId, @PathVariable @Min(1) int version) {
         return toResponse(blueprints.getVersion(blueprintId, version));
@@ -129,7 +134,11 @@ public class BaselineBlueprintController {
         List<CoverageShortageResponse> shortages = failure.coverageShortages().stream()
                 .map(shortage -> new CoverageShortageResponse(
                         shortage.roleId(), shortage.microSkillId(), shortage.difficulty(),
-                        shortage.required(), shortage.available(), shortage.missing()))
+                        shortage.required(), shortage.available(), shortage.missing(),
+                        shortage.roleRequirements().stream()
+                                .map(requirement -> new RoleCoverageRequirementResponse(
+                                        requirement.roleId(), requirement.required()))
+                                .toList()))
                 .toList();
         return ResponseEntity.status(status)
                 .body(new ApiError(failure.code().name(), failure.getMessage(), shortages));
@@ -262,7 +271,10 @@ public class BaselineBlueprintController {
             String difficulty,
             int required,
             int available,
-            int missing) {}
+            int missing,
+            List<RoleCoverageRequirementResponse> roleRequirements) {}
+
+    record RoleCoverageRequirementResponse(String roleId, int required) {}
 
     record AssessmentDraftResponse(
             UUID assessmentVersionId,

@@ -70,15 +70,14 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
 
             BaselineBlueprint blueprint = blueprints.findVersion(blueprintId, blueprintVersion)
                     .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline blueprint version was not found"));
-            List<BaselineBlueprint.RoleConfig> enabledRoles = blueprint.roles().stream()
-                    .filter(BaselineBlueprint.RoleConfig::enabled)
+            List<BaselineBlueprint.RoleConfig> participatingRoles = blueprint.roles().stream()
+                    .filter(BaselineBlueprint.RoleConfig::participates)
                     .toList();
-            if (enabledRoles.isEmpty() || enabledRoles.stream()
-                    .noneMatch(role -> role.totalQuestionCount() > 0)) {
-                throw failure(Code.INVALID_REQUEST, "At least one enabled role with questions is required");
+            if (participatingRoles.isEmpty()) {
+                throw failure(Code.INVALID_REQUEST, "At least one Occupation role with questions is required");
             }
 
-            Set<String> skillIds = enabledRoles.stream()
+            Set<String> skillIds = participatingRoles.stream()
                     .flatMap(role -> role.skills().stream())
                     .filter(skill -> skill.totalQuestionCount() > 0)
                     .map(BaselineBlueprint.SkillConfig::microSkillId)

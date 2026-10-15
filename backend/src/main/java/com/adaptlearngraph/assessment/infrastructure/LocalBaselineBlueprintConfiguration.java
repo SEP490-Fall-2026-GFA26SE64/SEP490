@@ -1,20 +1,25 @@
 package com.adaptlearngraph.assessment.infrastructure;
 
 import com.adaptlearngraph.assessment.application.BaselineAssessmentDraftService;
+import com.adaptlearngraph.assessment.application.BaselineOccupationCatalogService;
 import com.adaptlearngraph.assessment.application.BaselineBlueprintService;
 import com.adaptlearngraph.assessment.application.port.in.BaselineAssessmentDraftUseCase;
+import com.adaptlearngraph.assessment.application.port.in.BaselineOccupationCatalogUseCase;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase;
 import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentDraftStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.ActorPort;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort;
+import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import com.adaptlearngraph.catalog.infrastructure.LocalEmployeeContextProperties;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.neo4j.driver.Driver;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -44,8 +49,10 @@ public class LocalBaselineBlueprintConfiguration {
 
     @Bean
     BaselineBlueprintValidationPort baselineBlueprintValidation(
-            TargetRoleCatalogPort catalog, NamedParameterJdbcTemplate jdbc) {
-        return new BaselineBlueprintValidationAdapter(catalog, jdbc);
+            TargetRoleCatalogPort catalog,
+            ObjectProvider<BaselineOccupationCatalogPort> occupationCatalog,
+            NamedParameterJdbcTemplate jdbc) {
+        return new BaselineBlueprintValidationAdapter(catalog, occupationCatalog.getIfAvailable(), jdbc);
     }
 
     @Bean
@@ -58,5 +65,20 @@ public class LocalBaselineBlueprintConfiguration {
     BaselineAssessmentDraftUseCase baselineAssessmentDraftUseCase(
             ActorPort actor, BaselineBlueprintStore blueprints, BaselineAssessmentDraftStore drafts) {
         return new BaselineAssessmentDraftService(actor, blueprints, drafts);
+    }
+
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+    BaselineOccupationCatalogPort baselineOccupationCatalog(Driver driver) {
+        return new Neo4jBaselineOccupationCatalogAdapter(driver);
+    }
+
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+    BaselineOccupationCatalogUseCase baselineOccupationCatalogUseCase(
+            ActorPort actor, BaselineOccupationCatalogPort catalog) {
+        return new BaselineOccupationCatalogService(actor, catalog);
     }
 }

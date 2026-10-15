@@ -8,11 +8,22 @@ import java.util.Set;
 public interface BaselineBlueprintValidationPort {
     Optional<CatalogRole> findAvailableRole(String organizationId, String roleId);
 
+    default Optional<CatalogOccupation> findAvailableOccupation(
+            String organizationId, String occupationId) {
+        return Optional.empty();
+    }
+
     Map<CoverageKey, Integer> findPublishedCoverage(Set<String> microSkillIds);
 
     record CatalogRole(String id, String name, List<CatalogSkill> skills) {
         public CatalogRole {
             skills = List.copyOf(skills);
+        }
+    }
+
+    record CatalogOccupation(String id, String name, List<CatalogRole> roles) {
+        public CatalogOccupation {
+            roles = List.copyOf(roles);
         }
     }
 
@@ -27,6 +38,10 @@ public interface BaselineBlueprintValidationPort {
     }
 
     final class DependencyUnavailable extends RuntimeException {
+        public DependencyUnavailable(String message) {
+            super(message);
+        }
+
         public DependencyUnavailable(String message, Throwable cause) {
             super(message, cause);
         }

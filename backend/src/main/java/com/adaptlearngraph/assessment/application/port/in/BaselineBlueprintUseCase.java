@@ -14,6 +14,8 @@ public interface BaselineBlueprintUseCase {
 
     BaselineBlueprint getLatest(UUID blueprintId);
 
+    BaselineBlueprint getLatestByOccupation(String occupationId);
+
     BaselineBlueprint getVersion(UUID blueprintId, int version);
 
     record BlueprintDraft(
@@ -55,7 +57,21 @@ public interface BaselineBlueprintUseCase {
             String difficulty,
             int required,
             int available,
-            int missing) {}
+            int missing,
+            List<RoleCoverageRequirement> roleRequirements) {
+        public CoverageShortage(
+                String roleId, String microSkillId, String difficulty,
+                int required, int available, int missing) {
+            this(roleId, microSkillId, difficulty, required, available, missing,
+                    roleId == null ? List.of() : List.of(new RoleCoverageRequirement(roleId, required)));
+        }
+
+        public CoverageShortage {
+            roleRequirements = List.copyOf(roleRequirements);
+        }
+    }
+
+    record RoleCoverageRequirement(String roleId, int required) {}
 
     enum Code {
         UNAUTHENTICATED,

@@ -40,6 +40,17 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
     }
 
     @Override
+    public Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
+        List<UUID> blueprintIds = jdbc.query("""
+                SELECT blueprint_id
+                FROM platform.baseline_blueprint
+                WHERE occupation_id = :occupationId
+                """, Map.of("occupationId", requireText(occupationId, "occupationId")),
+                (result, row) -> result.getObject("blueprint_id", UUID.class));
+        return blueprintIds.isEmpty() ? Optional.empty() : findLatest(blueprintIds.getFirst());
+    }
+
+    @Override
     public Optional<BaselineBlueprint> findVersion(UUID blueprintId, int version) {
         List<Header> headers = jdbc.query("""
                 SELECT blueprint_id, version, name, occupation_id, occupation_name_snapshot,
@@ -86,6 +97,9 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
     @Transactional
     public void insert(BaselineBlueprint blueprint) {
         try {
+            if (blueprint.version() == 1) {
+                insertIdentity(blueprint);
+            }
             jdbc.update("""
                     INSERT INTO platform.baseline_blueprint_version (
                         blueprint_id, version, name, occupation_id, occupation_name_snapshot,
@@ -115,6 +129,19 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
         } catch (DuplicateKeyException conflict) {
             throw new WriteConflict(conflict);
         }
+    }
+
+    private void insertIdentity(BaselineBlueprint blueprint) {
+        jdbc.update("""
+                INSERT INTO platform.baseline_blueprint (
+                    blueprint_id, occupation_id, created_by, created_at)
+                VALUES (:blueprintId, :occupationId, :createdBy, :createdAt)
+                """, new MapSqlParameterSource()
+                .addValue("blueprintId", blueprint.blueprintId())
+                .addValue("occupationId", blueprint.occupationId())
+                .addValue("createdBy", blueprint.createdBy())
+                .addValue("createdAt", blueprint.createdAt().atOffset(ZoneOffset.UTC),
+                        Types.TIMESTAMP_WITH_TIMEZONE));
     }
 
     private void insertRole(BaselineBlueprint blueprint, RoleConfig role) {
@@ -180,6 +207,13 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
 
     private static MapSqlParameterSource key(UUID blueprintId, int version) {
         return new MapSqlParameterSource().addValue("blueprintId", blueprintId).addValue("version", version);
+    }
+
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+        return value.strip();
     }
 
     private record BlueprintKey(UUID blueprintId, int version) {}

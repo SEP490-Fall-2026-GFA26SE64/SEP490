@@ -75,6 +75,11 @@ public record BaselineBlueprint(
         public int totalQuestionCount() {
             return Math.toIntExact(skills.stream().mapToLong(SkillConfig::totalQuestionCount).sum());
         }
+
+        /** New Occupation-scoped participation rule; enabled remains a persisted compatibility field. */
+        public boolean participates() {
+            return totalQuestionCount() > 0;
+        }
     }
 
     public record SkillConfig(

@@ -2,98 +2,121 @@ package com.adaptlearngraph.assessment.application;
 
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.BlueprintDraft;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Code;
-import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.CoverageShortage;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogOccupation;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogRole;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogSkill;
-import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CoverageKey;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.DependencyUnavailable;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.Difficulty;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.RoleConfig;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.SkillConfig;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.math.BigDecimal;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 final class BaselineBlueprintDraftValidator {
     private final BaselineBlueprintValidationPort validation;
+    private final BaselineBlueprintCoverageValidator coverage;
 
     BaselineBlueprintDraftValidator(BaselineBlueprintValidationPort validation) {
         this.validation = validation;
+        this.coverage = new BaselineBlueprintCoverageValidator(validation);
     }
 
     BlueprintDraft validateAndNormalize(Actor actor, BlueprintDraft draft) {
         try {
-            List<RoleConfig> normalizedRoles = new ArrayList<>();
-            Set<String> enabledSkillIds = new LinkedHashSet<>();
-            for (RoleConfig role : draft.roles()) {
-                normalizedRoles.add(role.enabled()
-                        ? normalizeEnabledRole(actor, role, enabledSkillIds)
-                        : role);
+            String occupationId = requireText(draft.occupationId(), "occupationId");
+            CatalogOccupation occupation = validation.findAvailableOccupation(actor.organizationId(), occupationId)
+                    .orElseThrow(() -> failure("Occupation is unavailable: " + occupationId));
+            List<RoleConfig> roles = normalizeRoles(draft.roles(), occupation);
+            if (roles.stream().noneMatch(RoleConfig::participates)) {
+                throw invalid("At least one Occupation role must have questions");
             }
-            Map<CoverageKey, Integer> coverage = validation.findPublishedCoverage(enabledSkillIds);
-            List<CoverageShortage> shortages = findShortages(normalizedRoles, coverage);
-            if (!shortages.isEmpty()) {
-                throw new Failure(
-                        Code.INSUFFICIENT_QUESTION_COVERAGE,
-                        "Published question coverage is insufficient", shortages);
-            }
-            return new BlueprintDraft(
-                    draft.name(), draft.occupationId(), draft.occupationNameSnapshot(), normalizedRoles);
+            coverage.validate(roles);
+            return new BlueprintDraft(draft.name(), occupation.id(), occupation.name(), roles);
         } catch (DependencyUnavailable failure) {
             throw new Failure(Code.DEPENDENCY_UNAVAILABLE, failure.getMessage());
         }
     }
 
-    private RoleConfig normalizeEnabledRole(Actor actor, RoleConfig role, Set<String> enabledSkillIds) {
-        var catalogRole = validation.findAvailableRole(actor.organizationId(), role.roleId())
-                .orElseThrow(() -> failure(
-                        "Target role is unavailable: " + role.roleId()));
-        Map<String, CatalogSkill> catalogSkills = new HashMap<>();
-        for (CatalogSkill skill : catalogRole.skills()) {
-            if (catalogSkills.put(skill.id(), skill) != null) {
-                throw failure("Target role has duplicate MicroSkill: " + skill.id());
-            }
+    private List<RoleConfig> normalizeRoles(List<RoleConfig> submitted, CatalogOccupation occupation) {
+        Map<String, CatalogRole> catalogRoles = uniqueById(occupation.roles(), CatalogRole::id, "catalog roles");
+        if (catalogRoles.isEmpty()) {
+            throw failure("Occupation has no available roles: " + occupation.id());
         }
-        List<SkillConfig> normalizedSkills = role.skills().stream().map(skill -> {
-            CatalogSkill catalogSkill = catalogSkills.get(skill.microSkillId());
-            if (catalogSkill == null) {
-                throw failure(
-                        "MicroSkill is not active for role " + role.roleId() + ": " + skill.microSkillId());
-            }
-            enabledSkillIds.add(catalogSkill.id());
-            return new SkillConfig(
-                    catalogSkill.id(), catalogSkill.name(), skill.easyQuestionCount(),
-                    skill.mediumQuestionCount(), skill.hardQuestionCount());
-        }).toList();
-        return new RoleConfig(
-                catalogRole.id(), catalogRole.name(), true,
-                role.easyScoreWeight(), role.mediumScoreWeight(), role.hardScoreWeight(),
-                normalizedSkills);
+        Map<String, RoleConfig> submittedRoles = uniqueById(submitted, RoleConfig::roleId, "submitted roles");
+        requireExactIds("role", catalogRoles.keySet(), submittedRoles.keySet());
+        return catalogRoles.values().stream()
+                .sorted(Comparator.comparing(CatalogRole::id))
+                .map(role -> normalizeRole(role, submittedRoles.get(role.id())))
+                .toList();
     }
 
-    private static List<CoverageShortage> findShortages(
-            List<RoleConfig> roles, Map<CoverageKey, Integer> coverage) {
-        return roles.stream()
-                .filter(RoleConfig::enabled)
-                .sorted(Comparator.comparing(RoleConfig::roleId))
-                .flatMap(role -> role.skills().stream().flatMap(skill ->
-                        Arrays.stream(Difficulty.values()).map(difficulty -> {
-                            int required = required(skill, difficulty);
-                            int available = coverage.getOrDefault(
-                                    new CoverageKey(skill.microSkillId(), difficulty), 0);
-                            return new CoverageShortage(
-                                    role.roleId(), skill.microSkillId(), difficulty.name(), required,
-                                    available, Math.max(0, required - available));
-                        })))
-                .filter(shortage -> shortage.missing() > 0)
+    private RoleConfig normalizeRole(CatalogRole catalogRole, RoleConfig submittedRole) {
+        Map<String, CatalogSkill> catalogSkills = uniqueById(
+                catalogRole.skills(), CatalogSkill::id, "catalog skills for role " + catalogRole.id());
+        if (catalogSkills.isEmpty()) {
+            throw failure("Target role has no resolvable MicroSkills: " + catalogRole.id());
+        }
+        Map<String, SkillConfig> submittedSkills = uniqueById(
+                submittedRole.skills(), SkillConfig::microSkillId,
+                "submitted skills for role " + catalogRole.id());
+        requireExactIds("MicroSkill for role " + catalogRole.id(),
+                catalogSkills.keySet(), submittedSkills.keySet());
+        List<SkillConfig> normalizedSkills = catalogSkills.values().stream()
+                .sorted(Comparator.comparing(CatalogSkill::id))
+                .map(skill -> {
+                    SkillConfig counts = submittedSkills.get(skill.id());
+                    return new SkillConfig(skill.id(), skill.name(), counts.easyQuestionCount(),
+                            counts.mediumQuestionCount(), counts.hardQuestionCount());
+                })
                 .toList();
+        RoleConfig normalized = new RoleConfig(
+                catalogRole.id(), catalogRole.name(), hasQuestions(normalizedSkills),
+                submittedRole.easyScoreWeight(), submittedRole.mediumScoreWeight(),
+                submittedRole.hardScoreWeight(), normalizedSkills);
+        validateWeights(normalized);
+        return normalized;
+    }
+
+    private static void validateWeights(RoleConfig role) {
+        if (!role.participates()) {
+            return;
+        }
+        Map<Difficulty, Integer> counts = new EnumMap<>(Difficulty.class);
+        for (Difficulty difficulty : Difficulty.values()) {
+            counts.put(difficulty, role.skills().stream().mapToInt(skill -> required(skill, difficulty)).sum());
+        }
+        BigDecimal usedWeight = BigDecimal.ZERO;
+        for (Difficulty difficulty : Difficulty.values()) {
+            BigDecimal weight = weight(role, difficulty);
+            if (counts.get(difficulty) == 0 && weight.signum() != 0) {
+                throw invalid("Unused difficulty weight must be zero for role " + role.roleId()
+                        + ": " + difficulty.name());
+            }
+            if (counts.get(difficulty) > 0) {
+                usedWeight = usedWeight.add(weight);
+            }
+        }
+        if (usedWeight.compareTo(BigDecimal.ONE) != 0) {
+            throw invalid("Used difficulty weights must total one for role " + role.roleId());
+        }
+    }
+
+    private static BigDecimal weight(RoleConfig role, Difficulty difficulty) {
+        return switch (difficulty) {
+            case EASY -> role.easyScoreWeight();
+            case MEDIUM -> role.mediumScoreWeight();
+            case HARD -> role.hardScoreWeight();
+        };
     }
 
     private static int required(SkillConfig skill, Difficulty difficulty) {
@@ -104,7 +127,50 @@ final class BaselineBlueprintDraftValidator {
         };
     }
 
+    private static boolean hasQuestions(List<SkillConfig> skills) {
+        return skills.stream().anyMatch(skill -> skill.totalQuestionCount() > 0);
+    }
+
+    private static <T> Map<String, T> uniqueById(
+            List<T> values, Function<T, String> id, String label) {
+        Map<String, T> result = new LinkedHashMap<>();
+        for (T value : values) {
+            String key = id.apply(value);
+            if (result.put(key, value) != null) {
+                throw failure(label + " contain duplicate ID: " + key);
+            }
+        }
+        return result;
+    }
+
+    private static void requireExactIds(String label, Set<String> expected, Set<String> actual) {
+        Set<String> missing = new LinkedHashSet<>(expected);
+        missing.removeAll(actual);
+        Set<String> unexpected = new LinkedHashSet<>(actual);
+        unexpected.removeAll(expected);
+        if (!missing.isEmpty() || !unexpected.isEmpty()) {
+            throw failure(label + " membership mismatch; missing=" + sorted(missing)
+                    + ", unexpected=" + sorted(unexpected));
+        }
+    }
+
+    private static List<String> sorted(Set<String> values) {
+        return values.stream().sorted().toList();
+    }
+
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw invalid(field + " must not be blank");
+        }
+        return value.strip();
+    }
+
     private static Failure failure(String message) {
         return new Failure(Code.CATALOG_REFERENCE_INVALID, message);
     }
+
+    private static Failure invalid(String message) {
+        return new Failure(Code.INVALID_REQUEST, message);
+    }
+
 }

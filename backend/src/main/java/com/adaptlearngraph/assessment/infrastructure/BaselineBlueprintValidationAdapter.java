@@ -1,11 +1,13 @@
 package com.adaptlearngraph.assessment.infrastructure;
 
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort;
+import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogOccupation;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogRole;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.CoverageKey;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.DependencyUnavailable;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintValidationPort.Difficulty;
+import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort;
 import com.adaptlearngraph.catalog.application.TargetRoleQueryException;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import java.util.HashMap;
@@ -18,10 +20,19 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 final class BaselineBlueprintValidationAdapter implements BaselineBlueprintValidationPort {
     private final TargetRoleCatalogPort catalog;
+    private final BaselineOccupationCatalogPort occupationCatalog;
     private final NamedParameterJdbcTemplate jdbc;
 
     BaselineBlueprintValidationAdapter(TargetRoleCatalogPort catalog, NamedParameterJdbcTemplate jdbc) {
+        this(catalog, null, jdbc);
+    }
+
+    BaselineBlueprintValidationAdapter(
+            TargetRoleCatalogPort catalog,
+            BaselineOccupationCatalogPort occupationCatalog,
+            NamedParameterJdbcTemplate jdbc) {
         this.catalog = catalog;
+        this.occupationCatalog = occupationCatalog;
         this.jdbc = jdbc;
     }
 
@@ -34,6 +45,26 @@ final class BaselineBlueprintValidationAdapter implements BaselineBlueprintValid
                             .toList()));
         } catch (TargetRoleQueryException failure) {
             throw new DependencyUnavailable("Target-role catalog is unavailable", failure);
+        }
+    }
+
+    @Override
+    public Optional<CatalogOccupation> findAvailableOccupation(
+            String organizationId, String occupationId) {
+        if (occupationCatalog == null) {
+            throw new DependencyUnavailable("Occupation catalog is not enabled");
+        }
+        try {
+            return occupationCatalog.findAvailableOccupation(organizationId, occupationId)
+                    .map(occupation -> new CatalogOccupation(
+                            occupation.id(), occupation.name(), occupation.roles().stream()
+                                    .map(role -> new CatalogRole(
+                                            role.id(), role.name(), role.skills().stream()
+                                                    .map(skill -> new CatalogSkill(skill.id(), skill.name()))
+                                                    .toList()))
+                                    .toList()));
+        } catch (BaselineOccupationCatalogPort.DependencyUnavailable failure) {
+            throw new DependencyUnavailable(failure.getMessage(), failure);
         }
     }
 
