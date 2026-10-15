@@ -35,8 +35,8 @@ export interface SubmissionItem {
   id: string
   code: string
   title: string
-  type: 'module' | 'course' | 'assessment'
-  discipline: string
+  type: 'module' | 'assessment'
+  occupation: string
   submittedBy: string
   submittedAt: string
   status: 'PENDING_REVIEW' | 'APPROVED' | 'REVISION_REQUESTED'
@@ -51,19 +51,19 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     code: 'MOD-004',
     title: 'Graph Neural Networks & Relational Inductive Biases',
     type: 'module',
-    discipline: 'Cognitive Architecture & Machine Learning',
+    occupation: 'Software Developers (15-1252.00)',
     submittedBy: 'Dr. Sarah Chen',
     submittedAt: '2026-10-13 16:30',
     status: 'PENDING_REVIEW',
     microSkillsMapped: ['MS-004 (Graph Neural Networks)', 'MS-007 (Relational Inductive Biases)'],
-    itemDetails: '3 Courses, 18 Interactive exercises, 1 Capstone coding notebook.',
+    itemDetails: '18 Interactive exercises, 1 Capstone coding notebook.',
   },
   {
     id: 'sub-02',
     code: 'ASMT-009',
     title: 'Dynamic Knowledge Tracing Assessment Blueprint',
     type: 'assessment',
-    discipline: 'Cognitive Architecture & Machine Learning',
+    occupation: 'Software Developers (15-1252.00)',
     submittedBy: 'Chen Wei',
     submittedAt: '2026-10-13 14:15',
     status: 'PENDING_REVIEW',
@@ -72,10 +72,10 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
   },
   {
     id: 'sub-03',
-    code: 'CRS-105',
+    code: 'MOD-005',
     title: 'High-Concurrency Outbox Pattern in Spring Boot',
-    type: 'course',
-    discipline: 'Software Engineering & Cloud Architecture',
+    type: 'module',
+    occupation: 'Computer Systems Engineers/Architects (15-1299.08)',
     submittedBy: 'Chen Wei',
     submittedAt: '2026-10-12 11:20',
     status: 'PENDING_REVIEW',
@@ -87,12 +87,12 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     code: 'MOD-001',
     title: 'Foundations of Knowledge Graphs & Cypher Querying',
     type: 'module',
-    discipline: 'Data Engineering & Graph Analytics',
+    occupation: 'Database Architects (15-1243.00)',
     submittedBy: 'Dr. Sarah Chen',
     submittedAt: '2026-10-10 09:00',
     status: 'APPROVED',
     microSkillsMapped: ['MS-001 (Graph Theory Basics)', 'MS-003 (Cypher Fundamentals)'],
-    itemDetails: '5 Courses, Approved for enterprise onboarding pathways.',
+    itemDetails: 'Instructional module approved for enterprise onboarding pathways.',
   },
 ]
 
@@ -122,7 +122,7 @@ export function ContentApprovalQueuePage() {
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.submittedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.discipline.toLowerCase().includes(searchQuery.toLowerCase())
+      item.occupation.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesType = typeFilter === 'ALL' || item.type === typeFilter
     const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter
     return matchesSearch && matchesType && matchesStatus
@@ -198,12 +198,6 @@ export function ContentApprovalQueuePage() {
         return (
           <Badge variant="primary" className="text-[10px] font-semibold uppercase tracking-wider">
             Module
-          </Badge>
-        )
-      case 'course':
-        return (
-          <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider border border-primary/20">
-            Course
           </Badge>
         )
       case 'assessment':
@@ -302,7 +296,7 @@ export function ContentApprovalQueuePage() {
                       Learning Offering Governance Catalog
                     </CardTitle>
                     <CardDescription>
-                      Review and approve modules, courses, and assessments submitted by Experts.
+                      Review and approve modules and assessments submitted by Experts.
                     </CardDescription>
                   </div>
 
@@ -328,7 +322,6 @@ export function ContentApprovalQueuePage() {
                       >
                         <option value="ALL">All Offering Types</option>
                         <option value="module">Modules</option>
-                        <option value="course">Courses</option>
                         <option value="assessment">Assessments</option>
                       </select>
                     </div>
@@ -358,7 +351,7 @@ export function ContentApprovalQueuePage() {
                         <th className="py-2.5 px-3">OFFERING CODE</th>
                         <th className="py-2.5 px-3">TITLE</th>
                         <th className="py-2.5 px-3">TYPE</th>
-                        <th className="py-2.5 px-3">DISCIPLINE &amp; EXPERT</th>
+                        <th className="py-2.5 px-3">OCCUPATION &amp; EXPERT</th>
                         <th className="py-2.5 px-3">MICRO-SKILLS MAPPED</th>
                         <th className="py-2.5 px-3">STATUS</th>
                         <th className="py-2.5 px-3 text-right">ACTIONS</th>
@@ -387,7 +380,7 @@ export function ContentApprovalQueuePage() {
                               {getTypeBadge(item.type)}
                             </td>
                             <td className="py-3 px-3">
-                              <div className="text-xs font-semibold text-foreground">{item.discipline}</div>
+                              <div className="text-xs font-semibold text-foreground">{item.occupation}</div>
                               <div className="text-[11px] text-muted-foreground mt-0.5">By {item.submittedBy}</div>
                             </td>
                             <td className="py-3 px-3">
@@ -472,7 +465,7 @@ export function ContentApprovalQueuePage() {
                         className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 cursor-pointer"
                       >
                         <option value="ADAPTIVE_DIAGNOSTIC">Adaptive Item Response (Dynamic Difficulty Scaling)</option>
-                        <option value="STRATIFIED_RANDOM">Stratified Random (Even Coverage Across All Disciplines)</option>
+                        <option value="STRATIFIED_RANDOM">Stratified Random (Even Coverage Across All Occupations)</option>
                         <option value="FIXED_BENCHMARK">Standard Fixed Curricular Benchmark</option>
                       </select>
                       <span className="text-[11px] text-muted-foreground mt-1 block">
@@ -605,7 +598,7 @@ export function ContentApprovalQueuePage() {
             </DialogHeader>
 
             <div className="space-y-3.5 py-1 text-xs">
-              {/* Scope & Structure Box (3 Courses, 18 Interactive exercises, 1 Capstone coding notebook) */}
+              {/* Scope & Structure Box */}
               <div className="p-3.5 rounded-xl bg-secondary/30 border border-primary/20 space-y-1.5">
                 <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
                   Scope &amp; Learning Structure
@@ -618,8 +611,8 @@ export function ContentApprovalQueuePage() {
               {/* Metadata Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div className="p-2.5 rounded-lg border border-border bg-background">
-                  <span className="text-[11px] text-muted-foreground block">Discipline</span>
-                  <strong className="text-foreground text-xs">{viewingSubmission.discipline}</strong>
+                  <span className="text-[11px] text-muted-foreground block">Occupation</span>
+                  <strong className="text-foreground text-xs">{viewingSubmission.occupation}</strong>
                 </div>
                 <div className="p-2.5 rounded-lg border border-border bg-background">
                   <span className="text-[11px] text-muted-foreground block">Submitted By</span>

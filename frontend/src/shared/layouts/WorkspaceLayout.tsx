@@ -219,8 +219,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isLdManager) {
     actorTabs = [
       {
-        label: t('nav.disciplines', 'Disciplines'),
-        href: '/ld-manager/disciplines',
+        label: t('nav.occupations', 'Occupations'),
+        href: '/ld-manager/occupations',
         icon: <FolderTree size={15} />,
       },
       {
@@ -347,8 +347,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/manager'
       )
     }
-    if (itemHref === '/ld-manager/disciplines') {
-      return path === '/ld-manager/disciplines'
+    if (itemHref === '/ld-manager/occupations') {
+      return path === '/ld-manager/occupations' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
       return path === '/ld-manager/approvals'

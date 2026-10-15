@@ -73,12 +73,11 @@ const OFFICIAL_PALETTE: PaletteTheme = {
   ],
 }
 
-const SAMPLE_COURSES = [
-  { value: 'ai-python', label: 'AI for Everyone (Andrew Ng)', description: 'Beginner • 4 weeks' },
-  { value: 'web-dev', label: 'Full-Stack Web Development', description: 'Intermediate • 6 months' },
-  { value: 'data-science', label: 'Data Science Specialization', description: 'Advanced • 8 months' },
-  { value: 'ux-design', label: 'Google UX Design Certificate', description: 'Beginner • 3 months' },
-  { value: 'machine-learning', label: 'Machine Learning Specialization', description: 'Intermediate • 5 months' },
+const SAMPLE_MODULES = [
+  { value: 'mod-neural-nets', label: 'MOD-004: Graph Neural Networks & Inductive Biases', description: 'Advanced • 45 mins' },
+  { value: 'mod-cypher', label: 'MOD-001: Foundations of Knowledge Graphs & Cypher', description: 'Intermediate • 60 mins' },
+  { value: 'mod-outbox', label: 'MOD-005: High-Concurrency Transactional Outbox', description: 'Advanced • 90 mins' },
+  { value: 'mod-auth', label: 'MOD-008: Zero-Trust Cryptographic Authorization', description: 'Intermediate • 40 mins' },
 ]
 
 export function DesignSystemShowcasePage() {
@@ -89,7 +88,7 @@ export function DesignSystemShowcasePage() {
   const [btnIsDisabled, setBtnIsDisabled] = React.useState(false)
 
   // Combobox demo state
-  const [selectedCourse, setSelectedCourse] = React.useState('ai-python')
+  const [selectedModule, setSelectedModule] = React.useState('mod-neural-nets')
 
   // Search input state
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -462,17 +461,17 @@ export function DesignSystemShowcasePage() {
 
             <CardContent className="space-y-6 flex-1">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Select Course (Combobox)</label>
+                <label className="text-sm font-medium text-foreground">Select Learning Module (Combobox)</label>
                 <Combobox
-                  options={SAMPLE_COURSES}
-                  value={selectedCourse}
-                  onChange={(val) => setSelectedCourse(val)}
-                  placeholder="Choose a specialization..."
-                  searchPlaceholder="Filter courses..."
+                  options={SAMPLE_MODULES}
+                  value={selectedModule}
+                  onChange={(val) => setSelectedModule(val)}
+                  placeholder="Choose an instructional module..."
+                  searchPlaceholder="Filter modules..."
                 />
-                {selectedCourse && (
+                {selectedModule && (
                   <p className="text-xs text-muted-foreground">
-                    Selected ID: <code className="font-mono text-primary font-medium">{selectedCourse}</code>
+                    Selected ID: <code className="font-mono text-primary font-medium">{selectedModule}</code>
                   </p>
                 )}
               </div>
@@ -565,7 +564,7 @@ export function DesignSystemShowcasePage() {
                 <span>Tabs & Collapsible Accordion</span>
               </CardTitle>
               <CardDescription>
-                Structured navigation and expandable course syllabus gates.
+                Structured navigation and expandable module syllabus gates.
               </CardDescription>
             </CardHeader>
 
@@ -577,7 +576,7 @@ export function DesignSystemShowcasePage() {
                   <TabsTrigger value="outcomes">Outcomes</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview" className="text-xs text-muted-foreground p-2 leading-relaxed">
-                  Overview tab displaying course summary, prerequisite recommendations, and estimated time commitment.
+                  Overview tab displaying module summary, prerequisite recommendations, and estimated time commitment.
                 </TabsContent>
                 <TabsContent value="curriculum" className="text-xs text-muted-foreground p-2 leading-relaxed">
                   Curriculum syllabus tab structured into sequential milestones with gate assessments.

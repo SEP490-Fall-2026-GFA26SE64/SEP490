@@ -12,7 +12,7 @@ export const vi: TranslationKeys = {
     assessmentQuiz: 'Bài đánh giá',
     serverStatus: 'Trạng thái máy chủ',
     assignedRoles: 'Vai trò mục tiêu',
-    disciplines: 'Chuyên ngành',
+    occupations: 'Nghề nghiệp',
     contentApprovals: 'Duyệt nội dung',
     ontology: 'Bản thể tri thức',
     modules: 'Mô-đun học tập',

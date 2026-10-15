@@ -54,7 +54,7 @@ const INITIAL_AUDIT_LOGS: AuditLogRecord[] = [
     targetEntity: 'User: Zoe Martinez (Employee -> Expert)',
     severity: 'security',
     ipAddress: '10.0.4.12',
-    details: 'Elevated domain authority for discipline "Machine Learning & Cognitive Architecture".',
+    details: 'Elevated domain authority for occupation "Software Developers (15-1252.00)".',
   },
   {
     id: 'AUD-8920',
@@ -76,7 +76,7 @@ const INITIAL_AUDIT_LOGS: AuditLogRecord[] = [
     targetEntity: 'LearningModule: MOD-002 (Graph Neural Networks)',
     severity: 'info',
     ipAddress: '10.0.5.15',
-    details: 'Submitted 4 courses and module assessment blueprint to L&D Manager for approval.',
+    details: 'Submitted 4 modules and module assessment blueprint to L&D Manager for approval.',
   },
   {
     id: 'AUD-8918',

@@ -14,7 +14,7 @@ import { LearningModulesPage } from '../features/manager/modules/LearningModules
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
-import { DisciplinesManagementPage } from '../features/manager/disciplines/DisciplinesManagementPage'
+import { OccupationsManagementPage } from '../features/manager/occupations/OccupationsManagementPage'
 import { ContentApprovalQueuePage } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { LearningOutcomesPage } from '../features/manager/learning-outcomes/LearningOutcomesPage'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
@@ -81,9 +81,10 @@ export default function App() {
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />
 
-            {/* 3. L&D Manager routes (Disciplines, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
-            <Route path="/ld-manager" element={<Navigate to="/ld-manager/disciplines" replace />} />
-            <Route path="/ld-manager/disciplines" element={<DisciplinesManagementPage />} />
+            {/* 3. L&D Manager routes (Occupations, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
+            <Route path="/ld-manager" element={<Navigate to="/ld-manager/occupations" replace />} />
+            <Route path="/ld-manager/occupations" element={<OccupationsManagementPage />} />
+            <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />

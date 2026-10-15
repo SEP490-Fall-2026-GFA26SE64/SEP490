@@ -394,7 +394,7 @@ export const viPhrases: Record<string, string> = {
   'Cost Savings Forecast': 'Dự báo chi phí tiết kiệm',
   'Projected Time to Competency': 'Thời gian dự kiến đạt chuẩn năng lực',
   '+14% improvement this quarter': '+14% cải thiện trong quý này',
-  'Saved via adaptive knowledge-gap skipping vs rigid traditional LMS courses.': 'Tiết kiệm nhờ bỏ qua phần kiến thức đã vững thay vì học tuần tự truyền thống.',
+  'Saved via adaptive knowledge-gap skipping vs rigid traditional training.': 'Tiết kiệm nhờ bỏ qua phần kiến thức đã vững thay vì đào tạo cứng nhắc tuần tự.',
 
   // ==========================================
   // MANAGER: LEARNING OUTCOMES

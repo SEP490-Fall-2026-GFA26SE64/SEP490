@@ -289,7 +289,7 @@ const ASSESSMENT_QUESTIONS: Question[] = [
       },
       {
         id: 'opt-7-b',
-        text: 'B) Assigns random courses from unrelated departments.',
+        text: 'B) Assigns random modules from unrelated departments.',
       },
       {
         id: 'opt-7-c',

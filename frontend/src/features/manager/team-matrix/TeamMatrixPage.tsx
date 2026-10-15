@@ -141,7 +141,7 @@ export function TeamMatrixPage() {
             title="Cumulative Hours Saved"
             value={`${totalHoursSaved} Hours`}
             valueClassName="text-success"
-            description="Saved via adaptive knowledge-gap skipping vs rigid traditional LMS courses."
+            description="Saved via adaptive knowledge-gap skipping vs rigid traditional training."
           />
 
           <StatCard

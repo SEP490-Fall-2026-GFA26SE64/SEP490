@@ -10,7 +10,7 @@ export const en = {
     assessmentQuiz: 'Assessment Quiz',
     serverStatus: 'Server Status',
     assignedRoles: 'Target Roles',
-    disciplines: 'Disciplines',
+    occupations: 'Occupations',
     contentApprovals: 'Content Approvals',
     ontology: 'Ontology',
     modules: 'Modules',
