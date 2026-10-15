@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,11 +18,11 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-final class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraftStore {
+public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraftStore {
     private static final String SCORING_VERSION = "BASELINE_BLUEPRINT_WEIGHT_V1";
     private final NamedParameterJdbcTemplate jdbc;
 
-    JdbcBaselineAssessmentDraftStore(NamedParameterJdbcTemplate jdbc) {
+    public JdbcBaselineAssessmentDraftStore(NamedParameterJdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -195,7 +196,8 @@ final class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraftS
                     """, new MapSqlParameterSource()
                     .addValue("assessmentVersionId", assessmentVersionId)
                     .addValue("reviewerId", reviewerId)
-                    .addValue("reviewedAt", reviewedAt, Types.TIMESTAMP_WITH_TIMEZONE)
+                    .addValue("reviewedAt", reviewedAt.atOffset(ZoneOffset.UTC),
+                            Types.TIMESTAMP_WITH_TIMEZONE)
                     .addValue("expectedContentHash", expectedContentHash)) == 1;
         } catch (DataAccessException failure) {
             throw unavailable("Baseline assessment review could not be stored", failure);
@@ -249,7 +251,8 @@ final class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraftS
                 .addValue("blueprintVersion", draft.blueprintVersion())
                 .addValue("generationSeed", draft.generationSeed())
                 .addValue("createdBy", draft.createdBy())
-                .addValue("createdAt", draft.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
+                .addValue("createdAt", draft.createdAt().atOffset(ZoneOffset.UTC),
+                        Types.TIMESTAMP_WITH_TIMEZONE)
                 .addValue("idempotencyKey", draft.idempotencyKey())
                 .addValue("requestHash", draft.requestHash());
     }

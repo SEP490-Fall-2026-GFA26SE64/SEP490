@@ -6,7 +6,9 @@ import com.adaptlearngraph.assessment.domain.BaselineBlueprint.RoleConfig;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.SkillConfig;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -99,7 +101,8 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
                     .addValue("createdBy", blueprint.createdBy())
                     .addValue("idempotencyKey", blueprint.idempotencyKey())
                     .addValue("requestHash", blueprint.requestHash())
-                    .addValue("createdAt", blueprint.createdAt()));
+                    .addValue("createdAt", blueprint.createdAt().atOffset(ZoneOffset.UTC),
+                            Types.TIMESTAMP_WITH_TIMEZONE));
             for (RoleConfig role : blueprint.roles()) {
                 insertRole(blueprint, role);
                 for (SkillConfig skill : role.skills()) {

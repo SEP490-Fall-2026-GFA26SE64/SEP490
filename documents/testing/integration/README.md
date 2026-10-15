@@ -22,6 +22,7 @@ Integration testing validates real database round-trips, graph relationships, au
 | :--- | :--- | :--- | :--- | :--- |
 | **REQ-001-F01** | View Target Roles | Neo4j Testcontainers | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
 | **REQ-001-F02** | Choose Target Role | PostgreSQL Testcontainers | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |
+| **REQ-002-F02** | Baseline Blueprint Authoring | PostgreSQL 17.6 Testcontainers | [REQ-002-F02-baseline-authoring.md](REQ-002-F02-baseline-authoring.md) | **PASSED** |
 | **REQ-011** | Assigned Target Roles | Neo4j Testcontainers | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | **PASSED** |
 | **REQ-012** | Micro-Skill Management | Neo4j Testcontainers | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | **PASSED** |
 | **REQ-015** | Role Requirements | Neo4j Testcontainers | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | **PASSED** |
