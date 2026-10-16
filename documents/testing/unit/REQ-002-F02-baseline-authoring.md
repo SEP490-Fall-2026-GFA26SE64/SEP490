@@ -21,7 +21,18 @@ Executable cases now cover one blueprint per Occupation, exact full-role members
 | `BaselineBlueprintControllerTest` | local create contract; 422 structured shortage; generated response excludes protected answer material | R1, R2, R4 |
 | `BaselineBlueprintProductionBoundaryTest` | starter profile rejects a CSRF-valid unauthenticated authoring POST with 401 | R1 |
 | `baselineBlueprintApi.test.ts` | Occupation list/detail/latest parsing; idempotency/expected-version requests; aggregate shortage parsing; safe manifest parsing; distinct review/publish endpoints; malformed publication-state rejection | R2–R6, R9, R13–R14 |
-| `BaselineBlueprintPage.test.tsx` | ordered save/generate/review/publish flow; actionable shortage; all roles visible without include checkboxes; zero role submitted as retained/non-participating | R8, R11, R14 |
+| `baselineBlueprintForm.test.ts` | deterministic role-total distribution; balanced skill/difficulty cells; exact percentage/decimal sums; total-zero clearing and `40%` ↔ `0.4` conversion | UX1–UX3 |
+| `BaselineBlueprintPage.test.tsx` | ordered save/generate/review/publish; actionable shortage; all roles visible; explicit Apply/manual edit/zero clearing; decimal load; EN/VI state retention; independent multi-open role panels; excluded-role wire compatibility | R8, R11, R14, UX2–UX6 |
+
+## UX/i18n run evidence — 2026-10-16
+
+```powershell
+cd frontend
+npm.cmd test -- --run src/features/manager/baseline-blueprints/baselineBlueprintForm.test.ts src/features/manager/baseline-blueprints/baselineBlueprintApi.test.ts src/features/manager/baseline-blueprints/BaselineBlueprintPage.test.tsx
+npm.cmd test -- --run
+```
+
+Results: scoped **16 passed** across 3 files; full regression **46 passed** across 11 files. The final production build also passed, and lint exited 0 with only pre-existing warnings outside the changed baseline files.
 
 ## Run evidence — 2026-10-15
 

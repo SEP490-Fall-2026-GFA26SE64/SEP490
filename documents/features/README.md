@@ -110,13 +110,13 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 
 ## Clarification Tracker
 
-**Active contract review:** [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, is being realigned from an ungrouped role-scoped blueprint to one logical blueprint per Occupation. Existing BE–FE and executable evidence applies only to the earlier local contract.
+**Active contract review:** [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, is surface-complete for its approved local/demo authoring boundary. The 2026-10-16 frontend UX/i18n delta completed implementation, executable tests, documentation synchronization and final review; production dependencies remain open.
 
-**Current clarification question:** Approve the Occupation-scoped rules: every Occupation role is present, role total `0` excludes only its questions, at least one role is non-zero, role skills are the de-duplicated union across Levels, and shared-skill coverage is aggregated without repeating a question version.
+**Current clarification question:** REQ-002-F02 authoring has no open behavior that blocks its local/demo boundary. The next assessment clarification belongs to the separate Employee attempt/evidence lifecycle, not this authoring Function.
 
-**Progress:** 2 of 84 functions remain clarified under the current contract. REQ-002-F02 is reopened at documentation review because its acceptance scope changed; its earlier evidence is retained but does not certify Occupation behavior.
+**Progress:** REQ-002-F02 is clarified and surface-complete for the approved local/demo boundary; this does not increase the count of production-complete Functions while Identity/Catalog production contracts and Employee lifecycle remain open.
 
-**REQ-002-F02 status (2026-10-15):** One Occupation has one logical baseline blueprint containing all current roles; counts and weights remain per role/skill/difficulty, and a zero-total role stays visible without participating in coverage, generation or scoring. Cụm 1-4 are complete and the Function is surface-complete for the approved local/demo scope. Production Identity/Catalog/importer contracts, Employee lifecycle and RIASEC remain separate follow-ups before production-ready status.
+**REQ-002-F02 status (2026-10-16):** One Occupation has one logical baseline blueprint containing all current roles; counts and weights remain per role/skill/difficulty, and a zero-total role stays visible without participating in coverage, generation or scoring. The role-total helper, deterministic Apply, percentage weights, EN/VI state preservation and multi-open panels completed Cụm 1–4. Production Identity/Catalog/importer contracts, Employee lifecycle and RIASEC remain separate follow-ups before production-ready status.
 
 **Confirmed soft-skill readiness effect (2026-09-27):** Option A: Baseline readiness loss does not block a separate, otherwise eligible soft-skill assessment. The assessment remains subject to its own configuration and authorization rules. Baseline-start and evidence-only closure rules remain independent.
 **Confirmed AI comment visibility (2026-09-27):** Option B: Before expert review is complete, employees see only the summarized result, clearly labeled as AI-generated and pending expert review. The raw comment remains visible only to authorized experts and administrators.
