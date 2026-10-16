@@ -36,17 +36,17 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   await expect(platformTrigger).toHaveAttribute('aria-expanded', 'true')
 
   const totalInput = javaRole.getByLabel('Total questions for this role')
-  await totalInput.fill('3')
+  await totalInput.fill('15')
   await expect(javaRole.getByText('0 questions · not included')).toBeVisible()
   await javaRole.getByRole('button', { name: 'Apply and distribute' }).click()
-  await expect(javaRole.getByText('3 questions')).toBeVisible()
-  await expect(javaRole.getByLabel('Easy score weight (%)')).toHaveValue('33.34')
-  await expect(javaRole.getByLabel('Medium score weight (%)')).toHaveValue('33.33')
-  await expect(javaRole.getByLabel('Hard score weight (%)')).toHaveValue('33.33')
+  await expect(javaRole.getByText('15 questions')).toBeVisible()
+  await expect(javaRole.getByLabel('Easy score weight (%)')).toHaveValue('20')
+  await expect(javaRole.getByLabel('Medium score weight (%)')).toHaveValue('30')
+  await expect(javaRole.getByLabel('Hard score weight (%)')).toHaveValue('50')
 
   await page.getByRole('button', { name: 'VI', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Cấu hình đề đánh giá đầu vào' })).toBeVisible()
-  await expect(javaRole.getByLabel('Tổng số câu cho vai trò này')).toHaveValue('3')
+  await expect(javaRole.getByLabel('Tổng số câu cho vai trò này')).toHaveValue('15')
   await expect(javaTrigger).toHaveAttribute('aria-expanded', 'true')
   await expect(platformTrigger).toHaveAttribute('aria-expanded', 'true')
   await page.getByRole('button', { name: 'EN', exact: true }).click()
@@ -72,9 +72,9 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   const javaRequest = saveRequest.roles.find((role) =>
     role.roleId === '20000000-0000-0000-0000-000000000001')
   expect(javaRequest).toMatchObject({
-    easyScoreWeight: 0.3334,
-    mediumScoreWeight: 0.3333,
-    hardScoreWeight: 0.3333,
+    easyScoreWeight: 0.2,
+    mediumScoreWeight: 0.3,
+    hardScoreWeight: 0.5,
   })
   expect(blueprint.version).toBe(1)
   expect(blueprint.occupationId).toBe('10000000-0000-0000-0000-000000000001')
@@ -105,11 +105,11 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   const generateResponse = await generateResponsePromise
   expect(generateResponse.status()).toBe(201)
   const generated = await generateResponse.json() as AssessmentResponse
-  expect(generated.items).toHaveLength(3)
+  expect(generated.items).toHaveLength(15)
   expect(generated.items.every((item) =>
     item.roleId === '20000000-0000-0000-0000-000000000001')).toBeTruthy()
   await expect(page.getByText('Assessment draft v1', { exact: true })).toBeVisible()
-  await expect(page.getByText(/Items:\s*3/)).toBeVisible()
+  await expect(page.getByText(/Items:\s*15/)).toBeVisible()
 
   const generationKey = generateResponse.request().headers()['idempotency-key']
   expect(generationKey).toBeTruthy()

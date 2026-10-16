@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.adaptlearngraph.assessment.application.BaselineAssessmentDraftService;
+import com.adaptlearngraph.assessment.application.BaselineBlueprintCapacityService;
 import com.adaptlearngraph.assessment.application.BaselineBlueprintService;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.BlueprintDraft;
 import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentDraftStore;
@@ -65,6 +66,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     private BaselineBlueprintStore blueprints;
     private BaselineAssessmentDraftStore drafts;
     private BaselineBlueprintService blueprintService;
+    private BaselineBlueprintCapacityService capacityService;
     private BaselineAssessmentDraftService draftService;
 
     @BeforeAll
@@ -107,6 +109,8 @@ class BaselineAssessmentPostgresIntegrationTest {
                 new Actor(ACTOR_ID, ORGANIZATION_ID.toString(), true, Set.of("LD_MANAGER")));
         var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(), namedJdbc);
         blueprintService = new BaselineBlueprintService(actor, blueprints, validation);
+        capacityService = new BaselineBlueprintCapacityService(
+                actor, occupationCatalog(), validation);
         draftService = new BaselineAssessmentDraftService(actor, blueprints, drafts);
         seedIdentityAndQuestionBank();
     }
@@ -173,6 +177,28 @@ class BaselineAssessmentPostgresIntegrationTest {
     }
 
     @Test
+    void readsCurrentPublishedCapacityWithoutCountingSupersededItemVersions() {
+        var capacity = capacityService.getAvailableCapacity(OCCUPATION_ID);
+
+        assertThat(capacity.catalogVersion()).isEqualTo("test-v1");
+        assertThat(capacity.roles()).hasSize(2);
+        assertThat(capacity.roles().stream()
+                .filter(role -> role.roleId().equals(ROLE_ID))
+                .findFirst().orElseThrow().skills()).singleElement().satisfies(skill -> {
+                    assertThat(skill.availableEasy()).isOne();
+                    assertThat(skill.availableMedium()).isOne();
+                    assertThat(skill.availableHard()).isOne();
+                });
+        assertThat(capacity.roles().stream()
+                .filter(role -> role.roleId().equals(ZERO_ROLE_ID))
+                .findFirst().orElseThrow().skills()).singleElement().satisfies(skill -> {
+                    assertThat(skill.availableEasy()).isZero();
+                    assertThat(skill.availableMedium()).isZero();
+                    assertThat(skill.availableHard()).isZero();
+                });
+    }
+
+    @Test
     void reviewAndPublishPersistExactHashAndDatabaseFreezesHeaderAndManifest() {
         var blueprint = blueprintService.create("create-key", blueprintDraft("Baseline"));
         var generated = draftService.generate(blueprint.blueprintId(), 1, "generate-key");
@@ -211,11 +237,11 @@ class BaselineAssessmentPostgresIntegrationTest {
         return new BlueprintDraft(name, OCCUPATION_ID, "Client occupation", List.of(
                 new RoleConfig(
                         ROLE_ID, "Client role snapshot", true,
-                        new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"),
+                        new BigDecimal("0.2"), new BigDecimal("0.3"), new BigDecimal("0.5"),
                         List.of(new SkillConfig(SKILL_ID, "Client skill snapshot", 1, 1, 1))),
                 new RoleConfig(
                         ZERO_ROLE_ID, "Client zero role", true,
-                        new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"),
+                        new BigDecimal("0.2"), new BigDecimal("0.3"), new BigDecimal("0.5"),
                         List.of(new SkillConfig(ZERO_SKILL_ID, "Client zero skill", 0, 0, 0)))));
     }
 

@@ -102,6 +102,30 @@ class BaselineBlueprintServiceTest {
     }
 
     @Test
+    void rejectsParticipatingSkillWhenAnyDifficultyHasNoQuestion() {
+        var fixture = new Fixture();
+
+        assertCode(Code.INVALID_REQUEST,
+                () -> fixture.service.create("missing-medium", draft("Role", 1, 0, 1)));
+
+        assertThat(fixture.validation.coverageCalls).isZero();
+        assertThat(fixture.store.inserted).isEmpty();
+    }
+
+    @Test
+    void rejectsWeightsUnlessHardIsGreaterThanMediumAndMediumGreaterThanEasy() {
+        var fixture = new Fixture();
+
+        assertCode(Code.INVALID_REQUEST, () -> fixture.service.create(
+                "equal-weights", draftWithWeights("0.25", "0.375", "0.375")));
+        assertCode(Code.INVALID_REQUEST, () -> fixture.service.create(
+                "reverse-weights", draftWithWeights("0.40", "0.35", "0.25")));
+
+        assertThat(fixture.validation.coverageCalls).isZero();
+        assertThat(fixture.store.inserted).isEmpty();
+    }
+
+    @Test
     void replaysSameActorKeyAndRejectsDifferentContent() {
         var fixture = new Fixture();
         BaselineBlueprint first = fixture.service.create("shared-key", draft("Original", 1, 1, 1));
@@ -148,10 +172,21 @@ class BaselineBlueprintServiceTest {
                 List.of(role(true, "Client snapshot", easy, medium, hard)));
     }
 
+    private static BlueprintDraft draftWithWeights(String easy, String medium, String hard) {
+        return new BlueprintDraft("Weighted role", OCCUPATION_ID, "Client occupation",
+                List.of(roleWithWeights(true, "Client snapshot", 1, 1, 1, easy, medium, hard)));
+    }
+
     private static RoleConfig role(boolean enabled, String name, int easy, int medium, int hard) {
+        return roleWithWeights(enabled, name, easy, medium, hard, "0.2", "0.3", "0.5");
+    }
+
+    private static RoleConfig roleWithWeights(
+            boolean enabled, String name, int easy, int medium, int hard,
+            String easyWeight, String mediumWeight, String hardWeight) {
         return new RoleConfig(
                 ROLE_ID, name, enabled,
-                new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"),
+                new BigDecimal(easyWeight), new BigDecimal(mediumWeight), new BigDecimal(hardWeight),
                 List.of(new SkillConfig(SKILL_ID, "Client skill snapshot", easy, medium, hard)));
     }
 

@@ -11,12 +11,14 @@ import {
   generateAssessment,
   getLatestBlueprintByOccupation,
   getOccupation,
+  getOccupationCapacity,
   listOccupations,
   publishAssessment,
   reviewAssessment,
   reviseBlueprint,
   type AssessmentDraft,
   type BaselineBlueprint,
+  type BlueprintCapacity,
 } from './baselineBlueprintApi'
 import {
   developmentBaselineOccupation,
@@ -42,6 +44,7 @@ vi.mock('./baselineBlueprintApi', async (importOriginal) => {
     reviseBlueprint: vi.fn(),
     listOccupations: vi.fn(),
     getOccupation: vi.fn(),
+    getOccupationCapacity: vi.fn(),
     getLatestBlueprintByOccupation: vi.fn(),
     generateAssessment: vi.fn(),
     reviewAssessment: vi.fn(),
@@ -60,6 +63,7 @@ describe('BaselineBlueprintPage', () => {
     vi.mocked(getOccupation).mockResolvedValue(
       developmentBaselineOccupation('10000000-0000-0000-0000-000000000001')!,
     )
+    vi.mocked(getOccupationCapacity).mockResolvedValue(capacityPayload())
     vi.mocked(getLatestBlueprintByOccupation).mockRejectedValue(
       new BaselineBlueprintApiError(404, 'NOT_FOUND', 'No blueprint'),
     )
@@ -102,9 +106,9 @@ describe('BaselineBlueprintPage', () => {
       roles: expect.arrayContaining([
         expect.objectContaining({
           roleId: '20000000-0000-0000-0000-000000000001',
-          easyScoreWeight: 0.4,
+          easyScoreWeight: 0.2,
           mediumScoreWeight: 0.3,
-          hardScoreWeight: 0.3,
+          hardScoreWeight: 0.5,
         }),
         expect.objectContaining({
           roleId: '20000000-0000-0000-0000-000000000002',
@@ -162,6 +166,29 @@ describe('BaselineBlueprintPage', () => {
     expect(generateAssessment).not.toHaveBeenCalled()
   })
 
+  it('keeps the unsaved draft while capacity loading is retried', async () => {
+    const user = userEvent.setup()
+    vi.mocked(getOccupationCapacity)
+      .mockRejectedValueOnce(new Error('capacity offline'))
+      .mockResolvedValueOnce(capacityPayload())
+
+    renderPage()
+
+    expect(await screen.findByRole('button', { name: 'Retry capacity' })).toBeTruthy()
+    const name = screen.getByLabelText('Blueprint name')
+    await user.clear(name)
+    await user.type(name, 'Draft retained across retry')
+    expect((screen.getByRole('button', { name: 'Save blueprint' }) as HTMLButtonElement).disabled)
+      .toBe(true)
+
+    await user.click(screen.getByRole('button', { name: 'Retry capacity' }))
+
+    expect(await screen.findByText('Question capacity loaded')).toBeTruthy()
+    expect((screen.getByLabelText('Blueprint name') as HTMLInputElement).value)
+      .toBe('Draft retained across retry')
+    expect(getOccupationCapacity).toHaveBeenCalledTimes(2)
+  })
+
   it('shows every Occupation role without include checkboxes and marks zero roles excluded', async () => {
     renderPage()
 
@@ -180,39 +207,40 @@ describe('BaselineBlueprintPage', () => {
     const role = roleContainer('Java Backend Developer P3')
     const totalInput = within(role).getByLabelText('Total questions for this role')
     await user.clear(totalInput)
-    await user.type(totalInput, '7')
+    await user.type(totalInput, '17')
     expect(within(role).getByText('0 questions · not included')).toBeTruthy()
 
     await user.click(within(role).getByRole('button', { name: 'Apply and distribute' }))
-    expect(within(role).getByText('7 questions')).toBeTruthy()
+    expect(within(role).getByText('17 questions')).toBeTruthy()
 
     const javaCore = within(role).getByText('Java Core').closest('details')!
     const springBoot = within(role).getByText('Spring Boot').closest('details')!
     await user.click(within(javaCore).getByText('Java Core'))
     await user.click(within(springBoot).getByText('Spring Boot'))
-    const springBefore = ['Easy', 'Medium', 'Hard'].map((difficulty) =>
-      (within(springBoot).getByLabelText(`${difficulty} questions`) as HTMLInputElement).value)
+    const springBefore = within(springBoot).getAllByRole('spinbutton')
+      .map((input) => (input as HTMLInputElement).value)
 
-    const javaEasy = within(javaCore).getByLabelText('Easy questions')
+    const javaEasy = within(javaCore).getAllByRole('spinbutton')[0]
     await user.clear(javaEasy)
-    await user.type(javaEasy, '2')
-    expect(within(role).getByText('8 questions')).toBeTruthy()
-    expect(['Easy', 'Medium', 'Hard'].map((difficulty) =>
-      (within(springBoot).getByLabelText(`${difficulty} questions`) as HTMLInputElement).value))
+    await user.type(javaEasy, '3')
+    await user.tab()
+    expect(within(role).getByText('18 questions')).toBeTruthy()
+    expect(within(springBoot).getAllByRole('spinbutton')
+      .map((input) => (input as HTMLInputElement).value))
       .toEqual(springBefore)
 
     await user.clear(totalInput)
     await user.type(totalInput, '0')
     await user.click(within(role).getByRole('button', { name: 'Apply and distribute' }))
     expect(within(role).getByText('0 questions · not included')).toBeTruthy()
-    expect((within(javaCore).getByLabelText('Easy questions') as HTMLInputElement).value).toBe('0')
+    expect((within(javaCore).getAllByRole('spinbutton')[0] as HTMLInputElement).value).toBe('0')
     for (const difficulty of ['Easy', 'Medium', 'Hard']) {
       expect((within(role).getByLabelText(`${difficulty} score weight (%)`) as HTMLInputElement).value)
         .toBe('0')
     }
   })
 
-  it('loads decimal weights as percentages', async () => {
+  it('loads valid decimal weights as percentages', async () => {
     const saved = blueprintPayload()
     vi.mocked(getLatestBlueprintByOccupation).mockResolvedValue(saved)
 
@@ -221,7 +249,7 @@ describe('BaselineBlueprintPage', () => {
     await screen.findByText('Java Backend Developer P3')
     const role = roleContainer('Java Backend Developer P3')
     expect((within(role).getByLabelText('Easy score weight (%)') as HTMLInputElement).value)
-      .toBe('40')
+      .toBe('20')
   })
 
   it('switches English and Vietnamese without losing unsaved form state or reloading catalog', async () => {
@@ -274,13 +302,8 @@ async function configureFirstSkill(user: ReturnType<typeof userEvent.setup>) {
   const role = roleContainer('Java Backend Developer P3')
   const total = within(role).getByLabelText('Total questions for this role')
   await user.clear(total)
-  await user.type(total, '3')
+  await user.type(total, '15')
   await user.click(within(role).getByRole('button', { name: 'Apply and distribute' }))
-  for (const [difficulty, weight] of [['Easy', '40'], ['Medium', '30'], ['Hard', '30']]) {
-    const input = within(role).getByLabelText(`${difficulty} score weight (%)`)
-    await user.clear(input)
-    await user.type(input, weight)
-  }
 }
 
 function renderPage() {
@@ -302,15 +325,15 @@ function blueprintPayload(): BaselineBlueprint {
   const roles = developmentBaselineRoles().map((role, roleIndex) => ({
     ...role,
     enabled: roleIndex === 0,
-    totalQuestionCount: roleIndex === 0 ? 3 : 0,
-    easyScoreWeight: roleIndex === 0 ? 0.4 : 0.3334,
+    totalQuestionCount: roleIndex === 0 ? role.skills.length * 3 : 0,
+    easyScoreWeight: roleIndex === 0 ? 0.2 : 0.3334,
     mediumScoreWeight: roleIndex === 0 ? 0.3 : 0.3333,
-    hardScoreWeight: roleIndex === 0 ? 0.3 : 0.3333,
-    skills: role.skills.map((skill, skillIndex) => ({
+    hardScoreWeight: roleIndex === 0 ? 0.5 : 0.3333,
+    skills: role.skills.map((skill) => ({
       ...skill,
-      easyQuestionCount: roleIndex === 0 && skillIndex === 0 ? 1 : 0,
-      mediumQuestionCount: roleIndex === 0 && skillIndex === 0 ? 1 : 0,
-      hardQuestionCount: roleIndex === 0 && skillIndex === 0 ? 1 : 0,
+      easyQuestionCount: roleIndex === 0 ? 1 : 0,
+      mediumQuestionCount: roleIndex === 0 ? 1 : 0,
+      hardQuestionCount: roleIndex === 0 ? 1 : 0,
     })),
   }))
   return {
@@ -321,6 +344,24 @@ function blueprintPayload(): BaselineBlueprint {
     occupationNameSnapshot: 'Software Engineering',
     createdAt: '2026-10-14T15:00:00Z',
     roles,
+  }
+}
+
+function capacityPayload(): BlueprintCapacity {
+  const occupation = developmentBaselineOccupation('10000000-0000-0000-0000-000000000001')!
+  return {
+    occupationId: occupation.id,
+    catalogVersion: occupation.catalogVersion,
+    coverageAsOf: '2026-10-16T08:00:00Z',
+    roles: occupation.roles.map((role) => ({
+      roleId: role.id,
+      skills: role.skills.map((skill) => ({
+        microSkillId: skill.id,
+        availableEasy: 10,
+        availableMedium: 10,
+        availableHard: 10,
+      })),
+    })),
   }
 }
 

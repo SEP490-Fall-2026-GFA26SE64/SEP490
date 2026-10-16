@@ -4,6 +4,7 @@ import {
   generateAssessment,
   getLatestBlueprintByOccupation,
   getOccupation,
+  getOccupationCapacity,
   listOccupations,
   publishAssessment,
   reviewAssessment,
@@ -19,9 +20,9 @@ const DRAFT: BlueprintDraft = {
     roleId: 'role-java',
     roleNameSnapshot: 'Java Backend Engineer',
     enabled: true,
-    easyScoreWeight: 0.3,
-    mediumScoreWeight: 0.4,
-    hardScoreWeight: 0.3,
+    easyScoreWeight: 0.2,
+    mediumScoreWeight: 0.3,
+    hardScoreWeight: 0.5,
     skills: [{
       microSkillId: 'skill-java',
       microSkillNameSnapshot: 'Java Core',
@@ -87,6 +88,54 @@ describe('baselineBlueprintApi', () => {
       '/api/v1/ld/baseline-blueprint-catalog/occupations/occupation-engineering',
       '/api/v1/ld/baseline-blueprints/occupations/occupation-engineering',
     ])
+  })
+
+  it('loads and validates the published capacity snapshot', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(response({
+      occupationId: 'occupation-engineering',
+      catalogVersion: 'v1',
+      coverageAsOf: '2026-10-16T08:00:00Z',
+      roles: [{
+        roleId: 'role-java',
+        skills: [{
+          microSkillId: 'skill-java',
+          availableEasy: 10,
+          availableMedium: 9,
+          availableHard: 8,
+        }],
+      }],
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(getOccupationCapacity('occupation/engineering')).resolves.toEqual(
+      expect.objectContaining({
+        catalogVersion: 'v1',
+        roles: [expect.objectContaining({ roleId: 'role-java' })],
+      }),
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/ld/baseline-blueprint-catalog/occupations/occupation%2Fengineering/capacity',
+      expect.objectContaining({ method: 'GET', credentials: 'same-origin' }),
+    )
+  })
+
+  it('rejects malformed capacity instead of hiding stale or impossible limits', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({
+      occupationId: 'occupation-engineering', catalogVersion: 'v1',
+      coverageAsOf: 'not-an-instant', roles: [],
+    })))
+    await expect(getOccupationCapacity('occupation-engineering'))
+      .rejects.toThrow('Invalid coverageAsOf')
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({
+      occupationId: 'occupation-engineering', catalogVersion: 'v1',
+      coverageAsOf: '2026-10-16T08:00:00Z',
+      roles: [{ roleId: 'role-java', skills: [{
+        microSkillId: 'skill-java', availableEasy: -1, availableMedium: 1, availableHard: 1,
+      }] }],
+    })))
+    await expect(getOccupationCapacity('occupation-engineering'))
+      .rejects.toThrow('Invalid skill.availableEasy')
   })
 
   it('preserves structured coverage shortages from API errors', async () => {

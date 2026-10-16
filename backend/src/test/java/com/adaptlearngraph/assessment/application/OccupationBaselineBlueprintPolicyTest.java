@@ -104,10 +104,9 @@ class OccupationBaselineBlueprintPolicyTest {
 
     private static RoleConfig role(String roleId, int easy) {
         return new RoleConfig(roleId, "Client role", true,
-                easy > 0 ? BigDecimal.ONE : new BigDecimal("0.3"),
-                easy > 0 ? BigDecimal.ZERO : new BigDecimal("0.4"),
-                easy > 0 ? BigDecimal.ZERO : new BigDecimal("0.3"),
-                List.of(new SkillConfig(SHARED_SKILL, "Client skill", easy, 0, 0)));
+                new BigDecimal("0.2"), new BigDecimal("0.3"), new BigDecimal("0.5"),
+                List.of(new SkillConfig(
+                        SHARED_SKILL, "Client skill", easy, easy > 0 ? 1 : 0, easy > 0 ? 1 : 0)));
     }
 
     private static void assertCode(Code code, Runnable call) {
@@ -177,7 +176,10 @@ class OccupationBaselineBlueprintPolicyTest {
 
         @Override
         public Map<CoverageKey, Integer> findPublishedCoverage(Set<String> skillIds) {
-            return Map.of(new CoverageKey(SHARED_SKILL, Difficulty.EASY), available);
+            return Map.of(
+                    new CoverageKey(SHARED_SKILL, Difficulty.EASY), available,
+                    new CoverageKey(SHARED_SKILL, Difficulty.MEDIUM), 20,
+                    new CoverageKey(SHARED_SKILL, Difficulty.HARD), 20);
         }
 
         private static CatalogRole catalogRole(String id, String name) {
