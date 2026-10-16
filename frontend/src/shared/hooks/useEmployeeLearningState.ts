@@ -31,6 +31,13 @@ export interface HistoricalTargetRole {
   description: string
 }
 
+export interface TrackedSkillItem {
+  skillName: string
+  macroCode?: string | null
+  level?: string | null
+  assignedAt?: string | null
+}
+
 export interface LearnerLearningProfile {
   learnerId: string
   learnerName: string
@@ -41,6 +48,7 @@ export interface LearnerLearningProfile {
   targetSkillMacroCode?: string | null
   targetSkillLevel?: string | null
   targetSkillAssignedAt?: string | null
+  trackedSkills?: TrackedSkillItem[]
   deadline: string | null
   assignedByManager: string | null
   assignedAt: string | null
@@ -75,6 +83,14 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   targetSkillMacroCode: 'GEN_AI',
   targetSkillLevel: 'Advanced',
   targetSkillAssignedAt: '2026-09-25',
+  trackedSkills: [
+    {
+      skillName: 'Google Gemini & LLM Orchestration',
+      macroCode: 'GEN_AI',
+      level: 'Advanced',
+      assignedAt: '2026-09-25',
+    },
+  ],
   deadline: '2026-12-31',
   assignedByManager: 'Self-Selected (Learner)',
   assignedAt: '2026-09-21 09:30',
@@ -148,6 +164,7 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
     targetSkillMacroCode: null,
     targetSkillLevel: null,
     targetSkillAssignedAt: null,
+    trackedSkills: [],
     deadline: targetRole ? '2026-12-31' : null,
     assignedByManager: 'Self-Selected (Learner)',
     assignedAt: new Date().toISOString().slice(0, 10),
@@ -486,32 +503,76 @@ export function useEmployeeLearningState() {
     [profile, saveProfile]
   )
 
-  const selectTargetSkill = React.useCallback(
-    (skillName: string, macroCode?: string, level = 'Intermediate') => {
-      let updatedPrevious = profile.previousSkills || []
-      if (profile.targetSkill && profile.targetSkill !== skillName) {
-        const archiveEntry: HistoricalSkill = {
-          skillKey: `superseded-skill-${Date.now()}`,
+  const getTrackedSkills = React.useCallback((): TrackedSkillItem[] => {
+    if (profile.trackedSkills && profile.trackedSkills.length > 0) {
+      return profile.trackedSkills
+    }
+    if (profile.targetSkill) {
+      return [
+        {
           skillName: profile.targetSkill,
-          macroCode: profile.targetSkillMacroCode || undefined,
-          completedAt: new Date().toISOString().split('T')[0],
-          masteryScore: 88,
-          status: 'superseded',
-        }
-        updatedPrevious = [archiveEntry, ...updatedPrevious]
+          macroCode: profile.targetSkillMacroCode || null,
+          level: profile.targetSkillLevel || 'Intermediate',
+          assignedAt: profile.targetSkillAssignedAt || new Date().toISOString().split('T')[0],
+        },
+      ]
+    }
+    return []
+  }, [profile])
+
+  const trackedSkills = getTrackedSkills()
+
+  const isSkillTracked = React.useCallback(
+    (skillName: string): boolean => {
+      return getTrackedSkills().some(
+        (s) => s.skillName.toLowerCase() === skillName.toLowerCase()
+      )
+    },
+    [getTrackedSkills]
+  )
+
+  const trackSkill = React.useCallback(
+    (skillName: string, macroCode?: string, level = 'Intermediate') => {
+      const currentList = getTrackedSkills()
+      if (currentList.some((s) => s.skillName.toLowerCase() === skillName.toLowerCase())) {
+        return
       }
+      const newItem: TrackedSkillItem = {
+        skillName,
+        macroCode: macroCode || null,
+        level,
+        assignedAt: new Date().toISOString().split('T')[0],
+      }
+      const updatedList = [newItem, ...currentList]
       saveProfile({
         ...profile,
         targetSkill: skillName,
         targetSkillMacroCode: macroCode || null,
         targetSkillLevel: level,
-        targetSkillAssignedAt: new Date().toISOString().split('T')[0],
-        selectedViewSkillKey: 'active',
-        selectedViewType: 'skill',
-        previousSkills: updatedPrevious,
+        targetSkillAssignedAt: newItem.assignedAt,
+        trackedSkills: updatedList,
       })
     },
-    [profile, saveProfile]
+    [profile, getTrackedSkills, saveProfile]
+  )
+
+  const untrackSkill = React.useCallback(
+    (skillName: string) => {
+      const currentList = getTrackedSkills()
+      const updatedList = currentList.filter(
+        (s) => s.skillName.toLowerCase() !== skillName.toLowerCase()
+      )
+      const nextActive = updatedList[0]
+      saveProfile({
+        ...profile,
+        targetSkill: nextActive ? nextActive.skillName : null,
+        targetSkillMacroCode: nextActive ? nextActive.macroCode : null,
+        targetSkillLevel: nextActive ? nextActive.level : null,
+        targetSkillAssignedAt: nextActive ? nextActive.assignedAt : null,
+        trackedSkills: updatedList,
+      })
+    },
+    [profile, getTrackedSkills, saveProfile]
   )
 
   const clearTargetSkill = React.useCallback(() => {
@@ -521,9 +582,17 @@ export function useEmployeeLearningState() {
       targetSkillMacroCode: null,
       targetSkillLevel: null,
       targetSkillAssignedAt: null,
+      trackedSkills: [],
       selectedViewSkillKey: 'active',
     })
   }, [profile, saveProfile])
+
+  const selectTargetSkill = React.useCallback(
+    (skillName: string, macroCode?: string, level = 'Intermediate') => {
+      trackSkill(skillName, macroCode, level)
+    },
+    [trackSkill]
+  )
 
   const clearNotifications = React.useCallback(() => {
     saveNotifications([])
@@ -531,6 +600,11 @@ export function useEmployeeLearningState() {
 
   return {
     profile,
+    trackedSkills,
+    isSkillTracked,
+    trackSkill,
+    untrackSkill,
+    clearTrackedSkills: clearTargetSkill,
     isViewingActiveRole,
     isLearningLocked,
     unreadNotificationCount,

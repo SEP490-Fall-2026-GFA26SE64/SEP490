@@ -4,7 +4,7 @@ import * as React from 'react'
 import { cn } from '../../lib/utils'
 
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer',
+  'inline-flex items-center justify-center rounded-md text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer',
   {
     variants: {
       variant: {
@@ -48,13 +48,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+          <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" aria-hidden="true" />
         ) : leftIcon ? (
-          <span className="mr-2 inline-flex shrink-0">{leftIcon}</span>
+          <span className="mr-1.5 inline-flex shrink-0 items-center">{leftIcon}</span>
         ) : null}
-        <span>{children}</span>
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">{children}</span>
         {!isLoading && rightIcon ? (
-          <span className="ml-2 inline-flex shrink-0">{rightIcon}</span>
+          <span className="ml-1.5 inline-flex shrink-0 items-center">{rightIcon}</span>
         ) : null}
       </button>
     )

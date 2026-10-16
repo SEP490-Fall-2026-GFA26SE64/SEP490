@@ -99,12 +99,12 @@ export function GlobalSearchbar({ className }: { className?: string }) {
 
   const handleSelectRole = (role: TargetRoleSummary) => {
     setIsOpen(false)
-    navigate(`/employee/target-roles?tab=roles&search=${encodeURIComponent(role.name)}`)
+    navigate(`/employee/upskilling?tab=roles&search=${encodeURIComponent(role.name)}`)
   }
 
   const handleSelectSkill = (skill: MicroSkillDto) => {
     setIsOpen(false)
-    navigate(`/employee/target-roles?tab=skills&search=${encodeURIComponent(skill.name)}`)
+    navigate(`/employee/upskilling?tab=skills&search=${encodeURIComponent(skill.name)}`)
   }
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -113,11 +113,11 @@ export function GlobalSearchbar({ className }: { className?: string }) {
     setIsOpen(false)
     // If top match is a role and query strongly matches, navigate to roles, else generic
     if (matchingRoles.length > 0 && matchingSkills.length === 0) {
-      navigate(`/employee/target-roles?tab=roles&search=${encodeURIComponent(query.trim())}`)
+      navigate(`/employee/upskilling?tab=roles&search=${encodeURIComponent(query.trim())}`)
     } else if (matchingSkills.length > 0 && matchingRoles.length === 0) {
-      navigate(`/employee/target-roles?tab=skills&search=${encodeURIComponent(query.trim())}`)
+      navigate(`/employee/upskilling?tab=skills&search=${encodeURIComponent(query.trim())}`)
     } else {
-      navigate(`/employee/target-roles?search=${encodeURIComponent(query.trim())}`)
+      navigate(`/employee/upskilling?search=${encodeURIComponent(query.trim())}`)
     }
   }
 
@@ -132,7 +132,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
   return (
     <div ref={containerRef} className={cn('relative w-full max-w-xl mx-auto', className)}>
       <form onSubmit={handleSubmit} className="relative flex items-center">
-        <div className="relative flex items-center w-full rounded-full border border-border bg-card shadow-2xs hover:border-primary/40 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+        <div className="relative flex items-center w-full rounded-full border border-border bg-muted/40 hover:bg-card focus-within:bg-card shadow-2xs hover:border-primary/40 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
           <input
             ref={inputRef}
             type="search"

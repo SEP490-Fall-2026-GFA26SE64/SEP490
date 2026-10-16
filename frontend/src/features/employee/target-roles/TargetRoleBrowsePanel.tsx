@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertCircle, Award, ChevronDown, Compass, RefreshCw, Search, Target, X } from 'lucide-react'
+import { AlertCircle, ArrowRight, Award, ChevronDown, RefreshCw, Search, Sparkles, Target, X } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
@@ -19,6 +19,7 @@ import {
   type PendingTargetRoleChoice,
   type TargetRoleChoice,
 } from './TargetRoleSelectionDialog'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import type { Seniority, TargetRoleSummary } from './targetRoleTypes'
 
 const SENIORITY_OPTIONS: Seniority[] = ['P1', 'P2', 'P3', 'P4', 'P5', 'M3', 'M4']
@@ -63,14 +64,17 @@ export function TargetRoleBrowsePanel() {
     return () => window.clearTimeout(timeout)
   }, [searchInput])
 
+  const [statusFilter, setStatusFilter] = React.useState<'All' | 'Active' | 'Done'>('All')
+
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [seniority])
+  }, [seniority, statusFilter])
 
   const roles = useTargetRoles({ search, seniority })
   const selection = useTargetRoleSelection()
   const chooseRole = useChooseTargetRoleMutation()
-  const hasFilters = search.length > 0 || seniority !== null
+  const { selectTargetRole, profile } = useEmployeeLearningState()
+  const hasFilters = search.length > 0 || seniority !== null || statusFilter !== 'All'
   const showToolbarClear = hasFilters
     && (roles.isPending || roles.isError || (roles.data?.length ?? 0) > 0)
 
@@ -78,10 +82,11 @@ export function TargetRoleBrowsePanel() {
     setSearchInput('')
     setSearch('')
     setSeniority(null)
+    setStatusFilter('All')
     setCurrentPage(1)
   }
 
-  const deduplicatedRoles = React.useMemo(() => {
+  const filteredRoles = React.useMemo(() => {
     if (!roles.data) return []
     const map = new Map<string, TargetRoleSummary>()
     for (const r of roles.data) {
@@ -90,10 +95,27 @@ export function TargetRoleBrowsePanel() {
         map.set(key, r)
       }
     }
-    return Array.from(map.values())
-  }, [roles.data])
+    const deduplicated = Array.from(map.values())
+    if (statusFilter === 'All') return deduplicated
 
-  const totalItems = deduplicatedRoles.length
+    return deduplicated.filter((role) => {
+      const isActive = selection.data?.roleId === role.id ||
+        (profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
+      if (statusFilter === 'Active') return isActive
+      if (statusFilter === 'Done') {
+        const prevRoles = profile?.previousRoles || []
+        return prevRoles.some(
+          (pr) =>
+            pr.status === 'completed' &&
+            (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
+             (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
+        )
+      }
+      return true
+    })
+  }, [roles.data, statusFilter, selection.data?.roleId, profile?.targetRole, profile?.previousRoles])
+
+  const totalItems = filteredRoles.length
   const totalPages = Math.ceil(totalItems / PAGE_SIZE)
 
   React.useEffect(() => {
@@ -104,8 +126,8 @@ export function TargetRoleBrowsePanel() {
 
   const paginatedRoles = React.useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
-    return deduplicatedRoles.slice(start, start + PAGE_SIZE)
-  }, [deduplicatedRoles, currentPage])
+    return filteredRoles.slice(start, start + PAGE_SIZE)
+  }, [filteredRoles, currentPage])
 
   const catalogRef = React.useRef<HTMLElement | null>(null)
 
@@ -139,8 +161,16 @@ export function TargetRoleBrowsePanel() {
   const confirmSelection = () => {
     if (!pendingChoice || submissionInFlightRef.current || chooseRole.isPending) return
     submissionInFlightRef.current = true
+    const chosenRole = pendingChoice.role
     chooseRole.mutate(pendingChoice.command, {
       onSuccess: () => {
+        selectTargetRole(
+          chosenRole.name,
+          chosenRole.code,
+          '2026-12-31',
+          85,
+          'Selected from catalog'
+        )
         pendingChoiceRef.current = null
         setPendingChoice(null)
       },
@@ -158,21 +188,21 @@ export function TargetRoleBrowsePanel() {
 
   return (
     <section ref={catalogRef} className="space-y-4" aria-labelledby="target-role-catalog-heading">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 id="target-role-catalog-heading" className="flex items-center gap-2 text-base font-bold text-foreground">
-            <Compass size={18} className="text-primary" />
-            Explore Target Roles
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Browse active roles and their required competency count for your organization.
-          </p>
+      {/* Subtle compact link to dedicated AI Role Guidance tab */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-border bg-card/60 text-xs">
+        <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+          <Sparkles size={14} className="text-primary shrink-0" />
+          <span className="truncate">
+            Looking for AI career direction? Get recommendations based on your occupation baseline &amp; RIASEC profile.
+          </span>
         </div>
-        {!roles.isPending && !roles.isError && (
-          <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
-            {deduplicatedRoles.length} Roles in Catalog
-          </Badge>
-        )}
+        <a
+          href="/employee/guidance"
+          className="text-primary hover:text-primary-hover font-semibold shrink-0 flex items-center gap-1 hover:underline"
+        >
+          <span>Open AI Role Guidance</span>
+          <ArrowRight size={13} />
+        </a>
       </div>
 
       <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xs md:flex-row md:items-center">
@@ -202,6 +232,33 @@ export function TargetRoleBrowsePanel() {
 
         {/* Filter Controls Group */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Status Filter Pill */}
+          <div
+            className={cn(
+              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none shrink-0",
+              statusFilter !== 'All'
+                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-border bg-background hover:bg-muted/60 text-foreground"
+            )}
+          >
+            <Target size={13} className={statusFilter !== 'All' ? 'text-primary' : 'text-muted-foreground'} />
+            <span className="text-muted-foreground font-normal">Status:</span>
+            <span className="font-semibold text-foreground">
+              {statusFilter === 'All' ? 'All' : statusFilter}
+            </span>
+            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
+            <select
+              aria-label="Filter by status"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as 'All' | 'Active' | 'Done')}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            >
+              <option value="All" className="bg-card text-foreground">All</option>
+              <option value="Active" className="bg-card text-foreground">Active</option>
+              <option value="Done" className="bg-card text-foreground">Done</option>
+            </select>
+          </div>
+
           {/* Seniority Filter Pill */}
           <div
             className={cn(
@@ -243,6 +300,41 @@ export function TargetRoleBrowsePanel() {
         </div>
       </div>
 
+      {/* Expert-Reviewed AI Role Guidance Banner (Section 4.4) */}
+      <div className="p-4 rounded-xl border border-primary/20 bg-secondary/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Expert-Reviewed AI Role Guidance
+              </span>
+              <Badge variant="success" className="text-[10px] py-0 px-1.5 font-semibold">
+                Confirmed by Dr. Sarah Chen
+              </Badge>
+            </div>
+            <p className="text-xs text-foreground mt-0.5">
+              Based on your <strong>Baseline Diagnostic (92%)</strong> and <strong>Investigative RIASEC Profile</strong>, the recommended target role is <strong>AI Knowledge Architect</strong>.
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="primary"
+          className="text-xs font-semibold shadow-2xs shrink-0 whitespace-nowrap self-start sm:self-center"
+          onClick={() => {
+            const match = roles.data?.find((r) => r.code === 'TR-001' || r.name.includes('AI Knowledge Architect')) || roles.data?.[0]
+            if (match) {
+              openConfirmation(match)
+            }
+          }}
+        >
+          Select Recommended Role
+        </Button>
+      </div>
+
       {roles.isPending ? (
         <div role="status" className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           Loading target roles...
@@ -266,7 +358,7 @@ export function TargetRoleBrowsePanel() {
             Retry
           </Button>
         </div>
-      ) : roles.data.length === 0 ? (
+      ) : filteredRoles.length === 0 ? (
         <EmptyState
           icon={<Target size={28} className="text-primary" />}
           title={hasFilters ? 'No matching roles' : 'No target roles available'}
@@ -279,7 +371,14 @@ export function TargetRoleBrowsePanel() {
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {paginatedRoles.map((role) => {
-              const isActive = selection.data?.roleId === role.id
+              const isActive = selection.data?.roleId === role.id ||
+                (profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
+              const isDone = (profile?.previousRoles || []).some(
+                (pr) =>
+                  pr.status === 'completed' &&
+                  (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
+                   (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
+              )
               return (
                 <Card
                   key={role.id}
@@ -297,8 +396,13 @@ export function TargetRoleBrowsePanel() {
                       </Badge>
                       <div className="flex items-center gap-1.5">
                         {isActive && (
-                          <Badge variant="success" className="text-[10px]">
+                          <Badge variant="success" className="text-[10px] whitespace-nowrap">
                             Active role
+                          </Badge>
+                        )}
+                        {isDone && !isActive && (
+                          <Badge variant="outline" className="text-[10px] whitespace-nowrap text-muted-foreground border-border">
+                            Done
                           </Badge>
                         )}
                         <span

@@ -2,12 +2,12 @@ import * as React from 'react'
 import {
   BarChart2,
   Check,
+  CheckCircle2,
   ChevronDown,
   Clock,
   RefreshCw,
   Search,
   SlidersHorizontal,
-  Sparkles,
   TrendingUp,
   X,
 } from 'lucide-react'
@@ -31,6 +31,7 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
+import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { getActiveCompanyId } from '../../../shared/stores/companyStore'
 
 interface EnrichedSkill extends MicroSkillDto {
@@ -90,7 +91,7 @@ function getSearchFromLocation(): string {
 }
 
 export function UpskillSkillsPanel() {
-  const { profile, selectTargetSkill, clearTargetSkill } = useEmployeeLearningState()
+  const { profile, isSkillTracked, trackSkill, untrackSkill } = useEmployeeLearningState()
   const [macroCompetencies, setMacroCompetencies] = React.useState<MacroCompetencyDto[]>([])
   const [skills, setSkills] = React.useState<EnrichedSkill[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
@@ -102,7 +103,22 @@ export function UpskillSkillsPanel() {
   const [selectedTopic, setSelectedTopic] = React.useState<string>('All')
   const [selectedLevel, setSelectedLevel] = React.useState<string>('All')
   const [selectedDuration, setSelectedDuration] = React.useState<string>('All Durations')
+  const [selectedStatus, setSelectedStatus] = React.useState<'All' | 'Active' | 'Done'>('All')
   const [currentPage, setCurrentPage] = React.useState(1)
+
+  const isSkillDone = React.useCallback(
+    (skill: EnrichedSkill) => {
+      const prevSkills = profile?.previousSkills || []
+      return prevSkills.some(
+        (ps) =>
+          (ps.status === 'completed' || ps.masteryScore >= 85) &&
+          (ps.skillName.toLowerCase() === skill.name.toLowerCase() ||
+            (skill.code && ps.skillKey.toLowerCase() === skill.code.toLowerCase()) ||
+            ps.skillKey.toLowerCase() === skill.name.toLowerCase())
+      )
+    },
+    [profile?.previousSkills]
+  )
 
   React.useEffect(() => {
     const handleLocationChange = () => {
@@ -115,7 +131,7 @@ export function UpskillSkillsPanel() {
 
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedTopic, selectedLevel, selectedDuration])
+  }, [searchQuery, selectedTopic, selectedLevel, selectedDuration, selectedStatus])
   
   // Topic Modal state
   const [isTopicModalOpen, setIsTopicModalOpen] = React.useState(false)
@@ -123,6 +139,8 @@ export function UpskillSkillsPanel() {
 
   // Detail Modal state
   const [detailSkill, setDetailSkill] = React.useState<EnrichedSkill | null>(null)
+  // Untrack confirmation state
+  const [skillToUntrack, setSkillToUntrack] = React.useState<string | null>(null)
 
   const loadData = React.useCallback(async () => {
     setIsLoading(true)
@@ -179,6 +197,13 @@ export function UpskillSkillsPanel() {
   // Filter skills
   const filteredSkills = React.useMemo(() => {
     return skills.filter((item) => {
+      // Status match (Active, Done)
+      if (selectedStatus === 'Active') {
+        if (!isSkillTracked(item.name)) return false
+      } else if (selectedStatus === 'Done') {
+        if (!isSkillDone(item)) return false
+      }
+
       // Topic match
       if (selectedTopic !== 'All') {
         const matchesTopic =
@@ -209,25 +234,23 @@ export function UpskillSkillsPanel() {
 
       return true
     })
-  }, [skills, selectedTopic, selectedLevel, selectedDuration, searchQuery])
+  }, [skills, selectedStatus, selectedTopic, selectedLevel, selectedDuration, searchQuery, isSkillTracked, isSkillDone])
 
   const hasFilters =
     searchQuery.trim().length > 0 ||
     selectedTopic !== 'All' ||
     selectedLevel !== 'All' ||
-    selectedDuration !== 'All Durations'
+    selectedDuration !== 'All Durations' ||
+    selectedStatus !== 'All'
 
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedTopic('All')
     setSelectedLevel('All')
     setSelectedDuration('All Durations')
+    setSelectedStatus('All')
     setCurrentPage(1)
   }
-
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, selectedTopic, selectedLevel, selectedDuration])
 
   const totalItems = filteredSkills.length
   const totalPages = Math.ceil(totalItems / PAGE_SIZE)
@@ -262,24 +285,6 @@ export function UpskillSkillsPanel() {
 
   return (
     <section ref={catalogRef} className="space-y-4" aria-labelledby="skills-catalog-heading">
-      {/* Header Row matching Roles tab structure */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 id="skills-catalog-heading" className="flex items-center gap-2 text-base font-bold text-foreground">
-            <Sparkles size={18} className="text-primary" />
-            Explore Skills
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Browse verified micro-skills and competency requirements for your organization.
-          </p>
-        </div>
-        {!isLoading && !isError && (
-          <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
-            {filteredSkills.length} Skills Available
-          </Badge>
-        )}
-      </div>
-
       {/* Unified Search & Filter Toolbar matching Roles tab layout */}
       <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xs md:flex-row md:items-center">
         {/* Search Input */}
@@ -308,6 +313,33 @@ export function UpskillSkillsPanel() {
 
         {/* Filter Controls Group */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Status Filter Dropdown Pill */}
+          <div
+            className={cn(
+              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none",
+              selectedStatus !== 'All'
+                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-border bg-background hover:bg-muted/60 text-foreground"
+            )}
+          >
+            <CheckCircle2 size={13} className={selectedStatus !== 'All' ? 'text-primary' : 'text-muted-foreground'} />
+            <span className="text-muted-foreground font-normal">Status:</span>
+            <span className="font-semibold text-foreground">
+              {selectedStatus === 'All' ? 'All' : selectedStatus}
+            </span>
+            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
+            <select
+              aria-label="Filter by status"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as 'All' | 'Active' | 'Done')}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            >
+              <option value="All" className="bg-card text-foreground">All</option>
+              <option value="Active" className="bg-card text-foreground">Active</option>
+              <option value="Done" className="bg-card text-foreground">Done</option>
+            </select>
+          </div>
+
           {/* Topic Modal Trigger Button */}
           <button
             type="button"
@@ -428,75 +460,101 @@ export function UpskillSkillsPanel() {
       ) : (
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {paginatedSkills.map((skill) => (
-              <Card
-                key={skill.id}
-                className="flex flex-col justify-between hover:shadow-md transition-all duration-150 border-border bg-card group"
-              >
-                <div className="p-5 space-y-2.5">
-                  {/* Badges: Competency Domain & Level */}
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="secondary" className="text-[11px] font-semibold text-primary truncate max-w-[170px]">
-                      {skill.macroName}
-                    </Badge>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        skill.level === 'Beginner'
-                          ? 'bg-success/10 text-success'
-                          : skill.level === 'Intermediate'
-                          ? 'bg-warning/10 text-warning'
-                          : 'bg-primary/10 text-primary'
-                      }`}
-                    >
-                      {skill.level}
-                    </span>
-                  </div>
-
-                  {/* Skill Name (without code) */}
-                  <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-snug">
-                    {skill.name}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                    {skill.description || 'Verified organizational micro-skill for role capability enhancement.'}
-                  </p>
-                </div>
-
-                {/* Card Footer matching Roles cards */}
-                <div className="px-5 py-3 border-t border-border bg-muted/10 flex items-center justify-between gap-2 mt-auto">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                    <Clock size={13} className="text-muted-foreground" />
-                    <span>{skill.durationLabel}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-7.5 px-3"
-                      onClick={() => setDetailSkill(skill)}
-                    >
-                      View details
-                    </Button>
-                    {profile.targetSkill === skill.name ? (
-                      <Badge variant="success" className="gap-1 text-[11px] h-7.5 px-2.5 font-semibold">
-                        <Check size={12} strokeWidth={3} />
-                        Tracking
+            {paginatedSkills.map((skill) => {
+              const isTracked = isSkillTracked(skill.name)
+              const isDone = isSkillDone(skill)
+              return (
+                <Card
+                  key={skill.id}
+                  className={cn(
+                    "flex flex-col justify-between hover:shadow-md transition-all duration-150 border-border bg-card group",
+                    isTracked && "border-primary/50 ring-1 ring-primary/20"
+                  )}
+                >
+                  <div className="p-5 space-y-2.5">
+                    {/* Badges: Competency Domain & Level */}
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="secondary" className="text-[11px] font-semibold text-primary truncate max-w-[170px]">
+                        {skill.macroName}
                       </Badge>
-                    ) : (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="text-xs h-7.5 px-3 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                        onClick={() => selectTargetSkill(skill.name, skill.macroCompetencyCode, skill.level)}
-                      >
-                        Track
-                      </Button>
-                    )}
+                      <div className="flex items-center gap-1.5">
+                        {isTracked && (
+                          <Badge variant="success" className="text-[10px] whitespace-nowrap">
+                            Active skill
+                          </Badge>
+                        )}
+                        {isDone && !isTracked && (
+                          <Badge variant="outline" className="text-[10px] whitespace-nowrap text-muted-foreground border-border">
+                            Done
+                          </Badge>
+                        )}
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            skill.level === 'Beginner'
+                              ? 'bg-success/10 text-success'
+                              : skill.level === 'Intermediate'
+                              ? 'bg-warning/10 text-warning'
+                              : 'bg-primary/10 text-primary'
+                          }`}
+                        >
+                          {skill.level}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Skill Name (without code) */}
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-snug">
+                      {skill.name}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {skill.description || 'Verified organizational micro-skill for role capability enhancement.'}
+                    </p>
                   </div>
-                </div>
-              </Card>
-            ))}
+
+                  {/* Card Footer matching Roles cards */}
+                  <div className="px-5 py-3 border-t border-border bg-muted/10 flex items-center justify-between gap-2 mt-auto">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                      <Clock size={13} className="text-muted-foreground" />
+                      <span>{skill.durationLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7.5 px-3"
+                        onClick={() => setDetailSkill(skill)}
+                      >
+                        View details
+                      </Button>
+                      {isTracked ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="text-xs h-7.5 px-3 bg-success/10 text-success hover:bg-destructive/10 hover:text-destructive border border-success/30 hover:border-destructive/30 transition-all cursor-pointer group/btn"
+                          onClick={() => setSkillToUntrack(skill.name)}
+                          title="Click to untrack skill"
+                        >
+                          <Check size={12} strokeWidth={3} className="group-hover/btn:hidden" />
+                          <span className="group-hover/btn:hidden font-semibold">Active</span>
+                          <span className="hidden group-hover/btn:inline font-semibold">Untrack</span>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="text-xs h-7.5 px-3 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                          onClick={() => trackSkill(skill.name, skill.macroCompetencyCode, skill.level)}
+                        >
+                          Choose
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
 
           {totalItems > 0 && (
@@ -651,15 +709,16 @@ export function UpskillSkillsPanel() {
             <Button variant="outline" size="sm" onClick={() => setDetailSkill(null)}>
               Close
             </Button>
-            {profile.targetSkill === detailSkill.name ? (
+            {isSkillTracked(detailSkill.name) ? (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  clearTargetSkill()
+                  const name = detailSkill.name
                   setDetailSkill(null)
+                  setSkillToUntrack(name)
                 }}
-                className="text-destructive hover:bg-destructive/10 hover:border-destructive/30"
+                className="text-destructive hover:bg-destructive/10 hover:border-destructive/30 cursor-pointer"
               >
                 Untrack Skill
               </Button>
@@ -668,9 +727,10 @@ export function UpskillSkillsPanel() {
                 variant="primary"
                 size="sm"
                 onClick={() => {
-                  selectTargetSkill(detailSkill.name, detailSkill.macroCompetencyCode, detailSkill.level)
+                  trackSkill(detailSkill.name, detailSkill.macroCompetencyCode, detailSkill.level)
                   setDetailSkill(null)
                 }}
+                className="cursor-pointer"
               >
                 Track This Skill
               </Button>
@@ -678,6 +738,29 @@ export function UpskillSkillsPanel() {
           </DialogFooter>
         </Dialog>
       )}
+
+      {/* Confirmation Modal for Untrack */}
+      <ConfirmationModal
+        open={Boolean(skillToUntrack)}
+        onOpenChange={(open) => {
+          if (!open) setSkillToUntrack(null)
+        }}
+        title="Untrack Skill"
+        description={
+          <span>
+            Are you sure you want to stop tracking <strong className="text-foreground">{skillToUntrack}</strong>? You can re-track it at any time from the catalog.
+          </span>
+        }
+        confirmText="Untrack"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={() => {
+          if (skillToUntrack) {
+            untrackSkill(skillToUntrack)
+            setSkillToUntrack(null)
+          }
+        }}
+      />
     </section>
   )
 }

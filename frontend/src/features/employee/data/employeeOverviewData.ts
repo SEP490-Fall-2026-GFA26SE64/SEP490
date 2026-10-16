@@ -21,7 +21,7 @@ export interface RadarDimension {
   benchmarkRole: string
 }
 
-export type EvidenceType = 'assessment' | 'endorsement' | 'work_proof' | 'course'
+export type EvidenceType = 'assessment' | 'endorsement' | 'work_proof' | 'module'
 
 export interface EvidenceSource {
   id: string
@@ -187,7 +187,7 @@ export const COMPETENCY_SKILL_PROFILES: CompetencySkillProfile[] = [
       },
       {
         id: 'ev-5',
-        type: 'course',
+        type: 'module',
         title: 'MOD-102: Introduction to Employee State Estimation',
         providerOrIssuer: 'Adapt-Learn-Graph Academy',
         date: '2026-08-10',
@@ -259,7 +259,7 @@ export const COMPETENCY_SKILL_PROFILES: CompetencySkillProfile[] = [
       },
       {
         id: 'ev-10',
-        type: 'course',
+        type: 'module',
         title: 'MOD-108: Kafka Event Processing Patterns',
         providerOrIssuer: 'Enterprise Academy',
         date: '2026-06-14',

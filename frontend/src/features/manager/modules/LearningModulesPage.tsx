@@ -1224,7 +1224,7 @@ export function LearningModulesPage() {
         onOpenChange={setIsImportModalOpen}
         title="Import Learning Module Catalog"
         entityName="Learning Modules"
-        description="Select an industry course catalog or upload custom curriculum JSON to rapidly populate instructional modules for your organization."
+        description="Select an industry module catalog or upload custom curriculum JSON to rapidly populate instructional modules for your organization."
         presets={MODULE_PRESETS}
         onImport={handleImportModules}
         sampleJsonPlaceholder={`[\n  {\n    "code": "MOD-ATTN-101",\n    "title": "Attention Mechanism & Tensor Workflows",\n    "durationMinutes": 60,\n    "sampleContentUri": "https://learning.adaptlearn.internal/modules/content/sample.html"\n  }\n]`}

@@ -64,7 +64,7 @@ const GRAPH_NODES: GraphNodeData[] = [
     label: 'MOD-204: Neo4j Cypher Deep Dive',
     group: 'module',
     status: 'mastered',
-    description: 'Comprehensive course covering production Neo4j deployments and APOC procedures.',
+    description: 'Comprehensive learning module covering production Neo4j deployments and APOC procedures.',
   },
   {
     id: 'mod-2',
@@ -238,7 +238,7 @@ export function KnowledgeGraphViewer() {
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-xs bg-primary/80" />
-              <span className="text-muted-foreground">Learning Module (Course)</span>
+              <span className="text-muted-foreground">Learning Module</span>
             </div>
           </div>
         </CardContent>

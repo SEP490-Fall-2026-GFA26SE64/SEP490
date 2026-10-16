@@ -1,13 +1,13 @@
 import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Check, Network, UserPlus, LogIn } from 'lucide-react'
+import { Check, Network } from 'lucide-react'
 import { LanguageSwitcher } from '../../shared/components/ui/LanguageSwitcher'
 import { useToast } from '../../shared/hooks/useToast'
 import './LoginPage.css'
 
 interface DemoAccount {
-  role: 'Employee' | 'Expert' | 'L&D Manager' | 'Admin' | 'Guest'
-  actorKey: 'employee' | 'expert' | 'ld-manager' | 'admin' | 'guest'
+  role: 'Employee' | 'Expert' | 'L&D Manager' | 'Admin'
+  actorKey: 'employee' | 'expert' | 'ld-manager' | 'admin'
   email: string
   label: string
   targetRoute: string
@@ -42,30 +42,18 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     label: 'Elena Rostova (Admin)',
     targetRoute: '/admin/dashboard',
   },
-  {
-    role: 'Guest',
-    actorKey: 'guest',
-    email: 'guest.new@example.com',
-    label: 'New Guest (Package Purchase)',
-    targetRoute: '/packages',
-  },
 ]
 
 export function LoginPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  const [authMode, setAuthMode] = React.useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = React.useState('alex.chen@adaptlearn.internal')
   const [password, setPassword] = React.useState('••••••••••••')
-  const [signupName, setSignupName] = React.useState('')
-  const [signupEmail, setSignupEmail] = React.useState('')
-  const [signupPassword, setSignupPassword] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
 
   const handleSelectDemo = (account: DemoAccount) => {
-    setAuthMode('signin')
     setEmail(account.email)
     setPassword('enterprisePass2026!')
     toast({
@@ -118,36 +106,6 @@ export function LoginPage() {
     }, 500)
   }
 
-  const handleSignUp = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!signupEmail.trim() || !signupPassword.trim()) {
-      toast({
-        title: 'Missing Required Fields',
-        description: 'Please provide both your work email and password.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    setIsLoading(true)
-
-    setTimeout(() => {
-      setIsLoading(false)
-      const displayName = signupName.trim() || signupEmail.split('@')[0]
-      localStorage.setItem('auth_user', signupEmail)
-      localStorage.setItem('auth_display_name', displayName)
-      localStorage.setItem('active_actor', 'guest')
-
-      toast({
-        title: 'Guest Account Created',
-        description: `Welcome, ${displayName}! Next, select a package and name your company to activate your workspace.`,
-        variant: 'success',
-      })
-
-      navigate('/packages')
-    }, 600)
-  }
-
   return (
     <div className="razor-login-page">
       {/* TOP NAVBAR */}
@@ -179,47 +137,14 @@ export function LoginPage() {
 
           {/* CENTER FLOATING CARD */}
           <div className="razor-card">
-            {/* Mode Switcher: Sign In vs Sign Up */}
-            <div className="flex items-center justify-center p-1 rounded-xl bg-muted/60 mb-5 border border-border">
-              <button
-                type="button"
-                onClick={() => setAuthMode('signin')}
-                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  authMode === 'signin'
-                    ? 'bg-card text-foreground shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <LogIn size={13} />
-                <span>Sign In</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMode('signup')}
-                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  authMode === 'signup'
-                    ? 'bg-card text-primary shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <UserPlus size={13} />
-                <span>Guest Sign Up</span>
-              </button>
-            </div>
-
             <div className="razor-card-header">
-              <h1 className="razor-card-title">
-                {authMode === 'signin' ? 'Agent Login' : 'Guest Registration'}
-              </h1>
+              <h1 className="razor-card-title">Enterprise Sign In</h1>
               <p className="razor-card-subtitle">
-                {authMode === 'signin'
-                  ? 'Hey, Enter your details to get sign in to your account'
-                  : 'Sign up as a guest, choose your package, and provision your organization.'}
+                Enter your work credentials to access the adaptive learning platform.
               </p>
             </div>
 
-            {authMode === 'signin' ? (
-              <form onSubmit={handleLogin} className="razor-form">
+            <form onSubmit={handleLogin} className="razor-form">
                 {/* Input 1: Work / Organization Email */}
                 <div className="razor-input-wrapper">
                   <input
@@ -264,72 +189,13 @@ export function LoginPage() {
                   {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
               </form>
-            ) : (
-              <form onSubmit={handleSignUp} className="razor-form">
-                <div className="razor-input-wrapper">
-                  <input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Full Name (e.g. Jordan Parker)"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    className="razor-input"
-                    autoComplete="name"
-                    required
-                  />
-                  <span className="razor-input-circle-icon" aria-hidden="true" />
-                </div>
-
-                <div className="razor-input-wrapper">
-                  <input
-                    id="signup-email"
-                    type="email"
-                    placeholder="Work Email (e.g. jordan@company.com)"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    className="razor-input"
-                    autoComplete="email"
-                    required
-                  />
-                  <span className="razor-input-circle-icon" aria-hidden="true" />
-                </div>
-
-                <div className="razor-input-wrapper">
-                  <input
-                    id="signup-pass"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Create Password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    className="razor-input"
-                    autoComplete="new-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="razor-hide-btn"
-                  >
-                    {showPassword ? 'Show' : 'Hide'}
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="razor-submit-btn"
-                >
-                  {isLoading ? 'Creating Guest Account...' : 'Continue to Packages →'}
-                </button>
-              </form>
-            )}
 
             {/* Quick Demo Role Switcher */}
             <div className="razor-demo-strip">
               <span className="razor-demo-label">FAST DEMO ROLE SWITCHER:</span>
               <div className="razor-demo-buttons">
                 {DEMO_ACCOUNTS.map((acc) => {
-                  const isSelected = email === acc.email && authMode === 'signin'
+                  const isSelected = email === acc.email
                   return (
                     <button
                       key={acc.email}

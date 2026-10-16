@@ -185,7 +185,7 @@ export function QuickConfigImportModal({
               <div className="lg:col-span-5 flex flex-col space-y-3">
                 <div className="flex items-center justify-between px-0.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Available Packages
+                    Available Presets
                   </span>
                   <Badge variant="secondary" className="text-[10px] py-0 px-2 font-mono">
                     {presets.length} Ready

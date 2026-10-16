@@ -35,7 +35,7 @@ export function ProfilePage() {
   // Determine current active actor
   const getInitialActor = (): ActorRole => {
     const saved = localStorage.getItem('active_actor') as ActorRole | null
-    if (saved === 'expert' || saved === 'ld-manager' || saved === 'admin' || saved === 'guest') {
+    if (saved === 'expert' || saved === 'ld-manager' || saved === 'admin') {
       return saved
     }
     return 'employee'
@@ -420,8 +420,8 @@ export function ProfilePage() {
                 <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/30 border border-border">
                   <Sparkles size={15} className="text-primary shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-foreground block">Tenant Isolation & Real-Time Sync</strong>
-                    Updated credentials synchronize instantaneously across all portals (Employee, Expert, L&D Manager, Administrator, Guest) within your active organization.
+                    <strong className="text-foreground block">Zero-Trust Credential & Session Sync</strong>
+                    Updated credentials synchronize instantaneously across all portals (Employee, Expert, L&D Manager, Administrator) within your enterprise.
                   </div>
                 </div>
               </CardContent>

@@ -176,7 +176,7 @@ export function EmployeeOverviewPage() {
         return <UserCheck size={15} className="text-success" />
       case 'work_proof':
         return <GitPullRequest size={15} className="text-primary" />
-      case 'course':
+      case 'module':
         return <GraduationCap size={15} className="text-secondary-foreground" />
       default:
         return <ShieldCheck size={15} className="text-muted-foreground" />
