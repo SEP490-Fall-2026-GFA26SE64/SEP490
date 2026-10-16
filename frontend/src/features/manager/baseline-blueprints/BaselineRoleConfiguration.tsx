@@ -10,32 +10,42 @@ import {
 } from '../../../shared/components/ui/Accordion'
 import { Input } from '../../../shared/components/ui/Input'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import type { BlueprintRole } from './baselineBlueprintApi'
+import type { BlueprintCapacity, BlueprintRole } from './baselineBlueprintApi'
+import { BaselineWeightControl } from './BaselineWeightControl'
+import {
+  capacityCellKey,
+  roleCapacityLimit,
+  type CapacityIssue,
+} from './baselineBlueprintCapacity'
 import {
   difficulties,
-  difficultyQuestionTotal,
-  scoreWeightToPercentage,
   roleQuestionTotal,
   type CountField,
-  type WeightField,
 } from './baselineBlueprintForm'
+import type { ScoreWeights } from './baselineBlueprintWeights'
 
-export type { CountField, WeightField } from './baselineBlueprintForm'
+export type { CountField } from './baselineBlueprintForm'
 
 interface BaselineRoleConfigurationProps {
   roles: BlueprintRole[]
+  capacity: BlueprintCapacity | null
+  capacityIssues: CapacityIssue[]
   disabled: boolean
   onCount: (roleIndex: number, skillIndex: number, field: CountField, value: string) => void
-  onWeight: (roleIndex: number, field: WeightField, value: string) => void
+  onWeights: (roleIndex: number, weights: ScoreWeights) => void
   onApplyTotal: (roleIndex: number, total: number) => void
+  onPendingInputChange: (roleId: string, pending: boolean) => void
 }
 
 export function BaselineRoleConfiguration({
   roles,
+  capacity,
+  capacityIssues,
   disabled,
   onCount,
-  onWeight,
+  onWeights,
   onApplyTotal,
+  onPendingInputChange,
 }: BaselineRoleConfigurationProps) {
   return (
     <Accordion type="multiple" defaultValue={roles[0] ? [roles[0].roleId] : []}>
@@ -44,27 +54,46 @@ export function BaselineRoleConfiguration({
           key={role.roleId}
           role={role}
           roleIndex={roleIndex}
+          roles={roles}
+          capacity={capacity}
+          capacityIssues={capacityIssues}
           disabled={disabled}
           onCount={onCount}
-          onWeight={onWeight}
+          onWeights={onWeights}
           onApplyTotal={onApplyTotal}
+          onPendingInputChange={onPendingInputChange}
         />
       ))}
     </Accordion>
   )
 }
 
-function RoleConfiguration({ role, roleIndex, disabled, onCount, onWeight, onApplyTotal }:
-  { role: BlueprintRole; roleIndex: number } & Omit<BaselineRoleConfigurationProps, 'roles'>) {
+function RoleConfiguration({ role, roleIndex, roles, capacity, capacityIssues, disabled, onCount, onWeights, onApplyTotal, onPendingInputChange }:
+  { role: BlueprintRole; roleIndex: number } & BaselineRoleConfigurationProps) {
   const { t } = useTranslation()
   const total = roleQuestionTotal(role)
   const [totalDraft, setTotalDraft] = React.useState<string | null>(null)
+  const [totalTouched, setTotalTouched] = React.useState(false)
+  const [countDrafts, setCountDrafts] = React.useState<Record<string, string>>({})
+  const [countTouched, setCountTouched] = React.useState<Record<string, boolean>>({})
+  const [weightPending, setWeightPending] = React.useState(false)
   const totalInput = totalDraft ?? String(total)
+  const limit = capacity ? roleCapacityLimit(roles, roleIndex, capacity) : null
+  const parsedTotal = parseCount(totalInput)
+  const totalValid = parsedTotal !== null && (parsedTotal === 0 || Boolean(
+    limit?.feasible && parsedTotal >= limit.minimum && parsedTotal <= limit.maximum,
+  ))
+  const roleIssues = capacityIssues.filter((issue) => issue.roleIds.includes(role.roleId))
 
   const applyTotal = () => {
-    const parsed = Number.parseInt(totalInput, 10)
+    setTotalTouched(true)
+    if (!totalValid || parsedTotal === null) return
     setTotalDraft(null)
-    onApplyTotal(roleIndex, Number.isFinite(parsed) ? Math.max(0, parsed) : 0)
+    setTotalTouched(false)
+    setCountDrafts({})
+    setCountTouched({})
+    onPendingInputChange(role.roleId, false)
+    onApplyTotal(roleIndex, parsedTotal)
   }
 
   return (
@@ -88,59 +117,59 @@ function RoleConfiguration({ role, roleIndex, disabled, onCount, onWeight, onApp
             <Input
               type="number"
               min="0"
+              max={limit?.maximum}
               step="1"
               value={totalInput}
-              disabled={disabled}
-              onChange={(event) => setTotalDraft(event.target.value)}
+              aria-invalid={totalTouched && !totalValid}
+              disabled={disabled || !capacity}
+              onBlur={() => setTotalTouched(true)}
+              onChange={(event) => {
+                setTotalDraft(event.target.value)
+                setTotalTouched(false)
+                onPendingInputChange(role.roleId, true)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') applyTotal()
+              }}
             />
           </label>
           <Button
             type="button"
             variant="outline"
             leftIcon={<WandSparkles size={15} />}
-            disabled={disabled || role.skills.length === 0}
+            disabled={disabled || !capacity || role.skills.length === 0 || !totalValid || weightPending}
             onClick={applyTotal}
           >
             {t('baselineBlueprint.role.applyAndDistribute')}
           </Button>
           <p className="w-full text-xs text-muted-foreground">
-            {t('baselineBlueprint.role.applyHint')}
+            {limit ? formatMessage(t('baselineBlueprint.role.capacityRange'), {
+              minimum: limit.minimum, maximum: limit.maximum,
+            }) : t('baselineBlueprint.role.capacityUnavailable')}
           </p>
+          {totalTouched && !totalValid && <p className="w-full text-xs text-destructive">
+            {t('baselineBlueprint.validation.capacityRange')}
+          </p>}
+          {roleIssues.some((issue) => issue.code === 'ROLE_MINIMUM') && (
+            <p className="w-full text-xs text-destructive">
+              {t('baselineBlueprint.validation.roleMinimum')}
+            </p>
+          )}
         </div>
 
-        <div className="grid gap-3 rounded-md bg-muted/40 p-3 text-xs md:grid-cols-3">
-          {difficulties.map((difficulty) => {
-            const field = `${difficulty}ScoreWeight` as WeightField
-            const count = difficultyQuestionTotal(role, difficulty)
-            const weightLabel = formatMessage(t('baselineBlueprint.role.scoreWeight'), {
-              difficulty: t(`baselineBlueprint.difficulty.${difficulty}`),
-            })
-            return (
-              <label key={field} className="space-y-1 capitalize">
-                {weightLabel}
-                <div className="relative">
-                  <Input
-                    aria-label={weightLabel}
-                    className="pr-7"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={scoreWeightToPercentage(role[field])}
-                    disabled={disabled}
-                    onChange={(event) => onWeight(roleIndex, field, event.target.value)}
-                  />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
-                </div>
-                <span className="block normal-case text-muted-foreground">
-                  {formatMessage(t(count === 1
-                    ? 'baselineBlueprint.role.configuredQuestionOne'
-                    : 'baselineBlueprint.role.configuredQuestionMany'), { count })}
-                </span>
-              </label>
+        <BaselineWeightControl
+          key={`${role.easyScoreWeight}-${role.mediumScoreWeight}-${role.hardScoreWeight}`}
+          role={role}
+          disabled={disabled || total === 0}
+          onChange={(weights) => onWeights(roleIndex, weights)}
+          onPendingChange={(pending) => {
+            setWeightPending(pending)
+            onPendingInputChange(
+              role.roleId,
+              pending || totalDraft !== null || Object.keys(countDrafts).length > 0,
             )
-          })}
-        </div>
+          }}
+        />
 
         <div className="space-y-2">
           {role.skills.map((skill, skillIndex) => {
@@ -160,6 +189,29 @@ function RoleConfiguration({ role, roleIndex, disabled, onCount, onWeight, onApp
                 <div className="grid gap-3 border-t border-border p-3 sm:grid-cols-3">
                   {difficulties.map((difficulty) => {
                     const field = `${difficulty}QuestionCount` as CountField
+                    const draftKey = `${skill.microSkillId}:${field}`
+                    const draft = countDrafts[draftKey]
+                    const input = draft ?? String(skill[field])
+                    const parsed = parseCount(input)
+                    const cellMaximum = limit?.cells[capacityCellKey(skill.microSkillId, difficulty)] ?? 0
+                    const draftInvalid = draft !== undefined && (parsed === null || parsed > cellMaximum)
+                    const capacityInvalid = roleIssues.some((issue) => issue.microSkillId === skill.microSkillId
+                      && issue.difficulty === difficulty)
+                    const invalid = (Boolean(countTouched[draftKey]) && draftInvalid) || capacityInvalid
+                    const commitCount = () => {
+                      if (draft === undefined) return
+                      setCountTouched((current) => ({ ...current, [draftKey]: true }))
+                      if (draftInvalid || parsed === null) return
+                      setTotalDraft(null)
+                      setTotalTouched(false)
+                      onCount(roleIndex, skillIndex, field, String(parsed))
+                      setCountDrafts((current) => omitKey(current, draftKey))
+                      setCountTouched((current) => omitKey(current, draftKey))
+                      onPendingInputChange(
+                        role.roleId,
+                        weightPending || Object.keys(countDrafts).some((key) => key !== draftKey),
+                      )
+                    }
                     return (
                       <label key={field} className="space-y-1 text-xs capitalize">
                         {formatMessage(t('baselineBlueprint.role.difficultyQuestions'), {
@@ -168,13 +220,28 @@ function RoleConfiguration({ role, roleIndex, disabled, onCount, onWeight, onApp
                         <Input
                           type="number"
                           min="0"
-                          value={skill[field]}
-                          disabled={disabled}
+                          max={cellMaximum}
+                          step="1"
+                          value={input}
+                          aria-invalid={invalid}
+                          disabled={disabled || !capacity}
+                          onBlur={commitCount}
                           onChange={(event) => {
-                            setTotalDraft(null)
-                            onCount(roleIndex, skillIndex, field, event.target.value)
+                            setCountDrafts((current) => ({ ...current, [draftKey]: event.target.value }))
+                            setCountTouched((current) => omitKey(current, draftKey))
+                            onPendingInputChange(role.roleId, true)
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') commitCount()
                           }}
                         />
+                        <span className={invalid
+                          ? 'block normal-case text-destructive'
+                          : 'block normal-case text-muted-foreground'}>
+                          {invalid
+                            ? t('baselineBlueprint.validation.cellCapacity')
+                            : formatMessage(t('baselineBlueprint.role.cellAvailable'), { count: cellMaximum })}
+                        </span>
                       </label>
                     )
                   })}
@@ -186,6 +253,18 @@ function RoleConfiguration({ role, roleIndex, disabled, onCount, onWeight, onApp
       </AccordionContent>
     </AccordionItem>
   )
+}
+
+function parseCount(value: string) {
+  if (!/^(0|[1-9]\d*)$/.test(value)) return null
+  const parsed = Number(value)
+  return Number.isSafeInteger(parsed) ? parsed : null
+}
+
+function omitKey<T>(record: Record<string, T>, key: string) {
+  const remaining = { ...record }
+  delete remaining[key]
+  return remaining
 }
 
 type Translator = (keyOrPhrase: string, fallback?: string) => string

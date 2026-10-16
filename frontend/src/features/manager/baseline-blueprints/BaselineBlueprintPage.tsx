@@ -12,6 +12,7 @@ import {
   BaselineBlueprintApiError,
   type AssessmentDraft,
   type BaselineBlueprint,
+  type BlueprintCapacity,
   type BlueprintDraft,
   type BlueprintRole,
   type CoverageShortage,
@@ -21,6 +22,7 @@ import {
   generateAssessment,
   getLatestBlueprintByOccupation,
   getOccupation,
+  getOccupationCapacity,
   listOccupations,
   publishAssessment,
   reviewAssessment,
@@ -33,14 +35,22 @@ import {
 import {
   BaselineRoleConfiguration,
   type CountField,
-  type WeightField,
 } from './BaselineRoleConfiguration'
 import {
   difficultyQuestionTotal,
-  distributeRoleQuestionTotal,
-  percentageToScoreWeight,
   roleQuestionTotal,
 } from './baselineBlueprintForm'
+import {
+  CapacityAllocationError,
+  allocateRoleQuestionTotal,
+  validateBlueprintCapacity,
+} from './baselineBlueprintCapacity'
+import {
+  defaultScoreWeights,
+  isValidScoreWeights,
+  weightsFromRole,
+  type ScoreWeights,
+} from './baselineBlueprintWeights'
 
 type BusyAction = 'save' | 'generate' | 'review' | 'publish' | null
 
@@ -58,7 +68,12 @@ export function BaselineBlueprintPage() {
   const [occupations, setOccupations] = React.useState<OccupationSummary[]>([])
   const [selectedOccupationId, setSelectedOccupationId] = React.useState('')
   const [selectedOccupation, setSelectedOccupation] = React.useState<OccupationDetail | null>(null)
+  const [capacity, setCapacity] = React.useState<BlueprintCapacity | null>(null)
+  const [capacityBusy, setCapacityBusy] = React.useState(false)
+  const [capacityError, setCapacityError] = React.useState<string | null>(null)
+  const [capacityRefresh, setCapacityRefresh] = React.useState(0)
   const [roles, setRoles] = React.useState<BlueprintRole[]>([])
+  const [pendingInputRoleIds, setPendingInputRoleIds] = React.useState<string[]>([])
   const [blueprint, setBlueprint] = React.useState<BaselineBlueprint | null>(null)
   const [assessment, setAssessment] = React.useState<AssessmentDraft | null>(null)
   const [shortages, setShortages] = React.useState<CoverageShortage[]>([])
@@ -73,7 +88,11 @@ export function BaselineBlueprintPage() {
     generationKey.current = undefined
     setName('')
     setSelectedOccupation(null)
+    setCapacity(null)
+    setCapacityError(null)
+    setCapacityBusy(Boolean(occupationId))
     setRoles([])
+    setPendingInputRoleIds([])
     setBlueprint(null)
     setAssessment(null)
     setShortages([])
@@ -106,13 +125,15 @@ export function BaselineBlueprintPage() {
       loadLatestBlueprint(selectedOccupationId),
     ]).then(([occupation, saved]) => {
       if (!active) return
+      const requiresWeightRevision = saved?.roles.some((role) => roleTotal(role) > 0
+        && !isValidScoreWeights(weightsFromRole(role))) ?? false
       setSelectedOccupation(occupation)
       setName(saved?.name ?? formatMessage(translationRef.current('baselineBlueprint.defaultName'), {
         occupation: occupation.name,
       }))
       setRoles(saved ? rolesForEditor(saved.roles) : rolesFromOccupation(occupation))
       setBlueprint(saved)
-      setCoverageValidated(saved !== null)
+      setCoverageValidated(saved !== null && !requiresWeightRevision)
     }).catch((error: unknown) => {
       if (active) showError(errorMessage(error, translationRef.current))
     }).finally(() => {
@@ -120,6 +141,44 @@ export function BaselineBlueprintPage() {
     })
     return () => { active = false }
   }, [selectedOccupationId, showError])
+
+  React.useEffect(() => {
+    if (!selectedOccupationId) return
+
+    let active = true
+    void getOccupationCapacity(selectedOccupationId).then((loaded) => {
+      if (!active) return
+      if (loaded.occupationId !== selectedOccupationId) {
+        throw new Error('Capacity response does not match the selected Occupation')
+      }
+      setCapacity(loaded)
+    }).catch((error: unknown) => {
+      if (active) setCapacityError(errorMessage(error, translationRef.current))
+    }).finally(() => {
+      if (active) setCapacityBusy(false)
+    })
+    return () => { active = false }
+  }, [capacityRefresh, selectedOccupationId])
+
+  const retryCapacity = React.useCallback(() => {
+    setCapacityBusy(true)
+    setCapacityError(null)
+    setCapacityRefresh((value) => value + 1)
+  }, [])
+
+  const capacityStale = capacity !== null && selectedOccupation !== null
+    && capacity.catalogVersion !== selectedOccupation.catalogVersion
+  const capacityReady = capacity !== null && !capacityBusy && capacityError === null && !capacityStale
+  const capacityIssues = React.useMemo(() => capacityReady && capacity
+    ? validateBlueprintCapacity(roles, capacity)
+    : [], [capacity, capacityReady, roles])
+  const hasInvalidWeights = roles.some((role) => roleTotal(role) > 0
+    && !isValidScoreWeights(weightsFromRole(role)))
+  const setRolePendingInput = React.useCallback((roleId: string, pending: boolean) => {
+    setPendingInputRoleIds((current) => pending
+      ? current.includes(roleId) ? current : [...current, roleId]
+      : current.filter((id) => id !== roleId))
+  }, [])
 
   const markEdited = () => {
     saveKey.current = undefined
@@ -142,13 +201,20 @@ export function BaselineBlueprintPage() {
     }))
   }
 
-  const updateWeight = (roleIndex: number, field: WeightField, value: string) => {
-    const weight = percentageToScoreWeight(value)
-    updateRole(roleIndex, (role) => ({ ...role, [field]: weight }))
+  const updateWeights = (roleIndex: number, weights: ScoreWeights) => {
+    updateRole(roleIndex, (role) => ({ ...role, ...weights }))
   }
 
   const applyRoleTotal = (roleIndex: number, total: number) => {
-    updateRole(roleIndex, (role) => distributeRoleQuestionTotal(role, total))
+    if (!capacityReady || !capacity) return
+    try {
+      const allocated = allocateRoleQuestionTotal(roles, roleIndex, total, capacity)
+      updateRole(roleIndex, () => allocated)
+    } catch (error) {
+      showError(error instanceof CapacityAllocationError
+        ? t('baselineBlueprint.validation.capacityRange')
+        : t('baselineBlueprint.apiErrors.unexpected'))
+    }
   }
 
   const handleSave = async () => {
@@ -156,14 +222,16 @@ export function BaselineBlueprintPage() {
       showError(t('baselineBlueprint.validation.required'))
       return
     }
-    if (roles.filter((role) => roleTotal(role) > 0).some((role) => !approximatelyOne(
-      role.easyScoreWeight + role.mediumScoreWeight + role.hardScoreWeight,
-    ))) {
-      showError(t('baselineBlueprint.validation.weightsTotal'))
+    if (hasInvalidWeights) {
+      showError(t('baselineBlueprint.validation.weightHierarchy'))
       return
     }
     if (roles.some(hasWeightWithoutQuestions)) {
       showError(t('baselineBlueprint.validation.zeroDifficultyWeight'))
+      return
+    }
+    if (capacityIssues.length > 0 || pendingInputRoleIds.length > 0) {
+      showError(t('baselineBlueprint.validation.capacityInvalid'))
       return
     }
     setBusy('save')
@@ -186,6 +254,10 @@ export function BaselineBlueprintPage() {
         variant: 'success',
       })
     } catch (error) {
+      if (error instanceof BaselineBlueprintApiError
+        && error.code === 'INSUFFICIENT_QUESTION_COVERAGE') {
+        retryCapacity()
+      }
       handleApiError(error, setShortages, showError, translationRef.current)
     } finally {
       setBusy(null)
@@ -312,6 +384,19 @@ export function BaselineBlueprintPage() {
                   version: selectedOccupation.catalogVersion,
                 })}</span>
                 <span>{t('baselineBlueprint.allRolesVisible')}</span>
+                {capacityBusy && <Badge variant="outline">{t('baselineBlueprint.capacityLoading')}</Badge>}
+                {capacityReady && <Badge variant="success">{t('baselineBlueprint.capacityReady')}</Badge>}
+              </div>
+            )}
+            {selectedOccupation && !capacityBusy && (capacityError || capacityStale) && (
+              <div className="flex flex-wrap items-center gap-3 rounded-md border border-warning/50 bg-warning/5 p-3 text-sm">
+                <AlertTriangle className="shrink-0 text-warning" size={17} />
+                <span className="min-w-0 flex-1">
+                  {capacityStale ? t('baselineBlueprint.capacityStale') : capacityError}
+                </span>
+                <Button size="sm" variant="outline" onClick={retryCapacity}>
+                  {t('baselineBlueprint.retryCapacity')}
+                </Button>
               </div>
             )}
           </CardContent>
@@ -333,19 +418,22 @@ export function BaselineBlueprintPage() {
             <BaselineRoleConfiguration
               key={`${selectedOccupationId}-${roles[0]?.roleId ?? 'loading'}`}
               roles={roles}
+              capacity={capacityReady ? capacity : null}
+              capacityIssues={capacityIssues}
+              onPendingInputChange={setRolePendingInput}
               disabled={catalogBusy || busy !== null}
               onCount={updateCount}
-              onWeight={updateWeight}
+              onWeights={updateWeights}
               onApplyTotal={applyRoleTotal}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
               <CoverageStatus validated={coverageValidated} shortages={shortages} />
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" leftIcon={<Save size={15} />} isLoading={busy === 'save'} disabled={catalogBusy || busy !== null || !selectedOccupation || roles.length === 0} onClick={() => void handleSave()}>
+                <Button variant="outline" leftIcon={<Save size={15} />} isLoading={busy === 'save'} disabled={catalogBusy || busy !== null || !selectedOccupation || !capacityReady || capacityIssues.length > 0 || pendingInputRoleIds.length > 0 || hasInvalidWeights || roles.length === 0} onClick={() => void handleSave()}>
                   {blueprint ? t('baselineBlueprint.saveNewVersion') : t('baselineBlueprint.saveBlueprint')}
                 </Button>
-                <Button leftIcon={<FileQuestion size={15} />} isLoading={busy === 'generate'} disabled={busy !== null || !blueprint || !coverageValidated || assessment !== null} onClick={() => void handleGenerate()}>
+                <Button leftIcon={<FileQuestion size={15} />} isLoading={busy === 'generate'} disabled={busy !== null || !blueprint || !coverageValidated || !capacityReady || assessment !== null} onClick={() => void handleGenerate()}>
                   {t('baselineBlueprint.generateAssessment')}
                 </Button>
               </div>
@@ -453,12 +541,15 @@ function toDraft(name: string, occupation: OccupationDetail, roles: BlueprintRol
 }
 
 function rolesForEditor(roles: BlueprintRole[]): BlueprintRole[] {
-  return roles.map((role) => roleTotal(role) === 0 ? {
-    ...role,
-    easyScoreWeight: 0,
-    mediumScoreWeight: 0,
-    hardScoreWeight: 0,
-  } : role)
+  return roles.map((role) => {
+    if (roleTotal(role) === 0) return {
+      ...role,
+      easyScoreWeight: 0,
+      mediumScoreWeight: 0,
+      hardScoreWeight: 0,
+    }
+    return isValidScoreWeights(weightsFromRole(role)) ? role : { ...role, ...defaultScoreWeights() }
+  })
 }
 
 async function loadOccupationSummaries(): Promise<OccupationSummary[]> {
@@ -548,10 +639,6 @@ function errorMessage(error: unknown, t: Translator) {
   return error instanceof BaselineBlueprintApiError
     ? apiErrorMessage(error, t)
     : t('baselineBlueprint.apiErrors.unexpected')
-}
-
-function approximatelyOne(value: number) {
-  return Math.abs(value - 1) < 0.000001
 }
 
 type Translator = (keyOrPhrase: string, fallback?: string) => string

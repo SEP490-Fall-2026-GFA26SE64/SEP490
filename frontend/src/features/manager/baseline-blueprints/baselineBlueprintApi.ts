@@ -68,6 +68,25 @@ export interface OccupationSkill {
   catalogVersion: string
 }
 
+export interface BlueprintCapacity {
+  occupationId: string
+  catalogVersion: string
+  coverageAsOf: string
+  roles: RoleCapacity[]
+}
+
+export interface RoleCapacity {
+  roleId: string
+  skills: SkillCapacity[]
+}
+
+export interface SkillCapacity {
+  microSkillId: string
+  availableEasy: number
+  availableMedium: number
+  availableHard: number
+}
+
 export interface AssessmentItem {
   position: number
   itemVersionId: string
@@ -128,6 +147,13 @@ export async function listOccupations(): Promise<OccupationSummary[]> {
 export async function getOccupation(occupationId: string): Promise<OccupationDetail> {
   return parseOccupation(await requestJson(
     `${CATALOG_URL}/${encodeURIComponent(occupationId)}`,
+    { method: 'GET' },
+  ))
+}
+
+export async function getOccupationCapacity(occupationId: string): Promise<BlueprintCapacity> {
+  return parseCapacity(await requestJson(
+    `${CATALOG_URL}/${encodeURIComponent(occupationId)}/capacity`,
     { method: 'GET' },
   ))
 }
@@ -322,6 +348,30 @@ function parseOccupation(value: unknown): OccupationDetail {
   }
 }
 
+function parseCapacity(value: unknown): BlueprintCapacity {
+  const item = record(value)
+  return {
+    occupationId: requiredString(item.occupationId, 'occupationId'),
+    catalogVersion: requiredString(item.catalogVersion, 'catalogVersion'),
+    coverageAsOf: requiredInstant(item.coverageAsOf, 'coverageAsOf'),
+    roles: requiredArray(item.roles, 'roles').map((role) => {
+      const row = record(role)
+      return {
+        roleId: requiredString(row.roleId, 'role.roleId'),
+        skills: requiredArray(row.skills, 'role.skills').map((skill) => {
+          const entry = record(skill)
+          return {
+            microSkillId: requiredString(entry.microSkillId, 'skill.microSkillId'),
+            availableEasy: nonNegativeInteger(entry.availableEasy, 'skill.availableEasy'),
+            availableMedium: nonNegativeInteger(entry.availableMedium, 'skill.availableMedium'),
+            availableHard: nonNegativeInteger(entry.availableHard, 'skill.availableHard'),
+          }
+        }),
+      }
+    }),
+  }
+}
+
 function parseShortages(value: unknown): CoverageShortage[] {
   if (!Array.isArray(value)) return []
   return value.map((entry) => {
@@ -358,6 +408,11 @@ function requiredArray(value: unknown, field: string): unknown[] {
 function requiredString(value: unknown, field: string): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error(`Invalid ${field}`)
   return value
+}
+function requiredInstant(value: unknown, field: string): string {
+  const instant = requiredString(value, field)
+  if (Number.isNaN(Date.parse(instant))) throw new Error(`Invalid ${field}`)
+  return instant
 }
 function optionalString(value: unknown, field: string): string | null {
   return value === null ? null : requiredString(value, field)
