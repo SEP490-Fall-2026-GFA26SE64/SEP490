@@ -7,6 +7,9 @@ interface BlueprintResponse {
   roles: Array<{
     roleId: string
     totalQuestionCount: number
+    easyScoreWeight: number
+    mediumScoreWeight: number
+    hardScoreWeight: number
   }>
 }
 
@@ -26,11 +29,28 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   await expect(page.getByRole('checkbox')).toHaveCount(0)
 
   const javaRole = page.locator('[data-value="20000000-0000-0000-0000-000000000001"]')
-  const javaCore = javaRole.locator('details').filter({ hasText: 'Java Core' })
-  await javaCore.locator('summary').click()
-  const javaCoreCounts = javaCore.locator('input[type="number"]')
-  await expect(javaCoreCounts).toHaveCount(3)
-  for (const count of await javaCoreCounts.all()) await count.fill('1')
+  const javaTrigger = page.getByRole('button', { name: /Java Backend Developer P3/ })
+  const platformTrigger = page.getByRole('button', { name: /Platform Engineer P4/ })
+  await platformTrigger.click()
+  await expect(javaTrigger).toHaveAttribute('aria-expanded', 'true')
+  await expect(platformTrigger).toHaveAttribute('aria-expanded', 'true')
+
+  const totalInput = javaRole.getByLabel('Total questions for this role')
+  await totalInput.fill('3')
+  await expect(javaRole.getByText('0 questions · not included')).toBeVisible()
+  await javaRole.getByRole('button', { name: 'Apply and distribute' }).click()
+  await expect(javaRole.getByText('3 questions')).toBeVisible()
+  await expect(javaRole.getByLabel('Easy score weight (%)')).toHaveValue('33.34')
+  await expect(javaRole.getByLabel('Medium score weight (%)')).toHaveValue('33.33')
+  await expect(javaRole.getByLabel('Hard score weight (%)')).toHaveValue('33.33')
+
+  await page.getByRole('button', { name: 'VI', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Cấu hình đề đánh giá đầu vào' })).toBeVisible()
+  await expect(javaRole.getByLabel('Tổng số câu cho vai trò này')).toHaveValue('3')
+  await expect(javaTrigger).toHaveAttribute('aria-expanded', 'true')
+  await expect(platformTrigger).toHaveAttribute('aria-expanded', 'true')
+  await page.getByRole('button', { name: 'EN', exact: true }).click()
+
   await expect(page.getByText(/0 questions.*not included/)).toBeVisible()
 
   const saveResponsePromise = page.waitForResponse((response) =>
@@ -39,13 +59,33 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   )
   await page.getByRole('button', { name: 'Save blueprint' }).click()
   const saveResponse = await saveResponsePromise
-  expect(saveResponse.status()).toBe(201)
+  expect(saveResponse.status(), await saveResponse.text()).toBe(201)
   const blueprint = await saveResponse.json() as BlueprintResponse
+  const saveRequest = saveResponse.request().postDataJSON() as {
+    roles: Array<{
+      roleId: string
+      easyScoreWeight: number
+      mediumScoreWeight: number
+      hardScoreWeight: number
+    }>
+  }
+  const javaRequest = saveRequest.roles.find((role) =>
+    role.roleId === '20000000-0000-0000-0000-000000000001')
+  expect(javaRequest).toMatchObject({
+    easyScoreWeight: 0.3334,
+    mediumScoreWeight: 0.3333,
+    hardScoreWeight: 0.3333,
+  })
   expect(blueprint.version).toBe(1)
   expect(blueprint.occupationId).toBe('10000000-0000-0000-0000-000000000001')
   expect(blueprint.roles).toHaveLength(2)
   expect(blueprint.roles.find((role) => role.roleId === '20000000-0000-0000-0000-000000000002')
     ?.totalQuestionCount).toBe(0)
+  const javaSaved = blueprint.roles.find((role) =>
+    role.roleId === '20000000-0000-0000-0000-000000000001')
+  expect((javaSaved?.easyScoreWeight ?? 0)
+    + (javaSaved?.mediumScoreWeight ?? 0)
+    + (javaSaved?.hardScoreWeight ?? 0)).toBeCloseTo(1, 10)
   await expect(page.getByText('Catalog and coverage validated')).toBeVisible()
 
   const reloadedBlueprintResponse = await request.get(

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/compon
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
   BaselineBlueprintApiError,
@@ -34,13 +35,24 @@ import {
   type CountField,
   type WeightField,
 } from './BaselineRoleConfiguration'
+import {
+  difficultyQuestionTotal,
+  distributeRoleQuestionTotal,
+  percentageToScoreWeight,
+  roleQuestionTotal,
+} from './baselineBlueprintForm'
 
 type BusyAction = 'save' | 'generate' | 'review' | 'publish' | null
 
 export function BaselineBlueprintPage() {
   const { toast } = useToast()
+  const { t } = useTranslation()
+  const translationRef = React.useRef(t)
+  React.useEffect(() => {
+    translationRef.current = t
+  }, [t])
   const showError = React.useCallback((description: string) => toast({
-    title: 'Baseline blueprint action failed', description, variant: 'destructive',
+    title: translationRef.current('baselineBlueprint.actionFailed'), description, variant: 'destructive',
   }), [toast])
   const [name, setName] = React.useState('')
   const [occupations, setOccupations] = React.useState<OccupationSummary[]>([])
@@ -80,7 +92,7 @@ export function BaselineBlueprintPage() {
     }).catch((error: unknown) => {
       if (!active) return
       setCatalogBusy(false)
-      showError(errorMessage(error))
+      showError(errorMessage(error, translationRef.current))
     })
     return () => { active = false }
   }, [chooseOccupation, showError])
@@ -95,12 +107,14 @@ export function BaselineBlueprintPage() {
     ]).then(([occupation, saved]) => {
       if (!active) return
       setSelectedOccupation(occupation)
-      setName(saved?.name ?? `${occupation.name} baseline assessment`)
-      setRoles(saved?.roles ?? rolesFromOccupation(occupation))
+      setName(saved?.name ?? formatMessage(translationRef.current('baselineBlueprint.defaultName'), {
+        occupation: occupation.name,
+      }))
+      setRoles(saved ? rolesForEditor(saved.roles) : rolesFromOccupation(occupation))
       setBlueprint(saved)
       setCoverageValidated(saved !== null)
     }).catch((error: unknown) => {
-      if (active) showError(errorMessage(error))
+      if (active) showError(errorMessage(error, translationRef.current))
     }).finally(() => {
       if (active) setCatalogBusy(false)
     })
@@ -129,23 +143,27 @@ export function BaselineBlueprintPage() {
   }
 
   const updateWeight = (roleIndex: number, field: WeightField, value: string) => {
-    const weight = Math.min(1, Math.max(0, Number.parseFloat(value) || 0))
+    const weight = percentageToScoreWeight(value)
     updateRole(roleIndex, (role) => ({ ...role, [field]: weight }))
+  }
+
+  const applyRoleTotal = (roleIndex: number, total: number) => {
+    updateRole(roleIndex, (role) => distributeRoleQuestionTotal(role, total))
   }
 
   const handleSave = async () => {
     if (!selectedOccupation || !name.trim() || roles.length === 0 || !roles.some((role) => roleTotal(role) > 0)) {
-      showError('Choose an Occupation, enter a blueprint name and configure at least one question.')
+      showError(t('baselineBlueprint.validation.required'))
       return
     }
     if (roles.filter((role) => roleTotal(role) > 0).some((role) => !approximatelyOne(
       role.easyScoreWeight + role.mediumScoreWeight + role.hardScoreWeight,
     ))) {
-      showError('Easy, Medium and Hard score weights must add up to 1 for every participating role.')
+      showError(t('baselineBlueprint.validation.weightsTotal'))
       return
     }
     if (roles.some(hasWeightWithoutQuestions)) {
-      showError('A difficulty with 0 questions must also have score weight 0 for that role.')
+      showError(t('baselineBlueprint.validation.zeroDifficultyWeight'))
       return
     }
     setBusy('save')
@@ -157,16 +175,18 @@ export function BaselineBlueprintPage() {
         ? await reviseBlueprint(blueprint.blueprintId, blueprint.version, payload, saveKey.current)
         : await createBlueprint(payload, saveKey.current)
       setBlueprint(saved)
-      setRoles(saved.roles)
+      setRoles(rolesForEditor(saved.roles))
       setCoverageValidated(true)
       saveKey.current = undefined
       toast({
-        title: `Blueprint v${saved.version} saved`,
-        description: 'Catalog references and question coverage were accepted by the backend.',
+        title: formatMessage(translationRef.current('baselineBlueprint.toast.savedTitle'), {
+          version: saved.version,
+        }),
+        description: translationRef.current('baselineBlueprint.toast.savedDescription'),
         variant: 'success',
       })
     } catch (error) {
-      handleApiError(error, setShortages, showError)
+      handleApiError(error, setShortages, showError, translationRef.current)
     } finally {
       setBusy(null)
     }
@@ -182,12 +202,16 @@ export function BaselineBlueprintPage() {
       )
       setAssessment(generated)
       toast({
-        title: `Assessment draft v${generated.version} generated`,
-        description: `${generated.items.length} exact question versions are now pinned.`,
+        title: formatMessage(translationRef.current('baselineBlueprint.toast.generatedTitle'), {
+          version: generated.version,
+        }),
+        description: formatMessage(translationRef.current('baselineBlueprint.toast.generatedDescription'), {
+          count: generated.items.length,
+        }),
         variant: 'success',
       })
     } catch (error) {
-      handleApiError(error, setShortages, showError)
+      handleApiError(error, setShortages, showError, translationRef.current)
     } finally {
       setBusy(null)
     }
@@ -199,9 +223,13 @@ export function BaselineBlueprintPage() {
     try {
       const reviewed = await reviewAssessment(assessment.assessmentVersionId, assessment.contentHash)
       setAssessment(reviewed)
-      toast({ title: 'Current content reviewed', description: shortHash(reviewed.contentHash), variant: 'success' })
+      toast({
+        title: translationRef.current('baselineBlueprint.toast.reviewedTitle'),
+        description: shortHash(reviewed.contentHash),
+        variant: 'success',
+      })
     } catch (error) {
-      handleApiError(error, setShortages, showError)
+      handleApiError(error, setShortages, showError, translationRef.current)
     } finally {
       setBusy(null)
     }
@@ -213,9 +241,15 @@ export function BaselineBlueprintPage() {
     try {
       const published = await publishAssessment(assessment.assessmentVersionId, assessment.contentHash)
       setAssessment(published)
-      toast({ title: 'Baseline assessment published', description: `Version ${published.version} is immutable.`, variant: 'success' })
+      toast({
+        title: translationRef.current('baselineBlueprint.toast.publishedTitle'),
+        description: formatMessage(translationRef.current('baselineBlueprint.toast.publishedDescription'), {
+          version: published.version,
+        }),
+        variant: 'success',
+      })
     } catch (error) {
-      handleApiError(error, setShortages, showError)
+      handleApiError(error, setShortages, showError, translationRef.current)
     } finally {
       setBusy(null)
     }
@@ -225,11 +259,15 @@ export function BaselineBlueprintPage() {
     <WorkspaceLayout>
       <div className="space-y-6">
         <PageHeader
-          title="Baseline assessment blueprint"
-          description="Choose one Occupation, configure all of its roles, then generate, review and publish one immutable baseline assessment version."
+          title={t('baselineBlueprint.pageTitle')}
+          description={t('baselineBlueprint.pageDescription')}
           icon={<FileQuestion size={24} />}
           actions={<Badge variant={assessment?.publicationState === 'PUBLISHED' ? 'success' : 'outline'}>
-            {assessment?.publicationState ?? (blueprint ? `BLUEPRINT V${blueprint.version}` : 'UNSAVED')}
+            {assessment?.publicationState === 'PUBLISHED'
+              ? t('baselineBlueprint.status.published')
+              : blueprint
+                ? formatMessage(t('baselineBlueprint.status.blueprintVersion'), { version: blueprint.version })
+                : t('baselineBlueprint.status.unsaved')}
           </Badge>}
         />
 
@@ -237,37 +275,43 @@ export function BaselineBlueprintPage() {
           <Card className="border-warning/50">
             <CardContent className="flex gap-3 pt-6 text-sm">
               <AlertTriangle className="mt-0.5 shrink-0 text-warning" size={18} />
-              <p>No Occupation catalog is available. The development Occupation fixture is enabled only by Vite development mode.</p>
+              <p>{t('baselineBlueprint.catalogEmpty')}</p>
             </CardContent>
           </Card>
         )}
 
         <Card>
           <CardHeader>
-            <CardTitle>1. Select Occupation</CardTitle>
+            <CardTitle>{t('baselineBlueprint.selectStep')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <label className="block max-w-xl space-y-1 text-sm font-medium">
-              Occupation
+              {t('baselineBlueprint.occupation')}
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={selectedOccupationId}
                 disabled={catalogBusy || busy !== null}
                 onChange={(event) => chooseOccupation(event.target.value)}
               >
-                <option value="">Select an Occupation</option>
+                <option value="">{t('baselineBlueprint.selectOccupation')}</option>
                 {occupations.map((occupation) => (
                   <option key={occupation.id} value={occupation.id}>
-                    {occupation.name} ({occupation.roleCount} roles)
+                    {occupation.name} ({formatMessage(t(occupation.roleCount === 1
+                      ? 'baselineBlueprint.roleCountOne'
+                      : 'baselineBlueprint.roleCountMany'), { count: occupation.roleCount })})
                   </option>
                 ))}
               </select>
             </label>
             {selectedOccupation && (
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline">{selectedOccupation.roles.length} roles</Badge>
-                <span>Catalog {selectedOccupation.catalogVersion}</span>
-                <span>All roles remain visible in this blueprint.</span>
+                <Badge variant="outline">{formatMessage(t(selectedOccupation.roles.length === 1
+                  ? 'baselineBlueprint.roleCountOne'
+                  : 'baselineBlueprint.roleCountMany'), { count: selectedOccupation.roles.length })}</Badge>
+                <span>{formatMessage(t('baselineBlueprint.catalogVersion'), {
+                  version: selectedOccupation.catalogVersion,
+                })}</span>
+                <span>{t('baselineBlueprint.allRolesVisible')}</span>
               </div>
             )}
           </CardContent>
@@ -275,11 +319,11 @@ export function BaselineBlueprintPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>2. Configure blueprint</CardTitle>
+            <CardTitle>{t('baselineBlueprint.configureStep')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <label className="block max-w-xl space-y-1 text-sm font-medium">
-              Blueprint name
+              {t('baselineBlueprint.blueprintName')}
               <Input value={name} disabled={catalogBusy || busy !== null || !selectedOccupation} onChange={(event) => {
                 markEdited()
                 setName(event.target.value)
@@ -292,16 +336,17 @@ export function BaselineBlueprintPage() {
               disabled={catalogBusy || busy !== null}
               onCount={updateCount}
               onWeight={updateWeight}
+              onApplyTotal={applyRoleTotal}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
               <CoverageStatus validated={coverageValidated} shortages={shortages} />
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" leftIcon={<Save size={15} />} isLoading={busy === 'save'} disabled={catalogBusy || busy !== null || !selectedOccupation || roles.length === 0} onClick={() => void handleSave()}>
-                  {blueprint ? 'Save new version' : 'Save blueprint'}
+                  {blueprint ? t('baselineBlueprint.saveNewVersion') : t('baselineBlueprint.saveBlueprint')}
                 </Button>
                 <Button leftIcon={<FileQuestion size={15} />} isLoading={busy === 'generate'} disabled={busy !== null || !blueprint || !coverageValidated || assessment !== null} onClick={() => void handleGenerate()}>
-                  Generate assessment
+                  {t('baselineBlueprint.generateAssessment')}
                 </Button>
               </div>
             </div>
@@ -323,19 +368,30 @@ export function BaselineBlueprintPage() {
 }
 
 function CoverageStatus({ validated, shortages }: { validated: boolean; shortages: CoverageShortage[] }) {
-  if (shortages.length > 0) return <Badge variant="destructive">Coverage short in {shortages.length} bucket(s)</Badge>
-  if (validated) return <Badge variant="success">Catalog and coverage validated</Badge>
-  return <Badge variant="outline">Coverage not validated</Badge>
+  const { t } = useTranslation()
+  if (shortages.length > 0) return <Badge variant="destructive">{formatMessage(
+    t('baselineBlueprint.coverageShort'), { count: shortages.length },
+  )}</Badge>
+  if (validated) return <Badge variant="success">{t('baselineBlueprint.coverageValidated')}</Badge>
+  return <Badge variant="outline">{t('baselineBlueprint.coverageNotValidated')}</Badge>
 }
 
 function ShortageTable({ shortages, roles }: { shortages: CoverageShortage[]; roles: BlueprintRole[] }) {
-  return <Card className="border-destructive/40"><CardHeader><CardTitle className="flex items-center gap-2 text-base"><AlertTriangle size={17} />Question coverage shortages</CardTitle></CardHeader><CardContent>
+  const { t } = useTranslation()
+  return <Card className="border-destructive/40"><CardHeader><CardTitle className="flex items-center gap-2 text-base"><AlertTriangle size={17} />{t('baselineBlueprint.shortagesTitle')}</CardTitle></CardHeader><CardContent>
     <div className="space-y-2 text-sm">{shortages.map((item) => <div key={`${item.roleId}-${item.microSkillId}-${item.difficulty}`} className="space-y-2 rounded bg-muted/40 p-2">
       <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-        <span>{item.microSkillId}</span><span>{item.difficulty}</span><span>Required: {item.required}</span><span>Available: {item.available}</span><strong>Missing: {item.missing}</strong>
+        <span>{item.microSkillId}</span>
+        <span>{translatedDifficulty(t, item.difficulty)}</span>
+        <span>{formatMessage(t('baselineBlueprint.required'), { count: item.required })}</span>
+        <span>{formatMessage(t('baselineBlueprint.available'), { count: item.available })}</span>
+        <strong>{formatMessage(t('baselineBlueprint.missing'), { count: item.missing })}</strong>
       </div>
       {(item.roleRequirements?.length ?? 0) > 0 && <p className="text-xs text-muted-foreground">
-        Role demand: {item.roleRequirements?.map((requirement) => `${roleName(roles, requirement.roleId)} (${requirement.required})`).join(', ')}
+        {formatMessage(t('baselineBlueprint.roleDemand'), {
+          roles: item.roleRequirements?.map((requirement) =>
+            `${roleName(roles, requirement.roleId)} (${requirement.required})`).join(', ') ?? '',
+        })}
       </p>}
     </div>)}</div>
   </CardContent></Card>
@@ -351,23 +407,26 @@ function AssessmentReview({ assessment, busy, onReview, onPublish }: {
   onReview: () => void
   onPublish: () => void
 }) {
+  const { t } = useTranslation()
   const reviewed = assessment.reviewedContentHash === assessment.contentHash
   const published = assessment.publicationState === 'PUBLISHED'
-  return <Card><CardHeader><CardTitle className="flex flex-wrap items-center justify-between gap-3"><span>Assessment draft v{assessment.version}</span><Badge variant={published ? 'success' : reviewed ? 'warning' : 'outline'}>{published ? 'PUBLISHED' : reviewed ? 'REVIEWED' : 'DRAFT'}</Badge></CardTitle></CardHeader><CardContent className="space-y-4">
+  return <Card><CardHeader><CardTitle className="flex flex-wrap items-center justify-between gap-3"><span>{formatMessage(t('baselineBlueprint.assessmentDraft'), { version: assessment.version })}</span><Badge variant={published ? 'success' : reviewed ? 'warning' : 'outline'}>{published
+    ? t('baselineBlueprint.status.published')
+    : reviewed ? t('baselineBlueprint.status.reviewed') : t('baselineBlueprint.status.draft')}</Badge></CardTitle></CardHeader><CardContent className="space-y-4">
     <div className="grid gap-2 rounded-md bg-muted/40 p-3 text-xs md:grid-cols-3">
-      <span><strong>Items:</strong> {assessment.items.length}</span>
-      <span><strong>Blueprint:</strong> v{assessment.blueprintVersion}</span>
-      <span className="truncate font-mono" title={assessment.contentHash}><strong>Hash:</strong> {shortHash(assessment.contentHash)}</span>
+      <span><strong>{t('baselineBlueprint.items')}</strong> {assessment.items.length}</span>
+      <span><strong>{t('baselineBlueprint.blueprint')}</strong> v{assessment.blueprintVersion}</span>
+      <span className="truncate font-mono" title={assessment.contentHash}><strong>{t('baselineBlueprint.hash')}</strong> {shortHash(assessment.contentHash)}</span>
     </div>
     <ol className="max-h-96 space-y-2 overflow-y-auto pr-1">{assessment.items.map((item) => <li key={item.position} className="rounded-md border border-border p-3 text-sm">
-      <div className="mb-1 flex flex-wrap gap-2 text-xs text-muted-foreground"><span>#{item.position}</span><span>{item.roleNameSnapshot}</span><span>{item.microSkillNameSnapshot}</span><Badge variant="secondary">{item.difficulty}</Badge></div>
+      <div className="mb-1 flex flex-wrap gap-2 text-xs text-muted-foreground"><span>#{item.position}</span><span>{item.roleNameSnapshot}</span><span>{item.microSkillNameSnapshot}</span><Badge variant="secondary">{translatedDifficulty(t, item.difficulty)}</Badge></div>
       <p>{item.prompt}</p>
     </li>)}</ol>
     <div className="flex justify-end gap-2 border-t border-border pt-4">
-      <Button variant="outline" leftIcon={<ClipboardCheck size={15} />} isLoading={busy === 'review'} disabled={busy !== null || reviewed || published} onClick={onReview}>Review this hash</Button>
-      <Button leftIcon={<Send size={15} />} isLoading={busy === 'publish'} disabled={busy !== null || !reviewed || published} onClick={onPublish}>Publish</Button>
+      <Button variant="outline" leftIcon={<ClipboardCheck size={15} />} isLoading={busy === 'review'} disabled={busy !== null || reviewed || published} onClick={onReview}>{t('baselineBlueprint.reviewHash')}</Button>
+      <Button leftIcon={<Send size={15} />} isLoading={busy === 'publish'} disabled={busy !== null || !reviewed || published} onClick={onPublish}>{t('baselineBlueprint.publish')}</Button>
     </div>
-    {reviewed && <p className="flex items-center gap-2 text-xs text-success"><CheckCircle2 size={14} />Reviewed hash matches the displayed manifest.</p>}
+    {reviewed && <p className="flex items-center gap-2 text-xs text-success"><CheckCircle2 size={14} />{t('baselineBlueprint.reviewedHashMatches')}</p>}
   </CardContent></Card>
 }
 
@@ -376,11 +435,30 @@ function toDraft(name: string, occupation: OccupationDetail, roles: BlueprintRol
     name: name.trim(),
     occupationId: occupation.id,
     occupationNameSnapshot: occupation.name,
-    roles: roles.map(({ totalQuestionCount: _ignored, ...role }) => ({
-      ...role,
-      enabled: roleTotal(role) > 0,
-    })),
+    roles: roles.map(({ totalQuestionCount: _ignored, ...role }) => {
+      const participates = roleTotal(role) > 0
+      return {
+        ...role,
+        enabled: participates,
+        ...(!participates && {
+          // The existing backend domain requires every persisted role's weights to total one,
+          // even though generation ignores weights for a zero-question role.
+          easyScoreWeight: 0.3334,
+          mediumScoreWeight: 0.3333,
+          hardScoreWeight: 0.3333,
+        }),
+      }
+    }),
   }
+}
+
+function rolesForEditor(roles: BlueprintRole[]): BlueprintRole[] {
+  return roles.map((role) => roleTotal(role) === 0 ? {
+    ...role,
+    easyScoreWeight: 0,
+    mediumScoreWeight: 0,
+    hardScoreWeight: 0,
+  } : role)
 }
 
 async function loadOccupationSummaries(): Promise<OccupationSummary[]> {
@@ -422,9 +500,9 @@ function rolesFromOccupation(occupation: OccupationDetail): BlueprintRole[] {
     roleId: role.id,
     roleNameSnapshot: role.name,
     enabled: true,
-    easyScoreWeight: 0.3,
-    mediumScoreWeight: 0.4,
-    hardScoreWeight: 0.3,
+    easyScoreWeight: 0,
+    mediumScoreWeight: 0,
+    hardScoreWeight: 0,
     skills: role.skills.map((skill) => ({
       microSkillId: skill.id,
       microSkillNameSnapshot: skill.name,
@@ -435,10 +513,7 @@ function rolesFromOccupation(occupation: OccupationDetail): BlueprintRole[] {
   }))
 }
 
-function roleTotal(role: BlueprintRole) {
-  return role.skills.reduce((total, skill) => total
-    + skill.easyQuestionCount + skill.mediumQuestionCount + skill.hardQuestionCount, 0)
-}
+const roleTotal = roleQuestionTotal
 
 function hasWeightWithoutQuestions(role: BlueprintRole) {
   if (roleTotal(role) === 0) return false
@@ -448,33 +523,54 @@ function hasWeightWithoutQuestions(role: BlueprintRole) {
 }
 
 function difficultyTotal(role: BlueprintRole, difficulty: 'easy' | 'medium' | 'hard') {
-  const field = `${difficulty}QuestionCount` as CountField
-  return role.skills.reduce((total, skill) => total + skill[field], 0)
+  return difficultyQuestionTotal(role, difficulty)
 }
 
 function handleApiError(
   error: unknown,
   setShortages: React.Dispatch<React.SetStateAction<CoverageShortage[]>>,
   showError: (message: string) => void,
+  t: Translator,
 ) {
   if (error instanceof BaselineBlueprintApiError) {
     setShortages(error.coverageShortages)
-    showError(`${error.code}: ${error.message}`)
+    showError(apiErrorMessage(error, t))
     return
   }
-  showError(error instanceof Error ? error.message : 'Unexpected frontend error')
+  showError(t('baselineBlueprint.apiErrors.unexpected'))
 }
 
 function shortHash(hash: string) {
   return `${hash.slice(0, 12)}…${hash.slice(-8)}`
 }
 
-function errorMessage(error: unknown) {
+function errorMessage(error: unknown, t: Translator) {
   return error instanceof BaselineBlueprintApiError
-    ? `${error.code}: ${error.message}`
-    : error instanceof Error ? error.message : 'Unexpected frontend error'
+    ? apiErrorMessage(error, t)
+    : t('baselineBlueprint.apiErrors.unexpected')
 }
 
 function approximatelyOne(value: number) {
   return Math.abs(value - 1) < 0.000001
+}
+
+type Translator = (keyOrPhrase: string, fallback?: string) => string
+
+function apiErrorMessage(error: BaselineBlueprintApiError, t: Translator) {
+  const key = `baselineBlueprint.apiErrors.${error.code}`
+  const localized = t(key)
+  return `${error.code}: ${localized === key ? error.message : localized}`
+}
+
+function translatedDifficulty(t: Translator, difficulty: string) {
+  const key = `baselineBlueprint.difficulty.${difficulty.toLowerCase()}`
+  const translated = t(key)
+  return translated === key ? difficulty : translated
+}
+
+function formatMessage(template: string, values: Record<string, string | number>) {
+  return Object.entries(values).reduce(
+    (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+    template,
+  )
 }

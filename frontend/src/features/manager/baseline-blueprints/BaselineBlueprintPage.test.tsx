@@ -2,6 +2,8 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { LanguageSwitcher } from '../../../shared/components/ui/LanguageSwitcher'
+import { LanguageProvider } from '../../../shared/i18n/LanguageContext'
 import { BaselineBlueprintPage } from './BaselineBlueprintPage'
 import {
   BaselineBlueprintApiError,
@@ -50,6 +52,7 @@ vi.mock('./baselineBlueprintApi', async (importOriginal) => {
 describe('BaselineBlueprintPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.setItem('app_language', 'en')
     vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
       '00000000-0000-0000-0000-000000000901',
     )
@@ -62,7 +65,10 @@ describe('BaselineBlueprintPage', () => {
     )
   })
 
-  afterEach(cleanup)
+  afterEach(() => {
+    cleanup()
+    localStorage.clear()
+  })
 
   it('drives save, generate, exact-hash review and publish in order', async () => {
     const user = userEvent.setup()
@@ -84,7 +90,7 @@ describe('BaselineBlueprintPage', () => {
       publicationState: 'PUBLISHED',
     })
 
-    render(<BaselineBlueprintPage />)
+    renderPage()
 
     await configureFirstSkill(user)
 
@@ -94,7 +100,19 @@ describe('BaselineBlueprintPage', () => {
       occupationId: '10000000-0000-0000-0000-000000000001',
       occupationNameSnapshot: 'Software Engineering',
       roles: expect.arrayContaining([
-        expect.objectContaining({ roleId: '20000000-0000-0000-0000-000000000002', enabled: false }),
+        expect.objectContaining({
+          roleId: '20000000-0000-0000-0000-000000000001',
+          easyScoreWeight: 0.4,
+          mediumScoreWeight: 0.3,
+          hardScoreWeight: 0.3,
+        }),
+        expect.objectContaining({
+          roleId: '20000000-0000-0000-0000-000000000002',
+          enabled: false,
+          easyScoreWeight: 0.3334,
+          mediumScoreWeight: 0.3333,
+          hardScoreWeight: 0.3333,
+        }),
       ]),
     }), expect.any(String))
     expect(screen.getByText('Catalog and coverage validated')).toBeTruthy()
@@ -133,7 +151,7 @@ describe('BaselineBlueprintPage', () => {
       }],
     ))
 
-    render(<BaselineBlueprintPage />)
+    renderPage()
     await configureFirstSkill(user)
     await user.click(screen.getByRole('button', { name: 'Save blueprint' }))
 
@@ -145,7 +163,7 @@ describe('BaselineBlueprintPage', () => {
   })
 
   it('shows every Occupation role without include checkboxes and marks zero roles excluded', async () => {
-    render(<BaselineBlueprintPage />)
+    renderPage()
 
     expect(await screen.findByText('Java Backend Developer P3')).toBeTruthy()
     expect(screen.getByText('Platform Engineer P4')).toBeTruthy()
@@ -153,25 +171,147 @@ describe('BaselineBlueprintPage', () => {
     expect(screen.queryByRole('checkbox')).toBeNull()
     expect(screen.getByText('All roles remain visible in this blueprint.')).toBeTruthy()
   })
+
+  it('applies a total explicitly, keeps manual edits local and clears the role with total zero', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText('Java Backend Developer P3')
+    const role = roleContainer('Java Backend Developer P3')
+    const totalInput = within(role).getByLabelText('Total questions for this role')
+    await user.clear(totalInput)
+    await user.type(totalInput, '7')
+    expect(within(role).getByText('0 questions · not included')).toBeTruthy()
+
+    await user.click(within(role).getByRole('button', { name: 'Apply and distribute' }))
+    expect(within(role).getByText('7 questions')).toBeTruthy()
+
+    const javaCore = within(role).getByText('Java Core').closest('details')!
+    const springBoot = within(role).getByText('Spring Boot').closest('details')!
+    await user.click(within(javaCore).getByText('Java Core'))
+    await user.click(within(springBoot).getByText('Spring Boot'))
+    const springBefore = ['Easy', 'Medium', 'Hard'].map((difficulty) =>
+      (within(springBoot).getByLabelText(`${difficulty} questions`) as HTMLInputElement).value)
+
+    const javaEasy = within(javaCore).getByLabelText('Easy questions')
+    await user.clear(javaEasy)
+    await user.type(javaEasy, '2')
+    expect(within(role).getByText('8 questions')).toBeTruthy()
+    expect(['Easy', 'Medium', 'Hard'].map((difficulty) =>
+      (within(springBoot).getByLabelText(`${difficulty} questions`) as HTMLInputElement).value))
+      .toEqual(springBefore)
+
+    await user.clear(totalInput)
+    await user.type(totalInput, '0')
+    await user.click(within(role).getByRole('button', { name: 'Apply and distribute' }))
+    expect(within(role).getByText('0 questions · not included')).toBeTruthy()
+    expect((within(javaCore).getByLabelText('Easy questions') as HTMLInputElement).value).toBe('0')
+    for (const difficulty of ['Easy', 'Medium', 'Hard']) {
+      expect((within(role).getByLabelText(`${difficulty} score weight (%)`) as HTMLInputElement).value)
+        .toBe('0')
+    }
+  })
+
+  it('loads decimal weights as percentages', async () => {
+    const saved = blueprintPayload()
+    vi.mocked(getLatestBlueprintByOccupation).mockResolvedValue(saved)
+
+    renderPage()
+
+    await screen.findByText('Java Backend Developer P3')
+    const role = roleContainer('Java Backend Developer P3')
+    expect((within(role).getByLabelText('Easy score weight (%)') as HTMLInputElement).value)
+      .toBe('40')
+  })
+
+  it('switches English and Vietnamese without losing unsaved form state or reloading catalog', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText('Java Backend Developer P3')
+    const name = screen.getByLabelText('Blueprint name')
+    await user.clear(name)
+    await user.type(name, 'Unsaved custom blueprint')
+    const total = within(roleContainer('Java Backend Developer P3'))
+      .getByLabelText('Total questions for this role')
+    await user.clear(total)
+    await user.type(total, '8')
+
+    await user.click(screen.getByRole('button', { name: 'VI' }))
+    expect(screen.getByRole('heading', { name: 'Cấu hình đề đánh giá đầu vào' })).toBeTruthy()
+    expect((screen.getByLabelText('Tên cấu hình') as HTMLInputElement).value)
+      .toBe('Unsaved custom blueprint')
+    expect((within(roleContainer('Java Backend Developer P3'))
+      .getByLabelText('Tổng số câu cho vai trò này') as HTMLInputElement).value).toBe('8')
+    expect(vi.mocked(listOccupations)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(getOccupation)).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: 'EN' }))
+    expect(screen.getByRole('heading', { name: 'Baseline assessment blueprint' })).toBeTruthy()
+  })
+
+  it('keeps multiple role panels open and collapses them independently', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    const javaTrigger = await screen.findByRole('button', { name: /Java Backend Developer P3/ })
+    const platformTrigger = screen.getByRole('button', { name: /Platform Engineer P4/ })
+    expect(javaTrigger.getAttribute('aria-expanded')).toBe('true')
+    expect(platformTrigger.getAttribute('aria-expanded')).toBe('false')
+
+    await user.click(platformTrigger)
+    expect(javaTrigger.getAttribute('aria-expanded')).toBe('true')
+    expect(platformTrigger.getAttribute('aria-expanded')).toBe('true')
+
+    await user.click(javaTrigger)
+    expect(javaTrigger.getAttribute('aria-expanded')).toBe('false')
+    expect(platformTrigger.getAttribute('aria-expanded')).toBe('true')
+  })
 })
 
 async function configureFirstSkill(user: ReturnType<typeof userEvent.setup>) {
   await screen.findByText('Java Backend Developer P3')
-  const skillDetails = screen.getByText('Java Core').closest('details')
-  expect(skillDetails).not.toBeNull()
-  await user.click(within(skillDetails!).getByText('Java Core'))
-  for (const difficulty of ['Easy', 'Medium', 'Hard']) {
-    const input = within(skillDetails!).getByLabelText(new RegExp(`^${difficulty} questions`, 'i'))
+  const role = roleContainer('Java Backend Developer P3')
+  const total = within(role).getByLabelText('Total questions for this role')
+  await user.clear(total)
+  await user.type(total, '3')
+  await user.click(within(role).getByRole('button', { name: 'Apply and distribute' }))
+  for (const [difficulty, weight] of [['Easy', '40'], ['Medium', '30'], ['Hard', '30']]) {
+    const input = within(role).getByLabelText(`${difficulty} score weight (%)`)
     await user.clear(input)
-    await user.type(input, '1')
+    await user.type(input, weight)
   }
 }
 
+function renderPage() {
+  return render(
+    <LanguageProvider>
+      <LanguageSwitcher />
+      <BaselineBlueprintPage />
+    </LanguageProvider>,
+  )
+}
+
+function roleContainer(roleName: string) {
+  const role = screen.getByRole('button', { name: new RegExp(roleName) }).closest('[data-value]')
+  expect(role).not.toBeNull()
+  return role as HTMLElement
+}
+
 function blueprintPayload(): BaselineBlueprint {
-  const roles = developmentBaselineRoles().map((role) => ({
+  const roles = developmentBaselineRoles().map((role, roleIndex) => ({
     ...role,
-    totalQuestionCount: role.skills.reduce((sum, skill) => sum
-      + skill.easyQuestionCount + skill.mediumQuestionCount + skill.hardQuestionCount, 0),
+    enabled: roleIndex === 0,
+    totalQuestionCount: roleIndex === 0 ? 3 : 0,
+    easyScoreWeight: roleIndex === 0 ? 0.4 : 0.3334,
+    mediumScoreWeight: roleIndex === 0 ? 0.3 : 0.3333,
+    hardScoreWeight: roleIndex === 0 ? 0.3 : 0.3333,
+    skills: role.skills.map((skill, skillIndex) => ({
+      ...skill,
+      easyQuestionCount: roleIndex === 0 && skillIndex === 0 ? 1 : 0,
+      mediumQuestionCount: roleIndex === 0 && skillIndex === 0 ? 1 : 0,
+      hardQuestionCount: roleIndex === 0 && skillIndex === 0 ? 1 : 0,
+    })),
   }))
   return {
     blueprintId: 'blueprint-1',
