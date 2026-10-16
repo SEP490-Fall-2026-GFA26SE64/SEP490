@@ -1,9 +1,11 @@
 package com.adaptlearngraph.assessment.infrastructure;
 
 import com.adaptlearngraph.assessment.application.BaselineAssessmentDraftService;
+import com.adaptlearngraph.assessment.application.BaselineBlueprintCapacityService;
 import com.adaptlearngraph.assessment.application.BaselineOccupationCatalogService;
 import com.adaptlearngraph.assessment.application.BaselineBlueprintService;
 import com.adaptlearngraph.assessment.application.port.in.BaselineAssessmentDraftUseCase;
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintCapacityUseCase;
 import com.adaptlearngraph.assessment.application.port.in.BaselineOccupationCatalogUseCase;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase;
 import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentDraftStore;
@@ -80,5 +82,15 @@ public class LocalBaselineBlueprintConfiguration {
     BaselineOccupationCatalogUseCase baselineOccupationCatalogUseCase(
             ActorPort actor, BaselineOccupationCatalogPort catalog) {
         return new BaselineOccupationCatalogService(actor, catalog);
+    }
+
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+    BaselineBlueprintCapacityUseCase baselineBlueprintCapacityUseCase(
+            ActorPort actor,
+            BaselineOccupationCatalogPort catalog,
+            BaselineBlueprintValidationPort validation) {
+        return new BaselineBlueprintCapacityService(actor, catalog, validation);
     }
 }

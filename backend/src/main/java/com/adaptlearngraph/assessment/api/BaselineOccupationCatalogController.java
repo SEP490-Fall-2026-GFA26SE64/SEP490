@@ -1,5 +1,7 @@
 package com.adaptlearngraph.assessment.api;
 
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintCapacityUseCase;
+import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintCapacityUseCase.CapacityDetail;
 import com.adaptlearngraph.assessment.application.port.in.BaselineOccupationCatalogUseCase;
 import com.adaptlearngraph.assessment.application.port.in.BaselineOccupationCatalogUseCase.Failure;
 import com.adaptlearngraph.assessment.application.port.in.BaselineOccupationCatalogUseCase.OccupationDetail;
@@ -23,9 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/ld/baseline-blueprint-catalog/occupations")
 public class BaselineOccupationCatalogController {
     private final BaselineOccupationCatalogUseCase catalog;
+    private final BaselineBlueprintCapacityUseCase capacity;
 
-    public BaselineOccupationCatalogController(BaselineOccupationCatalogUseCase catalog) {
+    public BaselineOccupationCatalogController(
+            BaselineOccupationCatalogUseCase catalog, BaselineBlueprintCapacityUseCase capacity) {
         this.catalog = catalog;
+        this.capacity = capacity;
     }
 
     @GetMapping
@@ -38,8 +43,24 @@ public class BaselineOccupationCatalogController {
         return catalog.getAvailableOccupation(occupationId);
     }
 
+    @GetMapping("/{occupationId}/capacity")
+    CapacityDetail capacity(@PathVariable String occupationId) {
+        return capacity.getAvailableCapacity(occupationId);
+    }
+
     @ExceptionHandler(Failure.class)
     ResponseEntity<ApiError> handleFailure(Failure failure) {
+        HttpStatus status = switch (failure.code()) {
+            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+        return ResponseEntity.status(status).body(new ApiError(failure.code().name(), failure.getMessage()));
+    }
+
+    @ExceptionHandler(BaselineBlueprintCapacityUseCase.Failure.class)
+    ResponseEntity<ApiError> handleCapacityFailure(BaselineBlueprintCapacityUseCase.Failure failure) {
         HttpStatus status = switch (failure.code()) {
             case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
             case FORBIDDEN -> HttpStatus.FORBIDDEN;

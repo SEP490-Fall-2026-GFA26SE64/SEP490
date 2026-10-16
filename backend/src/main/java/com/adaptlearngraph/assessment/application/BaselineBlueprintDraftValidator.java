@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 final class BaselineBlueprintDraftValidator {
+    private static final BigDecimal MINIMUM_PARTICIPATING_WEIGHT = new BigDecimal("0.01");
+
     private final BaselineBlueprintValidationPort validation;
     private final BaselineBlueprintCoverageValidator coverage;
 
@@ -79,6 +81,7 @@ final class BaselineBlueprintDraftValidator {
                             counts.mediumQuestionCount(), counts.hardQuestionCount());
                 })
                 .toList();
+        validateMinimumCounts(catalogRole.id(), normalizedSkills);
         RoleConfig normalized = new RoleConfig(
                 catalogRole.id(), catalogRole.name(), hasQuestions(normalizedSkills),
                 submittedRole.easyScoreWeight(), submittedRole.mediumScoreWeight(),
@@ -108,6 +111,26 @@ final class BaselineBlueprintDraftValidator {
         }
         if (usedWeight.compareTo(BigDecimal.ONE) != 0) {
             throw invalid("Used difficulty weights must total one for role " + role.roleId());
+        }
+        if (role.easyScoreWeight().compareTo(MINIMUM_PARTICIPATING_WEIGHT) < 0
+                || role.mediumScoreWeight().compareTo(role.easyScoreWeight()) <= 0
+                || role.hardScoreWeight().compareTo(role.mediumScoreWeight()) <= 0) {
+            throw invalid("Participating role weights must satisfy hard > medium > easy >= 0.01 for role "
+                    + role.roleId());
+        }
+    }
+
+    private static void validateMinimumCounts(String roleId, List<SkillConfig> skills) {
+        if (skills.stream().noneMatch(skill -> skill.totalQuestionCount() > 0)) {
+            return;
+        }
+        for (SkillConfig skill : skills) {
+            if (skill.easyQuestionCount() < 1
+                    || skill.mediumQuestionCount() < 1
+                    || skill.hardQuestionCount() < 1) {
+                throw invalid("Participating role requires at least one question per MicroSkill and difficulty: role="
+                        + roleId + ", microSkill=" + skill.microSkillId());
+            }
         }
     }
 
