@@ -19,6 +19,7 @@ The PostgreSQL suite now applies V1–V13 and proves one logical blueprint per O
 | `persistsVersionedBlueprintAndIdempotentGenerationWithUtcTimestamps` | Occupation identity, all roles including a zero role, versions and replay records round-trip; generation pins the latest eligible item version; timestamps remain UTC; protected answer material is not reconstructed into the public manifest. | R3–R5, R7, R9, R11 |
 | `reviewAndPublishPersistExactHashAndDatabaseFreezesHeaderAndManifest` | Exact hash is persisted; review freezes item changes; publish freezes header and items. | R6 |
 | `rejectsSecondLogicalBlueprintForSameOccupation` | Database uniqueness prevents a second logical blueprint identity for one Occupation. | R9 |
+| `readsCurrentPublishedCapacityWithoutCountingSupersededItemVersions` | Capacity uses the real PostgreSQL adapter, counts only the latest published version per question identity and returns zero for an uncovered skill/difficulty. | CW3–CW4 |
 
 Neo4j file: `Neo4jBaselineOccupationCatalogAdapterIntegrationTest.java`.
 
@@ -38,6 +39,23 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock `
 ```
 
 Results after correcting the stale seed-count assertion: PostgreSQL **4 passed**, Neo4j Occupation adapter **3 passed**, graph schema **1 passed**. The complete backend regression then passed **174/174** in 2 minutes 35 seconds with the same Docker/Testcontainers configuration.
+
+## Linked capacity execution — 2026-10-16
+
+The new fifth PostgreSQL case above was compiled and selected with:
+
+```powershell
+cd backend
+.\mvnw.cmd -q "-Dtest=BaselineAssessmentPostgresIntegrationTest" test
+```
+
+The first attempt produced **5 skipped** because Docker Desktop was unavailable. After Docker was started, the combined command below exited 0:
+
+```powershell
+.\mvnw.cmd -q "-Dtest=BaselineAssessmentPostgresIntegrationTest,Neo4jBaselineOccupationCatalogAdapterIntegrationTest,GraphSchemaTest" test
+```
+
+PostgreSQL 17.6 applied Flyway V1–V13 on disposable schemas, including the fifth latest-published-capacity case. Neo4j 5.26 Testcontainers executed the Occupation adapter and graph-schema cases. The subsequent full backend regression passed **183/183**, with 0 failures/errors/skips. No production Catalog integration is claimed because tenant visibility/publication/release-snapshot ownership remains with the Catalog owner.
 
 ## Run evidence — 2026-10-14
 

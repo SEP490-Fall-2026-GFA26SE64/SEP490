@@ -1,8 +1,21 @@
 # REQ-002-F02 — Full-stack system evidence
 
+## Linked weight/capacity scenario — executed 2026-10-16
+
+The current Playwright source waits for capacity, applies the participating Java role minimum of `15` questions for its five MicroSkills, expects default weights `20/30/50`, keeps the Platform role at zero, and then saves/reloads/generates 15 items before replay, review and publication checks.
+
+The dedicated `req002-walkthrough` project was rebuilt on clean PostgreSQL/Neo4j volumes. Migration exited 0, PostgreSQL/Neo4j/API were healthy, the development ontology bridge returned five Platform skills, and the updated command passed **1/1 in 9.9 seconds** (scenario body 8.6 seconds):
+
+```powershell
+cd frontend
+npm.cmd exec -- playwright test system-tests/REQ-002-F02-baseline-authoring.spec.ts --config=playwright.system.config.ts
+```
+
+This proves the capacity endpoint, minimum-per-cell invariant, linked `20/30/50` weights and existing save/reload/generate/replay/review/publish flow on the approved local/demo stack. It does not replace production Identity or Catalog integration evidence.
+
 ## UX/i18n delta — executed 2026-10-16
 
-The browser scenario now enters a role-level total, confirms no distribution occurs before explicit Apply, verifies deterministic `33.34/33.33/33.33%` weights for three questions, keeps two role panels open, and switches EN → VI → EN without losing the draft total or accordion state. It then runs the existing save/reload/generate/idempotent replay/review/publish path and verifies decimal wire weights and zero-role exclusion.
+This historical browser scenario entered a role-level total, confirmed no distribution occurred before explicit Apply, verified the then-current `33.34/33.33/33.33%` behavior for three questions, kept two role panels open, and switched EN → VI → EN without losing draft state. That passing result predates and is superseded by the linked-weight/capacity contract for current acceptance.
 
 ```powershell
 cd frontend

@@ -5,7 +5,7 @@
 - Actor: L&D Manager from trusted server-side context.
 - Verified product flow: select one Occupation, configure all of its roles by skill/difficulty (including zero-question roles), generate an exact assessment manifest, review its current content hash, then publish it.
 - Tenant context: the current product contract is single-organization. Tests still verify that the actor organization is passed to catalog validation and that an unauthenticated or unauthorized actor is rejected before dependencies are called.
-- Approval status: the user approved O6 and the original Cụm 1–4 Occupation flow, completed on 2026-10-15. The user also approved Cụm 1–4 for the UX/i18n delta, completed on 2026-10-16 with the evidence below. F02 is surface-complete on the local/demo boundary, not production-ready.
+- Approval status: the user approved O6 and the original Cụm 1–4 Occupation flow, completed on 2026-10-15, plus the UX/i18n delta and linked-weight/capacity Cụm 1–4 completed on 2026-10-16. Local/demo executable evidence is current at every planned level. F02 is not production-ready because production Identity/Catalog contracts remain dependencies.
 
 ## Occupation-scoped delta — executed 2026-10-15
 
@@ -102,7 +102,41 @@ Execution summary:
 
 - R1–R14 are mapped to passing unit/application/API/frontend, PostgreSQL/Neo4j integration and Compose/Playwright evidence above.
 - No backend/frontend/runtime code changed after the successful Cụm 2 run; subsequent worktree changes are documentation only, so executable suites were not rerun in Cụm 4.
+
+## Linked weights and capacity-aware allocation — Cụm 2 executed 2026-10-16
+
+The user approved Cụm 2 on 2026-10-16. Docker-backed evidence was rerun after the daemon became available, then the user authorized proceeding directly to Cụm 4 when the rerun passed.
+
+| Rule | Executable mapping | Result |
+| :--- | :--- | :--- |
+| Participating weights total exactly `100%`, use at most `0.01%` precision and satisfy `Hard > Medium > Easy >= 1%`. Invalid raw values such as `040` remain visible and block commit. | `baselineBlueprintWeights.test.ts`, `BaselineWeightControl.test.tsx`, `BaselineBlueprintServiceTest` | PASS |
+| Input and accessible slider share state; divider movement clamps at the nearest valid hierarchy boundary. A zero-question role keeps visible weights at zero. | `BaselineWeightControl.test.tsx` | PASS |
+| A participating role allocates at least one Easy, Medium and Hard question for every MicroSkill; total is `0` or within `[3 × N, feasibleMax]`. | `baselineBlueprintCapacity.test.ts`, `BaselineBlueprintPage.test.tsx`, `BaselineBlueprintServiceTest` | PASS |
+| Shared MicroSkill demand is aggregated by difficulty and cannot exceed current published capacity. | `baselineBlueprintCapacity.test.ts`, `OccupationBaselineBlueprintPolicyTest` | PASS |
+| Capacity read uses trusted actor organization, unique occupation skills, stable API errors and exposes counts/metadata without protected answer material. | `BaselineBlueprintCapacityServiceTest`, `BaselineOccupationCatalogControllerTest`, `baselineBlueprintApi.test.ts` | PASS |
+| PostgreSQL capacity counts only the latest published item version; full UI save/generate/review/publish follows the new minimum and `20/30/50` default. | `BaselineAssessmentPostgresIntegrationTest`, `REQ-002-F02-baseline-authoring.spec.ts` | PASS |
+
+Execution evidence:
+
+- Backend scoped unit/API: **18 passed**, 0 failures/errors/skips across four classes.
+- Initial non-Docker regression while the daemon was unavailable: **177 executed, 162 passed and 15 skipped**, 0 failures/errors. This provisional evidence is superseded by the final Docker-enabled regression below.
+- Docker-enabled scoped integration command `mvnw.cmd -q "-Dtest=BaselineAssessmentPostgresIntegrationTest,Neo4jBaselineOccupationCatalogAdapterIntegrationTest,GraphSchemaTest" test` exited **0**. PostgreSQL capacity used PostgreSQL 17.6 with Flyway V1–V13; Neo4j adapter/schema cases used Neo4j 5.26 Testcontainers.
+- Final full backend regression `mvnw.cmd -q test`: **183/183 passed**, 0 failures/errors/skips.
+- Frontend scoped Function/component/API/page coverage: **36 passed** across 5 files, including capacity retry with unsaved-draft retention.
+- Full frontend regression: `npm.cmd test -- --run` — **69 passed** across 14 files.
+- Frontend production build passed. Full lint exited 0; warnings are pre-existing and outside the changed baseline files.
+- Clean Compose/Playwright rerun: **1/1 passed** in 9.9 seconds (scenario body 8.6 seconds). PostgreSQL, Neo4j and API were healthy, migration exited 0, and the catalog bridge returned five Platform skills before execution.
 - Static completion checks passed: no unmerged/conflict markers, relative links in changed Markdown resolve, and `git diff --check` is clean in both repositories.
 - Legacy `TargetRoleCatalogPort` compatibility remains available to other consumers, but new Occupation blueprint drafts route through `BaselineOccupationCatalogPort`; there is one controller/service/adapter path for the new command flow.
 - Rollback is configuration-first: leave `BASELINE_OCCUPATION_CATALOG_ENABLED=false` to disable the local adapter. V13 is forward-only and must not be edited or rolled back by deleting history; legacy-null identities remain compatible.
 - The complete read-and-run walkthrough is [REQ-002-F02 full walkthrough](../../../../.project/test/REQ-002-F02-full-walkthrough-test-guide.md).
+
+## Linked weights/capacity Cụm 4 completion review — 2026-10-16
+
+- Every accepted linked-weight, minimum-per-skill/difficulty, aggregate-capacity, stale-save and full authoring-flow rule maps to current executable evidence; no local/demo acceptance exception remains.
+- Static review confirms one capacity controller/use-case path, one frontend capacity client/policy/control path, and no competing command handler or legacy native-number weight editor.
+- Temporary entries `TMP-REQ002-01..05` still match the local actor, seed, catalog adapter and frontend consumers. No new fake capacity or client-side production source of truth was introduced.
+- Compatibility remains deliberate: excluded roles are represented by zero counts, immutable historical blueprint versions remain readable, and V13 stays forward-only. Rollback remains configuration-first by disabling the local Occupation adapter outside approved profiles.
+- Production Identity authorization, tenant-safe Catalog visibility, publication readiness and catalog snapshot/release ownership remain deferred to their owners. Therefore completion here means the approved local/demo Function delta, not production readiness.
+- `git diff --check`, conflict-marker scan, changed-document relative-link check and implementation/registry call-site review passed. No runtime code changed after the successful Docker-enabled Cụm 2 rerun, so executable suites were not repeated after these Cụm 4 Markdown updates.
+- Changes remain uncommitted and unpushed; commit grouping requires a separate user instruction.
