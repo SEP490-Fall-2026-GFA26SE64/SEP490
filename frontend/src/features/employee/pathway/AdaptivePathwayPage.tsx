@@ -1,12 +1,14 @@
 import * as React from 'react'
 import {
   ArrowRight,
+  CheckCircle2,
   GitFork,
   ListOrdered,
   Lock,
   RefreshCw,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
@@ -106,6 +108,19 @@ export function AdaptivePathwayPage() {
             </Card>
           ) : (
             <>
+              {/* Expert-Reviewed Pathway Confirmation Banner (Section 4.4 & 4.3) */}
+              <div className="p-3.5 rounded-xl border border-success/30 bg-success/10 flex items-center justify-between gap-3 text-xs mt-4">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-success shrink-0" />
+                  <span className="text-foreground">
+                    <strong>Expert-Reviewed Learning Pathway:</strong> Audited and confirmed by Subject Matter Expert <strong>Dr. Sarah Chen</strong> for target role <strong>{profile.targetRole || 'AI Knowledge Architect'}</strong>.
+                  </span>
+                </div>
+                <Badge variant="success" className="text-[10px] shrink-0 font-semibold">
+                  Pathway Verified
+                </Badge>
+              </div>
+
               {/* TAB 1: INTERACTIVE ROADMAP */}
               <TabsContent value="roadmap" className="mt-4">
                 <InteractiveRoleRoadmap />

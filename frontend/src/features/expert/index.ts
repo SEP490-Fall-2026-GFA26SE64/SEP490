@@ -2,3 +2,4 @@ export { CompetencyOntologyPage } from '../manager/ontology/CompetencyOntologyPa
 export { LearningModulesPage } from '../manager/modules/LearningModulesPage'
 export { AssessmentBankPage } from '../manager/assessment-bank/AssessmentBankPage'
 export { ExpertAssignedRolesPage } from './target-roles/ExpertAssignedRolesPage'
+export { ExpertGuidanceReviewPage, ExpertPathwayReviewPage } from './guidance-review/ExpertGuidanceReviewPage'

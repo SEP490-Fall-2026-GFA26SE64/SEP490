@@ -276,7 +276,7 @@ export function LearningOutcomesPage() {
           <StatCard
             variant="gradient"
             icon={<CheckCircle2 className="h-4 w-4 text-primary" />}
-            title="Course Completion Rate"
+            title="Module Completion Rate"
             value={`${avgCompletion}%`}
             valueClassName="text-primary"
             description="+12.4% vs previous quarter"

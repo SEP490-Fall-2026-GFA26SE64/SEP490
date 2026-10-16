@@ -965,7 +965,7 @@ export function CompetencyOntologyPage() {
                   onClick={handleOpenCreateSkill}
                   className="font-semibold shadow-2xs"
                 >
-                  Create Micro-skill
+                  Create
                 </Button>
               )}
               {activeTab === 'prerequisites' && (
@@ -976,7 +976,7 @@ export function CompetencyOntologyPage() {
                   onClick={() => setIsPrereqModalOpen(true)}
                   className="font-semibold shadow-2xs"
                 >
-                  Create Prerequisite Edge
+                  Create
                 </Button>
               )}
             </div>

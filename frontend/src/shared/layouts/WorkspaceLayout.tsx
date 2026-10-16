@@ -7,13 +7,14 @@ import {
   BookOpen,
   Briefcase,
   Building,
+  CheckCircle2,
   CheckSquare,
   ChevronDown,
   Compass,
   FileQuestion,
+  FolderTree,
   GraduationCap,
   HelpCircle,
-  Layers,
   LayoutDashboard,
   LogOut,
   Network,
@@ -23,7 +24,6 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
-  TrendingUp,
   User,
   Users,
 } from 'lucide-react'
@@ -35,8 +35,6 @@ import { useToast } from '../hooks/useToast'
 import { useTranslation } from '../i18n/LanguageContext'
 import {
   getActiveCompany,
-  loadCompanies,
-  setActiveCompanyId,
   type CompanyRecord,
 } from '../stores/companyStore'
 import { getUserProfile } from '../stores/userProfileStore'
@@ -48,7 +46,7 @@ interface NavTabItem {
   icon: React.ReactNode
 }
 
-export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'guest'
+export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin'
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const location = useLocation()
@@ -59,12 +57,10 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   // Active Company tracking
   const [activeCompany, setActiveCompanyState] = React.useState<CompanyRecord>(getActiveCompany)
-  const [allCompanies, setAllCompanies] = React.useState<CompanyRecord[]>(loadCompanies)
 
   React.useEffect(() => {
     const handleUpdate = () => {
       setActiveCompanyState(getActiveCompany())
-      setAllCompanies(loadCompanies())
     }
     window.addEventListener('active_company_changed', handleUpdate)
     window.addEventListener('companies_updated', handleUpdate)
@@ -116,8 +112,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       path === '/assessment'
     ) {
       localStorage.setItem('active_actor', 'employee')
-    } else if (path.startsWith('/packages') || path.startsWith('/guest')) {
-      localStorage.setItem('active_actor', 'guest')
     }
   }, [path])
 
@@ -139,10 +133,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     ) {
       return 'employee'
     }
-    if (path.startsWith('/packages') || path.startsWith('/guest')) return 'guest'
 
     const savedActor = localStorage.getItem('active_actor') as ActorRole | null
-    if (savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin' || savedActor === 'guest') {
+    if (savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin') {
       return savedActor
     }
     return 'employee'
@@ -153,7 +146,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const isExpert = activeActor === 'expert'
   const isLdManager = activeActor === 'ld-manager'
   const isAdmin = activeActor === 'admin'
-  const isGuest = activeActor === 'guest'
 
   // Actor-specific navigation tabs for the navbar
   let actorTabs: NavTabItem[] = []
@@ -166,9 +158,14 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <LayoutDashboard size={15} />,
       },
       {
-        label: t('nav.targetRoles'),
-        href: '/employee/target-roles',
+        label: t('nav.upskilling'),
+        href: '/employee/upskilling',
         icon: <Target size={15} />,
+      },
+      {
+        label: t('nav.roleGuidance', 'AI Role Guidance'),
+        href: '/employee/guidance',
+        icon: <Sparkles size={15} />,
       },
       {
         label: t('nav.pathway'),
@@ -199,6 +196,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
+        label: t('nav.pathwayReview', 'Pathway Review'),
+        href: '/expert/pathway-review',
+        icon: <Compass size={15} />,
+      },
+      {
         label: t('nav.ontology'),
         href: '/expert/ontology',
         icon: <Network size={15} />,
@@ -222,9 +224,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isLdManager) {
     actorTabs = [
       {
-        label: t('nav.learningOutcomes'),
-        href: '/ld-manager/learning-outcomes',
-        icon: <BarChart3 size={15} />,
+        label: t('nav.occupations', 'Occupations'),
+        href: '/ld-manager/occupations',
+        icon: <FolderTree size={15} />,
       },
       {
         label: t('nav.targetRoles'),
@@ -232,9 +234,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
-        label: t('nav.userDirectory'),
-        href: '/ld-manager/users',
-        icon: <Users size={15} />,
+        label: t('nav.contentApprovals', 'Content Approvals'),
+        href: '/ld-manager/approvals',
+        icon: <CheckCircle2 size={15} />,
       },
       {
         label: t('nav.teamMatrix'),
@@ -242,9 +244,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Users size={15} />,
       },
       {
-        label: t('nav.roiForecast'),
-        href: '/ld-manager/roi-forecast',
-        icon: <TrendingUp size={15} />,
+        label: t('nav.learningOutcomes'),
+        href: '/ld-manager/learning-outcomes',
+        icon: <BarChart3 size={15} />,
       },
       {
         label: t('nav.serverStatus'),
@@ -255,9 +257,14 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   } else if (isAdmin) {
     actorTabs = [
       {
-        label: t('nav.ontology'),
+        label: t('nav.adminConsole', 'System Console'),
         href: '/admin/dashboard',
-        icon: <Layers size={15} />,
+        icon: <ShieldCheck size={15} />,
+      },
+      {
+        label: t('nav.userDirectory', 'User Accounts'),
+        href: '/admin/users',
+        icon: <Users size={15} />,
       },
       {
         label: t('nav.knowledgeGraph'),
@@ -273,14 +280,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: t('nav.serverStatus'),
         href: '/system-status?portal=admin',
         icon: <Activity size={15} />,
-      },
-    ]
-  } else if (isGuest) {
-    actorTabs = [
-      {
-        label: t('nav.selectPlan'),
-        href: '/packages',
-        icon: <Sparkles size={15} />,
       },
     ]
   }
@@ -308,8 +307,21 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/'
       )
     }
-    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
-      return path === '/employee/target-roles' || path === '/learner/target-roles'
+    if (
+      itemHref === '/employee/upskilling' ||
+      itemHref === '/employee/target-roles' ||
+      itemHref === '/learner/target-roles' ||
+      itemHref === '/learner/upskilling'
+    ) {
+      return (
+        path === '/employee/upskilling' ||
+        path === '/employee/target-roles' ||
+        path === '/learner/target-roles' ||
+        path === '/learner/upskilling'
+      )
+    }
+    if (itemHref === '/employee/guidance') {
+      return path === '/employee/guidance'
     }
     if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
       return path === '/employee/pathway' || path === '/learner/pathway'
@@ -322,6 +334,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
     if (itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
       return path === '/expert/target-roles' || path === '/expert/assigned-roles'
+    }
+    if (itemHref === '/expert/pathway-review' || itemHref === '/expert/guidance-review') {
+      return path === '/expert/pathway-review' || path === '/expert/guidance-review'
     }
     if (itemHref === '/expert/ontology') {
       return path === '/expert/ontology' || path === '/ld-manager/ontology' || path === '/manager/ontology'
@@ -340,6 +355,12 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/manager'
       )
     }
+    if (itemHref === '/ld-manager/occupations') {
+      return path === '/ld-manager/occupations' || path === '/ld-manager/disciplines'
+    }
+    if (itemHref === '/ld-manager/approvals') {
+      return path === '/ld-manager/approvals'
+    }
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
@@ -349,9 +370,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/ld-manager/team-matrix') {
       return path === '/ld-manager/team-matrix' || path === '/manager/team-matrix'
     }
-    if (itemHref === '/ld-manager/roi-forecast') {
-      return path === '/ld-manager/roi-forecast' || path === '/manager/roi-forecast'
-    }
     if (itemHref === '/admin/dashboard') {
       return path === '/admin/dashboard' || path === '/admin'
     }
@@ -360,9 +378,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
     if (itemHref === '/admin/design-system') {
       return path === '/admin/design-system' || path === '/design-system'
-    }
-    if (itemHref === '/packages' || itemHref.startsWith('/packages')) {
-      return path.startsWith('/packages') || path.startsWith('/guest')
     }
     return path === itemHref
   }
@@ -394,10 +409,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     })
   }
 
-  const brandHomeUrl = isGuest
-    ? '/packages'
-    : isEmployee
-    ? '/employee/target-roles'
+  const brandHomeUrl = isEmployee
+    ? '/employee/upskilling'
     : isExpert
     ? '/expert/assigned-roles'
     : isLdManager
@@ -431,13 +444,13 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             {isEmployee && (
               <>
                 <Link
-                  to="/employee/target-roles"
+                  to="/employee/upskilling"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
-                    path === '/employee/target-roles'
-                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                    path === '/employee/upskilling' || path === '/employee/target-roles'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
-                  title="Home (Target Roles)"
+                  title="Home (Upskilling)"
                 >
                   Home
                 </Link>
@@ -445,7 +458,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                   to="/employee/pathway"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
                     path === '/employee/pathway'
-                      ? 'bg-secondary text-primary font-bold shadow-2xs'
+                      ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
                   title="My Learning (Adaptive Pathway)"
@@ -526,7 +539,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                     <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
                     <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
                     <p className="text-[11px] text-primary font-semibold mt-1 flex items-center gap-1">
-                      <Building size={12} /> {isGuest ? 'New Organization Registration' : activeCompany.name}
+                      <Building size={12} /> {activeCompany.name}
                     </p>
                   </div>
 
@@ -604,52 +617,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                           </span>
                           {isAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
-
-                        {/* 5. Guest */}
-                        <Link
-                          to="/packages"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isGuest
-                              ? 'bg-secondary text-primary font-semibold'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Sparkles size={13} className="text-primary" />
-                            <span>{t('roles.guest')}</span>
-                          </span>
-                          {isGuest && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
-                        </Link>
                       </div>
-                    </div>
-
-                    <div className="my-1 border-t border-border" />
-
-                    {/* Switch Company Quick Option */}
-                    <div className="px-3.5 py-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                        Active Company Scope
-                      </span>
-                      <select
-                        value={activeCompany.id}
-                        onChange={(e) => {
-                          setActiveCompanyId(e.target.value)
-                          setIsUserMenuOpen(false)
-                          toast({
-                            title: 'Company Context Changed',
-                            description: `Switched active organization scope.`,
-                            variant: 'info',
-                          })
-                        }}
-                        className="w-full rounded border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground focus:outline-none"
-                      >
-                        {allCompanies.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} ({c.packageTier})
-                          </option>
-                        ))}
-                      </select>
                     </div>
 
                     <div className="my-1 border-t border-border" />
