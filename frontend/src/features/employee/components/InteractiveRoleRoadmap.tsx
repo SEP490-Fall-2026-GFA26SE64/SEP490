@@ -13,12 +13,14 @@ import {
   Target,
   Zap,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Dialog } from '../../../shared/components/ui/Dialog'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { cn } from '../../../shared/lib/utils'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import {
   type LearningModuleNode,
   type MicroSkillNode,
@@ -40,12 +42,62 @@ export function InteractiveRoleRoadmap() {
     }
   }, [])
 
+  const { profile } = useEmployeeLearningState()
+  const isSkillMode = profile.selectedViewType === 'skill'
   const selectedRoleKey = 'ai-knowledge-architect'
   const [searchQuery, setSearchQuery] = React.useState('')
   const [selectedDetailSkill, setSelectedDetailSkill] = React.useState<MicroSkillNode | null>(null)
   const [selectedDetailModule, setSelectedDetailModule] = React.useState<LearningModuleNode | null>(null)
 
   const roadmapData: TargetRoleRoadmap = React.useMemo(() => {
+    // If in Skill mode, return dedicated skill roadmap
+    if (isSkillMode) {
+      const currentSkillName = profile.targetSkill || 'Neo4j Cypher Traversal'
+      return {
+        roleId: 'skill-pathway',
+        roleCode: 'SKILL-CYPHER-01',
+        name: `Skill Roadmap: ${currentSkillName}`,
+        jobLevel: profile.targetSkillLevel || 'Intermediate',
+        domain: 'Micro-Skill Upskilling',
+        description: `Dedicated learning pathway and modular curriculum calibrated to master ${currentSkillName}.`,
+        totalModules: 1,
+        totalSkills: 2,
+        achievedSkills: 1,
+        modules: [
+          {
+            id: 'mod-cypher-mastery',
+            moduleCode: 'MOD-CYP-101',
+            title: 'Accelerated Cypher Querying & Pattern Traversal',
+            description: 'Master pattern matching, variable-length path traversal, aggregation pipelines, and graph index optimization using openCypher.',
+            status: 'in_progress',
+            estimatedDurationMinutes: 45,
+            order: 1,
+            branchSide: 'both',
+            microSkills: [
+              {
+                id: 'sk-cyp-01',
+                skillCode: 'SK-CYP-01',
+                name: 'Declarative Cypher MATCH & MERGE',
+                description: 'Path traversal syntax, bidirectional relationship matching, and atomic merge semantics.',
+                status: 'achieved',
+                masteryPercentage: 91,
+                estimatedMinutes: 25,
+              },
+              {
+                id: 'sk-opt-04',
+                skillCode: 'SK-OPT-04',
+                name: 'Cypher Query Profiling (EXPLAIN / PROFILE)',
+                description: 'DbHits analysis, card estimation, cache hits, and Cartesian product elimination.',
+                status: 'not_achieved',
+                masteryPercentage: 45,
+                estimatedMinutes: 20,
+              },
+            ],
+          },
+        ],
+      }
+    }
+
     if (activeCompany.id === 'comp-technova') {
       return TARGET_ROLE_ROADMAPS[selectedRoleKey] || TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
     }
@@ -81,7 +133,7 @@ export function InteractiveRoleRoadmap() {
       achievedSkills: modules.reduce((acc, m) => acc + m.microSkills.filter((s) => s.status === 'achieved').length, 0),
       modules,
     }
-  }, [activeCompany, selectedRoleKey])
+  }, [activeCompany, selectedRoleKey, isSkillMode, profile.targetSkill, profile.targetSkillLevel, profile.targetRole])
 
   // Derive counts from active company roadmap
   const totalMicroSkills = roadmapData.modules.reduce((acc, m) => acc + m.microSkills.length, 0)
@@ -167,7 +219,7 @@ export function InteractiveRoleRoadmap() {
             <div className="flex items-center justify-center gap-2 mb-1">
               <Sparkles size={18} className="text-primary animate-pulse" />
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-primary">
-                Target Role
+                {isSkillMode ? 'Target Skill' : 'Target Role'}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
@@ -574,13 +626,22 @@ export function InteractiveRoleRoadmap() {
                 </div>
                 <div className="flex items-center gap-2 justify-end">
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="sm"
                     onClick={() => setSelectedDetailModule(null)}
-                    className="shadow-xs"
                   >
-                    Close View
+                    Close
                   </Button>
+                  <Link to={`/employee/modules/${selectedDetailModule.id || 'mod-cypher-mastery'}`}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="shadow-xs gap-1.5 font-semibold"
+                    >
+                      <BookOpen size={13} />
+                      <span>Study Module Content</span>
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -679,20 +740,36 @@ export function InteractiveRoleRoadmap() {
                   </div>
                 </div>
 
-                {/* Ontology Hierarchy Context Box */}
+                {/* Ontology Hierarchy Context Box with Module Content */}
                 {parentModule && (
-                  <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                      <BookOpen size={14} className="text-primary" />
-                      <span>Parent Curriculum Module</span>
+                  <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                        <BookOpen size={14} className="text-primary" />
+                        <span>Parent Curriculum Module</span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] font-mono">
+                        {parentModule.moduleCode}
+                      </Badge>
                     </div>
-                    <div className="pl-6">
-                      <div className="text-xs font-semibold text-foreground">
+                    <div className="pl-6 space-y-1">
+                      <div className="text-xs font-bold text-foreground">
                         {parentModule.moduleCode}: {parentModule.title}
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
                         {parentModule.description}
                       </p>
+                    </div>
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-muted-foreground">
+                        Duration: {parentModule.estimatedDurationMinutes || 45} mins &bull; Theory, Practical &amp; Quizzes
+                      </span>
+                      <Link to={`/employee/modules/${parentModule.id || 'mod-cypher-mastery'}`}>
+                        <Button variant="outline" size="sm" className="h-7 text-xs font-semibold gap-1 text-primary hover:text-primary">
+                          <BookOpen size={12} />
+                          <span>View Lessons</span>
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -707,19 +784,32 @@ export function InteractiveRoleRoadmap() {
               </div>
 
               {/* Footer */}
-              <div className="border-t border-border bg-muted/20 px-6 sm:px-7 py-3.5 flex items-center justify-between">
+              <div className="border-t border-border bg-muted/20 px-6 sm:px-7 py-3.5 flex items-center justify-between gap-3">
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <Target size={14} className="text-primary" />
                   <span>Calibrated via Knowledge Graph Engine</span>
                 </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setSelectedDetailSkill(null)}
-                  className="shadow-xs"
-                >
-                  Close
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedDetailSkill(null)}
+                  >
+                    Close
+                  </Button>
+                  {parentModule && (
+                    <Link to={`/employee/modules/${parentModule.id || 'mod-cypher-mastery'}`}>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="shadow-xs gap-1.5 font-semibold"
+                      >
+                        <BookOpen size={13} />
+                        <span>Go to Module Learning Content</span>
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           )

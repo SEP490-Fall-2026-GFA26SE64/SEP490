@@ -1,6 +1,6 @@
 import { getActiveCompany } from './companyStore'
 
-export type ActorRole = 'employee' | 'expert' | 'ld-manager' | 'admin' | 'learner'
+export type ActorRole = 'employee' | 'expert' | 'ld-manager' | 'admin' | 'learner' | 'platform-admin'
 
 export interface UserProfileData {
   actor: ActorRole
@@ -82,6 +82,20 @@ const DEFAULT_PROFILES: Record<
       { label: 'Department', value: 'Corporate Ontology & Governance' },
       { label: 'Scope', value: 'Neo4j Knowledge Graph & Design System Showcase' },
       { label: 'Cluster Connectivity', value: 'Neo4j Bolt: Active' },
+    ],
+  },
+  'platform-admin': {
+    name: 'Platform Superadmin',
+    email: 'platform.admin@adaptlearn.io',
+    roleTitle: 'Platform Administrator',
+    portal: 'Platform Administration',
+    department: 'Multi-Tenant Platform Infrastructure',
+    scope: 'Multi-Organization Lifecycle, Subscriptions & Telemetry',
+    status: 'Global Health: 100% Operational',
+    details: [
+      { label: 'Platform Scope', value: 'Multi-Tenant Organization Workspaces' },
+      { label: 'Authority', value: 'Global Platform Administrator' },
+      { label: 'Cluster Status', value: 'Multi-Region Neo4j & PostgreSQL Active' },
     ],
   },
 }

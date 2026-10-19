@@ -33,6 +33,7 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { getActiveCompanyId } from '../../../shared/stores/companyStore'
+import { TARGET_ROLE_ROADMAPS } from '../data/roadmapData'
 
 interface EnrichedSkill extends MicroSkillDto {
   durationHours: number
@@ -118,6 +119,39 @@ export function UpskillSkillsPanel() {
       )
     },
     [profile?.previousSkills]
+  )
+
+  // Determine skills that are already in the employee's active role learning pathway
+  const pathwaySkillKeys = React.useMemo(() => {
+    const keys = new Set<string>()
+    const defaultRoadmap = TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
+    if (defaultRoadmap) {
+      for (const m of defaultRoadmap.modules) {
+        for (const sk of m.microSkills) {
+          keys.add(sk.name.toLowerCase().trim())
+          if (sk.skillCode) keys.add(sk.skillCode.toLowerCase().trim())
+        }
+      }
+    }
+    // Also include common pathway competencies
+    keys.add('rdf triplestore data model')
+    keys.add('sparql 1.1 query engine')
+    keys.add('declarative cypher match & merge')
+    keys.add('index-free adjacency & schema constraints')
+    keys.add('graph neural networks & node embeddings')
+    keys.add('dynamic knowledge tracing & pedagogical modeling')
+    keys.add('prompt engineering patterns')
+    keys.add('gemini multimodal reasoning')
+    return keys
+  }, [])
+
+  const isSkillInPathway = React.useCallback(
+    (skill: EnrichedSkill) => {
+      const name = skill.name.toLowerCase().trim()
+      const code = (skill.code || '').toLowerCase().trim()
+      return pathwaySkillKeys.has(name) || pathwaySkillKeys.has(code)
+    },
+    [pathwaySkillKeys]
   )
 
   React.useEffect(() => {
@@ -528,7 +562,18 @@ export function UpskillSkillsPanel() {
                       >
                         View details
                       </Button>
-                      {isTracked ? (
+                      {isSkillInPathway(skill) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="text-xs h-7.5 px-3 bg-muted/60 text-muted-foreground border-border cursor-not-allowed opacity-75 font-semibold"
+                          title="This skill is already part of your active target role learning pathway."
+                        >
+                          <CheckCircle2 size={12} className="mr-1 text-primary shrink-0" />
+                          <span>In Pathway</span>
+                        </Button>
+                      ) : isTracked ? (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -709,7 +754,17 @@ export function UpskillSkillsPanel() {
             <Button variant="outline" size="sm" onClick={() => setDetailSkill(null)}>
               Close
             </Button>
-            {isSkillTracked(detailSkill.name) ? (
+            {isSkillInPathway(detailSkill) ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="bg-muted/60 text-muted-foreground border-border cursor-not-allowed opacity-75 font-semibold"
+              >
+                <CheckCircle2 size={13} className="mr-1 text-primary" />
+                <span>In Active Pathway</span>
+              </Button>
+            ) : isSkillTracked(detailSkill.name) ? (
               <Button
                 variant="outline"
                 size="sm"

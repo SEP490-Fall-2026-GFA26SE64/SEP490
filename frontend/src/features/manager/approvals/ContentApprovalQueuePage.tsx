@@ -387,14 +387,15 @@ export function ContentApprovalQueuePage() {
                               {item.microSkillsMapped.length > 0 && (
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span
-                                    className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-foreground font-mono border border-border font-medium"
+                                    className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/70 text-foreground font-mono border border-primary/20 font-medium inline-flex items-center gap-1 shadow-2xs"
                                     title={item.microSkillsMapped[0]}
                                   >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
                                     {item.microSkillsMapped[0]}
                                   </span>
                                   {item.microSkillsMapped.length > 1 && (
                                     <span
-                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/20 cursor-default"
+                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/25 cursor-default shadow-2xs"
                                       title={`+${item.microSkillsMapped.length - 1} more: ${item.microSkillsMapped.slice(1).join(', ')}`}
                                     >
                                       +{item.microSkillsMapped.length - 1}
@@ -633,8 +634,9 @@ export function ContentApprovalQueuePage() {
                   {viewingSubmission.microSkillsMapped.map((skill) => (
                     <span
                       key={skill}
-                      className="px-2 py-0.5 rounded bg-muted text-foreground font-mono text-[11px] border border-border font-medium"
+                      className="px-2 py-0.5 rounded-md bg-secondary/70 text-foreground font-mono text-[11px] border border-primary/20 font-medium inline-flex items-center gap-1.5 shadow-2xs"
                     >
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
                       {skill}
                     </span>
                   ))}

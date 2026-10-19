@@ -1,8 +1,10 @@
-import { CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
 
 export interface PathwayStep {
@@ -143,7 +145,27 @@ export function AdaptivePathwayTimeline() {
     })
   }
 
-  if (steps.length === 0) {
+  const { profile } = useEmployeeLearningState()
+  const isSkillMode = profile.selectedViewType === 'skill'
+
+  const skillSteps: PathwayStep[] = React.useMemo(() => {
+    const currentSkillName = profile.targetSkill || 'Neo4j Cypher Traversal'
+    return [
+      {
+        id: 'step-skill-cypher',
+        code: 'MOD-CYP-101',
+        title: 'Accelerated Cypher Querying & Pattern Traversal',
+        status: 'recommended',
+        estimatedHours: 1,
+        skillsTaught: [currentSkillName],
+        score: 85,
+      },
+    ]
+  }, [profile.targetSkill])
+
+  const effectiveSteps = isSkillMode ? skillSteps : steps
+
+  if (effectiveSteps.length === 0) {
     return (
       <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
         <Sparkles size={32} className="mx-auto text-muted-foreground/60 mb-2" />
@@ -165,23 +187,29 @@ export function AdaptivePathwayTimeline() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                AI-Driven Adaptive Learning Pathway
+                {isSkillMode
+                  ? `Skill Pathway: ${profile.targetSkill || 'Neo4j Cypher Traversal'}`
+                  : 'AI-Driven Adaptive Learning Pathway'}
               </h2>
             </div>
             <p className="text-xs text-muted-foreground">
-              Dynamic graph-traversal route continually recalculated based on real-time assessment performance
+              {isSkillMode
+                ? 'Modular adaptive progression designed to achieve verified single-skill mastery'
+                : 'Dynamic graph-traversal route continually recalculated based on real-time assessment performance'}
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSimulateRemedyFallback}
-            leftIcon={<Zap className="h-4 w-4 text-warning" />}
-            className="self-start md:self-auto shadow-2xs font-semibold"
-          >
-            {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
-          </Button>
+          {!isSkillMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSimulateRemedyFallback}
+              leftIcon={<Zap className="h-4 w-4 text-warning" />}
+              className="self-start md:self-auto shadow-2xs font-semibold"
+            >
+              {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
+            </Button>
+          )}
         </div>
 
         {/* Big Container Body: Continuous Adaptive Timeline Track */}
@@ -191,7 +219,7 @@ export function AdaptivePathwayTimeline() {
             <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
 
             <div className="space-y-6">
-              {steps.map((step) => {
+              {effectiveSteps.map((step) => {
                 const isRecommended = step.status === 'recommended'
                 const isRemedy = step.status === 'remedy'
                 const isCompleted = step.status === 'completed'
@@ -305,6 +333,15 @@ export function AdaptivePathwayTimeline() {
                             </Badge>
                           ))}
                         </div>
+
+                        {!isLocked && (
+                          <Link to="/employee/modules/mod-cypher-mastery">
+                            <Button variant="outline" size="sm" className="text-xs h-7 gap-1">
+                              <span>Open Module Lessons</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
