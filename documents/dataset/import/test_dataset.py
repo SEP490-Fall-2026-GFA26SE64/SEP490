@@ -36,6 +36,9 @@ class CatalogContractTest(unittest.TestCase):
     def test_retired_field_rejected(self):
         self.check_invalid(lambda d:d['LearningModules'][0].update(learningOutcome='retired'),'fields leaked')
 
+    def test_retired_profile_key_rejected(self):
+        self.check_invalid(lambda d:d['TargetRoles'][0].update(canonicalProfileKey='PROFILE-DEV'),'fields leaked')
+
     def test_course_section_rejected(self):
         self.check_invalid(lambda d:d.update(Courses=[]),'Unknown or retired seed sections')
 

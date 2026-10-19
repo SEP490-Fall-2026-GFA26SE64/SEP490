@@ -81,9 +81,7 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 | `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
 | `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
 | `scope` | String | Phạm vi công việc của role: làm gì, phụ trách phần nào. Đây là mô tả do nhóm tổng hợp theo nguồn và cần chuyên gia xác nhận. |
-| `canonicalProfileKey` | String | Mã nhóm profile do nhóm định nghĩa, ví dụ `PROFILE-DEV`. Gom các role có cùng bộ yêu cầu skill để tránh recommendation lặp; 48 role hiện thuộc 20 nhóm. |
 
-`canonicalProfileKey` là property nghiệp vụ thực sự trên node. Nó không phải mã O*NET và không tự xác nhận các tên role đồng nghĩa trong mọi organization. Khi learner chọn role, đánh giá vẫn dùng requirement của Level thuộc role đó; bằng chứng đánh giá giữa các role không tự động thay thế cho nhau.
 
 `occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
 
@@ -192,7 +190,7 @@ Xem [quy tắc assessment và minh chứng](dataset/ONTOLOGY.md#assessment-calcu
 | `Levels.targetRoleId` | TargetRole → HAS_LEVEL → Level | Bỏ field khỏi node; dùng cạnh để truy vấn role sở hữu. |
 | `Competencies.levelId` | Level → HAS_COMPETENCY → Competency | Bỏ field khỏi node; dùng cạnh để truy vấn Level sở hữu. |
 
-Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau import, quan hệ graph là nguồn chính thức cho truy vấn cấu trúc. `canonicalProfileKey` và sáu field RIASEC là property nghiệp vụ thực sự, được giữ trên node tương ứng.
+Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau import, quan hệ graph là nguồn chính thức cho truy vấn cấu trúc. Sáu field RIASEC là property nghiệp vụ thực sự trên Occupation.
 
 ## 7. Các quy tắc nhất quán và recommendation
 
@@ -229,7 +227,7 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 | Node | Property nghiệp vụ ngoài metadata |
 |---|---|
 | Occupation | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional |
-| TargetRole | code, name, scope, canonicalProfileKey |
+| TargetRole | code, name, scope |
 | Level | code, name, rank, context, attainmentRule |
 | Competency | name, description, attainmentRule |
 | MicroSkill | name, definition |
@@ -245,4 +243,6 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 | TEACHES | Không có | 79 |
 | HAS_SKILL_PREREQUISITE | requiredScore | 11 |
 
-Các field đã bỏ khỏi graph: `learningOutcome`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.
+Mỗi TargetRole được xử lý riêng theo Level và bộ requirement. Các role có cùng skill có thể tạo ra lộ trình giống nhau; không có cơ chế gom role bằng mã profile.
+
+Các field đã bỏ khỏi graph: `canonicalProfileKey`, `learningOutcome`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.

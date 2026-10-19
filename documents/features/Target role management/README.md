@@ -5,6 +5,10 @@
 **Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-023. **Actors:** L&D Manager creates/manages; Expert configures assigned requirements. **Status:** Existing evidence requires scope review.
 L&D creates/updates roles, assigns an Expert, and views configuration status. Expert owns competency/micro-skill requirements, proficiency and importance. Completed configuration is submitted to L&D for separate publication (REQ-052). Organization Administrator/`ADMIN` is not an additional product actor; runtime codes require migration design.
 
+### Ontology catalog field scope — 19 October 2026
+
+TargetRole business fields are code, name and scope, plus shared catalog metadata. Occupation ownership is a HAS_ROLE relationship. The profile-grouping field has been removed; each role is recommended/evaluated using its own Level requirements. This catalog-only change does not convert the legacy management API or alter historical learner decisions.
+
 ## Historical Contract and Evidence
 Existing implementation claims below are not recertified by this documentation update.
 

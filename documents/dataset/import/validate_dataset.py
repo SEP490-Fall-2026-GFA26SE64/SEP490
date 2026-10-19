@@ -33,7 +33,7 @@ def validate(file):
     for r in list(nodes.values())+edges:
         require(r['version']=='0.8.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
         require(r['reviewedBy'] is None and r['reviewedAt'] is None,'Unsubstantiated approval')
-        require(not {'learningOutcome','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
+        require(not {'canonicalProfileKey','learningOutcome','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
     for e in edges:
         t,a,b=e['type'],e['fromId'],e['toId'];require(a in nodes and b in nodes,'Missing endpoint')
         require((labels[a],labels[b]) in TYPES[t],'Wrong endpoint labels')
@@ -85,15 +85,6 @@ def validate(file):
     for r in interest['rows']:
         o=next(o for o in data['Occupations'] if o['code']==r['onetsoc_code'])
         require(o['interest'+r['element_name']]==round((r['data_value']-1)/6,6),'RIASEC normalization mismatch')
-    profile_keys={r['canonicalProfileKey'] for r in data['TargetRoles']}
-    require(len(profile_keys)==20 and all(k.startswith('PROFILE-') for k in profile_keys),'Canonical profile inventory mismatch')
-    # Ensure each presentation group has one skill/threshold vector at every tier.
-    signatures=defaultdict(set)
-    for role in data['TargetRoles']:
-        lv=sorted([l for l in data['Levels'] if l['targetRoleId']==role['id']],key=lambda l:l['rank'])
-        vector=[(l['code'],sorted((e['toId'],e['requiredScore'],e['isMandatory']) for e in edges if e['type']=='REQUIRES_SKILL' and e['fromId']==l['id'])) for l in lv]
-        signatures[role['canonicalProfileKey']].add(json.dumps(vector))
-    require(all(len(v)==1 for v in signatures.values()),'Canonical group has incompatible skill vectors; review/split group')
     return data,{'nodeCounts':COUNTS,'relationshipCounts':EDGE_COUNTS,'totalNodes':len(nodes),'totalRelationships':len(edges),'riasecSourceRows':30,'skillPrerequisites':11,'reviewStatus':'NEEDS_EXPERT_REVIEW'}
 
 if __name__=='__main__':

@@ -124,14 +124,14 @@ Browser can limit displayed records/visual graph size. Use scoped queries for re
 
 ## Current import boundary
 
-Graph payload generation is in import/graph_payload.py. The validator compares all three export-only join fields to the supplied relationship records before creating the graph payload, and dry-run also validates property serialization. Export-only join fields are not stored. canonicalProfileKey and the six occupation interest fields remain actual graph properties.
+Graph payload generation is in import/graph_payload.py. The validator compares all three export-only join fields to the supplied relationship records before creating the graph payload, and dry-run also validates property serialization. Export-only join fields are not stored. The six occupation interest fields remain actual graph properties. TargetRole has no profile-grouping property.
 
 The current seed has no assessment configuration sections. Earlier rubric/task proposals are preserved only in sources/ontology_v07_history/assessment_reference.json. The assessment service must define an explicit external mapping; Neo4j contains no rubric or readiness-assessment references.
 
 ```cypher
 MATCH (r:TargetRole)
-RETURN r.canonicalProfileKey AS profile, collect(r.name) AS reportedTitles, count(r) AS roleCount
-ORDER BY profile;
+RETURN r.id, r.name, r.scope
+ORDER BY r.name, r.id;
 ```
 
 ```cypher
