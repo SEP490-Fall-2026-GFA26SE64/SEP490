@@ -64,6 +64,46 @@ export function rebalanceWeight(
   return best ? fromUnits(best.units) : null
 }
 
+export function rebalanceWholeWeight(
+  current: ScoreWeights,
+  field: WeightField,
+  rawValue: string,
+  preservedField?: WeightField,
+): ScoreWeights | null {
+  const fixed = parseWholePercentage(rawValue)
+  if (fixed === null) return null
+
+  const editedIndex = weightFieldIndex(field)
+  const preservedIndex = preservedField && preservedField !== field
+    ? weightFieldIndex(preservedField)
+    : null
+
+  if (preservedIndex !== null) {
+    const preserved = Math.round(weightUnits(current)[preservedIndex] / 100)
+    const derivedIndex = [0, 1, 2].find((index) => index !== editedIndex && index !== preservedIndex)
+    if (derivedIndex === undefined) return null
+    const candidate: [number, number, number] = [0, 0, 0]
+    candidate[editedIndex] = fixed
+    candidate[preservedIndex] = preserved
+    candidate[derivedIndex] = 100 - fixed - preserved
+    return validWholePercentages(candidate) ? fromWholePercentages(candidate) : null
+  }
+
+  const otherIndexes = [0, 1, 2].filter((index) => index !== editedIndex)
+  const remaining = 100 - fixed
+  let best: { percentages: [number, number, number]; distance: number } | null = null
+  for (let first = 1; first < remaining; first += 1) {
+    const candidate: [number, number, number] = [0, 0, 0]
+    candidate[editedIndex] = fixed
+    candidate[otherIndexes[0]] = first
+    candidate[otherIndexes[1]] = remaining - first
+    if (!validWholePercentages(candidate)) continue
+    const distance = Math.abs(candidate[otherIndexes[0]] - candidate[otherIndexes[1]])
+    if (!best || distance < best.distance) best = { percentages: candidate, distance }
+  }
+  return best ? fromWholePercentages(best.percentages) : null
+}
+
 export function weightSliderBounds(weights: ScoreWeights): WeightSliderBounds {
   const [easy, medium, hard] = weightUnits(weights)
   const easyValues: number[] = []
@@ -97,9 +137,9 @@ export function moveWeightBoundary(
 }
 
 export function weightInputRange(field: WeightField) {
-  if (field === 'easyScoreWeight') return { minimum: '1', maximum: '33.32' }
-  if (field === 'mediumScoreWeight') return { minimum: '1.01', maximum: '49.49' }
-  return { minimum: '33.34', maximum: '97.99' }
+  if (field === 'easyScoreWeight') return { minimum: '1', maximum: '32' }
+  if (field === 'mediumScoreWeight') return { minimum: '2', maximum: '49' }
+  return { minimum: '34', maximum: '97' }
 }
 
 export function weightsFromRole(role: BlueprintRole): ScoreWeights {
@@ -114,6 +154,12 @@ function parsePercentageUnits(value: string) {
   if (!/^(?:0|[1-9]\d?)(?:\.\d{1,2})?$/.test(value)) return null
   const units = Math.round(Number(value) * 100)
   return units >= MINIMUM_UNITS && units < TOTAL_UNITS ? units : null
+}
+
+function parseWholePercentage(value: string) {
+  if (!/^(?:[1-9]|[1-9]\d)$/.test(value)) return null
+  const percentage = Number(value)
+  return percentage < 100 ? percentage : null
 }
 
 function weightFieldIndex(field: WeightField) {
@@ -135,6 +181,20 @@ function validUnits([easy, medium, hard]: [number, number, number]) {
     && easy < medium
     && medium < hard
     && easy + medium + hard === TOTAL_UNITS
+}
+
+function validWholePercentages([easy, medium, hard]: [number, number, number]) {
+  return Number.isInteger(easy)
+    && Number.isInteger(medium)
+    && Number.isInteger(hard)
+    && easy >= 1
+    && easy < medium
+    && medium < hard
+    && easy + medium + hard === 100
+}
+
+function fromWholePercentages([easy, medium, hard]: [number, number, number]): ScoreWeights {
+  return fromUnits([easy * 100, medium * 100, hard * 100])
 }
 
 function fromUnits([easy, medium, hard]: [number, number, number]): ScoreWeights {

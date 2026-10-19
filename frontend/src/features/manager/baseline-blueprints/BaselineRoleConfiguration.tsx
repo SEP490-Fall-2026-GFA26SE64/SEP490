@@ -158,7 +158,6 @@ function RoleConfiguration({ role, roleIndex, roles, capacity, capacityIssues, d
         </div>
 
         <BaselineWeightControl
-          key={`${role.easyScoreWeight}-${role.mediumScoreWeight}-${role.hardScoreWeight}`}
           role={role}
           disabled={disabled || total === 0}
           onChange={(weights) => onWeights(roleIndex, weights)}

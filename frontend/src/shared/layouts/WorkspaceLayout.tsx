@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   CheckSquare,
   ChevronDown,
+  ClipboardCheck,
   Compass,
   FileQuestion,
   FolderTree,
@@ -234,14 +235,16 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
-        label: t('nav.assessmentBank'),
-        href: '/ld-manager/assessment-bank',
-        icon: <FileQuestion size={15} />,
+        label: t('nav.baselineAssessments'),
+        href: '/ld-manager/baseline-assessments',
+        icon: <ClipboardCheck size={15} />,
       },
       {
         label: t('nav.userDirectory'),
         href: '/ld-manager/users',
         icon: <Users size={15} />,
+      },
+      {
         label: t('nav.contentApprovals', 'Content Approvals'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
@@ -353,7 +356,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       return path === '/expert/modules' || path === '/ld-manager/modules' || path === '/manager/modules'
     }
     if (itemHref === '/expert/assessment-bank') {
-      return path === '/expert/assessment-bank' || path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+      return path === '/expert/assessment-bank'
     }
     if (itemHref === '/ld-manager/learning-outcomes') {
       return (
@@ -372,8 +375,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
-    if (itemHref === '/ld-manager/assessment-bank') {
-      return path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+    if (itemHref === '/ld-manager/baseline-assessments') {
+      return path.startsWith('/ld-manager/baseline-assessments')
     }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'

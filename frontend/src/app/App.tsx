@@ -11,7 +11,12 @@ import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwa
 import { EmployeeTargetRolesPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
 import { EmployeeRoleGuidancePage } from '../features/employee/guidance/EmployeeRoleGuidancePage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
-import { BaselineBlueprintPage } from '../features/manager/baseline-blueprints/BaselineBlueprintPage'
+import { BaselineAssessmentManagementPage } from '../features/manager/baseline-assessments/BaselineAssessmentManagementPage'
+import { AssessmentVersionPage } from '../features/manager/baseline-assessments/AssessmentVersionPage'
+import { AssessmentVersionsView } from '../features/manager/baseline-assessments/AssessmentVersionsView'
+import { BlueprintRevisionPage } from '../features/manager/baseline-assessments/BlueprintRevisionPage'
+import { BlueprintVersionsView } from '../features/manager/baseline-assessments/BlueprintVersionsView'
+import { LegacyBaselineAssessmentRedirect } from '../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
@@ -91,7 +96,14 @@ export default function App() {
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
-            <Route path="/ld-manager/assessment-bank" element={<BaselineBlueprintPage />} />
+            <Route path="/ld-manager/baseline-assessments" element={<BaselineAssessmentManagementPage />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId" element={<BlueprintVersionsView />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints" element={<BlueprintVersionsView />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints/revision" element={<BlueprintRevisionPage />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints/:blueprintId/versions/:version" element={<BlueprintVersionsView />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId/assessments" element={<AssessmentVersionsView />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId/assessments/:assessmentVersionId" element={<AssessmentVersionPage />} />
+            <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
             <Route path="/ld-manager/users" element={<UserManagementPage />} />
             <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
@@ -102,7 +114,7 @@ export default function App() {
             <Route path="/ld-manager/modules" element={<Navigate to="/expert/modules" replace />} />
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />
-            <Route path="/manager/assessment-bank" element={<Navigate to="/ld-manager/assessment-bank" replace />} />
+            <Route path="/manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/manager" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
             <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />

@@ -9,12 +9,8 @@ import {
   type WeightField,
 } from './baselineBlueprintForm'
 import {
-  displayWeight,
-  isValidScoreWeights,
-  moveWeightBoundary,
-  rebalanceWeight,
+  rebalanceWholeWeight,
   weightInputRange,
-  weightSliderBounds,
   weightsFromRole,
   type ScoreWeights,
 } from './baselineBlueprintWeights'
@@ -32,72 +28,26 @@ export function BaselineWeightControl({
   const { t } = useTranslation()
   const [drafts, setDrafts] = React.useState<Partial<Record<WeightField, string>>>({})
   const [touched, setTouched] = React.useState<Partial<Record<WeightField, boolean>>>({})
+  const lastCommittedField = React.useRef<WeightField | undefined>(undefined)
   const weights = weightsFromRole(role)
-  const slider = isValidScoreWeights(weights) ? weightSliderBounds(weights) : null
 
   const commit = (field: WeightField) => {
     const raw = drafts[field]
     if (raw === undefined) return
     setTouched((current) => ({ ...current, [field]: true }))
-    const next = rebalanceWeight(weights, field, raw)
+    const next = rebalanceWholeWeight(weights, field, raw, lastCommittedField.current)
     if (!next) return
     const remaining = omitKey(drafts, field)
     setDrafts(remaining)
     setTouched((current) => omitKey(current, field))
     onPendingChange(Object.keys(remaining).length > 0)
-    onChange(next)
-  }
-
-  const moveBoundary = (boundary: 'easy-medium' | 'medium-hard', value: string) => {
-    if (!slider) return
-    const requested = Number(value)
-    const clamped = boundary === 'easy-medium'
-      ? Math.min(slider.easyMaximum, Math.max(slider.easyMinimum, requested))
-      : Math.min(slider.mediumMaximum, Math.max(slider.mediumMinimum, requested))
-    const next = moveWeightBoundary(weights, boundary, clamped)
-    if (!next) return
-    setDrafts({})
-    setTouched({})
-    onPendingChange(false)
+    lastCommittedField.current = field
     onChange(next)
   }
 
   return (
     <div className="space-y-3 rounded-md bg-muted/40 p-3 text-xs">
-      <div className="space-y-2">
-        <div className="baseline-weight-slider relative h-10 overflow-hidden rounded-md border border-border bg-background">
-          <div className="flex h-full" aria-hidden="true">
-            <WeightSegment className="bg-success/20" width={role.easyScoreWeight} label={t('baselineBlueprint.difficulty.easy')} />
-            <WeightSegment className="bg-warning/20" width={role.mediumScoreWeight} label={t('baselineBlueprint.difficulty.medium')} />
-            <WeightSegment className="bg-destructive/15" width={role.hardScoreWeight} label={t('baselineBlueprint.difficulty.hard')} />
-          </div>
-          {slider && <>
-            <input
-              className="baseline-weight-range"
-              type="range"
-              min="0"
-              max="10000"
-              step="1"
-              value={slider.easyBoundary}
-              disabled={disabled}
-              aria-label={t('baselineBlueprint.role.easyMediumBoundary')}
-              onChange={(event) => moveBoundary('easy-medium', event.target.value)}
-            />
-            <input
-              className="baseline-weight-range"
-              type="range"
-              min="0"
-              max="10000"
-              step="1"
-              value={slider.mediumBoundary}
-              disabled={disabled}
-              aria-label={t('baselineBlueprint.role.mediumHardBoundary')}
-              onChange={(event) => moveBoundary('medium-hard', event.target.value)}
-            />
-          </>}
-        </div>
-        <p className="text-muted-foreground">{t('baselineBlueprint.role.weightHierarchy')}</p>
-      </div>
+      <p className="text-muted-foreground">{t('baselineBlueprint.role.weightHierarchy')}</p>
 
       <div className="grid gap-3 md:grid-cols-3">
         {difficulties.map((difficulty) => {
@@ -106,7 +56,7 @@ export function BaselineWeightControl({
           const range = weightInputRange(field)
           const raw = drafts[field]
           const invalid = Boolean(touched[field]) && raw !== undefined
-            && rebalanceWeight(weights, field, raw) === null
+            && rebalanceWholeWeight(weights, field, raw, lastCommittedField.current) === null
           const weightLabel = formatMessage(t('baselineBlueprint.role.scoreWeight'), {
             difficulty: t(`baselineBlueprint.difficulty.${difficulty}`),
           })
@@ -119,8 +69,9 @@ export function BaselineWeightControl({
                   aria-invalid={invalid}
                   className="pr-7"
                   type="text"
-                  inputMode="decimal"
-                  value={raw ?? displayWeight(role[field])}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={raw ?? String(Math.round(role[field] * 100))}
                   disabled={disabled || roleQuestionTotal(role) === 0}
                   onBlur={() => commit(field)}
                   onChange={(event) => {
@@ -149,17 +100,6 @@ export function BaselineWeightControl({
       </div>
     </div>
   )
-}
-
-function WeightSegment({ className, width, label }: {
-  className: string
-  width: number
-  label: string
-}) {
-  return <div className={`flex min-w-0 items-center justify-center overflow-hidden ${className}`}
-    style={{ width: `${width * 100}%` }}>
-    <span className="truncate px-1 font-medium">{label} {displayWeight(width)}%</span>
-  </div>
 }
 
 function omitKey<T>(record: Partial<Record<WeightField, T>>, key: WeightField) {

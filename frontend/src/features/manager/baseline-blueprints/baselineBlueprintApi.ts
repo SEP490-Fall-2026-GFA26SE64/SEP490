@@ -165,6 +165,13 @@ export async function getLatestBlueprintByOccupation(occupationId: string): Prom
   ))
 }
 
+export async function getBlueprintVersion(blueprintId: string, version: number): Promise<BaselineBlueprint> {
+  return parseBlueprint(await requestJson(
+    `${BASE_URL}/${encodeURIComponent(blueprintId)}/versions/${version}`,
+    { method: 'GET' },
+  ))
+}
+
 export async function createBlueprint(draft: BlueprintDraft, idempotencyKey: string): Promise<BaselineBlueprint> {
   return requestBlueprint(BASE_URL, 'POST', draft, idempotencyKey)
 }
@@ -239,7 +246,7 @@ async function requestJson(url: string, init: RequestInit): Promise<unknown> {
   return payload
 }
 
-function parseBlueprint(value: unknown): BaselineBlueprint {
+export function parseBlueprint(value: unknown): BaselineBlueprint {
   const item = record(value)
   return {
     blueprintId: requiredString(item.blueprintId, 'blueprintId'),
@@ -248,30 +255,38 @@ function parseBlueprint(value: unknown): BaselineBlueprint {
     occupationId: optionalString(item.occupationId, 'occupationId'),
     occupationNameSnapshot: optionalString(item.occupationNameSnapshot, 'occupationNameSnapshot'),
     createdAt: requiredString(item.createdAt, 'createdAt'),
-    roles: requiredArray(item.roles, 'roles').map(parseRole),
+    roles: requiredArray(item.roles, 'roles').map(parseBlueprintRole),
   }
 }
 
-function parseRole(value: unknown): BlueprintRole {
+export function parseBlueprintRole(value: unknown): BlueprintRole {
   const item = record(value)
+  const skills = requiredArray(item.skills, 'skills').map((skill) => {
+    const row = record(skill)
+    return {
+      microSkillId: requiredString(row.microSkillId, 'microSkillId'),
+      microSkillNameSnapshot: requiredString(row.microSkillNameSnapshot, 'microSkillNameSnapshot'),
+      easyQuestionCount: nonNegativeInteger(row.easyQuestionCount, 'easyQuestionCount'),
+      mediumQuestionCount: nonNegativeInteger(row.mediumQuestionCount, 'mediumQuestionCount'),
+      hardQuestionCount: nonNegativeInteger(row.hardQuestionCount, 'hardQuestionCount'),
+    }
+  })
+  const derivedTotal = skills.reduce((total, skill) => total
+    + skill.easyQuestionCount + skill.mediumQuestionCount + skill.hardQuestionCount, 0)
+  const totalQuestionCount = item.totalQuestionCount === null || item.totalQuestionCount === undefined
+    ? derivedTotal
+    : nonNegativeInteger(item.totalQuestionCount, 'totalQuestionCount')
+  if (totalQuestionCount !== derivedTotal) throw new Error('Invalid totalQuestionCount')
+
   return {
     roleId: requiredString(item.roleId, 'roleId'),
     roleNameSnapshot: requiredString(item.roleNameSnapshot, 'roleNameSnapshot'),
     enabled: requiredBoolean(item.enabled, 'enabled'),
-    totalQuestionCount: nonNegativeInteger(item.totalQuestionCount, 'totalQuestionCount'),
+    totalQuestionCount,
     easyScoreWeight: requiredNumber(item.easyScoreWeight, 'easyScoreWeight'),
     mediumScoreWeight: requiredNumber(item.mediumScoreWeight, 'mediumScoreWeight'),
     hardScoreWeight: requiredNumber(item.hardScoreWeight, 'hardScoreWeight'),
-    skills: requiredArray(item.skills, 'skills').map((skill) => {
-      const row = record(skill)
-      return {
-        microSkillId: requiredString(row.microSkillId, 'microSkillId'),
-        microSkillNameSnapshot: requiredString(row.microSkillNameSnapshot, 'microSkillNameSnapshot'),
-        easyQuestionCount: nonNegativeInteger(row.easyQuestionCount, 'easyQuestionCount'),
-        mediumQuestionCount: nonNegativeInteger(row.mediumQuestionCount, 'mediumQuestionCount'),
-        hardQuestionCount: nonNegativeInteger(row.hardQuestionCount, 'hardQuestionCount'),
-      }
-    }),
+    skills,
   }
 }
 

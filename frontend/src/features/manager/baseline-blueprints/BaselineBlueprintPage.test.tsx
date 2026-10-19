@@ -1,6 +1,7 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageSwitcher } from '../../../shared/components/ui/LanguageSwitcher'
 import { LanguageProvider } from '../../../shared/i18n/LanguageContext'
@@ -308,10 +309,12 @@ async function configureFirstSkill(user: ReturnType<typeof userEvent.setup>) {
 
 function renderPage() {
   return render(
-    <LanguageProvider>
-      <LanguageSwitcher />
-      <BaselineBlueprintPage />
-    </LanguageProvider>,
+    <MemoryRouter>
+      <LanguageProvider>
+        <LanguageSwitcher />
+        <BaselineBlueprintPage />
+      </LanguageProvider>
+    </MemoryRouter>,
   )
 }
 

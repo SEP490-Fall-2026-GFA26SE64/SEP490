@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, ClipboardCheck, FileQuestion, Save, Send } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
+import { useSearchParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Input } from '../../../shared/components/ui/Input'
@@ -13,7 +14,6 @@ import {
   type AssessmentDraft,
   type BaselineBlueprint,
   type BlueprintCapacity,
-  type BlueprintDraft,
   type BlueprintRole,
   type CoverageShortage,
   type OccupationDetail,
@@ -37,7 +37,6 @@ import {
   type CountField,
 } from './BaselineRoleConfiguration'
 import {
-  difficultyQuestionTotal,
   roleQuestionTotal,
 } from './baselineBlueprintForm'
 import {
@@ -46,15 +45,20 @@ import {
   validateBlueprintCapacity,
 } from './baselineBlueprintCapacity'
 import {
-  defaultScoreWeights,
   isValidScoreWeights,
   weightsFromRole,
   type ScoreWeights,
 } from './baselineBlueprintWeights'
+import {
+  hasWeightWithoutQuestions,
+  rolesForBlueprintEditor,
+  toBlueprintDraft,
+} from './baselineBlueprintDraft'
 
 type BusyAction = 'save' | 'generate' | 'review' | 'publish' | null
 
 export function BaselineBlueprintPage() {
+  const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { t } = useTranslation()
   const translationRef = React.useRef(t)
@@ -106,7 +110,11 @@ export function BaselineBlueprintPage() {
     void loadOccupationSummaries().then((available) => {
       if (!active) return
       setOccupations(available)
-      chooseOccupation(available[0]?.id ?? '')
+      const requestedOccupationId = searchParams.get('occupationId')
+      const initialOccupationId = available.some((occupation) => occupation.id === requestedOccupationId)
+        ? requestedOccupationId ?? ''
+        : available[0]?.id ?? ''
+      chooseOccupation(initialOccupationId)
       if (available.length === 0) setCatalogBusy(false)
     }).catch((error: unknown) => {
       if (!active) return
@@ -114,7 +122,7 @@ export function BaselineBlueprintPage() {
       showError(errorMessage(error, translationRef.current))
     })
     return () => { active = false }
-  }, [chooseOccupation, showError])
+  }, [chooseOccupation, searchParams, showError])
 
   React.useEffect(() => {
     if (!selectedOccupationId) return
@@ -131,7 +139,7 @@ export function BaselineBlueprintPage() {
       setName(saved?.name ?? formatMessage(translationRef.current('baselineBlueprint.defaultName'), {
         occupation: occupation.name,
       }))
-      setRoles(saved ? rolesForEditor(saved.roles) : rolesFromOccupation(occupation))
+      setRoles(saved ? rolesForBlueprintEditor(saved.roles) : rolesFromOccupation(occupation))
       setBlueprint(saved)
       setCoverageValidated(saved !== null && !requiresWeightRevision)
     }).catch((error: unknown) => {
@@ -237,13 +245,13 @@ export function BaselineBlueprintPage() {
     setBusy('save')
     setShortages([])
     try {
-      const payload = toDraft(name, selectedOccupation, roles)
+      const payload = toBlueprintDraft(name, selectedOccupation, roles)
       saveKey.current ??= crypto.randomUUID()
       const saved = blueprint
         ? await reviseBlueprint(blueprint.blueprintId, blueprint.version, payload, saveKey.current)
         : await createBlueprint(payload, saveKey.current)
       setBlueprint(saved)
-      setRoles(rolesForEditor(saved.roles))
+      setRoles(rolesForBlueprintEditor(saved.roles))
       setCoverageValidated(true)
       saveKey.current = undefined
       toast({
@@ -518,40 +526,6 @@ function AssessmentReview({ assessment, busy, onReview, onPublish }: {
   </CardContent></Card>
 }
 
-function toDraft(name: string, occupation: OccupationDetail, roles: BlueprintRole[]): BlueprintDraft {
-  return {
-    name: name.trim(),
-    occupationId: occupation.id,
-    occupationNameSnapshot: occupation.name,
-    roles: roles.map(({ totalQuestionCount: _ignored, ...role }) => {
-      const participates = roleTotal(role) > 0
-      return {
-        ...role,
-        enabled: participates,
-        ...(!participates && {
-          // The existing backend domain requires every persisted role's weights to total one,
-          // even though generation ignores weights for a zero-question role.
-          easyScoreWeight: 0.3334,
-          mediumScoreWeight: 0.3333,
-          hardScoreWeight: 0.3333,
-        }),
-      }
-    }),
-  }
-}
-
-function rolesForEditor(roles: BlueprintRole[]): BlueprintRole[] {
-  return roles.map((role) => {
-    if (roleTotal(role) === 0) return {
-      ...role,
-      easyScoreWeight: 0,
-      mediumScoreWeight: 0,
-      hardScoreWeight: 0,
-    }
-    return isValidScoreWeights(weightsFromRole(role)) ? role : { ...role, ...defaultScoreWeights() }
-  })
-}
-
 async function loadOccupationSummaries(): Promise<OccupationSummary[]> {
   try {
     return await listOccupations()
@@ -605,17 +579,6 @@ function rolesFromOccupation(occupation: OccupationDetail): BlueprintRole[] {
 }
 
 const roleTotal = roleQuestionTotal
-
-function hasWeightWithoutQuestions(role: BlueprintRole) {
-  if (roleTotal(role) === 0) return false
-  return (difficultyTotal(role, 'easy') === 0 && role.easyScoreWeight !== 0)
-    || (difficultyTotal(role, 'medium') === 0 && role.mediumScoreWeight !== 0)
-    || (difficultyTotal(role, 'hard') === 0 && role.hardScoreWeight !== 0)
-}
-
-function difficultyTotal(role: BlueprintRole, difficulty: 'easy' | 'medium' | 'hard') {
-  return difficultyQuestionTotal(role, difficulty)
-}
 
 function handleApiError(
   error: unknown,

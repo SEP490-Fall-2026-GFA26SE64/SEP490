@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -20,14 +20,15 @@ describe('BaselineWeightControl', () => {
     localStorage.clear()
   })
 
-  it('uses decimal text inputs without native number spinners and keeps invalid raw text', async () => {
+  it('uses integer text inputs without slider/spinner and keeps invalid raw text', async () => {
     const user = userEvent.setup()
     renderControl()
     const easy = screen.getByLabelText('Easy score weight (%)') as HTMLInputElement
 
     expect(easy.type).toBe('text')
-    expect(easy.inputMode).toBe('decimal')
+    expect(easy.inputMode).toBe('numeric')
     expect(screen.queryAllByRole('spinbutton')).toHaveLength(0)
+    expect(screen.queryAllByRole('slider')).toHaveLength(0)
 
     await user.clear(easy)
     await user.type(easy, '040')
@@ -35,7 +36,7 @@ describe('BaselineWeightControl', () => {
 
     expect(easy.value).toBe('040')
     expect(easy.getAttribute('aria-invalid')).toBe('true')
-    expect(screen.getByText(/from 1% to 33\.32%/)).toBeTruthy()
+    expect(screen.getByText(/from 1% to 32%/)).toBeTruthy()
     expect(pending).toHaveBeenLastCalledWith(true)
   })
 
@@ -54,20 +55,21 @@ describe('BaselineWeightControl', () => {
     expect(pending).toHaveBeenLastCalledWith(false)
   })
 
-  it('exposes accessible slider dividers and clamps changes to valid bounds', () => {
+  it('keeps Hard 40 when Medium 35 is entered and derives Easy 25', async () => {
+    const user = userEvent.setup()
     renderControl()
-    const easyDivider = screen.getByRole('slider', {
-      name: 'Adjust the Easy and Medium weight boundary',
-    })
-
-    expect(screen.getByRole('slider', {
-      name: 'Adjust the Medium and Hard weight boundary',
-    })).toBeTruthy()
-    fireEvent.change(easyDivider, { target: { value: '9000' } })
-
-    expect((screen.getByLabelText('Easy score weight (%)') as HTMLInputElement).value).toBe('24.99')
-    expect((screen.getByLabelText('Medium score weight (%)') as HTMLInputElement).value).toBe('25.01')
-    expect((screen.getByLabelText('Hard score weight (%)') as HTMLInputElement).value).toBe('50')
+    const hard = screen.getByLabelText('Hard score weight (%)') as HTMLInputElement
+    const medium = screen.getByLabelText('Medium score weight (%)') as HTMLInputElement
+    await user.clear(hard)
+    await user.type(hard, '40')
+    await user.keyboard('{Enter}')
+    await user.clear(medium)
+    await user.type(medium, '35')
+    await user.keyboard('{Enter}')
+    expect((screen.getByLabelText('Easy score weight (%)') as HTMLInputElement).value).toBe('25')
+    expect(medium.value).toBe('35')
+    expect(hard.value).toBe('40')
+    expect(pending).toHaveBeenLastCalledWith(false)
   })
 
   it('disables weight editing for a zero-question role', () => {

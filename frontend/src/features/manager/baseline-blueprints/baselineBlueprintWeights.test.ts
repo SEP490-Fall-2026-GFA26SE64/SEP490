@@ -3,10 +3,8 @@ import {
   defaultScoreWeights,
   displayWeight,
   isValidScoreWeights,
-  moveWeightBoundary,
-  rebalanceWeight,
+  rebalanceWholeWeight,
   weightInputRange,
-  weightSliderBounds,
 } from './baselineBlueprintWeights'
 
 describe('baselineBlueprintWeights', () => {
@@ -25,47 +23,27 @@ describe('baselineBlueprintWeights', () => {
   it.each(['', '040', '0', '1.001', '100', '-1', 'abc'])(
     'rejects malformed or out-of-range percentage %s',
     (raw) => {
-      expect(rebalanceWeight(defaultScoreWeights(), 'easyScoreWeight', raw)).toBeNull()
+      expect(rebalanceWholeWeight(defaultScoreWeights(), 'easyScoreWeight', raw)).toBeNull()
     },
   )
 
   it('keeps the edited value and deterministically rebalances the other two weights', () => {
-    const next = rebalanceWeight(defaultScoreWeights(), 'easyScoreWeight', '25')
-
-    expect(next?.easyScoreWeight).toBe(0.25)
-    expect(next && isValidScoreWeights(next)).toBe(true)
-    expect(next && Object.values(next).reduce((sum, value) => sum + value, 0)).toBe(1)
-    expect(rebalanceWeight(defaultScoreWeights(), 'easyScoreWeight', '40')).toBeNull()
+    const afterHard = rebalanceWholeWeight(defaultScoreWeights(), 'hardScoreWeight', '40')
+    expect(afterHard).toEqual({ easyScoreWeight: 0.29, mediumScoreWeight: 0.31, hardScoreWeight: 0.4 })
+    const afterMedium = rebalanceWholeWeight(afterHard!, 'mediumScoreWeight', '35', 'hardScoreWeight')
+    expect(afterMedium).toEqual({ easyScoreWeight: 0.25, mediumScoreWeight: 0.35, hardScoreWeight: 0.4 })
+    expect(isValidScoreWeights(afterMedium!)).toBe(true)
   })
 
-  it('moves both slider dividers only inside strict hierarchy bounds', () => {
-    const weights = defaultScoreWeights()
-    const bounds = weightSliderBounds(weights)
-
-    expect(bounds).toEqual({
-      easyBoundary: 2000,
-      easyMinimum: 100,
-      easyMaximum: 2499,
-      mediumBoundary: 5000,
-      mediumMinimum: 4001,
-      mediumMaximum: 5999,
-    })
-    expect(moveWeightBoundary(weights, 'easy-medium', 2200)).toEqual({
-      easyScoreWeight: 0.22,
-      mediumScoreWeight: 0.28,
-      hardScoreWeight: 0.5,
-    })
-    expect(moveWeightBoundary(weights, 'medium-hard', 5200)).toEqual({
-      easyScoreWeight: 0.2,
-      mediumScoreWeight: 0.32,
-      hardScoreWeight: 0.48,
-    })
-    expect(moveWeightBoundary(weights, 'easy-medium', 2500)).toBeNull()
+  it('rejects an edit that cannot preserve the previous field and hierarchy', () => {
+    const afterHard = rebalanceWholeWeight(defaultScoreWeights(), 'hardScoreWeight', '40')!
+    expect(rebalanceWholeWeight(afterHard, 'mediumScoreWeight', '40', 'hardScoreWeight')).toBeNull()
+    expect(rebalanceWholeWeight(afterHard, 'mediumScoreWeight', '39.5', 'hardScoreWeight')).toBeNull()
   })
 
   it('publishes input ranges that communicate the absolute hierarchy limits', () => {
-    expect(weightInputRange('easyScoreWeight')).toEqual({ minimum: '1', maximum: '33.32' })
-    expect(weightInputRange('mediumScoreWeight')).toEqual({ minimum: '1.01', maximum: '49.49' })
-    expect(weightInputRange('hardScoreWeight')).toEqual({ minimum: '33.34', maximum: '97.99' })
+    expect(weightInputRange('easyScoreWeight')).toEqual({ minimum: '1', maximum: '32' })
+    expect(weightInputRange('mediumScoreWeight')).toEqual({ minimum: '2', maximum: '49' })
+    expect(weightInputRange('hardScoreWeight')).toEqual({ minimum: '34', maximum: '97' })
   })
 })
