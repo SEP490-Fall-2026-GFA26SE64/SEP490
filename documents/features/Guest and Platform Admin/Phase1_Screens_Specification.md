@@ -64,6 +64,13 @@ The Platform Administrator is the super-administrator overseeing the entire mult
    - 4-step visual stepper (`1. Organization & Admin` ➔ `2. Subscription Plan` ➔ `3. PayOS Checkout` ➔ `4. Workspace Setup`).
    - Sticky topbar with platform branding, Language Switcher, and *"Sign In"* link.
 
+6. **Login Page Guest Entry Point** (`/login`)
+   - **Path:** `frontend/src/features/auth/LoginPage.tsx`
+   - **Features:**
+     - Form-integrated inline guest sign-up prompt: *"Don't have an account? Sign Up as Guest"* (`#guest-signup-link`) rendered cleanly below the *"Sign in"* submit button, eliminating extraneous boxes/containers and preserving the card's minimalist vertical rhythm.
+     - Top navbar remains streamlined with brand identity and Language Switcher (`EN`/`VI`).
+     - Full bi-directional language switching (English: *"Don't have an account? Sign Up as Guest"*, Vietnamese: *"Chưa có tài khoản? Đăng ký Khách"*).
+
 ---
 
 ### Group B: Platform Administrator Screens

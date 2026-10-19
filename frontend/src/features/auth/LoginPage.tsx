@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Check, Network } from 'lucide-react'
 import { LanguageSwitcher } from '../../shared/components/ui/LanguageSwitcher'
+import { useTranslation } from '../../shared/i18n/LanguageContext'
 import { useToast } from '../../shared/hooks/useToast'
 import './LoginPage.css'
 
@@ -47,6 +48,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
 export function LoginPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const [email, setEmail] = React.useState('alex.chen@adaptlearn.internal')
   const [password, setPassword] = React.useState('••••••••••••')
@@ -189,6 +191,18 @@ export function LoginPage() {
                   {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
               </form>
+
+            {/* Guest Sign-Up Prompt */}
+            <p className="razor-signup-caption">
+              <span>{t("Don't have an account?")}</span>{' '}
+              <Link
+                to="/guest/register"
+                className="razor-signup-link"
+                id="guest-signup-link"
+              >
+                {t('Sign Up as Guest')}
+              </Link>
+            </p>
 
             {/* Quick Demo Role Switcher */}
             <div className="razor-demo-strip">
