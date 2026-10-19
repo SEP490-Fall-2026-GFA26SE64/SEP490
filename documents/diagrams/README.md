@@ -7,7 +7,7 @@ Discipline membership/assignments, module/content storage, L&D role publication/
 
 ## Technical Baseline Snapshot
 
-These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers, which do not render PlantUML code blocks directly. PostgreSQL source files describe all 57 tables through V13.
+These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers. The three PostgreSQL sources and SVGs were regenerated from a clean PostgreSQL 17.6 database after Flyway V1-V17 applied successfully (62 `platform` tables). They show structural columns and same-group foreign keys, not indexes, checks, cross-group links or trigger bodies; use the migrations for those details.
 
 | Diagram | Source | Rendered image |
 | --- | --- | --- |
@@ -17,14 +17,15 @@ These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE
 | PostgreSQL pathway, analytics, evaluation | [postgresql-pathway.puml](postgresql-pathway.puml) | [postgresql-pathway.svg](postgresql-pathway.svg) |
 | Neo4j occupation-based ontology 0.7.0 | [neo4j.puml](neo4j.puml) | [neo4j.svg](neo4j.svg) |
 
-After editing PostgreSQL migrations, start the development stack, regenerate the PostgreSQL sources from `pg_catalog`, then render the SVGs with PlantUML 1.2025.10 or newer:
+The generator lists all 62 V17 tables. Use a clean migrated PostgreSQL instance to regenerate sources from `pg_catalog`, then render the three PostgreSQL SVGs with PlantUML 1.2025.10 or newer. It rejects a schema with missing or additional tables rather than silently omitting them:
 
 ```powershell
-docker compose -f compose.dev.yml up --build -d
-.\documents\diagrams\Generate-PostgresqlDiagrams.ps1
-java -jar path\to\plantuml.jar -tsvg documents/diagrams
+docker compose -f compose.dev.yml up -d postgres neo4j
+docker compose -f compose.dev.yml run --build --rm migrate
+powershell -NoProfile -ExecutionPolicy Bypass -File .\documents\diagrams\Generate-PostgresqlDiagrams.ps1
+java -jar path\to\plantuml.jar -tsvg documents/diagrams/postgresql.puml documents/diagrams/postgresql-assessment.puml documents/diagrams/postgresql-pathway.puml
 ```
 
 Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
 
-The PlantUML sources are updated through V13. The assessment source and SVG include the V13 logical blueprint identity in addition to V8-V12 authoring data; the SVG was rendered with PlantUML 1.2025.10. `postgresql.svg` may still temporarily show the pre-V7 identity view.
+The assessment view includes the V14-V16 management tables and current V17 columns. V17 only changes a trigger function, which a table diagram cannot depict. The diagrams do not encode the V14 tenant-scoped unique index; consult the migration and [architecture text](../ARCHITECTURE.md) for behavioral rules.
