@@ -7,12 +7,15 @@ import {
   BookOpen,
   Briefcase,
   Building,
+  Building2,
   CheckCircle2,
   CheckSquare,
   ChevronDown,
   Compass,
+  CreditCard,
   FileQuestion,
   FolderTree,
+  GitFork,
   GraduationCap,
   HelpCircle,
   LayoutDashboard,
@@ -21,7 +24,10 @@ import {
   Palette,
   PanelLeftClose,
   PanelLeftOpen,
+  Server,
+  Settings,
   ShieldCheck,
+  Sliders,
   Sparkles,
   Target,
   User,
@@ -33,8 +39,11 @@ import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
 import { useToast } from '../hooks/useToast'
 import { useTranslation } from '../i18n/LanguageContext'
+import { Badge } from '../components/ui/Badge'
 import {
   getActiveCompany,
+  loadCompanies,
+  setActiveCompanyId,
   type CompanyRecord,
 } from '../stores/companyStore'
 import { getUserProfile } from '../stores/userProfileStore'
@@ -46,7 +55,7 @@ interface NavTabItem {
   icon: React.ReactNode
 }
 
-export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin'
+export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'platform-admin'
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const location = useLocation()
@@ -96,7 +105,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   // Persist active actor context across route changes in useEffect
   React.useEffect(() => {
-    if (path.startsWith('/expert')) {
+    if (path.startsWith('/platform-admin')) {
+      localStorage.setItem('active_actor', 'platform-admin')
+    } else if (path.startsWith('/expert')) {
       localStorage.setItem('active_actor', 'expert')
     } else if (path.startsWith('/ld-manager') || path.startsWith('/manager')) {
       localStorage.setItem('active_actor', 'ld-manager')
@@ -117,6 +128,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   // Pure resolver for active actor context
   const getActiveActor = (): ActorRole => {
+    if (path.startsWith('/platform-admin')) return 'platform-admin'
     if (path.startsWith('/expert')) return 'expert'
     if (path.startsWith('/ld-manager') || path.startsWith('/manager')) return 'ld-manager'
     if (
@@ -135,7 +147,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
 
     const savedActor = localStorage.getItem('active_actor') as ActorRole | null
-    if (savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin') {
+    if (savedActor === 'platform-admin' || savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin') {
       return savedActor
     }
     return 'employee'
@@ -146,6 +158,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   const isExpert = activeActor === 'expert'
   const isLdManager = activeActor === 'ld-manager'
   const isAdmin = activeActor === 'admin'
+  const isPlatformAdmin = activeActor === 'platform-admin'
 
   // Actor-specific navigation tabs for the navbar
   let actorTabs: NavTabItem[] = []
@@ -158,24 +171,19 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <LayoutDashboard size={15} />,
       },
       {
+        label: t('nav.gapAnalysis'),
+        href: '/employee/gap-analysis',
+        icon: <Award size={15} />,
+      },
+      {
         label: t('nav.upskilling'),
         href: '/employee/upskilling',
         icon: <Target size={15} />,
       },
       {
-        label: t('nav.roleGuidance', 'AI Role Guidance'),
-        href: '/employee/guidance',
-        icon: <Sparkles size={15} />,
-      },
-      {
         label: t('nav.pathway'),
         href: '/employee/pathway',
-        icon: <Compass size={15} />,
-      },
-      {
-        label: t('nav.gapAnalysis'),
-        href: '/employee/gap-analysis',
-        icon: <Award size={15} />,
+        icon: <GitFork size={15} />,
       },
       {
         label: t('nav.assessmentQuiz'),
@@ -234,6 +242,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
+        label: t('nav.baselineConfig', 'Baseline Config'),
+        href: '/ld-manager/baseline-config',
+        icon: <Sliders size={15} />,
+      },
+      {
         label: t('nav.contentApprovals', 'Content Approvals'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
@@ -262,9 +275,24 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <ShieldCheck size={15} />,
       },
       {
+        label: t('nav.departments', 'Departments'),
+        href: '/admin/departments',
+        icon: <Building2 size={15} />,
+      },
+      {
         label: t('nav.userDirectory', 'User Accounts'),
         href: '/admin/users',
         icon: <Users size={15} />,
+      },
+      {
+        label: t('nav.orgSettings', 'Org Settings'),
+        href: '/admin/organization-settings',
+        icon: <Settings size={15} />,
+      },
+      {
+        label: t('nav.subscription', 'Subscription'),
+        href: '/admin/subscription',
+        icon: <CreditCard size={15} />,
       },
       {
         label: t('nav.knowledgeGraph'),
@@ -282,6 +310,29 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Activity size={15} />,
       },
     ]
+  } else if (isPlatformAdmin) {
+    actorTabs = [
+      {
+        label: t('nav.platformOrgs', 'Organizations'),
+        href: '/platform-admin/organizations',
+        icon: <Building size={15} />,
+      },
+      {
+        label: t('nav.platformSubs', 'Subscriptions'),
+        href: '/platform-admin/subscriptions',
+        icon: <CreditCard size={15} />,
+      },
+      {
+        label: t('nav.platformActivity', 'Platform Activity'),
+        href: '/platform-admin/activity',
+        icon: <Activity size={15} />,
+      },
+      {
+        label: t('nav.serverStatus'),
+        href: '/system-status?portal=platform-admin',
+        icon: <Server size={15} />,
+      },
+    ]
   }
 
   // Active user profile metadata based on active actor
@@ -295,7 +346,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         ((isEmployee && (!location.search || location.search.includes('portal=employee') || location.search.includes('portal=learner'))) ||
           (isExpert && location.search.includes('portal=expert')) ||
           (isLdManager && (location.search.includes('portal=ld-manager') || location.search.includes('portal=manager'))) ||
-          (isAdmin && location.search.includes('portal=admin')))
+          (isAdmin && location.search.includes('portal=admin')) ||
+          (isPlatformAdmin && location.search.includes('portal=platform-admin')))
       )
     }
     if (itemHref === '/employee/overview' || itemHref === '/learner/overview') {
@@ -320,11 +372,26 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/learner/upskilling'
       )
     }
+    if (itemHref === '/employee/riasec') {
+      return path === '/employee/riasec' || path === '/learner/riasec'
+    }
     if (itemHref === '/employee/guidance') {
       return path === '/employee/guidance'
     }
     if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
-      return path === '/employee/pathway' || path === '/learner/pathway'
+      return (
+        path === '/employee/pathway' ||
+        path === '/learner/pathway' ||
+        path.startsWith('/employee/modules') ||
+        path.startsWith('/learner/modules')
+      )
+    }
+    if (itemHref === '/employee/skills-catalog') {
+      return (
+        path === '/employee/skills-catalog' ||
+        path === '/employee/skills' ||
+        path === '/learner/skills-catalog'
+      )
     }
     if (itemHref === '/employee/gap-analysis' || itemHref === '/learner/gap-analysis') {
       return path === '/employee/gap-analysis' || path === '/learner/gap-analysis'
@@ -364,6 +431,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
+    if (itemHref === '/ld-manager/baseline-config') {
+      return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config'
+    }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'
     }
@@ -373,11 +443,29 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/admin/dashboard') {
       return path === '/admin/dashboard' || path === '/admin'
     }
+    if (itemHref === '/admin/departments') {
+      return path === '/admin/departments'
+    }
+    if (itemHref === '/admin/organization-settings') {
+      return path === '/admin/organization-settings'
+    }
+    if (itemHref === '/admin/subscription') {
+      return path === '/admin/subscription' || path === '/admin/billing'
+    }
     if (itemHref === '/admin/knowledge-graph') {
       return path === '/admin/knowledge-graph' || path === '/knowledge-graph'
     }
     if (itemHref === '/admin/design-system') {
       return path === '/admin/design-system' || path === '/design-system'
+    }
+    if (itemHref === '/platform-admin/organizations') {
+      return path === '/platform-admin/organizations' || path === '/platform-admin'
+    }
+    if (itemHref === '/platform-admin/subscriptions') {
+      return path === '/platform-admin/subscriptions'
+    }
+    if (itemHref === '/platform-admin/activity') {
+      return path === '/platform-admin/activity'
     }
     return path === itemHref
   }
@@ -409,7 +497,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     })
   }
 
-  const brandHomeUrl = isEmployee
+  const brandHomeUrl = isPlatformAdmin
+    ? '/platform-admin/organizations'
+    : isEmployee
     ? '/employee/upskilling'
     : isExpert
     ? '/expert/assigned-roles'
@@ -543,6 +633,38 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                     </p>
                   </div>
 
+                  {/* Active Organization Switcher for Multi-Tenant Testing */}
+                  <div className="px-3.5 py-2.5 border-b border-border bg-muted/15">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Building size={11} className="text-primary" /> Active Workspace
+                      </span>
+                      <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono">
+                        {activeCompany.packageTier}
+                      </Badge>
+                    </div>
+                    <select
+                      value={activeCompany.id}
+                      onChange={(e) => {
+                        const newId = e.target.value
+                        setActiveCompanyId(newId)
+                        const target = loadCompanies().find((c) => c.id === newId)
+                        toast({
+                          title: 'Workspace Switched',
+                          description: `Switched active organization to ${target?.name || newId}.`,
+                          variant: 'info',
+                        })
+                      }}
+                      className="w-full text-xs font-semibold py-1.5 px-2 rounded-lg bg-card border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer transition-all"
+                    >
+                      {loadCompanies().map((comp) => (
+                        <option key={comp.id} value={comp.id}>
+                          {comp.name} ({comp.packageTier})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="py-1">
                     {/* Switch Persona Shortcuts Across 4 Primary Roles */}
                     <div className="px-3.5 py-1.5">
@@ -601,7 +723,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                           {isLdManager && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
 
-                        {/* 4. Admin */}
+                        {/* 4. Org Admin */}
                         <Link
                           to="/admin/dashboard"
                           onClick={() => setIsUserMenuOpen(false)}
@@ -613,9 +735,26 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         >
                           <span className="flex items-center gap-1.5">
                             <ShieldCheck size={13} />
-                            <span>{t('roles.admin')}</span>
+                            <span>{t('roles.admin', 'System Admin')}</span>
                           </span>
                           {isAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 5. Platform Superadmin */}
+                        <Link
+                          to="/platform-admin/organizations"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isPlatformAdmin
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Building size={13} className="text-primary" />
+                            <span>Platform Admin</span>
+                          </span>
+                          {isPlatformAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
                       </div>
                     </div>

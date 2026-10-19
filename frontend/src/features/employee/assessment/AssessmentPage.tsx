@@ -58,7 +58,6 @@ import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { useToast } from '../../../shared/hooks/useToast'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { getActiveCompany, getActiveCompanyId } from '../../../shared/stores/companyStore'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import './AssessmentPage.css'
@@ -402,10 +401,37 @@ export const MODULE_OPTIONS = [
   { code: 'MOD-301', title: 'Graph Neural Networks & Node Embeddings (Fast-Track)' },
   { code: 'MOD-305', title: 'Adaptive Knowledge Tracing Engine Implementation' },
   { code: 'MOD-401', title: 'Enterprise Competency Intelligence Platform Capstone' },
+  { code: 'MOD-CYP-101', title: 'Accelerated Cypher Querying & Pattern Traversal' },
 ]
+
+export const SKILL_CYPHER_ATTEMPT: QuizAttempt = {
+  id: 'att-modcyp101-1',
+  attemptNumber: 1,
+  moduleCode: 'MOD-CYP-101',
+  moduleTitle: 'Accelerated Cypher Querying & Pattern Traversal',
+  quizTitle: 'Skill Milestone: Cypher Query Optimization & Pattern Matching',
+  date: '2026-09-18 11:20',
+  score: 85,
+  correctCount: 8,
+  totalQuestions: 10,
+  timeTaken: '14m 20s',
+  answers: {
+    'q-1': 'opt-1-a',
+    'q-2': 'opt-2-a',
+    'q-3': 'opt-3-a',
+    'q-4': 'opt-4-a',
+    'q-5': 'opt-5-b',
+    'q-6': 'opt-6-a',
+    'q-7': 'opt-7-b',
+    'q-8': 'opt-8-a',
+    'q-9': 'opt-9-a',
+    'q-10': 'opt-10-a',
+  },
+}
 
 // Seed initial finished attempts across multiple modules so history displays cross-module attempts
 const INITIAL_ATTEMPTS: QuizAttempt[] = [
+  SKILL_CYPHER_ATTEMPT,
   {
     id: 'att-mod301-1',
     attemptNumber: 1,
@@ -652,11 +678,58 @@ const PATHWAY_QUIZZES: PathwayQuiz[] = [
   },
 ]
 
+export interface RiasecQuestionItem {
+  id: number
+  dimension: 'R' | 'I' | 'A' | 'S' | 'E' | 'C'
+  dimensionName: string
+  statement: string
+}
+
+export const RIASEC_QUIZ_QUESTIONS: RiasecQuestionItem[] = [
+  // Realistic (Hands-on, systems, hardware, networks)
+  { id: 1, dimension: 'R', dimensionName: 'Realistic', statement: 'Deploying and troubleshooting Linux server clusters, containers, and network topologies.' },
+  { id: 2, dimension: 'R', dimensionName: 'Realistic', statement: 'Configuring CI/CD build agents, hardware accelerators (GPUs), and infrastructure pipelines.' },
+  { id: 3, dimension: 'R', dimensionName: 'Realistic', statement: 'Diagnosing low-level memory leaks, thread contention, and hardware resource bottlenecks.' },
+
+  // Investigative (Analytical, research, math, algorithms)
+  { id: 4, dimension: 'I', dimensionName: 'Investigative', statement: 'Designing complex graph traversal algorithms and querying multi-hop relationship trees.' },
+  { id: 5, dimension: 'I', dimensionName: 'Investigative', statement: 'Formulating probabilistic Bayesian models to estimate learner skill acquisition curves.' },
+  { id: 6, dimension: 'I', dimensionName: 'Investigative', statement: 'Conducting in-depth architectural benchmarks and profiling Big-O time complexity.' },
+
+  // Artistic (Creative, design, visual aesthetics, abstraction)
+  { id: 7, dimension: 'A', dimensionName: 'Artistic', statement: 'Crafting responsive user interfaces with micro-animations and harmonious color systems.' },
+  { id: 8, dimension: 'A', dimensionName: 'Artistic', statement: 'Synthesizing ambiguous business problems into novel, elegant visual domain models.' },
+  { id: 9, dimension: 'A', dimensionName: 'Artistic', statement: 'Designing engaging data visualisations, knowledge graphs, and interactive timelines.' },
+
+  // Social (Mentorship, team communication, coaching)
+  { id: 10, dimension: 'S', dimensionName: 'Social', statement: 'Mentoring junior developers through code reviews and pair programming sessions.' },
+  { id: 11, dimension: 'S', dimensionName: 'Social', statement: 'Facilitating cross-functional discovery workshops between engineers and domain experts.' },
+  { id: 12, dimension: 'S', dimensionName: 'Social', statement: 'Explaining intricate technical trade-offs to non-technical stakeholders with empathy.' },
+
+  // Enterprising (Leadership, business impact, product ownership)
+  { id: 13, dimension: 'E', dimensionName: 'Enterprising', statement: 'Pitching technical roadmaps and product feature investments to executive leadership.' },
+  { id: 14, dimension: 'E', dimensionName: 'Enterprising', statement: 'Balancing technical debt against rapid time-to-market commercial delivery priorities.' },
+  { id: 15, dimension: 'E', dimensionName: 'Enterprising', statement: 'Organizing engineering sprint commitments and driving accountability for team milestones.' },
+
+  // Conventional (Structure, precision, test automation, data integrity)
+  { id: 16, dimension: 'C', dimensionName: 'Conventional', statement: 'Enforcing strict relational schema constraints, database migrations, and ACID consistency.' },
+  { id: 17, dimension: 'C', dimensionName: 'Conventional', statement: 'Writing comprehensive unit, integration, and contract test suites to prevent regressions.' },
+  { id: 18, dimension: 'C', dimensionName: 'Conventional', statement: 'Cataloging API contracts, OpenAPI schemas, and documentation according to standards.' },
+]
+
+export const RIASEC_LIKERT_OPTIONS = [
+  { value: 1, letter: 'A', label: 'Strongly Dislike', desc: 'I would avoid this activity' },
+  { value: 2, letter: 'B', label: 'Dislike', desc: 'I find this activity unappealing' },
+  { value: 3, letter: 'C', label: 'Neutral', desc: 'No strong preference either way' },
+  { value: 4, letter: 'D', label: 'Enjoy', desc: 'I find this engaging and interesting' },
+  { value: 5, letter: 'E', label: 'Strongly Enjoy', desc: 'One of my favorite types of work' },
+]
+
 export function AssessmentPage() {
   const { toast } = useToast()
-  const { t } = useTranslation()
   const location = useLocation()
   const { profile, isLearningLocked, completeDiagnosticAssessment } = useEmployeeLearningState()
+  const isSkillMode = profile.selectedViewType === 'skill'
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
 
   const getAttemptsStorageKey = () => `alg_learner_quiz_attempts_${getActiveCompanyId()}`
@@ -664,16 +737,20 @@ export function AssessmentPage() {
     const raw = localStorage.getItem(getAttemptsStorageKey())
     if (raw) {
       try {
-        return JSON.parse(raw)
+        const parsed: QuizAttempt[] = JSON.parse(raw)
+        if (getActiveCompanyId() === 'comp-technova' && !parsed.some((a) => a.moduleCode === 'MOD-CYP-101')) {
+          parsed.unshift(SKILL_CYPHER_ATTEMPT)
+        }
+        return parsed
       } catch (e) {
         console.error(e)
       }
     }
-    return getActiveCompanyId() === 'comp-technova' ? INITIAL_ATTEMPTS : []
+    return getActiveCompanyId() === 'comp-technova' ? [SKILL_CYPHER_ATTEMPT, ...INITIAL_ATTEMPTS] : []
   }
 
-  // Navigation tab state: 'upcoming' | 'history'
-  const [activeTab, setActiveTab] = React.useState<'upcoming' | 'history'>('upcoming')
+  // Navigation tab state: 'pathway' | 'baseline' | 'history'
+  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'history'>('pathway')
 
   // Available Quiz Info Modal state
   const [selectedQuizModal, setSelectedQuizModal] = React.useState<PathwayQuiz | null>(null)
@@ -684,21 +761,167 @@ export function AssessmentPage() {
   // Attempt review state: null = taking quiz, string = reviewing specific attempt
   const [reviewAttemptId, setReviewAttemptId] = React.useState<string | null>(null)
   const [attempts, setAttempts] = React.useState<QuizAttempt[]>(loadAttempts)
+  const [hasCompletedRiasec, setHasCompletedRiasec] = React.useState<boolean>(() => {
+    try {
+      return localStorage.getItem('alg_employee_riasec_result_v1') !== null || localStorage.getItem('employee_riasec_completed') === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  const riasecData = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem('alg_employee_riasec_result_v1')
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  }, [hasCompletedRiasec])
+
+  // RIASEC In-Page Assessment Taking State
+  const [isTakingRiasec, setIsTakingRiasec] = React.useState(false)
+  const [riasecCurrentIndex, setRiasecCurrentIndex] = React.useState(0)
+  const [riasecAnswers, setRiasecAnswers] = React.useState<Record<number, number>>(() => {
+    try {
+      const saved = localStorage.getItem('alg_employee_riasec_result_v1_answers')
+      return saved ? JSON.parse(saved) : {}
+    } catch {
+      return {}
+    }
+  })
+  const [riasecFlagged, setRiasecFlagged] = React.useState<Record<number, boolean>>({})
+  const [riasecSecondsRemaining, setRiasecSecondsRemaining] = React.useState(900) // 15 mins
+  const [isRiasecSubmitModalOpen, setIsRiasecSubmitModalOpen] = React.useState(false)
+  const [isRiasecQuitModalOpen, setIsRiasecQuitModalOpen] = React.useState(false)
+  const [isRiasecDetailModalOpen, setIsRiasecDetailModalOpen] = React.useState(false)
+
+  // URL query sync for RIASEC
+  React.useEffect(() => {
+    if (location.search.includes('take=riasec') && !hasCompletedRiasec) {
+      setActiveTab('baseline')
+      setIsTakingRiasec(true)
+    }
+  }, [location.search, hasCompletedRiasec])
+
+  // Live timer for RIASEC assessment
+  React.useEffect(() => {
+    if (!isTakingRiasec || hasCompletedRiasec) return
+    const timer = setInterval(() => {
+      setRiasecSecondsRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [isTakingRiasec, hasCompletedRiasec])
+
+  const currRiasecQuestion = RIASEC_QUIZ_QUESTIONS[riasecCurrentIndex] || RIASEC_QUIZ_QUESTIONS[0]
+  const riasecAnsweredCount = Object.keys(riasecAnswers).length
+  const riasecFlaggedCount = Object.values(riasecFlagged).filter(Boolean).length
+
+  const handleFinishRiasec = () => {
+    const dimMap: Record<'R' | 'I' | 'A' | 'S' | 'E' | 'C', { sum: number; count: number; name: string; title: string; desc: string }> = {
+      R: { sum: 0, count: 0, name: 'Realistic', title: 'Hands-on & Infrastructure', desc: 'Practical execution, DevOps, distributed systems, networks.' },
+      I: { sum: 0, count: 0, name: 'Investigative', title: 'Algorithmic & Analytical', desc: 'Mathematical problem-solving, data science, deep architecture.' },
+      A: { sum: 0, count: 0, name: 'Artistic', title: 'Creative & Conceptual', desc: 'UI/UX design, visual storytelling, exploratory software designs.' },
+      S: { sum: 0, count: 0, name: 'Social', title: 'Collaborative & Mentoring', desc: 'Team enablement, knowledge sharing, cross-functional leadership.' },
+      E: { sum: 0, count: 0, name: 'Enterprising', title: 'Product & Strategic', desc: 'Product vision, driving deliverables, tech-business alignment.' },
+      C: { sum: 0, count: 0, name: 'Conventional', title: 'Systematic & Precision', desc: 'Quality assurance, formal schema integrity, reliability engineering.' },
+    }
+
+    RIASEC_QUIZ_QUESTIONS.forEach((q) => {
+      const val = riasecAnswers[q.id] || 3
+      dimMap[q.dimension].sum += val
+      dimMap[q.dimension].count += 1
+    })
+
+    const scores = Object.entries(dimMap).map(([key, data]) => {
+      const rawAvg = data.sum / data.count
+      const pct = Math.round(((rawAvg - 1) / 4) * 100)
+      return {
+        dimension: key as 'R' | 'I' | 'A' | 'S' | 'E' | 'C',
+        name: data.name,
+        title: data.title,
+        score: pct,
+        description: data.desc,
+      }
+    })
+
+    const topDimensions = [...scores].sort((a, b) => b.score - a.score).slice(0, 3)
+    const hollandCode = topDimensions.map((d) => d.dimension).join('')
+
+    const payload = {
+      completedAt: new Date().toISOString(),
+      hollandCode,
+      topTraits: topDimensions.map((d) => d.name),
+      scores: scores.map((s) => ({ dim: s.dimension, score: s.score, name: s.name, title: s.title })),
+    }
+
+    try {
+      localStorage.setItem('alg_employee_riasec_result_v1', JSON.stringify(payload))
+      localStorage.setItem('employee_riasec_completed', 'true')
+      localStorage.setItem('alg_employee_riasec_result_v1_answers', JSON.stringify(riasecAnswers))
+    } catch (e) {
+      console.error(e)
+    }
+
+    setHasCompletedRiasec(true)
+    setIsTakingRiasec(false)
+    setIsRiasecSubmitModalOpen(false)
+    setActiveTab('baseline')
+
+    toast({
+      title: `RIASEC Profile Calibrated (${hollandCode}) 🎉`,
+      description: `Dominant Traits: ${topDimensions.map((d) => d.name).join(', ')}. Career role alignment updated. Retakes locked per policy.`,
+      variant: 'success',
+    })
+  }
 
   React.useEffect(() => {
     const handleSync = () => {
       setActiveCompany(getActiveCompany())
       setAttempts(loadAttempts())
+      try {
+        setHasCompletedRiasec(
+          localStorage.getItem('alg_employee_riasec_result_v1') !== null ||
+          localStorage.getItem('employee_riasec_completed') === 'true'
+        )
+      } catch {
+        // ignore
+      }
     }
     window.addEventListener('active_company_changed', handleSync)
     window.addEventListener('companies_updated', handleSync)
+    window.addEventListener('focus', handleSync)
     return () => {
       window.removeEventListener('active_company_changed', handleSync)
       window.removeEventListener('companies_updated', handleSync)
+      window.removeEventListener('focus', handleSync)
     }
   }, [])
 
   const pathwayQuizzes: PathwayQuiz[] = React.useMemo(() => {
+    if (isSkillMode) {
+      const skillName = profile.targetSkill || 'Neo4j Cypher Traversal'
+      return [
+        {
+          id: 'quiz-mod-cyp-101',
+          moduleCode: 'MOD-CYP-101',
+          moduleTitle: 'Accelerated Cypher Querying & Pattern Traversal',
+          quizTitle: `Skill Assessment: ${skillName}`,
+          description: `Evaluates query profiling, variable-length path traversal, and pattern matching for ${skillName}.`,
+          status: 'available' as const,
+          durationMinutes: 20,
+          questionCount: 10,
+          passingScore: 80,
+          lastScore: 85,
+          skills: [skillName, 'openCypher Syntax', 'Query Profiling'],
+        },
+      ]
+    }
     if (activeCompany.id === 'comp-technova') {
       return PATHWAY_QUIZZES
     }
@@ -718,7 +941,7 @@ export function AssessmentPage() {
       lastScore: idx === 0 ? 88 : undefined,
       skills: [m.title],
     }))
-  }, [activeCompany])
+  }, [activeCompany, isSkillMode, profile.targetSkill])
 
   const companyQuestions: Question[] = React.useMemo(() => {
     if (activeCompany.id === 'comp-technova') {
@@ -844,6 +1067,18 @@ export function AssessmentPage() {
   const filteredAttempts = React.useMemo(() => {
     return attempts
       .filter((a) => {
+        // Skill vs Role mode filtering
+        if (isSkillMode) {
+          const isSkillAttempt =
+            a.moduleCode === 'MOD-CYP-101' ||
+            a.moduleTitle.toLowerCase().includes('cypher') ||
+            a.quizTitle.toLowerCase().includes('skill')
+          if (!isSkillAttempt) return false
+        } else {
+          const isSkillOnly = a.moduleCode === 'MOD-CYP-101'
+          if (isSkillOnly) return false
+        }
+
         if (historySearch.trim()) {
           const q = historySearch.toLowerCase().trim()
           const matchesCode = a.moduleCode.toLowerCase().includes(q)
@@ -864,7 +1099,7 @@ export function AssessmentPage() {
         if (historySort === 'lowest') return a.score - b.score
         return 0
       })
-  }, [attempts, historySearch, historyFilter, historySort])
+  }, [attempts, isSkillMode, historySearch, historyFilter, historySort])
 
   // Handle active option selection
   const handleSelectOption = (optionId: string) => {
@@ -970,6 +1205,12 @@ export function AssessmentPage() {
 
   // Start quiz from Upcoming modal
   const handleStartQuizFromModal = () => {
+    if (selectedQuizModal?.id === 'quiz-riasec') {
+      setSelectedQuizModal(null)
+      setRiasecCurrentIndex(0)
+      setIsTakingRiasec(true)
+      return
+    }
     setAnswers({})
     setFlagged({})
     setSecondsRemaining(1500)
@@ -994,7 +1235,295 @@ export function AssessmentPage() {
         {/* =========================================================================
             ACTIVE QUIZ OR REVIEW MODE VIEW
            ========================================================================= */}
-        {isQuizViewActive ? (
+        {isTakingRiasec ? (
+          <div className="space-y-6">
+            {/* Top Navigation Bar: Back to Quizzes */}
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<ArrowLeft className="h-4 w-4" />}
+                onClick={() => {
+                  if (riasecAnsweredCount > 0) {
+                    setIsRiasecQuitModalOpen(true)
+                  } else {
+                    setIsTakingRiasec(false)
+                  }
+                }}
+              >
+                Back to Baseline Assessments
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-semibold text-muted-foreground">
+                  RIASEC Profiler • 18 Items
+                </Badge>
+              </div>
+            </div>
+
+            {/* Header Card / Hero with Live Timer */}
+            <Card className="border-border shadow-xs bg-gradient-to-r from-card via-card to-secondary/30">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="primary" className="text-xs font-semibold">
+                        RIASEC Vocational Profiler
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs font-normal">
+                        Holland Occupational Themes
+                      </Badge>
+                    </div>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                      Holland RIASEC Vocational Profile Inventory
+                    </h1>
+                    <p className="text-xs text-muted-foreground">
+                      Discover your vocational interest traits across 6 engineering dimensions to align your adaptive pathway.
+                    </p>
+                  </div>
+
+                  {/* Live Timer Widget */}
+                  <div className="flex items-center gap-3 self-start md:self-auto">
+                    <div className="px-4 py-2.5 rounded-xl border border-border bg-card shadow-2xs flex items-center gap-2.5">
+                      <Clock className="h-5 w-5 text-warning shrink-0" />
+                      <div>
+                        <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                          Time Remaining
+                        </div>
+                        <div className={`font-mono text-base font-bold ${riasecSecondsRemaining < 180 ? 'text-destructive' : 'text-foreground'}`}>
+                          {formatTimer(riasecSecondsRemaining)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Two-Column Quiz Workspace */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+              {/* LEFT: Question Navigation Sidebar (lg:col-span-1) */}
+              <Card className="border-border shadow-xs">
+                <CardHeader className="pb-3 border-b border-border">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                      Quiz Navigation
+                    </h3>
+                    <Badge variant="secondary" className="text-xs font-semibold">
+                      {riasecAnsweredCount}/18 Answered
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
+                  {/* Navigation Buttons Grid (18 items) */}
+                  <div className="quiz-nav-grid">
+                    {RIASEC_QUIZ_QUESTIONS.map((q, idx) => {
+                      const isCurrent = idx === riasecCurrentIndex
+                      const isAnswered = riasecAnswers[q.id] !== undefined
+                      const isFlagged = !!riasecFlagged[q.id]
+                      return (
+                        <button
+                          key={q.id}
+                          onClick={() => setRiasecCurrentIndex(idx)}
+                          className={`quiz-nav-btn ${isCurrent ? 'active' : ''} ${isAnswered ? 'answered' : ''} ${isFlagged ? 'flagged' : ''}`}
+                        >
+                          {idx + 1}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="pt-3 border-t border-border space-y-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded border border-primary bg-primary/20 inline-block" />
+                      <span>Answered ({riasecAnsweredCount})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded border border-border bg-card inline-block" />
+                      <span>Unanswered ({18 - riasecAnsweredCount})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded border border-warning bg-warning/20 inline-block" />
+                      <span>Flagged ({riasecFlaggedCount})</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="pt-2 space-y-2">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      className="w-full justify-center"
+                      leftIcon={<Save className="h-4 w-4" />}
+                      onClick={() => {
+                        try {
+                          localStorage.setItem('alg_employee_riasec_result_v1_answers', JSON.stringify(riasecAnswers))
+                        } catch (e) {
+                          console.error(e)
+                        }
+                        toast({
+                          title: 'Progress Saved',
+                          description: `${riasecAnsweredCount} of 18 statements saved.`,
+                          variant: 'success',
+                        })
+                      }}
+                    >
+                      Save Progress
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="default"
+                      className="w-full justify-center shadow-xs"
+                      rightIcon={<Send className="h-4 w-4" />}
+                      onClick={() => setIsRiasecSubmitModalOpen(true)}
+                    >
+                      Finish Attempt
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* RIGHT: Active Question Workspace (lg:col-span-3) */}
+              <div className="lg:col-span-3 space-y-4">
+                <Card className="border-border shadow-xs">
+                  <CardHeader className="pb-4 border-b border-border">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="font-semibold text-primary">
+                            Question {currRiasecQuestion.id} of 18
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {currRiasecQuestion.dimensionName} ({currRiasecQuestion.dimension})
+                          </Badge>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            1.0 pt(s)
+                          </span>
+                        </div>
+                        <h3 className="text-base font-semibold text-foreground mt-1">
+                          Dimension: {currRiasecQuestion.dimensionName} Reasoning & Activity
+                        </h3>
+                      </div>
+
+                      <Button
+                        variant={riasecFlagged[currRiasecQuestion.id] ? 'secondary' : 'ghost'}
+                        size="sm"
+                        leftIcon={
+                          <Flag
+                            className={`h-4 w-4 ${
+                              riasecFlagged[currRiasecQuestion.id] ? 'text-warning fill-warning' : 'text-muted-foreground'
+                            }`}
+                          />
+                        }
+                        onClick={() => {
+                          setRiasecFlagged((prev) => ({
+                            ...prev,
+                            [currRiasecQuestion.id]: !prev[currRiasecQuestion.id],
+                          }))
+                        }}
+                      >
+                        {riasecFlagged[currRiasecQuestion.id] ? 'Flagged' : 'Flag for Review'}
+                      </Button>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="pt-6 space-y-6">
+                    {/* Question Statement */}
+                    <div className="space-y-3">
+                      <Text variant="body" className="text-foreground text-base leading-relaxed font-medium">
+                        &ldquo;{currRiasecQuestion.statement}&rdquo;
+                      </Text>
+                    </div>
+
+                    {/* Options (Likert Scale styled like Assessment Options) */}
+                    <div className="space-y-3">
+                      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        SELECT BEST RESPONSE:
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {RIASEC_LIKERT_OPTIONS.map((opt) => {
+                          const isSelected = riasecAnswers[currRiasecQuestion.id] === opt.value
+                          return (
+                            <label
+                              key={opt.value}
+                              onClick={() => {
+                                const next = { ...riasecAnswers, [currRiasecQuestion.id]: opt.value }
+                                setRiasecAnswers(next)
+                                try {
+                                  localStorage.setItem('alg_employee_riasec_result_v1_answers', JSON.stringify(next))
+                                } catch (e) {
+                                  console.error(e)
+                                }
+                              }}
+                              className={`flex items-start gap-3 p-3.5 rounded-lg border cursor-pointer transition-all ${
+                                isSelected
+                                  ? 'border-primary bg-secondary/50 font-medium'
+                                  : 'border-border bg-card hover:bg-muted/40'
+                              }`}
+                            >
+                              <div className="mt-0.5 shrink-0">
+                                <div
+                                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                    isSelected ? 'border-primary bg-primary' : 'border-border'
+                                  }`}
+                                >
+                                  {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                              </div>
+                              <div className="text-sm leading-relaxed flex-1">
+                                <span className="font-semibold text-foreground mr-1.5">{opt.letter}) {opt.label}</span>
+                                <span className="text-muted-foreground">— {opt.desc}</span>
+                              </div>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Question Footer Navigation Controls */}
+                    <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <Button
+                        variant="outline"
+                        size="default"
+                        leftIcon={<ArrowLeft className="h-4 w-4" />}
+                        onClick={() => setRiasecCurrentIndex((prev) => Math.max(0, prev - 1))}
+                        disabled={riasecCurrentIndex === 0}
+                      >
+                        Previous Question
+                      </Button>
+
+                      <div className="text-xs text-muted-foreground font-medium">
+                        Question {riasecCurrentIndex + 1} of 18
+                      </div>
+
+                      {riasecCurrentIndex < 17 ? (
+                        <Button
+                          variant="primary"
+                          size="default"
+                          rightIcon={<ArrowRight className="h-4 w-4" />}
+                          onClick={() => setRiasecCurrentIndex((prev) => Math.min(17, prev + 1))}
+                        >
+                          Next Question
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="default"
+                          rightIcon={<Send className="h-4 w-4" />}
+                          onClick={() => setIsRiasecSubmitModalOpen(true)}
+                        >
+                          Finish Attempt
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        ) : isQuizViewActive ? (
           <div className="space-y-6">
             {/* Top Navigation Bar: Back to Quizzes */}
             <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -1478,18 +2007,22 @@ export function AssessmentPage() {
                   <Tabs
                     value={activeTab}
                     onValueChange={(val) => {
-                      setActiveTab(val as 'upcoming' | 'history')
+                      setActiveTab(val as 'pathway' | 'baseline' | 'history')
                     }}
                     className="w-auto"
                   >
                     <TabsList className="bg-muted/70 p-1">
-                      <TabsTrigger value="upcoming" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
+                      <TabsTrigger value="pathway" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span>{t('assessment.upcomingQuizzes')}</span>
+                        <span>Pathway</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="baseline" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span>Baseline</span>
                       </TabsTrigger>
                       <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                         <History className="h-4 w-4 text-primary" />
-                        <span>{t('assessment.attemptHistory')}</span>
+                        <span>History</span>
                         {isLearningLocked && <Lock size={12} className="text-warning ml-0.5" />}
                       </TabsTrigger>
                     </TabsList>
@@ -1498,10 +2031,10 @@ export function AssessmentPage() {
               }
             />
 
-            {/* TAB 1: UPCOMING ASSESSMENTS */}
-            {activeTab === 'upcoming' && (() => {
-              // If diagnostic is locked, employee can ONLY see and take the diagnostic assessment!
-              if (isLearningLocked) {
+            {/* TAB 1: PATHWAY ASSESSMENTS */}
+            {activeTab === 'pathway' && (() => {
+              // If diagnostic is locked and in role mode, employee can ONLY see and take the diagnostic assessment!
+              if (isLearningLocked && !isSkillMode) {
                 return (
                   <div className="space-y-6 max-w-3xl mx-auto py-2">
                     <Card className="border border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md overflow-hidden">
@@ -1583,7 +2116,7 @@ export function AssessmentPage() {
               return (
                 <div className="space-y-5">
                   {/* DIAGNOSTIC ASSESSMENT REQUIRED BANNER WHEN LEARNING IS LOCKED */}
-                  {isLearningLocked && (
+                  {isLearningLocked && !isSkillMode && (
                     <div className="rounded-2xl border border-warning/40 bg-gradient-to-r from-warning/15 via-warning/10 to-card p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-start sm:items-center gap-3">
                         <div className="p-2.5 rounded-xl bg-warning/20 text-warning shrink-0">
@@ -1626,52 +2159,72 @@ export function AssessmentPage() {
                           <div className="flex items-center gap-2">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                               <Sparkles className="h-3.5 w-3.5" />
-                              Dynamic Pathway Quizzes
+                              {isSkillMode ? 'Skill Milestone Track' : 'Dynamic Pathway Quizzes'}
                             </span>
                             <span className="text-xs text-muted-foreground font-medium hidden sm:inline">
-                              End-of-Module Evaluations
+                              {isSkillMode ? 'Single-Skill Specialization' : 'End-of-Module Evaluations'}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-2 text-xs font-semibold">
                             <span className="text-muted-foreground">Milestone Progress:</span>
                             <Badge variant="success" className="font-mono text-xs font-bold">
-                              2 of 5 Cleared (40%)
+                              {isSkillMode ? '1 of 1 Available (100%)' : '2 of 5 Cleared (40%)'}
                             </Badge>
                           </div>
                         </div>
 
                         <div>
                           <Heading level={1} size="page" className="text-foreground tracking-tight text-xl sm:text-2xl font-bold">
-                            Upcoming Pathway Quizzes
+                            {isSkillMode
+                              ? `Upcoming Pathway Quizzes: ${profile.targetSkill || 'Neo4j Cypher Traversal'}`
+                              : 'Upcoming Pathway Quizzes'}
                           </Heading>
                           <Text variant="subtitle" className="mt-1 text-muted-foreground max-w-2xl leading-relaxed text-xs sm:text-sm">
-                            Milestone assessment quizzes unlock sequentially as you finish each module in your Adaptive Learning Pathway. Passing each quiz calibrates knowledge tracing and unlocks the next module.
+                            {isSkillMode
+                              ? `Targeted milestone evaluations calibrated to certify your operational mastery in ${profile.targetSkill || 'Neo4j Cypher Traversal'}.`
+                              : `Milestone assessment quizzes unlock sequentially as you finish each module in your Adaptive Learning Pathway for ${profile.targetRole || 'AI Knowledge Architect'}. Passing each quiz calibrates knowledge tracing and unlocks the next module.`}
                           </Text>
                         </div>
 
                         {/* Pathway Sequential Progress Step Bar */}
                         <div className="pt-2">
-                          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5 flex-wrap gap-1">
-                            <span className="text-success font-bold">MOD-101 (RDF) ✓</span>
-                            <span className="text-success font-bold">MOD-204 (Neo4j) ✓</span>
-                            <span className="text-primary font-bold flex items-center gap-1">
-                              <Sparkles size={11} /> MOD-301 (GNN) • Ready
-                            </span>
-                            <span className="text-foreground font-bold flex items-center gap-1">
-                              <Lock size={11} className="text-muted-foreground" /> MOD-305 (DKT)
-                            </span>
-                            <span className="text-foreground font-bold flex items-center gap-1">
-                              <Lock size={11} className="text-muted-foreground" /> MOD-401 (Capstone)
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-5 gap-1.5 h-2 w-full rounded-full overflow-hidden bg-muted/80 p-0.5">
-                            <div className="bg-success rounded-full" title="MOD-101: Passed (92%)" />
-                            <div className="bg-success rounded-full" title="MOD-204: Passed (90%)" />
-                            <div className="bg-primary rounded-full animate-pulse" title="MOD-301: Ready to Take" />
-                            <div className="bg-muted-foreground/50 rounded-full" title="MOD-305: Locked" />
-                            <div className="bg-muted-foreground/50 rounded-full" title="MOD-401: Locked" />
-                          </div>
+                          {isSkillMode ? (
+                            <>
+                              <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5 flex-wrap gap-1">
+                                <span className="text-primary font-bold flex items-center gap-1">
+                                  <Sparkles size={11} /> MOD-CYP-101 (Cypher Traversal) • Ready to Take
+                                </span>
+                                <span className="text-xs text-muted-foreground font-mono">1 Assessment</span>
+                              </div>
+                              <div className="grid grid-cols-1 gap-1.5 h-2 w-full rounded-full overflow-hidden bg-muted/80 p-0.5">
+                                <div className="bg-primary rounded-full animate-pulse" title="MOD-CYP-101: Ready to Take" />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5 flex-wrap gap-1">
+                                <span className="text-success font-bold">MOD-101 (RDF) ✓</span>
+                                <span className="text-success font-bold">MOD-204 (Neo4j) ✓</span>
+                                <span className="text-primary font-bold flex items-center gap-1">
+                                  <Sparkles size={11} /> MOD-301 (GNN) • Ready
+                                </span>
+                                <span className="text-foreground font-bold flex items-center gap-1">
+                                  <Lock size={11} className="text-muted-foreground" /> MOD-305 (DKT)
+                                </span>
+                                <span className="text-foreground font-bold flex items-center gap-1">
+                                  <Lock size={11} className="text-muted-foreground" /> MOD-401 (Capstone)
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-5 gap-1.5 h-2 w-full rounded-full overflow-hidden bg-muted/80 p-0.5">
+                                <div className="bg-success rounded-full" title="MOD-101: Passed (92%)" />
+                                <div className="bg-success rounded-full" title="MOD-204: Passed (90%)" />
+                                <div className="bg-primary rounded-full animate-pulse" title="MOD-301: Ready to Take" />
+                                <div className="bg-muted-foreground/50 rounded-full" title="MOD-305: Locked" />
+                                <div className="bg-muted-foreground/50 rounded-full" title="MOD-401: Locked" />
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -1932,57 +2485,63 @@ export function AssessmentPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold shadow-2xs">
-                            <Target size={19} />
+                            {isSkillMode ? <Sparkles size={19} /> : <Target size={19} />}
                           </div>
                           <div>
-                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Target Role</h3>
-                            <p className="text-sm font-bold text-foreground">AI Knowledge Architect</p>
+                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              {isSkillMode ? 'Target Skill' : 'Target Role'}
+                            </h3>
+                            <p className="text-sm font-bold text-foreground">
+                              {isSkillMode ? (profile.targetSkill || 'Neo4j Cypher Traversal') : (profile.targetRole || 'AI Knowledge Architect')}
+                            </p>
                           </div>
                         </div>
                         <Badge variant="secondary" className="font-mono text-[11px] font-bold text-primary">
-                          Staff Level
+                          {isSkillMode ? (profile.targetSkillLevel || 'Intermediate') : 'Staff Level'}
                         </Badge>
                       </div>
 
                       <div className="space-y-1.5 pt-1">
                         <div className="flex justify-between text-xs font-semibold">
                           <span className="text-muted-foreground">Milestone Readiness</span>
-                          <span className="text-foreground font-mono font-bold">40% (2 / 5 Passed)</span>
+                          <span className="text-foreground font-mono font-bold">
+                            {isSkillMode ? '100% (1 / 1 Available)' : '40% (2 / 5 Passed)'}
+                          </span>
                         </div>
-                        <Progress value={40} variant="primary" />
+                        <Progress value={isSkillMode ? 100 : 40} variant="primary" />
                       </div>
 
                       {/* 2x2 Metric Tile Grid */}
                       <div className="grid grid-cols-2 gap-2.5 pt-1">
                         <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                           <div className="text-[11px] font-semibold text-muted-foreground">Highest Score</div>
-                          <div className="text-xl font-bold text-success mt-0.5 font-mono">92%</div>
-                          <div className="text-[10px] text-muted-foreground font-mono truncate">MOD-101 RDF</div>
+                          <div className="text-xl font-bold text-success mt-0.5 font-mono">{isSkillMode ? '85%' : '92%'}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono truncate">{isSkillMode ? 'MOD-CYP-101' : 'MOD-101 RDF'}</div>
                         </div>
 
                         <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                           <div className="text-[11px] font-semibold text-muted-foreground">Average Score</div>
-                          <div className="text-xl font-bold text-primary mt-0.5 font-mono">91%</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">2 Assessments</div>
+                          <div className="text-xl font-bold text-primary mt-0.5 font-mono">{isSkillMode ? '85%' : '91%'}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">{isSkillMode ? '1 Assessment' : '2 Assessments'}</div>
                         </div>
 
                         <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                           <div className="text-[11px] font-semibold text-muted-foreground">Est. Time Left</div>
-                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">1h 35m</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">3 Quizzes Left</div>
+                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">{isSkillMode ? '20m' : '1h 35m'}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">{isSkillMode ? '1 Quiz Left' : '3 Quizzes Left'}</div>
                         </div>
 
                         <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                           <div className="text-[11px] font-semibold text-muted-foreground">Skills Verified</div>
-                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">6 / 18</div>
+                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">{isSkillMode ? '1 / 2' : '6 / 18'}</div>
                           <div className="text-[10px] text-success font-semibold flex items-center gap-0.5">
-                            <CheckCircle2 size={11} /> +4 on next pass
+                            <CheckCircle2 size={11} /> +1 on next pass
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Card B: Next Action Priority Spotlight (MOD-301) */}
+                    {/* Card B: Next Action Priority Spotlight */}
                     {nextQuiz && (
                       <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-secondary/60 via-card to-card p-5 shadow-xs space-y-3.5 relative overflow-hidden">
                         <div className="flex items-center justify-between">
@@ -1998,7 +2557,9 @@ export function AssessmentPage() {
                             {nextQuiz.quizTitle}
                           </h4>
                           <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                            Covers Graph Neural Networks, Spatial GCN convolution, and DKT models. Clearing this milestone unlocks Module MOD-305 in your pathway.
+                            {isSkillMode
+                              ? `Covers pattern matching, variable-length relationship traversal, and query execution profiling to certify operational mastery in ${profile.targetSkill || 'Neo4j Cypher Traversal'}.`
+                              : 'Covers Graph Neural Networks, Spatial GCN convolution, and DKT models. Clearing this milestone unlocks Module MOD-305 in your pathway.'}
                           </p>
                         </div>
 
@@ -2069,7 +2630,177 @@ export function AssessmentPage() {
               )
             })()}
 
-            {/* TAB 2: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
+            {/* TAB 2: BASELINE & RIASEC DIAGNOSTICS */}
+            {activeTab === 'baseline' && (
+              <div className="space-y-6 max-w-3xl mx-auto py-2">
+                {/* 1. Target Role Baseline Diagnostic Assessment */}
+                <Card className="border border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md overflow-hidden">
+                  <CardHeader className="p-6 border-b border-border/80">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                        <Sparkles size={14} /> Target Role Diagnostic Baseline
+                      </span>
+                      <Badge variant={isLearningLocked ? "warning" : "success"} className="text-xs font-bold">
+                        {isLearningLocked ? "Diagnostic Required" : "Diagnostic Cleared (92% Mastery)"}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-xl font-extrabold text-foreground mt-2.5">
+                      Target Role Baseline Diagnostic: {profile.targetRole || 'AI Knowledge Architect'}
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                      Calibrate your competency graph across prerequisite knowledge, graph data models, and adaptive tracing to establish your optimal personalized curriculum.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Duration</div>
+                        <div className="text-base font-bold text-foreground mt-0.5">25 Mins</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Questions</div>
+                        <div className="text-base font-bold text-foreground mt-0.5">10 Items</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Pass Score</div>
+                        <div className="text-base font-bold text-success mt-0.5">80%</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Grading</div>
+                        <div className="text-base font-bold text-primary mt-0.5">Instant</div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-border/80 bg-card/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span className="text-foreground">Bayesian Knowledge Model Calibration</span>
+                        <span className="text-success font-bold font-mono">92% Calibrated</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                        <div className="bg-success h-2 rounded-full" style={{ width: '92%' }} />
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Diagnostic evaluations update prerequisite gates and skill mastery parameters directly in the Neo4j ontology graph.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Version: <strong className="text-foreground">{profile.targetRoleVersion || 'v2.4'}</strong>
+                      </span>
+                      {isLearningLocked ? (
+                        <Button
+                          variant="primary"
+                          size="default"
+                          className="font-bold shadow-xs px-6"
+                          rightIcon={<ArrowRight size={16} />}
+                          onClick={() => setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0])}
+                        >
+                          Take Diagnostic Assessment Now
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2 p-2.5 rounded-lg border border-success/30 bg-success/5 text-xs font-semibold text-success shadow-2xs">
+                          <CheckCircle2 size={16} className="text-success shrink-0" />
+                          <span>Assessment Completed & Calibrated • Retakes Locked</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 2. RIASEC Career Interest Assessment */}
+                <Card className="border border-border bg-card shadow-md overflow-hidden">
+                  <CardHeader className="p-6 border-b border-border/80 bg-muted/10">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                        <Compass size={14} /> Vocational Interest Assessment
+                      </span>
+                      <Badge variant={hasCompletedRiasec ? "success" : "warning"} className="text-xs font-bold">
+                        {hasCompletedRiasec ? `Profile Completed (${riasecData?.hollandCode || 'ICR'})` : "Assessment Pending"}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-xl font-extrabold text-foreground mt-2.5">
+                      Holland RIASEC Vocational Interest Assessment
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                      Evaluates your engagement across 6 engineering dimensions (Realistic, Investigative, Artistic, Social, Enterprising, Conventional) to calculate optimal role compatibility.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Statements</div>
+                        <div className="text-base font-bold text-foreground mt-0.5">18 Criteria</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Dimensions</div>
+                        <div className="text-base font-bold text-foreground mt-0.5">6 Themes</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Scale</div>
+                        <div className="text-base font-bold text-primary mt-0.5">1–5 Likert</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Outcome</div>
+                        <div className="text-base font-bold text-success mt-0.5">Holland Code</div>
+                      </div>
+                    </div>
+
+                    {hasCompletedRiasec && (
+                      <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-2">
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                          <span className="text-foreground">Dominant Holland Profile</span>
+                          <span className="text-primary font-bold font-mono">
+                            {riasecData?.hollandCode || 'ICR'} — {(riasecData?.topTraits || ['Investigative', 'Conventional', 'Realistic']).join(' • ')}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          Vocational interest vectors successfully calibrated. Career role compatibility has been linked to your target role recommendations.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Methodology: <strong className="text-foreground">Holland Occupational Themes (RIASEC)</strong>
+                      </span>
+                      {hasCompletedRiasec ? (
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-success/30 bg-success/5 text-xs font-semibold text-success shadow-2xs">
+                            <CheckCircle2 size={16} className="text-success shrink-0" />
+                            <span>RIASEC Profile Calibrated • Retakes Locked</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="font-semibold text-xs gap-1.5 shadow-2xs"
+                            onClick={() => setIsRiasecDetailModalOpen(true)}
+                          >
+                            <Compass size={14} className="text-primary" />
+                            <span>View Full Report</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="default"
+                          className="font-bold shadow-xs px-6"
+                          rightIcon={<ArrowRight size={16} />}
+                          onClick={() => {
+                            setRiasecCurrentIndex(0)
+                            setIsTakingRiasec(true)
+                          }}
+                        >
+                          Take RIASEC Assessment Now
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* TAB 3: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
             {activeTab === 'history' && (
               isLearningLocked ? (
                 <div className="max-w-xl mx-auto py-8">
@@ -2091,7 +2822,7 @@ export function AssessmentPage() {
                         variant="primary"
                         size="sm"
                         onClick={() => {
-                          setActiveTab('upcoming')
+                          setActiveTab('baseline')
                           setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0] || null)
                         }}
                         rightIcon={<ArrowRight size={14} />}
@@ -2276,11 +3007,15 @@ export function AssessmentPage() {
                       <div className="flex items-center gap-2">
                         <History className="h-5 w-5 text-primary shrink-0" />
                         <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                          Historical Attempts Ledger
+                          {isSkillMode
+                            ? `Skill Attempt History: ${profile.targetSkill || 'Neo4j Cypher Traversal'}`
+                            : 'Historical Attempts Ledger'}
                         </h2>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Archived attempt results, submission timestamps, and verified competencies across all modules
+                        {isSkillMode
+                          ? `Archived attempt results for targeted skill specialization (${profile.targetSkill || 'Neo4j Cypher Traversal'}).`
+                          : `Archived attempt results, submission timestamps, and verified competencies across all modules for ${profile.targetRole || 'AI Knowledge Architect'}.`}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground font-mono bg-card px-3 py-1.5 rounded-lg border border-border shadow-2xs">
@@ -2641,6 +3376,267 @@ export function AssessmentPage() {
                 rightIcon={<Send className="h-4 w-4" />}
               >
                 Submit &amp; Grade
+              </Button>
+            </DialogFooter>
+          </Dialog>
+        )}
+
+        {/* =========================================================================
+            MODAL: SUBMIT RIASEC ASSESSMENT (CONFIRMATION & METRICS)
+           ========================================================================= */}
+        {isRiasecSubmitModalOpen && (
+          <Dialog
+            open={isRiasecSubmitModalOpen}
+            onOpenChange={setIsRiasecSubmitModalOpen}
+            className="sm:max-w-[500px] p-6 sm:p-7"
+          >
+            <DialogHeader className="mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Send className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-extrabold text-foreground">
+                    Finish RIASEC Assessment?
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    Ready to finalize your answers and generate your calibrated Holland occupational profile?
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-4 my-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-xl border border-border bg-card text-center shadow-xs">
+                  <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Answered
+                  </div>
+                  <div className="text-xl font-extrabold text-foreground mt-1">
+                    <span className="text-primary">{riasecAnsweredCount}</span>
+                    <span className="text-xs font-semibold text-muted-foreground">/18</span>
+                  </div>
+                </div>
+
+                <div className={`p-3.5 rounded-xl border text-center shadow-xs ${
+                  18 - riasecAnsweredCount > 0
+                    ? 'border-warning/50 bg-warning/10 text-warning-foreground'
+                    : 'border-border bg-card'
+                }`}>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Unanswered
+                  </div>
+                  <div className={`text-xl font-extrabold mt-1 ${18 - riasecAnsweredCount > 0 ? 'text-warning' : 'text-foreground'}`}>
+                    {18 - riasecAnsweredCount}
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-border bg-card text-center shadow-xs">
+                  <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Flagged
+                  </div>
+                  <div className="text-xl font-extrabold text-foreground mt-1 flex items-center justify-center gap-1.5">
+                    {riasecFlaggedCount > 0 && <Flag className="h-4 w-4 text-warning fill-warning" />}
+                    <span>{riasecFlaggedCount}</span>
+                  </div>
+                </div>
+              </div>
+
+              {18 - riasecAnsweredCount > 0 ? (
+                <div className="p-3.5 rounded-xl border border-warning/30 bg-warning/10 flex items-start gap-3">
+                  <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                  <div className="text-xs text-foreground leading-relaxed">
+                    <strong>{18 - riasecAnsweredCount} statements left unrated.</strong> Unrated statements default to Neutral (3). You can return now to complete them.
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl border border-success/30 bg-success/10 flex items-center gap-2.5 text-xs text-success font-medium">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>All 18 criteria rated! Your profile is ready for Holland code calibration.</span>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="mt-5 flex items-center justify-end gap-3">
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => setIsRiasecSubmitModalOpen(false)}
+                className="rounded-xl px-4 font-semibold text-muted-foreground hover:text-foreground"
+              >
+                Return to Questions
+              </Button>
+              <Button
+                variant="primary"
+                size="default"
+                onClick={handleFinishRiasec}
+                className="rounded-xl px-5 font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                rightIcon={<Send className="h-4 w-4" />}
+              >
+                Submit &amp; Calibrate
+              </Button>
+            </DialogFooter>
+          </Dialog>
+        )}
+
+        {/* MODAL: Quit RIASEC Assessment */}
+        <ConfirmationModal
+          open={isRiasecQuitModalOpen}
+          onOpenChange={setIsRiasecQuitModalOpen}
+          title="Exit RIASEC Assessment?"
+          description="Are you sure you want to pause your RIASEC assessment? Your current responses are saved, and you can resume anytime."
+          confirmText="Exit to Baseline"
+          cancelText="Continue Assessment"
+          variant="warning"
+          onConfirm={() => {
+            setIsTakingRiasec(false)
+            setIsRiasecQuitModalOpen(false)
+          }}
+        />
+
+        {/* =========================================================================
+            MODAL: FULL RIASEC CALIBRATION REPORT
+           ========================================================================= */}
+        {isRiasecDetailModalOpen && (
+          <Dialog
+            open={isRiasecDetailModalOpen}
+            onOpenChange={setIsRiasecDetailModalOpen}
+            className="sm:max-w-[700px] p-6 sm:p-7 max-h-[90vh] overflow-y-auto"
+          >
+            <DialogHeader className="mb-4">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-primary/20">
+                  <Compass className="h-3.5 w-3.5" />
+                  Holland Occupational Themes
+                </span>
+                <Badge variant="success" className="text-xs font-bold">
+                  Calibrated &amp; Locked
+                </Badge>
+              </div>
+              <DialogTitle className="text-xl sm:text-2xl font-extrabold text-foreground">
+                RIASEC Vocational Orientation Report
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Holland Occupational Code calibration for self-directed engineering pathways.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-5 my-2">
+              {/* Top Hero Callout */}
+              <div className="p-5 rounded-2xl border border-primary/30 bg-gradient-to-r from-secondary/60 via-card to-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
+                    Primary Holland Code
+                  </div>
+                  <div className="text-3xl font-black text-primary font-mono mt-1">
+                    {riasecData?.hollandCode || 'ICR'}
+                  </div>
+                  <div className="text-xs text-foreground font-semibold mt-1">
+                    {(riasecData?.topTraits || ['Investigative', 'Conventional', 'Realistic']).join(' • ')}
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground max-w-xs leading-relaxed sm:text-right">
+                  Completed: {riasecData?.completedAt ? new Date(riasecData.completedAt).toLocaleDateString() : 'Active Profile'}<br />
+                  Retakes are permanently locked per assessment governance policy.
+                </div>
+              </div>
+
+              {/* 6 Dimension Breakdown */}
+              <div className="space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Engineering Dimension Scores
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    { dim: 'R', name: 'Realistic', title: 'Hands-on & Infrastructure', desc: 'Practical execution, DevOps, distributed systems, networks.', defaultScore: 78, color: 'hsl(var(--primary))' },
+                    { dim: 'I', name: 'Investigative', title: 'Algorithmic & Analytical', desc: 'Mathematical problem-solving, data science, deep architecture.', defaultScore: 92, color: '#0284C7' },
+                    { dim: 'A', name: 'Artistic', title: 'Creative & Conceptual', desc: 'UI/UX design, visual storytelling, exploratory software designs.', defaultScore: 65, color: '#8B5CF6' },
+                    { dim: 'S', name: 'Social', title: 'Collaborative & Mentoring', desc: 'Team enablement, knowledge sharing, cross-functional leadership.', defaultScore: 70, color: 'hsl(var(--success))' },
+                    { dim: 'E', name: 'Enterprising', title: 'Product & Strategic', desc: 'Product vision, driving deliverables, tech-business alignment.', defaultScore: 60, color: 'hsl(var(--warning))' },
+                    { dim: 'C', name: 'Conventional', title: 'Systematic & Precision', desc: 'Quality assurance, formal schema integrity, reliability engineering.', defaultScore: 84, color: '#64748B' },
+                  ].map((dimItem) => {
+                    const found = riasecData?.scores?.find((s: any) => s.dim === dimItem.dim)
+                    const scoreVal = found ? found.score : dimItem.defaultScore
+                    return (
+                      <div key={dimItem.dim} className="p-3.5 rounded-xl border border-border bg-card space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground">
+                            {dimItem.name} ({dimItem.dim})
+                          </span>
+                          <span className="font-mono font-bold text-foreground">{scoreVal}%</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-2 rounded-full"
+                            style={{ width: `${scoreVal}%`, backgroundColor: dimItem.color }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                          {dimItem.desc}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Suggested Role Alignment */}
+              <div className="space-y-2.5 pt-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Calibrated Target Role Alignment
+                </div>
+                <div className="space-y-2">
+                  {[
+                    {
+                      title: 'AI Knowledge Architect',
+                      match: '94% Match',
+                      badge: 'Highest Affinity',
+                      desc: 'High Investigative (92%) and Conventional (84%) profile matches knowledge graph ontology engineering.',
+                    },
+                    {
+                      title: 'Senior Machine Learning Engineer',
+                      match: '88% Match',
+                      badge: 'Strong Affinity',
+                      desc: 'Strong algorithmic reasoning and software engineering production baseline.',
+                    },
+                    {
+                      title: 'Full-Stack Knowledge Engineer',
+                      match: '85% Match',
+                      badge: 'Good Affinity',
+                      desc: 'Balanced Artistic conceptual design and Conventional data integrity aptitude.',
+                    },
+                  ].map((role) => (
+                    <div key={role.title} className="p-3.5 rounded-xl border border-border bg-card flex items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-foreground">{role.title}</span>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {role.badge}
+                          </Badge>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">{role.desc}</p>
+                      </div>
+                      <span className="text-xs font-bold font-mono text-primary shrink-0">{role.match}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-6 flex items-center justify-between">
+              <Link to="/employee/upskilling?tab=roles" onClick={() => setIsRiasecDetailModalOpen(false)}>
+                <Button variant="outline" size="sm" className="text-xs font-semibold gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <span>Browse Matching Roles</span>
+                </Button>
+              </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsRiasecDetailModalOpen(false)}
+                className="rounded-xl px-5 font-semibold"
+              >
+                Close Report
               </Button>
             </DialogFooter>
           </Dialog>
