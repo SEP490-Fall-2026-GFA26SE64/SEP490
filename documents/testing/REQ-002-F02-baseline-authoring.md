@@ -129,7 +129,7 @@ Execution evidence:
 - Static completion checks passed: no unmerged/conflict markers, relative links in changed Markdown resolve, and `git diff --check` is clean in both repositories.
 - Legacy `TargetRoleCatalogPort` compatibility remains available to other consumers, but new Occupation blueprint drafts route through `BaselineOccupationCatalogPort`; there is one controller/service/adapter path for the new command flow.
 - Rollback is configuration-first: leave `BASELINE_OCCUPATION_CATALOG_ENABLED=false` to disable the local adapter. V13 is forward-only and must not be edited or rolled back by deleting history; legacy-null identities remain compatible.
-- The complete read-and-run walkthrough is [REQ-002-F02 full walkthrough](../../../../.project/test/REQ-002-F02-full-walkthrough-test-guide.md).
+- The historical walkthrough was retired after the management route and whole-integer UI replaced its legacy steps; this document retains canonical execution evidence.
 
 ## Linked weights/capacity Cụm 4 completion review — 2026-10-16
 
@@ -140,3 +140,55 @@ Execution evidence:
 - Production Identity authorization, tenant-safe Catalog visibility, publication readiness and catalog snapshot/release ownership remain deferred to their owners. Therefore completion here means the approved local/demo Function delta, not production readiness.
 - `git diff --check`, conflict-marker scan, changed-document relative-link check and implementation/registry call-site review passed. No runtime code changed after the successful Docker-enabled Cụm 2 rerun, so executable suites were not repeated after these Cụm 4 Markdown updates.
 - Changes remain uncommitted and unpushed; commit grouping requires a separate user instruction.
+
+## Baseline Assessment Management — Cluster 2 partial evidence — 2026-10-17
+
+Function: `REQ-002-F02`. Actor/tenant fixture for the new backend cases is an active `LD_MANAGER` in a fixed organization; negative fixtures cover unauthenticated, inactive, wrong-role, denied reveal and cross-tenant lookup. Frontend fixtures use deterministic management payloads and no local lifecycle source of truth.
+
+| Acceptance/risk | Trigger and expected result | Executable mapping | Result |
+| :--- | :--- | :--- | :--- |
+| AC-04/05/06/08/10/11 lifecycle cardinality | Start/edit/review/publish/restore decisions reject a second pending chain, stale edit, reviewed mutation, draft publish and active restore; projections distinguish active/draft/history. | `BaselineAssessmentLifecycleTest` | PASS |
+| AC-13 trusted actor and isolation | Missing/inactive/wrong-role actors are rejected before dependencies; assessment lookup uses trusted organization and does not fall through on cross-tenant absence. | `BaselineAssessmentManagementServiceTest`, `BaselineAnswerReviewServiceTest` | PASS |
+| AC-02/07/15 API safety | Landing query is forwarded; stale revision maps to `409`; normal detail omits protected key, actor and generation seed. Reveal uses a dedicated JSON response with `no-store`. | `BaselineAssessmentManagementControllerTest`, `BaselineAnswerReviewControllerTest` | PASS |
+| AC-03/15/16 frontend compatibility | Filters are encoded, server errors retain codes, reveal calls only the no-store endpoint, answer rendering is opt-in, item reorder is deterministic, and old routes redirect to persistent management URLs. | `baselineAssessmentManagementApi.test.ts`, `AssessmentManifestEditor.test.tsx`, `LegacyBaselineAssessmentRedirect.test.tsx` | PASS |
+| Architecture/atomic boundary | Application core must not depend on Spring. Management writes run through an infrastructure transaction wrapper; reveal read+audit is transactional in the JDBC adapter. | `HexagonalArchitectureTest` plus scoped REQ-002 suites | PASS |
+| AC-06/10/13/14 PostgreSQL V1-V16, uniqueness, cross-tenant reveal and audit | Disposable PostgreSQL must migrate through V16, reject invalid cardinality/tenant state and append one reveal audit. | `BaselineAssessmentPostgresIntegrationTest` including `answerRevealIsTenantScopedAndAppendsOneAuditRow` | NOT RUN — 6/6 skipped because Docker Linux engine was unavailable |
+| AC-03/09/10/11/12 system lifecycle | Run management → revision → generate → reload → edit → review → publish, then successor/restore/disable on disposable Compose. | Playwright REQ-002-F02 system flow | NOT RUN — Docker Linux engine unavailable |
+
+Executed commands and outcomes:
+
+- Scoped backend domain/application/API/architecture/production-boundary command: **21/21 passed**; management application and API additions each contributed **3/3 passed**.
+- Backend regression excluding the six explicitly Docker-dependent classes: `mvnw.cmd "-Dtest=*Test,!BaselineAssessmentPostgresIntegrationTest,!Neo4jBaselineOccupationCatalogAdapterIntegrationTest,!TargetRoleAndMicroSkillNeo4jIntegrationTest,!Neo4jTargetRoleCatalogAdapterTest,!DatabaseSchemaTest,!GraphSchemaTest" test` — **186 run, 0 failures, 0 errors, 7 skipped**, exit 0.
+- Unfiltered backend `mvnw.cmd test` exposed the original application-layer transaction dependency plus four Docker environment errors. The architecture defect was fixed and its focused rerun passed; Docker failures remain environmental and the unfiltered suite is therefore not recorded as passed.
+- Frontend `npm.cmd test -- --run` — **17 files, 76/76 passed**, exit 0. The first run caught missing Router context in the retained legacy page test and an incorrect accessibility-label expectation; both tests were corrected before the successful full rerun.
+- Frontend production build (`npm.cmd run build`) passed with TypeScript checking and 2,036 transformed modules; only the existing large-chunk advisory remained.
+- Testcontainers probe for `BaselineAssessmentPostgresIntegrationTest` — Maven exited 0 only because **all 6 tests were skipped** after Testcontainers reported no valid Docker environment. This is not integration evidence.
+
+Environment: Windows workspace, Java 21.0.12, Spring Boot 3.5.16, Vitest 5.0.2. The user approved Cluster 2 with Docker-backed PostgreSQL/concurrency and disposable Compose/Playwright evidence explicitly deferred, then authorized Cluster 3. Documentation synchronization does not convert those gaps into passes; they remain required follow-up evidence.
+
+## Baseline Assessment Management — Cluster 4 review finding — 2026-10-17
+
+Static full-context security review found a blocking gap not covered by the passing controller slices. `LocalCatalogSecurityConfiguration` matches `/api/v1/ld/baseline-blueprints/**` but not `/api/v1/ld/baseline-assessments/**`. In the complete local application, management and answer-review requests therefore fall through to `SecurityConfiguration.anyRequest().denyAll()`; POST/PUT requests also lack the CSRF exemption expected by the current frontend client. The controller tests import only the local chain, so their passing result does not prove full-chain route availability.
+
+Result: **Cluster 4 review completed with an explicitly deferred defect**. The user chose to retain this finding for later correction. Before claiming executable local management, add the new path to the local matcher, GET/POST/PUT authorization and CSRF ignore list; add a full security-chain regression proving local/demo availability and starter-profile denial; rerun affected backend coverage. No production code or executable test was changed or run during this review. The Docker-backed gaps above remain separate and unchanged.
+
+## 2026-10-19 corrective verification (manual/build only)
+
+Before the Cluster 2 rerun below, manual POST created a working revision (201), GET reloaded it, and read-only API smoke returned Blueprint v1 (two roles, ten skills) and Reviewed assessment v1 (50 items). Flyway applied V17. These were manual observations, not executable test evidence. The local migration process later failed on a separate legacy Neo4j seeder guard after V17 committed.
+
+## Corrective Cluster 2 — 2026-10-19
+
+| Function rule | Actor/tenant and trigger | File/method | Result |
+| :--- | :--- | :--- | :--- |
+| Whole-number weights total 100 and keep the previous committed field | L&D enters Hard 40, then Medium 35; Easy becomes 25; decimal or non-hierarchical edits fail | `baselineBlueprintWeights.test.ts`, `BaselineWeightControl.test.tsx` | PASS |
+| Working revision omits a derived total without breaking reload; inconsistent total fails | L&D GET workspace; skill counts 1/1/1 | `baselineAssessmentManagementApi.test.ts` | PASS |
+| Save stays in editor; Finalize shows Generate CTA; candidate list retains CTA; details show skill counts | L&D current Occupation, saved/candidate Blueprint | `BlueprintRevisionPage.test.tsx`, `BlueprintVersionsView.test.tsx` | PASS |
+| Save/Finalize/Generate send expected revision and idempotency keys | L&D command sequence | `baselineAssessmentManagementApi.test.ts` | PASS |
+| Local matcher admits management GET/POST/PUT without CSRF; starter denies management | local vs starter profile with both local/default chains | `BaselineManagementSecurityChainTest`, `BaselineBlueprintProductionBoundaryTest` | PASS |
+| V17 migrates once; working and transition triggers read their respective actor fields; cross-organization actor update rolls back | disposable PostgreSQL 17.6, trusted L&D actor and wrong-organization actor | `BaselineAssessmentPostgresIntegrationTest` | PASS |
+
+Commands: frontend `npm.cmd test -- --run` (19 files, **83/83 passed**) and `npm.cmd run build` (TypeScript/build pass, 2,036 modules); backend `mvnw.cmd -q "-Dtest=BaselineManagementSecurityChainTest,BaselineBlueprintProductionBoundaryTest,BaselineAssessmentManagementControllerTest,BaselineAssessmentManagementServiceTest,BaselineAssessmentLifecycleTest,BaselineBlueprintControllerTest,BaselineAssessmentDraftServiceTest,BaselineAnswerReviewControllerTest,BaselineAnswerReviewServiceTest" test` (**31/31 passed**) plus `mvnw.cmd "-Dtest=BaselineManagementSecurityChainTest,BaselineBlueprintProductionBoundaryTest,BaselineAssessmentPostgresIntegrationTest" test` (**7/7 PostgreSQL integration passed**; first security fixture returned 404, corrected by importing its controller, then scoped security rerun passed). The trigger case was rerun after adding the cross-tenant assertion and passed. No cases were skipped in these runs. Environment: Windows, Java 21, Docker Desktop, one disposable PostgreSQL 17.6 Testcontainer; development Compose volumes were not used.
+
+Current management Compose/Playwright Save → Publish lifecycle, broader concurrent command serialization, desktop/mobile visual review and production Identity/Catalog integrations remain open. Prior historical slider and legacy-route results are not evidence for those gaps.
+
+The subsequent full backend command `backend/mvnw.cmd -q test` completed with **204/204 passed, 0 failures/errors/skips** across 45 test classes, including PostgreSQL and Neo4j Testcontainers. It confirms regression compatibility of the changed backend with the current suite; it does not add the still-missing concurrency or management browser scenario.

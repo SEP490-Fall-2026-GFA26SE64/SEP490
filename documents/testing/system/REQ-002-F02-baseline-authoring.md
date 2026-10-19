@@ -1,6 +1,6 @@
 # REQ-002-F02 — Full-stack system evidence
 
-## Linked weight/capacity scenario — executed 2026-10-16
+## Historical linked weight/capacity scenario — executed 2026-10-16
 
 The current Playwright source waits for capacity, applies the participating Java role minimum of `15` questions for its five MicroSkills, expects default weights `20/30/50`, keeps the Platform role at zero, and then saves/reloads/generates 15 items before replay, review and publication checks.
 
@@ -11,7 +11,7 @@ cd frontend
 npm.cmd exec -- playwright test system-tests/REQ-002-F02-baseline-authoring.spec.ts --config=playwright.system.config.ts
 ```
 
-This proves the capacity endpoint, minimum-per-cell invariant, linked `20/30/50` weights and existing save/reload/generate/replay/review/publish flow on the approved local/demo stack. It does not replace production Identity or Catalog integration evidence.
+This proves the capacity endpoint, minimum-per-cell invariant, linked `20/30/50` weights and the former save/reload/generate/replay/review/publish flow on the approved local/demo stack. The current management routes and slider-free UI still need a new system run. It does not replace production Identity or Catalog integration evidence.
 
 ## UX/i18n delta — executed 2026-10-16
 
@@ -55,3 +55,11 @@ Final result: **1 passed** in 7.8 seconds (scenario body 6.6 seconds).
 The fixture was deterministic and isolated: the existing development seed ran first, then the disposable graph received one active Occupation, two active role memberships, one Level per role and Level-to-skill relationships matching the development question bank IDs. The API alone enabled `BASELINE_OCCUPATION_CATALOG_ENABLED=true`. The follow-up migration run disabled the catalog seeder because that seeder intentionally rejects a graph containing Occupation nodes. No persistent development volume was used as a test oracle.
 
 This validates the local/demo vertical path. It does not replace production Identity or Catalog integration evidence.
+
+## Management lifecycle delta — not executed 2026-10-17
+
+The passing scenarios above target the historical `/ld-manager/assessment-bank` editor and predate the persistent management route graph. The current intended path is `/ld-manager/baseline-assessments` → Occupation workspace → Blueprint Versions/Assessment Versions → persistent detail routes, including draft edit/review/publish, successor or restore, disable, reload, localization and the separate answer-reveal action.
+
+No disposable Compose/Playwright run of that current management lifecycle was completed because the Docker Linux engine was unavailable. Legacy system evidence remains useful regression history but is not acceptance evidence for V14-V16 or the new route/lifecycle behavior.
+
+As of 2026-10-19 Docker-backed PostgreSQL integration is available and passed, but this management browser scenario has not been rerun. Component tests cover the two-tab Blueprint list, saved row, detail, and Save → Finalize → Generate CTA; they do not prove the full browser flow against a disposable Compose stack.

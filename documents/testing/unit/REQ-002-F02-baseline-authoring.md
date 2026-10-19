@@ -25,8 +25,8 @@ Executable cases now cover one blueprint per Occupation, exact full-role members
 | `baselineBlueprintApi.test.ts` | Occupation list/detail/latest/capacity parsing; malformed timestamp/count rejection; idempotency/expected-version requests; aggregate shortage parsing; safe manifest parsing; distinct review/publish endpoints | R2–R6, R9, R13–R14, CW3 |
 | `baselineBlueprintForm.test.ts` | deterministic role-total distribution; balanced skill/difficulty cells; exact percentage/decimal sums; total-zero clearing and `40%` ↔ `0.4` conversion | UX1–UX3 |
 | `baselineBlueprintCapacity.test.ts` | minimum `3 × N`; feasible maximum after shared demand; deterministic minimum-first allocation; zero clearing; per-cell and aggregate shared-pool issues | CW2–CW4 |
-| `baselineBlueprintWeights.test.ts` | canonical parser; absolute/dynamic boundaries; exact `100%`; linked rebalance; divider movement and strict hierarchy | CW1 |
-| `BaselineWeightControl.test.tsx` | text inputs without spinner; invalid raw input retention; input/slider synchronization; accessible dividers/clamping; zero-role exception | CW1 |
+| `baselineBlueprintWeights.test.ts` | whole-integer parsing; Hard 40 then Medium 35 derives Easy 25; invalid hierarchy rejected | CW1 — PASS 2026-10-19 |
+| `BaselineWeightControl.test.tsx` | slider-free integer inputs; invalid raw text, preserved Hard value and zero-role disable | CW1 — PASS 2026-10-19 |
 | `BaselineBlueprintPage.test.tsx` | ordered save/generate/review/publish; actionable shortage; capacity retry preserves draft; all roles visible; capacity-aware Apply/manual edit/zero clearing; decimal load; EN/VI state retention; independent multi-open role panels; excluded-role wire compatibility | R8, R11, R14, UX2–UX6, CW1–CW4 |
 
 `CW1`: linked weight invariant. `CW2`: one question per skill/difficulty. `CW3`: trusted capacity read contract. `CW4`: feasible total and shared-pool early validation.
@@ -88,3 +88,11 @@ npm.cmd test
 Result: **37 passed** across 10 files; REQ-002 contributed **7 passed** across 2 files.
 
 The first production-boundary run expected 401 without CSRF and received 403 from the CSRF filter. The test was strengthened by adding a valid CSRF token, after which it passed with 401 from the authentication boundary.
+
+## Management lifecycle delta — executed 2026-10-17
+
+The current management routes and lifecycle add executable coverage for domain transitions, one-pending/open/active policy, optimistic revisions and idempotent commands, trusted actor and tenant boundaries, API conflict/serialization behavior, protected-answer reveal authorization and `no-store` behavior, frontend landing/workspace/version flows, safe manifest parsing, and legacy redirects.
+
+Focused backend domain/application/API/architecture/production-boundary selection: **21/21 passed**. The non-Docker backend regression executed **186**, with 0 failures, 0 errors and **7 Docker-dependent skips**. Frontend regression: **76/76 passed** across 17 files; production build passed with 2,036 modules transformed. ArchUnit initially detected Spring transaction annotations in the application layer; the boundary was moved to the infrastructure `TransactionalBaselineAssessmentManagementUseCase`, after which the architecture selection passed.
+
+These results do not prove V14-V16 PostgreSQL constraints, lock order, atomic pointer switching, rollback, backfill, or a browser-driven management lifecycle.

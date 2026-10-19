@@ -2,7 +2,7 @@
 
 ## Current Scope Alignment
 
-**Product baseline:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-16. Product responsibility changes below supersede earlier SaaS assumptions; the technical snapshot that follows is dated evidence, not proof of revised functionality.
+**Product baseline:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-17. Product responsibility changes below supersede earlier SaaS assumptions; the technical snapshot that follows is dated evidence, not proof of revised functionality.
 
 The deployment serves one organization. Human actors are System Administrator, L&D Manager, Expert, and Employee. Multi-organization registration/workspaces, subscriptions, payments and PayOS are outside product scope. Existing organization identifiers, account assignments, table names and actor codes remain technical compatibility data until an explicit forward migration is agreed; documentation does not silently remove fields or map privileges.
 
@@ -12,7 +12,7 @@ The deployment serves one organization. Human actors are System Administrator, L
 | Discipline catalog | L&D manages disciplines and assigns/removes Experts; Experts author assigned-discipline content | Discipline identity, content membership and assignment history are not established by the V5 `JobDomain` label |
 | Target roles | L&D creates/assigns; Expert configures competencies/skills/proficiency/importance and submits completion; L&D publishes/unpublishes | Separate configuration-completion and publication contract from legacy `ACTIVE` status; L&D must not edit Expert requirements |
 | Learning offerings | Expert authors modules, lesson/practice content and module assessments; L&D approves or returns revisions | Module/content storage, versioned content membership, submission/approval state and learning availability require design |
-| Baseline assessment | L&D owns one versioned baseline blueprint per Occupation, with role/skill/difficulty counts and weights inside it; Employee completes the applicable published assessment | Occupation-scoped authoring, published-capacity feedback, minimum per skill/difficulty, linked `Hard > Medium > Easy` weights and EN/VI UI are implemented on the local opt-in boundary; production Identity/Catalog visibility, publication and release-snapshot contracts plus Employee attempt/result remain open |
+| Baseline assessment | L&D owns one organization-scoped release line per Occupation with immutable Blueprint/assessment history, one optional pending chain/open candidate and one optional active assessment; Employee later completes the applicable active assessment | Management code exists through V17 and persistent frontend routes. Corrective slices added the local security/CSRF routing and fixed the actor-scope trigger that blocked the first working revision. Production Identity/Catalog visibility, protected-answer permission, publication/release snapshots and Employee attempt/result remain open; full PostgreSQL/concurrency and management Playwright regression evidence remains pending |
 | RIASEC and role guidance | Employee completes RIASEC; system uses baseline/RIASEC to suggest roles/comments; Expert confirms/revises/rejects; Employee selects/confirms | Interest result, AI data contract and review workflow/versioning require design; legacy soft-skill evidence is not RIASEC |
 | Pathways | System generates from gaps; Expert reviews/adjusts/confirms before Employee starts | Initial access gate, review state, module overrides and later evidence-driven revision policy require design |
 | Individual skill learning | Employee selects skill and accesses the mapped approved Module without changing role pathway | Separate independent progress/context from pathway selection; reuse valid assessment evidence through tracing boundary |
@@ -25,7 +25,9 @@ Current requirement traceability is in [features/README.md](features/README.md),
 
 ## Technical Baseline Snapshot
 
-**Runtime and ontology snapshot: 2026-10-16.** This is a runnable database/deployment baseline plus tested local implementation bases for REQ-001-F01 View Target Roles, REQ-001-F02 Choose Target Role and Occupation-scoped REQ-002-F02 Baseline Blueprint Authoring; it is not an implementation of all drafted functions. The authoring slice includes baseline question metadata, a gated development question-bank importer, one immutable-versioned blueprint identity per Occupation, all-role validation, zero-question roles, aggregate coverage, deterministic no-repeat draft generation, exact-hash review/publication APIs, and the local L&D assessment-bank interface. The frontend adds capacity-aware role-total distribution, linked percentage inputs/sliders, EN/VI content and independent multi-open role panels. A read-only capacity API joins the current Occupation catalog scope with PostgreSQL published coverage; save still revalidates the authoritative pool. Unit/API/component, PostgreSQL/Neo4j integration, full backend regression and the updated Compose/Playwright scenario have current local/demo evidence. Evidence is recorded in [REQ-002-F02 testing](testing/REQ-002-F02-baseline-authoring.md). Employee attempt, response, scoring/evidence and RIASEC runtime are not implemented. Production security remains deny-by-default until real Identity and Catalog authorization contracts are integrated.
+**Runtime and ontology snapshot: 2026-10-17.** This is a runnable database/deployment baseline plus tested local implementation bases for REQ-001-F01 View Target Roles, REQ-001-F02 Choose Target Role and Occupation-scoped REQ-002-F02 Baseline Assessment Management; it is not an implementation of all drafted functions. REQ-002 now has one organization + Occupation coordination series, a mutable working Blueprint revision, immutable Blueprint/assessment versions, one pending chain/open candidate, one active pointer, transition history, idempotent command receipts, replacement/restore/disable/abandon commands and persistent L&D management routes. Capacity-aware counts/weights, deterministic no-repeat generation and exact-hash review remain unchanged. Normal DTOs exclude protected answers; local/demo may fetch them through a dedicated audited `no-store` boundary. Domain/application/API/frontend/architecture and non-Docker regression evidence is current; V14-V16 PostgreSQL/concurrency and updated Compose/Playwright evidence remains pending because Docker was unavailable. Evidence is recorded in [REQ-002-F02 testing](testing/REQ-002-F02-baseline-authoring.md). Employee attempt, response, scoring/evidence and RIASEC runtime are not implemented. Production security remains deny-by-default until real Identity and Catalog authorization contracts are integrated.
+
+Corrective local-runtime work added `/api/v1/ld/baseline-assessments/**` to the local security and CSRF rules. A later manual Step 3 smoke exposed the V14 actor-scope trigger referencing fields from two different trigger row shapes; forward-only V17 now selects `actor_id` for transitions and `updated_by` for working revisions explicitly. The create-working-revision POST and following workspace reload succeed manually, while executable full-chain/concurrency regression remains gated.
 
 ## Runtime topology
 
@@ -42,20 +44,20 @@ Current requirement traceability is in [features/README.md](features/README.md),
 
 | Store | Current responsibility | Current baseline |
 | --- | --- | --- |
-| PostgreSQL 17.6 | Organizations, accounts/roles, target selections, assessments, mastery/evidence, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V13 in [db/migration](../backend/src/main/resources/db/migration); V8-V12 add baseline question metadata, versioned blueprints, retry-safe writes, deterministic manifests and exact-content review/publication; V13 adds the immutable logical blueprint identity and one-blueprint-per-Occupation uniqueness. |
+| PostgreSQL 17.6 | Organizations, accounts/roles, target selections, assessments, mastery/evidence, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V17 in [db/migration](../backend/src/main/resources/db/migration); V8-V13 establish baseline metadata, immutable Blueprint/generation/review and logical identity; V14 adds tenant-scoped series coordination, working revisions, candidate/active pointers and transition history; V15 adds immutable command receipts; V16 adds protected-answer reveal audit; V17 corrects management-actor trigger field routing. |
 | Neo4j 5.26 Community | Ontology 0.8.0: Occupation, TargetRole, Level, Competency, MicroSkill and LearningModule; legacy runtime adapters are still pending conversion | V1 remains the legacy baseline; V2 adds Level/Competency/Course constraints and V3 adds Occupation ID/code constraints. V4 retires the Course constraint, leaving 14 domain constraints plus SchemaMigration.version. No catalog data or learner results are rewritten. |
 
 ## Database diagrams
 
 ### PostgreSQL
 
-The three PlantUML sources include every column of the 57 migrated tables through V13. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
+The checked-in PlantUML/PostgreSQL diagrams still show the 57-table snapshot through V13. They do not yet include the V14-V16 series, working-revision, transition, command-receipt and answer-reveal-audit structures described below. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Diagram regeneration is a documented follow-up and the diagrams must not be used as proof of the V14-V16 runtime schema.
 
 ![PostgreSQL identity, catalog and processing tables](diagrams/postgresql.svg)
 
 [Identity and catalog PlantUML source](diagrams/postgresql.puml)
 
-The assessment PlantUML source and checked-in SVG include V13. The SVG was rendered from that source with PlantUML 1.2025.10.
+The assessment PlantUML source and checked-in SVG include V13 only. The SVG was rendered from that source with PlantUML 1.2025.10.
 
 ![PostgreSQL assessment and learning tables](diagrams/postgresql-assessment.svg)
 
@@ -81,7 +83,7 @@ Each new version must contain all and only the current roles and resolved skills
 
 The baseline editor derives its displayed role total from detailed skill/difficulty counts. It loads current published capacity through `GET /api/v1/ld/baseline-blueprint-catalog/occupations/{occupationId}/capacity`. For a role with `N` skills, explicit Apply accepts `0` or `[3 × N, feasibleMax]`, reserves one question in every Easy/Medium/Hard cell, then distributes the remainder deterministically without exceeding capacity after other roles' shared demand. Manual cell edits do not redistribute siblings. Client checks provide early feedback only; save re-reads authoritative published coverage.
 
-Participating score weights are independent from question counts and use one linked state represented as decimal text inputs plus two range dividers. The wire values remain decimals and must total one with `hard > medium > easy >= 0.01`; Apply defaults to `0.20/0.30/0.50`. The legacy `BaselineBlueprint.RoleConfig` constructor requires all persisted role weights to total one even for a zero-question role; the frontend request boundary therefore supplies `0.3334/0.3333/0.3333` for that excluded role and converts them back to `0/0/0` in editor state. This is compatibility mapping only: server participation and every coverage/generation/scoring decision continue to use the detailed count total.
+Participating score weights are independent from question counts and use one linked state represented as whole-percentage text inputs without sliders. The wire values remain decimals and must total one with `hard > medium > easy >= 0.01`; Apply defaults to `0.20/0.30/0.50`. The legacy `BaselineBlueprint.RoleConfig` constructor requires all persisted role weights to total one even for a zero-question role; the frontend request boundary therefore supplies `0.3334/0.3333/0.3333` for that excluded role and converts them back to `0/0/0` in editor state. This is compatibility mapping only: server participation and every coverage/generation/scoring decision continue to use the detailed count total.
 
 V10 adds an actor-scoped idempotency key and normalized request hash to each blueprint version. The local-only `/api/v1/ld/baseline-blueprints` adapter can create, read and revise a blueprint; revise requires the expected latest version and always inserts a new immutable version. A repeated key with identical content returns the original result, while key reuse with different content and concurrent version changes return conflicts. The local actor comes from server-side configuration and is temporarily granted the seeded `LD_MANAGER` role behind the local-actor flag. The production chain exposes none of these endpoints until the Identity owner supplies trusted authentication and authorization.
 
@@ -90,6 +92,21 @@ The baseline boundary resolves `Occupation -> HAS_ROLE -> TargetRole -> HAS_LEVE
 V11 extends the existing `assessment_version`/`assessment_item` pair instead of creating a separate draft or manifest table. Generation pins the immutable blueprint ID/version, random seed, actor, request idempotency metadata, content hash, exact published `item_version_id`, TargetRole snapshot, item position, and per-item score contribution. One blueprint identity owns one assessment series (`assessment_id = blueprint_id`): each new generation key creates the next draft version and retrying the same actor/key returns the original draft. Candidate selection uses the latest published question version, includes only roles with `total_question_count > 0`, and selects globally without replacement for exact role/skill/difficulty counts. Draft reads expose prompt and response schema but never `protected_key`. `pass_threshold` is nullable for authoring; attempt/result compatibility is deferred to the Employee lifecycle migration.
 
 V12 records the L&D reviewer, review time, and exact reviewed content hash on `assessment_version`. A generated baseline can move from `DRAFT` to `PUBLISHED` only while that reviewed hash still equals its current manifest hash. Review freezes both the assessment header and its `assessment_item` manifest; publication is the only remaining state transition, and the existing published-definition guard keeps the published version immutable. Review/publish responses continue to omit `protected_key`.
+
+V14-V16 extend that authoring chain into one tenant-scoped release line:
+
+| Structure | Responsibility and invariant |
+| --- | --- |
+| `baseline_assessment_series` | First coordination lock for one organization + Occupation. Stores `series_revision`, the stable Blueprint identity, optional working revision, pending Blueprint version, open assessment candidate and active assessment. Working and finalized pending Blueprint states cannot coexist; open and active assessment IDs must differ. |
+| `baseline_blueprint_working_revision` | The only mutable Blueprint representation. Optimistic `revision` protects repeated Save; Finalize/Abandon closes it while retaining history. A partial unique index permits one open working revision per scope. |
+| `assessment_version.draft_revision` / `baseline_candidate_state` | Optimistic manifest editing and the `OPEN`/`CLOSED` lifecycle marker. A partial unique index permits one open candidate per Blueprint identity. Reviewed/published content remains immutable. |
+| `baseline_assessment_transition` | Append-only pointer/history audit for revision start/save/finalize, draft open/edit/review/replace, active switch, restore, disable and abandonment. The series revision and transition insert are changed in the same command transaction. |
+| `baseline_management_command` | Immutable actor + idempotency-key receipt with operation, request hash and response JSON. Same key/same request replays; key reuse for another request conflicts. |
+| `baseline_answer_reveal_audit` | Append-only organization/assessment/actor/time/item-count record written with the tenant-scoped protected-answer read. |
+
+All management writes run inside the infrastructure transaction wrapper; the application core depends only on ports. The required write order is series coordination row first, then working revision or immutable Blueprint/assessment child, then pointer transition and command receipt. Publishing a reviewed candidate updates the active pointer atomically and leaves the former active definition immutable. Restore/replacement clone into the sole Draft, while disable/abandon clear pointers without deleting definitions. Database constraints are the final cardinality guard under concurrency; the application lifecycle policy supplies deterministic conflicts before persistence where possible.
+
+The intended runtime route is `/ld-manager/baseline-assessments`: landing → Occupation workspace → Blueprint Versions/Assessment Versions → persistent detail URLs. Legacy `/ld-manager/assessment-bank` and `/manager/assessment-bank` paths redirect to this route and no longer own generated state. The local answer-reveal endpoint exists only under the `local` profile plus `assessment.baseline.answer-review.enabled=true`; production has no matching bean/controller and remains deny-by-default.
 
 ![PostgreSQL recommendation, analytics and evaluation tables](diagrams/postgresql-pathway.svg)
 
@@ -141,7 +158,7 @@ backend/
     evaluation/          reserved feature package
   src/main/resources/
     application*.yml     local, prod, migrate, starter, worker profiles
-    db/migration/        PostgreSQL Flyway V1-V13
+    db/migration/        PostgreSQL Flyway V1-V17
     db/neo4j/            graph constraints packaged in the backend JAR
   src/test/java/com/adaptlearngraph/
     platform/            unit, security, database and graph tests

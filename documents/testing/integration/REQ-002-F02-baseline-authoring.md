@@ -62,3 +62,13 @@ PostgreSQL 17.6 applied Flyway V1–V13 on disposable schemas, including the fif
 Included in the scoped backend command documented in the [master evidence](../REQ-002-F02-baseline-authoring.md): **3 passed**, 0 failures/errors/skips.
 
 During the first assertion run, PostgreSQL correctly rejected a forbidden mutation but appended PL/pgSQL context to the trigger message. The assertion was narrowed to require `DataAccessException` and the invariant message rather than exact driver formatting; rerun passed all three cases.
+
+## Management lifecycle delta — attempted 2026-10-17
+
+The PostgreSQL suite was extended to the V1-V16 management schema and now contains six REQ-002 integration cases, including answer-reveal audit coverage. On this run, the Testcontainers Docker probe could not reach a Docker Linux engine, so **all six cases were skipped**. A full unfiltered backend attempt also reported four Docker-environment errors from container-backed suites.
+
+At that 2026-10-17 run there was no new integration evidence for V14–V16. The 2026-10-19 run below covers migration, selected tenant/uniqueness and audit cases; coordination/concurrent command serialization and atomic active-pointer rollback still need separate cases.
+
+## Corrective PostgreSQL run — 2026-10-19
+
+`mvnw.cmd "-Dtest=BaselineManagementSecurityChainTest,BaselineBlueprintProductionBoundaryTest,BaselineAssessmentPostgresIntegrationTest" test` used one disposable PostgreSQL 17.6 Testcontainer. The PostgreSQL class passed **7/7**: Flyway V1–V17 and no-op rerun, V17 working/transition actor trigger with cross-organization rollback, tenant-scoped answer reveal/audit, Blueprint persistence/generation, uniqueness, capacity, and review/publish history. The actor trigger case was rerun after adding its cross-tenant assertion and passed. This closes the V17 migration/trigger gap only; management command concurrency and atomic pointer-switch rollback still need their own integration cases.
