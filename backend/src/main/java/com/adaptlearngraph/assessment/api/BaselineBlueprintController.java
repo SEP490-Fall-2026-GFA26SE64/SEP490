@@ -1,9 +1,11 @@
 package com.adaptlearngraph.assessment.api;
 
 import com.adaptlearngraph.assessment.application.port.in.BaselineAssessmentDraftUseCase;
+import com.adaptlearngraph.assessment.application.port.in.BaselineAssessmentManagementUseCase;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.BlueprintDraft;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.Failure;
+import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentManagementStore;
 import com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.RoleConfig;
@@ -27,6 +29,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,14 +52,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class BaselineBlueprintController {
     private final BaselineBlueprintUseCase blueprints;
     private final BaselineAssessmentDraftUseCase drafts;
+    private final BaselineAssessmentManagementUseCase management;
     private final ObjectMapper objectMapper;
 
+    @Autowired
     public BaselineBlueprintController(
+            BaselineBlueprintUseCase blueprints,
+            BaselineAssessmentDraftUseCase drafts,
+            ObjectProvider<BaselineAssessmentManagementUseCase> management,
+            ObjectMapper objectMapper) {
+        this.blueprints = blueprints;
+        this.drafts = drafts;
+        this.management = management.getIfAvailable();
+        this.objectMapper = objectMapper;
+    }
+
+    BaselineBlueprintController(
             BaselineBlueprintUseCase blueprints,
             BaselineAssessmentDraftUseCase drafts,
             ObjectMapper objectMapper) {
         this.blueprints = blueprints;
         this.drafts = drafts;
+        this.management = null;
         this.objectMapper = objectMapper;
     }
 
@@ -64,7 +82,14 @@ public class BaselineBlueprintController {
     BlueprintResponse create(
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody CreateRequest request) {
-        return toResponse(blueprints.create(idempotencyKey, request.toDraft()));
+        if (management == null) {
+            return toResponse(blueprints.create(idempotencyKey, request.toDraft()));
+        }
+        if (!management.getWorkspace(request.occupationId()).blueprintVersions().isEmpty()) {
+            throw new Failure(BaselineBlueprintUseCase.Code.VERSION_CONFLICT,
+                    "This Occupation already has a baseline blueprint");
+        }
+        return toResponse(finalizeLegacyDraft(idempotencyKey, request.toDraft()));
     }
 
     @PutMapping("/{blueprintId}")
@@ -72,8 +97,16 @@ public class BaselineBlueprintController {
             @PathVariable UUID blueprintId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody ReviseRequest request) {
-        return toResponse(blueprints.revise(
-                blueprintId, request.expectedLatestVersion(), idempotencyKey, request.toDraft()));
+        if (management == null) {
+            return toResponse(blueprints.revise(
+                    blueprintId, request.expectedLatestVersion(), idempotencyKey, request.toDraft()));
+        }
+        BaselineBlueprint latest = blueprints.getLatest(blueprintId);
+        if (latest.version() != request.expectedLatestVersion()) {
+            throw new Failure(BaselineBlueprintUseCase.Code.VERSION_CONFLICT,
+                    "Baseline blueprint has a newer version");
+        }
+        return toResponse(finalizeLegacyDraft(idempotencyKey, request.toDraft()));
     }
 
     @GetMapping("/{blueprintId}")
@@ -97,26 +130,37 @@ public class BaselineBlueprintController {
             @PathVariable UUID blueprintId,
             @PathVariable @Min(1) int blueprintVersion,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        return toResponse(drafts.generate(blueprintId, blueprintVersion, idempotencyKey));
+        if (management == null) {
+            return toResponse(drafts.generate(blueprintId, blueprintVersion, idempotencyKey));
+        }
+        BaselineBlueprint blueprint = blueprints.getVersion(blueprintId, blueprintVersion);
+        return toResponse(management.generateAssessmentDraft(
+                blueprint.occupationId(), idempotencyKey));
     }
 
     @GetMapping("/assessment-drafts/{assessmentVersionId}")
     AssessmentDraftResponse draft(@PathVariable UUID assessmentVersionId) {
-        return toResponse(drafts.get(assessmentVersionId));
+        return toResponse(management == null
+                ? drafts.get(assessmentVersionId)
+                : management.getAssessmentVersion(assessmentVersionId));
     }
 
     @PutMapping("/assessment-drafts/{assessmentVersionId}/review")
     AssessmentDraftResponse review(
             @PathVariable UUID assessmentVersionId,
             @Valid @RequestBody ContentHashRequest request) {
-        return toResponse(drafts.review(assessmentVersionId, request.contentHash()));
+        return toResponse(management == null
+                ? drafts.review(assessmentVersionId, request.contentHash())
+                : management.reviewAssessmentDraft(assessmentVersionId, request.contentHash()));
     }
 
     @PutMapping("/assessment-drafts/{assessmentVersionId}/publish")
     AssessmentDraftResponse publish(
             @PathVariable UUID assessmentVersionId,
             @Valid @RequestBody ContentHashRequest request) {
-        return toResponse(drafts.publish(assessmentVersionId, request.contentHash()));
+        return toResponse(management == null
+                ? drafts.publish(assessmentVersionId, request.contentHash())
+                : management.publishAssessment(assessmentVersionId, request.contentHash()));
     }
 
     @ExceptionHandler(Failure.class)
@@ -144,6 +188,36 @@ public class BaselineBlueprintController {
                 .body(new ApiError(failure.code().name(), failure.getMessage(), shortages));
     }
 
+    @ExceptionHandler(BaselineAssessmentManagementUseCase.Failure.class)
+    ResponseEntity<ApiError> handleManagementFailure(
+            BaselineAssessmentManagementUseCase.Failure failure) {
+        HttpStatus status = switch (failure.code()) {
+            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
+            case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+            case PENDING_CHANGE_EXISTS, OPEN_ASSESSMENT_CANDIDATE_EXISTS,
+                    ACTIVE_ASSESSMENT_CONFLICT, STALE_WORKING_REVISION,
+                    STALE_ASSESSMENT_REVISION, IDEMPOTENCY_CONFLICT,
+                    REVIEW_REQUIRED, REVIEW_HASH_MISMATCH -> HttpStatus.CONFLICT;
+        };
+        return ResponseEntity.status(status)
+                .body(new ApiError(failure.code().name(), failure.getMessage(), List.of()));
+    }
+
+    @ExceptionHandler(BaselineAssessmentManagementStore.WriteConflict.class)
+    ResponseEntity<ApiError> handleManagementWriteConflict(RuntimeException failure) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiError("VERSION_CONFLICT", failure.getMessage(), List.of()));
+    }
+
+    @ExceptionHandler(BaselineAssessmentManagementStore.DependencyUnavailable.class)
+    ResponseEntity<ApiError> handleManagementDependency(RuntimeException failure) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ApiError("DEPENDENCY_UNAVAILABLE", failure.getMessage(), List.of()));
+    }
+
     @ExceptionHandler({IllegalArgumentException.class, ArithmeticException.class})
     ResponseEntity<ApiError> handleInvalidInput(RuntimeException exception) {
         return ResponseEntity.badRequest()
@@ -164,11 +238,22 @@ public class BaselineBlueprintController {
                         .toList());
     }
 
+    private BaselineBlueprint finalizeLegacyDraft(String idempotencyKey, BlueprintDraft draft) {
+        var working = management.startBlueprintRevision(
+                draft.occupationId(), idempotencyKey + ":start");
+        var saved = management.saveBlueprintRevision(
+                working.workingRevisionId(), working.revision(),
+                idempotencyKey + ":save", draft);
+        return management.finalizeBlueprintRevision(
+                saved.workingRevisionId(), saved.revision(), idempotencyKey);
+    }
+
     private AssessmentDraftResponse toResponse(BaselineAssessmentDraft draft) {
         return new AssessmentDraftResponse(
                 draft.assessmentVersionId(), draft.assessmentId(), draft.version(), draft.title(),
                 draft.blueprintId(), draft.blueprintVersion(), draft.generationSeed(),
-                draft.createdAt(), draft.contentHash(), draft.publicationState().name(),
+                draft.createdAt(), draft.contentHash(), draft.draftRevision(),
+                draft.publicationState().name(),
                 draft.reviewedBy(), draft.reviewedAt(), draft.reviewedContentHash(),
                 draft.items().stream()
                         .map(item -> new AssessmentItemResponse(
@@ -286,6 +371,7 @@ public class BaselineBlueprintController {
             long generationSeed,
             Instant createdAt,
             String contentHash,
+            long draftRevision,
             String publicationState,
             UUID reviewedBy,
             Instant reviewedAt,

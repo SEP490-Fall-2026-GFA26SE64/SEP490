@@ -8,15 +8,33 @@ import java.util.UUID;
 public interface BaselineBlueprintStore {
     Optional<BaselineBlueprint> findLatest(UUID blueprintId);
 
+    default Optional<BaselineBlueprint> findLatest(String organizationId, UUID blueprintId) {
+        return findLatest(blueprintId);
+    }
+
     default Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
         return Optional.empty();
     }
 
+    default Optional<BaselineBlueprint> findLatestByOccupation(
+            String organizationId, String occupationId) {
+        return findLatestByOccupation(occupationId);
+    }
+
     Optional<BaselineBlueprint> findVersion(UUID blueprintId, int version);
+
+    default Optional<BaselineBlueprint> findVersion(
+            String organizationId, UUID blueprintId, int version) {
+        return findVersion(blueprintId, version);
+    }
 
     Optional<BaselineBlueprint> findByRequest(UUID actorId, String idempotencyKey);
 
     void insert(BaselineBlueprint blueprint);
+
+    default void insert(String organizationId, BaselineBlueprint blueprint) {
+        insert(blueprint);
+    }
 
     interface ActorPort {
         Optional<Actor> currentActor();

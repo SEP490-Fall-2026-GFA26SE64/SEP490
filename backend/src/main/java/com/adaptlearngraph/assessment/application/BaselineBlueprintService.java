@@ -49,7 +49,7 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
         String hash = hash("CREATE", null, 0, draft);
         return replay(actor, key, hash).orElseGet(() -> {
             BlueprintDraft validated = validator.validateAndNormalize(actor, draft);
-            if (store.findLatestByOccupation(validated.occupationId()).isPresent()) {
+            if (store.findLatestByOccupation(actor.organizationId(), validated.occupationId()).isPresent()) {
                 throw failure(
                         Code.VERSION_CONFLICT,
                         "This Occupation already has a baseline blueprint; revise its latest version");
@@ -75,7 +75,7 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
         if (replay.isPresent()) {
             return replay.orElseThrow();
         }
-        BaselineBlueprint latest = store.findLatest(blueprintId)
+        BaselineBlueprint latest = store.findLatest(actor.organizationId(), blueprintId)
                 .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline blueprint was not found"));
         if (latest.version() != expectedLatestVersion) {
             throw failure(Code.VERSION_CONFLICT, "Baseline blueprint has a newer version");
@@ -92,32 +92,35 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
 
     @Override
     public BaselineBlueprint getLatest(UUID blueprintId) {
-        requireActor();
-        return store.findLatest(Objects.requireNonNull(blueprintId, "blueprintId must not be null"))
+        Actor actor = requireActor();
+        return store.findLatest(actor.organizationId(),
+                        Objects.requireNonNull(blueprintId, "blueprintId must not be null"))
                 .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline blueprint was not found"));
     }
 
     @Override
     public BaselineBlueprint getLatestByOccupation(String occupationId) {
-        requireActor();
-        return store.findLatestByOccupation(requireText(occupationId, "occupationId"))
+        Actor actor = requireActor();
+        return store.findLatestByOccupation(
+                        actor.organizationId(), requireText(occupationId, "occupationId"))
                 .orElseThrow(() -> failure(
                         Code.NOT_FOUND, "Baseline blueprint was not found for this Occupation"));
     }
 
     @Override
     public BaselineBlueprint getVersion(UUID blueprintId, int version) {
-        requireActor();
+        Actor actor = requireActor();
         if (version < 1) {
             throw failure(Code.INVALID_REQUEST, "version must be positive");
         }
-        return store.findVersion(Objects.requireNonNull(blueprintId, "blueprintId must not be null"), version)
+        return store.findVersion(actor.organizationId(),
+                        Objects.requireNonNull(blueprintId, "blueprintId must not be null"), version)
                 .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline blueprint version was not found"));
     }
 
     private BaselineBlueprint insert(BaselineBlueprint blueprint, Actor actor, String key, String hash) {
         try {
-            store.insert(blueprint);
+            store.insert(actor.organizationId(), blueprint);
             return blueprint;
         } catch (WriteConflict conflict) {
             return replay(actor, key, hash)

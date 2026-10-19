@@ -68,7 +68,8 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
                 return replay.orElseThrow();
             }
 
-            BaselineBlueprint blueprint = blueprints.findVersion(blueprintId, blueprintVersion)
+            BaselineBlueprint blueprint = blueprints.findVersion(
+                            actor.organizationId(), blueprintId, blueprintVersion)
                     .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline blueprint version was not found"));
             List<BaselineBlueprint.RoleConfig> participatingRoles = blueprint.roles().stream()
                     .filter(BaselineBlueprint.RoleConfig::participates)
@@ -97,9 +98,9 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
 
     @Override
     public BaselineAssessmentDraft get(UUID assessmentVersionId) {
-        requireActor();
+        Actor actor = requireActor();
         try {
-            return drafts.findByVersionId(Objects.requireNonNull(
+            return drafts.findByVersionId(actor.organizationId(), Objects.requireNonNull(
                             assessmentVersionId, "assessmentVersionId must not be null"))
                     .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline assessment draft was not found"));
         } catch (DependencyUnavailable unavailable) {
@@ -114,13 +115,13 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
                 assessmentVersionId, "assessmentVersionId must not be null");
         String contentHash = requireContentHash(expectedContentHash);
         try {
-            BaselineAssessmentDraft current = find(versionId);
+            BaselineAssessmentDraft current = find(actor, versionId);
             requireCurrentHash(current, contentHash);
             if (current.reviewedContentHash() != null) {
                 return current;
             }
-            drafts.review(versionId, actor.accountId(), now(), contentHash);
-            BaselineAssessmentDraft reviewed = find(versionId);
+            drafts.review(actor.organizationId(), versionId, actor.accountId(), now(), contentHash);
+            BaselineAssessmentDraft reviewed = find(actor, versionId);
             if (!contentHash.equals(reviewed.reviewedContentHash())) {
                 throw failure(Code.VERSION_CONFLICT,
                         "Baseline assessment changed while it was being reviewed");
@@ -133,12 +134,12 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
 
     @Override
     public BaselineAssessmentDraft publish(UUID assessmentVersionId, String expectedContentHash) {
-        requireActor();
+        Actor actor = requireActor();
         UUID versionId = Objects.requireNonNull(
                 assessmentVersionId, "assessmentVersionId must not be null");
         String contentHash = requireContentHash(expectedContentHash);
         try {
-            BaselineAssessmentDraft current = find(versionId);
+            BaselineAssessmentDraft current = find(actor, versionId);
             requireCurrentHash(current, contentHash);
             if (!contentHash.equals(current.reviewedContentHash())) {
                 throw failure(Code.REVIEW_REQUIRED,
@@ -148,8 +149,8 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
                     == BaselineAssessmentDraft.PublicationState.PUBLISHED) {
                 return current;
             }
-            drafts.publish(versionId, contentHash);
-            BaselineAssessmentDraft published = find(versionId);
+            drafts.publish(actor.organizationId(), versionId, contentHash);
+            BaselineAssessmentDraft published = find(actor, versionId);
             if (published.publicationState()
                     != BaselineAssessmentDraft.PublicationState.PUBLISHED) {
                 throw failure(Code.VERSION_CONFLICT,
@@ -183,8 +184,8 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
         });
     }
 
-    private BaselineAssessmentDraft find(UUID assessmentVersionId) {
-        return drafts.findByVersionId(assessmentVersionId)
+    private BaselineAssessmentDraft find(Actor actor, UUID assessmentVersionId) {
+        return drafts.findByVersionId(actor.organizationId(), assessmentVersionId)
                 .orElseThrow(() -> failure(Code.NOT_FOUND,
                         "Baseline assessment draft was not found"));
     }

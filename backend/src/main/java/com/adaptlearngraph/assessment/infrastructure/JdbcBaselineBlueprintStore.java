@@ -40,6 +40,24 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
     }
 
     @Override
+    public Optional<BaselineBlueprint> findLatest(String organizationId, UUID blueprintId) {
+        List<Integer> versions = jdbc.query("""
+                SELECT max(version) AS version
+                FROM platform.baseline_blueprint_version version
+                JOIN platform.baseline_blueprint identity USING (blueprint_id)
+                WHERE version.blueprint_id = :blueprintId
+                  AND identity.organization_id = CAST(:organizationId AS uuid)
+                """, Map.of(
+                        "blueprintId", blueprintId,
+                        "organizationId", requireText(organizationId, "organizationId")),
+                (result, row) -> (Integer) result.getObject("version"));
+        if (versions.isEmpty() || versions.getFirst() == null) {
+            return Optional.empty();
+        }
+        return findVersion(organizationId, blueprintId, versions.getFirst());
+    }
+
+    @Override
     public Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
         List<UUID> blueprintIds = jdbc.query("""
                 SELECT blueprint_id
@@ -51,13 +69,45 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
     }
 
     @Override
+    public Optional<BaselineBlueprint> findLatestByOccupation(
+            String organizationId, String occupationId) {
+        List<UUID> blueprintIds = jdbc.query("""
+                SELECT blueprint_id
+                FROM platform.baseline_blueprint
+                WHERE organization_id = CAST(:organizationId AS uuid)
+                  AND occupation_id = :occupationId
+                """, Map.of(
+                        "organizationId", requireText(organizationId, "organizationId"),
+                        "occupationId", requireText(occupationId, "occupationId")),
+                (result, row) -> result.getObject("blueprint_id", UUID.class));
+        return blueprintIds.isEmpty()
+                ? Optional.empty()
+                : findLatest(organizationId, blueprintIds.getFirst());
+    }
+
+    @Override
     public Optional<BaselineBlueprint> findVersion(UUID blueprintId, int version) {
+        return findVersion(null, blueprintId, version);
+    }
+
+    @Override
+    public Optional<BaselineBlueprint> findVersion(
+            String organizationId, UUID blueprintId, int version) {
+        String organizationPredicate = organizationId == null
+                ? ""
+                : " AND identity.organization_id = CAST(:organizationId AS uuid)";
+        MapSqlParameterSource parameters = key(blueprintId, version);
+        if (organizationId != null) {
+            parameters.addValue("organizationId", requireText(organizationId, "organizationId"));
+        }
         List<Header> headers = jdbc.query("""
-                SELECT blueprint_id, version, name, occupation_id, occupation_name_snapshot,
-                       created_by, idempotency_key, request_hash, created_at
-                FROM platform.baseline_blueprint_version
-                WHERE blueprint_id = :blueprintId AND version = :version
-                """, key(blueprintId, version), this::mapHeader);
+                SELECT version.blueprint_id, version.version, version.name, version.occupation_id,
+                       version.occupation_name_snapshot, version.created_by,
+                       version.idempotency_key, version.request_hash, version.created_at
+                FROM platform.baseline_blueprint_version version
+                JOIN platform.baseline_blueprint identity USING (blueprint_id)
+                WHERE version.blueprint_id = :blueprintId AND version.version = :version
+                """ + organizationPredicate, parameters, this::mapHeader);
         if (headers.isEmpty()) {
             return Optional.empty();
         }
@@ -96,9 +146,23 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
     @Override
     @Transactional
     public void insert(BaselineBlueprint blueprint) {
+        String organizationId = jdbc.queryForObject("""
+                SELECT organization_id::text
+                FROM platform.account
+                WHERE account_id = :actorId
+                """, Map.of("actorId", blueprint.createdBy()), String.class);
+        if (organizationId == null) {
+            throw new IllegalStateException("Blueprint actor has no organization");
+        }
+        insert(organizationId, blueprint);
+    }
+
+    @Override
+    @Transactional
+    public void insert(String organizationId, BaselineBlueprint blueprint) {
         try {
             if (blueprint.version() == 1) {
-                insertIdentity(blueprint);
+                insertIdentity(organizationId, blueprint);
             }
             jdbc.update("""
                     INSERT INTO platform.baseline_blueprint_version (
@@ -131,17 +195,35 @@ public class JdbcBaselineBlueprintStore implements BaselineBlueprintStore {
         }
     }
 
-    private void insertIdentity(BaselineBlueprint blueprint) {
+    private void insertIdentity(String organizationId, BaselineBlueprint blueprint) {
         jdbc.update("""
                 INSERT INTO platform.baseline_blueprint (
-                    blueprint_id, occupation_id, created_by, created_at)
-                VALUES (:blueprintId, :occupationId, :createdBy, :createdAt)
+                    blueprint_id, organization_id, occupation_id, created_by, created_at)
+                SELECT :blueprintId, account.organization_id, :occupationId, :createdBy, :createdAt
+                FROM platform.account account
+                WHERE account.account_id = :createdBy
+                  AND account.organization_id = CAST(:organizationId AS uuid)
+                ON CONFLICT (blueprint_id) DO NOTHING
                 """, new MapSqlParameterSource()
                 .addValue("blueprintId", blueprint.blueprintId())
+                .addValue("organizationId", requireText(organizationId, "organizationId"))
                 .addValue("occupationId", blueprint.occupationId())
                 .addValue("createdBy", blueprint.createdBy())
                 .addValue("createdAt", blueprint.createdAt().atOffset(ZoneOffset.UTC),
                         Types.TIMESTAMP_WITH_TIMEZONE));
+        Integer matching = jdbc.queryForObject("""
+                SELECT count(*)
+                FROM platform.baseline_blueprint
+                WHERE blueprint_id = :blueprintId
+                  AND organization_id = CAST(:organizationId AS uuid)
+                  AND occupation_id IS NOT DISTINCT FROM :occupationId
+                """, new MapSqlParameterSource()
+                .addValue("blueprintId", blueprint.blueprintId())
+                .addValue("organizationId", requireText(organizationId, "organizationId"))
+                .addValue("occupationId", blueprint.occupationId()), Integer.class);
+        if (matching == null || matching != 1) {
+            throw new IllegalStateException("Blueprint actor is outside the trusted organization");
+        }
     }
 
     private void insertRole(BaselineBlueprint blueprint, RoleConfig role) {

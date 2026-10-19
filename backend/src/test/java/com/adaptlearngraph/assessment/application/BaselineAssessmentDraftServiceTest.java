@@ -310,6 +310,23 @@ class BaselineAssessmentDraftServiceTest {
             return true;
         }
 
+        @Override
+        public BaselineAssessmentDraft updateManifest(
+                String organizationId, UUID assessmentVersionId, long expectedDraftRevision,
+                String title, List<UUID> orderedItemVersionIds) {
+            throw new UnsupportedOperationException("Not used by the legacy draft-service tests");
+        }
+
+        @Override
+        public void closeCandidate(String organizationId, UUID assessmentVersionId) {
+            throw new UnsupportedOperationException("Not used by the legacy draft-service tests");
+        }
+
+        @Override
+        public BaselineAssessmentDraft cloneAsOpenCandidate(CloneCandidate candidate) {
+            throw new UnsupportedOperationException("Not used by the legacy draft-service tests");
+        }
+
         private static BaselineAssessmentDraft copy(
                 BaselineAssessmentDraft current, PublicationState state,
                 UUID reviewerId, Instant reviewedAt, String reviewedHash) {

@@ -9,6 +9,7 @@ import com.adaptlearngraph.assessment.application.BaselineBlueprintCapacityServi
 import com.adaptlearngraph.assessment.application.BaselineBlueprintService;
 import com.adaptlearngraph.assessment.application.port.in.BaselineBlueprintUseCase.BlueprintDraft;
 import com.adaptlearngraph.assessment.application.port.out.BaselineAssessmentDraftStore;
+import com.adaptlearngraph.assessment.application.port.out.BaselineAnswerReviewStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore;
 import com.adaptlearngraph.assessment.application.port.out.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.assessment.application.port.out.BaselineOccupationCatalogPort;
@@ -65,6 +66,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     private JdbcTemplate jdbc;
     private BaselineBlueprintStore blueprints;
     private BaselineAssessmentDraftStore drafts;
+    private BaselineAnswerReviewStore answerReviews;
     private BaselineBlueprintService blueprintService;
     private BaselineBlueprintCapacityService capacityService;
     private BaselineAssessmentDraftService draftService;
@@ -105,6 +107,7 @@ class BaselineAssessmentPostgresIntegrationTest {
                 new JdbcBaselineBlueprintStore(namedJdbc), transactions);
         drafts = new TransactionalDraftStore(
                 new JdbcBaselineAssessmentDraftStore(namedJdbc), transactions);
+        answerReviews = new JdbcBaselineAnswerReviewStore(namedJdbc);
         var actor = (BaselineBlueprintStore.ActorPort) () -> Optional.of(
                 new Actor(ACTOR_ID, ORGANIZATION_ID.toString(), true, Set.of("LD_MANAGER")));
         var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(), namedJdbc);
@@ -116,11 +119,99 @@ class BaselineAssessmentPostgresIntegrationTest {
     }
 
     @Test
-    void migratesThroughV13AndSecondMigrationRunIsNoOp() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
+    void migratesThroughV17AndSecondMigrationRunIsNoOp() {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("17");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE success", Long.class)).isEqualTo(13L);
+                "SELECT count(*) FROM flyway_schema_history WHERE success", Long.class)).isEqualTo(17L);
+    }
+
+    @Test
+    void workingRevisionAndTransitionTriggersReadTheirOwnActorColumns() {
+        var blueprint = blueprintService.create("trigger-blueprint", blueprintDraft("Trigger blueprint"));
+        jdbc.update("""
+                INSERT INTO platform.baseline_assessment_series(
+                    organization_id, occupation_id, blueprint_id)
+                VALUES (?, ?, ?)
+                """, ORGANIZATION_ID, OCCUPATION_ID, blueprint.blueprintId());
+
+        UUID workingId = uuid(902);
+        jdbc.update("""
+                INSERT INTO platform.baseline_blueprint_working_revision(
+                    working_revision_id, organization_id, occupation_id, blueprint_id,
+                    name, occupation_name_snapshot, roles, created_by, updated_by)
+                VALUES (?, ?, ?, ?, 'Working', 'Software Engineering', '[]'::jsonb, ?, ?)
+                """, workingId, ORGANIZATION_ID, OCCUPATION_ID, blueprint.blueprintId(), ACTOR_ID, ACTOR_ID);
+        jdbc.update("""
+                INSERT INTO platform.baseline_assessment_transition(
+                    organization_id, occupation_id, series_revision, transition, actor_id, occurred_at,
+                    working_revision_id)
+                VALUES (?, ?, 2, 'WORKING_REVISION_STARTED', ?, now(), ?)
+                """, ORGANIZATION_ID, OCCUPATION_ID, ACTOR_ID, workingId);
+
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM platform.baseline_blueprint_working_revision
+                WHERE working_revision_id = ? AND updated_by = ?
+                """, Long.class, workingId, ACTOR_ID)).isOne();
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM platform.baseline_assessment_transition
+                WHERE working_revision_id = ? AND actor_id = ?
+                """, Long.class, workingId, ACTOR_ID)).isOne();
+
+        UUID otherOrganization = uuid(903);
+        UUID otherActor = uuid(904);
+        jdbc.update("INSERT INTO platform.organization(organization_id, code, name) VALUES (?, 'OTHER_TRIGGER', 'Other')",
+                otherOrganization);
+        jdbc.update("""
+                INSERT INTO platform.account(
+                    account_id, organization_id, identifier, normalized_identifier, password_hash)
+                VALUES (?, ?, 'other-trigger-actor', 'other-trigger-actor', 'not-a-login')
+                """, otherActor, otherOrganization);
+        assertThatThrownBy(() -> jdbc.update("""
+                UPDATE platform.baseline_blueprint_working_revision
+                SET updated_by = ? WHERE working_revision_id = ?
+                """, otherActor, workingId))
+                .hasMessageContaining("Baseline management actor is outside the series organization");
+        assertThat(jdbc.queryForObject("""
+                SELECT updated_by FROM platform.baseline_blueprint_working_revision
+                WHERE working_revision_id = ?
+                """, UUID.class, workingId)).isEqualTo(ACTOR_ID);
+    }
+
+    @Test
+    void answerRevealIsTenantScopedAndAppendsOneAuditRow() {
+        var blueprint = blueprintService.create("answer-blueprint", blueprintDraft("Answer review"));
+        var assessment = draftService.generate(blueprint.blueprintId(), 1, "answer-assessment");
+        jdbc.update("""
+                INSERT INTO platform.baseline_assessment_series(
+                    organization_id, occupation_id, blueprint_id, pending_blueprint_version,
+                    open_assessment_version_id)
+                VALUES (?, ?, ?, 1, ?)
+                """, ORGANIZATION_ID, OCCUPATION_ID, blueprint.blueprintId(), assessment.assessmentVersionId());
+
+        UUID otherOrganizationId = uuid(901);
+        jdbc.update("""
+                INSERT INTO platform.organization(organization_id, code, name)
+                VALUES (?, 'ORG_OTHER', 'Other Organization')
+                """, otherOrganizationId);
+
+        assertThatThrownBy(() -> answerReviews.revealAndAudit(
+                otherOrganizationId, assessment.assessmentVersionId(), ACTOR_ID, Instant.now()))
+                .isInstanceOf(BaselineAnswerReviewStore.NotFound.class);
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM platform.baseline_answer_reveal_audit", Long.class)).isZero();
+
+        Instant revealedAt = Instant.parse("2026-10-17T08:30:00Z");
+        var answers = answerReviews.revealAndAudit(
+                ORGANIZATION_ID, assessment.assessmentVersionId(), ACTOR_ID, revealedAt);
+
+        assertThat(answers).hasSize(3).allSatisfy(item ->
+                assertThat(item.protectedKeyJson()).contains("correctOption"));
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM platform.baseline_answer_reveal_audit
+                WHERE organization_id = ? AND assessment_version_id = ?
+                  AND actor_id = ? AND item_count = 3
+                """, Long.class, ORGANIZATION_ID, assessment.assessmentVersionId(), ACTOR_ID)).isOne();
     }
 
     @Test
@@ -409,6 +500,25 @@ class BaselineAssessmentPostgresIntegrationTest {
         public boolean publish(UUID assessmentVersionId, String expectedContentHash) {
             return Boolean.TRUE.equals(transactions.execute(status ->
                     delegate.publish(assessmentVersionId, expectedContentHash)));
+        }
+
+        @Override
+        public com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft updateManifest(
+                String organizationId, UUID assessmentVersionId, long expectedDraftRevision,
+                String title, List<UUID> orderedItemVersionIds) {
+            return transactions.execute(status -> delegate.updateManifest(
+                    organizationId, assessmentVersionId, expectedDraftRevision, title, orderedItemVersionIds));
+        }
+
+        @Override
+        public void closeCandidate(String organizationId, UUID assessmentVersionId) {
+            transactions.executeWithoutResult(status -> delegate.closeCandidate(organizationId, assessmentVersionId));
+        }
+
+        @Override
+        public com.adaptlearngraph.assessment.domain.BaselineAssessmentDraft cloneAsOpenCandidate(
+                CloneCandidate candidate) {
+            return transactions.execute(status -> delegate.cloneAsOpenCandidate(candidate));
         }
     }
 }

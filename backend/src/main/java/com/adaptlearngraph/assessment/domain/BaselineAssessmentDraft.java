@@ -21,6 +21,7 @@ public record BaselineAssessmentDraft(
         Instant createdAt,
         String generationRequestHash,
         String contentHash,
+        long draftRevision,
         PublicationState publicationState,
         UUID reviewedBy,
         Instant reviewedAt,
@@ -39,6 +40,9 @@ public record BaselineAssessmentDraft(
         Objects.requireNonNull(createdAt, "createdAt must not be null");
         generationRequestHash = requireText(generationRequestHash, "generationRequestHash");
         contentHash = requireText(contentHash, "contentHash");
+        if (draftRevision < 1) {
+            throw new IllegalArgumentException("draftRevision must be positive");
+        }
         Objects.requireNonNull(publicationState, "publicationState must not be null");
         boolean hasReview = reviewedBy != null || reviewedAt != null || reviewedContentHash != null;
         if (hasReview && (reviewedBy == null || reviewedAt == null || reviewedContentHash == null)) {
@@ -64,6 +68,17 @@ public record BaselineAssessmentDraft(
                 throw new IllegalArgumentException("item versions must not repeat");
             }
         }
+    }
+
+    public BaselineAssessmentDraft(
+            UUID assessmentVersionId, UUID assessmentId, int version, String title,
+            UUID blueprintId, int blueprintVersion, long generationSeed, UUID createdBy,
+            Instant createdAt, String generationRequestHash, String contentHash,
+            PublicationState publicationState, UUID reviewedBy, Instant reviewedAt,
+            String reviewedContentHash, List<Item> items) {
+        this(assessmentVersionId, assessmentId, version, title, blueprintId, blueprintVersion,
+                generationSeed, createdBy, createdAt, generationRequestHash, contentHash, 1,
+                publicationState, reviewedBy, reviewedAt, reviewedContentHash, items);
     }
 
     public enum PublicationState {

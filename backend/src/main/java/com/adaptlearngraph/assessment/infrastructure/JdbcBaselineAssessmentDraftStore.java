@@ -7,6 +7,12 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -79,17 +85,37 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
 
     @Override
     public Optional<BaselineAssessmentDraft> findByVersionId(UUID assessmentVersionId) {
+        return findByVersionId(null, assessmentVersionId);
+    }
+
+    @Override
+    public Optional<BaselineAssessmentDraft> findByVersionId(
+            String organizationId, UUID assessmentVersionId) {
         try {
+            String organizationPredicate = organizationId == null
+                    ? ""
+                    : " AND identity.organization_id = CAST(:organizationId AS uuid)";
+            MapSqlParameterSource parameters = new MapSqlParameterSource()
+                    .addValue("assessmentVersionId", assessmentVersionId);
+            if (organizationId != null) {
+                parameters.addValue("organizationId", requireText(organizationId, "organizationId"));
+            }
             List<Header> headers = jdbc.query("""
-                    SELECT assessment_version_id, assessment_id, version, title,
-                           blueprint_id, blueprint_version, generation_seed,
-                           created_by, created_at, generation_request_hash, content_hash,
-                           publication_state, reviewed_by, reviewed_at, reviewed_content_hash
-                    FROM platform.assessment_version
-                    WHERE assessment_version_id = :assessmentVersionId
-                      AND purpose = 'BASELINE'
-                      AND blueprint_id IS NOT NULL
-                    """, Map.of("assessmentVersionId", assessmentVersionId), this::mapHeader);
+                    SELECT assessment.assessment_version_id, assessment.assessment_id,
+                           assessment.version, assessment.title, assessment.blueprint_id,
+                           assessment.blueprint_version, assessment.generation_seed,
+                           assessment.created_by, assessment.created_at,
+                           assessment.generation_request_hash, assessment.content_hash,
+                           assessment.draft_revision,
+                           assessment.publication_state, assessment.reviewed_by,
+                           assessment.reviewed_at, assessment.reviewed_content_hash
+                    FROM platform.assessment_version assessment
+                    JOIN platform.baseline_blueprint identity
+                      ON identity.blueprint_id = assessment.blueprint_id
+                    WHERE assessment.assessment_version_id = :assessmentVersionId
+                      AND assessment.purpose = 'BASELINE'
+                      AND assessment.blueprint_id IS NOT NULL
+                    """ + organizationPredicate, parameters, this::mapHeader);
             if (headers.isEmpty()) {
                 return Optional.empty();
             }
@@ -117,7 +143,8 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
                     header.assessmentVersionId(), header.assessmentId(), header.version(), header.title(),
                     header.blueprintId(), header.blueprintVersion(), header.generationSeed(),
                     header.createdBy(), header.createdAt(), header.generationRequestHash(),
-                    header.contentHash(), header.publicationState(), header.reviewedBy(),
+                    header.contentHash(), header.draftRevision(), header.publicationState(),
+                    header.reviewedBy(),
                     header.reviewedAt(), header.reviewedContentHash(), items));
         } catch (DataAccessException failure) {
             throw unavailable("Baseline assessment draft is unavailable", failure);
@@ -128,6 +155,39 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
     @Transactional
     public BaselineAssessmentDraft insertNextVersion(NewDraft draft) {
         try {
+            List<Long> seriesLocks = jdbc.query("""
+                    SELECT series.series_revision
+                    FROM platform.baseline_assessment_series series
+                    JOIN platform.baseline_blueprint identity
+                      ON identity.blueprint_id = series.blueprint_id
+                    JOIN platform.account actor
+                      ON actor.account_id = :createdBy
+                     AND actor.organization_id = series.organization_id
+                    WHERE series.blueprint_id = :blueprintId
+                      AND identity.organization_id = series.organization_id
+                    FOR UPDATE OF series
+                    """, new MapSqlParameterSource()
+                    .addValue("blueprintId", draft.blueprintId())
+                    .addValue("createdBy", draft.createdBy()),
+                    (result, row) -> result.getLong("series_revision"));
+            if (seriesLocks.isEmpty()) {
+                List<UUID> identityLocks = jdbc.query("""
+                        SELECT identity.blueprint_id
+                        FROM platform.baseline_blueprint identity
+                        JOIN platform.account actor
+                          ON actor.account_id = :createdBy
+                         AND actor.organization_id = identity.organization_id
+                        WHERE identity.blueprint_id = :blueprintId
+                        FOR UPDATE OF identity
+                        """, new MapSqlParameterSource()
+                        .addValue("blueprintId", draft.blueprintId())
+                        .addValue("createdBy", draft.createdBy()),
+                        (result, row) -> result.getObject("blueprint_id", UUID.class));
+                if (identityLocks.isEmpty()) {
+                    throw new IllegalStateException(
+                            "Baseline blueprint is outside the trusted organization");
+                }
+            }
             List<Integer> locked = jdbc.query("""
                     SELECT version
                     FROM platform.baseline_blueprint_version
@@ -144,12 +204,13 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
                         assessment_version_id, assessment_id, version, title, purpose,
                         scoring_version, publication_state, content_hash,
                         blueprint_id, blueprint_version, generation_seed,
-                        created_by, created_at, generation_idempotency_key, generation_request_hash)
+                        created_by, created_at, generation_idempotency_key, generation_request_hash,
+                        baseline_candidate_state)
                     VALUES (
                         :assessmentVersionId, :assessmentId, :version, :title, 'BASELINE',
                         :scoringVersion, 'DRAFT', :contentHash,
                         :blueprintId, :blueprintVersion, :generationSeed,
-                        :createdBy, :createdAt, :idempotencyKey, :requestHash)
+                        :createdBy, :createdAt, :idempotencyKey, :requestHash, 'OPEN')
                     """, headerParameters(draft, version));
             int position = 1;
             for (NewItem item : draft.items()) {
@@ -181,9 +242,31 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
     public boolean review(
             UUID assessmentVersionId, UUID reviewerId, Instant reviewedAt,
             String expectedContentHash) {
+        return review(null, assessmentVersionId, reviewerId, reviewedAt, expectedContentHash);
+    }
+
+    @Override
+    public boolean review(
+            String organizationId, UUID assessmentVersionId, UUID reviewerId,
+            Instant reviewedAt, String expectedContentHash) {
         try {
+            String organizationPredicate = organizationId == null ? "" : """
+                      AND EXISTS (
+                          SELECT 1 FROM platform.baseline_blueprint identity
+                          WHERE identity.blueprint_id = assessment.blueprint_id
+                            AND identity.organization_id = CAST(:organizationId AS uuid))
+                    """;
+            MapSqlParameterSource parameters = new MapSqlParameterSource()
+                    .addValue("assessmentVersionId", assessmentVersionId)
+                    .addValue("reviewerId", reviewerId)
+                    .addValue("reviewedAt", reviewedAt.atOffset(ZoneOffset.UTC),
+                            Types.TIMESTAMP_WITH_TIMEZONE)
+                    .addValue("expectedContentHash", expectedContentHash);
+            if (organizationId != null) {
+                parameters.addValue("organizationId", requireText(organizationId, "organizationId"));
+            }
             return jdbc.update("""
-                    UPDATE platform.assessment_version
+                    UPDATE platform.assessment_version AS assessment
                     SET reviewed_by = :reviewerId,
                         reviewed_at = :reviewedAt,
                         reviewed_content_hash = :expectedContentHash
@@ -193,12 +276,7 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
                       AND publication_state = 'DRAFT'
                       AND content_hash = :expectedContentHash
                       AND reviewed_content_hash IS NULL
-                    """, new MapSqlParameterSource()
-                    .addValue("assessmentVersionId", assessmentVersionId)
-                    .addValue("reviewerId", reviewerId)
-                    .addValue("reviewedAt", reviewedAt.atOffset(ZoneOffset.UTC),
-                            Types.TIMESTAMP_WITH_TIMEZONE)
-                    .addValue("expectedContentHash", expectedContentHash)) == 1;
+                    """ + organizationPredicate, parameters) == 1;
         } catch (DataAccessException failure) {
             throw unavailable("Baseline assessment review could not be stored", failure);
         }
@@ -206,22 +284,269 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
 
     @Override
     public boolean publish(UUID assessmentVersionId, String expectedContentHash) {
+        return publish(null, assessmentVersionId, expectedContentHash);
+    }
+
+    @Override
+    public boolean publish(
+            String organizationId, UUID assessmentVersionId, String expectedContentHash) {
         try {
+            String organizationPredicate = organizationId == null ? "" : """
+                      AND EXISTS (
+                          SELECT 1 FROM platform.baseline_blueprint identity
+                          WHERE identity.blueprint_id = assessment.blueprint_id
+                            AND identity.organization_id = CAST(:organizationId AS uuid))
+                    """;
+            MapSqlParameterSource parameters = new MapSqlParameterSource()
+                    .addValue("assessmentVersionId", assessmentVersionId)
+                    .addValue("expectedContentHash", expectedContentHash);
+            if (organizationId != null) {
+                parameters.addValue("organizationId", requireText(organizationId, "organizationId"));
+            }
             return jdbc.update("""
-                    UPDATE platform.assessment_version
-                    SET publication_state = 'PUBLISHED'
+                    UPDATE platform.assessment_version AS assessment
+                    SET publication_state = 'PUBLISHED',
+                        baseline_candidate_state = 'CLOSED'
                     WHERE assessment_version_id = :assessmentVersionId
                       AND purpose = 'BASELINE'
                       AND blueprint_id IS NOT NULL
                       AND publication_state = 'DRAFT'
                       AND content_hash = :expectedContentHash
                       AND reviewed_content_hash = :expectedContentHash
-                    """, Map.of(
-                    "assessmentVersionId", assessmentVersionId,
-                    "expectedContentHash", expectedContentHash)) == 1;
+                    """ + organizationPredicate, parameters) == 1;
         } catch (DataAccessException failure) {
             throw unavailable("Baseline assessment could not be published", failure);
         }
+    }
+
+    @Override
+    @Transactional
+    public BaselineAssessmentDraft updateManifest(
+            String organizationId, UUID assessmentVersionId, long expectedDraftRevision,
+            String title, List<UUID> orderedItemVersionIds) {
+        try {
+            BaselineAssessmentDraft current = findByVersionId(organizationId, assessmentVersionId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Baseline assessment draft was not found"));
+            if (current.draftRevision() != expectedDraftRevision
+                    || current.publicationState() != BaselineAssessmentDraft.PublicationState.DRAFT
+                    || current.reviewedContentHash() != null) {
+                throw new WriteConflict(new IllegalStateException(
+                        "Baseline assessment draft is stale or immutable"));
+            }
+            if (orderedItemVersionIds.size() != current.items().size()
+                    || new HashSet<>(orderedItemVersionIds).size() != orderedItemVersionIds.size()) {
+                throw new IllegalArgumentException(
+                        "Edited manifest must retain its item count and unique items");
+            }
+            List<EditableItem> candidates = readEditableItems(orderedItemVersionIds);
+            if (candidates.size() != orderedItemVersionIds.size()) {
+                throw new IllegalArgumentException(
+                        "Every assessment replacement item must be published");
+            }
+            Map<UUID, BaselineAssessmentDraft.Item> existing = current.items().stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            BaselineAssessmentDraft.Item::itemVersionId, item -> item));
+            Set<Integer> reservedSlots = orderedItemVersionIds.stream()
+                    .map(existing::get).filter(java.util.Objects::nonNull)
+                    .map(BaselineAssessmentDraft.Item::position)
+                    .collect(java.util.stream.Collectors.toSet());
+            Set<Integer> usedSlots = new HashSet<>();
+            List<ManifestRow> rows = new ArrayList<>();
+            int position = 1;
+            for (UUID itemId : orderedItemVersionIds) {
+                EditableItem item = candidates.stream()
+                        .filter(value -> value.itemVersionId().equals(itemId))
+                        .findFirst().orElseThrow();
+                BaselineAssessmentDraft.Item slot = existing.get(itemId);
+                if (slot == null) {
+                    slot = current.items().stream()
+                            .filter(value -> !usedSlots.contains(value.position()))
+                            .filter(value -> !reservedSlots.contains(value.position()))
+                            .filter(value -> value.microSkillId().equals(item.microSkillId())
+                                    && value.difficulty().equals(item.difficulty()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Replacement item does not match a skill and difficulty slot"));
+                }
+                if (!usedSlots.add(slot.position())) {
+                    throw new IllegalArgumentException(
+                            "Edited manifest cannot reuse an assessment slot");
+                }
+                rows.add(new ManifestRow(position++, item, slot.roleId(),
+                        slot.roleNameSnapshot(), slot.scoringWeight()));
+            }
+            String normalizedTitle = requireText(title, "title");
+            String contentHash = manifestHash(current.blueprintId(),
+                    current.blueprintVersion(), normalizedTitle, rows);
+            int changed = jdbc.update("""
+                    UPDATE platform.assessment_version AS assessment
+                    SET title = :title, content_hash = :contentHash,
+                        draft_revision = draft_revision + 1
+                    WHERE assessment_version_id = :assessmentVersionId
+                      AND draft_revision = :expectedRevision
+                      AND publication_state = 'DRAFT'
+                      AND reviewed_content_hash IS NULL
+                      AND baseline_candidate_state = 'OPEN'
+                      AND EXISTS (
+                          SELECT 1 FROM platform.baseline_blueprint identity
+                          WHERE identity.blueprint_id = assessment.blueprint_id
+                            AND identity.organization_id = CAST(:organizationId AS uuid))
+                    """, new MapSqlParameterSource()
+                    .addValue("title", normalizedTitle)
+                    .addValue("contentHash", contentHash)
+                    .addValue("assessmentVersionId", assessmentVersionId)
+                    .addValue("expectedRevision", expectedDraftRevision)
+                    .addValue("organizationId", requireText(organizationId, "organizationId")));
+            if (changed != 1) {
+                throw new WriteConflict(new IllegalStateException(
+                        "Baseline assessment draft revision is stale"));
+            }
+            jdbc.update("DELETE FROM platform.assessment_item WHERE assessment_version_id = :id",
+                    Map.of("id", assessmentVersionId));
+            for (ManifestRow row : rows) {
+                jdbc.update("""
+                        INSERT INTO platform.assessment_item (
+                            assessment_version_id, item_position, item_version_id,
+                            required, scoring_weight, role_id, role_name_snapshot)
+                        VALUES (:assessmentVersionId, :position, :itemVersionId,
+                            true, :weight, :roleId, :roleName)
+                        """, new MapSqlParameterSource()
+                        .addValue("assessmentVersionId", assessmentVersionId)
+                        .addValue("position", row.position())
+                        .addValue("itemVersionId", row.item().itemVersionId())
+                        .addValue("weight", row.weight())
+                        .addValue("roleId", row.roleId())
+                        .addValue("roleName", row.roleName()));
+            }
+            return findByVersionId(organizationId, assessmentVersionId).orElseThrow();
+        } catch (DataAccessException failure) {
+            throw unavailable("Baseline assessment manifest could not be updated", failure);
+        }
+    }
+
+    @Override
+    public void closeCandidate(String organizationId, UUID assessmentVersionId) {
+        try {
+            int changed = jdbc.update("""
+                    UPDATE platform.assessment_version AS assessment
+                    SET baseline_candidate_state = 'CLOSED'
+                    WHERE assessment_version_id = :assessmentVersionId
+                      AND baseline_candidate_state = 'OPEN'
+                      AND EXISTS (
+                          SELECT 1 FROM platform.baseline_blueprint identity
+                          WHERE identity.blueprint_id = assessment.blueprint_id
+                            AND identity.organization_id = CAST(:organizationId AS uuid))
+                    """, Map.of("assessmentVersionId", assessmentVersionId,
+                            "organizationId", requireText(organizationId, "organizationId")));
+            if (changed != 1) {
+                throw new WriteConflict(new IllegalStateException(
+                        "Open baseline assessment candidate was not found"));
+            }
+        } catch (DataAccessException failure) {
+            throw unavailable("Baseline assessment candidate could not be closed", failure);
+        }
+    }
+
+    @Override
+    @Transactional
+    public BaselineAssessmentDraft cloneAsOpenCandidate(CloneCandidate candidate) {
+        try {
+            int inserted = jdbc.update("""
+                    INSERT INTO platform.assessment_version (
+                        assessment_version_id, assessment_id, version, title, purpose,
+                        scoring_version, publication_state, content_hash,
+                        blueprint_id, blueprint_version, generation_seed,
+                        created_by, created_at, generation_idempotency_key,
+                        generation_request_hash, draft_revision, baseline_candidate_state)
+                    SELECT :newId, source.assessment_id,
+                           (SELECT coalesce(max(version), 0) + 1
+                            FROM platform.assessment_version sibling
+                            WHERE sibling.assessment_id = source.assessment_id),
+                           source.title, source.purpose, source.scoring_version, 'DRAFT',
+                           source.content_hash, source.blueprint_id, source.blueprint_version,
+                           source.generation_seed, :actorId, :occurredAt, :idempotencyKey,
+                           :requestHash, 1, 'OPEN'
+                    FROM platform.assessment_version source
+                    JOIN platform.baseline_blueprint identity
+                      ON identity.blueprint_id = source.blueprint_id
+                    WHERE source.assessment_version_id = :sourceId
+                      AND source.purpose = 'BASELINE'
+                      AND identity.organization_id = CAST(:organizationId AS uuid)
+                    """, cloneParameters(candidate));
+            if (inserted != 1) {
+                throw new IllegalArgumentException("Historical baseline assessment was not found");
+            }
+            jdbc.update("""
+                    INSERT INTO platform.assessment_item (
+                        assessment_version_id, item_position, item_version_id,
+                        required, scoring_weight, role_id, role_name_snapshot)
+                    SELECT :newId, item_position, item_version_id,
+                           required, scoring_weight, role_id, role_name_snapshot
+                    FROM platform.assessment_item
+                    WHERE assessment_version_id = :sourceId
+                    """, cloneParameters(candidate));
+            return findByVersionId(candidate.organizationId(), candidate.newAssessmentVersionId())
+                    .orElseThrow();
+        } catch (DuplicateKeyException conflict) {
+            throw new WriteConflict(conflict);
+        } catch (DataAccessException failure) {
+            throw unavailable("Baseline assessment candidate could not be cloned", failure);
+        }
+    }
+
+    private List<EditableItem> readEditableItems(List<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return jdbc.query("""
+                SELECT item_version_id, micro_skill_id, difficulty, content_hash
+                FROM platform.item_version
+                WHERE item_version_id IN (:ids) AND publication_state = 'PUBLISHED'
+                """, new MapSqlParameterSource("ids", ids), (result, row) -> new EditableItem(
+                result.getObject("item_version_id", UUID.class),
+                result.getString("micro_skill_id"), result.getString("difficulty"),
+                result.getString("content_hash")));
+    }
+
+    private static String manifestHash(
+            UUID blueprintId, int blueprintVersion, String title, List<ManifestRow> rows) {
+        StringBuilder canonical = new StringBuilder();
+        appendHash(canonical, blueprintId);
+        appendHash(canonical, blueprintVersion);
+        appendHash(canonical, title);
+        appendHash(canonical, SCORING_VERSION);
+        for (ManifestRow row : rows) {
+            appendHash(canonical, row.position());
+            appendHash(canonical, row.item().itemVersionId());
+            appendHash(canonical, row.item().contentHash());
+            appendHash(canonical, row.roleId());
+            appendHash(canonical, row.roleName());
+            appendHash(canonical, row.weight().stripTrailingZeros().toPlainString());
+        }
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException("SHA-256 is unavailable", impossible);
+        }
+    }
+
+    private static void appendHash(StringBuilder target, Object value) {
+        String text = java.util.Objects.toString(value, "").strip();
+        target.append(text.length()).append(':').append(text).append('|');
+    }
+
+    private static MapSqlParameterSource cloneParameters(CloneCandidate candidate) {
+        return new MapSqlParameterSource()
+                .addValue("organizationId", requireText(candidate.organizationId(), "organizationId"))
+                .addValue("sourceId", candidate.sourceAssessmentVersionId())
+                .addValue("newId", candidate.newAssessmentVersionId())
+                .addValue("actorId", candidate.actorId())
+                .addValue("occurredAt", candidate.occurredAt().atOffset(ZoneOffset.UTC),
+                        Types.TIMESTAMP_WITH_TIMEZONE)
+                .addValue("idempotencyKey", requireText(candidate.idempotencyKey(), "idempotencyKey"))
+                .addValue("requestHash", requireText(candidate.requestHash(), "requestHash"));
     }
 
     private int nextVersion(UUID assessmentId) {
@@ -267,6 +592,7 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
                 result.getObject("created_at", java.time.OffsetDateTime.class).toInstant(),
                 result.getString("generation_request_hash"),
                 result.getString("content_hash"),
+                result.getLong("draft_revision"),
                 BaselineAssessmentDraft.PublicationState.valueOf(
                         result.getString("publication_state")),
                 result.getObject("reviewed_by", UUID.class),
@@ -278,6 +604,13 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
 
     private static DependencyUnavailable unavailable(String message, Throwable cause) {
         return new DependencyUnavailable(message, cause);
+    }
+
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+        return value.strip();
     }
 
     private record Header(
@@ -292,8 +625,16 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
             Instant createdAt,
             String generationRequestHash,
             String contentHash,
+            long draftRevision,
             BaselineAssessmentDraft.PublicationState publicationState,
             UUID reviewedBy,
             Instant reviewedAt,
             String reviewedContentHash) {}
+
+    private record EditableItem(
+            UUID itemVersionId, String microSkillId, String difficulty, String contentHash) {}
+
+    private record ManifestRow(
+            int position, EditableItem item, String roleId, String roleName,
+            java.math.BigDecimal weight) {}
 }

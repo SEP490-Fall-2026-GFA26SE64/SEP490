@@ -15,11 +15,35 @@ public interface BaselineAssessmentDraftStore {
 
     Optional<BaselineAssessmentDraft> findByVersionId(UUID assessmentVersionId);
 
+    default Optional<BaselineAssessmentDraft> findByVersionId(
+            String organizationId, UUID assessmentVersionId) {
+        return findByVersionId(assessmentVersionId);
+    }
+
     BaselineAssessmentDraft insertNextVersion(NewDraft draft);
 
     boolean review(UUID assessmentVersionId, UUID reviewerId, Instant reviewedAt, String expectedContentHash);
 
+    default boolean review(
+            String organizationId, UUID assessmentVersionId, UUID reviewerId,
+            Instant reviewedAt, String expectedContentHash) {
+        return review(assessmentVersionId, reviewerId, reviewedAt, expectedContentHash);
+    }
+
     boolean publish(UUID assessmentVersionId, String expectedContentHash);
+
+    default boolean publish(
+            String organizationId, UUID assessmentVersionId, String expectedContentHash) {
+        return publish(assessmentVersionId, expectedContentHash);
+    }
+
+    BaselineAssessmentDraft updateManifest(
+            String organizationId, UUID assessmentVersionId, long expectedDraftRevision,
+            String title, List<UUID> orderedItemVersionIds);
+
+    void closeCandidate(String organizationId, UUID assessmentVersionId);
+
+    BaselineAssessmentDraft cloneAsOpenCandidate(CloneCandidate candidate);
 
     record CandidateItem(
             UUID itemVersionId,
@@ -53,6 +77,15 @@ public interface BaselineAssessmentDraftStore {
             items = List.copyOf(items);
         }
     }
+
+    record CloneCandidate(
+            String organizationId,
+            UUID sourceAssessmentVersionId,
+            UUID newAssessmentVersionId,
+            UUID actorId,
+            Instant occurredAt,
+            String idempotencyKey,
+            String requestHash) {}
 
     enum Difficulty {
         EASY,
