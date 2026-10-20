@@ -2,7 +2,7 @@
 
 ## Current Scope Alignment
 
-**Product baseline:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-17. Product responsibility changes below supersede earlier SaaS assumptions; the technical snapshot that follows is dated evidence, not proof of revised functionality.
+**Product baseline:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-20. Product responsibility changes below supersede earlier SaaS assumptions; the technical snapshot that follows is dated evidence, not proof of revised functionality.
 
 The deployment serves one organization. Human actors are System Administrator, L&D Manager, Expert, and Employee. Multi-organization registration/workspaces, subscriptions, payments and PayOS are outside product scope. Existing organization identifiers, account assignments, table names and actor codes remain technical compatibility data until an explicit forward migration is agreed; documentation does not silently remove fields or map privileges.
 
@@ -12,18 +12,32 @@ The deployment serves one organization. Human actors are System Administrator, L
 | Discipline catalog | L&D manages disciplines and assigns/removes Experts; Experts author assigned-discipline content | Discipline identity, content membership and assignment history are not established by the V5 `JobDomain` label |
 | Target roles | L&D creates/assigns; Expert configures competencies/skills/proficiency/importance and submits completion; L&D publishes/unpublishes | Separate configuration-completion and publication contract from legacy `ACTIVE` status; L&D must not edit Expert requirements |
 | Learning offerings | Expert authors modules, lesson/practice content and module assessments; L&D approves or returns revisions | Module/content storage, versioned content membership, submission/approval state and learning availability require design |
-| Baseline assessment | L&D owns one organization-scoped release line per Occupation with immutable Blueprint/assessment history, one optional pending chain/open candidate and one optional active assessment; Employee later completes the applicable active assessment | Management code exists through V17 and persistent frontend routes. Corrective slices added local security/CSRF routing and fixed the actor-scope trigger. V17 PostgreSQL Testcontainers regression passed; concurrent management commands and the current management Playwright lifecycle remain unverified. Production Identity/Catalog visibility, protected-answer permission, publication/release snapshots and Employee attempt/result remain open. |
+| Baseline assessment | L&D configures/finalizes an immutable Blueprint per organization + Occupation with capacity-bounded maximum/time pairs for active roles and exploration; Test Blueprint is ephemeral. Role selection is immediate, but every Employee without a mastery-producing baseline for that Occupation must complete it before mastery-dependent steps. One successful baseline is allowed per Employee + Occupation; only invalidated no-mastery attempts may be replaced. Each attempt pins all versions and produces theta, SE, point mastery and conservative downstream mastery per MicroSkill. | The target schema is defined below but not implemented. V17 still runs the superseded shared Generate → Review → Publish lifecycle. Exact IRT technical constants/library are provisional system-owned implementation configuration, not L&D fields. |
 | RIASEC and role guidance | Employee completes RIASEC; system uses baseline/RIASEC to suggest roles/comments; Expert confirms/revises/rejects; Employee selects/confirms | Interest result, AI data contract and review workflow/versioning require design; legacy soft-skill evidence is not RIASEC |
 | Pathways | System generates from gaps; Expert reviews/adjusts/confirms before Employee starts | Initial access gate, review state, module overrides and later evidence-driven revision policy require design |
 | Individual skill learning | Employee selects skill and accesses the mapped approved Module without changing role pathway | Separate independent progress/context from pathway selection; reuse valid assessment evidence through tracing boundary |
 | Competency and adaptation | System traces estimates, calculates gaps, updates progress and revises remaining learning when needs change | Model/thresholds, evidence replay/versioning and override preservation remain open; failure-only triggers are superseded |
 | Monitoring | L&D views profiles/gaps/results/progress; System Administrator views permitted audit/operational activity | Privacy/read contracts and metrics; no platform subscription/organization-count workspace |
 
-Neo4j continues to describe catalog relationships; PostgreSQL continues to describe transactional identity, assessment, evidence and learning state. No new node, property, table, enum or cross-store synchronization is implemented by this document update. [neo4j_schema.md](neo4j_schema.md) retains the technical field inventory and records the same design gaps. Dataset preview fields are not automatically runtime schema fields.
+Neo4j continues to describe catalog relationships; PostgreSQL continues to describe transactional identity, assessment, evidence and learning state. The adaptive baseline model in this document is a target design, not a claim that new tables, columns, enums or cross-store synchronization have been implemented. [neo4j_schema.md](neo4j_schema.md) retains the technical field inventory and records the same design gaps. Dataset preview fields are not automatically runtime schema fields.
+
+## Target Adaptive Baseline Architecture
+
+The approved direction replaces the shared baseline assessment artifact with a current Blueprint and one adaptive attempt per Employee. L&D no longer enters points or difficulty score weights and no longer generates, reviews or publishes a shared test. Saving/finalizing a valid configuration moves the technical current pointer atomically; this pointer is not a separate review/publish workflow. The system derives explanatory raw score, while IRT 3PL estimates theta and standard error per MicroSkill and a pinned mapping version converts theta to mastery `0..1`.
+
+![Planned adaptive baseline PostgreSQL model](diagrams/postgresql-adaptive-baseline-target.svg)
+
+[Target PlantUML source](diagrams/postgresql-adaptive-baseline-target.puml) · [Complete target table/transaction description](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md)
+
+This target keeps PostgreSQL authoritative for configuration, attempts, deadlines, responses, results, calibration provenance and mastery evidence. Java performs numerical estimation and next-item selection. Neo4j supplies authorized catalog membership; versioned identifiers/snapshots are pinned in PostgreSQL. Redis is not an initial dependency and cannot become the source of truth for attempts or timers.
+
+The target introduces versioned IRT parameter/mapping/calibration records and a dedicated reload-safe adaptive attempt aggregate. It reuses the existing downstream processing/profile projection, while the immutable per-attempt skill result remains the reproducible baseline source. Generic fixed-manifest assessment tables remain available for module/legacy assessment; they are not overloaded for the adaptive baseline.
+
+No migration accompanies this Cluster 1 update. Cluster 2 must use a new forward-only migration, map every existing consumer and remove legacy weight/count fields only in the approved cutover slice.
 
 Current requirement traceability is in [features/README.md](features/README.md), including REQ-047 through REQ-059. Historical tests and diagrams must be reviewed against new acceptance before being used to claim feature completion. Do not rewrite a previous passing run as proof of publication, RIASEC, discipline authorization or independent learning.
 
-## Technical Baseline Snapshot
+## Current V17 Technical Baseline Snapshot
 
 **Runtime and ontology snapshot: updated 2026-10-19.** This is a database/deployment baseline plus tested local implementation bases for REQ-001-F01 View Target Roles, REQ-001-F02 Choose Target Role and Occupation-scoped REQ-002-F02 Baseline Assessment Management; it is not an implementation of all drafted functions. REQ-002 has one organization + Occupation coordination series, a mutable working Blueprint revision, immutable Blueprint/assessment versions, one pending chain/open candidate, one active pointer, transition history, idempotent command receipts, replacement/restore/disable/abandon commands and persistent L&D management routes. Capacity-aware counts/weights, deterministic no-repeat generation and exact-hash review remain unchanged. Normal DTOs exclude protected answers; local/demo may fetch them through a dedicated audited `no-store` boundary. The corrective FE suite passed 83/83, FE build passed, and the full BE suite passed 204/204, including disposable PostgreSQL V17 and Neo4j Testcontainers. These results do not establish concurrent management-command behavior or the current Compose/Playwright Save → Publish lifecycle; both remain open. Evidence is recorded in [REQ-002-F02 testing](testing/REQ-002-F02-baseline-authoring.md). Employee attempt, response, scoring/evidence and RIASEC runtime are not implemented. Production security remains deny-by-default until real Identity and Catalog authorization contracts are integrated.
 
@@ -49,7 +63,7 @@ Corrective local-runtime work added `/api/v1/ld/baseline-assessments/**` to the 
 
 ## Database diagrams
 
-### PostgreSQL
+### PostgreSQL — live V17
 
 The checked-in PostgreSQL PlantUML sources and SVGs were regenerated from a clean PostgreSQL 17.6 database migrated through Flyway V17 (62 `platform` tables). They show columns and same-group foreign keys; `?` marks a nullable column, and `[PK]`/`[FK]` mark key participation. They do not show indexes, check constraints, cross-group foreign keys or trigger bodies. In particular, consult V14 for organization-scoped uniqueness and V17 for the corrected management-actor trigger.
 
@@ -210,5 +224,5 @@ Production publishes HTTP on `127.0.0.1:${WEB_PORT:-8088}`. Place a separately m
 3. **Actor-code migration:** Existing `EMPLOYEE`, `DOMAIN_EXPERT`, `ORGANIZATION_ADMINISTRATOR`, `PLATFORM_ADMINISTRATOR`, `LEARNER`, `LD_MANAGER` and `ADMINISTRATOR` codes are legacy technical data, not the current actor list. Agree an explicit migration to System Administrator, L&D Manager, Expert and Employee permissions without granting unintended privileges.
 4. **Graph operational metadata:** Confirm whether the non-domain `SchemaMigration` label is acceptable alongside seven ontology labels and the five legacy V5 catalog labels, or whether migration history must be stored outside Neo4j.
 5. **Catalog learning content:** The dev catalog is illustrative only. Dataset 0.8.0 has documented sources and still requires expert review. Confirm production discipline/role/skill data, one-to-one module/skill content mapping, contentUri deployment and L&D approval; current scope is not dummy-only. Keep existing `LearningModule.sourceUrl` semantics until a versioned storage contract is agreed.
-6. **Open feature rules:** The feature index marks the functions as drafts, including unfinished baseline Bayesian parameters and other acceptance details. Confirm each contract before adding business migrations, APIs, or system tests for it.
+6. **Provisional technical configuration:** REQ-002 product behavior is approved for Cluster 1. MAP/minimum-evidence/SE/`k` constants, calibration bounds and runtime library are system-owned/versioned and initially backend-configured; their future operational UI owner is deferred.
 7. **Deployment, tests and integrations:** Choose production HTTPS/domain, secret manager, backup/restore, monitoring and automation/CI. Confirm baseline/RIASEC AI guidance and any operational email contracts before integration. PayOS/billing are excluded; no non-Spring Boot backend runtime is proposed.

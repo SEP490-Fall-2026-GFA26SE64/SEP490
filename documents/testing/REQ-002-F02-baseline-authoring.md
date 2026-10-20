@@ -1,5 +1,7 @@
 # REQ-002-F02 — Baseline blueprint authoring test plan and evidence
 
+> **Historical V17 evidence:** this document proves the superseded counts/weights and Generate → Review → Publish implementation. It does not certify the 2026-10-20 adaptive Blueprint/Test Blueprint contract. New executable tests may be created/run only in approved Cluster 3 after Cluster 2 implementation.
+
 ## Scope and status
 
 - Actor: L&D Manager from trusted server-side context.

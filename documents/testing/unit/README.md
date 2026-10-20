@@ -2,7 +2,7 @@
 
 ## Current Scope Alignment
 
-Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Revised unit/API contracts must cover the four actors, discipline/role assignments, L&D baseline/publication/approval, Expert reviewed guidance and initial confirmation, and independent learning/evidence. Existing PASSED labels and runtime actor codes below are historical evidence, not revised-scope acceptance.
+Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Revised unit/API contracts must cover the four actors, discipline/role assignments, L&D adaptive Blueprint/Test Blueprint, Expert content/guidance, initial confirmation, and independent learning/evidence. Existing PASSED labels and runtime actor codes below are historical evidence, not revised-scope acceptance.
 New feature specs keep open scoring/state/field choices open until agreed. Use per-REQ documents for real future runs; documentation checks do not replace runtime tests.
 
 ## Existing Execution Guides and Historical Evidence
@@ -22,7 +22,7 @@ Unit testing in this workspace validates pure domain invariants, application ser
 | :--- | :--- | :--- | :--- | :--- |
 | **REQ-001-F01** | View Target Roles | `LEARNER` | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
 | **REQ-001-F02** | Choose Target Role | `LEARNER` | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |
-| **REQ-002-F02** | Baseline Blueprint Authoring | `LD_MANAGER` | [REQ-002-F02-baseline-authoring.md](REQ-002-F02-baseline-authoring.md) | **PASSED** |
+| **REQ-002-F02 historical V17** | Fixed Baseline Blueprint Authoring | `LD_MANAGER` | [REQ-002-F02-baseline-authoring.md](REQ-002-F02-baseline-authoring.md) | **PASSED for superseded contract** |
 | **REQ-011** | Assigned Target Roles | `DOMAIN_EXPERT` | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | **PASSED** |
 | **REQ-012** | Micro-Skill Management | `DOMAIN_EXPERT` | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | **PASSED** |
 | **REQ-015** | Role Requirements | `DOMAIN_EXPERT` | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | **PASSED** |

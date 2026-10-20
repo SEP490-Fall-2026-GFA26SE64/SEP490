@@ -1,137 +1,107 @@
 # Configure Baseline Assessment
 
-## Current scope
+## Current adaptive contract
 
-**Function:** REQ-002-F02. **Actor:** L&D Manager. **Status:** Local/demo Blueprint configuration and assessment creation implementation complete. FE, full BE and V17 PostgreSQL tests passed on 2026-10-19; management Compose/browser lifecycle and command concurrency still need verification. Production Identity and Catalog contracts remain open.
+**Function:** REQ-002-F02. **Actor:** L&D Manager. **Status:** Cluster 1 contract approved on 2026-10-20; adaptive runtime migration is not implemented yet.
 
-L&D selects one Occupation, sees every current TargetRole in it, and configures one logical baseline blueprint for that Occupation. Counts and score weights remain detailed per role, skill and difficulty. Setting all counts of a role to `0` keeps the role visible in history but excludes it from coverage, generation and scoring.
+### Goal and position
+
+L&D configures one adaptive baseline Blueprint for an authorized Occupation. The Blueprint bounds the individual question sequence generated while each Employee works; it does not assign points and does not create a shared test for review/publication.
 
 ```text
-open Baseline Assessments
-  -> select an authorized Occupation workspace
-  -> load all roles and resolved skills
-  -> load current published question capacity
-  -> start or resume the one working Blueprint revision
-  -> enter a feasible role total and explicitly distribute it across skill/difficulty cells
-  -> optionally adjust detailed counts and linked percentage weights
-  -> validate exact catalog membership and aggregate coverage
-  -> finalize a new immutable Blueprint version
-  -> generate and edit the sole assessment Draft
-  -> review the exact content hash
-  -> publish and atomically switch the active assessment
+authorized Occupation and catalog scope
+  -> open/resume working Blueprint
+  -> configure maximum/time pairs for Occupation exploration and each active role
+  -> validate catalog, eligible questions and IRT parameter coverage
+  -> optionally Test Blueprint (ephemeral dry-run)
+  -> finalize an immutable version and atomically make it current
+  -> new Employee attempts pin that exact version
 ```
 
-This function does not execute Employee attempts, calculate mastery/gaps, edit the catalog, or configure RIASEC.
+Finalization has no reviewer, approval or Publish step. Switching the database current pointer is part of the same transaction, not a separate publication workflow. This Function does not start Employee attempts, accept answers, calculate mastery or calibrate `a/b/c`.
 
-## Confirmed management lifecycle — implemented 2026-10-17
+### Actor, trigger and trusted context
 
-- The L&D sidebar uses the noun `Baseline Assessments` / `Đánh giá đầu vào`. The landing lists authorized Occupations; entering an Occupation opens Blueprint Versions directly. The workspace has only Blueprint Versions and Assessment Versions tabs, both with reloadable resource URLs; the former Overview tab is removed.
-- One organization + Occupation owns one baseline release line. It may have one active assessment and one open candidate at the same time, but never two active assessments or two open candidates.
-- Only one pending change chain is allowed: an open Blueprint working revision, a finalized pending Blueprint, or an assessment candidate blocks starting another Blueprint revision until publish or explicit abandonment.
-- A Blueprint working revision is the only mutable Blueprint representation. Repeated Save uses an expected revision, stays in the editor, and appears as a resumable `Saved` row in the Blueprint list. Finalize creates a new immutable Blueprint version, shows a confirmation with `Create assessment now`, and leaves that action available on the candidate list.
-- Generate consumes the pending Blueprint and creates the sole assessment `DRAFT`. Draft title/order edits use an expected draft revision and recompute the manifest hash.
-- Review locks the exact content hash. A reviewed candidate is immutable; correction creates a replacement Draft transactionally rather than editing reviewed history.
-- Publish requires the reviewed hash and atomically changes the active pointer. The former active definition remains immutable and is projected as `SUPERSEDED`.
-- Restore clones a historical assessment into the sole Draft. It does not edit history or remove the current active assessment before the restored Draft is reviewed and published.
-- Disable clears the active pointer for new Employee attempts while preserving the assessment and transition history. Behavior for already-started attempts remains owned by the Employee assessment contract.
-- Abandon closes the current pending chain without deleting its definitions or audit history.
-- The normal management manifest includes prompts and learner-safe response schema only. Protected answers are fetched through a separate audited, `no-store` endpoint and held only in ephemeral UI state. This reveal path is local/demo only until Person 1 supplies production authorization and separation-of-duty policy.
+- Actor and organization come from authenticated server context, never the payload.
+- Occupation/TargetRole/MicroSkill membership comes from the authorized Catalog view; PostgreSQL stores stable IDs and history snapshots. Only `ACTIVE` roles and active, complete, validly mapped question versions enter a new Blueprint pool. Draft, inactive, archived or removed roles/questions are excluded.
+- The backend resolves eligible question versions and IRT parameter coverage. Client capacity is never authoritative.
+- One organization + Occupation owns one stable Blueprint identity, at most one working revision and one technical current-version pointer.
 
-## Confirmed capacity, weight and language behavior
+### Configuration contract
 
-Detailed counts remain the saved source of truth and score weights remain decimals `0..1` on the wire. The capacity endpoint is a read model only: it returns current published counts and never question content or answer material.
-
-The UI accepts score weights as whole percentages only and has no drag slider. Committing the first field distributes the remainder as evenly as possible while preserving `Easy < Medium < Hard`. A subsequent field commit preserves the previously committed field and derives the third field so the total stays exactly `100`; for example, Hard `40` followed by Medium `35` produces Easy `25` without changing Hard.
-
-- Catalog detail and capacity load independently. Apply/Save is available only when capacity belongs to the selected Occupation and catalog version. A failed refresh keeps the unsaved draft and offers Retry.
-- A role with `N` MicroSkills accepts total `0` or a feasible value in `[3 × N, feasibleMax]`. `feasibleMax` subtracts demand already assigned by other roles sharing the same MicroSkill pool.
-- Explicit Apply first reserves one Easy, one Medium and one Hard question for every MicroSkill, then distributes the remainder deterministically without exceeding any cell capacity. Typing the total alone does not overwrite detailed counts.
-- Manual cell edits update the displayed total without redistributing other cells. Each participating cell must be an integer `>= 1`; per-cell and aggregate shared-pool shortages are shown before Save.
-- Applying total `0` clears every detailed count and displayed weight for that role. The role stays visible and stored but does not participate in coverage, generation or scoring.
-- Applying a participating role initializes `Easy 20% / Medium 30% / Hard 50%`. Counts do not derive score weights.
-- Three whole-percentage inputs edit one linked weight state without sliders. The invariant is `Hard > Medium > Easy >= 1%` and total exactly `100%`. The first committed field distributes the remainder; the next committed field preserves the previous value and derives the third field deterministically.
-- Non-canonical input such as `040`, empty text, any fractional percentage or a value with no feasible linked solution remains visible and reports an inline error on blur/Enter. Native number spinners are not used.
-- Role panels expand/collapse independently. The global English/Vietnamese switch translates static/dynamic states without losing unsaved form, capacity or accordion state.
-
-Client capacity validation is early feedback, not authority. Save resolves catalog membership and published coverage again on the backend. A concurrent publish/unpublish can therefore still return a structured shortage; the editor retains the draft and refreshes capacity.
-
-The editor shows all weights as `0%` for a zero-question role. The existing backend domain nevertheless requires every persisted role's three wire weights to total `1`, before its later participation check ignores zero-question roles. The request boundary therefore sends compatibility decimals `0.3334/0.3333/0.3333` only for an excluded role and normalizes those values back to visible zeros when loading it. These compatibility values never create coverage demand, generated items or score contribution; participation remains derived from detailed counts.
-
-## Input and trusted context
-
-| Input/context | Source | Rule |
+| Field | Rule | Status |
 | --- | --- | --- |
-| Actor and organization | Trusted server-side identity context | Active L&D Manager only; never accepted from request payload. |
-| Occupation | Catalog selection | Stable ID/name, active and available in actor scope. |
-| Blueprint name | L&D input | Required; revisions may rename without changing logical identity. |
-| Role rows | Derived from Occupation | Exactly every current `HAS_ROLE` role; no omission or injection. |
-| Skill rows | Derived from each role | Union of active `HAS_LEVEL -> REQUIRES_SKILL` MicroSkills by stable ID. |
-| Current capacity | Backend read model | Published available count per role/MicroSkill/difficulty plus catalog version and read time; never supplied by the client. |
-| Counts | L&D input | Zero role or integer `>= 1` for every Easy/Medium/Hard cell of a participating role; aggregate demand must fit current capacity. |
-| Weights | L&D input | Participating role only: exact decimal total `1`, each `>= 0.01`, with `hard > medium > easy`. |
+| Blueprint name | Required display name. | Confirmed |
+| Occupation | Authorized Catalog selection; stable identity scope. | Confirmed |
+| Exploration maximum/time | Required positive maximum and duration for voluntary Occupation attempts. The maximum cannot exceed the deduplicated eligible capacity of all active roles. | Confirmed |
+| Active-role maximum/time | Required positive maximum and duration for each active role. The maximum cannot exceed that role's current deduplicated eligible capacity. Draft/inactive/removed roles have no configurable row and create no demand. | Confirmed |
+| Time calculator | In each exploration/role row, UI initially suggests `60 seconds × that row's maximum questions`. Editing total duration recalculates displayed seconds/question; editing seconds/question recalculates total duration. Only that row's final total duration is persisted and becomes the server-authoritative deadline duration for its attempt type. The suggestion is not a backend default, and L&D must explicitly confirm/save it. | Confirmed |
+| Role/MicroSkill scope | A role-required attempt uses the selected active role's deduplicated skill/item pool and role bound. A voluntary exploration attempt uses the deduplicated union of all active role pools and the exploration bound. | Confirmed |
+| Minimum evidence/skill coverage | A system-owned technical policy prevents a prior or too few answers from becoming mastery. It is not editable by L&D. | Confirmed boundary |
+| Adaptive stop target | A system-owned maximum acceptable standard error (`SE`) permits early stop after minimum evidence. It is not editable by L&D. | Confirmed boundary |
+| Model, IRT parameter set and mastery mapping | Immutable versions pinned by the Blueprint/attempt. Calibration produces a candidate set; System Administrator promotion makes it eligible for new versions. | Confirmed |
 
-## Output
+Removed from the target contract: per-question points, Easy/Medium/Hard score weights, exact difficulty quotas, generated assessment Draft, protected-answer review and Publish. Difficulty labels may remain for authoring/cold-start explanation; adaptive selection uses pinned `a/b/c` and item information. MAP prior, minimum-evidence rule, `SE` target, conservative-mastery factor and initial `a/b/c` values are temporarily system-owned/versioned technical configuration (initially code/config constants), not L&D fields. The owner/configuration UI for those controls is deferred and must not be silently assigned to L&D.
 
-- One organization-scoped release line per Occupation with one logical Blueprint identity, immutable Blueprint/assessment history, one optional pending chain and one optional active pointer.
-- A mutable working revision until Finalize; successful Finalize creates a new immutable Blueprint version.
-- Occupation, role and skill ID/name snapshots for historical display.
-- Role totals; a total of `0` is stored but produces no questions or score.
-- Structured coverage shortages with role, skill, difficulty, required, available and missing counts.
-- An immutable generated manifest containing pinned item versions, role attribution, score contribution, seed and content hash.
-- Review/publication metadata for the exact hash. Responses never expose `protected_key` or answer-key material.
-- Management summaries and deep-linkable detail resources. Protected answers, when explicitly revealed in local/demo, use a separate audited response that is never merged into the shared manifest DTO.
+### Test Blueprint
 
-## Rules
+**Test Blueprint** is the UI name for an ephemeral dry-run. It re-resolves Catalog membership, checks eligible items and complete `a/b/c` coverage, validates bounds, then returns an answer-safe feasibility result and sample/selection trace.
 
-1. A version contains all and only the Occupation's current roles and each role's resolved skills.
-2. At least one role must have a total greater than `0`; all-zero configurations are rejected.
-3. Every MicroSkill in a participating role has at least one Easy, Medium and Hard question. Its weights total `1` and satisfy `hard > medium > easy >= 0.01`. A zero role displays zero weights; its wire-only compatibility weights are ignored by participation, coverage, generation and scoring.
-4. Zero roles still pass catalog membership validation but skip coverage, generation and scoring.
-5. Shared skill+difficulty demand is aggregated across participating roles; generation never repeats an item version.
-6. Save/revise and generation are idempotent. Reusing a key with different content or revising a stale version returns conflict without partial persistence.
-7. Working Blueprint Save updates the same revision; Finalize creates immutable history. Review freezes the exact assessment header and manifest; publish requires the reviewed hash and published content remains immutable.
-8. Catalog changes never rewrite history. A new revision resolves current membership and snapshots it again.
-9. At most one pending chain, one open assessment candidate and one active assessment exist for an organization + Occupation. Active and open candidate may coexist.
-10. Draft content is editable; reviewed, published, superseded, disabled and abandoned definitions are immutable history. Post-review correction and restore always clone.
-11. Publish switches the active pointer in the same PostgreSQL transaction as the transition audit. Disable/abandon clear pointers without deleting history.
-12. Actor and organization come from trusted server context. Existence checks are organization-scoped. Production exposes neither management nor protected-answer routes until production Identity/Catalog authorization is integrated.
+It creates no assessment version, attempt, response, result, mastery evidence, current-pointer change or dry-run history. It never returns `protected_key`. Failure reports structured shortages and leaves the working revision unchanged.
 
-## Main and failure branches
+### Ordered write behavior
 
-| Branch | Observable result |
+1. Open/save authorizes the Occupation, locks/loads the sole working revision, revalidates Catalog scope and saves with optimistic revision plus idempotency receipt. It does not switch the current version.
+2. Finalize locks the organization + Occupation current-pointer row first; validates the expected revision, catalog/item/parameter coverage and version dependencies; inserts the immutable Blueprint and snapshots; advances the pointer; appends history and command outcome; then commits atomically.
+3. A later finalization affects only new attempts. Existing attempts retain their pinned versions.
+4. The immutable version stores an active-role/catalog fingerprint. If current active-role membership changes, new attempts are blocked as Blueprint-stale until L&D finalizes a refreshed version; the system never silently uses a removed/draft role or mutates the old snapshot.
+
+### Outputs and protected data
+
+- Working configuration with revision/validation state.
+- Immutable Blueprint version and current-version summary.
+- Structured item/parameter shortages and an answer-safe Test Blueprint preview.
+- No answer key, Employee attempt/result/mastery, cross-organization identifiers or personal calibration data.
+
+### Failure and concurrency branches
+
+| Condition | Result and state guarantee |
 | --- | --- |
-| Valid Occupation with at least one non-zero role | Save/revise, generate, review and publish are available. |
-| A role is intentionally zero | It survives save/reload; no coverage request, generated item or score contribution. |
-| Capacity is loading, stale or unavailable | Disable Apply/Save, preserve the draft and offer Retry; do not invent a maximum. |
-| Total is `1..(3 × N - 1)` or above feasible maximum | Report the valid range before Apply; do not redistribute. |
-| A required skill/difficulty bucket has no question | That role cannot participate until coverage exists; total `0` remains allowed. |
-| A count or linked weight is malformed | Keep the raw input, show inline validation and disable Save. |
-| Occupation missing/inactive/unavailable | Reject without a new version. |
-| Role/skill set differs from catalog | Reject with validation details; do not silently repair input. |
-| A role has no resolvable skills | Reject as catalog-not-ready. |
-| Aggregate published coverage is insufficient | Return every shortage; never reuse items or lower counts. |
-| Catalog/database dependency fails | Return dependency failure and preserve the latest saved version. |
-| Stale revision or reviewed-hash mismatch | Return conflict; no partial version/publication state. |
-| Another pending Blueprint/assessment chain exists | Return a navigable conflict; resume or abandon the existing chain instead of creating another. |
-| Reviewed content needs correction | Create a replacement Draft and close the reviewed candidate atomically; never mutate reviewed content. |
-| Historical version is restored | Clone it into the sole Draft; keep the active assessment unchanged until a later publish. |
-| Active version is disabled | Prevent selection for new attempts and preserve history; do not decide the fate of already-started attempts in this Function. |
-| Protected answers are requested | Local/demo authorization is checked, the tenant-scoped reveal is audited, the response is `no-store`, and normal manifests remain answer-safe. |
+| Unauthorized/cross-organization scope | Reject without revealing configuration/capacity. |
+| Missing required question/time in any applicable exploration/active-role row, non-positive value, bound above authoritative eligible capacity, or missing Catalog/item/parameter coverage | Validation/shortage details; no finalization/pointer change. Client capacity feedback is advisory; finalization rechecks the database-backed capacity. |
+| Catalog changes or stale revision | Conflict; no partial immutable version. |
+| Active-role membership changes after finalization | Existing attempts continue pinned; new starts report Blueprint-stale until a refreshed version is finalized. |
+| Same idempotency key and request | Replay stored outcome. |
+| Same key with different request | Conflict; no write. |
+| Concurrent finalization | Pointer lock/revision permits one winner; other request conflicts or replays. |
+| Dependency failure | No partial version/current switch. |
 
-## Runtime boundary
+### History, compatibility and current implementation
 
-- PostgreSQL Flyway V13 adds the logical `baseline_blueprint` identity. V14 adds organization-scoped series coordination, working revisions, open/active pointers, transition history, draft revisions and uniqueness guards. V15 adds immutable actor-scoped management command receipts. V16 adds append-only protected-answer reveal audit. V17 corrects the cross-table management-actor trigger without rewriting the applied V14 migration.
-- The local opt-in Neo4j adapter reads active `Occupation -> TargetRole -> Level -> MicroSkill`, unions skills across Levels and exposes L&D list/detail APIs.
-- `GET /api/v1/ld/baseline-blueprint-catalog/occupations/{occupationId}/capacity` joins that Occupation scope with current PostgreSQL published coverage through application ports. `coverageAsOf` is the application read-completion time, not a production catalog snapshot.
-- The frontend calls those APIs first. In development only, defined unavailable responses may use the isolated fixture; production receives no fixture fallback.
-- Production Identity authorization and Catalog tenant visibility, approval/publication and release-snapshot contracts are not yet integrated. The local adapter must not be treated as production-ready.
-- Employee attempt/result, scoring/evidence/mastery and RIASEC remain separate functions.
-- Management write transactions are applied by an infrastructure wrapper so the application core remains framework-independent. The lock order begins with the organization + Occupation series coordination row; child definitions and transition/command history follow inside the same transaction.
+- Applied V1–V17 migrations are immutable. Cluster 2 uses a forward-only migration.
+- Legacy weight/count fields are removed only after all runtime consumers are mapped; the new API carries no compatibility weights.
+- Generic fixed-manifest assessment tables may remain for module/legacy assessment, but adaptive baseline does not use them.
+- The repository still implements the superseded V17 fixed-assessment flow. Its implementation inventory is kept in `.project/requirements/active/REQ-002-003-009-assessment/REQ-002-IMPLEMENTED-SNAPSHOT.md`; historical evidence remains under `documents/testing/` and does not certify this contract.
+- Target storage is defined in [Adaptive Baseline Data Architecture](Adaptive%20Baseline%20Data%20Architecture.md).
+- Frontend work must reuse established controls, buttons, dialogs, responsive layout and EN/VI patterns; the old weight UI must not survive as hidden state.
 
-## Acceptance and evidence
+### Acceptance-to-test mapping
 
-The accepted behavior is mapped in [REQ-002-F02 testing](../../testing/REQ-002-F02-baseline-authoring.md). Historical 2026-10-16 slider/legacy-route tests describe the former UI. On 2026-10-19 the current FE regression passed 83/83 and built; full BE regression passed 204/204, including disposable PostgreSQL V17 actor isolation. The current Compose/Playwright lifecycle, broader concurrent command handling and production adapters remain unverified.
+| Acceptance | Planned Cluster 3 evidence |
+| --- | --- |
+| Authorized L&D saves/finalizes a valid Blueprint | API/function and PostgreSQL integration test |
+| Target API has no weights or shared assessment lifecycle | Contract/regression and removed-consumer check |
+| Test Blueprint detects feasibility/shortage without writes or answer leakage | API/integration database-state comparison |
+| Finalize pins all versions and switches current atomically | Integration/concurrency test |
+| Idempotency, stale writes and organization isolation hold | Unit/integration/authorization tests |
+| New version affects only new attempts | End-to-end version-pinning test |
+| Active-role change makes new-start readiness stale without altering in-progress attempts | Catalog/Blueprint integration and system test |
+| Active-role/exploration bounds cannot exceed eligible deduplicated capacity | API and PostgreSQL integration boundary tests |
+| Time suggestion and bidirectional calculation remain consistent while only final duration persists | Frontend unit/component plus API contract tests |
 
-The corrective local matcher/CSRF slice makes the management path reachable. Manual Step 3 found the cross-table actor-trigger defect; V17 fixed it. The 2026-10-19 Cluster 2 run below verifies the matcher and trigger on the local/demo boundary.
+### Decision status
 
-Remaining dependencies and verification gates are tracked in [REQ-002-F02 open gates](../../../../../.project/requirements/active/REQ-002-003-009-assessment/REQ-002-F02-OPEN.md).
+- **Confirmed:** L&D/Occupation ownership; active-role and Occupation-exploration pools/bounds; capacity validation; required time with a one-minute-per-question UI suggestion and bidirectional calculator; no points/weights; no Generate/Review/Publish; ephemeral Test Blueprint; immutable version pinning; server time/auto-submit; PostgreSQL authority; System Administrator parameter-set promotion; established frontend design system.
+- **Provisional technical configuration:** MAP/SE/minimum-evidence/conservative-mastery constants and cold-start `a/b/c` are system-owned and versioned but initially hard-coded/configured below the L&D surface until a separate owner/configuration Function is approved.
+- **Open:** none for this Function's Cluster 1 product contract. Exact implementation field names and safe technical constant values are resolved inside the approved versioned technical configuration slice without expanding L&D input.
+- **Rejected:** shared generated baseline, persisted preview history, client-authoritative capacity and compatibility weights in the new contract.

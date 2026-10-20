@@ -1,5 +1,7 @@
 # REQ-002-F02 — Full-stack system evidence
 
+> **Historical V17 evidence:** this Save → Generate → Review → Publish scenario is superseded for future REQ-002 implementation. The adaptive end-to-end target is Configure → Test Blueprint → Finalize → Start → Answer/Reload → Submit/Auto-submit → Result.
+
 ## Historical linked weight/capacity scenario — executed 2026-10-16
 
 The current Playwright source waits for capacity, applies the participating Java role minimum of `15` questions for its five MicroSkills, expects default weights `20/30/50`, keeps the Platform role at zero, and then saves/reloads/generates 15 items before replay, review and publication checks.

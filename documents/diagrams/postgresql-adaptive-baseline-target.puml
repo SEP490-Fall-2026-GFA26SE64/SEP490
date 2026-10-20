@@ -1,0 +1,319 @@
+@startuml
+title REQ-002 adaptive baseline - target PostgreSQL model (planned, not live V17)
+hide methods
+hide stereotypes
+skinparam shadowing false
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+legend left
+  Target design approved in Cluster 1.
+  It is not a representation of the current V17 database.
+  PostgreSQL owns all attempt, result, evidence and mastery state.
+endlegend
+
+package "Trusted context / catalog snapshots" #F3F4F6 {
+  class organization {
+    +organization_id : uuid <<PK>>
+  }
+  class learner_state {
+    +learner_id : uuid <<PK>>
+    organization_id : uuid
+  }
+  class target_selection {
+    +learner_id : uuid <<PK>>
+    organization_id : uuid
+    target_role_id : varchar
+    occupation_id : varchar
+    target_revision : bigint
+  }
+  class item_version {
+    +item_version_id : uuid <<PK>>
+    question_bank_id : uuid
+    status : varchar
+    difficulty_label : varchar
+    response_schema : jsonb
+    protected_key : jsonb
+  }
+}
+
+package "Blueprint configuration" #E8F1FB {
+  class baseline_blueprint {
+    +blueprint_id : uuid <<PK>>
+    organization_id : uuid
+    occupation_id : varchar
+  }
+  class baseline_blueprint_working_revision {
+    +working_revision_id : uuid <<PK>>
+    blueprint_id : uuid
+    organization_id : uuid
+    occupation_id : varchar
+    revision : bigint
+    configuration : jsonb
+    state : varchar
+    updated_by : uuid
+    updated_at : timestamptz
+  }
+  class baseline_blueprint_version {
+    +blueprint_id : uuid <<PK>>
+    +version : bigint <<PK>>
+    name : varchar
+    catalog_fingerprint : varchar
+    exploration_max_questions : integer
+    exploration_time_limit_seconds : integer
+    model_version_id : uuid
+    mastery_mapping_version_id : uuid
+    parameter_set_id : uuid
+    created_by : uuid
+    created_at : timestamptz
+  }
+  class baseline_blueprint_role {
+    +blueprint_id : uuid <<PK>>
+    +blueprint_version : bigint <<PK>>
+    +role_id : varchar <<PK>>
+    role_snapshot : jsonb
+    max_questions : integer
+    time_limit_seconds : integer
+  }
+  class baseline_blueprint_skill {
+    +blueprint_id : uuid <<PK>>
+    +blueprint_version : bigint <<PK>>
+    +role_id : varchar <<PK>>
+    +micro_skill_id : varchar <<PK>>
+  }
+  class baseline_blueprint_activation {
+    +organization_id : uuid <<PK>>
+    +occupation_id : varchar <<PK>>
+    blueprint_id : uuid
+    blueprint_version : bigint
+    activation_revision : bigint
+    state : varchar
+    activated_by : uuid
+    activated_at : timestamptz
+  }
+  class baseline_blueprint_activation_event {
+    +activation_event_id : uuid <<PK>>
+    organization_id : uuid
+    occupation_id : varchar
+    activation_revision : bigint
+    blueprint_id : uuid
+    blueprint_version : bigint
+    operation : varchar
+    actor_id : uuid
+    occurred_at : timestamptz
+  }
+  class baseline_blueprint_command {
+    +organization_id : uuid <<PK>>
+    +actor_id : uuid <<PK>>
+    +idempotency_key : varchar <<PK>>
+    operation : varchar
+    request_hash : varchar
+    response_payload : jsonb
+    created_at : timestamptz
+  }
+  note right of baseline_blueprint_version
+    No score/point weight.
+    No exact easy/medium/hard quota.
+    Dry-run preview is ephemeral and has no table.
+  end note
+}
+
+package "IRT model and calibration" #FFF4D6 {
+  class model_version {
+    +model_version_id : uuid <<PK>>
+    model_type : varchar
+    configuration : jsonb
+  }
+  class mastery_mapping_version {
+    +mastery_mapping_version_id : uuid <<PK>>
+    mapping_type : varchar
+    configuration : jsonb
+    created_at : timestamptz
+  }
+  class irt_parameter_set {
+    +parameter_set_id : uuid <<PK>>
+    model_version_id : uuid
+    source : varchar
+    status : varchar
+    parameter_hash : varchar
+    created_at : timestamptz
+    activated_at : timestamptz
+  }
+  class irt_item_parameter {
+    +parameter_set_id : uuid <<PK>>
+    +item_version_id : uuid <<PK>>
+    +micro_skill_id : varchar <<PK>>
+    discrimination_a : numeric
+    difficulty_b : numeric
+    guessing_c : numeric
+    fit_diagnostics : jsonb
+  }
+  class irt_calibration_run {
+    +calibration_run_id : uuid <<PK>>
+    input_dataset_ref : varchar
+    configuration : jsonb
+    status : varchar
+    output_parameter_set_id : uuid
+    diagnostics : jsonb
+    started_at : timestamptz
+    completed_at : timestamptz
+  }
+  note right of irt_item_parameter
+    Structural checks: a > 0 and 0 <= c < 1.
+    Operational bounds and promotion thresholds
+    remain versioned configuration decisions.
+  end note
+}
+
+package "Adaptive Employee attempt" #E8F8EE {
+  class baseline_adaptive_attempt {
+    +attempt_id : uuid <<PK>>
+    organization_id : uuid
+    learner_id : uuid
+    attempt_purpose : varchar
+    target_selection_revision : bigint?
+    target_role_id : varchar?
+    occupation_id : varchar
+    blueprint_id : uuid
+    blueprint_version : bigint
+    model_version_id : uuid
+    mastery_mapping_version_id : uuid
+    parameter_set_id : uuid
+    state : varchar
+    revision : bigint
+    started_at : timestamptz
+    deadline_at : timestamptz
+    submitted_at : timestamptz
+    completion_reason : varchar
+    replaces_attempt_id : uuid?
+  }
+  class baseline_attempt_item {
+    +attempt_id : uuid <<PK>>
+    +position : integer <<PK>>
+    item_version_id : uuid
+    micro_skill_id : varchar
+    option_order : jsonb
+    selection_trace : jsonb
+    presented_at : timestamptz
+  }
+  class baseline_attempt_response {
+    +attempt_id : uuid <<PK>>
+    +position : integer <<PK>>
+    response_payload : jsonb
+    is_correct : boolean
+    accepted_at : timestamptz
+    request_id : uuid
+  }
+  class baseline_attempt_skill_state {
+    +attempt_id : uuid <<PK>>
+    +micro_skill_id : varchar <<PK>>
+    theta : numeric
+    standard_error : numeric
+    test_information : numeric
+    answered_count : integer
+    revision : bigint
+    updated_at : timestamptz
+  }
+  class baseline_attempt_result {
+    +attempt_id : uuid <<PK>>
+    answered_count : integer
+    correct_count : integer
+    raw_score : numeric
+    result_status : varchar
+    scored_at : timestamptz
+  }
+  class baseline_attempt_skill_result {
+    +attempt_id : uuid <<PK>>
+    +micro_skill_id : varchar <<PK>>
+    theta : numeric
+    standard_error : numeric
+    estimated_mastery : numeric
+    mastery : numeric
+    confidence_label : varchar
+    mastery_mapping_version_id : uuid
+    finalized_at : timestamptz
+  }
+  class baseline_attempt_command {
+    +attempt_id : uuid <<PK>>
+    +actor_id : uuid <<PK>>
+    +idempotency_key : varchar <<PK>>
+    operation : varchar
+    request_hash : varchar
+    response_payload : jsonb
+    created_at : timestamptz
+  }
+  note right of baseline_adaptive_attempt
+    One server deadline; client timer is display-only.
+    Identity scope is Employee + Occupation.
+    Role provenance is optional for exploration.
+    Attempt pins all immutable input versions.
+    Active rows are claimed with revision checks/row locks.
+  end note
+}
+
+package "Mastery handoff" #F6EAF8 {
+  class baseline_mastery_evidence {
+    +attempt_id : uuid <<PK>>
+    +micro_skill_id : varchar <<PK>>
+    learner_id : uuid
+    organization_id : uuid
+    theta : numeric
+    standard_error : numeric
+    estimated_mastery : numeric
+    mastery : numeric
+    confidence_label : varchar
+    emitted_at : timestamptz
+  }
+  class processing_stream {
+    +learner_id : uuid <<PK>>
+    +stream_kind : varchar <<PK>>
+    next_source_revision : bigint
+  }
+  class profile_revision {
+    +learner_id : uuid <<PK>>
+    +profile_revision : bigint <<PK>>
+    model_version_id : uuid
+    created_at : timestamptz
+  }
+  class mastery_estimate {
+    +learner_id : uuid <<PK>>
+    +profile_revision : bigint <<PK>>
+    +micro_skill_id : varchar <<PK>>
+    mastery : numeric
+    confidence : numeric
+  }
+}
+
+organization ||--o{ learner_state
+organization ||--o{ baseline_blueprint
+learner_state ||--o{ target_selection
+baseline_blueprint ||--o{ baseline_blueprint_working_revision
+baseline_blueprint ||--o{ baseline_blueprint_version
+baseline_blueprint_version ||--o{ baseline_blueprint_role
+baseline_blueprint_role ||--o{ baseline_blueprint_skill
+baseline_blueprint_version ||--o{ baseline_blueprint_activation
+baseline_blueprint_activation ||--o{ baseline_blueprint_activation_event
+baseline_blueprint ||--o{ baseline_blueprint_command
+model_version ||--o{ irt_parameter_set
+irt_parameter_set ||--o{ irt_item_parameter
+item_version ||--o{ irt_item_parameter
+irt_calibration_run }o--|| irt_parameter_set : output
+mastery_mapping_version ||--o{ baseline_blueprint_version
+irt_parameter_set ||--o{ baseline_blueprint_version
+target_selection |o--o{ baseline_adaptive_attempt
+baseline_blueprint_version ||--o{ baseline_adaptive_attempt
+irt_parameter_set ||--o{ baseline_adaptive_attempt
+baseline_adaptive_attempt ||--o{ baseline_attempt_item
+baseline_attempt_item ||--o| baseline_attempt_response
+item_version ||--o{ baseline_attempt_item
+baseline_adaptive_attempt ||--o{ baseline_attempt_skill_state
+baseline_adaptive_attempt ||--o| baseline_attempt_result
+baseline_adaptive_attempt ||--o{ baseline_attempt_skill_result
+baseline_adaptive_attempt ||--o{ baseline_attempt_command
+baseline_adaptive_attempt |o--o| baseline_adaptive_attempt : replaces
+baseline_attempt_skill_result ||--o| baseline_mastery_evidence
+baseline_mastery_evidence }o--|| processing_stream
+profile_revision ||--o{ mastery_estimate
+
+@enduml

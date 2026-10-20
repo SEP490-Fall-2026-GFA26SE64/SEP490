@@ -53,7 +53,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Assign Experts:** Assign or remove Experts from disciplines and review current assignments.
 - **Manage target roles:** Create and update target role details, assign each target role to an Expert for competency configuration, and view its configuration status.
 - **Manage target role publication:** Review the Expert’s completed competency configuration, then publish or unpublish the target role. L&D does not edit the Expert’s competency requirements.
-- **Manage baseline assessment configuration:** Maintain one versioned baseline blueprint per Occupation. Each blueprint includes every TargetRole in that Occupation and keeps question counts and scoring rules at role/skill/difficulty level; a role may be retained with zero questions when it should not contribute to that baseline.
+- **Manage baseline assessment configuration:** Maintain one versioned adaptive Blueprint per Occupation, including capacity-bounded maximum/time pairs for each active role and voluntary exploration; optionally run an ephemeral feasibility preview. Each row suggests one minute per question and keeps total/per-question time synchronized, but L&D must explicitly save the values. The Blueprint carries no question points/difficulty score weights and does not require generation, review or publication of a shared assessment.
 - **Approve learning offerings:** Review submitted modules and assessments; approve them for organizational use or return them for revision.
 - **Monitor employee development:** View employee competency profiles, skill gaps, assessment results, and learning progress.
 
@@ -76,7 +76,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 **Purpose:** Understand current competencies and develop toward a relevant target role.
 
 - **Manage personal profile:** View and update personal and work-related profile information used by the system.
-- **Complete baseline assessment:** Answer the questions used to estimate current competency levels.
+- **Complete baseline assessment:** After choosing a role, complete its Occupation baseline before mastery-dependent steps unless a prior mastery-producing baseline already closed that Employee + Occupation allowance; or voluntarily take the baseline of another available Occupation. Start/resume uses an individual server-timed adaptive 3PL attempt. Only invalidated attempts that emitted no mastery may be replaced.
 - **Complete RIASEC assessment:** Answer the questions used to inform interest-based role guidance.
 - **Review target role guidance:** View Expert-reviewed AI suggestions and comments, then select or confirm a target role.
 - **Review competency profile and gaps:** View estimated competency levels and gaps against the selected target role.
@@ -107,7 +107,7 @@ These functions are performed by the system and are not separate actors:
 - **Competency gap analysis:** Compares current competency estimates with target role requirements.
 - **Knowledge graph recommendation:** Finds relevant modules using skill mappings and prerequisites.
 - **Pathway generation:** Proposes an ordered set of learning modules from the Employee’s competency gaps and the knowledge graph; the Expert reviews the initial pathway, includes or excludes modules, and confirms it before the Employee starts. Later pathway recalculations respond to new assessment evidence.
-- **Knowledge tracing:** Updates estimated skill mastery using assessment evidence and configured rules.
+- **Knowledge tracing:** Initializes mastery from versioned baseline IRT evidence, then updates it from later learning evidence without double-counting the baseline responses.
 - **Pathway recalculation:** Revises the remaining pathway when new evidence changes the Employee’s learning needs.
 - **Progress tracking:** Records assessment, module, and pathway completion status.
 - **Skill-based content discovery:** Shows the module mapped to an Employee-selected micro-skill, independent of target role pathway recommendations.

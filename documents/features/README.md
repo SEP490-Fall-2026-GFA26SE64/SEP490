@@ -1,7 +1,7 @@
 # Feature and Function Documentation
 
 **Current source:** [System Overview](../adapt_learn_graph_system_overview.md), with requirement mapping in [Product Overview](../PRODUCT_OVERVIEW.md).  
-**Aligned:** 2026-10-14. This catalog supersedes the historical SaaS index and interview queue below.
+**Aligned:** 2026-10-20. This catalog supersedes the historical SaaS index and interview queue below.
 
 ## Current Reading Rules
 
@@ -10,7 +10,7 @@
 - Existing requirement/function IDs and file paths remain stable for traceability. Legacy filenames do not establish current business scope.
 - A **Current Scope Alignment** section in an existing feature/function document controls over its retained historical description, decisions, status, and acceptance rules. Old test results do not certify revised scope.
 - New feature READMEs contain function-level IDs, inputs/outcomes, acceptance scenarios, and open decisions. They are scope drafts, not implementation-ready approved contracts.
-- Reclarify baseline-before-role-selection, discipline ownership, publication/approval, reviewed AI guidance, initial pathway confirmation, and evidence-driven adaptation before changing code or schemas.
+- REQ-002 adaptive Blueprint/IRT contract is approved for Cluster 1. Target-role selection takes effect immediately; an Employee without a mastery-producing baseline for that role's Occupation must then complete the baseline before mastery-dependent steps. Attempt, invalidation and uncertainty policies are defined in the REQ-002 contracts. Discipline ownership, publication/approval, reviewed AI guidance and initial pathway confirmation remain separate gates.
 - Architecture/schema documents describe existing technical fields separately from product design gaps; do not fabricate fields, scoring formulas, or implementation evidence.
 
 ## Current Feature Index
@@ -18,7 +18,7 @@
 | ID | Feature | Current actor or performer | Contract status |
 | --- | --- | --- | --- |
 | REQ-001 | [Target role selection](Target%20role%20selection/README.md) | Employee | Reclarify reviewed-guidance/publication gates |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Reclarify assessment scope and scoring |
+| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Cluster 1 adaptive 3PL contract approved; runtime not migrated |
 | REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | Employee | Initial Expert confirmation required |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | Employee | Retained; detail draft |
 | REQ-006 | [Competency graph](Competency%20graph/README.md) | Employee | Retained; detail draft |
@@ -84,7 +84,7 @@
 
 ## Clarification and Verification
 
-The historical interview queue is paused where it conflicts with the new baseline. Start with baseline scope before role selection and L&D configuration, then discipline/role publication and learning approval, baseline/RIASEC guidance and review, initial pathway confirmation, independent skill learning, and evidence-driven recalculation. Existing detailed decisions unaffected by these changes remain reference candidates, not automatically reapproved contracts.
+The historical interview queue is superseded wherever it conflicts with the approved adaptive baseline. REQ-001 owns immediate target-role selection; REQ-002 then owns the required Occupation baseline when no mastery-producing baseline exists. Existing historical decisions outside this confirmed boundary remain reference candidates, not automatically reapproved contracts.
 
 Record future decisions in the owning function. Maintain per-REQ unit/integration/system evidence when implemented; do not rewrite old passed runs as proof of new acceptance. See [testing/README.md](../testing/README.md) for revised verification scope.
 
@@ -104,46 +104,23 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 - A feature README describes the capability and links to its functions.
 - Each function filename is its function name; its stable ID is `REQ-nnn-Fnn`, linked to the overview requirement through its feature README.
 - Each function records the responsible actor or automated performer, description, inputs, outcome, open decisions, and an acceptance baseline.
-- Automated performers and external services are not additional human actors. The four human actors remain Employee, Domain Expert, Organization Administrator, and Platform Administrator.
-- These are documentation drafts, not implemented functionality or approved detailed specifications. Open questions and suggested answers are not confirmed business rules.
+- Automated performers and external services are not additional human actors. The current four human actors are System Administrator, L&D Manager, Expert and Employee.
+- Each file states whether its contract is approved, proposed or historical. An approved document is still not proof that runtime or tests implement it.
 - One function can require several questions. A function becomes **Clarified** only when its important behavior, access, inputs, outputs, validation, exceptional states, and acceptance criteria are agreed and documented.
 
 ## Clarification Tracker
 
-**Local/demo implementation complete:** [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), REQ-002-F02, includes Occupation-scoped release-line management, Blueprint configuration and assessment creation. Current FE 83/83, full BE 204/204 (including V17 PostgreSQL) and frontend build passed on 2026-10-19; concurrent management commands, system flow and production Identity/Catalog authorization remain open.
+**Current REQ-002 direction (2026-10-20):** [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md) and [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) now define an Occupation-scoped adaptive 3PL baseline. L&D finalizes a Blueprint and may run ephemeral Test Blueprint; each Employee receives an individual reload-safe, server-timed attempt. There are no score weights or shared Generate/Review/Publish steps.
 
-**Current clarification question:** REQ-002-F02 authoring has no open behavior that blocks its local/demo boundary. The next assessment clarification belongs to the separate Employee attempt/evidence lifecycle, not this authoring Function.
+**Cluster 1 decision boundary:** Product flow, active-role/exploration sampling, capacity validation, one-success Employee + Occupation allowance, no-grace deadline, invalidated/no-mastery replacement, result disclosure, System Administrator calibration promotion and conservative mastery use are approved. Exact IRT constants/library remain system-owned versioned technical implementation configuration and are not L&D fields.
 
-**Progress:** REQ-002-F02 behavior is clarified and implemented for the approved local/demo boundary. This does not increase the count of production-complete Functions while system/concurrency evidence, Identity/Catalog production contracts and Employee lifecycle remain open.
-
-**REQ-002-F02 status (2026-10-19):** One organization + Occupation has one release line with immutable Blueprint/assessment history, at most one pending chain, one open candidate and one active assessment. Blueprint Versions opens directly; Save remains editable, Finalize offers assessment creation, and weights use whole percentages. Production Identity/Catalog/importer contracts, protected-answer permission, Employee lifecycle and system/concurrency evidence remain follow-ups before production-ready status.
-
-**Confirmed soft-skill readiness effect (2026-09-27):** Option A: Baseline readiness loss does not block a separate, otherwise eligible soft-skill assessment. The assessment remains subject to its own configuration and authorization rules. Baseline-start and evidence-only closure rules remain independent.
-**Confirmed AI comment visibility (2026-09-27):** Option B: Before expert review is complete, employees see only the summarized result, clearly labeled as AI-generated and pending expert review. The raw comment remains visible only to authorized experts and administrators.
-
-**Added function (2026-09-27):** Configure Baseline Assessment, REQ-002-F02, is part of the existing Baseline knowledge assessment feature. Existing function IDs and the 46-feature structure are unchanged.
-
-**Custom baseline attempt limit (2026-09-27):** "Baseline assessment is only one attempt per target role." Record one baseline attempt per employee and target role: no completed-baseline retake or limit reset when switching away and returning. Resume is the same attempt. Clarify when the allowance is consumed, incomplete-attempt handling, evidence-only completion, and newly unknown skills on return. The existing-pathway continuation question remains unanswered; no option A or B was selected for it.
-
-**Confirmed allowance timing (2026-09-27):** Option A: Successful baseline start consumes the employee-role allowance. An interrupted attempt can resume but cannot restart as a new attempt, even before any answers are submitted. A request blocked before successful start does not consume it. Evidence-only satisfaction counting is the next question; the existing-pathway continuation question remains unanswered. Function statuses and counts are unchanged.
-
-**Confirmed evidence-only allowance closure (2026-09-27):** Option B: Mark the baseline requirement fulfilled through existing evidence and close the employee-role allowance without creating a test attempt or fabricated score. Known gaps remain for learning; this is not a newly passed test. Returning to the role does not reopen the allowance. Required configuration and coverage checks for this fulfillment remain open and are the next question; existing-pathway continuation is still unanswered. Function statuses and counts are unchanged.
-
-**Confirmed evidence-only prerequisites (2026-09-27):** Option B: For an already-selected role, require valid requirements and prerequisites plus saved baseline settings, then verify no unknown skills in the resolved scope. Skip question coverage for this fulfillment only. Missing settings or invalid scope blocks fulfillment without closing an unused allowance. Catalog visibility, new selection, configuration saving, and question-based tests still require coverage. Resume the unanswered existing-pathway question; no functions are marked clarified by this follow-up.
-
-**Confirmed existing-pathway continuation (2026-09-27):** Option A: Continue learning through existing active-pathway modules and module assessments after baseline readiness loss, subject to their own availability and authorization checks. Do not pause or archive a pathway solely for this loss, or reactivate an archived pathway. Catalog and baseline-start restrictions remain unchanged. The next question concerns soft-skill assessments during readiness loss, separately from deferred soft-skill result reuse. Function statuses and counts are unchanged.
+**Progress:** Cluster 1 Function contracts, target database architecture and acceptance plan are approved. V17 remains the superseded local/demo fixed lifecycle; no adaptive migration/runtime/test completion is claimed.
 
 **Clarified selection function (2026-10-01):** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02, owns only the selection transaction. Baseline/gap/pathway generation and soft-skill reuse remain in their owning functions.
 
 **Superseded visibility history (2026-09-27):** The earlier proposal to hide roles based on assessment readiness was superseded for F01 on 2026-09-29. Browse visibility now uses organization, `ACTIVE` status and catalog validity; question coverage belongs to assessment-start.
 
-**Confirmed role readiness (2026-09-27):** Option A: Baseline-ready means defined role requirements and prerequisites, saved baseline settings, and passing eligible-question coverage for the configured scope. Learning modules and module assessments are not visibility prerequisites. Publication, active status, and organization isolation still apply. Readiness-loss behavior and check timing remain open; function counts are unchanged.
-
-**Confirmed open-detail readiness loss (2026-09-27):** Option A: On detecting loss of baseline readiness, replace the role details with "This role is no longer available" and a **Back to roles** action; do not automatically redirect. This does not itself change an existing selection, pathway, attempt, or history. Detection timing and future learning behavior for existing selections remain open; function counts are unchanged.
-
 **Confirmed request-time availability (2026-09-27):** Option A: Recheck on list/detail requests, including loading, refreshing, searching, changing filters, and opening details; no background updates. Always recheck before initial selection or confirmed role change. Idle pages may remain outdated but cannot authorize an unavailable selection. Existing-selection behavior after readiness loss and concurrent-edit consistency remain open; function counts are unchanged.
-
-**Confirmed retained selection (2026-09-27):** Option A: Keep an already-selected role after baseline readiness loss. Block new baseline attempts until repair, but allow existing baseline attempts to continue or resume using their preserved configuration and content. No forced role change, automatic pathway archival, or history deletion follows solely from this loss. Existing-pathway learning, soft-skill assessment, evidence-only completion, remaining notification details, and concurrent-edit consistency remain open; function counts are unchanged.
 
 **Current browsing contract (updated 2026-09-29):** Employees browse same-organization, `ACTIVE`, catalog-valid roles. Details include role name, description and responsibilities, seniority, competency requirements, and required proficiency per micro-skill; assigned expert name was not selected. Publication and baseline readiness are not part of the current browsing gate.
 
@@ -161,12 +138,6 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 
 **Confirmed role-change approval (2026-09-26):** Option A: Eligible role changes require no approval. The selected role becomes the employee's sole active target role.
 
-**Confirmed role-change baseline (2026-09-26):** Custom answer: Require a baseline assessment after changing roles, but assess only unknown gaps based on the new target role. If there are no unknown gaps, existing evidence satisfies the requirement without questions. Soft-skill result reuse remains provisional.
-
-**Confirmed known-gap handling (2026-09-26):** Option A: Skills with existing evidence below the new role's required proficiency are known gaps. Skip their baseline reassessment and use them for pathway planning.
-
-**Confirmed no unknown gaps (2026-09-26):** Option A: When no unknown gaps remain after a role change, no questions are required; satisfy the baseline requirement using existing evidence and proceed to pathway planning without expert waiver approval.
-
 **Confirmed previous pathway (2026-09-26):** Option A: Archive the previous pathway as read-only history when the target role changes; it cannot be resumed. Existing mastery evidence remains available under the agreed reuse rules.
 
 **Deferred product decision (2026-09-26):** Reuse existing soft-skill results and generate new AI comments relative to the new role. This policy remains provisional and must be revisited before it is treated as finalized.
@@ -177,61 +148,7 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 
 **Latest selection decision (2026-09-27):** Option A: Show a role-change confirmation explaining previous-pathway archival and evaluation of the new role's baseline requirement, with **Confirm change** and **Cancel**. Cancel leaves the role and pathway unchanged.
 
-**Confirmed baseline question type (2026-09-27):** Option A: Baseline knowledge assessments support single-answer multiple-choice questions only. Question types for soft-skill and module assessments remain separate decisions.
-
-**Superseded baseline selection (2026-09-27):** Earlier option B selected random questions with micro-skill coverage. The later adaptive rule below supersedes random-only selection.
-
-**Confirmed adaptive baseline (2026-09-27):** Cover relevant role micro-skills and prerequisites to the configured depth. Group questions by micro-skill, label each Easy, Medium, or Hard, present one at a time, and select the next based on the previous result. Apply the configured question count. The original depth-3 and five-question upper limits were subsequently replaced by depth 5 and 10 questions per micro-skill. Interpret depth as prerequisite hops from role skills (depth 0); exact adaptive transitions and early stopping remain open.
-
-**Confirmed baseline evidence reuse (2026-09-27):** Option A: After a role change, expand the scope to include prerequisites, then ask questions only for unknown skills. Skip evidenced role and prerequisite skills; keep known gaps for pathway planning. With no unknown skills across the expanded scope, existing evidence satisfies the baseline without questions or expert waiver approval. This resolves the baseline-scope question without finalizing the deferred soft-skill reuse policy.
-
-**Confirmed baseline configuration (2026-09-27):** Add a Domain Expert function to configure a role's baseline assessment, including prerequisite depth, questions per micro-skill, and starting difficulty. No fixed starting difficulty was chosen.
-
-**Confirmed configuration limits (2026-09-27):** Hard upper limits are depth 5 and 10 questions per micro-skill, superseding the earlier upper limits. Minimum allowed values remain open.
-
-**Confirmed configuration defaults (2026-09-27):** Option A: New role configurations default to prerequisite depth 3 and 5 questions per micro-skill. These defaults do not change the hard upper limits of depth 5 and 10 questions per micro-skill or settle the starting-difficulty default.
-
-**Confirmed question maximum (2026-09-27):** Option A: The configured question count is a maximum per assessed micro-skill, allowing early stopping. Reaching the maximum does not itself establish mastery or sufficient evidence.
-
-**Confirmed confidence-based stopping (2026-09-27):** Option B: Use confidence-based early stopping for each micro-skill's proficiency estimate. The question maximum still applies even below the confidence threshold; confidence is distinct from percent correct and does not itself imply mastery.
-
-**Latest baseline decision (2026-09-27):** Option A: Use Bayesian proficiency-level estimation, updating probabilities after each answer based on its result and question difficulty. The proficiency levels, priors, response likelihoods, confidence measure, and stopping threshold remain open.
-
-**Deferred proficiency-scale decision (2026-09-27):** The user will choose the Bayesian learner proficiency levels later; no proposed scale was selected. Bayesian estimation remains confirmed. Continue independent configuration questions, then revisit the scale before finalizing REQ-002-F02 and its dependent assessment behavior. Deferred question: Which learner proficiency levels should the Bayesian model estimate for each micro-skill?
-
-**Confirmed starting-difficulty default (2026-09-27):** Option B: Medium for new role configurations. The Domain Expert can change it before saving; existing saved configurations retain their values. Per-skill overrides and configuration activation remain open.
-
-**Confirmed uniform settings (2026-09-27):** Option A: Apply one question maximum and one starting difficulty uniformly across each role's assessed micro-skills, including prerequisites. Per-skill overrides are not supported, resolving the earlier open override question. Actual question counts and later difficulty sequences can still vary through confidence-based stopping and adaptive selection. Configuration activation remains open.
-
-**Confirmed minimum depth (2026-09-27):** Option A: Allow prerequisite depth 0, covering directly required role skills without prerequisite expansion. Depth now ranges from 0 through 5 with default 3. Role-change evidence reuse still applies within the configured scope; the minimum configurable question maximum remains open.
-
-**Confirmed minimum question cap (2026-09-27):** Option B: The smallest configurable question maximum is 3 per micro-skill. The cap ranges from 3 through 10 with default 5. This does not require three answers before early stopping; minimum evidence and handling insufficient confidence at the cap remain open.
-
-**Confirmed configuration activation (2026-09-27):** Option A: Successfully saved settings apply to new attempts immediately, without a separate activation step. In-progress attempts retain their original settings, including on resume. Missing-configuration behavior, historical retention, and concurrent save/start handling remain open.
-
-**Confirmed missing configuration (2026-09-27):** Option A: Block baseline attempt start until an authorized Domain Expert saves a role configuration. Do not use defaults automatically. A successful save removes this blocker but does not bypass other start conditions. Messaging, notifications, and configuration requirements for evidence-only completion remain open.
-
-**Confirmed question-bank validation (2026-09-27):** Option A: Block saving when the question bank cannot support the proposed configuration, explain missing coverage, and preserve any previously active configuration. No warning-only save for this failure. Exact coverage requirements remain open and are the next interview question.
-
-**Confirmed coverage requirement (2026-09-27):** Option B: Require at least the configured question maximum in distinct eligible questions at each of Easy, Medium, and Hard for every micro-skill in the configured scope. A cap of 5 requires at least 15 questions per skill. Surplus at one difficulty cannot replace missing coverage at another; the delivery cap remains 5 total. Question eligibility, multi-skill counting, and later bank changes remain open.
-
-**Confirmed baseline question eligibility (2026-09-27):** Option B: Complete, active questions with valid required fields and mappings count toward baseline coverage and are available for delivery without separate publishing. Incomplete, inactive, or invalidly mapped questions are excluded. Exact field and mapping validation, initial active status, and in-progress effects of later edits remain open; this does not determine other assessment types' publication policies.
-
 ### Interview Protocol
-
-**Confirmed blocked-start email limit (2026-09-27):** Option A: One notification per organization and role's unresolved blocked period, shared across employees and retries. Partial repair does not reset suppression; after configuration and coverage are restored, a later blocked start can trigger another notification. Failed-delivery retries remain separate and undecided.
-
-**Confirmed blocked-start notifications (2026-09-27):** Option A: Show an employee message and automatically email the role's assigned Domain Expert when missing configuration or insufficient question coverage blocks baseline start. No employee notification action is required. Repeat-email limits, exact content, delivery failures, and missing or unavailable Expert handling remain open.
-
-**Confirmed baseline starting scope (2026-09-27):** Option A: Preserve the original skill scope of an in-progress attempt, including on resume, despite later role-requirement or prerequisite-relationship changes. No forced restart or insertion/removal of assessed skills. Changes apply to new attempts under their saved settings and coverage checks. Downstream gap-analysis and pathway requirement versions remain open.
-
-**Confirmed baseline question versions (2026-09-27):** Option A: Preserve each starting-pool question's text, options, correct answer, difficulty, and skill mapping throughout the attempt, including unseen questions and on resume. Edits apply to new attempts after current eligibility and coverage validation, without automatically rescoring existing attempts. Retention and explicit invalidation remain open.
-
-**Confirmed in-progress question pool (2026-09-27):** Option A: Preserve the questions eligible at baseline attempt start, including subsequently deactivated questions, for continued adaptive selection and resume. Deactivation alone does not interrupt the attempt or force replacement; new attempts use current eligibility and coverage checks. Content/scoring edits, deletion, and invalidation remain open.
-
-**Confirmed start-time coverage (2026-09-27):** Option A: Recheck eligible question coverage before each new baseline attempt using the same cap-per-difficulty requirement for every skill in the configured scope. Insufficient coverage blocks starting without changing saved settings. In-progress attempts and evidence-only completion dependencies remain separate open decisions.
-
-**Confirmed baseline question mapping (2026-09-27):** Option A: Each baseline question assesses exactly one micro-skill. It counts only toward that skill's coverage at its difficulty and provides answer evidence for that skill. Unmapped or multi-skill-mapped questions are ineligible for baseline use. Mapping rules for module and soft-skill assessments remain open.
 
 1. Ask one question at a time about the current function, providing selectable options and allowing a custom answer.
 2. Record each answer in that function's decision log with its date; update confirmed rules, outcomes, and acceptance criteria as needed.
@@ -245,7 +162,7 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 | Requirement | Feature folder | Function count | Clarified |
 | --- | --- | --- | --- |
 | REQ-001 | [Target role selection](Target%20role%20selection/README.md) | 2 | 2 |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | 2 | 0 |
+| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | 2 | 2 |
 | REQ-003 | [Soft skill assessment](Soft%20skill%20assessment/README.md) | 1 | 0 |
 | REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | 1 | 0 |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | 1 | 0 |

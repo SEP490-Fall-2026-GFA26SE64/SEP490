@@ -7,7 +7,7 @@ Discipline membership/assignments, module/content storage, L&D role publication/
 
 ## Technical Baseline Snapshot
 
-These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers. The three PostgreSQL sources and SVGs were regenerated from a clean PostgreSQL 17.6 database after Flyway V1-V17 applied successfully (62 `platform` tables). They show structural columns and same-group foreign keys, not indexes, checks, cross-group links or trigger bodies; use the migrations for those details.
+These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers. The three live PostgreSQL sources and SVGs were regenerated from a clean PostgreSQL 17.6 database after Flyway V1-V17 applied successfully (62 `platform` tables). They show structural columns and same-group foreign keys, not indexes, checks, cross-group links or trigger bodies; use the migrations for those details. The adaptive baseline diagram is a manually maintained **target design** and must not be described as live until its forward migration is implemented and regenerated evidence agrees.
 
 | Diagram | Source | Rendered image |
 | --- | --- | --- |
@@ -15,6 +15,7 @@ These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE
 | PostgreSQL identity, catalog, processing | [postgresql.puml](postgresql.puml) | [postgresql.svg](postgresql.svg) |
 | PostgreSQL assessment and learning | [postgresql-assessment.puml](postgresql-assessment.puml) | [postgresql-assessment.svg](postgresql-assessment.svg) |
 | PostgreSQL pathway, analytics, evaluation | [postgresql-pathway.puml](postgresql-pathway.puml) | [postgresql-pathway.svg](postgresql-pathway.svg) |
+| PostgreSQL adaptive baseline target (planned) | [postgresql-adaptive-baseline-target.puml](postgresql-adaptive-baseline-target.puml) | [postgresql-adaptive-baseline-target.svg](postgresql-adaptive-baseline-target.svg) |
 | Neo4j occupation-based ontology 0.7.0 | [neo4j.puml](neo4j.puml) | [neo4j.svg](neo4j.svg) |
 
 The generator lists all 62 V17 tables. Use a clean migrated PostgreSQL instance to regenerate sources from `pg_catalog`, then render the three PostgreSQL SVGs with PlantUML 1.2025.10 or newer. It rejects a schema with missing or additional tables rather than silently omitting them:
@@ -24,6 +25,7 @@ docker compose -f compose.dev.yml up -d postgres neo4j
 docker compose -f compose.dev.yml run --build --rm migrate
 powershell -NoProfile -ExecutionPolicy Bypass -File .\documents\diagrams\Generate-PostgresqlDiagrams.ps1
 java -jar path\to\plantuml.jar -tsvg documents/diagrams/postgresql.puml documents/diagrams/postgresql-assessment.puml documents/diagrams/postgresql-pathway.puml
+java -jar path\to\plantuml.jar -tsvg documents/diagrams/postgresql-adaptive-baseline-target.puml
 ```
 
 Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.

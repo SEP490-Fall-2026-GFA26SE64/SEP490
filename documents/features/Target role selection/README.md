@@ -2,8 +2,8 @@
 
 ## Current Scope Alignment
 
-**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-001. **Actor:** Employee. **Status:** Reclarification required.
-Employee views available published roles and selects/confirms a role after Expert-reviewed baseline/RIASEC guidance. Publication-independent browsing and immediate selection before assessment/guidance are superseded. Revisit role-change, attempt, availability, and history rules without inventing new policies.
+**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-001. **Actor:** Employee. **Status:** Entry dependency synchronized with approved REQ-002 contract.
+Employee views an authorized available role and selects/confirms it immediately. Selection does not wait for baseline: a completed mastery-producing baseline for the role's Occupation satisfies the dependency; otherwise the role remains selected and that Occupation baseline is required before gap/pathway steps. Baseline identity is Employee + Occupation, not Employee + role.
 
 ## Historical Contract and Evidence
 The retained details below describe the prior contract, not acceptance of revised scope.

@@ -1,7 +1,7 @@
 # View Target Roles
 
 ## Current Scope Alignment
-Employee discovery/selection uses L&D publication and reviewed-guidance availability under the new flow. Earlier `ACTIVE`/catalog-valid-only visibility without publication is superseded. Withdrawal effects, readiness and review navigation need clarification. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+Employee browsing uses the authorized role-availability contract and is independent of adaptive-Blueprint readiness. Viewing/selecting an available role is not blocked by missing Occupation baseline mastery; that dependency is enforced afterward before gap/pathway steps. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification and Decision Log
 Conflicting confirmed rules, actors and acceptance below are superseded; old evidence is not revised-scope certification.
@@ -104,9 +104,6 @@ Entries before 2026-09-29 are retained as history. Where they conflict with the 
 | 2026-09-26 | What should happen when search/filter results are empty? | Show "No matching roles" with a Clear filters action. The no-available-roles case was not decided by this answer. |
 | 2026-09-26 | What should employees see when the organization has no published, active roles at all? | Option B: "No roles available. Please contact your Organization Administrator." |
 | 2026-09-26 | What should happen when the viewed role becomes unavailable? | Option A: Replace its details with "This role is no longer available" and a Back to roles action; do not automatically redirect. |
-| 2026-09-27 | Who should receive a blocked-start email when no active Expert is assigned? | Custom answer: A target role whose configuration is not finished must not be shown to employees. This adds a visibility gate rather than selecting an email recipient. Readiness criteria and previously selected role handling remain open. |
-| 2026-09-27 | What must be configured before a published, active role becomes visible? | Option A: Baseline-ready. Role requirements and prerequisites are defined, baseline settings are saved, and eligible-question coverage passes. Learning modules and module assessments are not visibility prerequisites. |
-| 2026-09-27 | What should an open role detail page show when the system detects loss of baseline readiness? | Option A: Replace the details with "This role is no longer available" and a Back to roles action, matching existing unavailable-role behavior. Do not automatically redirect. Detection timing and existing-selection learning effects remain open. |
 | 2026-09-27 | Should already-open role lists and details update automatically when availability changes? | Option A: Recheck on the next request, including loading, refreshing, searching, and opening details. Always recheck before confirming selection. No background updates; idle content may remain outdated until the next request. |
 | 2026-09-29 | What determines employee catalog visibility for the implementation base? | Same-organization `ACTIVE` role with required catalog fields and at least one valid active required skill. Assessment settings and question coverage do not control browsing. |
 | 2026-09-29 | Where is organization scope stored initially? | `TargetRole.organizationId`, matched against trusted actor context behind `TargetRoleCatalogPort`; a future publication mapping may replace the adapter. |

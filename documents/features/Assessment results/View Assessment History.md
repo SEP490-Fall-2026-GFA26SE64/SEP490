@@ -1,7 +1,7 @@
 # View Assessment History
 
 ## Current Scope Alignment
-Employee views own baseline, RIASEC and module history, including independent learning evidence. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); old soft-skill records retain their original meaning.
+Employee views own baseline, RIASEC and module history, including independent learning evidence. Adaptive baseline history retains the original Occupation/optional target context plus Blueprint/model/mapping/parameter provenance and never replaces an old result with the learner's latest mastery projection. It distinguishes the sole mastery-producing completion from invalidated no-mastery attempts and their replacement link. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.

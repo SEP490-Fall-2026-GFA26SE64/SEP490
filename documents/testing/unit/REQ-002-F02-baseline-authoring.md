@@ -1,5 +1,7 @@
 # REQ-002-F02 — Unit, API and frontend evidence
 
+> **Historical V17 evidence:** the cases below target the superseded counts/weights and shared-assessment lifecycle, not the adaptive REQ-002 contract.
+
 ## Occupation-scoped cases — executed 2026-10-15
 
 Executable cases now cover one blueprint per Occupation, exact full-role membership, zero-question role retention/exclusion, minimum Easy/Medium/Hard coverage per skill, strict linked weights, current capacity reads, aggregate shared-skill coverage, unique generated questions and Occupation-first UI behavior. Neo4j Level-union traversal is recorded in the integration evidence.

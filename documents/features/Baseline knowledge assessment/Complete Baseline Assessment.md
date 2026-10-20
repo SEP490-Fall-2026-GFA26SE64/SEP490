@@ -1,144 +1,151 @@
 # Complete Baseline Assessment
 
-## Current Scope Alignment
-Employee completes baseline assessment using L&D-defined competency coverage, question selection and scoring before baseline/RIASEC-informed role guidance and selection/confirmation. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md). Prior per-selected-role attempts, adaptive defaults, evidence reuse, coverage and notification decisions require reclarification; no new scoring/attempt policy is invented here.
+## Current adaptive contract
 
-## Historical Specification and Decision Log
-Conflicting confirmed rules, actors and acceptance below are superseded; old evidence is not revised-scope certification.
+**Function:** REQ-002-F01. **Actor:** Employee. **Status:** Cluster 1 contract approved on 2026-10-20. No adaptive runtime is implemented yet.
 
-**Function ID:** REQ-002-F01  
-**Actor:** Employee  
-**Status:** In clarification  
-**Feature:** [Baseline Knowledge Assessment](README.md)
+### Goal and position
 
-## Description
+Estimate initial mastery for MicroSkills covered by the applicable Occupation Blueprint. The same baseline must distinguish limited evidence from reliable evidence for Intern, Junior and Senior Employees; a strong result is not capped merely because it came from a baseline.
 
-Complete an adaptive baseline knowledge assessment covering the selected target role's relevant micro-skills and their prerequisites to the role's configured depth, with a hard upper limit of 5 prerequisite hops. Organize questions by micro-skill and present them one at a time, using the preceding answer's result to select the next question. Record answers and scored results as input to competency profiling and initial pathway generation.
+```text
+trusted Employee chooses a role or an available Occupation
+  -> resolve that Occupation and its current Blueprint
+  -> reuse a completed baseline mastery for that Occupation, or start its one allowed baseline
+  -> create or resume one adaptive attempt
+  -> pin Blueprint/catalog/item/model/mapping/parameter versions and deadline
+  -> present one item at a time
+  -> accept response idempotently; update provisional theta + SE
+  -> select the next skill/item by 3PL information and Blueprint bounds
+  -> stop by evidence, hard bound, manual submit or deadline
+  -> finalize raw result + per-skill theta/SE/point mastery/conservative mastery
+  -> emit baseline mastery evidence exactly once
+```
 
-**Input:** Employee, selected role, prerequisite graph, questions mapped to micro-skills with difficulty labels, and answers.  
-**Outcome:** A recorded baseline attempt with question-level evidence, or a baseline requirement satisfied using existing evidence when a role change leaves no unknown skills in the expanded role-and-prerequisite scope.
+Choosing a role is never blocked by baseline. An Employee who has no completed baseline mastery for that Occupation—including a new Employee or an existing employee using the system for the first time—must complete the Occupation baseline before mastery-dependent gap/pathway steps. A completed baseline for the same Occupation satisfies later role choices inside that Occupation; a role in another Occupation requires that other Occupation's baseline. An Employee may also choose any available Occupation in the organization and take its baseline voluntarily without selecting a role.
 
-## Role Configuration
+The allowance is one successful mastery-producing baseline per Employee + Occupation, regardless of entry path. A completed result cannot be retaken because a role, Blueprint or catalog later changes. A replacement is allowed only when the earlier attempt was invalidated and emitted no mastery; deleting an account follows the separate retention/deletion policy and is not a reset command.
 
-- The Domain Expert configures prerequisite depth, questions per micro-skill, and starting difficulty for the role through [Configure Baseline Assessment](Configure%20Baseline%20Assessment.md), REQ-002-F02 (2026-09-27).
-- Prerequisite depth ranges from 0 through 5; the question maximum ranges from 3 through 10 per micro-skill. New role configurations default to depth 3 and a question maximum of 5 per micro-skill; these defaults are not hard limits. The minimum configurable cap of 3 does not define the minimum evidence required before early stopping.
-- Starting difficulty is supplied by the applicable role configuration, not chosen by the Employee. New configurations default to Medium; the Expert can change it to Easy or Hard before saving, and existing saved values are preserved. One question maximum and one starting difficulty apply uniformly to all assessed role and prerequisite skills, with no per-skill overrides. A successful configuration save takes effect for new attempts; in-progress attempts retain the settings applicable when they started, including on resume.
+The Employee cannot choose parameters, submit correctness/mastery, see protected answers or change the server deadline. Gap calculation, pathway generation/review and `a/b/c` calibration belong to dependent Functions.
 
-## Confirmed Rules
+### Trusted context and client input
 
-- Each employee is allowed only one baseline assessment attempt per target role. A completed baseline cannot be retaken for that same role, including after switching away and returning. This limit is per employee and role, not one shared attempt for all employees assigned to a role. It does not set retake rules for soft-skill or module assessments.
-- For a question-based baseline, the allowance is consumed when the attempt successfully starts, not on first answer or submission. After that point, interruption or leaving the assessment does not restore the allowance; the employee can resume the same unfinished attempt but cannot restart as a new attempt. A request blocked or failed before any attempt successfully starts does not consume it. If the attempt started but the response was lost, recover that same attempt rather than creating another. Evidence-only fulfillment closes the allowance separately, as specified below.
-- When existing evidence satisfies the baseline without questions, record the requirement as fulfilled through evidence and close the employee's baseline allowance for that role. Do not create a test attempt, submitted answers, a fabricated score, or a newly passed assessment. Known below-required skills remain gaps, not mastery. This closure prevents a later baseline attempt for the same role, including after role switching or requirement changes; it is distinct from starting or completing a test.
-- For an already-selected role, evidence-only fulfillment requires valid role requirements and prerequisite relationships plus saved baseline settings. Expand the scope using the saved prerequisite depth and verify that no unknown skills remain. Skip question-bank coverage checks for this no-question path. Missing settings or invalid scope blocks fulfillment and leaves an unused allowance open; do not fall back to defaults or treat an unresolvable scope as having no unknown skills.
-- This coverage exception applies only to evidence-only fulfillment for an existing selection. It does not relax coverage for catalog visibility, new role selection, configuration saving, or a question-based attempt. Fulfilling one employee's baseline does not repair the role's question bank or resolve a coverage-blocked period for other employees. Notification handling for blocked evidence-only fulfillment remains separate and undecided.
-- Continuing or resuming the same in-progress attempt is not another attempt and retains its preserved configuration, scope, pool, question versions, and recorded answers. Configuration edits, graph changes, or restored readiness do not grant an additional baseline attempt. References below to new attempts mean attempts still permitted by this limit, not repeat assessments for an already-assessed employee-role pair.
-- Starting a baseline attempt requires a saved role configuration. If none exists, block attempt start until an authorized Domain Expert saves one; do not use defaults automatically. A saved configuration does not bypass other start conditions.
-- From Choose Target Role, 2026-09-27, option A: If the selected role loses baseline readiness, retain the selection but block new question-based baseline attempts until readiness is restored. Existing attempts may continue and resume with their preserved starting settings, skill scope, question pool, and question versions. Repair permits a later start request subject to other start conditions; it neither requires role reselection nor automatically starts an attempt. Evidence-only fulfillment uses the scope-and-settings checks above, without question coverage.
-- Baseline knowledge assessments support single-answer multiple-choice questions only. Each question has exactly one correct answer, and the employee can select at most one option for it.
-- Each baseline question assesses exactly one micro-skill. Its answer provides assessment evidence for that mapped skill, without distributing the result across other skills. It counts once toward only that skill's question-bank coverage at its difficulty. Questions with no assessed-skill mapping or multiple assessed-skill mappings are ineligible for baseline use.
-- Before a new question-based baseline attempt starts, recheck eligible question-bank coverage against the saved configuration: the configured maximum at each of Easy, Medium, and Hard for every skill in the configured scope. Insufficient coverage blocks starting, including when questions became inactive after configuration save. Do not reduce coverage requirements or change the saved settings to let the attempt start. Evidence-only fulfillment is not a test start and skips this coverage check.
-- If missing configuration or insufficient question coverage blocks starting, show the employee a blocked-start message and automatically trigger email to the role's assigned Domain Expert in the same organization, once per role's unresolved blocked period across all employees and retries. Further blocked requests still show a message but do not create another notification. After configuration and coverage are restored, a later blocked start can trigger a new notification. The employee does not need to select a notification action. Notification success or failure does not bypass the blocker; delivery retry policies remain open.
-- Build the starting question pool from complete, active questions with valid required fields and skill mappings, without requiring separate publishing. Incomplete, inactive, or invalidly mapped questions cannot enter that pool. Preserve the starting pool for the attempt, including on resume: a question deactivated later remains available for adaptive selection. Deactivation alone does not pause the attempt, force replacement, or discard answers.
-- Use the starting version of every question in that pool, including unseen questions and after resume. Preserve text, options, correct answer, difficulty, and skill mapping for presentation, scoring, adaptive selection, and evidence attribution. Later edits apply to new attempts subject to eligibility and coverage checks, and do not automatically rescore existing attempts. Explicit invalidation remains a separate decision.
-- Preserve the skill scope established when the attempt starts, including on resume. Later role-requirement or prerequisite-relationship changes do not add or remove assessed skills, discard answers, or force a restart. Continue with the original scope and its evidence-filtered assessed skills; known skills skipped at start do not become reassessment requirements merely because the graph changed.
-- New attempts use the requirements and prerequisite relationships applicable at their own start, with the saved depth and required coverage checks. Finishing an older scope does not establish evidence or mastery for newly added skills. Which requirement version subsequent gap analysis or pathway generation uses remains open.
-- Multiple-answer questions, written responses, and coding exercises are not supported in the baseline. This decision does not determine question types for soft-skill or module assessments.
-- Include all micro-skills relevant to the selected target role, including prerequisites reached up to the configured depth, which cannot exceed 5. After a role change, use this expanded scope to identify unknown skills, then ask fresh questions only for those unknown skills. Existing evidence can satisfy coverage for both role skills and prerequisite skills.
-- Skills with evidence below the required proficiency remain known gaps for pathway planning and are not reassessed in the role-change baseline. If no unknown skills remain anywhere in the expanded scope, existing evidence satisfies the baseline requirement without questions or expert waiver approval.
-- Divide the assessment questions by micro-skill. A micro-skill shared by multiple prerequisite paths belongs to the scope once, not once per path.
-- Each baseline question has a difficulty label: Easy, Medium, or Hard.
-- Present questions one at a time. Use the result of the preceding question to choose the subsequent question adaptively, rather than using the earlier random-only selection policy. Starting difficulty comes from role configuration; transition rules and any random tie-breaking remain open.
-- Each assessed micro-skill receives no more than its applicable configured question maximum, which defaults to 5 and cannot exceed 10. Stop early when confidence in that micro-skill's Bayesian proficiency estimate reaches a defined threshold. The model parameters, confidence measure, and threshold remain open. The configured maximum is not an exact-count requirement.
-- Estimate proficiency using probabilities over defined proficiency levels, updated after each answer using its result and question difficulty. The proficiency scale, priors, and response likelihoods remain open; question-difficulty labels do not automatically define proficiency levels.
-- The user explicitly deferred choosing the proficiency scale on 2026-09-27. No proposed levels are approved; revisit this decision through Configure Baseline Assessment before finalizing the model-dependent behavior.
-- Confidence-based stopping concerns certainty in the estimated proficiency, not necessarily mastery. Neither percent-correct scoring nor reaching the question maximum is automatically a confidence measure.
+| Client may send | Server owns/derives |
+| --- | --- |
+| Idempotency key and expected revision | Organization, learner and attempt purpose |
+| Own attempt ID returned by the server | Current Blueprint and every pinned version |
+| Presented position/item identifier | Eligibility, option order and next-item selection |
+| Selected option/response payload | Correctness, raw counts, theta, SE, point/conservative mastery and confidence label |
+| Manual-submit confirmation | Start/deadline, remaining time and timeout outcome |
 
-## Depth Convention
+The request may identify an available Occupation for voluntary exploration. For a role-triggered baseline, the server derives the Occupation from the trusted selected active role; the client cannot substitute another Occupation. A role-required attempt uses that active role's deduplicated skill/item pool and configured role bound. An exploration attempt uses the deduplicated union of all active role pools and the configured exploration bound. Draft, inactive, archived or removed roles/questions never enter a new attempt. A target-selection revision/role snapshot is optional provenance, not the attempt identity.
 
-- Working interpretation: target-role micro-skills are depth 0; follow prerequisite relationships toward the skills they require up to the configured number of micro-skill-to-micro-skill hops (maximum 5). Do not count the target-role-to-micro-skill relationship as a prerequisite hop.
-- Depth 0 is an allowed configuration: include directly required role skills only and do not expand prerequisites. This limits baseline assessment scope, not the stored graph or evidence of prerequisite mastery.
+### IRT 3PL behavior
 
-## Confirmed Related Rules
+For item discrimination `a`, difficulty `b`, guessing `c` and current ability `theta`:
 
-On 2026-09-27, option A confirmed that the following earlier role-change evidence-reuse decisions also apply to the expanded role-and-prerequisite scope. With Expert configuration, expand to the configured depth before filtering by evidence. "All micro-skills" defines coverage, not mandatory fresh questions for skills already evidenced.
+```text
+P(correct | theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
+```
 
-- From Choose Target Role (REQ-001-F02), 2026-09-26: After a role change, the baseline requirement applies, but assessment questions cover only unknown gaps relative to the new target role. Existing mastery evidence informs the assessment scope; this is not a full reassessment of all role requirements.
-- From Choose Target Role (REQ-001-F02), 2026-09-26: Skills with existing evidence below the new role's required proficiency are known gaps. Exclude them from baseline reassessment and use them for pathway planning instead.
-- From [Choose Target Role](../Target%20role%20selection/Choose%20Target%20Role.md), 2026-09-26: If no unknown gaps remain, no questions are required. Existing evidence satisfies the baseline requirement without expert waiver approval, allowing progression to pathway planning with known gaps retained.
+- Responses are evidence whose strength depends on `a/b/c`; they are not manually weighted points.
+- The estimator updates theta and standard error (`SE`) for the assessed MicroSkill after each accepted response.
+- The selector chooses an eligible unseen item with useful information while satisfying Blueprint bounds.
+- The attempt may stop early at sufficient precision; maximum questions and server deadline remain hard stops.
+- Difficulty labels are for authoring/cold-start explanation. The algorithm does not follow a fixed Easy → Medium → Hard ladder.
+- Demo cold-start values may be Easy `(1,-1,.25)`, Medium `(1,0,.25)`, Hard `(1,1,.25)` for four-option items. They are system-owned seeded technical values, not L&D fields or calibrated truth.
+- The initial MAP prior, minimum-evidence gate, `SE` stop target and conservative-mastery factor are system-owned/versioned technical configuration. They are initially supplied as backend code/config constants; assigning an operational UI owner is deferred.
 
-## Open Decisions
+### Ordered operations
 
-- Configuration dependency: Resolve remaining validation, exact blocked-start messages, delivery and retry policies, resolution detection, missing or unavailable Expert handling, historical configuration retention, and concurrent save/start handling in REQ-002-F02. Employee messages and automatic email to the assigned Expert once per role's unresolved blocked period are confirmed for question-based starts blocked by missing configuration or insufficient coverage. Define messaging and notification applicability when missing settings or invalid scope blocks evidence-only fulfillment. Saved settings and valid scope are required for evidence-only fulfillment, but question coverage is not. Depth ranges from 0 through 5, question maxima range from 3 through 10, the starting-difficulty default is Medium, and per-skill overrides are not supported. Configuration changes activate on save for new attempts only; no saved configuration blocks attempt start.
-- Answer-result-to-next-question transitions; Bayesian proficiency levels, priors, response likelihoods, confidence measure and stopping threshold; any minimum evidence requirement; and selection among equally eligible questions.
-- Micro-skill group order, including prerequisite-first ordering, and transition between groups.
-- Handling deletion or explicit invalidation during an attempt, concurrent bank changes during start, and question-version retention. New attempts recheck coverage and are blocked if insufficient; existing attempts preserve their starting pool and question versions despite later deactivation or edits. Each baseline question counts only toward its single mapped skill; multi-skill counting is not supported.
-- Timing, autosave/resume, submission confirmation, and handling unanswered items.
-- The single allowance is consumed at successful test start or closed by evidence-only fulfillment; interruption of a started test permits resume, not a fresh attempt. Define recovery when successful-start state is uncertain or an attempt is technically unrecoverable, and explicit invalidation without silently granting a replacement. Resume duration and eventual disposition of abandoned attempts remain open. Define handling newly unknown skills when returning to a role whose baseline was completed or fulfilled through evidence; do not invent mastery or reopen the allowance. Consistency when scope, settings, or evidence change during evidence-only evaluation remains open.
-- Scoring, invalidated questions, and whether soft-skill assessment must also be complete before generation.
+#### Start or resume
 
-## Acceptance Baseline
+1. Authorize the Employee and resolve either the selected role's Occupation or an explicitly chosen available Occupation.
+2. Check the Employee + Occupation allowance. A prior completed baseline that emitted mastery closes it; an invalidated/no-mastery attempt does not.
+3. Lock/check the unique active-attempt key for Employee + Occupation.
+4. Return an existing `IN_PROGRESS` attempt for retries/resume.
+5. Otherwise validate the current Blueprint's active-role/catalog fingerprint, applicable role or exploration pool, item capacity and parameter coverage. Current membership drift blocks a new start until L&D finalizes a refreshed version.
+6. Create the attempt with purpose `ROLE_REQUIREMENT` or `OCCUPATION_EXPLORATION`, pin all versions, set server `startedAt/deadlineAt`, initialize skill states and persist the first presented item atomically.
 
-Submitted answers retain their assessed skill mappings and support a reproducible baseline result for the selected role.
+#### Answer and select next
 
-- Given no unknown skills in the applicable role-and-prerequisite scope and satisfied evidence-only prerequisites, record fulfillment through existing evidence and close the employee-role allowance without creating a test attempt, answers, score, or test-pass result. Preserve known gaps and the original supporting evidence.
-- Given an already-selected role with valid requirements, prerequisites, saved settings, no unknown skills, and insufficient question coverage, allow evidence-only fulfillment and close the allowance without a test attempt or score. The role remains excluded from new catalog responses while coverage fails; an eligible employee who needs questions is still blocked from starting a test.
-- Given missing baseline settings or invalid role/prerequisite scope, do not record evidence-only fulfillment or close an unused allowance, even if all previously known skills have evidence. Do not substitute default depth or interpret the invalid scope as empty. Once those prerequisites pass, reevaluate evidence across the resolved scope.
-- If at least one unknown skill remains, the employee cannot use the evidence-only coverage exception. Any permitted first test still requires full question coverage. Evidence-only fulfillment for another employee does not resolve the role's coverage-blocked period.
-- After evidence-only fulfillment for role A, reject a later baseline-start request for that employee and role, including after leaving and returning or adding new role skills. Re-evaluating the same fulfillment does not create an attempt or reset the allowance. Other employees' allowances and the employee's allowances for other roles remain independent.
-- After an employee completes a baseline for role A, another baseline for that employee and role A is rejected, including after a role switch, configuration update, or readiness repair. Preserve the original attempt and evidence. A different employee's first attempt for role A is not blocked by this employee's usage; an eligible first attempt for role B is also independent.
-- Resuming an existing attempt continues the same attempt and recorded answers without creating a second attempt or changing its preserved configuration. Repeated or simultaneous requests must not create multiple active baseline attempts for the same employee-role pair.
-- After a successful start, closing the assessment before answering any question still consumes the allowance. Reopening resumes that same attempt; a request to create a fresh attempt is rejected without discarding its state.
-- A start rejected for missing configuration or insufficient coverage leaves an unused allowance unused. After repair, the employee may make a later eligible first-start request. If the original start succeeded but its response was lost, retrying must not create a second attempt.
-- Every question presented in a baseline attempt is single-answer multiple-choice with exactly one correct option. The employee cannot select multiple options for one question; whether unanswered questions may be submitted remains open.
-- Every delivered baseline question has exactly one valid assessed-skill mapping. A response to a question mapped to skill A is attributed to A, not also to skill B merely because the skills share a role or prerequisite relationship.
-- With a saved cap of 5, if one required skill has only 4 eligible Easy questions after deactivation, a new attempt cannot start or deliver questions even if all other counts pass. Restored coverage permits a later start request to pass this check without changing the saved settings, subject to other start conditions.
-- If that coverage loss affects an already-selected role, the role remains selected. A new attempt is blocked, but an in-progress attempt can continue or resume with its original settings, scope, pool, and question versions. No forced role change or automatic pathway archival occurs solely because baseline readiness was lost.
-- A start blocked by missing configuration or insufficient coverage displays a message and triggers assigned-Expert email processing without employee confirmation, once per role's unresolved blocked period. Repeated or simultaneous requests by the same or other employees create no additional notification during that period, but still display the blocked message. The attempt stays blocked regardless of email delivery outcome.
-- A question eligible at attempt start remains selectable within that attempt after deactivation, including on resume. Deactivation alone neither removes an already displayed question nor prevents its answer from being accepted. Adaptive selection, the total cap, and confidence-based stopping still apply; preserving the pool does not require all its questions to be delivered.
-- If an Expert edits a question before the employee has seen it, the current attempt still presents and scores its starting version, with the original difficulty and skill mapping. The same preservation applies to displayed and answered questions and after resume. A new attempt uses the edited version only after current eligibility and coverage validation.
-- If skill C is added to the role's prerequisites during an attempt whose scope contains only A and B, the employee can finish that original assessment without C being inserted or a restart being required. Resume retains the original scope. A later eligible first attempt for another employee includes C if reached within its configured depth, subject to evidence filtering and coverage checks. The original employee is not granted another baseline for that role, and the earlier attempt supplies no assessment evidence for C.
-- With no saved role configuration, no baseline attempt can start and no assessment question is presented. An authorized Expert save removes the missing-configuration blocker; it does not automatically start an attempt or waive other eligibility checks.
-- At configured depth 0, if the role directly requires A and A requires B, include A but exclude B unless B is independently directly required by the role. On role change, ask only about unknown skills in this direct-role-skill scope; excluded prerequisites are not marked as mastered.
-- When configured depth is 3, a prerequisite chain starting at role skill A and continuing through B, C, D, and E includes A, B, C, and D. E is excluded unless it is independently relevant to the role or reachable within 3 prerequisite hops from another role skill. Apply the same boundary rule for other configured depths, up to 5. Shared prerequisite skills are not duplicated.
-- Questions are organized by assessed micro-skill, have Easy, Medium, or Hard difficulty, and are delivered one at a time. Selecting the next question uses the preceding answer's result under the adaptation rules still to be agreed.
-- When the applicable starting difficulty is Medium and an eligible Medium question is available, the first question for the assessed micro-skill uses Medium difficulty. An Expert-selected Easy or Hard value is honored instead of being replaced by the default; insufficient-bank behavior remains open.
-- Apply the same configured question maximum and starting difficulty to each assessed micro-skill, including prerequisites. Actual question counts may differ because of confidence-based stopping, and later difficulty sequences may differ because of answer-dependent adaptation.
-- If the Expert saves changed depth, question maximum, or starting difficulty during an attempt, that attempt continues with its original settings, including on resume. A new attempt started after the successful save uses the changed settings. Unsaved or rejected changes affect neither attempt.
-- With a configured question maximum of 3, no fourth question is presented for a micro-skill. The cap does not itself require three answers before early stopping or establish confidence or mastery; minimum-evidence and uncertain-result policies remain open.
-- After an answer, update the assessed micro-skill's proficiency-level probabilities using the agreed Bayesian model. Given the same prior, model parameters, and answer sequence, the resulting probabilities are reproducible; the distribution remains nonnegative and sums to 1. The stopping-confidence calculation still requires agreement.
-- No assessed micro-skill receives more questions than its applicable configured maximum or an eleventh question in one baseline attempt. Stop earlier when confidence in its proficiency estimate reaches the defined threshold. Reaching the maximum below the threshold still ends questioning for the skill without fabricating confidence or mastery; scoring and uncertain-result handling remain open.
-- After a role change, expand the role scope to the configured prerequisite depth before applying the evidence filter. Ask questions for an unknown prerequisite even when the role's direct skills already have evidence; do not skip prerequisite traversal just because a role skill is already evidenced.
-- In a role-change baseline, exclude evidenced skills from fresh questions, including prerequisite skills. Retain below-required evidence as known gaps for pathway planning, not as mastery. When no unknown skills remain across the expanded scope, satisfy the baseline using existing evidence without questions or expert waiver approval; do not fabricate a newly passed assessment or remove separate pathway review.
+1. Lock/check ownership, attempt state/revision and server deadline.
+2. Verify the submitted position is the pinned presented item.
+3. Save one response and server-computed correctness idempotently.
+4. Update the affected skill theta/SE/information.
+5. Stop when required, or select/persist exactly one next unseen item and option order.
+6. Store the command outcome and commit before responding.
 
-## Decision Log
+#### Submit or auto-submit
 
-| Date | Question | Confirmed answer |
-| --- | --- | --- |
-| 2026-09-27 | Which question types should the baseline knowledge assessment support? | Option A: Single-answer multiple-choice only. |
-| 2026-09-27 | How should questions be selected for each baseline assessment attempt? | Earlier option B: Random selection with micro-skill coverage. Random-only selection is superseded by the later adaptive rule below; unknown-gap-only applicability was subsequently reconfirmed for the expanded scope. |
-| 2026-09-27 | How should the number of baseline questions per micro-skill be determined? | Custom answer expanding the design: Cover all target-role-relevant micro-skills and prerequisites up to graph depth 3; group questions by micro-skill; label difficulty Easy, Medium, or Hard; present one question at a time and select the next based on the previous result; at most 5 questions per micro-skill. |
-| 2026-09-27 | After a role change, should existing assessment evidence still allow skills to be skipped? | Option A: Include prerequisites when identifying the scope, but ask questions only for unknown skills. Keep known gaps for pathway planning. The earlier no-unknown-skills completion rule still applies. |
-| 2026-09-27 | What difficulty should the first baseline question use for each assessed micro-skill? | Custom answer: Add Expert configuration per target role for assessment depth, questions per micro-skill, and starting difficulty. Captured in Configure Baseline Assessment (REQ-002-F02); no fixed starting difficulty was selected. |
-| 2026-09-27 | What are the baseline configuration upper limits? | From REQ-002-F02: Depth 5 and 10 questions per micro-skill supersede the earlier upper limits. Defaults remain open. |
-| 2026-09-27 | Does the configured question count require an exact number of questions? | From REQ-002-F02, option A: It is a maximum, with early stopping allowed once sufficient evidence is collected. The stopping rule remains open. |
-| 2026-09-27 | What is the early-stopping approach? | From REQ-002-F02, option B: Use a confidence threshold for the micro-skill proficiency estimate. The confidence calculation and threshold remain open, and the question maximum still applies. |
-| 2026-09-27 | Which estimation approach supports confidence-based stopping? | From REQ-002-F02, option A: Bayesian probabilities over proficiency levels, updated after each answer using question difficulty. Model parameters, confidence measure, and threshold remain open. |
-| 2026-09-27 | Which learner proficiency levels should be used? | From REQ-002-F02: Deferred for later selection. No scale is approved; the Bayesian approach remains confirmed. |
-| 2026-09-27 | What starting difficulty should a new role configuration default to? | From REQ-002-F02, option B: Medium, editable by the Expert before saving. Assessment delivery uses the applicable configuration, not an unconditional Medium starting question. |
-| 2026-09-27 | Are per-skill question maxima or starting difficulties supported? | From REQ-002-F02, option A: No. Both settings apply uniformly across the role's assessed micro-skills, including prerequisites. This does not require identical actual question counts or subsequent difficulty sequences. |
-| 2026-09-27 | What is the minimum allowed prerequisite depth? | From REQ-002-F02, option A: 0, covering directly required role skills without prerequisite expansion. Default 3 and maximum 5 remain unchanged. |
-| 2026-09-27 | What is the minimum configurable question cap? | From REQ-002-F02, option B: 3 questions per micro-skill. The cap ranges from 3 through 10 with default 5, distinct from the still-open minimum evidence required before early stopping. |
-| 2026-09-27 | When do role configuration changes take effect? | From REQ-002-F02, option A: On successful save for new attempts. In-progress attempts retain their original settings, including on resume. |
-| 2026-09-27 | Can an attempt start without a saved role configuration? | From REQ-002-F02, option A: No. Block starting until an authorized Domain Expert saves a configuration; no automatic default fallback. |
-| 2026-09-27 | Which questions are eligible for baseline delivery? | From REQ-002-F02, option B: Complete and active questions with valid required fields and mappings, without a separate publishing step. |
-| 2026-09-27 | May a baseline question assess more than one micro-skill? | From REQ-002-F02, option A: Exactly one micro-skill per question. Coverage and answer evidence belong to that skill; no multi-skill distribution. |
-| 2026-09-27 | Should coverage be rechecked before a new attempt after bank changes? | From REQ-002-F02, option A: Require the same cap-per-difficulty coverage and block starting if insufficient. In-progress handling remains open. |
-| 2026-09-27 | How does later question deactivation affect an in-progress attempt? | From REQ-002-F02, option A: Preserve and continue using the starting eligible pool, including subsequently deactivated questions and on resume. Content and scoring edits remain open. |
-| 2026-09-27 | Which question version is used after an Expert edits it during an attempt? | From REQ-002-F02, option A: Preserve each pool question's starting text, options, correct answer, difficulty, and skill mapping, including unseen questions and on resume. Edits apply to new attempts. |
-| 2026-09-27 | What happens if role requirements or prerequisite relationships change during an attempt? | From REQ-002-F02, option A: Preserve the starting skill scope, including on resume, without forcing a restart. Changes apply to new attempts. |
-| 2026-09-27 | How is the assigned Expert notified when configuration or coverage blocks starting? | From REQ-002-F02, option A: Show the employee a message and automatically email the assigned Domain Expert. Repeat-email and delivery details remain open. |
-| 2026-09-27 | How are repeated blocked-start emails limited? | From REQ-002-F02, option A: One notification per role during an unresolved blocked period, shared across employees and retries. A resolved role that later becomes blocked can trigger another notification on a blocked start. |
-| 2026-09-27 | Should baseline readiness loss interrupt an existing learning pathway? | Custom clarification: "Baseline assessment is only one attempt per target role." Confirm one baseline attempt per employee and target role, with no completed-baseline retake or reset on role return. This did not select a pathway-continuation policy; allowance-consumption timing remains open. |
-| 2026-09-27 | When is the single baseline allowance consumed? | Option A: When successfully started. An interrupted assessment may resume as the same attempt, but cannot restart as a new attempt. Submission is not the consumption point. Evidence-only satisfaction remains a separate open decision. |
-| 2026-09-27 | Does no-question fulfillment through existing evidence use the role's baseline allowance? | Option B: Yes. Mark the baseline requirement fulfilled and close the allowance without recording a test attempt or fabricated score. The baseline-readiness prerequisites for this fulfillment remain open. |
-| 2026-09-27 | What must be ready before evidence-only fulfillment for an already-selected role? | Option B: Valid role requirements and prerequisites plus saved baseline settings. Skip question coverage because no questions are needed. The full coverage rules for catalog visibility, new selection, configuration saving, and question-based starts remain unchanged. |
+1. Lock the same attempt; finalization is idempotent.
+2. Use all responses whose transactions were accepted strictly before the authoritative server deadline. There is no grace period; a request observed at or after the deadline cannot mutate the attempt.
+3. Derive raw score `correct / answered` for explanation only.
+4. If minimum evidence is absent because of timeout or technical failure, mark the attempt `INVALIDATED`, store no skill mastery result/evidence and permit one linked replacement attempt.
+5. Otherwise store immutable overall completion and per-skill theta, SE, point mastery, conservative mastery and confidence label, then emit mastery evidence once and reject further response mutation. Reaching the question bound with high `SE` still finalizes using conservative mastery; it does not fabricate confidence and does not unlock a retake.
+
+The client timer is display-only. PostgreSQL owns deadlines; a worker may claim expired attempts in bounded batches. Redis is not the source of truth.
+
+### Result semantics
+
+- Canonical psychometric output is per MicroSkill `theta + SE`. The pinned mapping version defines point `estimatedMastery = logistic(theta)` and downstream conservative `mastery = logistic(theta - k × SE)` with positive `k`.
+- There is no `INSUFFICIENT_EVIDENCE` result status. Below the minimum-evidence gate, the attempt is invalidated, no mastery is written and a linked replacement is allowed. Once minimum evidence exists, high `SE` produces a lower conservative mastery and a low-confidence label rather than a fixed `0.2/0.8` cap.
+- There is no baseline mastery cap. Strong answers to discriminating items can yield high mastery.
+- Guessing and uncertainty prevent a lucky raw score from being treated as equally reliable evidence.
+- Baseline initializes mastery. The same responses are not applied again as independent BKT evidence.
+- REQ-009 shows raw score, conservative per-skill mastery and a plain-language confidence label. It hides theta, SE, protected answers and rationales from the Employee.
+
+### Resume, versioning and history
+
+- Reload/reconnect returns the same responses, item/option order, provisional state and deadline.
+- Presented items never change after question/Blueprint/parameter updates.
+- New selection remains inside the attempt's pinned eligible versions; calibration never changes an active/past attempt.
+- Replacing or disabling the current Blueprint affects only new starts. An `IN_PROGRESS` attempt continues/resumes with its pinned snapshot.
+- Final results are immutable and retain original target/Occupation/Blueprint/model provenance.
+- REQ-001 blocks target-role change while an assessment is `IN_PROGRESS`.
+
+### Failure and concurrency branches
+
+| Condition | Result and state guarantee |
+| --- | --- |
+| No valid current Blueprint/item/parameter coverage | Block start with structured reason; create/consume no attempt. |
+| Current active-role membership differs from Blueprint snapshot | Block new start as Blueprint-stale; do not silently include/exclude roles or consume the allowance. |
+| Cross-learner/organization attempt ID | Reject without data leakage. |
+| Duplicate start/answer/submit | Replay stored outcome; create no duplicate state/evidence. |
+| Stale/simultaneous answers | One valid transaction wins; sequence cannot fork. |
+| Unpresented/replaced item | Reject and preserve attempt. |
+| Request at/after deadline | Reject answer mutation with no grace; idempotent worker/request finalizes accepted responses or invalidates below the evidence gate. |
+| Reload/network loss | Resume committed PostgreSQL state. |
+| Manual submit before minimum evidence | Reject submission and continue the same attempt while time/questions remain. |
+| Estimator/technical failure preventing mastery | Preserve audit data, invalidate with no mastery, and allow a replacement linked by `replacesAttemptId`. |
+| Auto-submit retry | Finalize and emit evidence once. |
+| Completed Employee + Occupation requests another baseline | Reject; role/Blueprint/catalog changes do not reopen the allowance. |
+
+### Dependencies and implementation alignment
+
+- REQ-001 selected-role provenance for `ROLE_REQUIREMENT`; authorized organization Occupation catalog for `OCCUPATION_EXPLORATION`; REQ-002-F02 current Blueprint; authorized question versions; versioned IRT model/parameters/mapping; REQ-041 mastery/BKT handoff; REQ-009 result/history.
+- Target persistence is defined in [Adaptive Baseline Data Architecture](Adaptive%20Baseline%20Data%20Architecture.md).
+- V17 has no adaptive attempt aggregate, IRT parameter/calibration records, provisional theta/SE or server-deadline worker. Historical fixed-assessment evidence under `documents/testing/` does not certify this contract.
+
+### Acceptance-to-test mapping
+
+| Acceptance | Planned Cluster 3 evidence |
+| --- | --- |
+| Start pins versions/deadline and retry returns same attempt | API/PostgreSQL integration test |
+| Reload preserves item/option order, responses and timing | System test |
+| Fixed response vectors reproduce theta/SE/mastery | Unit/vector tests |
+| Selection does not repeat items and respects bounds | Unit/property/integration tests |
+| Deadline auto-submits once | Worker/integration/concurrency test |
+| Concurrent answers cannot fork sequence | Concurrency integration test |
+| Below-minimum evidence invalidates without mastery and permits one linked replacement | Unit/API/integration test |
+| High-SE evidence above the minimum finalizes through conservative mastery | Deterministic unit/vector and API result test |
+| Tenant/learner isolation holds | Authorization/isolation tests |
+| Baseline initializes mastery once without BKT double count | REQ-002/REQ-041 integration test |
+| Configure → Test Blueprint → finalize → start → answer/reload → submit → result | Disposable-adapter system test |
+
+### Decision status
+
+- **Confirmed:** role choice is immediate; every Employee without a completed Occupation baseline must take it; one successful baseline per Employee + Occupation; role-required and active-role-union exploration sampling; invalidated/no-mastery replacement only; individual adaptive 3PL attempt; raw score for explanation; theta + SE with logistic point mapping and conservative lower-bound mastery; no mastery cap or fixed confidence cap; reload-safe persistence; pinned versions; no deadline grace; server auto-submit; pinned attempts survive Blueprint replacement/disable; Employee result disclosure; exactly-once mastery handoff; no BKT double count.
+- **Provisional technical configuration:** estimator implementation, exact minimum-evidence/`SE`/`k` constants and cold-start values are system-owned/versioned and initially backend-configured, not L&D-editable.
+- **Open:** none for this Function's Cluster 1 product contract. Exact technical constant values and library choice remain bounded implementation details that must preserve the pinned version and acceptance rules above.
+- **Rejected:** shared published baseline, fixed difficulty ladder, client-computed scoring, raw score as mastery, mastery cap and unanswered prior as a real result.

@@ -1,5 +1,7 @@
 # REQ-002-F02 — PostgreSQL integration evidence
 
+> **Historical V17 evidence:** these results remain valid for their recorded schema/lifecycle only. They do not prove the planned adaptive Blueprint, IRT parameter, attempt or mastery tables.
+
 ## Occupation-scoped integration — executed 2026-10-15
 
 The PostgreSQL suite now applies V1–V13 and proves one logical blueprint per Occupation, immutable version compatibility, latest-by-Occupation lookup and zero-role round-trip. A separate disposable Neo4j case proves real `HAS_ROLE` plus multi-Level skill-union traversal and dependency-failure mapping.

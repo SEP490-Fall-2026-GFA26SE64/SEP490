@@ -1,7 +1,7 @@
 # Choose Target Role
 
 ## Current Scope Alignment
-Employee selects/confirms an available published role after Expert-reviewed baseline/RIASEC guidance. Earlier immediate selection before baseline, publication-independent eligibility and per-role baseline sequence need reclarification. Existing history/idempotency protections remain candidates for the revised contract, not proof it is implemented. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+Employee selects/confirms an authorized available role immediately. The selection transaction does not wait for baseline. If no mastery-producing baseline exists for the role's Occupation, the committed selection requires that Occupation baseline before gap/pathway steps; a completed baseline for the same Occupation is reused, and another Occupation has its own allowance. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification and Decision Log
 Conflicting confirmed rules, actors and acceptance below are superseded; old evidence is not revised-scope certification.

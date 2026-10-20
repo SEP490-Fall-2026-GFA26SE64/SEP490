@@ -1,7 +1,7 @@
 # View Assessment Result
 
 ## Current Scope Alignment
-Employee views own baseline, RIASEC and module results, distinguishing interest scores from competency estimates. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+Employee views own baseline, RIASEC and module results, distinguishing interest scores from competency estimates. For an adaptive baseline result, show derived raw score, conservative per-MicroSkill mastery and a plain-language confidence label. Retain theta/SE and pinned provenance for authorized processing/audit but hide theta, SE, protected answers and rationales from the Employee. An invalidated attempt has no mastery result and links to its permitted replacement. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
@@ -20,7 +20,7 @@ Display an employee's own baseline, soft-skill, or module assessment outcome, in
 
 ## Open Decisions
 
-- Overall scores, skill scores, correct answers, rationales, and AI comment visibility.
+- RIASEC/module result details and AI comment visibility; adaptive baseline disclosure is fixed by REQ-002.
 - Immediate publication versus delayed/expert-reviewed publication for each assessment type.
 - Pending scoring, invalid questions, and unavailable results.
 
