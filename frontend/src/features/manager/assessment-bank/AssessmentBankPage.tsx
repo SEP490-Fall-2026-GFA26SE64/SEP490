@@ -1,10 +1,10 @@
 import {
   AlertCircle,
   AlertTriangle,
-  Award,
   Check,
   CheckCircle2,
-  Copy,
+  Clock,
+  CornerDownRight,
   Edit3,
   Eye,
   FileQuestion,
@@ -21,6 +21,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
 import {
   Dialog,
   DialogDescription,
@@ -43,6 +44,7 @@ import {
 import {
   type AssessmentBlueprintModel,
   type BlueprintSkillRequirement,
+  INITIAL_MICRO_SKILLS,
   INITIAL_MODULES,
   INITIAL_TARGET_ROLES,
   type QuizQuestionModel,
@@ -125,6 +127,105 @@ const QUESTION_PRESETS: ImportPreset[] = [
   },
 ]
 
+function compareVersions(v1: string, v2: string): number {
+  const p1 = (v1 || '1.0').split('.').map((n) => parseInt(n, 10) || 0)
+  const p2 = (v2 || '1.0').split('.').map((n) => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+    const num1 = p1[i] ?? 0
+    const num2 = p2[i] ?? 0
+    if (num1 !== num2) return num1 - num2
+  }
+  return 0
+}
+
+function sortQuestionsWithDraftsBelowPublished(
+  list: QuizQuestionModel[],
+  sortBy: 'latest' | 'code' = 'latest'
+): QuizQuestionModel[] {
+  const groups = new Map<string, QuizQuestionModel[]>()
+  for (const q of list) {
+    const key = q.stableId || q.code
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key)!.push(q)
+  }
+
+  const isPureDraftLineage = (groupQuestions: QuizQuestionModel[]): boolean => {
+    return groupQuestions.every((q) => q.status !== 'published')
+  }
+
+  const getLineageBaseTime = (groupQuestions: QuizQuestionModel[]): number => {
+    const published = groupQuestions.filter((q) => q.status === 'published')
+    if (published.length > 0) {
+      let baseTime = Infinity
+      for (const q of published) {
+        const t = q.updatedAt ? new Date(q.updatedAt).getTime() : 0
+        if (!isNaN(t) && t > 0 && t < baseTime) {
+          baseTime = t
+        }
+      }
+      return baseTime === Infinity ? 0 : baseTime
+    }
+
+    let latest = 0
+    for (const q of groupQuestions) {
+      const t = q.updatedAt ? new Date(q.updatedAt).getTime() : 0
+      if (!isNaN(t) && t > latest) {
+        latest = t
+      }
+    }
+    return latest
+  }
+
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    const qsA = groups.get(a)!
+    const qsB = groups.get(b)!
+    const qA = qsA[0]
+    const qB = qsB[0]
+
+    if (sortBy === 'latest') {
+      const isPureDraftA = isPureDraftLineage(qsA)
+      const isPureDraftB = isPureDraftLineage(qsB)
+
+      // Rule: Brand-new pure draft questions appear on top
+      if (isPureDraftA && !isPureDraftB) return -1
+      if (isPureDraftB && !isPureDraftA) return 1
+
+      const timeA = getLineageBaseTime(qsA)
+      const timeB = getLineageBaseTime(qsB)
+      if (timeB !== timeA) {
+        return timeB - timeA
+      }
+      return (qB?.id || '').localeCompare(qA?.id || '')
+    }
+
+    return (qA?.code || '').localeCompare(qB?.code || '')
+  })
+
+  const result: QuizQuestionModel[] = []
+  for (const key of sortedKeys) {
+    const groupQs = groups.get(key)!
+    const published = groupQs
+      .filter((q) => q.status === 'published')
+      .sort((a, b) => compareVersions(b.version, a.version))
+
+    const newestPublished = published[0]
+    const olderPublished = published.slice(1).sort((a, b) => compareVersions(a.version, b.version))
+    const nonPublished = groupQs
+      .filter((q) => q.status !== 'published')
+      .sort((a, b) => compareVersions(a.version, b.version))
+
+    if (newestPublished) {
+      result.push(newestPublished, ...olderPublished, ...nonPublished)
+    } else {
+      result.push(...nonPublished)
+    }
+  }
+
+  return result
+}
+
 export function AssessmentBankPage() {
   const { toast } = useToast()
 
@@ -175,7 +276,10 @@ export function AssessmentBankPage() {
   )
 
   const activeComp = getActiveCompany()
-  const companyMicroSkills = activeComp?.microSkills || []
+  const companyMicroSkills =
+    activeComp?.microSkills && activeComp.microSkills.length > 0
+      ? activeComp.microSkills
+      : INITIAL_MICRO_SKILLS
   const companyRoles = activeComp?.targetRoles || []
   const companyModules = activeComp?.modules || []
 
@@ -189,6 +293,7 @@ export function AssessmentBankPage() {
   const [isBlueprintModalOpen, setIsBlueprintModalOpen] = React.useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
   const [selectedQuestion, setSelectedQuestion] = React.useState<QuizQuestionModel | null>(null)
+  const [viewingQuestionDetails, setViewingQuestionDetails] = React.useState<QuizQuestionModel | null>(null)
   const [selectedBlueprint, setSelectedBlueprint] = React.useState<AssessmentBlueprintModel | null>(null)
   const [viewingBlueprintDetails, setViewingBlueprintDetails] = React.useState<AssessmentBlueprintModel | null>(null)
   const [deletingBlueprint, setDeletingBlueprint] = React.useState<AssessmentBlueprintModel | null>(null)
@@ -250,20 +355,45 @@ export function AssessmentBankPage() {
     return questions.filter((q) => q.assessedSkillId === skillId && q.status === 'published').length
   }
 
-  // Filtered Questions
-  const filteredQuestions = questions.filter((q) => {
-    const matchesSkill = questionSkillFilter === 'all' || q.assessedSkillId === questionSkillFilter
-    const matchesStatus = questionStatusFilter === 'all' || q.status === questionStatusFilter
-    const matchesSearch =
-      q.prompt.toLowerCase().includes(questionSearch.toLowerCase()) ||
-      q.code.toLowerCase().includes(questionSearch.toLowerCase())
-    return matchesSkill && matchesStatus && matchesSearch
-  })
+  // Sorting & pagination states
+  const [questionSortBy, setQuestionSortBy] = React.useState<'latest' | 'code'>('latest')
+  const [questionPage, setQuestionPage] = React.useState(1)
+  const [blueprintPage, setBlueprintPage] = React.useState(1)
+  const pageSize = 10
+
+  React.useEffect(() => {
+    setQuestionPage(1)
+  }, [questionSearch, questionSkillFilter, questionStatusFilter, questionSortBy])
+
+  // Filtered & sorted Questions
+  const filteredQuestions = React.useMemo(() => {
+    const list = questions.filter((q) => {
+      const matchesSkill = questionSkillFilter === 'all' || q.assessedSkillId === questionSkillFilter
+      const matchesStatus = questionStatusFilter === 'all' || q.status === questionStatusFilter
+      const matchesSearch =
+        q.prompt.toLowerCase().includes(questionSearch.toLowerCase()) ||
+        q.code.toLowerCase().includes(questionSearch.toLowerCase())
+      return matchesSkill && matchesStatus && matchesSearch
+    })
+
+    return sortQuestionsWithDraftsBelowPublished(list, questionSortBy)
+  }, [questions, questionSkillFilter, questionStatusFilter, questionSearch, questionSortBy])
+
+  const totalQuestionPages = Math.max(1, Math.ceil(filteredQuestions.length / pageSize))
+  const paginatedQuestions = React.useMemo(() => {
+    const start = (questionPage - 1) * pageSize
+    return filteredQuestions.slice(start, start + pageSize)
+  }, [filteredQuestions, questionPage, pageSize])
+
+  const totalBlueprintPages = Math.max(1, Math.ceil(blueprints.length / pageSize))
+  const paginatedBlueprints = React.useMemo(() => {
+    const start = (blueprintPage - 1) * pageSize
+    return blueprints.slice(start, start + pageSize)
+  }, [blueprints, blueprintPage, pageSize])
 
   // Aggregate stats
   const totalQuestions = questions.length
   const publishedQuestions = questions.filter((q) => q.status === 'published').length
-  const activeBlueprints = blueprints.filter((b) => b.status === 'active').length
 
   // ------------------------------------------------------------------
   // Question Handlers
@@ -369,7 +499,9 @@ export function AssessmentBankPage() {
     const curVer = parseFloat(q.version) || 1.0
     const nextVer = (curVer + 0.1).toFixed(1)
 
-    const existingDraft = questions.find((item) => item.stableId === q.stableId && item.status === 'draft')
+    const existingDraft = questions.find(
+      (item) => (item.stableId === q.stableId || item.code === q.code) && item.status === 'draft'
+    )
     if (existingDraft) {
       toast({
         title: 'Successor Draft Exists',
@@ -382,12 +514,14 @@ export function AssessmentBankPage() {
     const successor: QuizQuestionModel = {
       ...q,
       id: `q-${Date.now()}`,
+      stableId: q.stableId || `qu-uuid-${q.code}`,
       version: nextVer,
       status: 'draft',
+      updatedAt: new Date().toISOString().slice(0, 10),
       prompt: `${q.prompt} (Revision)`,
     }
 
-    saveAndSetQuestions([successor, ...questions])
+    saveAndSetQuestions((prev) => [...prev, successor])
     toast({
       title: 'Successor Version Spawned',
       description: `Draft v${nextVer} created. Historical submitted learner attempts continue using the original answer key.`,
@@ -664,20 +798,20 @@ export function AssessmentBankPage() {
 
           <StatCard
             variant="gradient"
-            icon={<Sliders className="h-4 w-4 text-primary" />}
-            title="Active Blueprints"
-            value={activeBlueprints.toString()}
-            valueClassName="text-primary"
-            description="Diagnostic assessment templates"
+            icon={<Clock className="h-4 w-4 text-warning" />}
+            title="Draft In-Development"
+            value={(totalQuestions - publishedQuestions).toString()}
+            valueClassName="text-warning"
+            description="Pending curricular review"
           />
 
           <StatCard
             variant="gradient"
-            icon={<Award className="h-4 w-4 text-warning" />}
-            title="Item Coverage Integrity"
-            value="100%"
-            valueClassName="text-warning"
-            description="Assessed skill 1-to-1 linkage"
+            icon={<Layers className="h-4 w-4 text-primary" />}
+            title="Micro-Skills Assessed"
+            value={`${new Set(questions.map((q) => q.assessedSkillId)).size} Skills`}
+            valueClassName="text-primary"
+            description="Objective question bank coverage"
           />
         </div>
 
@@ -690,39 +824,40 @@ export function AssessmentBankPage() {
 
           {/* TAB 1: QUIZ QUESTIONS */}
           <TabsContent value="questions" className="space-y-4">
-            <Card>
-              <CardHeader>
+            <Card className="border-border shadow-xs bg-card">
+              <CardHeader className="p-4 border-b border-border">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
+                  <div className="space-y-1">
+                    <CardTitle className="text-base font-bold flex items-center gap-2">
                       <FileQuestion className="h-4 w-4 text-primary" />
-                      Objective Question Bank
+                      <span>Question Bank Directory</span>
                     </CardTitle>
-                    <CardDescription>
-                      Multiple-choice items with single correct answers, feedback rationales, and micro-skill linkages.
+                    <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                      Multiple-choice diagnostic items mapped 1-to-1 with micro-skills. Governs formative and summative testing.
                     </CardDescription>
                   </div>
 
-                  {/* Filters */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative min-w-[200px]">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  {/* Search & Filter Toolbar matching LearningModulesPage */}
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="relative w-56">
+                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                       <input
                         type="text"
-                        placeholder="Search prompts or codes..."
+                        placeholder="Search questions..."
                         value={questionSearch}
                         onChange={(e) => setQuestionSearch(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                       />
                     </div>
 
-                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs">
+                      <span className="text-[11px] text-muted-foreground font-medium">Skill:</span>
                       <select
                         value={questionSkillFilter}
                         onChange={(e) => setQuestionSkillFilter(e.target.value)}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium max-w-[130px] truncate"
                       >
-                        <option value="all">All Micro-skills</option>
+                        <option value="all">All ({companyMicroSkills.length})</option>
                         {companyMicroSkills.map((ms) => (
                           <option key={ms.id} value={ms.id}>
                             {ms.code}
@@ -731,21 +866,34 @@ export function AssessmentBankPage() {
                       </select>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs">
+                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
                       <select
                         value={questionStatusFilter}
                         onChange={(e) => setQuestionStatusFilter(e.target.value)}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="all">All Statuses</option>
-                        <option value="published">Published</option>
-                        <option value="draft">Draft</option>
+                        <option value="all">All ({totalQuestions})</option>
+                        <option value="published">Published ({publishedQuestions})</option>
+                        <option value="draft">Draft ({totalQuestions - publishedQuestions})</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs">
+                      <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
+                      <select
+                        value={questionSortBy}
+                        onChange={(e) => setQuestionSortBy(e.target.value as 'latest' | 'code')}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                      >
+                        <option value="latest">Latest Created / Updated</option>
+                        <option value="code">Question Code (A–Z)</option>
                       </select>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {filteredQuestions.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-60" />
@@ -756,28 +904,57 @@ export function AssessmentBankPage() {
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
                         <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                          <th className="py-2.5 px-3">Question Code</th>
+                          <th className="py-2.5 px-3">Question Code &amp; Version</th>
                           <th className="py-2.5 px-3">Prompt Stem &amp; Correct Answer</th>
                           <th className="py-2.5 px-3">Assessed Micro-skill</th>
                           <th className="py-2.5 px-3 text-center">Difficulty</th>
-                          <th className="py-2.5 px-3">Provenance</th>
+                          <th className="py-2.5 px-3">Provenance Reference</th>
                           <th className="py-2.5 px-3">Status</th>
                           <th className="py-2.5 px-3 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {filteredQuestions.map((q) => {
-                          const skill = companyMicroSkills.find((s) => s.id === q.assessedSkillId)
+                        {paginatedQuestions.map((q) => {
+                          const skill =
+                            companyMicroSkills.find((s) => s.id === q.assessedSkillId || s.code === q.assessedSkillId) ||
+                            INITIAL_MICRO_SKILLS.find((s) => s.id === q.assessedSkillId || s.code === q.assessedSkillId)
                           const isDraft = q.status === 'draft'
                           const isPublished = q.status === 'published'
+                          const predecessorPublished = questions.find(
+                            (item) =>
+                              (item.stableId === q.stableId || item.code === q.code) &&
+                              item.status === 'published' &&
+                              item.id !== q.id
+                          )
+                          const isSuccessor = !isPublished && Boolean(predecessorPublished)
 
                           return (
-                            <tr key={q.id} className="hover:bg-muted/20">
+                            <tr
+                              key={q.id}
+                              className={`transition-colors ${
+                                isSuccessor
+                                  ? 'bg-muted/10 border-l-2 border-l-primary/60 hover:bg-muted/25'
+                                  : 'hover:bg-muted/20'
+                              }`}
+                            >
                               <td className="py-3 px-3">
-                                <div className="font-mono font-bold text-foreground">{q.code}</div>
-                                <Badge variant="secondary" className="font-mono text-[10px] mt-0.5 py-0 px-1">
-                                  v{q.version}
-                                </Badge>
+                                {isSuccessor ? (
+                                  <div
+                                    className="flex items-center gap-1.5 pl-3"
+                                    title="Successor draft positioned below published version"
+                                  >
+                                    <CornerDownRight className="h-3.5 w-3.5 text-primary shrink-0" />
+                                    <span className="font-mono font-bold text-foreground">{q.code}</span>
+                                  </div>
+                                ) : (
+                                  <div className="font-mono font-bold text-foreground">{q.code}</div>
+                                )}
+                                <div className={`flex items-center gap-1.5 mt-0.5 ${isSuccessor ? 'pl-8' : ''}`}>
+                                  <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1">
+                                    v{q.version}
+                                  </Badge>
+                                  <span className="text-[10px] text-muted-foreground">{q.updatedAt || '01/02/2026'}</span>
+                                </div>
                               </td>
                               <td className="py-3 px-3 max-w-sm">
                                 <div className="font-medium text-foreground line-clamp-2">{q.prompt}</div>
@@ -838,6 +1015,18 @@ export function AssessmentBankPage() {
                               </td>
                               <td className="py-3 px-3 text-right">
                                 <div className="flex items-center justify-end gap-1.5">
+                                  {!isDraft && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setViewingQuestionDetails(q)}
+                                      title="View Details"
+                                      aria-label="View Details"
+                                    >
+                                      <Eye className="h-4 w-4 text-primary" />
+                                    </Button>
+                                  )}
                                   {isDraft ? (
                                     <>
                                       <Button
@@ -864,9 +1053,19 @@ export function AssessmentBankPage() {
                                         <Edit3 className="h-4 w-4" />
                                       </Button>
                                       <Button
-                                        variant="destructive"
+                                        variant="outline"
                                         size="sm"
-                                        className="h-8 w-8 p-0"
+                                        className="h-8 w-8 p-0 text-success hover:bg-success/10"
+                                        onClick={() => handlePublishQuestion(q)}
+                                        title="Publish Question"
+                                        aria-label="Publish Question"
+                                      >
+                                        <Check className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
                                         onClick={() => setDeletingDraftQuestion(q)}
                                         title="Delete Draft"
                                         aria-label="Delete Draft"
@@ -876,14 +1075,14 @@ export function AssessmentBankPage() {
                                     </>
                                   ) : (
                                     <Button
-                                      variant="secondary"
+                                      variant="outline"
                                       size="sm"
                                       className="h-8 w-8 p-0"
                                       onClick={() => handleCreateSuccessorQuestion(q)}
-                                      title="Create Draft"
-                                      aria-label="Create Draft"
+                                      title="Create New Draft Version"
+                                      aria-label="Create New Draft Version"
                                     >
-                                      <Copy className="h-4 w-4" />
+                                      <Plus className="h-4 w-4 text-primary" />
                                     </Button>
                                   )}
                                 </div>
@@ -895,21 +1094,34 @@ export function AssessmentBankPage() {
                     </table>
                   </div>
                 )}
+                {filteredQuestions.length > 0 && (
+                  <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+                    <span>
+                      Showing {(questionPage - 1) * pageSize + 1}–
+                      {Math.min(questionPage * pageSize, filteredQuestions.length)} of {filteredQuestions.length} questions
+                    </span>
+                    <Pagination
+                      currentPage={questionPage}
+                      totalPages={totalQuestionPages}
+                      onPageChange={setQuestionPage}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* TAB 2: ASSESSMENT BLUEPRINTS */}
           <TabsContent value="blueprints" className="space-y-4">
-            <Card>
-              <CardHeader>
+            <Card className="border-border shadow-xs bg-card">
+              <CardHeader className="p-4 border-b border-border">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="space-y-1">
                     <CardTitle className="flex items-center gap-2">
                       <Sliders className="h-4 w-4 text-primary" />
-                      Assessment Blueprints &amp; Bank Coverage
+                      <span>Assessment Blueprints &amp; Bank Coverage</span>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs text-muted-foreground mt-0.5">
                       Define diagnostic blueprints mapping target roles or modules to question quotas. Engine validates
                       sufficient published bank coverage.
                     </CardDescription>
@@ -919,7 +1131,7 @@ export function AssessmentBankPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
@@ -935,7 +1147,7 @@ export function AssessmentBankPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {blueprints.map((bp) => {
+                      {paginatedBlueprints.map((bp) => {
                         const isCovered = bp.coverageStatus === 'fully_covered'
 
                         return (
@@ -1028,9 +1240,9 @@ export function AssessmentBankPage() {
                                   <Edit3 className="h-4 w-4" />
                                 </Button>
                                 <Button
-                                  variant="destructive"
+                                  variant="outline"
                                   size="sm"
-                                  className="h-8 w-8 p-0"
+                                  className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
                                   onClick={() => setDeletingBlueprint(bp)}
                                   title="Delete Blueprint"
                                   aria-label="Delete Blueprint"
@@ -1045,6 +1257,19 @@ export function AssessmentBankPage() {
                     </tbody>
                   </table>
                 </div>
+                {blueprints.length > 0 && (
+                  <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+                    <span>
+                      Showing {(blueprintPage - 1) * pageSize + 1}–
+                      {Math.min(blueprintPage * pageSize, blueprints.length)} of {blueprints.length} blueprints
+                    </span>
+                    <Pagination
+                      currentPage={blueprintPage}
+                      totalPages={totalBlueprintPages}
+                      onPageChange={setBlueprintPage}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1606,6 +1831,160 @@ export function AssessmentBankPage() {
           )
         })()}
       </Dialog>
+
+      {/* VIEW QUESTION DETAILS MODAL */}
+      {viewingQuestionDetails && (
+        <Dialog
+          open={Boolean(viewingQuestionDetails)}
+          onOpenChange={(open) => !open && setViewingQuestionDetails(null)}
+          className="max-w-2xl"
+        >
+          {(() => {
+            const skill =
+              companyMicroSkills.find(
+                (s) => s.id === viewingQuestionDetails.assessedSkillId || s.code === viewingQuestionDetails.assessedSkillId
+              ) ||
+              INITIAL_MICRO_SKILLS.find(
+                (s) => s.id === viewingQuestionDetails.assessedSkillId || s.code === viewingQuestionDetails.assessedSkillId
+              )
+            const isPublished = viewingQuestionDetails.status === 'published'
+
+            return (
+              <div className="space-y-4">
+                <DialogHeader>
+                  <div className="flex flex-wrap items-center justify-between gap-2.5">
+                    <DialogTitle className="flex items-center gap-2">
+                      <FileQuestion className="h-5 w-5 text-primary shrink-0" />
+                      <span>Question Specification: {viewingQuestionDetails.code}</span>
+                    </DialogTitle>
+                    <Badge variant={isPublished ? 'success' : 'warning'} className="font-bold text-xs">
+                      {viewingQuestionDetails.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                  <DialogDescription>
+                    Assessment item specification, cognitive difficulty, verified answer key, and pedagogical feedback.
+                  </DialogDescription>
+                </DialogHeader>
+
+                {/* Question Metadata Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="p-3 rounded-lg border border-border bg-card">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Question Code</span>
+                    <span className="font-mono font-bold text-foreground mt-0.5 block">{viewingQuestionDetails.code}</span>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-card">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Version</span>
+                    <span className="font-mono font-bold text-foreground mt-0.5 block">v{viewingQuestionDetails.version}</span>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-card">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Difficulty</span>
+                    <span className="font-semibold text-primary mt-0.5 block">{viewingQuestionDetails.difficulty}</span>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-card">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Updated</span>
+                    <span className="font-mono text-muted-foreground mt-0.5 block">
+                      {viewingQuestionDetails.updatedAt || '01/02/2026'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Assessed Micro-Skill */}
+                <div className="p-3 rounded-lg border border-border bg-card text-xs space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold flex items-center gap-1.5">
+                      <Layers className="h-3.5 w-3.5 text-primary" />
+                      Assessed Micro-skill &amp; Competency
+                    </span>
+                    {skill?.macroCompetencyCode && (
+                      <Badge variant="secondary" className="text-[10px] py-0 px-1 font-semibold text-primary">
+                        {skill.macroCompetencyCode}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <strong className="font-mono font-bold text-foreground">{skill?.code || viewingQuestionDetails.assessedSkillId}</strong>
+                    <span className="text-muted-foreground font-medium">— {skill?.name || 'Atomic Competency'}</span>
+                  </div>
+                  {skill?.description && (
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">{skill.description}</p>
+                  )}
+                </div>
+
+                {/* Question Prompt Stem */}
+                <div className="p-3.5 rounded-lg border border-border bg-card text-xs space-y-2">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Question Stem</span>
+                  <p className="text-sm font-semibold text-foreground leading-relaxed">{viewingQuestionDetails.prompt}</p>
+                </div>
+
+                {/* Multiple-Choice Options with Correct Answer Highlighted */}
+                <div className="space-y-1.5 text-xs">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Answer Options &amp; Key</span>
+                  <div className="space-y-1.5">
+                    {viewingQuestionDetails.options.map((opt, idx) => {
+                      const isCorrect = idx === viewingQuestionDetails.correctAnswerIndex
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-2.5 rounded-lg border flex items-center justify-between text-xs transition-colors ${
+                            isCorrect
+                              ? 'bg-success/10 border-success/30 text-success font-semibold'
+                              : 'bg-card border-border text-foreground hover:bg-muted/20'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-mono font-bold w-5 shrink-0">
+                              {String.fromCharCode(65 + idx)}.
+                            </span>
+                            <span className="truncate">{opt}</span>
+                          </div>
+                          {isCorrect && (
+                            <Badge variant="success" className="text-[10px] shrink-0 font-bold ml-2">
+                              <CheckCircle2 size={12} className="mr-1 inline" /> Correct Answer
+                            </Badge>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Pedagogical Feedback */}
+                {viewingQuestionDetails.feedback && (
+                  <div className="p-3 rounded-lg border border-primary/20 bg-secondary/30 text-xs space-y-1">
+                    <span className="text-[10px] text-primary uppercase font-bold block">Pedagogical Feedback</span>
+                    <p className="text-muted-foreground leading-relaxed text-[11px]">{viewingQuestionDetails.feedback}</p>
+                  </div>
+                )}
+
+                {/* Provenance reference */}
+                <div className="p-2.5 rounded-lg bg-muted/30 border border-border text-[11px] text-muted-foreground flex items-center gap-2">
+                  <span className="font-semibold text-foreground shrink-0">Reference Provenance:</span>
+                  <span className="font-mono truncate">{viewingQuestionDetails.provenance}</span>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" size="sm" onClick={() => setViewingQuestionDetails(null)}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<Plus className="h-3 w-3 text-primary" />}
+                    onClick={() => {
+                      const q = viewingQuestionDetails
+                      setViewingQuestionDetails(null)
+                      handleCreateSuccessorQuestion(q)
+                    }}
+                  >
+                    Create New Draft Version
+                  </Button>
+                </DialogFooter>
+              </div>
+            )
+          })()}
+        </Dialog>
+      )}
+
       {/* CONFIRMATION PROMPT TO DISCARD DRAFT QUESTION */}
       <ConfirmationModal
         open={Boolean(deletingDraftQuestion)}

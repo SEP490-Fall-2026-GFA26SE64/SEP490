@@ -9,7 +9,6 @@ import { CompetencyGapAnalysisPage } from '../features/employee/gap-analysis/Com
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { EmployeeTargetRolesPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
-import { EmployeeRoleGuidancePage } from '../features/employee/guidance/EmployeeRoleGuidancePage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { BaselineAssessmentManagementPage } from '../features/manager/baseline-assessments/BaselineAssessmentManagementPage'
 import { AssessmentVersionPage } from '../features/manager/baseline-assessments/AssessmentVersionPage'
@@ -29,6 +28,18 @@ import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
 import { UserManagementPage } from '../features/manager/user-management/UserManagementPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
 import { SystemStatusPage } from '../features/system/SystemStatusPage'
+import { GuestRegisterPage } from '../features/guest/GuestRegisterPage'
+import { SubscriptionPlansPage } from '../features/guest/SubscriptionPlansPage'
+import { PayOsCheckoutPage } from '../features/guest/PayOsCheckoutPage'
+import { WorkspaceProvisioningPage } from '../features/guest/WorkspaceProvisioningPage'
+import { PlatformOrganizationsPage } from '../features/platform-admin/PlatformOrganizationsPage'
+import { PlatformSubscriptionsConfigPage } from '../features/platform-admin/PlatformSubscriptionsConfigPage'
+import { PlatformActivityMonitoringPage } from '../features/platform-admin/PlatformActivityMonitoringPage'
+import { DepartmentsManagementPage } from '../features/administration/departments/DepartmentsManagementPage'
+import { OrganizationSettingsPage } from '../features/administration/settings/OrganizationSettingsPage'
+import { OrganizationSubscriptionPage } from '../features/administration/subscription/OrganizationSubscriptionPage'
+import { BaselineAssessmentConfigPage } from '../features/manager/baseline-config/BaselineAssessmentConfigPage'
+import { LearningModuleReaderPage } from '../features/employee/modules/LearningModuleReaderPage'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
@@ -49,18 +60,28 @@ export default function App() {
             <Route path="/home" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Out-of-scope package & guest routes redirect to login */}
-            <Route path="/packages" element={<Navigate to="/login" replace />} />
-            <Route path="/guest/packages" element={<Navigate to="/login" replace />} />
-            <Route path="/guest" element={<Navigate to="/login" replace />} />
+            {/* Guest Self-Service Onboarding & Subscription */}
+            <Route path="/register" element={<GuestRegisterPage />} />
+            <Route path="/guest/register" element={<GuestRegisterPage />} />
+            <Route path="/packages" element={<SubscriptionPlansPage />} />
+            <Route path="/guest/packages" element={<Navigate to="/packages" replace />} />
+            <Route path="/guest/plans" element={<SubscriptionPlansPage />} />
+            <Route path="/guest/checkout" element={<PayOsCheckoutPage />} />
+            <Route path="/guest/onboarding-status" element={<WorkspaceProvisioningPage />} />
+            <Route path="/guest" element={<Navigate to="/guest/register" replace />} />
 
             {/* 1. Employee routes (Primary) */}
             <Route path="/employee" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/employee/overview" element={<EmployeeOverviewPage />} />
             <Route path="/employee/upskilling" element={<EmployeeTargetRolesPage />} />
             <Route path="/employee/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
-            <Route path="/employee/guidance" element={<EmployeeRoleGuidancePage />} />
+            <Route path="/employee/riasec" element={<Navigate to="/employee/assessment?tab=baseline" replace />} />
+            <Route path="/employee/guidance" element={<Navigate to="/employee/upskilling?tab=roles" replace />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
+            <Route path="/employee/modules/:moduleId" element={<LearningModuleReaderPage />} />
+            <Route path="/employee/modules" element={<Navigate to="/employee/pathway" replace />} />
+            <Route path="/employee/skills-catalog" element={<Navigate to="/employee/upskilling?tab=skills" replace />} />
+            <Route path="/employee/skills" element={<Navigate to="/employee/upskilling?tab=skills" replace />} />
             <Route path="/employee/gap-analysis" element={<CompetencyGapAnalysisPage />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
             <Route path="/employee/profile" element={<Navigate to="/profile" replace />} />
@@ -73,7 +94,10 @@ export default function App() {
             <Route path="/learner/overview" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/upskilling" element={<Navigate to="/employee/upskilling" replace />} />
             <Route path="/learner/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
+            <Route path="/learner/riasec" element={<Navigate to="/employee/riasec" replace />} />
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
+            <Route path="/learner/modules/:moduleId" element={<LearningModuleReaderPage />} />
+            <Route path="/learner/skills-catalog" element={<Navigate to="/employee/skills-catalog" replace />} />
             <Route path="/learner/gap-analysis" element={<Navigate to="/employee/gap-analysis" replace />} />
             <Route path="/learner/assessment" element={<Navigate to="/employee/assessment" replace />} />
             <Route path="/learner/profile" element={<Navigate to="/profile" replace />} />
@@ -105,6 +129,7 @@ export default function App() {
             <Route path="/ld-manager/baseline-assessments/:occupationId/assessments/:assessmentVersionId" element={<AssessmentVersionPage />} />
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
+            <Route path="/ld-manager/baseline-config" element={<BaselineAssessmentConfigPage />} />
             <Route path="/ld-manager/users" element={<UserManagementPage />} />
             <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
             <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
@@ -112,6 +137,8 @@ export default function App() {
             {/* Redirects from old L&D Manager / Manager routes to new Expert and L&D locations */}
             <Route path="/ld-manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/ld-manager/modules" element={<Navigate to="/expert/modules" replace />} />
+            <Route path="/ld-manager/assessment-bank" element={<Navigate to="/expert/assessment-bank" replace />} />
+            <Route path="/manager/baseline-config" element={<Navigate to="/ld-manager/baseline-config" replace />} />
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />
             <Route path="/manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
@@ -122,14 +149,24 @@ export default function App() {
             <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/team-matrix" replace />} />
             <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
-            {/* 4. Administrator routes (Taxonomy, Knowledge Graph, Design System) */}
+            {/* 4. Administrator routes (Taxonomy, Knowledge Graph, Departments, Settings, Subscription, Design System) */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/admin/departments" element={<DepartmentsManagementPage />} />
+            <Route path="/admin/organization-settings" element={<OrganizationSettingsPage />} />
+            <Route path="/admin/subscription" element={<OrganizationSubscriptionPage />} />
+            <Route path="/admin/billing" element={<Navigate to="/admin/subscription" replace />} />
             <Route path="/admin/knowledge-graph" element={<KnowledgeGraphPage />} />
             <Route path="/knowledge-graph" element={<Navigate to="/admin/knowledge-graph" replace />} />
             <Route path="/admin/design-system" element={<DesignSystemShowcasePage />} />
             <Route path="/design-system" element={<Navigate to="/admin/design-system" replace />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
+
+            {/* 5. Platform Administrator routes (Multi-Tenant Organizations, Subscriptions, Platform Telemetry) */}
+            <Route path="/platform-admin" element={<Navigate to="/platform-admin/organizations" replace />} />
+            <Route path="/platform-admin/organizations" element={<PlatformOrganizationsPage />} />
+            <Route path="/platform-admin/subscriptions" element={<PlatformSubscriptionsConfigPage />} />
+            <Route path="/platform-admin/activity" element={<PlatformActivityMonitoringPage />} />
 
             {/* System Status route */}
             <Route path="/system-status" element={<SystemStatusPage />} />

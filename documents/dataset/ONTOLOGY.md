@@ -410,11 +410,11 @@ Expand HAS_SKILL_PREREQUISITE from dependent skill to foundation skill and check
 
 No suitable approved content or assessment mapping produces PATHWAY_UNRESOLVED/CATALOG_NOT_READY, never assumed readiness. Passing a Module does not automatically pass every Level requirement. A one-module-per-skill catalog permits remedial sections/practice in that Module, not an alternative Module for the same skill. Recalculation considers new assessment evidence; one incorrect answer alone does not require rewriting the pathway. Expert initial-pathway review remains applicable.
 
-## Canonical profiles and expert review
+## TargetRole independence and expert review
 
-canonicalProfileKey groups 48 reported-title records into 20 local requirement profiles. Group alternatives to avoid duplicate recommendations; do not claim all grouped titles are universal synonyms. [Profile audit](sources/local_review/canonical_profile_audit.json) records the earlier grouping analysis; skill/threshold vectors are unchanged.
+All 48 TargetRoles remain independent records. Recommendation uses each selected role's Level and REQUIRES_SKILL; roles with the same requirements can yield the same skill gaps or pathway. There is no profile-grouping property or grouped role ranking. The former profile audit in sources/local_review/ is historical design evidence only and must not drive the active catalog.
 
-All 1,891 isMandatory flags and 0.60–0.95 attainment thresholds remain proposals. Level inventories range from 3 to 20 skills; the shortest security-role inventories require completeness review. The Requirement Review, Level Review and Profile Review workbook sheets retain expert inputs. They do not automatically update seed data or approve records. Official use requires ACTIVE + APPROVED with actual reviewer and review time.
+All 1,891 isMandatory flags and 0.60–0.95 attainment thresholds remain proposals. Level inventories range from 3 to 20 skills; the shortest security-role inventories require completeness review. The Requirement Review and Level Review workbook sheets retain expert inputs. They do not automatically update seed data or approve records. Official use requires ACTIVE + APPROVED with actual reviewer and review time.
 
 ## Assessment calculation and readiness contract
 

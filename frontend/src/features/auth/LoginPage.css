@@ -94,20 +94,25 @@
 .razor-request-btn {
   background-color: hsl(var(--secondary));
   color: hsl(var(--secondary-foreground));
-  border: 1px solid hsl(var(--primary) / 0.3);
-  font-size: 13px;
+  border: 1px solid hsl(var(--primary) / 0.35);
+  font-size: 13.5px;
   font-weight: 600;
   padding: 8px 18px;
-  border-radius: 8px;
+  border-radius: 10px;
   text-decoration: none;
-  transition: all 0.15s;
+  transition: all 0.15s ease-in-out;
   box-shadow: 0 1px 2px hsl(var(--primary) / 0.05);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .razor-request-btn:hover {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   border-color: hsl(var(--primary));
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.25);
+  transform: translateY(-1px);
 }
 
 .razor-request-btn:active {
@@ -368,10 +373,33 @@
   cursor: not-allowed;
 }
 
+/* GUEST SIGN-UP INLINE PROMPT */
+.razor-signup-caption {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14.5px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.razor-signup-link {
+  color: hsl(var(--primary));
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 2px;
+  transition: color 0.15s ease-in-out, text-decoration 0.15s ease-in-out;
+}
+
+.razor-signup-link:hover {
+  color: hsl(var(--primary-hover));
+  text-decoration: underline;
+}
+
 /* DEMO SWITCHER PILLS */
 .razor-demo-strip {
-  margin-top: 30px;
-  padding-top: 22px;
+  margin-top: 24px;
+  padding-top: 20px;
   border-top: 1px dashed hsl(var(--border));
   text-align: center;
 }

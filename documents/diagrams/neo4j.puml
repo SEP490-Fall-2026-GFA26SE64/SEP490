@@ -30,7 +30,6 @@ class TargetRole {
  code : String
  name : String
  scope : String
- canonicalProfileKey : String
 }
 class Level {
  code : String
