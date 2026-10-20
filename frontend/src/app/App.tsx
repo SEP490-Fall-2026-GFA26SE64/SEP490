@@ -11,6 +11,7 @@ import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwa
 import { EmployeeTargetRolesPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { BaselineAssessmentManagementPage } from '../features/manager/baseline-assessments/BaselineAssessmentManagementPage'
+import { AdaptiveBaselineRoute } from '../features/manager/baseline-assessments/AdaptiveBaselinePage'
 import { AssessmentVersionPage } from '../features/manager/baseline-assessments/AssessmentVersionPage'
 import { AssessmentVersionsView } from '../features/manager/baseline-assessments/AssessmentVersionsView'
 import { BlueprintRevisionPage } from '../features/manager/baseline-assessments/BlueprintRevisionPage'
@@ -47,6 +48,8 @@ import { LanguageProvider } from '../shared/i18n/LanguageContext'
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
 })
+
+const adaptiveBaselineEnabled = import.meta.env.VITE_ADAPTIVE_BASELINE_ENABLED === 'true'
 
 export default function App() {
   return (
@@ -120,6 +123,10 @@ export default function App() {
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
+            {adaptiveBaselineEnabled ? <>
+            <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />
+            <Route path="/ld-manager/baseline-assessments/:occupationId/*" element={<AdaptiveBaselineRoute />} />
+            </> : <>
             <Route path="/ld-manager/baseline-assessments" element={<BaselineAssessmentManagementPage />} />
             <Route path="/ld-manager/baseline-assessments/:occupationId" element={<BlueprintVersionsView />} />
             <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints" element={<BlueprintVersionsView />} />
@@ -127,6 +134,7 @@ export default function App() {
             <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints/:blueprintId/versions/:version" element={<BlueprintVersionsView />} />
             <Route path="/ld-manager/baseline-assessments/:occupationId/assessments" element={<AssessmentVersionsView />} />
             <Route path="/ld-manager/baseline-assessments/:occupationId/assessments/:assessmentVersionId" element={<AssessmentVersionPage />} />
+            </>}
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
             <Route path="/ld-manager/baseline-config" element={<BaselineAssessmentConfigPage />} />
@@ -137,7 +145,6 @@ export default function App() {
             {/* Redirects from old L&D Manager / Manager routes to new Expert and L&D locations */}
             <Route path="/ld-manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/ld-manager/modules" element={<Navigate to="/expert/modules" replace />} />
-            <Route path="/ld-manager/assessment-bank" element={<Navigate to="/expert/assessment-bank" replace />} />
             <Route path="/manager/baseline-config" element={<Navigate to="/ld-manager/baseline-config" replace />} />
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />

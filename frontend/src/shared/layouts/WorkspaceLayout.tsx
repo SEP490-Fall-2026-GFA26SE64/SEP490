@@ -251,6 +251,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: t('nav.userDirectory'),
         href: '/ld-manager/users',
         icon: <Users size={15} />,
+      },
+      {
         label: t('nav.baselineConfig', 'Baseline Config'),
         href: '/ld-manager/baseline-config',
         icon: <Sliders size={15} />,
@@ -442,6 +444,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
     if (itemHref === '/ld-manager/baseline-assessments') {
       return path.startsWith('/ld-manager/baseline-assessments')
+    }
     if (itemHref === '/ld-manager/baseline-config') {
       return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config'
     }
