@@ -111,9 +111,8 @@ export function OrganizationSettingsPage() {
   return (
     <WorkspaceLayout>
       <form onSubmit={handleSaveAll} className="space-y-6 pb-16">
+        {/* Actions Bar */}
         <PageHeader
-          title="Organization Profile & Workspace Configuration"
-          description="Manage tenant corporate identity, MinIO private storage quotas, access policies, and automated adaptive learning rules."
           actions={
             <Button type="submit" variant="primary" size="sm" className="flex items-center gap-1.5 shadow-xs">
               <Save size={14} />
@@ -137,10 +136,10 @@ export function OrganizationSettingsPage() {
             description="Private course video & PDF artifacts"
           />
           <StatCard
-            title="Graph Boundary Protection"
+            title="Workspace Boundary Protection"
             value="Active Isolation"
             icon={<ShieldCheck size={18} className="text-primary" />}
-            description="Neo4j tenant-scoped Cypher queries"
+            description="Isolated enterprise workspace repository"
           />
         </div>
 
@@ -348,7 +347,7 @@ export function OrganizationSettingsPage() {
                   <div>
                     <h4 className="font-bold text-foreground">Automated Pathway Recalculation</h4>
                     <p className="text-[11px] text-muted-foreground">
-                      Automatically re-traverse Neo4j prerequisite graph upon each module quiz submission.
+                      Automatically update learning pathways when learners pass module assessments.
                     </p>
                   </div>
                   <input

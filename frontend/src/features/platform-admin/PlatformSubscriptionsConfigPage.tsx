@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from '../../shared/components/ui/Dialog'
 import { Input } from '../../shared/components/ui/Input'
-import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { StatCard } from '../../shared/components/ui/StatCard'
 import { useToast } from '../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
@@ -89,11 +88,6 @@ export function PlatformSubscriptionsConfigPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        <PageHeader
-          title="Platform Subscriptions Configuration"
-          description="Manage public and enterprise subscription tiers, seat quota limits, multi-currency pricing (USD & VND), and feature entitlements."
-        />
-
         {/* Global Overview KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard

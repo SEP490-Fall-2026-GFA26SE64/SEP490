@@ -285,8 +285,46 @@ export function useEmployeeLearningState() {
     }
   }, [])
 
+  const isSkillCompleted = React.useCallback(
+    (skillNameOrKey: string, code?: string): boolean => {
+      const prevSkills = profile.previousSkills || []
+      const norm = skillNameOrKey.toLowerCase().trim()
+      const normCode = (code || '').toLowerCase().trim()
+      return prevSkills.some(
+        (ps) =>
+          (ps.status === 'completed' || ps.masteryScore >= 85) &&
+          (ps.skillName.toLowerCase().trim() === norm ||
+            ps.skillKey.toLowerCase().trim() === norm ||
+            (normCode && ps.skillKey.toLowerCase().trim() === normCode) ||
+            (normCode && ps.skillName.toLowerCase().trim() === normCode))
+      )
+    },
+    [profile.previousSkills]
+  )
+
+  const isTargetRoleCompleted = React.useCallback(
+    (roleTitleOrKey: string, code?: string): boolean => {
+      const prevRoles = profile.previousRoles || []
+      const norm = roleTitleOrKey.toLowerCase().trim()
+      const normCode = (code || '').toLowerCase().trim()
+      return prevRoles.some(
+        (pr) =>
+          pr.status === 'completed' &&
+          (pr.roleTitle.toLowerCase().trim() === norm ||
+            pr.roleKey.toLowerCase().trim() === norm ||
+            (normCode && pr.roleKey.toLowerCase().trim() === normCode) ||
+            (normCode && pr.roleTitle.toLowerCase().trim() === normCode))
+      )
+    },
+    [profile.previousRoles]
+  )
+
   // Check if current view is active role or historical completed role
-  const isViewingActiveRole = profile.selectedViewRoleKey === 'active'
+  const isCurrentTargetRoleCompleted = profile.targetRole
+    ? isTargetRoleCompleted(profile.targetRole, profile.targetRoleVersion || undefined)
+    : false
+
+  const isViewingActiveRole = profile.selectedViewRoleKey === 'active' && !isCurrentTargetRoleCompleted
 
   // If viewing active role, check if diagnostic is pending
   const isLearningLocked = isViewingActiveRole
@@ -504,11 +542,11 @@ export function useEmployeeLearningState() {
   )
 
   const getTrackedSkills = React.useCallback((): TrackedSkillItem[] => {
+    let rawList: TrackedSkillItem[] = []
     if (profile.trackedSkills && profile.trackedSkills.length > 0) {
-      return profile.trackedSkills
-    }
-    if (profile.targetSkill) {
-      return [
+      rawList = profile.trackedSkills
+    } else if (profile.targetSkill) {
+      rawList = [
         {
           skillName: profile.targetSkill,
           macroCode: profile.targetSkillMacroCode || null,
@@ -517,8 +555,9 @@ export function useEmployeeLearningState() {
         },
       ]
     }
-    return []
-  }, [profile])
+    // Completed skills are NO LONGER tracked so employees don't misunderstand their active learning goals
+    return rawList.filter((item) => !isSkillCompleted(item.skillName, item.macroCode || undefined))
+  }, [profile, isSkillCompleted])
 
   const trackedSkills = getTrackedSkills()
 
@@ -533,6 +572,10 @@ export function useEmployeeLearningState() {
 
   const trackSkill = React.useCallback(
     (skillName: string, macroCode?: string, level = 'Intermediate') => {
+      // Completed skills cannot be tracked
+      if (isSkillCompleted(skillName, macroCode)) {
+        return
+      }
       const currentList = getTrackedSkills()
       if (currentList.some((s) => s.skillName.toLowerCase() === skillName.toLowerCase())) {
         return
@@ -553,7 +596,7 @@ export function useEmployeeLearningState() {
         trackedSkills: updatedList,
       })
     },
-    [profile, getTrackedSkills, saveProfile]
+    [profile, getTrackedSkills, isSkillCompleted, saveProfile]
   )
 
   const untrackSkill = React.useCallback(
@@ -602,6 +645,8 @@ export function useEmployeeLearningState() {
     profile,
     trackedSkills,
     isSkillTracked,
+    isSkillCompleted,
+    isTargetRoleCompleted,
     trackSkill,
     untrackSkill,
     clearTrackedSkills: clearTargetSkill,

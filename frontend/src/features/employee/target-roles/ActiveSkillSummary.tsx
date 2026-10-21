@@ -113,7 +113,7 @@ export function ActiveSkillSummary() {
                             level === 'Beginner'
                               ? 'bg-success/10 text-success'
                               : level === 'Intermediate'
-                              ? 'bg-warning/10 text-warning'
+                              ? 'bg-warning/15 text-black border border-warning/30'
                               : 'bg-primary/10 text-primary'
                           )}
                         >

@@ -322,7 +322,7 @@ export function DesignSystemShowcasePage() {
                 onClick={() => {
                   toast({
                     title: 'Knowledge Graph Synced',
-                    description: 'Fetched latest Neo4j schema migrations and ontology nodes.',
+                    description: 'Synchronized latest competency framework and ontology nodes.',
                     variant: 'info',
                   })
                 }}
@@ -682,7 +682,7 @@ export function DesignSystemShowcasePage() {
             <DialogHeader>
               <DialogTitle>Knowledge Graph Node Details</DialogTitle>
               <DialogDescription>
-                Inspecting semantic properties of Node <code>#GNN-301</code> stored in Neo4j.
+                Inspecting semantic properties of Node <code>#GNN-301</code> within the competency graph.
               </DialogDescription>
             </DialogHeader>
             <div className="bg-muted/40 p-4 rounded-lg text-xs space-y-1">

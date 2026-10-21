@@ -253,21 +253,28 @@ export function LearningModulesPage() {
   const [viewingDetailsModule, setViewingDetailsModule] = React.useState<LearningModuleModel | null>(null)
   const [deletingDraftModule, setDeletingDraftModule] = React.useState<LearningModuleModel | null>(null)
 
-  const handleImportModules = (data: any) => {
-    const list = Array.isArray(data) ? data : data.modules || []
-    const normalized: LearningModuleModel[] = list.map((item: any, idx: number) => ({
-      id: item.id || `mod-${Date.now()}-${idx}`,
-      stableId: item.stableId || `mod-uuid-${Date.now()}-${idx}`,
-      code: (item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
-      title: (item.title || 'Untitled Module').trim(),
-      version: item.version || '1.0',
-      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
-      durationMinutes: Number(item.durationMinutes) || 45,
-      sampleContentUri: item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html',
-      teachesSkillIds: Array.isArray(item.teachesSkillIds) ? item.teachesSkillIds : [],
-      activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
-      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+  const handleImportModules = (data: unknown) => {
+    const list = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'modules' in data && Array.isArray((data as Record<string, unknown>).modules))
+      ? ((data as Record<string, unknown>).modules as unknown[])
+      : []
+    const normalized: LearningModuleModel[] = list.map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      return {
+        id: (item.id as string) || `mod-${Date.now()}-${idx}`,
+        stableId: (item.stableId as string) || `mod-uuid-${Date.now()}-${idx}`,
+        code: String(item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
+        title: String(item.title || 'Untitled Module').trim(),
+        version: String(item.version || '1.0'),
+        status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+        durationMinutes: Number(item.durationMinutes) || 45,
+        sampleContentUri: String(item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html'),
+        teachesSkillIds: Array.isArray(item.teachesSkillIds) ? (item.teachesSkillIds as string[]) : [],
+        activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
+        updatedAt: String(item.updatedAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
     saveAndSetModules((prev) => [...normalized, ...prev])
   }
 
@@ -674,7 +681,7 @@ export function LearningModulesPage() {
                 <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft' | 'archived')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
                     <option value="all">All Statuses ({totalModules})</option>

@@ -203,31 +203,31 @@ export function PayOsCheckoutPage() {
                       <div className="p-3 bg-white rounded-lg shadow-xs border border-gray-200">
                         {/* Clean SVG QR mockup */}
                         <svg className="w-44 h-44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="100" height="100" fill="white" />
-                          <rect x="10" y="10" width="25" height="25" fill="#0F172A" />
-                          <rect x="14" y="14" width="17" height="17" fill="white" />
-                          <rect x="18" y="18" width="9" height="9" fill="#EA580C" />
+                          <rect width="100" height="100" fill="hsl(var(--card))" />
+                          <rect x="10" y="10" width="25" height="25" fill="hsl(var(--foreground))" />
+                          <rect x="14" y="14" width="17" height="17" fill="hsl(var(--card))" />
+                          <rect x="18" y="18" width="9" height="9" fill="hsl(var(--primary))" />
 
-                          <rect x="65" y="10" width="25" height="25" fill="#0F172A" />
-                          <rect x="69" y="14" width="17" height="17" fill="white" />
-                          <rect x="73" y="18" width="9" height="9" fill="#EA580C" />
+                          <rect x="65" y="10" width="25" height="25" fill="hsl(var(--foreground))" />
+                          <rect x="69" y="14" width="17" height="17" fill="hsl(var(--card))" />
+                          <rect x="73" y="18" width="9" height="9" fill="hsl(var(--primary))" />
 
-                          <rect x="10" y="65" width="25" height="25" fill="#0F172A" />
-                          <rect x="14" y="69" width="17" height="17" fill="white" />
-                          <rect x="18" y="73" width="9" height="9" fill="#EA580C" />
+                          <rect x="10" y="65" width="25" height="25" fill="hsl(var(--foreground))" />
+                          <rect x="14" y="69" width="17" height="17" fill="hsl(var(--card))" />
+                          <rect x="18" y="73" width="9" height="9" fill="hsl(var(--primary))" />
 
                           {/* Data dots */}
-                          <rect x="42" y="15" width="5" height="5" fill="#0F172A" />
-                          <rect x="50" y="22" width="6" height="6" fill="#0F172A" />
-                          <rect x="42" y="42" width="16" height="16" rx="3" fill="#EA580C" />
-                          <rect x="46" y="46" width="8" height="8" fill="white" />
-                          <rect x="15" y="42" width="6" height="6" fill="#0F172A" />
-                          <rect x="25" y="50" width="6" height="6" fill="#0F172A" />
-                          <rect x="68" y="45" width="8" height="6" fill="#0F172A" />
-                          <rect x="78" y="55" width="6" height="8" fill="#0F172A" />
-                          <rect x="42" y="68" width="6" height="6" fill="#0F172A" />
-                          <rect x="52" y="75" width="6" height="6" fill="#0F172A" />
-                          <rect x="70" y="72" width="16" height="16" fill="#0F172A" />
+                          <rect x="42" y="15" width="5" height="5" fill="hsl(var(--foreground))" />
+                          <rect x="50" y="22" width="6" height="6" fill="hsl(var(--foreground))" />
+                          <rect x="42" y="42" width="16" height="16" rx="3" fill="hsl(var(--primary))" />
+                          <rect x="46" y="46" width="8" height="8" fill="hsl(var(--card))" />
+                          <rect x="15" y="42" width="6" height="6" fill="hsl(var(--foreground))" />
+                          <rect x="25" y="50" width="6" height="6" fill="hsl(var(--foreground))" />
+                          <rect x="68" y="45" width="8" height="6" fill="hsl(var(--foreground))" />
+                          <rect x="78" y="55" width="6" height="8" fill="hsl(var(--foreground))" />
+                          <rect x="42" y="68" width="6" height="6" fill="hsl(var(--foreground))" />
+                          <rect x="52" y="75" width="6" height="6" fill="hsl(var(--foreground))" />
+                          <rect x="70" y="72" width="16" height="16" fill="hsl(var(--foreground))" />
                         </svg>
                       </div>
                       <span className="text-[11px] text-muted-foreground mt-2 font-medium">

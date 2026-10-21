@@ -108,28 +108,28 @@ export function ExpertAssignedRolesPage() {
       )
       if (res.ok) {
         const data = await res.json()
-        const mapped: TargetRoleModel[] = data.map((r: any) => ({
-          id: r.id,
-          stableId: r.code,
-          code: r.code,
-          title: r.name,
-          domainCode: r.domainCode,
-          familyCode: r.familyCode,
-          track: r.track,
-          seniority: r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3'),
-          assignedExpertId: r.assignedExpertId,
-          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || r.assignedExpertId || '',
-          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || r.domainCode || 'Information Technology',
-          description: r.description || '',
-          responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
-          version: r.version || '1.0',
-          status: (r.status?.toLowerCase() === 'active' ? 'published' : r.status?.toLowerCase()) || 'draft',
-          rejectionReason: r.rejectionReason || '',
+        const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => ({
+          id: String(r.id || ''),
+          stableId: String(r.code || ''),
+          code: String(r.code || ''),
+          title: String(r.name || ''),
+          domainCode: String(r.domainCode || ''),
+          familyCode: String(r.familyCode || ''),
+          track: r.track as TargetRoleModel['track'],
+          seniority: String(r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3')),
+          assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
+          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
+          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || String(r.domainCode || 'Information Technology'),
+          description: String(r.description || ''),
+          responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
+          version: String(r.version || '1.0'),
+          status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+          rejectionReason: String(r.rejectionReason || ''),
           competencyIds: [],
-          skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
+          skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
           activeEnrollments: 0,
-          createdAt: r.createdAt || r.updatedAt || new Date().toISOString(),
-          updatedAt: r.updatedAt || r.createdAt || new Date().toISOString(),
+          createdAt: String(r.createdAt || r.updatedAt || new Date().toISOString()),
+          updatedAt: String(r.updatedAt || r.createdAt || new Date().toISOString()),
         }))
         setRoles(mapped)
       } else {
@@ -879,8 +879,8 @@ export function ExpertAssignedRolesPage() {
                                   e.stopPropagation()
                                   setGraphRole(role)
                                 }}
-                                title="View Knowledge Graph (REQ-018-F01)"
-                                aria-label="View Knowledge Graph"
+                                title="View Competency Knowledge Graph"
+                                aria-label="View Competency Knowledge Graph"
                               >
                                 <NetworkIcon className="h-4 w-4 text-primary" />
                               </Button>
@@ -998,9 +998,6 @@ export function ExpertAssignedRolesPage() {
                   v{authoringRole.version} {authoringRole.status.toUpperCase()}
                 </Badge>
               </div>
-              <DialogDescription>
-                As the assigned Domain Expert, author the required micro-skill proficiency thresholds and weights for this target role.
-              </DialogDescription>
             </DialogHeader>
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">

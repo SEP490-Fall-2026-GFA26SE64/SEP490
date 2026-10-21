@@ -128,9 +128,14 @@ public class CompetencyConfiguration {
         public List<com.adaptlearngraph.competency.domain.MacroCompetency> findAll() {
             Instant now = Instant.now();
             return List.of(
-                    new com.adaptlearngraph.competency.domain.MacroCompetency("macro-knowledge", "KNOWLEDGE", "Technical & Domain Knowledge", "Foundational knowledge and operational mastery in domain concepts", "ACTIVE", now, now),
-                    new com.adaptlearngraph.competency.domain.MacroCompetency("macro-comm", "COMMUNICATION", "Team Communication & Collaboration", "Interpersonal skills, cross-functional communication, and stakeholder alignment", "ACTIVE", now, now),
-                    new com.adaptlearngraph.competency.domain.MacroCompetency("macro-innov", "INNOVATION", "Problem Solving & Innovation", "Algorithmic thinking, architectural innovation, and creative engineering resolution", "ACTIVE", now, now)
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000001", "KNOWLEDGE", "Knowledge", "Core technical and conceptual domain knowledge", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000002", "COMMUNICATION", "Communication", "Interpersonal, technical communication, and collaboration", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000003", "INNOVATION", "Innovation", "Creative problem solving and novel architectural solutions", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000004", "RESPONSIBLE_AI", "Responsible AI", "AI safety, governance, transparency, and ethical machine learning deployments", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000005", "AI_LITERACY", "AI literacy", "Foundations of artificial intelligence, LLM capabilities, and organizational enablement", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000006", "GEN_AI", "Generative AI", "Modern generative AI architectures, prompt patterns, multimodal reasoning, and foundation models", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000007", "MACHINE_LEARNING", "Machine Learning", "Statistical learning, model training pipelines, deep learning, and evaluation", "ACTIVE", now, now),
+                    new com.adaptlearngraph.competency.domain.MacroCompetency("30000000-0000-0000-0000-000000000008", "LEADERSHIP", "Leadership and Management", "Engineering leadership, strategic technology management, and team empowerment", "ACTIVE", now, now)
             );
         }
     }

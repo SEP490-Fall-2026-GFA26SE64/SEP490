@@ -1,12 +1,10 @@
 import * as React from 'react'
 import {
   AlertCircle,
-  ArrowRight,
   ArrowUpDown,
   Award,
-  BrainCircuit,
+  CheckCircle2,
   ChevronDown,
-  Compass,
   RefreshCw,
   Search,
   Sparkles,
@@ -137,18 +135,19 @@ export function TargetRoleBrowsePanel() {
     let result = deduplicated
     if (statusFilter !== 'All') {
       result = deduplicated.filter((role) => {
-        const isActive = selection.data?.roleId === role.id ||
-          (profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
+        const prevRoles = profile?.previousRoles || []
+        const isDone = prevRoles.some(
+          (pr) =>
+            pr.status === 'completed' &&
+            (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
+             (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
+        )
+        const isActive = !isDone && (
+          selection.data?.roleId === role.id ||
+          Boolean(profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
+        )
         if (statusFilter === 'Active') return isActive
-        if (statusFilter === 'Done') {
-          const prevRoles = profile?.previousRoles || []
-          return prevRoles.some(
-            (pr) =>
-              pr.status === 'completed' &&
-              (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
-               (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
-          )
-        }
+        if (statusFilter === 'Done') return isDone
         return true
       })
     }
@@ -235,22 +234,6 @@ export function TargetRoleBrowsePanel() {
 
   return (
     <section ref={catalogRef} className="space-y-4" aria-labelledby="target-role-catalog-heading">
-      {/* Subtle compact link to dedicated AI Role Guidance tab */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-border bg-card/60 text-xs">
-        <div className="flex items-center gap-2 text-muted-foreground min-w-0">
-          <Sparkles size={14} className="text-primary shrink-0" />
-          <span className="truncate">
-            Looking for AI career direction? Get recommendations based on your occupation baseline &amp; RIASEC profile.
-          </span>
-        </div>
-        <a
-          href="/employee/guidance"
-          className="text-primary hover:text-primary-hover font-semibold shrink-0 flex items-center gap-1 hover:underline"
-        >
-          <span>Open AI Role Guidance</span>
-          <ArrowRight size={13} />
-        </a>
-      </div>
 
       <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xs md:flex-row md:items-center">
         <label className="relative flex-1" htmlFor="target-role-search">
@@ -376,43 +359,6 @@ export function TargetRoleBrowsePanel() {
         </div>
       </div>
 
-      {/* AI Role Guidance Overview Section */}
-      <div className="p-4 rounded-xl border border-border bg-card shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary">
-              <BrainCircuit size={18} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                  AI Role Guidance & Recommendations
-                </span>
-                <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold text-primary">
-                  Holland RIASEC + Baseline
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Personalized role recommendations calibrated dynamically against your diagnostic assessment and behavioral profile.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <a href="/employee/assessment?tab=baseline">
-              <Button variant="outline" size="sm" className="text-xs font-semibold gap-1.5 shadow-2xs">
-                <Compass size={13} className="text-primary" />
-                <span>RIASEC Profiler</span>
-              </Button>
-            </a>
-            <a href="/employee/assessment">
-              <Button variant="outline" size="sm" className="text-xs font-semibold gap-1.5 shadow-2xs">
-                <Target size={13} className="text-primary" />
-                <span>Baseline Diagnostic</span>
-              </Button>
-            </a>
-          </div>
-        </div>
-      </div>
 
       {roles.isPending ? (
         <div role="status" className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
@@ -450,13 +396,15 @@ export function TargetRoleBrowsePanel() {
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {paginatedRoles.map((role) => {
-              const isActive = selection.data?.roleId === role.id ||
-                (profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
               const isDone = (profile?.previousRoles || []).some(
                 (pr) =>
                   pr.status === 'completed' &&
                   (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
                    (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
+              )
+              const isActive = !isDone && (
+                selection.data?.roleId === role.id ||
+                Boolean(profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
               )
               const recScore = getRoleRecommendationScore(role)
               return (
@@ -465,7 +413,8 @@ export function TargetRoleBrowsePanel() {
                   aria-label={`Target role ${role.name}`}
                   className={cn(
                     "flex flex-col justify-between hover:shadow-md transition-all duration-150 border-border bg-card group",
-                    isActive && "border-primary/50 ring-1 ring-primary/20"
+                    isActive && "border-primary/50 ring-1 ring-primary/20",
+                    isDone && "border-success/30 bg-card hover:border-success/50"
                   )}
                 >
                   <div className="p-5 space-y-2.5">
@@ -483,16 +432,19 @@ export function TargetRoleBrowsePanel() {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {isActive && (
+                        {isDone ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] whitespace-nowrap text-success border-success/30 bg-success/5 font-semibold gap-1"
+                          >
+                            <CheckCircle2 size={11} className="text-success shrink-0" />
+                            <span>Done</span>
+                          </Badge>
+                        ) : isActive ? (
                           <Badge variant="success" className="text-[10px] whitespace-nowrap">
                             Active role
                           </Badge>
-                        )}
-                        {isDone && !isActive && (
-                          <Badge variant="outline" className="text-[10px] whitespace-nowrap text-muted-foreground border-border">
-                            Done
-                          </Badge>
-                        )}
+                        ) : null}
                         <span
                           className={cn(
                             "text-[10px] font-bold px-2 py-0.5 rounded-full",
@@ -534,7 +486,18 @@ export function TargetRoleBrowsePanel() {
                       >
                         View details
                       </Button>
-                      {isActive ? (
+                      {isDone ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="text-xs h-7.5 px-3 bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
+                          title="You have already completed this target role."
+                        >
+                          <CheckCircle2 size={12} className="mr-1 text-success shrink-0" />
+                          <span>Done</span>
+                        </Button>
+                      ) : isActive ? (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -577,6 +540,16 @@ export function TargetRoleBrowsePanel() {
       <TargetRoleDetailDialog
         roleId={detailRoleId}
         activeRoleId={selection.data?.roleId ?? null}
+        isCompleted={(profile?.previousRoles || []).some((pr) => {
+          if (!detailRoleId || !roles.data) return false
+          const role = roles.data.find((r) => r.id === detailRoleId)
+          if (!role) return false
+          return (
+            pr.status === 'completed' &&
+            (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
+             (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
+          )
+        })}
         selectionUnavailable={selection.isError || chooseRole.isPending}
         selectionPending={selection.isPending}
         onClose={() => setDetailRoleId(null)}

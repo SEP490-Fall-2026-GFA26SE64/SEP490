@@ -331,31 +331,30 @@ export function BaselineAssessmentConfigPage() {
       if (res.ok) {
         const data = await res.json()
         if (Array.isArray(data) && data.length > 0) {
-          const mapped: TargetRoleModel[] = data.map((r: any) => ({
-            id: r.id,
-            stableId: r.code,
-            code: r.code,
-            title: r.name,
-            domainCode: r.domainCode,
-            familyCode: r.familyCode,
-            track: r.track,
-            seniority: r.seniority || 'P3',
-            assignedExpertId: r.assignedExpertId,
+          const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => ({
+            id: String(r.id || ''),
+            stableId: String(r.code || ''),
+            code: String(r.code || ''),
+            title: String(r.name || ''),
+            domainCode: String(r.domainCode || ''),
+            familyCode: String(r.familyCode || ''),
+            track: r.track as TargetRoleModel['track'],
+            seniority: String(r.seniority || 'P3'),
+            assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
             assignedExpertName:
-              ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || r.assignedExpertId || '',
+              ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
             department:
               JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name ||
-              r.domainCode ||
-              'Information Technology',
-            description: r.description || '',
-            responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
-            version: r.version || '1.0',
-            status: (r.status?.toLowerCase() === 'active' ? 'published' : r.status?.toLowerCase() || 'draft') as any,
+              String(r.domainCode || 'Information Technology'),
+            description: String(r.description || ''),
+            responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
+            version: String(r.version || '1.0'),
+            status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
             competencyIds: [],
-            skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
-            activeEnrollments: ROSTER_MAP[r.code]?.length || 3,
-            createdAt: r.createdAt || '2026-10-01T00:00:00Z',
-            updatedAt: r.updatedAt || '2026-10-01T00:00:00Z',
+            skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
+            activeEnrollments: ROSTER_MAP[String(r.code || '')]?.length || 3,
+            createdAt: String(r.createdAt || '2026-10-01T00:00:00Z'),
+            updatedAt: String(r.updatedAt || '2026-10-01T00:00:00Z'),
           }))
           setRoles(mapped)
           return
@@ -612,7 +611,7 @@ export function BaselineAssessmentConfigPage() {
     setDraftEarlyStopping(true)
     toast({
       title: 'Defaults Restored',
-      description: 'Reset parameters to REQ-002-F02 standard baseline defaults (Depth 3, Cap 5, Medium difficulty).',
+      description: 'Reset parameters to standard baseline defaults (Depth 3, Cap 5, Medium difficulty).',
       variant: 'info',
     })
   }
@@ -624,7 +623,7 @@ export function BaselineAssessmentConfigPage() {
       setNotificationSent(false)
       toast({
         title: 'Authoring Alert Dispatched',
-        description: `Notification queued for Domain Expert (${selectedRole?.assignedExpertName || 'Lead Expert'}). One-email suppression active.`,
+        description: `Notification sent to Subject Matter Expert (${selectedRole?.assignedExpertName || 'Lead Expert'}) for question bank authoring.`,
         variant: 'success',
       })
     }, 1000)
@@ -710,7 +709,7 @@ export function BaselineAssessmentConfigPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Sliders className="h-4 w-4 text-primary" />
-                  Baseline Assessment Configurations (REQ-002-F02)
+                  Baseline Assessment Configurations
                 </CardTitle>
                 <CardDescription>
                   Configure prerequisite assessment expansion depth, question caps, starting difficulty, and Bayesian confidence stopping rules.
@@ -745,7 +744,7 @@ export function BaselineAssessmentConfigPage() {
                 <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
                   <select
                     value={coverageFilter}
-                    onChange={(e) => setCoverageFilter(e.target.value as any)}
+                    onChange={(e) => setCoverageFilter(e.target.value as 'ALL' | 'PASSING' | 'DEFICIT')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
                     <option value="ALL">All Coverages</option>
@@ -758,7 +757,7 @@ export function BaselineAssessmentConfigPage() {
                   <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
+                    onChange={(e) => setSortBy(e.target.value as 'latest' | 'code' | 'title')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                   >
                     <option value="latest">Latest Saved / Updated</option>
@@ -1371,7 +1370,7 @@ export function BaselineAssessmentConfigPage() {
 
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Dispatched Authoring Notification
+              Expert Authoring Notification Preview
             </label>
             <div className="p-3.5 rounded-xl bg-muted/30 border border-border text-xs space-y-2">
               <div className="font-semibold text-foreground flex items-center justify-between pb-2 border-b border-border/60">

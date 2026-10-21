@@ -298,23 +298,32 @@ export function AssessmentBankPage() {
   const [viewingBlueprintDetails, setViewingBlueprintDetails] = React.useState<AssessmentBlueprintModel | null>(null)
   const [deletingBlueprint, setDeletingBlueprint] = React.useState<AssessmentBlueprintModel | null>(null)
 
-  const handleImportQuestions = (data: any) => {
-    const list = Array.isArray(data) ? data : data.questions || []
-    const normalized: QuizQuestionModel[] = list.map((item: any, idx: number) => ({
-      id: item.id || `qst-${Date.now()}-${idx}`,
-      stableId: item.stableId || `qst-uuid-${Date.now()}-${idx}`,
-      code: (item.code || `QST-IMP-${idx + 1}`).trim().toUpperCase(),
-      prompt: (item.prompt || 'Untitled Assessment Question').trim(),
-      options: Array.isArray(item.options) && item.options.length >= 2 ? item.options : ['Option A', 'Option B', 'Option C', 'Option D'],
-      correctAnswerIndex: typeof item.correctAnswerIndex === 'number' ? item.correctAnswerIndex : 0,
-      feedback: item.feedback || 'Explanatory feedback for this question.',
-      assessedSkillId: item.assessedSkillId || companyMicroSkills[0]?.id || 'skill-attn-01',
-      difficulty: item.difficulty || 'Intermediate',
-      version: item.version || '1.0',
-      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
-      provenance: item.provenance || 'Imported Curriculum Test Bank',
-      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+  const [isSubmittingQuestion, setIsSubmittingQuestion] = React.useState(false)
+
+  const handleImportQuestions = (data: unknown) => {
+    const list = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'questions' in data && Array.isArray((data as Record<string, unknown>).questions))
+      ? ((data as Record<string, unknown>).questions as unknown[])
+      : []
+    const normalized: QuizQuestionModel[] = list.map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      return {
+        id: (item.id as string) || `qst-${Date.now()}-${idx}`,
+        stableId: (item.stableId as string) || `qst-uuid-${Date.now()}-${idx}`,
+        code: String(item.code || `QST-IMP-${idx + 1}`).trim().toUpperCase(),
+        prompt: String(item.prompt || 'Untitled Assessment Question').trim(),
+        options: Array.isArray(item.options) && item.options.length >= 2 ? (item.options as string[]) : ['Option A', 'Option B', 'Option C', 'Option D'],
+        correctAnswerIndex: typeof item.correctAnswerIndex === 'number' ? item.correctAnswerIndex : 0,
+        feedback: String(item.feedback || 'Explanatory feedback for this question.'),
+        assessedSkillId: (item.assessedSkillId as string) || companyMicroSkills[0]?.id || 'skill-attn-01',
+        difficulty: (item.difficulty as QuizQuestionModel['difficulty']) || 'Intermediate',
+        version: String(item.version || '1.0'),
+        status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+        provenance: String(item.provenance || 'Imported Curriculum Test Bank'),
+        updatedAt: String(item.updatedAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
     saveAndSetQuestions((prev) => [...normalized, ...prev])
   }
   const [deletingDraftQuestion, setDeletingDraftQuestion] = React.useState<QuizQuestionModel | null>(null)
@@ -416,6 +425,8 @@ export function AssessmentBankPage() {
   }
 
   const handleSaveQuestion = () => {
+    if (isSubmittingQuestion) return
+
     // Validations
     if (!questionForm.code.trim() || !questionForm.prompt.trim()) {
       toast({
@@ -443,6 +454,9 @@ export function AssessmentBankPage() {
       })
       return
     }
+
+    setIsSubmittingQuestion(true)
+    try {
 
     if (selectedQuestion) {
       // Editing draft
@@ -492,7 +506,10 @@ export function AssessmentBankPage() {
       })
     }
     setIsQuestionModalOpen(false)
+  } finally {
+    setIsSubmittingQuestion(false)
   }
+}
 
   // Create Successor Draft (Preserving Submitted Historical Attempts)
   const handleCreateSuccessorQuestion = (q: QuizQuestionModel) => {
@@ -1310,7 +1327,7 @@ export function AssessmentBankPage() {
                 <label className="font-semibold text-foreground block mb-1">Difficulty Level</label>
                 <select
                   value={questionForm.difficulty}
-                  onChange={(e) => setQuestionForm({ ...questionForm, difficulty: e.target.value as any })}
+                  onChange={(e) => setQuestionForm({ ...questionForm, difficulty: e.target.value as QuizQuestionModel['difficulty'] })}
                   className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="Foundation">Foundation</option>
@@ -1436,13 +1453,23 @@ export function AssessmentBankPage() {
               Cancel
             </Button>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleSaveQuestion}>
-                {selectedQuestion ? 'Save Draft' : 'Create Question'}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isSubmittingQuestion}
+                onClick={handleSaveQuestion}
+              >
+                {isSubmittingQuestion
+                  ? 'Saving...'
+                  : selectedQuestion
+                  ? 'Save Draft'
+                  : 'Create Question'}
               </Button>
               {selectedQuestion?.status === 'draft' && (
                 <Button
                   variant="primary"
                   size="sm"
+                  disabled={isSubmittingQuestion}
                   leftIcon={<CheckCircle2 className="h-4 w-4" />}
                   onClick={() => {
                     handleSaveQuestion()

@@ -1,6 +1,6 @@
 import { AlertCircle, Eye, GitBranch, Maximize2, Minimize2, Network as NetworkIcon, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react'
 import * as React from 'react'
-import { Network, type Options } from 'vis-network'
+import { Network, type Options, type Node, type Edge } from 'vis-network'
 import { fetchTargetRoleGraph, type TargetRoleGraphDto } from '../../../../shared/api/prerequisiteApi'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
@@ -21,6 +21,31 @@ interface TargetRoleGraphModalProps {
   roleTitle?: string
 }
 
+export interface RoleNodeData {
+  category: 'TargetRole'
+  code: string
+  title: string
+  track: string
+  seniority: string
+  status: string
+}
+
+export interface SkillNodeData {
+  category: 'MicroSkill'
+  skillId: string
+  code: string
+  name: string
+  macroCompetencyCode: string
+  targetMastery: number
+  status: string
+}
+
+export type GraphElementNodeData = RoleNodeData | SkillNodeData
+
+interface GraphCustomNode extends Node {
+  data?: GraphElementNodeData
+}
+
 export function TargetRoleGraphModal({
   open,
   onOpenChange,
@@ -31,7 +56,7 @@ export function TargetRoleGraphModal({
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [graphData, setGraphData] = React.useState<TargetRoleGraphDto | null>(null)
-  const [selectedNode, setSelectedNode] = React.useState<any | null>(null)
+  const [selectedNode, setSelectedNode] = React.useState<GraphElementNodeData | null>(null)
   const [layoutMode, setLayoutMode] = React.useState<'hierarchical' | 'organic'>('hierarchical')
   const [isFullscreen, setIsFullscreen] = React.useState(false)
 
@@ -111,8 +136,8 @@ export function TargetRoleGraphModal({
   React.useEffect(() => {
     if (!graphData || !containerRef.current || loading) return
 
-    const nodes: any[] = []
-    const edges: any[] = []
+    const nodes: GraphCustomNode[] = []
+    const edges: Edge[] = []
 
     const reqSkills = Array.isArray(graphData.requiredSkills) ? graphData.requiredSkills : []
     const prereqs = Array.isArray(graphData.prerequisites) ? graphData.prerequisites : []
@@ -298,7 +323,7 @@ export function TargetRoleGraphModal({
       if (params.nodes.length > 0) {
         const nodeId = params.nodes[0]
         const matched = nodes.find((n) => n.id === nodeId)
-        if (matched) setSelectedNode(matched.data)
+        if (matched && matched.data) setSelectedNode(matched.data)
       }
     })
 
@@ -527,7 +552,7 @@ export function TargetRoleGraphModal({
 
                       <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-card border border-border">
                         <div>
-                          <span className="text-[10px] text-muted-foreground block">Macro Competency</span>
+                          <span className="text-[10px] text-muted-foreground block">Competency Domain</span>
                           <Badge variant="outline" className="text-[10px] mt-0.5">
                             {selectedNode.macroCompetencyCode}
                           </Badge>
@@ -582,7 +607,7 @@ export function TargetRoleGraphModal({
             </div>
 
             <div className="pt-3 border-t border-border text-[11px] text-muted-foreground">
-              Sub-graph represents REQ-018-F01 authorized view.
+              Visualizing confirmed competency structure and prerequisite learning paths.
             </div>
           </div>
         </div>

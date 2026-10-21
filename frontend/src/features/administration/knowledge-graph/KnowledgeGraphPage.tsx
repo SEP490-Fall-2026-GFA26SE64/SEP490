@@ -14,7 +14,7 @@ export function KnowledgeGraphPage() {
           actions={
             <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5">
               <Database className="h-3.5 w-3.5 text-primary" />
-              <span>Neo4j Graph Database Connected</span>
+              <span>Competency Graph Engine Connected</span>
             </Badge>
           }
         />

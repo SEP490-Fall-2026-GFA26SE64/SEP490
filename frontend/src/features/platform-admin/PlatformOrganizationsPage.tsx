@@ -151,9 +151,8 @@ export function PlatformOrganizationsPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
+        {/* Actions Bar */}
         <PageHeader
-          title="Platform Organizations Management"
-          description="Global administrative oversight across all multi-tenant organization workspaces, subscription allocations, and operational lifecycles."
           actions={
             <Button
               variant="primary"

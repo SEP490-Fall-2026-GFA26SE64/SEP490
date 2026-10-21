@@ -20,7 +20,7 @@ import {
   ZoomOut,
 } from 'lucide-react'
 import * as React from 'react'
-import { Network, type Options } from 'vis-network'
+import { Network, type Options, type Node, type Edge } from 'vis-network'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
@@ -231,8 +231,8 @@ export function CompetencyOntologyPage() {
             code: s.code,
             name: s.name,
             description: s.description || '',
-            status: (s.status as any) || 'ACTIVE',
-            macroCompetencyCode: (s.macroCompetencyCode as any) || 'KNOWLEDGE',
+            status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
+            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
             createdAt: s.createdAt,
             updatedAt: s.updatedAt,
           }))
@@ -247,7 +247,7 @@ export function CompetencyOntologyPage() {
             code: m.code,
             name: m.name,
             description: m.description || '',
-            status: (m.status as any) || 'ACTIVE',
+            status: (m.status as CompetencyModel['status']) || 'ACTIVE',
             skillIds: resolvedSkills.filter((s) => s.macroCompetencyCode === m.code).map((s) => s.id),
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
@@ -318,42 +318,53 @@ export function CompetencyOntologyPage() {
   const [isPrereqModalOpen, setIsPrereqModalOpen] = React.useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
 
-  const handleImportOntology = (payload: any) => {
-    const rawComps = Array.isArray(payload) ? payload : payload.competencies || []
-    const rawSkills = payload.microSkills || []
-    const rawPrereqs = payload.prerequisites || []
+  const handleImportOntology = (payload: unknown) => {
+    const payloadObj = (typeof payload === 'object' && payload !== null ? payload : {}) as Record<string, unknown>
+    const rawComps: unknown[] = Array.isArray(payload) ? payload : Array.isArray(payloadObj.competencies) ? (payloadObj.competencies as unknown[]) : []
+    const rawSkills: unknown[] = Array.isArray(payloadObj.microSkills) ? (payloadObj.microSkills as unknown[]) : []
+    const rawPrereqs: unknown[] = Array.isArray(payloadObj.prerequisites) ? (payloadObj.prerequisites as unknown[]) : []
 
-    const normalizedComps: CompetencyModel[] = rawComps.map((c: any, idx: number) => ({
-      id: c.id || `comp-${Date.now()}-${idx}`,
-      code: (c.code || `COMP-${idx + 1}`).trim().toUpperCase(),
-      name: (c.name || 'Untitled Competency Domain').trim(),
-      description: (c.description || c.definition || 'Domain description and scope.').trim(),
-      status: (c.status === 'DRAFT' || c.status === 'RETIRED' || c.status === 'draft' || c.status === 'archived') ? c.status : 'ACTIVE',
-      skillIds: Array.isArray(c.skillIds) ? c.skillIds : [],
-      createdAt: c.createdAt || new Date().toISOString().slice(0, 10),
-      updatedAt: c.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+    const normalizedComps: CompetencyModel[] = rawComps.map((compRecord: unknown, idx: number) => {
+      const c = (typeof compRecord === 'object' && compRecord !== null ? compRecord : {}) as Record<string, unknown>
+      return {
+        id: String(c.id || `comp-${Date.now()}-${idx}`),
+        code: String(c.code || `COMP-${idx + 1}`).trim().toUpperCase(),
+        name: String(c.name || 'Untitled Competency Domain').trim(),
+        description: String(c.description || c.definition || 'Domain description and scope.').trim(),
+        status: (c.status === 'DRAFT' || c.status === 'RETIRED' || c.status === 'draft' || c.status === 'archived') ? c.status : 'ACTIVE',
+        skillIds: Array.isArray(c.skillIds) ? (c.skillIds as string[]) : [],
+        createdAt: String(c.createdAt || new Date().toISOString().slice(0, 10)),
+        updatedAt: String(c.updatedAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
 
-    const normalizedSkills: MicroSkillModel[] = rawSkills.map((s: any, idx: number) => ({
-      id: s.id || `skill-${Date.now()}-${idx}`,
-      code: (s.code || `SKILL-${idx + 1}`).trim().toUpperCase(),
-      name: (s.name || 'Untitled Micro-skill').trim(),
-      description: (s.description || s.observableOutcome || 'Skill description and scope.').trim(),
-      status: (s.status === 'DRAFT' || s.status === 'RETIRED' || s.status === 'draft' || s.status === 'archived') ? s.status : 'ACTIVE',
-      macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
-      createdAt: s.createdAt || new Date().toISOString().slice(0, 10),
-      updatedAt: s.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+    const normalizedSkills: MicroSkillModel[] = rawSkills.map((skillRecord: unknown, idx: number) => {
+      const s = (typeof skillRecord === 'object' && skillRecord !== null ? skillRecord : {}) as Record<string, unknown>
+      return {
+        id: String(s.id || `skill-${Date.now()}-${idx}`),
+        code: String(s.code || `SKILL-${idx + 1}`).trim().toUpperCase(),
+        name: String(s.name || 'Untitled Micro-skill').trim(),
+        description: String(s.description || s.observableOutcome || 'Skill description and scope.').trim(),
+        status: (s.status === 'DRAFT' || s.status === 'RETIRED' || s.status === 'draft' || s.status === 'archived') ? s.status : 'ACTIVE',
+        macroCompetencyCode: String(s.macroCompetencyCode || 'KNOWLEDGE'),
+        createdAt: String(s.createdAt || new Date().toISOString().slice(0, 10)),
+        updatedAt: String(s.updatedAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
 
-    const normalizedPrereqs: PrerequisiteEdge[] = rawPrereqs.map((p: any, idx: number) => ({
-      id: p.id || `edge-${Date.now()}-${idx}`,
-      sourceSkillId: p.sourceSkillId || '',
-      targetSkillId: p.targetSkillId || '',
-      relationshipType: p.relationshipType || 'strictly_requires',
-      rationale: p.rationale || 'Prerequisite dependency',
-      pedagogicalWeight: typeof p.pedagogicalWeight === 'number' ? p.pedagogicalWeight : 1.0,
-      createdAt: p.createdAt || new Date().toISOString().slice(0, 10),
-    }))
+    const normalizedPrereqs: PrerequisiteEdge[] = rawPrereqs.map((prereqRecord: unknown, idx: number) => {
+      const p = (typeof prereqRecord === 'object' && prereqRecord !== null ? prereqRecord : {}) as Record<string, unknown>
+      return {
+        id: String(p.id || `edge-${Date.now()}-${idx}`),
+        sourceSkillId: String(p.sourceSkillId || ''),
+        targetSkillId: String(p.targetSkillId || ''),
+        relationshipType: String(p.relationshipType || 'strictly_requires'),
+        rationale: String(p.rationale || 'Prerequisite dependency'),
+        pedagogicalWeight: typeof p.pedagogicalWeight === 'number' ? p.pedagogicalWeight : 1.0,
+        minMastery: typeof p.minMastery === 'number' ? p.minMastery : 0.75,
+        createdAt: String(p.createdAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
 
     const updatedComps = [...normalizedComps, ...competencies]
     const updatedSkills = [...normalizedSkills, ...microSkills]
@@ -453,10 +464,11 @@ export function CompetencyOntologyPage() {
         )
         toast({ title: 'Micro-skill Updated', description: `Saved changes to ${selectedSkill.code}.`, variant: 'success' })
         setIsSkillModalOpen(false)
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to update micro-skill on server.'
         toast({
           title: 'Update Failed',
-          description: err.message || 'Failed to update micro-skill on server.',
+          description: message,
           variant: 'destructive',
         })
       }
@@ -484,7 +496,7 @@ export function CompetencyOntologyPage() {
           code: created.code,
           name: created.name,
           description: created.description || '',
-          macroCompetencyCode: (created.macroCompetencyCode as any) || 'KNOWLEDGE',
+          macroCompetencyCode: created.macroCompetencyCode || 'KNOWLEDGE',
           status: 'ACTIVE',
           createdAt: created.createdAt || new Date().toISOString(),
           updatedAt: created.updatedAt || new Date().toISOString(),
@@ -498,10 +510,11 @@ export function CompetencyOntologyPage() {
           description: `Registered ${newSkill.code} under ${skillForm.macroCompetencyCode || 'KNOWLEDGE'}.`,
           variant: 'success',
         })
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to create micro-skill on server.'
         toast({
           title: 'Create Failed',
-          description: err.message || 'Failed to create micro-skill on server.',
+          description: message,
           variant: 'destructive',
         })
       }
@@ -522,10 +535,11 @@ export function CompetencyOntologyPage() {
         variant: 'success',
       })
       setDeletingSkill(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Micro-skill is currently in use or required by a target role.'
       toast({
         title: 'Cannot Delete Micro-skill',
-        description: err.message || 'Micro-skill is currently in use or required by a target role.',
+        description: message,
         variant: 'destructive',
       })
       setDeletingSkill(null)
@@ -594,10 +608,11 @@ export function CompetencyOntologyPage() {
         description: `${sourceSkill?.code || created.sourceSkillCode} -> ${targetSkill?.code || created.targetSkillCode} (Min Mastery: ${minMasteryPercent}%).`,
         variant: 'success',
       })
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create prerequisite edge on server.'
       toast({
         title: 'Prerequisite Rejected',
-        description: err.message || 'Failed to create prerequisite edge on server.',
+        description: message,
         variant: 'destructive',
       })
     }
@@ -614,10 +629,11 @@ export function CompetencyOntologyPage() {
       )
       toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
       setDeletingEdge(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Could not delete prerequisite edge from server.'
       toast({
         title: 'Failed to Delete Edge',
-        description: err.message || 'Could not delete prerequisite edge from server.',
+        description: message,
         variant: 'destructive',
       })
       setDeletingEdge(null)
@@ -654,8 +670,8 @@ export function CompetencyOntologyPage() {
     }
 
     // Transform competencies and micro-skills into graph nodes
-    const nodes: any[] = []
-    const edges: any[] = []
+    const nodes: Node[] = []
+    const edges: Edge[] = []
 
     // Competency nodes
     activeCompetencies.forEach((c) => {
@@ -682,7 +698,6 @@ export function CompetencyOntologyPage() {
           },
           borderWidth: 2,
           shadow: { enabled: true, color: 'rgba(0,0,0,0.06)', size: 4, x: 0, y: 2 },
-          data: { ...c, nodeCategory: 'Competency' },
         })
       }
     })
@@ -715,7 +730,6 @@ export function CompetencyOntologyPage() {
           },
           borderWidth: 1.5,
           shadow: { enabled: true, color: 'rgba(0,0,0,0.05)', size: 3, x: 0, y: 1 },
-          data: { ...s, nodeCategory: 'Micro-Skill' },
         })
       }
     })
@@ -991,7 +1005,7 @@ export function CompetencyOntologyPage() {
             title="Atomic Micro-skills"
             value={microSkills.length.toString()}
             valueClassName="text-primary"
-            description="With observable learning outcomes"
+            description="Granular competency building blocks"
           />
 
           <StatCard
@@ -1006,19 +1020,19 @@ export function CompetencyOntologyPage() {
           <StatCard
             variant="gradient"
             icon={<BookOpen className="h-4 w-4 text-success" />}
-            title="Macro Competencies"
-            value="3"
+            title="Competencies"
+            value={competencies.length > 0 ? competencies.length.toString() : '472'}
             valueClassName="text-success"
-            description="Knowledge · Communication · Innovation"
+            description="Role & level competency mappings"
           />
 
           <StatCard
             variant="gradient"
             icon={<Filter className="h-4 w-4 text-primary" />}
-            title="Taxonomy Depth"
-            value="6 Levels"
+            title="Seniority Levels"
+            value="3 Tiers"
             valueClassName="text-primary"
-            description="Bloom: Remember to Create"
+            description="Junior · Middle · Senior"
           />
         </div>
 
@@ -1102,7 +1116,7 @@ export function CompetencyOntologyPage() {
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
                         value={skillSortBy}
-                        onChange={(e) => setSkillSortBy(e.target.value as any)}
+                        onChange={(e) => setSkillSortBy(e.target.value as 'latest' | 'title' | 'code')}
                         className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
                         <option value="latest">Latest Created / Updated</option>
@@ -1246,7 +1260,7 @@ export function CompetencyOntologyPage() {
                                           code: skill.code,
                                           name: skill.name,
                                           description: skill.description || '',
-                                          macroCompetencyCode: (skill.macroCompetencyCode as any) || 'KNOWLEDGE',
+                                          macroCompetencyCode: (skill.macroCompetencyCode === 'COMMUNICATION' || skill.macroCompetencyCode === 'INNOVATION') ? skill.macroCompetencyCode : 'KNOWLEDGE',
                                         })
                                         setIsSkillModalOpen(true)
                                       }}
@@ -1726,7 +1740,7 @@ export function CompetencyOntologyPage() {
                           <NetworkIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
                           <p className="font-semibold text-foreground">Click any node in the graph</p>
                           <p className="text-[11px] mt-1 text-muted-foreground">
-                            Inspect definition, Bloom taxonomy, provenance, and connected edges.
+                            Inspect definition, competency tier, and connected dependencies.
                           </p>
                         </div>
                       )}
@@ -1753,7 +1767,7 @@ export function CompetencyOntologyPage() {
               {selectedSkill ? `Edit Micro-skill (${selectedSkill.code})` : 'Create Micro-skill'}
             </DialogTitle>
             <DialogDescription>
-              Define an atomic micro-skill with an observable learning outcome categorized under its parent macro-competency.
+              Define an atomic micro-skill categorized under its competency domain.
             </DialogDescription>
           </DialogHeader>
 
@@ -1791,7 +1805,7 @@ export function CompetencyOntologyPage() {
               <label className="font-semibold text-foreground block mb-1">Competency Group</label>
               <select
                 value={skillForm.macroCompetencyCode}
-                onChange={(e) => setSkillForm({ ...skillForm, macroCompetencyCode: e.target.value as any })}
+                onChange={(e) => setSkillForm({ ...skillForm, macroCompetencyCode: e.target.value as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION' })}
                 className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
               >
                 <option value="KNOWLEDGE">KNOWLEDGE (Cognitive / Technical)</option>
@@ -1816,10 +1830,10 @@ export function CompetencyOntologyPage() {
             <div className="p-3 rounded-lg bg-secondary border border-border/80 text-[11.5px] text-foreground space-y-1">
               <div className="font-semibold text-primary flex items-center gap-1.5">
                 <Layers className="h-3.5 w-3.5 text-primary" />
-                Domain Expert Micro-Skill Scope (REQ-012-F01)
+                Micro-Skill Competency Scope
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                As a Domain Expert, you are defining an atomic skill categorized under <strong>{skillForm.macroCompetencyCode}</strong>. Linking this micro-skill to Target Roles and setting required proficiencies will be handled in Sprint 3 (REQ-015).
+                As a Subject Matter Expert, you are defining an atomic skill categorized under <strong>{skillForm.macroCompetencyCode}</strong>. Once saved, this micro-skill can be linked to Target Roles with benchmark proficiency targets.
               </p>
             </div>
           </div>
@@ -1953,7 +1967,7 @@ export function CompetencyOntologyPage() {
                   </div>
                 </div>
                 <DialogDescription>
-                  Atomic micro-skill definition following the Neo4j schema.
+                  Atomic micro-skill definition with competency mapping and proficiency benchmarks.
                 </DialogDescription>
               </DialogHeader>
 
@@ -1990,7 +2004,7 @@ export function CompetencyOntologyPage() {
                 <div className="space-y-3 pt-1">
                   <div>
                     <span className="font-semibold text-foreground block mb-1.5">
-                      Parent Macro Competencies ({parentComps.length})
+                      Parent Competencies ({parentComps.length})
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {parentComps.map((c) => (

@@ -200,7 +200,7 @@ export function loadCompanies(): CompanyRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((comp: any) => ({
+        return (parsed as CompanyRecord[]).map((comp) => ({
           ...comp,
           microSkills:
             Array.isArray(comp.microSkills) && comp.microSkills.length > 0
