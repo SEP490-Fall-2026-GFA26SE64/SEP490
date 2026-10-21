@@ -225,25 +225,24 @@ export const IndividualSkillCatalogPage: React.FC = () => {
         </div>
       )}
 
-      {/* Page Header */}
+      {/* Actions Bar */}
       <PageHeader
-        title="Independent Micro-Skill Catalog"
-        description="Explore and master technical micro-skills at your own pace without altering your primary Target Role pathway (REQ-055)."
-      >
-        <div className="flex items-center gap-2">
-          <Link to="/employee/pathway">
-            <Button variant="outline" size="sm">
-              View Target Role Pathway
-            </Button>
-          </Link>
-          <Link to="/employee/riasec">
-            <Button variant="primary" size="sm">
-              <Sparkles className="w-4 h-4 mr-1.5" />
-              RIASEC Career Profiler
-            </Button>
-          </Link>
-        </div>
-      </PageHeader>
+        actions={
+          <div className="flex items-center gap-2">
+            <Link to="/employee/pathway">
+              <Button variant="outline" size="sm">
+                View Target Role Pathway
+              </Button>
+            </Link>
+            <Link to="/employee/riasec">
+              <Button variant="primary" size="sm">
+                <Sparkles className="w-4 h-4 mr-1.5" />
+                RIASEC Career Profiler
+              </Button>
+            </Link>
+          </div>
+        }
+      />
 
       {/* Top StatCards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -495,11 +494,11 @@ export const IndividualSkillCatalogPage: React.FC = () => {
               <div className="p-3 rounded-xl bg-secondary/50 border border-primary/20 text-xs space-y-1.5">
                 <div className="font-bold text-foreground flex items-center gap-1.5">
                   <Sparkles size={13} className="text-primary" />
-                  <span>Architectural Isolation Policy (REQ-055)</span>
+                  <span>Elective Learning Policy</span>
                 </div>
                 <ul className="text-muted-foreground text-[11px] space-y-1 list-disc pl-4 leading-relaxed">
                   <li>Elective skill study operates in an <strong>independent context</strong> and will not overwrite or alter your role pathway.</li>
-                  <li>Assessment results are credited directly to your skill competency profile in the Neo4j graph.</li>
+                  <li>Assessment results are credited directly to your competency profile and professional learning progression.</li>
                 </ul>
               </div>
             </div>

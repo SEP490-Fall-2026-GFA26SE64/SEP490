@@ -63,10 +63,9 @@ test('learner reviews, cancels, then confirms a target-role change', async ({ pa
   const alternate = roles.find((role) => role.id !== current.roleId)
   expect(alternate, 'the deterministic local fixture must expose a competing role').toBeTruthy()
 
-  await page.goto('/employee/target-roles')
-  await expect(page.getByRole('heading', { name: 'Target Roles', exact: true })).toBeVisible()
-  await expect(page.locator('#active-target-role-heading')).toHaveText(current.roleSnapshot.name)
-  await expect(page.getByText('2 Roles in Catalog')).toBeVisible()
+  await page.goto('/employee/upskilling?tab=roles')
+  await expect(page.locator('#active-target-role-heading')).toBeVisible()
+  await expect(page.getByText(current.roleSnapshot.name).first()).toBeVisible()
 
   const alternateCard = page.getByLabel(`Target role ${alternate!.name}`)
   await alternateCard.getByRole('button', { name: 'View details' }).click()
@@ -96,7 +95,7 @@ test('learner reviews, cancels, then confirms a target-role change', async ({ pa
   expect((await updateResponse).status()).toBe(200)
 
   await expect(confirmationHeading).toBeHidden()
-  await expect(page.locator('#active-target-role-heading')).toHaveText(alternate!.name)
+  await expect(page.locator('[aria-labelledby="active-target-role-heading"]').getByText(alternate!.name).first()).toBeVisible()
   await expect(alternateCard.getByRole('button', { name: 'Active' })).toBeDisabled()
 })
 

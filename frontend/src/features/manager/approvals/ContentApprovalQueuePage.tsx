@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
+import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import {
@@ -360,8 +361,27 @@ export function ContentApprovalQueuePage() {
                     <tbody className="divide-y divide-border">
                       {paginatedSubmissions.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="text-center py-10 text-muted-foreground text-xs">
-                            No offerings found matching filter criteria.
+                          <td colSpan={7} className="p-6">
+                            <EmptyState
+                              icon={<CheckCircle2 className="h-10 w-10 text-success" />}
+                              title="All Pathways and Offerings Processed"
+                              description="There are currently no learning offerings or pathways awaiting review. Any new submissions from domain experts will appear here."
+                              action={
+                                searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL' ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSearchQuery('')
+                                      setTypeFilter('ALL')
+                                      setStatusFilter('ALL')
+                                    }}
+                                  >
+                                    Reset Filters
+                                  </Button>
+                                ) : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       ) : (
@@ -553,7 +573,7 @@ export function ContentApprovalQueuePage() {
             </label>
             <textarea
               rows={4}
-              placeholder="e.g. Please refine questions #3 and #7 to better target Bloom level 4 analysis..."
+              placeholder="e.g. Please refine questions #3 and #7 to better target practical scenario analysis..."
               value={revisionFeedback}
               onChange={(e) => setRevisionFeedback(e.target.value)}
               className="w-full rounded-lg border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25"

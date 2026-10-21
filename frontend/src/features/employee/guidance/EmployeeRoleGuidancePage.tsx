@@ -14,7 +14,6 @@ import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import {
   Dialog,
@@ -265,9 +264,6 @@ export function EmployeeRoleGuidancePage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Page Actions Bar */}
-        <PageHeader />
-
         {/* Aggregate KPI StatCards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard

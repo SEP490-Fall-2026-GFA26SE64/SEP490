@@ -13,7 +13,7 @@ import { Button } from '../../shared/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../shared/components/ui/Card'
 import { Progress } from '../../shared/components/ui/Progress'
 import { useToast } from '../../shared/hooks/useToast'
-import { createCompanyFromPackagePurchase, setActiveCompanyId } from '../../shared/stores/companyStore'
+import { createCompanyFromPackagePurchase, setActiveCompanyId, type PackageTier } from '../../shared/stores/companyStore'
 import { logPlatformEvent } from '../platform-admin/platformAdminStore'
 import { GuestLayout } from './GuestLayout'
 
@@ -26,14 +26,23 @@ interface ProvisionStep {
   status: 'pending' | 'in_progress' | 'completed'
 }
 
+export interface CheckoutPlanData {
+  tier: PackageTier
+  organizationName: string
+  adminEmail: string
+  adminName: string
+  seatLimit: number
+  subdomain: string
+}
+
 export function WorkspaceProvisioningPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  const [checkoutData] = React.useState<any>(() => {
+  const [checkoutData] = React.useState<CheckoutPlanData>(() => {
     try {
       const raw = localStorage.getItem(CHECKOUT_SELECTION_KEY)
-      if (raw) return JSON.parse(raw)
+      if (raw) return JSON.parse(raw) as CheckoutPlanData
     } catch {
       // fallback
     }
@@ -56,14 +65,14 @@ export function WorkspaceProvisioningPage() {
     },
     {
       id: 'step-2',
-      label: 'PostgreSQL Tenant Isolation Schema',
-      detail: 'Created isolated tenant workspace schema, department structures, and seat limits.',
+      label: 'Tenant Workspace Isolation & Storage',
+      detail: 'Configured secure organization database space, department structures, and seat quotas.',
       status: 'in_progress',
     },
     {
       id: 'step-3',
-      label: 'Neo4j Graph Database Partitioning',
-      detail: 'Initialized organization node label constraints and competency graph space.',
+      label: 'Knowledge & Competency Graph Engine',
+      detail: 'Initialized organizational competency taxonomy and learning path structures.',
       status: 'pending',
     },
     {
@@ -165,8 +174,8 @@ export function WorkspaceProvisioningPage() {
           </Heading>
           <Text className="text-muted-foreground text-sm max-w-lg mx-auto">
             {isAllComplete
-              ? `Workspace credentials and graph spaces have been initialized for ${checkoutData.organizationName}.`
-              : 'Configuring multi-tenant relational schema, Neo4j graph space, and administrative entitlements...'}
+              ? `Workspace credentials and learning systems have been initialized for ${checkoutData.organizationName}.`
+              : 'Configuring secure organization database, competency graph models, and administrative entitlements...'}
           </Text>
         </div>
 

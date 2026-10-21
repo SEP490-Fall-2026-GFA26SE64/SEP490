@@ -76,12 +76,12 @@ const DEFAULT_PROFILES: Record<
     roleTitle: 'Lead System Administrator',
     portal: 'Administration',
     department: 'Corporate Ontology & Governance',
-    scope: 'Neo4j Knowledge Graph & Design System Showcase',
-    status: 'Neo4j Bolt: Active',
+    scope: 'Competency Framework & Design System Showcase',
+    status: 'Competency Engine: Operational',
     details: [
       { label: 'Department', value: 'Corporate Ontology & Governance' },
-      { label: 'Scope', value: 'Neo4j Knowledge Graph & Design System Showcase' },
-      { label: 'Cluster Connectivity', value: 'Neo4j Bolt: Active' },
+      { label: 'Scope', value: 'Competency Framework & Design System Showcase' },
+      { label: 'Connectivity', value: 'Competency Engine: Operational' },
     ],
   },
   'platform-admin': {

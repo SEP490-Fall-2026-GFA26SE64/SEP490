@@ -88,7 +88,7 @@ export function SubscriptionPlansPage() {
             Transparent Pricing for Engineering Upskilling
           </Heading>
           <Text className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
-            Choose the subscription tier scaled for your software engineering team. Every plan includes the Neo4j Knowledge Graph engine and adaptive knowledge tracing.
+            Choose the subscription tier scaled for your software engineering team. Every plan includes our adaptive knowledge graph engine and personalized skill tracing.
           </Text>
 
           {/* Currency & Frequency Controls */}
@@ -245,7 +245,7 @@ export function SubscriptionPlansPage() {
             <div>
               <h4 className="text-sm font-bold text-foreground">Need custom seats or on-premises SLA?</h4>
               <p className="text-xs text-muted-foreground">
-                All subscriptions feature isolated relational schemas and Neo4j graph multi-tenancy. You can upgrade seat limits anytime.
+                All subscriptions feature dedicated tenant isolation and secure workforce analytics. You can upgrade seat limits anytime.
               </p>
             </div>
           </div>

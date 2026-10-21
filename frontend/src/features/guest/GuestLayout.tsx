@@ -104,7 +104,7 @@ export function GuestLayout({ children, currentStep = 1 }: GuestLayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <ShieldCheck size={15} className="text-primary" />
-            <span>Multi-Tenant Isolated Architecture with PostgreSQL & Neo4j</span>
+            <span>Enterprise Multi-Tenant Isolation & Zero-Trust Security</span>
           </div>
           <p>© 2026 Adapt-Learn-Graph Platform. Enterprise Competency Intelligence.</p>
         </div>

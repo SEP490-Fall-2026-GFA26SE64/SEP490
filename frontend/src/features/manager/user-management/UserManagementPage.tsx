@@ -320,12 +320,16 @@ export function UserManagementPage() {
     reloadCompany()
   }
 
-  const handleBulkImportUsers = (data: any) => {
-    const importList = Array.isArray(data) ? data : data.users || []
+  const handleBulkImportUsers = (data: unknown) => {
+    const importList = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'users' in data && Array.isArray((data as Record<string, unknown>).users))
+      ? ((data as Record<string, unknown>).users as unknown[])
+      : []
     if (!Array.isArray(importList) || importList.length === 0) {
       toast({
         title: 'Import Failed',
-        description: 'No valid user objects found in import payload.',
+        description: 'No valid user records found in the imported file.',
         variant: 'destructive',
       })
       return
@@ -341,8 +345,10 @@ export function UserManagementPage() {
       return
     }
 
-    const toAdd = importList.slice(0, availableSeats).map((item: any, idx: number) => {
-      const initials = (item.name || 'User')
+    const toAdd = importList.slice(0, availableSeats).map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      const name = String(item.name || `Team Member ${idx + 1}`)
+      const initials = name
         .split(' ')
         .map((p: string) => p[0])
         .join('')
@@ -358,12 +364,12 @@ export function UserManagementPage() {
 
       const user: CompanyUser = {
         id: `USR-${Math.floor(300 + idx * 10 + Math.random() * 9)}`,
-        name: item.name || `Team Member ${idx + 1}`,
-        email: item.email || `user${idx + 1}@${activeCompany.name.toLowerCase().replace(/\s+/g, '')}.internal`,
+        name,
+        email: String(item.email || `user${idx + 1}@${activeCompany.name.toLowerCase().replace(/\s+/g, '')}.internal`),
         role: userRole,
-        department: item.department || DEPARTMENTS[1],
+        department: String(item.department || DEPARTMENTS[1]),
         status: 'active',
-        targetRole: userRole === 'Employee' ? item.targetRole || 'AI Knowledge Architect' : undefined,
+        targetRole: userRole === 'Employee' ? String(item.targetRole || 'AI Knowledge Architect') : undefined,
         lastActive: 'Just imported',
         avatar: initials || 'TM',
       }

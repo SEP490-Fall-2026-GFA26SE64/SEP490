@@ -6,6 +6,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { useToast } from '../../../shared/hooks/useToast'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { normalizeRoleKey } from '../data/employeeOverviewData'
 
 export interface PathwayStep {
   id: string
@@ -66,8 +67,100 @@ const INITIAL_PATHWAY: PathwayStep[] = [
   },
 ]
 
+const BACKEND_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-be-1',
+    code: 'MOD-108',
+    title: 'Event-Driven Microservices & Kafka Stream Processing',
+    status: 'completed',
+    estimatedHours: 4,
+    skillsTaught: ['Kafka Stream Processing', 'Outbox Relay Pattern'],
+    score: 90,
+  },
+  {
+    id: 'step-be-2',
+    code: 'MOD-202',
+    title: 'PostgreSQL Relational Schema Optimization & Indexing',
+    status: 'completed',
+    estimatedHours: 5,
+    skillsTaught: ['PostgreSQL Indexing', 'Lock Contention Analysis'],
+    score: 88,
+  },
+  {
+    id: 'step-be-3',
+    code: 'MOD-304',
+    title: 'Distributed Consensus & Replication Protocols',
+    status: 'recommended',
+    estimatedHours: 6,
+    skillsTaught: ['Raft Consensus', 'gRPC HTTP/2 Streaming'],
+    prerequisite: 'MOD-108',
+  },
+  {
+    id: 'step-be-4',
+    code: 'MOD-402',
+    title: 'Cloud-Native Container Orchestration & Telemetry',
+    status: 'locked',
+    estimatedHours: 8,
+    skillsTaught: ['Kubernetes Workload Meshes', 'OpenTelemetry Tracing'],
+    prerequisite: 'MOD-304',
+  },
+]
+
+const DATA_SCIENTIST_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-ds-1',
+    code: 'MOD-301',
+    title: 'Geometric Deep Learning & Message Passing Networks',
+    status: 'completed',
+    estimatedHours: 5,
+    skillsTaught: ['Graph Convolutional Networks', 'GraphSAGE Inductive Sampling'],
+    score: 86,
+  },
+  {
+    id: 'step-ds-2',
+    code: 'MOD-302',
+    title: 'Graph Representation Learning & Node Embeddings',
+    status: 'recommended',
+    estimatedHours: 6,
+    skillsTaught: ['Node2Vec Biased Random Walks', 'Topological Hyperbolic Geometry'],
+    prerequisite: 'MOD-301',
+  },
+  {
+    id: 'step-ds-3',
+    code: 'MOD-303',
+    title: 'Heterogeneous Knowledge Graphs & Link Prediction',
+    status: 'locked',
+    estimatedHours: 6,
+    skillsTaught: ['Translational Distance Embeddings (TransE / RotatE)', 'Entity Deduplication'],
+    prerequisite: 'MOD-302',
+  },
+  {
+    id: 'step-ds-4',
+    code: 'MOD-403',
+    title: 'Causal Inference & Graph Machine Learning Capstone',
+    status: 'locked',
+    estimatedHours: 8,
+    skillsTaught: ['DAG Causal Discovery', 'GNN Explainer & Subgraph Attribution'],
+    prerequisite: 'MOD-303',
+  },
+]
+
+const SKILL_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-sk-1',
+    code: 'MOD-CYP-101',
+    title: 'Accelerated Cypher Querying & Pattern Traversal',
+    status: 'recommended',
+    estimatedHours: 3,
+    skillsTaught: ['Declarative Cypher MATCH & MERGE', 'Cypher Query Profiling'],
+    score: 85,
+  },
+]
+
 export function AdaptivePathwayTimeline() {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+  const { profile } = useEmployeeLearningState()
+  const isSkillMode = profile.selectedViewType === 'skill'
 
   React.useEffect(() => {
     const handleSync = () => setActiveCompany(getActiveCompany())
@@ -81,6 +174,11 @@ export function AdaptivePathwayTimeline() {
 
   const defaultSteps: PathwayStep[] = React.useMemo(() => {
     if (activeCompany.id === 'comp-technova') {
+      const isSkillMode = profile.selectedViewType === 'skill'
+      const roleKey = normalizeRoleKey(profile.targetRole)
+      if (isSkillMode) return SKILL_PATHWAY
+      if (roleKey === 'senior-backend-engineer') return BACKEND_PATHWAY
+      if (roleKey === 'graph-data-scientist') return DATA_SCIENTIST_PATHWAY
       return INITIAL_PATHWAY
     }
     if (!activeCompany?.modules || activeCompany.modules.length === 0) {
@@ -96,7 +194,7 @@ export function AdaptivePathwayTimeline() {
       prerequisite: idx > 0 ? activeCompany.modules[idx - 1].code : undefined,
       score: idx === 0 ? 88 : undefined,
     }))
-  }, [activeCompany])
+  }, [activeCompany, profile.selectedViewType, profile.targetRole])
 
   const [steps, setSteps] = React.useState<PathwayStep[]>(defaultSteps)
   React.useEffect(() => {
@@ -144,9 +242,6 @@ export function AdaptivePathwayTimeline() {
       variant: 'warning',
     })
   }
-
-  const { profile } = useEmployeeLearningState()
-  const isSkillMode = profile.selectedViewType === 'skill'
 
   const skillSteps: PathwayStep[] = React.useMemo(() => {
     const currentSkillName = profile.targetSkill || 'Neo4j Cypher Traversal'

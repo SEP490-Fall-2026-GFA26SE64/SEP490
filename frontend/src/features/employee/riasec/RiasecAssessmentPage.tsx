@@ -134,11 +134,11 @@ export const RiasecAssessmentPage: React.FC = () => {
   const dimensionScores: DimensionScore[] = useMemo(() => {
     const dimMap: Record<'R' | 'I' | 'A' | 'S' | 'E' | 'C', { sum: number; count: number; name: string; title: string; desc: string; color: string }> = {
       R: { sum: 0, count: 0, name: 'Realistic', title: 'Hands-on & Infrastructure', desc: 'Practical execution, DevOps, distributed systems, networks.', color: 'hsl(var(--primary))' },
-      I: { sum: 0, count: 0, name: 'Investigative', title: 'Algorithmic & Analytical', desc: 'Mathematical problem-solving, data science, deep architecture.', color: '#0284C7' },
-      A: { sum: 0, count: 0, name: 'Artistic', title: 'Creative & Conceptual', desc: 'UI/UX design, visual storytelling, exploratory software designs.', color: '#8B5CF6' },
+      I: { sum: 0, count: 0, name: 'Investigative', title: 'Algorithmic & Analytical', desc: 'Mathematical problem-solving, data science, deep architecture.', color: 'hsl(var(--primary))' },
+      A: { sum: 0, count: 0, name: 'Artistic', title: 'Creative & Conceptual', desc: 'UI/UX design, visual storytelling, exploratory software designs.', color: 'hsl(var(--primary-hover))' },
       S: { sum: 0, count: 0, name: 'Social', title: 'Collaborative & Mentoring', desc: 'Team enablement, knowledge sharing, cross-functional leadership.', color: 'hsl(var(--success))' },
       E: { sum: 0, count: 0, name: 'Enterprising', title: 'Product & Strategic', desc: 'Product vision, driving deliverables, tech-business alignment.', color: 'hsl(var(--warning))' },
-      C: { sum: 0, count: 0, name: 'Conventional', title: 'Systematic & Precision', desc: 'Quality assurance, formal schema integrity, reliability engineering.', color: '#64748B' },
+      C: { sum: 0, count: 0, name: 'Conventional', title: 'Systematic & Precision', desc: 'Quality assurance, formal schema integrity, reliability engineering.', color: 'hsl(var(--muted-foreground))' },
     }
 
     RIASEC_QUESTIONS.forEach((q) => {
@@ -217,10 +217,8 @@ export const RiasecAssessmentPage: React.FC = () => {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Top Header / Actions Bar */}
+        {/* Actions Bar */}
         <PageHeader
-          title="RIASEC Career Interest Profiler"
-          description="Discover your Holland occupational interest code to align your adaptive learning pathway with your natural strengths."
           actions={
             <div className="flex items-center gap-2">
               {isCompleted ? (

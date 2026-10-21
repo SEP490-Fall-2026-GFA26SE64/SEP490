@@ -135,28 +135,28 @@ export function TargetRolesPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        const mapped: TargetRoleModel[] = data.map((r: any) => ({
-          id: r.id,
-          stableId: r.code,
-          code: r.code,
-          title: r.name,
-          domainCode: r.domainCode,
-          familyCode: r.familyCode,
-          track: r.track,
-          seniority: r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3'),
-          assignedExpertId: r.assignedExpertId,
-          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || r.assignedExpertId || '',
-          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || r.domainCode || 'Information Technology',
-          description: r.description || '',
-          responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
-          version: r.version || '1.0',
-          status: (r.status?.toLowerCase() === 'active' ? 'published' : r.status?.toLowerCase()) || 'draft',
-          rejectionReason: r.rejectionReason || '',
+        const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => ({
+          id: String(r.id || ''),
+          stableId: String(r.code || ''),
+          code: String(r.code || ''),
+          title: String(r.name || ''),
+          domainCode: String(r.domainCode || ''),
+          familyCode: String(r.familyCode || ''),
+          track: r.track as TargetRoleModel['track'],
+          seniority: String(r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3')),
+          assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
+          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
+          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || String(r.domainCode || 'Information Technology'),
+          description: String(r.description || ''),
+          responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
+          version: String(r.version || '1.0'),
+          status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+          rejectionReason: String(r.rejectionReason || ''),
           competencyIds: [],
-          skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
+          skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
           activeEnrollments: 0,
-          createdAt: r.createdAt || r.updatedAt || new Date().toISOString(),
-          updatedAt: r.updatedAt || r.createdAt || new Date().toISOString(),
+          createdAt: String(r.createdAt || r.updatedAt || new Date().toISOString()),
+          updatedAt: String(r.updatedAt || r.createdAt || new Date().toISOString()),
         }))
         setRoles(mapped)
       } else {
@@ -214,22 +214,29 @@ export function TargetRolesPage() {
   const [deletingRole, setDeletingRole] = React.useState<TargetRoleModel | null>(null)
   const [compSearchQuery, setCompSearchQuery] = React.useState('')
 
-  const handleImportRoles = (data: any) => {
-    const list = Array.isArray(data) ? data : data.roles || []
-    const normalized: TargetRoleModel[] = list.map((item: any, idx: number) => ({
-      id: item.id || `role-${Date.now()}-${idx}`,
-      stableId: item.stableId || `role-uuid-${Date.now()}-${idx}`,
-      code: (item.code || `ROLE-IMP-${idx + 1}`).trim().toUpperCase(),
-      title: (item.title || 'Untitled Target Role').trim(),
-      department: (item.department || 'Machine Learning & Cognitive Architecture').trim(),
-      description: (item.description || 'Target career role definition').trim(),
-      version: item.version || '1.0',
-      status: (item.status === 'draft' || item.status === 'archived' || item.status === 'sent' || item.status === 'rejected') ? item.status : 'published',
-      competencyIds: Array.isArray(item.competencyIds) ? item.competencyIds : [],
-      skillTargets: Array.isArray(item.skillTargets) ? item.skillTargets : [],
-      activeEnrollments: Number(item.activeEnrollments) || 0,
-      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+  const handleImportRoles = (data: unknown) => {
+    const list = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'roles' in data && Array.isArray((data as Record<string, unknown>).roles))
+      ? ((data as Record<string, unknown>).roles as unknown[])
+      : []
+    const normalized: TargetRoleModel[] = list.map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      return {
+        id: (item.id as string) || `role-${Date.now()}-${idx}`,
+        stableId: (item.stableId as string) || `role-uuid-${Date.now()}-${idx}`,
+        code: String(item.code || `ROLE-IMP-${idx + 1}`).trim().toUpperCase(),
+        title: String(item.title || 'Untitled Target Role').trim(),
+        department: String(item.department || 'Machine Learning & Cognitive Architecture').trim(),
+        description: String(item.description || 'Target career role definition').trim(),
+        version: String(item.version || '1.0'),
+        status: (item.status === 'draft' || item.status === 'sent' || item.status === 'rejected') ? item.status : 'published',
+        competencyIds: Array.isArray(item.competencyIds) ? (item.competencyIds as string[]) : [],
+        skillTargets: Array.isArray(item.skillTargets) ? (item.skillTargets as TargetRoleModel['skillTargets']) : [],
+        activeEnrollments: Number(item.activeEnrollments) || 0,
+        updatedAt: String(item.updatedAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
     saveAndSetRoles((prev) => [...normalized, ...prev])
   }
 
@@ -544,10 +551,11 @@ export function TargetRolesPage() {
         })
         return
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e : new Error(String(e))
       toast({
         title: 'Network Error',
-        description: e?.message || 'Could not communicate with server.',
+        description: err.message || 'Could not communicate with server.',
         variant: 'destructive',
       })
       return
@@ -885,7 +893,7 @@ export function TargetRolesPage() {
                 <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft' | 'sent' | 'rejected')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
                     <option value="all">All Statuses ({totalRoles})</option>
@@ -1150,8 +1158,8 @@ export function TargetRolesPage() {
                                   e.stopPropagation()
                                   setGraphRole(role)
                                 }}
-                                title="View Knowledge Graph (REQ-018-F01)"
-                                aria-label="View Knowledge Graph"
+                                title="View Competency Knowledge Graph"
+                                aria-label="View Competency Knowledge Graph"
                               >
                                 <NetworkIcon className="h-4 w-4 text-primary" />
                               </Button>
@@ -1714,7 +1722,7 @@ export function TargetRolesPage() {
 
                 {selectedRole.skillTargets.length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground border border-dashed rounded-lg bg-card/40 text-xs">
-                    No micro-skills linked yet. Awaiting mapping by the assigned Domain Expert in Sprint 3.
+                    No micro-skills linked yet. Awaiting competency mapping by the assigned Subject Matter Expert.
                   </div>
                 ) : (
                   <div className="overflow-x-auto border rounded-lg border-border">
