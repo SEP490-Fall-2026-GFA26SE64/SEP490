@@ -2,6 +2,7 @@ import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
   employeeBaseline: {
+    "unavailable": "Bài đánh giá nền tảng hiện chưa khả dụng. Hãy liên hệ quản trị viên để kiểm tra quyền truy cập và tình trạng bài đánh giá.",
     "scope": "Phạm vi đánh giá",
     "scopeNotice": "Phạm vi phản ánh đúng bài bạn đã làm. Việc đổi vị trí hoặc cấu hình sau này không thay đổi kết quả này.",
     "scopes": {"OCCUPATION": "Đánh giá toàn bộ nghề nghiệp", "EARLIER_ROLE": "Đánh giá theo vị trí trước đây", "EARLIER_OCCUPATION": "Đánh giá nghề nghiệp trước đây"},
@@ -41,6 +42,7 @@ export const vi: TranslationKeys = {
     },
   },
   adaptiveBaseline: {
+    "unavailable": "Chức năng cấu hình đánh giá nền tảng hiện chưa khả dụng. Hãy liên hệ quản trị viên để kiểm tra quyền truy cập và điều kiện đánh giá.",
     "paging": { "navigation": "Phân trang", "first": "Trang đầu", "previous": "Trước", "next": "Tiếp", "last": "Trang cuối", "showing": "Hiển thị", "of": "trên" },
     "title": "Đánh giá nền tảng",
     "description": "Quản lý bài đánh giá theo nghề nghiệp, xem các phiên bản đã lưu và kiểm soát việc bắt đầu bài mới.",

@@ -1,5 +1,6 @@
 export const en = {
   employeeBaseline: {
+    "unavailable": "Baseline assessment is not available yet. Contact your administrator to check access and assessment availability.",
     "scope": "Assessment scope",
     "scopeNotice": "This scope reflects the assessment you took. Later Role or baseline changes do not alter these results.",
     "scopes": {"OCCUPATION": "Full Occupation baseline", "EARLIER_ROLE": "Earlier Role baseline", "EARLIER_OCCUPATION": "Earlier Occupation baseline"},
@@ -39,6 +40,7 @@ export const en = {
     },
   },
   adaptiveBaseline: {
+    "unavailable": "Baseline configuration is not available yet. Contact your administrator to check access and assessment readiness.",
     "paging": { "navigation": "Pagination", "first": "First page", "previous": "Previous", "next": "Next", "last": "Last page", "showing": "Showing", "of": "of" },
     "title": "Baseline assessments",
     "description": "Manage Occupation baselines, review saved versions and control when employees can begin.",
