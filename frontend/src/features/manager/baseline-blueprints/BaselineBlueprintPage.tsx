@@ -29,10 +29,6 @@ import {
   reviseBlueprint,
 } from './baselineBlueprintApi'
 import {
-  developmentBaselineOccupation,
-  developmentBaselineOccupations,
-} from './developmentBaselineCatalog'
-import {
   BaselineRoleConfiguration,
   type CountField,
 } from './BaselineRoleConfiguration'
@@ -527,23 +523,11 @@ function AssessmentReview({ assessment, busy, onReview, onPublish }: {
 }
 
 async function loadOccupationSummaries(): Promise<OccupationSummary[]> {
-  try {
-    return await listOccupations()
-  } catch (error) {
-    const fixtures = developmentBaselineOccupations()
-    if (fixtures.length > 0 && canUseDevelopmentCatalog(error)) return fixtures
-    throw error
-  }
+  return listOccupations()
 }
 
 async function loadOccupationDetail(occupationId: string): Promise<OccupationDetail> {
-  try {
-    return await getOccupation(occupationId)
-  } catch (error) {
-    const fixture = developmentBaselineOccupation(occupationId)
-    if (fixture && canUseDevelopmentCatalog(error)) return fixture
-    throw error
-  }
+  return getOccupation(occupationId)
 }
 
 async function loadLatestBlueprint(occupationId: string): Promise<BaselineBlueprint | null> {
@@ -553,11 +537,6 @@ async function loadLatestBlueprint(occupationId: string): Promise<BaselineBluepr
     if (error instanceof BaselineBlueprintApiError && error.status === 404) return null
     throw error
   }
-}
-
-function canUseDevelopmentCatalog(error: unknown) {
-  return import.meta.env.DEV && (error instanceof TypeError
-    || (error instanceof BaselineBlueprintApiError && (error.status === 404 || error.status === 503)))
 }
 
 function rolesFromOccupation(occupation: OccupationDetail): BlueprintRole[] {

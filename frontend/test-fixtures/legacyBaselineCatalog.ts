@@ -2,7 +2,7 @@ import type {
   BlueprintRole,
   OccupationDetail,
   OccupationSummary,
-} from './baselineBlueprintApi'
+} from '../src/features/manager/baseline-blueprints/baselineBlueprintApi'
 
 type CatalogRole = Omit<BlueprintRole, 'totalQuestionCount'>
 

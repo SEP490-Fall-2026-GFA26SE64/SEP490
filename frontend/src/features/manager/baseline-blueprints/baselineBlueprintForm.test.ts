@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { developmentBaselineRoles } from './developmentBaselineCatalog'
+import { developmentBaselineRoles } from '../../../../test-fixtures/legacyBaselineCatalog'
 import {
   difficulties,
   difficultyQuestionTotal,

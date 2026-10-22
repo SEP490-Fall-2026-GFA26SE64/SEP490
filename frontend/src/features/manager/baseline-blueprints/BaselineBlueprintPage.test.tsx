@@ -25,7 +25,7 @@ import {
   developmentBaselineOccupation,
   developmentBaselineOccupations,
   developmentBaselineRoles,
-} from './developmentBaselineCatalog'
+} from '../../../../test-fixtures/legacyBaselineCatalog'
 
 const toast = vi.fn()
 
