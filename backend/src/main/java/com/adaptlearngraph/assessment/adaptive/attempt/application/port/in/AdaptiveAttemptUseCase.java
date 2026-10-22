@@ -49,19 +49,21 @@ public interface AdaptiveAttemptUseCase {
     }
     record View(UUID id, String occupationId, String occupationName, String purpose, String roleId,
                 String state, long revision, Instant startedAt, Instant deadlineAt, Instant observedAt,
-                boolean expired, int maxQuestions, int answeredCount, List<Presented> items) {
+                boolean expired, int maxQuestions, int answeredCount, List<Presented> items, AssessmentScope assessmentScope) {
         public View { items = List.copyOf(items); }
     }
+    /** Public assessment scope, independent of internal format/version names and entry provenance. */
+    enum AssessmentScope { OCCUPATION, EARLIER_ROLE, EARLIER_OCCUPATION }
     record SkillResult(String microSkillId, String microSkillName, BigDecimal mastery, String confidence) {}
     /** Deliberately excludes theta/SE, answers, scoring keys, item parameters and evidence/receipt data. */
     record Result(UUID attemptId, String occupationId, String occupationName, String purpose,
                   String roleId, String roleName, String state, String completionReason,
                   Instant startedAt, Instant completedAt, UUID replacesAttemptId,
-                  UUID replacementAttemptId, BigDecimal rawScore, List<SkillResult> skills) {
+                  UUID replacementAttemptId, BigDecimal rawScore, List<SkillResult> skills, AssessmentScope assessmentScope) {
         public Result { skills = List.copyOf(skills); }
     }
     enum Code { INVALID_REQUEST, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, SELECTION_UNAVAILABLE,
-        BLUEPRINT_UNAVAILABLE, BLUEPRINT_STALE, INFEASIBLE_SCOPE, POLICY_UNAVAILABLE,
+        BLUEPRINT_UNAVAILABLE, CONFIGURATION_UPDATE_REQUIRED, BLUEPRINT_STALE, INFEASIBLE_SCOPE, POLICY_UNAVAILABLE,
         ALLOWANCE_CLOSED, IDEMPOTENCY_CONFLICT, VERSION_CONFLICT, DEPENDENCY_UNAVAILABLE,
         ATTEMPT_CLOSED, DEADLINE_REACHED, ANSWER_NOT_PRESENTED, INVALID_OPTION, MINIMUM_EVIDENCE_NOT_MET }
     final class Failure extends RuntimeException {

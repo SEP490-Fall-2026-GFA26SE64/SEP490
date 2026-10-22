@@ -34,7 +34,7 @@ public final class AdaptiveBlueprintPreview {
             skills.computeIfAbsent(item.microSkillId(), ignored -> new ArrayDeque<>()).add(item);
         });
         var sample = new ArrayList<SampleItem>();
-        int maximum = configuration.exploration().maxQuestions();
+        int maximum = configuration.bounds(java.util.Optional.empty()).maxQuestions();
         while (sample.size() < maximum) {
             boolean added = false;
             for (var pool : skills.values()) {

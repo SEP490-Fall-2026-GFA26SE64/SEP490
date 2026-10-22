@@ -28,6 +28,7 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
     private final NamedParameterJdbcTemplate jdbc;
     private final AdaptiveBlueprintJson json;
     private final TransactionTemplate transactions;
+    private final JdbcAdaptiveBlueprintListing listing;
     private final ThreadLocal<Scope> transactionScope = new ThreadLocal<>();
 
     public JdbcAdaptiveBlueprintStore(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper,
@@ -35,7 +36,14 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
         this.json = new AdaptiveBlueprintJson(mapper);
         this.transactions = new TransactionTemplate(transactionManager);
+        this.listing = new JdbcAdaptiveBlueprintListing(jdbc, transactionManager);
         transactions.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+    }
+
+    @Override public com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Page list(
+            UUID organizationId, java.util.Set<String> occupations,
+            com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Query query) {
+        return read(() -> listing.list(organizationId, occupations, query));
     }
 
     @Override
@@ -52,6 +60,8 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
                 jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))",
                         new MapSqlParameterSource("key", scope.organizationId() + "\n" + scope.occupationId()), (rs, row) -> true);
                 jdbc.query("SELECT blueprint_id FROM platform.baseline_blueprint WHERE organization_id=:org AND occupation_id=:occupation FOR UPDATE",
+                        key(scope), (rs, row) -> rs.getObject(1, UUID.class));
+                jdbc.query("SELECT blueprint_id FROM platform.baseline_blueprint_activation WHERE organization_id=:org AND occupation_id=:occupation FOR UPDATE",
                         key(scope), (rs, row) -> rs.getObject(1, UUID.class));
                 return work.get();
             });
@@ -177,24 +187,44 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
     }
 
     @Override
+    public void archiveLegacyWorking(Scope scope, UUID workingRevisionId, long expectedRevision, UUID actorId, Instant closedAt) {
+        requireTransaction(scope);
+        changedOne(jdbc.update("""
+                UPDATE platform.baseline_adaptive_blueprint_working_revision
+                SET state='ABANDONED',revision=revision+1,updated_by=:actor,updated_at=:time,closed_at=:time
+                WHERE organization_id=:org AND occupation_id=:occupation AND working_revision_id=:working
+                  AND revision=:expected AND state='OPEN' AND NOT jsonb_exists(configuration,'occupationBounds')
+                """, key(scope).addValue("working", workingRevisionId).addValue("expected", expectedRevision)
+                .addValue("actor", actorId).addValue("time", closedAt.atOffset(ZoneOffset.UTC))));
+    }
+
+    @Override
     public void insertVersion(Scope scope, Version version) {
         requireTransaction(scope); sameScope(scope, version.scope());
+        boolean full = version.configuration().scopePolicy() == ScopePolicy.FULL_OCCUPATION_V2;
+        Bounds occupation = version.configuration().occupationBounds();
+        Bounds exploration = version.configuration().exploration();
         var params = key(scope).addValue("id", version.id().blueprintId()).addValue("version", version.id().version())
                 .addValue("name", version.configuration().name()).addValue("occupationName", version.occupationNameSnapshot())
-                .addValue("fingerprint", version.catalogFingerprint()).addValue("max", version.configuration().exploration().maxQuestions())
-                .addValue("duration", version.configuration().exploration().timeLimitSeconds()).addValue("model", version.pins().modelVersionId())
+                .addValue("fingerprint", version.catalogFingerprint()).addValue("max", full ? null : exploration.maxQuestions())
+                .addValue("duration", full ? null : exploration.timeLimitSeconds())
+                .addValue("policy", full ? ScopePolicy.FULL_OCCUPATION_V2.name() : null)
+                .addValue("occupationMax", full ? occupation.maxQuestions() : null)
+                .addValue("occupationDuration", full ? occupation.timeLimitSeconds() : null).addValue("model", version.pins().modelVersionId())
                 .addValue("mapping", version.pins().masteryMappingVersionId()).addValue("parameters", version.pins().parameterSetId())
                 .addValue("actor", version.createdBy()).addValue("time", version.createdAt().atOffset(ZoneOffset.UTC));
         jdbc.update("""
                 INSERT INTO platform.baseline_adaptive_blueprint_version(blueprint_id,version,organization_id,occupation_id,
                     name,occupation_name_snapshot,catalog_fingerprint,exploration_max_questions,exploration_time_limit_seconds,
-                    model_version_id,mastery_mapping_version_id,parameter_set_id,created_by,created_at)
-                VALUES (:id,:version,:org,:occupation,:name,:occupationName,:fingerprint,:max,:duration,:model,:mapping,:parameters,:actor,:time)
+                    model_version_id,mastery_mapping_version_id,parameter_set_id,created_by,created_at,
+                    scope_policy,occupation_max_questions,occupation_time_limit_seconds)
+                VALUES (:id,:version,:org,:occupation,:name,:occupationName,:fingerprint,:max,:duration,:model,:mapping,:parameters,:actor,:time,
+                    :policy,:occupationMax,:occupationDuration)
                 """, params);
         version.roles().forEach((roleId, role) -> {
             Bounds bounds = version.configuration().roles().get(roleId);
             params.addValue("role", roleId).addValue("roleName", role.name()).addValue("roleVersion", role.catalogVersion())
-                    .addValue("roleMax", bounds.maxQuestions()).addValue("roleDuration", bounds.timeLimitSeconds());
+                    .addValue("roleMax", full ? null : bounds.maxQuestions()).addValue("roleDuration", full ? null : bounds.timeLimitSeconds());
             jdbc.update("""
                     INSERT INTO platform.baseline_adaptive_blueprint_role VALUES (:id,:version,:role,:roleName,:roleVersion,:roleMax,:roleDuration)
                     """, params);
@@ -240,6 +270,7 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
         UUID blueprintId = identity(scope);
         UUID outcomeBlueprint = switch (receipt.outcome()) {
             case Saved saved -> saved.working().blueprintId();
+            case Converted converted -> converted.working().blueprintId();
             case Finalized finalized -> finalized.version().id().blueprintId();
             case Disabled disabled -> disabled.activation().current().map(VersionId::blueprintId).orElse(blueprintId);
         };
@@ -298,6 +329,6 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
 
     private static <T> T read(Supplier<T> operation) {
         try { return operation.get(); }
-        catch (DataAccessException cause) { throw translated(cause); }
+        catch (DataAccessException | TransactionException cause) { throw translated(cause); }
     }
 }

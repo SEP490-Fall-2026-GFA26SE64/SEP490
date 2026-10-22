@@ -4,6 +4,10 @@ import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBase
 import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveTechnicalVersionPort;
 import com.adaptlearngraph.assessment.adaptive.domain.AdaptiveBlueprint.*;
+import com.adaptlearngraph.assessment.adaptive.psychometrics.AdaptiveIrtPolicy.Model;
+import com.adaptlearngraph.assessment.adaptive.psychometrics.Irt3pl;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,6 +65,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveTechnicalVersionPort technical;
     private final AdaptiveBlueprintJson json;
+    private final ObjectMapper policies;
     private final Properties settings;
 
     public JdbcAdaptiveBlueprintEligibilityAdapter(NamedParameterJdbcTemplate jdbc, AdaptiveBaselineCatalogPort catalog,
@@ -69,6 +74,12 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
         this.catalog = Objects.requireNonNull(catalog);
         this.technical = Objects.requireNonNull(technical);
         this.json = new AdaptiveBlueprintJson(mapper);
+        this.policies = mapper.copy().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES,
+                DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+                .enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+                .disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT);
+        this.policies.setConfig(this.policies.getDeserializationConfig().without(MapperFeature.ALLOW_COERCION_OF_SCALARS));
         this.settings = Objects.requireNonNull(settings);
         Objects.requireNonNull(settings.organizationId(), "Explicit local organization required");
         Objects.requireNonNull(settings.questionBankId(), "Explicit local question bank required");
@@ -103,12 +114,19 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
             if (!Boolean.TRUE.equals(allowed)) return Optional.empty();
             var versions = pins.isPresent() ? technical.findPinned(pins.get())
                     : technical.findPromoted(settings.modelVersionId(), settings.masteryMappingVersionId());
-            var selected = versions.orElseThrow(() -> new DependencyUnavailable("Approved technical versions unavailable", null)).pins();
+            var technicalVersions = versions.orElseThrow(() -> new DependencyUnavailable("Approved technical versions unavailable", null));
+            var selected = technicalVersions.pins();
+            Model model = policies.readValue(technicalVersions.modelConfigurationJson(), Model.class);
             Set<String> skills = snapshot.roles().values().stream().flatMap(role -> role.skills().keySet().stream()).collect(Collectors.toSet());
-            var parameters = technical.findParameters(selected, skills).stream().collect(Collectors.toMap(
+            var parameterRows = technical.findParameters(selected, skills);
+            var parameters = parameterRows.stream().collect(Collectors.toMap(
                     AdaptiveTechnicalVersionPort.ItemParameter::itemVersionId, AdaptiveTechnicalVersionPort.ItemParameter::microSkillId));
             List<Item> items = skills.isEmpty() ? List.of() : jdbc.query(ITEMS, params.addValue("skills", skills),
                     (rs, row) -> new Item(rs.getObject("item_version_id", UUID.class), rs.getString("micro_skill_id"), rs.getString("content_hash")));
+            Set<UUID> published = items.stream().map(Item::id).collect(Collectors.toSet());
+            parameterRows.stream().filter(item -> published.contains(item.itemVersionId())).forEach(item -> model.validate(
+                    new Irt3pl.Item(item.itemVersionId(), item.microSkillId(), selected.parameterSetId(),
+                            item.a().doubleValue(), item.b().doubleValue(), item.c().doubleValue())));
             var roles = new LinkedHashMap<String, RolePool>();
             snapshot.roles().forEach((id, role) -> {
                 Set<UUID> covered = items.stream().filter(item -> role.skills().containsKey(item.skill()) && item.skill().equals(parameters.get(item.id())))
@@ -126,8 +144,12 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
             items.forEach(item -> manifest.add(json.write(List.of(item.id(), item.skill(), item.hash()))));
             String fingerprint = AdaptiveBlueprintJson.hash("AB-ELIGIBILITY-V1:" + snapshot.fingerprint() + ":"
                     + scope.organizationId() + ":" + scope.occupationId() + ":" + settings.questionBankId() + ":" + json.write(manifest));
-            return Optional.of(new Snapshot(scope, snapshot.occupationName(), fingerprint, selected, roles));
+            var coverage = new Coverage(model.minimumPerSkill(), model.maxResponses(),
+                    items.stream().collect(Collectors.toMap(Item::id, Item::skill)));
+            return Optional.of(new Snapshot(scope, snapshot.occupationName(), fingerprint, selected, roles, coverage));
         } catch (DataAccessException | com.adaptlearngraph.assessment.adaptive.application.port.in.AdaptiveBlueprintUseCase.Failure
+                 | com.fasterxml.jackson.core.JsonProcessingException
+                 | com.adaptlearngraph.assessment.adaptive.psychometrics.AdaptiveIrtPolicy.Failure
                  | IllegalArgumentException | IllegalStateException failure) {
             throw new DependencyUnavailable("Assessment eligibility is unavailable or inconsistent", failure);
         }

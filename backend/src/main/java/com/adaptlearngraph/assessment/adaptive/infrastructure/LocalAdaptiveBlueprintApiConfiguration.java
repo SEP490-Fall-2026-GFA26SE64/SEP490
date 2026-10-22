@@ -42,9 +42,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class LocalAdaptiveBlueprintApiConfiguration {
     @Bean
     AdaptiveBlueprintActorPort adaptiveBlueprintActorPort(DataSource dataSource,
-            @Value("${assessment.baseline.adaptive.local-actor-id:#{null}}") UUID actorId) {
+            @Value("${assessment.baseline.adaptive.local-actor-id:#{null}}") UUID actorId,
+            JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
         var jdbc = new NamedParameterJdbcTemplate(dataSource);
-        return () -> {
+        AdaptiveBlueprintActorPort identity = () -> {
             if (actorId == null) return Optional.empty();
             try {
                 var params = Map.of("actor", actorId);
@@ -56,6 +57,13 @@ public class LocalAdaptiveBlueprintApiConfiguration {
                 Failure failure = new Failure(Code.DEPENDENCY_UNAVAILABLE, "Actor context unavailable", List.of());
                 failure.initCause(cause);
                 throw failure;
+            }
+        };
+        return new AdaptiveBlueprintActorPort() {
+            @Override public Optional<Actor> currentActor() { return identity.currentActor(); }
+            @Override public java.util.Set<String> authorizedOccupations(Actor actor) {
+                return actor.isActiveLdManager() && settings.organizationId().equals(actor.organizationId())
+                        ? settings.occupationIds() : java.util.Set.of();
             }
         };
     }

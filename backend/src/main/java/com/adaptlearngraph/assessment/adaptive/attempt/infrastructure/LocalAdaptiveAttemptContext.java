@@ -57,7 +57,11 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
             if (!scope.occupationId().equals(occupation(selected.role()))) throw new Failure(Code.SELECTION_UNAVAILABLE);
             role = Optional.of(selected.role()); revision = Optional.of(selected.revision());
         }
-        jdbc.query("SELECT blueprint_id FROM platform.baseline_blueprint WHERE organization_id=:org AND occupation_id=:occupation FOR SHARE",
+        // Same scope key as management, shared until attempt/pool/first item/receipt commit.
+        // Advisory coordination also covers an absent identity/activation row.
+        jdbc.queryForObject("SELECT pg_advisory_xact_lock_shared(hashtextextended(:coordination,0))",
+                Map.of("coordination", scope.organizationId() + "\n" + scope.occupationId()), (rs, row) -> true);
+        jdbc.query("SELECT blueprint_id FROM platform.baseline_blueprint_activation WHERE organization_id=:org AND occupation_id=:occupation FOR SHARE",
                 params, (rs, row) -> rs.getObject(1, UUID.class));
         return snapshots.resolve(scope, role, revision);
     }

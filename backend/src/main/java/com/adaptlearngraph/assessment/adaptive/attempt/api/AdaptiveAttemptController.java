@@ -81,7 +81,10 @@ public final class AdaptiveAttemptController {
             case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
             default -> HttpStatus.CONFLICT;
         };
-        return ResponseEntity.status(status).cacheControl(CacheControl.noStore()).body(new Error(code.name(), "Adaptive baseline request: " + code));
+        String message = code == Code.CONFIGURATION_UPDATE_REQUIRED
+                ? "This baseline needs an updated Occupation configuration before new starts. Contact your L&D Manager."
+                : "Adaptive baseline request: " + code;
+        return ResponseEntity.status(status).cacheControl(CacheControl.noStore()).body(new Error(code.name(), message));
     }
     public record Error(String code, String message) {}
 }

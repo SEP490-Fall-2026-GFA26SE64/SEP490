@@ -9,6 +9,9 @@ import java.util.UUID;
 public interface AdaptiveBlueprintActorPort {
     Optional<Actor> currentActor();
 
+    /** Server-authorized visibility, independent of Catalog/item availability; deny by default. */
+    default Set<String> authorizedOccupations(Actor actor) { return Set.of(); }
+
     record Actor(UUID accountId, UUID organizationId, boolean active, Set<String> roles) {
         public Actor {
             Objects.requireNonNull(accountId, "accountId");

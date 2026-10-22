@@ -25,14 +25,43 @@ public final class AdaptiveBlueprint {
         }
     }
 
-    /** L&D-editable values. Role keys must exactly match authorized active roles at finalization. */
-    public record Configuration(String name, Bounds exploration, Map<String, Bounds> roles) {
+    public enum ScopePolicy { LEGACY_ROLE_OR_EXPLORATION, FULL_OCCUPATION_V2 }
+
+    /** Dual-format value. Legacy limits are retained only for their original snapshots/receipts. */
+    public record Configuration(String name, Bounds exploration, Map<String, Bounds> roles, Bounds occupationBounds) {
+        public Configuration(String name, Bounds exploration, Map<String, Bounds> roles) {
+            this(name, exploration, roles, null);
+        }
+
+        public static Configuration occupation(String name, Bounds bounds) {
+            return new Configuration(name, null, Map.of(), Objects.requireNonNull(bounds));
+        }
+
         public Configuration {
             name = text(name);
-            Objects.requireNonNull(exploration, "exploration");
-            roles = Map.copyOf(roles);
+            roles = roles == null && occupationBounds != null ? Map.of() : Map.copyOf(Objects.requireNonNull(roles));
             roles.keySet().forEach(AdaptiveBlueprint::identifier);
-            if (roles.isEmpty()) throw new IllegalArgumentException("Active roles are required");
+            if (occupationBounds != null) {
+                if (exploration != null || !roles.isEmpty()) throw new IllegalArgumentException("Mixed Blueprint scopes");
+                if (name.codePointCount(0, name.length()) > 100) throw new IllegalArgumentException("Blueprint name exceeds 100 characters");
+                long seconds = occupationBounds.timeLimitSeconds();
+                long maximum = occupationBounds.maxQuestions();
+                if (seconds < maximum * 30 || seconds > maximum * 120) {
+                    throw new IllegalArgumentException("Total duration must allow 30 to 120 seconds per maximum question");
+                }
+            } else {
+                Objects.requireNonNull(exploration, "exploration");
+                if (roles.isEmpty()) throw new IllegalArgumentException("Legacy active roles are required");
+            }
+        }
+
+        public ScopePolicy scopePolicy() {
+            return occupationBounds == null ? ScopePolicy.LEGACY_ROLE_OR_EXPLORATION : ScopePolicy.FULL_OCCUPATION_V2;
+        }
+
+        public Bounds bounds(Optional<String> originalRole) {
+            if (occupationBounds != null) return occupationBounds;
+            return originalRole.map(id -> Objects.requireNonNull(roles.get(id), "Unknown pinned Role")).orElse(exploration);
         }
     }
 
@@ -81,7 +110,8 @@ public final class AdaptiveBlueprint {
             catalogFingerprint = text(catalogFingerprint);
             Objects.requireNonNull(pins, "pins");
             roles = Map.copyOf(roles);
-            if (!roles.keySet().equals(configuration.roles().keySet())) {
+            if (roles.isEmpty() || (configuration.scopePolicy() == ScopePolicy.LEGACY_ROLE_OR_EXPLORATION
+                    && !roles.keySet().equals(configuration.roles().keySet()))) {
                 throw new IllegalArgumentException("Configuration and active-role snapshots must match");
             }
             createdBy = AdaptiveBlueprint.id(createdBy);

@@ -3,6 +3,7 @@ package com.adaptlearngraph.assessment.adaptive.api;
 import com.adaptlearngraph.assessment.adaptive.api.AdaptiveBlueprintPayloads.*;
 import com.adaptlearngraph.assessment.adaptive.application.port.in.AdaptiveBlueprintUseCase;
 import com.adaptlearngraph.assessment.adaptive.application.port.in.AdaptiveBlueprintUseCase.*;
+import com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.*;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Profile("(local | demo) & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled"}, havingValue = "true")
-@RequestMapping(value = "/api/v1/ld/adaptive-baseline-blueprints/occupations/{occupationId}", produces = "application/json")
+@RequestMapping(value = "/api/v1/ld/adaptive-baseline-blueprints", produces = "application/json")
 public final class AdaptiveBlueprintController {
     private final AdaptiveBlueprintUseCase blueprints;
     private final ObjectMapper requests;
@@ -40,32 +41,49 @@ public final class AdaptiveBlueprintController {
     }
 
     @GetMapping
+    ResponseEntity<Page> list(@RequestParam(defaultValue = "") String search, @RequestParam(required = false) Status status,
+            @RequestParam(defaultValue = "NEWEST") Direction direction, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String occupationId) {
+        return ok(blueprints.list(new Query(search, status, direction, page, size, occupationId)));
+    }
+
+    @GetMapping("/occupations/{occupationId}")
     ResponseEntity<WorkspaceResponse> workspace(@PathVariable String occupationId) {
         return ok(WorkspaceResponse.from(blueprints.getWorkspace(occupationId)));
     }
 
-    @PutMapping(value = "/working", consumes = "application/json")
+    @PutMapping(value = "/occupations/{occupationId}/working", consumes = "application/json")
     ResponseEntity<WorkingResponse> save(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         SaveRequest request = decode(body, SaveRequest.class);
-        return ok(WorkingResponse.from(blueprints.save(new Save(occupationId, request.expectedRevision(), key(key), request.configuration().domain()))));
+        return ok(WorkingResponse.from(blueprints.saveResult(new Save(occupationId, request.expectedRevision(), key(key),
+                request.configuration().domain(), request.expectedWorkingRevisionId()))));
     }
 
-    @PostMapping(value = "/test", consumes = "application/json")
+    @PostMapping(value = "/occupations/{occupationId}/test", consumes = "application/json")
     ResponseEntity<PreviewResponse> test(@PathVariable String occupationId, @RequestBody String body) {
-        return ok(PreviewResponse.from(blueprints.testBlueprint(occupationId, decode(body, TestRequest.class).configuration().domain())));
+        TestRequest request = decode(body, TestRequest.class);
+        return ok(PreviewResponse.from(blueprints.previewSaved(new PreviewSaved(occupationId, request.workingRevisionId(), request.expectedWorkingRevision()))));
     }
 
-    @PostMapping(value = "/finalize", consumes = "application/json")
+    @PostMapping(value = "/occupations/{occupationId}/working/convert", consumes = "application/json")
+    ResponseEntity<WorkingResponse> convert(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+        ConvertRequest request = decode(body, ConvertRequest.class);
+        return ok(WorkingResponse.from(blueprints.convertLegacyDraft(new ConvertLegacyDraft(occupationId, request.workingRevisionId(),
+                request.expectedWorkingRevision(), key(key), request.configuration().domain()))));
+    }
+
+    @PostMapping(value = "/occupations/{occupationId}/finalize", consumes = "application/json")
     ResponseEntity<VersionResponse> finalizeBlueprint(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         FinalizeRequest request = decode(body, FinalizeRequest.class);
         return ok(VersionResponse.from(blueprints.finalizeBlueprint(new Finalize(occupationId, request.workingRevisionId(),
-                request.expectedWorkingRevision(), request.expectedActivationRevision(), key(key)))));
+                request.expectedWorkingRevision(), request.expectedActivationRevision(), key(key), request.expectedCurrent(), confirmsCurrent(body)))));
     }
 
-    @PostMapping(value = "/disable", consumes = "application/json")
+    @PostMapping(value = "/occupations/{occupationId}/disable", consumes = "application/json")
     ResponseEntity<ActivationResponse> disable(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         DisableRequest request = decode(body, DisableRequest.class);
-        return ok(ActivationResponse.from(blueprints.disable(new Disable(occupationId, request.expectedActivationRevision(), key(key), request.reason()))));
+        return ok(ActivationResponse.from(blueprints.disable(new Disable(occupationId, request.expectedActivationRevision(), key(key), request.reason(),
+                request.expectedCurrent(), confirmsCurrent(body)))));
     }
 
     @ExceptionHandler(Failure.class)
@@ -83,7 +101,8 @@ public final class AdaptiveBlueprintController {
                 failure.getMessage(), failure.shortages().stream().map(ShortageResponse::from).toList()));
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class, MissingRequestHeaderException.class})
+    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class, MissingRequestHeaderException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class})
     ResponseEntity<ApiError> invalid(Exception cause) {
         return failure(new Failure(Code.INVALID_REQUEST, "Invalid adaptive Blueprint request", List.of()));
     }
@@ -91,6 +110,12 @@ public final class AdaptiveBlueprintController {
     private <T> T decode(String body, Class<T> type) {
         if (body.length() > 65_536) throw new IllegalArgumentException("Request too large");
         try {
+            var tree = requests.readTree(body);
+            var configuration = tree == null ? null : tree.get("configuration");
+            if (configuration != null && configuration.has("occupationBounds")
+                    && (configuration.has("exploration") || configuration.has("roles"))) {
+                throw new IllegalArgumentException("Mixed configuration scopes");
+            }
             T request = requests.readValue(body, type);
             if (request == null || !validator.validate(request).isEmpty()) throw new IllegalArgumentException("Invalid fields");
             return request;
@@ -102,6 +127,11 @@ public final class AdaptiveBlueprintController {
             throw new IllegalArgumentException("Invalid idempotency key");
         }
         return key;
+    }
+
+    private boolean confirmsCurrent(String body) {
+        try { return requests.readTree(body).has("expectedCurrent"); }
+        catch (JsonProcessingException invalid) { throw new IllegalArgumentException("Invalid JSON", invalid); }
     }
 
     private static <T> ResponseEntity<T> ok(T body) { return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(body); }

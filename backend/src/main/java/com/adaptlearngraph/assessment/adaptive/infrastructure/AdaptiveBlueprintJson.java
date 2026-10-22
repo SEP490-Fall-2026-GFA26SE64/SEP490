@@ -27,6 +27,11 @@ final class AdaptiveBlueprintJson {
     }
 
     String write(Object value) {
+        if (value instanceof Configuration config) {
+            value = config.scopePolicy() == ScopePolicy.FULL_OCCUPATION_V2
+                    ? Map.of("name", config.name(), "occupationBounds", config.occupationBounds())
+                    : Map.of("name", config.name(), "exploration", config.exploration(), "roles", config.roles());
+        }
         try { return mapper.writeValueAsString(value); }
         catch (JsonProcessingException failure) { throw new IllegalStateException("Cannot encode adaptive state", failure); }
     }
@@ -39,7 +44,8 @@ final class AdaptiveBlueprintJson {
     String writeOutcome(Outcome outcome) {
         ObjectNode envelope = mapper.createObjectNode();
         switch (outcome) {
-            case Saved saved -> { envelope.put("operation", "SAVE"); envelope.set("value", mapper.valueToTree(saved.working())); }
+            case Saved saved -> { envelope.put("operation", "SAVE"); envelope.put("noOp", saved.noOp()); envelope.set("value", mapper.valueToTree(saved.working())); }
+            case Converted converted -> { envelope.put("operation", "CONVERT"); envelope.set("value", mapper.valueToTree(converted)); }
             case Finalized finalized -> { envelope.put("operation", "FINALIZE"); envelope.set("value", mapper.valueToTree(finalized.version())); }
             case Disabled disabled -> { envelope.put("operation", "DISABLE"); envelope.set("value", mapper.valueToTree(disabled.activation())); }
         }
@@ -54,7 +60,8 @@ final class AdaptiveBlueprintJson {
             }
             JsonNode value = envelope.get("value");
             return switch (operation) {
-                case SAVE -> new Saved(mapper.treeToValue(value, WorkingRevision.class));
+                case SAVE -> new Saved(mapper.treeToValue(value, WorkingRevision.class), envelope.path("noOp").asBoolean(false));
+                case CONVERT -> mapper.treeToValue(value, Converted.class);
                 case FINALIZE -> new Finalized(mapper.treeToValue(value, Version.class));
                 case DISABLE -> new Disabled(mapper.treeToValue(value, Activation.class));
             };
@@ -62,6 +69,9 @@ final class AdaptiveBlueprintJson {
     }
 
     Version version(ResultSet header, Scope scope, List<Map<String, Object>> rows) throws SQLException {
+        String policy = header.getString("scope_policy");
+        boolean full = ScopePolicy.FULL_OCCUPATION_V2.name().equals(policy);
+        if (policy != null && !full) throw new IllegalStateException("Unknown Blueprint scope policy");
         Map<String, Bounds> bounds = new LinkedHashMap<>();
         Map<String, RoleSnapshot> roles = new LinkedHashMap<>();
         Map<String, Map<String, SkillSnapshot>> skills = new LinkedHashMap<>();
@@ -69,7 +79,7 @@ final class AdaptiveBlueprintJson {
             String role = (String) row.get("role_id");
             skills.computeIfAbsent(role, ignored -> new LinkedHashMap<>()).put((String) row.get("micro_skill_id"),
                     new SkillSnapshot((String) row.get("micro_skill_name_snapshot"), (String) row.get("skill_version")));
-            bounds.put(role, new Bounds(((Number) row.get("max_questions")).intValue(),
+            if (!full) bounds.put(role, new Bounds(((Number) row.get("max_questions")).intValue(),
                     ((Number) row.get("time_limit_seconds")).intValue()));
         }
         for (Map<String, Object> row : rows) {
@@ -78,7 +88,9 @@ final class AdaptiveBlueprintJson {
                     (String) row.get("role_version"), skills.get(role)));
         }
         return new Version(scope, new VersionId(header.getObject("blueprint_id", UUID.class), header.getInt("version")),
-                new Configuration(header.getString("name"), new Bounds(header.getInt("exploration_max_questions"),
+                full ? Configuration.occupation(header.getString("name"), new Bounds(header.getInt("occupation_max_questions"),
+                        header.getInt("occupation_time_limit_seconds")))
+                     : new Configuration(header.getString("name"), new Bounds(header.getInt("exploration_max_questions"),
                         header.getInt("exploration_time_limit_seconds")), bounds), header.getString("occupation_name_snapshot"),
                 header.getString("catalog_fingerprint"), new VersionPins(header.getObject("model_version_id", UUID.class),
                         header.getObject("mastery_mapping_version_id", UUID.class), header.getObject("parameter_set_id", UUID.class)),

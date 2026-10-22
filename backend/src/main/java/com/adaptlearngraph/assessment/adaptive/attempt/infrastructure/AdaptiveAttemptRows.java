@@ -43,6 +43,16 @@ final class AdaptiveAttemptRows {
                 AdaptiveAttemptJdbc.key(scope, id), rs -> { pool.put(rs.getObject(1, UUID.class), rs.getString(2)); });
         var snapshot = new AdaptiveAttemptSnapshot(blueprint, AdaptiveAttemptSnapshot.Purpose.valueOf(row.getString("attempt_purpose")),
                 Optional.ofNullable(row.getString("target_role_id")), Optional.ofNullable(row.getObject("target_selection_revision", Long.class)), pool);
+        String expectedPolicy = blueprint.configuration().occupationBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_OCCUPATION_V2.name();
+        if (!java.util.Objects.equals(expectedPolicy, row.getString("scope_policy"))) throw new IllegalStateException("Attempt scope pin mismatch");
+        if (!blueprint.pins().modelVersionId().equals(row.getObject("model_version_id", UUID.class))
+                || !blueprint.pins().masteryMappingVersionId().equals(row.getObject("mastery_mapping_version_id", UUID.class))
+                || !blueprint.pins().parameterSetId().equals(row.getObject("parameter_set_id", UUID.class))
+                || !blueprint.catalogFingerprint().equals(row.getString("catalog_fingerprint"))
+                || snapshot.bounds().maxQuestions() != row.getInt("max_questions")
+                || snapshot.bounds().timeLimitSeconds() != row.getInt("time_limit_seconds")) {
+            throw new IllegalStateException("Attempt immutable inputs differ from pinned Blueprint");
+        }
         return new AdaptiveAttempt(id, scope, snapshot, row.getLong("revision"), AdaptiveAttempt.Status.valueOf(row.getString("state")),
                 row.getTimestamp("started_at").toInstant(), row.getTimestamp("deadline_at").toInstant(),
                 Optional.ofNullable(row.getTimestamp("finished_at")).map(java.sql.Timestamp::toInstant),
@@ -59,6 +69,7 @@ final class AdaptiveAttemptRows {
                 .addValue("mapping", blueprint.pins().masteryMappingVersionId()).addValue("parameters", blueprint.pins().parameterSetId())
                 .addValue("fingerprint", blueprint.catalogFingerprint()).addValue("maximum", attempt.snapshot().bounds().maxQuestions())
                 .addValue("duration", attempt.snapshot().bounds().timeLimitSeconds()).addValue("revision", attempt.revision())
+                .addValue("policy", blueprint.configuration().occupationBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_OCCUPATION_V2.name())
                 .addValue("state", attempt.status().name()).addValue("started", time(attempt.startedAt())).addValue("deadline", time(attempt.deadlineAt()))
                 .addValue("finished", attempt.finishedAt().map(AdaptiveAttemptRows::time).orElse(null))
                 .addValue("reason", attempt.completionReason().map(Enum::name).orElse(null)).addValue("replaces", attempt.replacesAttemptId().orElse(null));

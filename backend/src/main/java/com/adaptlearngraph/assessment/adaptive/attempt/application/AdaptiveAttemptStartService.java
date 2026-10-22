@@ -49,6 +49,8 @@ public final class AdaptiveAttemptStartService implements StartRead {
                 var initial = selector.evaluate(List.of(), Set.of(), firstTime, firstTime.plusSeconds(snapshot.bounds().timeLimitSeconds()), false);
                 var first = initial.next().orElseThrow(() -> new Failure(Code.INFEASIBLE_SCOPE));
                 var item = content.read(scope, first.id());
+                // Recheck cross-store readiness after policy/content reads; no distributed ACID claim.
+                if (!snapshot.equals(context.resolveStartingSnapshot(scope, target))) throw new Failure(Code.BLUEPRINT_STALE);
                 var now = store.observedAt(scope);
                 attempt = AdaptiveAttempt.start(UUID.randomUUID(), scope, snapshot, now, false, store.findLatest(scope));
                 var skills = initial.states().entrySet().stream().map(entry -> new AdaptiveAttemptStore.SkillState(entry.getKey(),

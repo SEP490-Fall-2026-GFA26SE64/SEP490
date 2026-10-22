@@ -15,9 +15,10 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
     private static final String QUERY = """
             SELECT attempt.attempt_id,attempt.occupation_id,version.occupation_name_snapshot,
                 attempt.attempt_purpose,attempt.target_role_id,role.role_name_snapshot,attempt.state,
+                attempt.scope_policy,version.scope_policy AS blueprint_scope_policy,
                 attempt.completion_reason,attempt.started_at,attempt.finished_at,attempt.replaces_attempt_id,
                 successor.attempt_id AS replacement_attempt_id,result.raw_score,
-                skill.micro_skill_id,skill_name.micro_skill_name_snapshot,skill.mastery,skill.confidence_label
+                skill.micro_skill_id,skill_name.micro_skill_name_snapshot,skill_name.snapshot_variants,skill.mastery,skill.confidence_label
             FROM platform.baseline_adaptive_attempt attempt
             JOIN platform.account employee
               ON employee.account_id=attempt.learner_id AND employee.organization_id=attempt.organization_id
@@ -38,12 +39,13 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
             LEFT JOIN platform.baseline_attempt_skill_result skill
               ON skill.attempt_id=attempt.attempt_id AND skill.organization_id=attempt.organization_id
             LEFT JOIN LATERAL (
-                SELECT MIN(snapshot.micro_skill_name_snapshot) AS micro_skill_name_snapshot
+                SELECT MIN(snapshot.micro_skill_name_snapshot) AS micro_skill_name_snapshot,
+                    count(DISTINCT (snapshot.micro_skill_name_snapshot,snapshot.catalog_version)) AS snapshot_variants
                 FROM platform.baseline_adaptive_blueprint_skill snapshot
                 WHERE snapshot.blueprint_id=attempt.blueprint_id
                   AND snapshot.blueprint_version=attempt.blueprint_version
                   AND snapshot.micro_skill_id=skill.micro_skill_id
-                  AND (attempt.target_role_id IS NULL OR snapshot.role_id=attempt.target_role_id)
+                  AND (attempt.scope_policy='FULL_OCCUPATION_V2' OR attempt.target_role_id IS NULL OR snapshot.role_id=attempt.target_role_id)
             ) skill_name ON skill.micro_skill_id IS NOT NULL
             WHERE attempt.organization_id=:org AND attempt.learner_id=:learner
               AND attempt.state<>'IN_PROGRESS'
@@ -58,7 +60,7 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
 
     @Override public List<Result> history() {
         var employee = context.requireEmployee();
-        var results = read(scope(employee), " ORDER BY attempt.started_at DESC,attempt.attempt_id,skill.micro_skill_id");
+        var results = read(scope(employee), " ORDER BY attempt.finished_at DESC,attempt.attempt_id,skill.micro_skill_id");
         if (results.isEmpty()) context.requireEmployee();
         return results;
     }
@@ -85,20 +87,28 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
                 rows.put(id, view);
             }
             String skillId = result.getString("micro_skill_id");
-            if (skillId != null) view.skills.add(new SkillResult(skillId,
-                    result.getString("micro_skill_name_snapshot"), result.getBigDecimal("mastery"),
-                    result.getString("confidence_label")));
+            if (skillId != null) {
+                String name = result.getString("micro_skill_name_snapshot");
+                if (name == null || name.isBlank() || view.header.assessmentScope() == AssessmentScope.OCCUPATION
+                        && result.getLong("snapshot_variants") != 1) throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
+                view.skills.add(new SkillResult(skillId, name, result.getBigDecimal("mastery"), result.getString("confidence_label")));
+            }
         });
         return rows.values().stream().map(MutableResult::view).toList();
     }
 
     private static Header header(ResultSet result) throws SQLException {
+        String policy = result.getString("scope_policy");
+        if (!Objects.equals(policy, result.getString("blueprint_scope_policy"))
+                || policy != null && !policy.equals("FULL_OCCUPATION_V2")) throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
+        AssessmentScope publicScope = policy != null ? AssessmentScope.OCCUPATION
+                : result.getString("target_role_id") == null ? AssessmentScope.EARLIER_OCCUPATION : AssessmentScope.EARLIER_ROLE;
         return new Header(result.getObject("attempt_id", UUID.class), result.getString("occupation_id"),
                 result.getString("occupation_name_snapshot"), result.getString("attempt_purpose"),
                 result.getString("target_role_id"), result.getString("role_name_snapshot"), result.getString("state"),
                 result.getString("completion_reason"), result.getTimestamp("started_at").toInstant(),
                 result.getTimestamp("finished_at").toInstant(), result.getObject("replaces_attempt_id", UUID.class),
-                result.getObject("replacement_attempt_id", UUID.class), result.getBigDecimal("raw_score"));
+                result.getObject("replacement_attempt_id", UUID.class), result.getBigDecimal("raw_score"), publicScope);
     }
 
     private static MapSqlParameterSource scope(AdaptiveAttemptContextPort.Employee employee) {
@@ -108,10 +118,10 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
     private record Header(UUID attemptId, String occupationId, String occupationName, String purpose,
                           String roleId, String roleName, String state, String completionReason,
                           Instant startedAt, Instant completedAt, UUID replacesAttemptId,
-                          UUID replacementAttemptId, BigDecimal rawScore) {
+                          UUID replacementAttemptId, BigDecimal rawScore, AssessmentScope assessmentScope) {
         Result view(List<SkillResult> skills) {
             return new Result(attemptId, occupationId, occupationName, purpose, roleId, roleName, state,
-                    completionReason, startedAt, completedAt, replacesAttemptId, replacementAttemptId, rawScore, skills);
+                    completionReason, startedAt, completedAt, replacesAttemptId, replacementAttemptId, rawScore, skills, assessmentScope);
         }
     }
 
@@ -119,6 +129,11 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
         private final Header header;
         private final List<SkillResult> skills = new ArrayList<>();
         private MutableResult(Header header) { this.header = header; }
-        private Result view() { return header.view(skills); }
+        private Result view() {
+            boolean invalidated = "INVALIDATED".equals(header.state());
+            if (invalidated && (header.rawScore() != null || !skills.isEmpty())
+                    || !invalidated && (header.rawScore() == null || skills.isEmpty())) throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
+            return header.view(skills);
+        }
     }
 }

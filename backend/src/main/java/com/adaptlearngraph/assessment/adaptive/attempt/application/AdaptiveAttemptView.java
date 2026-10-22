@@ -23,6 +23,8 @@ public final class AdaptiveAttemptView {
         return new View(attempt.id(), attempt.scope().occupationId(), attempt.snapshot().blueprint().occupationNameSnapshot(),
                 attempt.snapshot().purpose().name(), attempt.snapshot().roleId().orElse(null), attempt.status().name(),
                 attempt.revision(), attempt.startedAt(), attempt.deadlineAt(), observedAt, !observedAt.isBefore(attempt.deadlineAt()),
-                attempt.snapshot().bounds().maxQuestions(), progress.responses().size(), items);
+                attempt.snapshot().bounds().maxQuestions(), progress.responses().size(), items,
+                attempt.snapshot().blueprint().configuration().occupationBounds() != null ? AssessmentScope.OCCUPATION
+                        : attempt.snapshot().roleId().isPresent() ? AssessmentScope.EARLIER_ROLE : AssessmentScope.EARLIER_OCCUPATION);
     }
 }

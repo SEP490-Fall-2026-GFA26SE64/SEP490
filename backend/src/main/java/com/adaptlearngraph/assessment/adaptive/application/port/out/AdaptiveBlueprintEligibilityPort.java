@@ -27,7 +27,11 @@ public interface AdaptiveBlueprintEligibilityPort {
     Optional<Snapshot> resolvePinned(Scope scope, VersionPins pins);
 
     record Snapshot(Scope scope, String occupationName, String catalogFingerprint,
-                    VersionPins pins, Map<String, RolePool> roles) {
+                    VersionPins pins, Map<String, RolePool> roles, Coverage coverage) {
+        /** Historical callers do not assert full-Occupation feasibility. */
+        public Snapshot(Scope scope, String name, String fingerprint, VersionPins pins, Map<String, RolePool> roles) {
+            this(scope, name, fingerprint, pins, roles, null);
+        }
         public Snapshot {
             Objects.requireNonNull(scope, "scope");
             if (occupationName == null || occupationName.isBlank()
@@ -45,6 +49,16 @@ public interface AdaptiveBlueprintEligibilityPort {
         public Set<UUID> explorationItemVersionIds() {
             return roles.values().stream().flatMap(role -> role.itemVersionIds().stream())
                     .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        }
+    }
+
+    /** Answer-free data from the same exact pins/items as Snapshot, never client-provided. */
+    record Coverage(int minimumPerSkill, int modelMaxResponses, Map<UUID, String> publishedItemSkills) {
+        public Coverage {
+            if (minimumPerSkill < 1 || modelMaxResponses < minimumPerSkill) {
+                throw new IllegalArgumentException("Invalid pinned coverage limits");
+            }
+            publishedItemSkills = Map.copyOf(publishedItemSkills);
         }
     }
 
