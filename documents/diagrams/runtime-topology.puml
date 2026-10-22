@@ -3,18 +3,28 @@
 left to right direction
 skinparam componentStyle rectangle
 skinparam shadowing false
-
+title Local development topology / 2026-10-23
 actor Browser
-component "React/Vite (dev)\nCaddy (production)" as Web
-component "Spring Boot API" as API
-component "Spring Boot migrate profile" as Migrate
-database "PostgreSQL" as PG
-database "Neo4j" as Graph
-
+component "React/Vite\nloopback :8088" as Web
+component "Java21 / Spring Boot3.5 API\nlocal,local-baseline-demo\nloopback :18080" as API
+component "local,migrate\nCATALOG_SEED_ENABLED=false" as Migrate
+component "Explicit local demo provisioning\nprofile + enabled + !prod" as Demo
+database "PostgreSQL17.6\nplatform V1-V23 /86 tables\nloopback :15432" as PG
+database "Neo4j5.26\nexisting official ontology0.8.0\nloopback :7474 / :7687" as Graph
 Browser --> Web
-Web --> API : /api
-API --> PG
-API --> Graph
-Migrate --> PG : Flyway V1-V13
-Migrate --> Graph : V1-V4 catalog constraints
+Web --> API : /api proxy
+Migrate --> PG : Flyway V1-V23, then exit
+Migrate ..> API : must succeed before API starts
+API --> PG : transactional learner/assessment state
+API --> Graph : catalog reads
+API --> Demo : startup gate
+Demo --> PG : additive dedicated demo data\nretain bank/history/pins
+note bottom of Graph
+No graph seeder/migrator on startup.
+Legacy graph CRUD off.
+end note
+note bottom of Demo
+Persona/review/model readiness bypass.
+SYNTHETIC pins; no operational C promotion.
+end note
 @enduml

@@ -1,39 +1,41 @@
-# Architecture Diagrams
+# Architecture diagrams
 
-**Slices4–5,2026-10-22:** common UI and pinned full/legacy result/history source implemented; no schema/diagram regeneration or executable acceptance. [Evidence and unverified browser checklist](../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+Updated 2026-10-23 from a read-only, repeatable-read snapshot of the existing local PostgreSQL17.6 service. Source V1-V23 and all23 successful Flyway checksums match. No migration, seed, learner write or executable test was run for regeneration.
 
-**2026-10-22 slices2–3:** no schema change beyond retained V20–V22; admission locks and management read projection are documented in the [current contract](../features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md). V17 diagrams remain historical and were not regenerated from user data.
+## Current PostgreSQL V23
 
-## Current Scope Alignment
+86 `platform` tables,703 columns,610 constraints (185 foreign keys),207 indexes,97 user triggers and39 functions. Every table/column belongs to exactly one detail group. External reference stubs show cross-group parent tables. Arrows run from referenced parent to referencing child; they do not assert one-to-one/mandatory cardinality. Composite FK details remain in the [complete FK inventory](postgresql-foreign-keys.md) and [metadata catalog](postgresql-schema-catalog.json), including defaults, checks, uniqueness, indexes and trigger/function definitions. No business data rows or credentials are captured. `public.flyway_schema_history` is migration metadata, outside the86 platform tables.
 
-The [System Overview](../adapt_learn_graph_system_overview.md) controls product scope; [architecture](../ARCHITECTURE.md) distinguishes revised responsibilities from the recorded technical baseline. These database/runtime diagrams inventory existing storage, not an approved model for all new capabilities. Legacy organization/billing/evaluation structures do not reinstate excluded SaaS functionality.
-Discipline membership/assignments, module/content storage, L&D role publication/offering approval, RIASEC/reviewed role guidance and independent progress need agreed mappings before regenerating schema diagrams. Documentation alignment does not change migrations or generated images.
+| View | Tables owned | Source | SVG |
+| --- | ---: | --- | --- |
+| Overview and cross-group FK counts |86 total | [source](postgresql-overview.puml) | [image](postgresql-overview.svg) |
+| Identity, catalog, processing |17 | [source](postgresql.puml) | [image](postgresql.svg) |
+| Legacy assessment/shared learning |32 | [source](postgresql-assessment.puml) | [image](postgresql-assessment.svg) |
+| Recommendation, analytics, evaluation |13 | [source](postgresql-pathway.puml) | [image](postgresql-pathway.svg) |
+| Adaptive Blueprint/activation/receipts |9 | [source](postgresql-adaptive-blueprint.puml) | [image](postgresql-adaptive-blueprint.svg) |
+| Adaptive attempts/results/evidence |9 | [source](postgresql-adaptive-attempt.puml) | [image](postgresql-adaptive-attempt.svg) |
+| IRT/mapping/scoped promotion |6 | [source](postgresql-irt.puml) | [image](postgresql-irt.svg) |
 
-## Technical Baseline Snapshot
+![Current PostgreSQL storage overview](postgresql-overview.svg)
 
-These PlantUML sources back the dated diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers. The three PostgreSQL sources/SVGs record the historical clean PostgreSQL 17.6 V1–V17 snapshot (62 tables); they are not a fresh live-schema assertion. They show structural columns and same-group foreign keys, not indexes/checks/triggers. The adaptive baseline drawing is the superseded20 October manual target, not the 22 October whole-Occupation revision or applied schema.
+The three former V17 sources/SVGs have been regenerated in place; the extra24 V18/V19/V23 tables are now included in three separate detailed views. These diagrams inventory existing storage, including retained legacy/other-owner tables. They do not approve unused product functionality or establish authorization, numerical/concurrency correctness or executable acceptance.
 
-| Diagram | Source | Rendered image |
-| --- | --- | --- |
-| Runtime topology | [runtime-topology.puml](runtime-topology.puml) | [runtime-topology.svg](runtime-topology.svg) |
-| PostgreSQL identity, catalog, processing | [postgresql.puml](postgresql.puml) | [postgresql.svg](postgresql.svg) |
-| PostgreSQL assessment and learning | [postgresql-assessment.puml](postgresql-assessment.puml) | [postgresql-assessment.svg](postgresql-assessment.svg) |
-| PostgreSQL pathway, analytics, evaluation | [postgresql-pathway.puml](postgresql-pathway.puml) | [postgresql-pathway.svg](postgresql-pathway.svg) |
-| PostgreSQL adaptive baseline historical target (2026-10-20, superseded) | [postgresql-adaptive-baseline-target.puml](postgresql-adaptive-baseline-target.puml) | [postgresql-adaptive-baseline-target.svg](postgresql-adaptive-baseline-target.svg) |
-| Neo4j occupation-based ontology 0.7.0 | [neo4j.puml](neo4j.puml) | [neo4j.svg](neo4j.svg) |
+## Reproduce without database changes
 
-The2026-10-22 revised full-Occupation design and scoped diagram are in [Adaptive Baseline Data Architecture](../features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md). Old adaptive PlantUML/SVG retain the earlier role/exploration proposal as historical provenance; they are not current schema or acceptance. V18/V19 now exist on disk; no new live diagram/database inspection is claimed by this document-only update.
-
-The historical generator lists all 62 V17 tables. Its commands below are retained instructions for that historical baseline, not commands executed/approved in Cluster 1. Use an explicitly isolated version-matched database before any later approved regeneration; do not run against user volumes. It rejects missing/additional tables rather than silently omitting them:
+Run from the repository root with the existing postgres service already running:
 
 ```powershell
-docker compose -f compose.dev.yml up -d postgres neo4j
-docker compose -f compose.dev.yml run --build --rm migrate
-powershell -NoProfile -ExecutionPolicy Bypass -File .\documents\diagrams\Generate-PostgresqlDiagrams.ps1
-java -jar path\to\plantuml.jar -tsvg documents/diagrams/postgresql.puml documents/diagrams/postgresql-assessment.puml documents/diagrams/postgresql-pathway.puml
-java -jar path\to\plantuml.jar -tsvg documents/diagrams/postgresql-adaptive-baseline-target.puml
+python documents/diagrams/Generate-PostgresqlDiagrams.py
+# Or regenerate from the captured catalog, without Docker/database access:
+python documents/diagrams/Generate-PostgresqlDiagrams.py --snapshot documents/diagrams/postgresql-schema-catalog.json
+# Use an existing locally downloaded PlantUML JAR; explicit list excludes historical target:
+java -jar path/to/plantuml.jar -failfast2 -tsvg documents/diagrams/postgresql.puml documents/diagrams/postgresql-assessment.puml documents/diagrams/postgresql-pathway.puml documents/diagrams/postgresql-adaptive-blueprint.puml documents/diagrams/postgresql-adaptive-attempt.puml documents/diagrams/postgresql-irt.puml documents/diagrams/postgresql-overview.puml documents/diagrams/runtime-topology.puml
 ```
 
-Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
+The [PowerShell wrapper](Generate-PostgresqlDiagrams.ps1) invokes the same Python generator. It never starts containers, migrates, seeds or resets data. Unknown/missing/duplicate table groups or source/history checksum drift stop generation. All metadata is taken in one READ ONLY transaction. SVGs use PlantUML1.2025.10/Smetana, matching the existing diagram toolchain; see [review/provenance](../testing/system/REQ-002-memory-schema-sync.md).
 
-The assessment view includes the V14-V16 management tables and current V17 columns. V17 only changes a trigger function, which a table diagram cannot depict. The diagrams do not encode the V14 tenant-scoped unique index; consult the migration and [architecture text](../ARCHITECTURE.md) for behavioral rules.
+## Other diagrams and historical drawing
+
+- Current [runtime topology source](runtime-topology.puml) / [SVG](runtime-topology.svg): Java/Spring Boot API; PostgreSQL-only migration; existing official Neo4j; explicit local-demo provisioning.
+- Neo4j [source](neo4j.puml) / [SVG](neo4j.svg): ontology0.8.0, six entity labels/seven relationship types. LearningModule TEACHES exactly one MicroSkill; only MicroSkill has prerequisite self-links. No learner mastery/pathway state in Neo4j. This review does not claim a fresh graph-data validation.
+- [20 October adaptive target source](postgresql-adaptive-baseline-target.puml) / [SVG](postgresql-adaptive-baseline-target.svg) is retained as **superseded historical design**, including old Role/exploration bounds. Use current V23 views and [adaptive data contract](../features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md), not that target, for current work.
