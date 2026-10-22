@@ -1,5 +1,7 @@
 # Feature and Function Documentation
 
+**Current source checkpoint,2026-10-22:** approved slices1–5 now include full-Occupation admission, common Manager form/calculator/list/lifecycle and pinned full/legacy Employee result/history. Main compile, production FE type/lint/build and bounded isolated manual observations passed. Browser interaction remains unverified; no executable acceptance, user-data migration, stage/commit/push or automatic Cluster3. See [evidence/checklist](../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+
 **Current source:** [System Overview](../adapt_learn_graph_system_overview.md), with requirement mapping in [Product Overview](../PRODUCT_OVERVIEW.md).  
 **Aligned:** 2026-10-20. This catalog supersedes the historical SaaS index and interview queue below.
 
@@ -10,7 +12,7 @@
 - Existing requirement/function IDs and file paths remain stable for traceability. Legacy filenames do not establish current business scope.
 - A **Current Scope Alignment** section in an existing feature/function document controls over its retained historical description, decisions, status, and acceptance rules. Old test results do not certify revised scope.
 - New feature READMEs contain function-level IDs, inputs/outcomes, acceptance scenarios, and open decisions. They are scope drafts, not implementation-ready approved contracts.
-- REQ-002 adaptive Blueprint/IRT contract is approved for Cluster 1. Target-role selection takes effect immediately; an Employee without a mastery-producing baseline for that role's Occupation must then complete the baseline before mastery-dependent steps. Attempt, invalidation and uncertainty policies are defined in the REQ-002 contracts. Discipline ownership, publication/approval, reviewed AI guidance and initial pathway confirmation remain separate gates.
+- REQ-002 was aligned2026-10-22 for Cluster 1 review: confirmed one full-Occupation baseline/pair for all new entry paths, lifecycle/list/form rules and preserved historical scope/allowance. The approved slices1–5 now implement that scope with dual readers for historical Role/exploration rows; browser review and executable acceptance remain unverified. Target-role selection remains immediate; dependent Functions and their own gates remain separate.
 - Architecture/schema documents describe existing technical fields separately from product design gaps; do not fabricate fields, scoring formulas, or implementation evidence.
 
 ## Current Feature Index
@@ -18,7 +20,7 @@
 | ID | Feature | Current actor or performer | Contract status |
 | --- | --- | --- | --- |
 | REQ-001 | [Target role selection](Target%20role%20selection/README.md) | Employee | Reclarify reviewed-guidance/publication gates |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Cluster 1 adaptive 3PL contract approved; runtime not migrated |
+| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | 2026-10-22 slices1–5 full-Occupation source implemented; historical scope preserved, browser/acceptance unverified |
 | REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | Employee | Initial Expert confirmation required |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | Employee | Retained; detail draft |
 | REQ-006 | [Competency graph](Competency%20graph/README.md) | Employee | Retained; detail draft |
@@ -110,7 +112,7 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 
 ## Clarification Tracker
 
-**Current REQ-002 direction (2026-10-20):** [Configure Baseline Assessment](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md) and [Complete Baseline Assessment](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) now define an Occupation-scoped adaptive 3PL baseline. L&D finalizes a Blueprint and may run ephemeral Test Blueprint; each Employee receives an individual reload-safe, server-timed attempt. There are no score weights or shared Generate/Review/Publish steps.
+**Current REQ-002 direction (2026-10-22):** [Configure](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md) and [Complete](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) define one whole-Occupation adaptive 3PL baseline with one pair of bounds for every new entry. Save draft→Preview→Activate, direct Deactivate and lifecycle/list/form rules preserve pinned attempts/history and one-success allowance. [Transition contract](Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md) is approved and implemented in slices1–5 source; browser review remains pending. No shared generated assessment/Review/Publish or score weights.
 
 **Cluster 1 decision boundary:** Product flow, active-role/exploration sampling, capacity validation, one-success Employee + Occupation allowance, no-grace deadline, invalidated/no-mastery replacement, result disclosure, System Administrator calibration promotion and conservative mastery use are approved. Exact IRT constants/library remain system-owned versioned technical implementation configuration and are not L&D fields.
 

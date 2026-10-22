@@ -1,5 +1,9 @@
 # Test Documentation
 
+**Slices4–5,2026-10-22:** common UI and pinned full/legacy result/history source implemented; no schema/diagram regeneration or executable acceptance. [Evidence and unverified browser checklist](system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+
+Current REQ-002 slice2–3 compile/manual observations: [dedicated evidence and procedures](system/REQ-002-F01-F02-occupation-admission-management.md). Revised executable acceptance remains Planned/Not run; no tests were created or executed.
+
 ## Current Scope Alignment
 
 **Scope baseline:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-20. Test actors are System Administrator, L&D Manager, Expert and Employee within one organization. Existing test IDs, fixtures, actor codes, dated results and manual procedures remain evidence of their recorded contract, not revised acceptance certification.
@@ -16,7 +20,7 @@ The [current feature catalog](../features/README.md) supersedes old SaaS accepta
 
 Documentation-only checks do not establish backend/frontend behavior. Revised runtime acceptance requires the relevant feature suites and per-REQ evidence after implementation.
 
-The approved Cluster 1 plan for the adaptive redesign is [REQ-002 Adaptive Baseline](REQ-002-adaptive-baseline-test-plan.md). It contains planned evidence only; no adaptive test pass is claimed.
+The revised2026-10-22 Cluster 1 plan is [REQ-002 Adaptive Baseline](REQ-002-adaptive-baseline-test-plan.md): whole-Occupation configuration/attempts, lifecycle/compatibility and REQ-009 reads. Confirmed acceptance is separated from proposal-dependent expectations; all new executable evidence is Planned/Not run. Prior build/manual observations and historical V17 passes do not certify it.
 
 ## Existing Test Guides and Evidence
 

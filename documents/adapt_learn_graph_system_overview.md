@@ -1,5 +1,7 @@
 # Adapt-Learn-Graph System Overview
 
+**Current source checkpoint,2026-10-22:** approved slices1–5 now include full-Occupation admission, common Manager form/calculator/list/lifecycle and pinned full/legacy Employee result/history. Main compile, production FE type/lint/build and bounded isolated manual observations passed. Browser interaction remains unverified; no executable acceptance, user-data migration, stage/commit/push or automatic Cluster3. See [evidence/checklist](testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+
 ## 1. System Overview
 
 **Adapt-Learn-Graph** is an internal enterprise system for managing employee competencies and supporting personalized learning within one organization. It connects target roles, competencies, micro-skills, learning modules and assessments through a knowledge graph. The system identifies skill gaps, recommends learning pathways, and updates those pathways based on assessment outcomes.
@@ -53,7 +55,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Assign Experts:** Assign or remove Experts from disciplines and review current assignments.
 - **Manage target roles:** Create and update target role details, assign each target role to an Expert for competency configuration, and view its configuration status.
 - **Manage target role publication:** Review the Expert’s completed competency configuration, then publish or unpublish the target role. L&D does not edit the Expert’s competency requirements.
-- **Manage baseline assessment configuration:** Maintain one versioned adaptive Blueprint per Occupation, including capacity-bounded maximum/time pairs for each active role and voluntary exploration; optionally run an ephemeral feasibility preview. Each row suggests one minute per question and keeps total/per-question time synchronized, but L&D must explicitly save the values. The Blueprint carries no question points/difficulty score weights and does not require generation, review or publication of a shared assessment.
+- **Manage baseline assessment configuration:** Maintain one stable versioned baseline per Occupation and one capacity-valid maximum-question/total-duration pair for the full deduplicated active-role skill/item union. Save draft → Preview assessment → Activate, with confirmed atomic replacement, direct Deactivate and Draft/Active/Retiring/Inactive availability that preserves pinned attempts/history. Time-per-question is a calculator aid with an explicit one-minute suggestion, not a separate timeout/default. There are no per-Role/exploration settings, points/weights or shared generated assessment. Detailed lifecycle/transition proposals and unresolved limits are marked in the 2026-10-22 REQ-002 contracts; they are not implementation claims.
 - **Approve learning offerings:** Review submitted modules and assessments; approve them for organizational use or return them for revision.
 - **Monitor employee development:** View employee competency profiles, skill gaps, assessment results, and learning progress.
 
@@ -76,7 +78,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 **Purpose:** Understand current competencies and develop toward a relevant target role.
 
 - **Manage personal profile:** View and update personal and work-related profile information used by the system.
-- **Complete baseline assessment:** After choosing a role, complete its Occupation baseline before mastery-dependent steps unless a prior mastery-producing baseline already closed that Employee + Occupation allowance; or voluntarily take the baseline of another available Occupation. Start/resume uses an individual server-timed adaptive 3PL attempt. Only invalidated attempts that emitted no mastery may be replaced.
+- **Complete baseline assessment:** Every new entry, through any selected Role or an authorized Occupation, assesses the full Occupation union using the same bounds pair. The Employee receives an individual server-timed adaptive 3PL sequence, not separate Role tests; valid early stopping remains. One prior mastery-producing completion closes the Employee+Occupation allowance across Role choices; only invalidated/no-mastery attempts permit linked replacement. Old attempts/results retain their recorded scope/pins and are never rescored, relabeled or reset by this change.
 - **Complete RIASEC assessment:** Answer the questions used to inform interest-based role guidance.
 - **Review target role guidance:** View Expert-reviewed AI suggestions and comments, then select or confirm a target role.
 - **Review competency profile and gaps:** View estimated competency levels and gaps against the selected target role.

@@ -1,5 +1,7 @@
 # REQ-002-F02 — PostgreSQL integration evidence
 
+**Slices1–5 source checkpoint,2026-10-22:** user accepted2–3 and authorized4–5. Java main compile, production-only FE type/lint and flag-off/on builds passed; bounded live-client/HTTP/SQL observations are in [slice4–5 evidence](../system/REQ-002-F02-REQ-009-occupation-ui-results.md). No executable test source, test compilation, runner or acceptance execution was created/run. All revised acceptance IDs remain Planned/Not run. Browser interaction remains unverified; historical results below retain their original scope.
+
 > **Historical V17 evidence:** these results remain valid for their recorded schema/lifecycle only. They do not prove the planned adaptive Blueprint, IRT parameter, attempt or mastery tables.
 
 ## Occupation-scoped integration — executed 2026-10-15

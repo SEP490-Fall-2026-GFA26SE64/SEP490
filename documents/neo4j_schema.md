@@ -1,5 +1,9 @@
 # Schema Neo4j — Ontology v0.8.0
 
+**Lát4–5,22/10/2026:** UI dùng cấu hình chung đã duyệt. Result/history đọc tên skill và phạm vi từ snapshot PostgreSQL đã pin, không tra Catalog hiện tại; không thêm node/property/relationship, không sửa graph hoặc lịch sử. Xem [evidence/checklist](testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+
+**Mốc triển khai lát2–3,22/10/2026:** admission mới đọc hợp skill/item active Roles, kiểm tra fingerprint trước/sau và pin vào PostgreSQL; Role chỉ là provenance. Khóa chuyển Active, list/status/counts và Deactivate thuộc PostgreSQL, không thêm property/relationship/state vào Neo4j. Danh sách/Deactivate không cần Catalog hoạt động. Không import/migrate/reset graph người dùng; xem [contract](features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md).
+
 Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.8.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ![Sơ đồ ontology](diagrams/neo4j.svg)
@@ -7,6 +11,8 @@
 [File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
 
 ## 1. Cấu trúc tổng quát
+
+**Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md).
 
 Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.8.0.
 

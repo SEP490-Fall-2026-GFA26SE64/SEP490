@@ -1,12 +1,18 @@
 # Complete Baseline Assessment
 
+**Current source checkpoint — slices 1–5, 2026-10-22:** The user accepted slices 2–3 and authorized slices 4–5. The common-configuration form/calculator, saved-preview and confirmed lifecycle actions, PostgreSQL-backed management directory, and safe full/legacy result/history are now implemented in uncommitted source. V1–V22 and historical data remain unchanged. Main Java compile, production-only TypeScript/lint and FE flag-off/on builds passed; bounded isolated live-client/HTTP/SQL observations are recorded in [slice 4–5 evidence](../../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md). Interactive browser review is unavailable in this session and remains unverified. No executable tests, acceptance certification, user-stack migration, stage/commit/push or automatic Cluster 3.
+
+**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier review qualifiers are superseded by this approval; implementation status remains explicit. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+
 ## Current adaptive contract
 
-**Function:** REQ-002-F01. **Actor:** Employee. **Status:** Cluster 1 contract approved on 2026-10-20. No adaptive runtime is implemented yet.
+**Function:** REQ-002-F01. **Actor:** Employee. **Status:** Cluster 1 approved; Cluster 2 in progress, 2026-10-22. User-confirmed whole-Occupation scope supersedes the earlier role/exploration split. B1–B9 local/demo runtime exists at `618d772`; the revised backend admission is now implemented in slices 2–3; frontend/result presentation is now implemented in slices4–5; interactive browser review remains unverified. Approved design transition choices are in [Lifecycle and transition design](Occupation%20Baseline%20Lifecycle%20and%20Transition.md).
 
 ### Goal and position
 
 Estimate initial mastery for MicroSkills covered by the applicable Occupation Blueprint. The same baseline must distinguish limited evidence from reliable evidence for Intern, Junior and Senior Employees; a strong result is not capped merely because it came from a baseline.
+
+**One baseline per Occupation:** every new attempt assesses the deduplicated union of all active-role skills/items using one Occupation question maximum and total duration. Selected Role A or Role B changes entry/provenance, never the pool, bounds, allowance or a separate assessment section. “Full baseline” means the entire Occupation skill scope with the pinned minimum-evidence coverage; it does not mean answering every item in the bank or an identical fixed sequence for all Employees. Adaptive early stopping remains valid only after all required skill evidence conditions are satisfied.
 
 ```text
 trusted Employee chooses a role or an available Occupation
@@ -38,7 +44,7 @@ The Employee cannot choose parameters, submit correctness/mastery, see protected
 | Selected option/response payload | Correctness, raw counts, theta, SE, point/conservative mastery and confidence label |
 | Manual-submit confirmation | Start/deadline, remaining time and timeout outcome |
 
-The request may identify an available Occupation for voluntary exploration. For a role-triggered baseline, the server derives the Occupation from the trusted selected active role; the client cannot substitute another Occupation. A role-required attempt uses that active role's deduplicated skill/item pool and configured role bound. An exploration attempt uses the deduplicated union of all active role pools and the configured exploration bound. Draft, inactive, archived or removed roles/questions never enter a new attempt. A target-selection revision/role snapshot is optional provenance, not the attempt identity.
+The request may identify an available Occupation for voluntary entry. For a selected-role entry, the server derives its Occupation from the trusted selected active role; the client cannot substitute another scope. Both entry paths use the same full active-role union and Occupation bounds. Draft, inactive, archived or removed Roles and ineligible questions do not enter a new snapshot. Target-selection revision/role and the existing purpose codes are provenance, not pool selectors or attempt identity. Client cannot supply a scope-policy marker, skill subset, question budget, model pins, learner or tenant. Role-specific level/proficiency thresholds belong to later gap/pathway processing, not separate baseline tests.
 
 ### IRT 3PL behavior
 
@@ -64,8 +70,8 @@ P(correct | theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
 2. Check the Employee + Occupation allowance. A prior completed baseline that emitted mastery closes it; an invalidated/no-mastery attempt does not.
 3. Lock/check the unique active-attempt key for Employee + Occupation.
 4. Return an existing `IN_PROGRESS` attempt for retries/resume.
-5. Otherwise validate the current Blueprint's active-role/catalog fingerprint, applicable role or exploration pool, item capacity and parameter coverage. Current membership drift blocks a new start until L&D finalizes a refreshed version.
-6. Create the attempt with purpose `ROLE_REQUIREMENT` or `OCCUPATION_EXPLORATION`, pin all versions, set server `startedAt/deadlineAt`, initialize skill states and persist the first presented item atomically.
+5. Otherwise validate current availability, explicit full-Occupation format, active-role/catalog fingerprint, full union skill/item capacity, exact parameter coverage and feasibility under the pinned model. Never omit a skill to fit a small maximum. Current membership drift blocks new starts until L&D activates a refreshed version. A legacy-format current requires the proposed explicit configuration transition; it is never silently interpreted as the new scope.
+6. Under the implemented shared activation-scope lock, recheck current/version/readiness and create the attempt. Preserve `ROLE_REQUIREMENT` or `OCCUPATION_EXPLORATION` as provenance only; pin full-Occupation scope policy, common bounds, complete deduplicated pool, skill snapshots and all versions. Set server `startedAt/deadlineAt`; initialize every union skill and persist the first item/receipt atomically. Exact lock/schema design is approved in the linked transition document.
 
 #### Answer and select next
 
@@ -103,6 +109,8 @@ The client timer is display-only. PostgreSQL owns deadlines; a worker may claim 
 - Replacing or disabling the current Blueprint affects only new starts. An `IN_PROGRESS` attempt continues/resumes with its pinned snapshot.
 - Final results are immutable and retain original target/Occupation/Blueprint/model provenance.
 - REQ-001 blocks target-role change while an assessment is `IN_PROGRESS`.
+- Legacy role-scoped/exploration attempts continue with their original pool, bounds, purpose, deadline and numerical pins, even after configuration replacement or cutover. A previously completed Role A result still consumes the same Employee+Occupation allowance; never relabel it full-Occupation, rescore it, add fabricated skill evidence or reset it to satisfy the new definition.
+- New-format attempts/results retain an explicit server-owned scope discriminator and full union; REQ-009 reads the recorded scope rather than deriving it from the Employee's current Role or today's Blueprint. A replacement of an invalidated attempt is a new start: authorize and validate the current full-Occupation version, preserve the predecessor link, and do not copy obsolete role sampling into it.
 
 ### Failure and concurrency branches
 
@@ -120,12 +128,16 @@ The client timer is display-only. PostgreSQL owns deadlines; a worker may claim 
 | Estimator/technical failure preventing mastery | Preserve audit data, invalidate with no mastery, and allow a replacement linked by `replacesAttemptId`. |
 | Auto-submit retry | Finalize and emit evidence once. |
 | Completed Employee + Occupation requests another baseline | Reject; role/Blueprint/catalog changes do not reopen the allowance. |
+| Legacy-format current version after revised admission cutover | Actionable configuration-update requirement; no new attempt, allowance consumption or silent role/exploration fallback. |
+| Union skill has insufficient eligible/parameterized items or maximum cannot cover minimum evidence | Reject activation/start with structured readiness failure; do not narrow scope or create partial state. |
+| Activate/Deactivate races new start | Serialize admission against current switch; pin the version that wins the agreed transaction ordering, or reject unavailable/stale configuration. Existing pinned attempts remain valid. |
 
 ### Dependencies and implementation alignment
 
 - REQ-001 selected-role provenance for `ROLE_REQUIREMENT`; authorized organization Occupation catalog for `OCCUPATION_EXPLORATION`; REQ-002-F02 current Blueprint; authorized question versions; versioned IRT model/parameters/mapping; REQ-041 mastery/BKT handoff; REQ-009 result/history.
 - Target persistence is defined in [Adaptive Baseline Data Architecture](Adaptive%20Baseline%20Data%20Architecture.md).
-- V17 has no adaptive attempt aggregate, IRT parameter/calibration records, provisional theta/SE or server-deadline worker. Historical fixed-assessment evidence under `documents/testing/` does not certify this contract.
+- V18/V19 on disk and B1–B9 code provide adaptive configuration/attempt/pool/response/result/evidence, estimator/selector, deadline finalization/worker, safe result/history and gated UI. This is a source inventory, not live-schema or production/executable acceptance evidence. AdaptiveAttemptSnapshot still selects role-specific versus union bounds/pool, and V19 insert/scope triggers enforce that older rule; both require a forward-compatible change. Resume, allowance, guards, exact retry and immutable evidence are retained.
+- Production Identity/Catalog and Employee-authorized Occupation discovery remain open. Local/demo gates use trusted configured identities, not arbitrary client actor/tenant input. REQ-041 consumer/delivery is not established by durable outbox alone. No wider role-selection/gap/pathway implementation is authorized by this Function.
 
 ### Acceptance-to-test mapping
 
@@ -141,11 +153,14 @@ The client timer is display-only. PostgreSQL owns deadlines; a worker may claim 
 | High-SE evidence above the minimum finalizes through conservative mastery | Deterministic unit/vector and API result test |
 | Tenant/learner isolation holds | Authorization/isolation tests |
 | Baseline initializes mastery once without BKT double count | REQ-002/REQ-041 integration test |
-| Configure → Test Blueprint → finalize → start → answer/reload → submit → result | Disposable-adapter system test |
+| Save draft → Preview assessment → Activate → full-Occupation start → answer/reload → submit → result | Disposable-adapter system test |
+| Role A/Role B/direct Occupation entry use the same full scope/pair with skill/item deduplication | AB-A02 selector/API/integration/system plan |
+| Legacy attempts/history/allowance survive forward transition; new starts require explicit full-Occupation config | AB-A09–A11 and AB-R02–R03 compatibility plan |
 
 ### Decision status
 
-- **Confirmed:** role choice is immediate; every Employee without a completed Occupation baseline must take it; one successful baseline per Employee + Occupation; role-required and active-role-union exploration sampling; invalidated/no-mastery replacement only; individual adaptive 3PL attempt; raw score for explanation; theta + SE with logistic point mapping and conservative lower-bound mastery; no mastery cap or fixed confidence cap; reload-safe persistence; pinned versions; no deadline grace; server auto-submit; pinned attempts survive Blueprint replacement/disable; Employee result disclosure; exactly-once mastery handoff; no BKT double count.
+- **Confirmed:** immediate role choice; one whole-Occupation baseline/pair for every new entry path; required skill coverage with no role sections; one mastery-producing completion per Employee+Occupation; invalidated/no-mastery linked replacement; unchanged history/pins/allowance; individual adaptive 3PL, raw explanatory score and conservative mastery; no confidence/mastery cap; PostgreSQL authority/reload/deadline/idempotency/security/evidence boundaries above.
 - **Provisional technical configuration:** estimator implementation, exact minimum-evidence/`SE`/`k` constants and cold-start values are system-owned/versioned and initially backend-configured, not L&D-editable.
-- **Open:** none for this Function's Cluster 1 product contract. Exact technical constant values and library choice remain bounded implementation details that must preserve the pinned version and acceptance rules above.
-- **Rejected:** shared published baseline, fixed difficulty ladder, client-computed scoring, raw score as mastery, mastery cap and unanswered prior as a real result.
+- **Confirmed design:** dual-format schema/readers, legacy-configuration admission gate, explicit conversion and transaction protocol in the linked design.
+- **Open:** authoritative external production contracts and numerical/executable/browser validation. Numerical calibration remains outside this alignment.
+- **Rejected:** per-Role or exploration-specific sampling/bounds for new attempts, history relabel/rescore/reset, shared fixed published baseline, fixed difficulty ladder, client scoring, raw score as mastery or unanswered prior as a result.
