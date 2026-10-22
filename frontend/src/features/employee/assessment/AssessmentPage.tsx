@@ -28,6 +28,7 @@ import {
   Target,
   X,
   XCircle,
+  Zap,
 } from 'lucide-react'
 import * as React from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -433,6 +434,78 @@ export const SKILL_CYPHER_ATTEMPT: QuizAttempt = {
 const INITIAL_ATTEMPTS: QuizAttempt[] = [
   SKILL_CYPHER_ATTEMPT,
   {
+    id: 'att-diag-base',
+    attemptNumber: 1,
+    moduleCode: 'DIAG-BASE',
+    moduleTitle: 'Baseline Competency Diagnostic Assessment',
+    quizTitle: 'Initial Baseline Diagnostic Assessment',
+    date: '2026-09-10 09:15',
+    score: 92,
+    correctCount: 9,
+    totalQuestions: 10,
+    timeTaken: '18m 20s',
+    answers: {
+      'q-1': 'opt-1-a',
+      'q-2': 'opt-2-a',
+      'q-3': 'opt-3-a',
+      'q-4': 'opt-4-a',
+      'q-5': 'opt-5-a',
+      'q-6': 'opt-6-a',
+      'q-7': 'opt-7-b',
+      'q-8': 'opt-8-a',
+      'q-9': 'opt-9-a',
+      'q-10': 'opt-10-a',
+    },
+  },
+  {
+    id: 'att-career-riasec',
+    attemptNumber: 1,
+    moduleCode: 'CAREER-RIASEC',
+    moduleTitle: 'Holland RIASEC Vocational Profile Inventory',
+    quizTitle: 'RIASEC Interest & Vocational Orientation Assessment',
+    date: '2026-09-10 10:00',
+    score: 88,
+    correctCount: 9,
+    totalQuestions: 10,
+    timeTaken: '11m 40s',
+    answers: {
+      'q-1': 'opt-1-a',
+      'q-2': 'opt-2-a',
+      'q-3': 'opt-3-a',
+      'q-4': 'opt-4-a',
+      'q-5': 'opt-5-b',
+      'q-6': 'opt-6-a',
+      'q-7': 'opt-7-b',
+      'q-8': 'opt-8-a',
+      'q-9': 'opt-9-a',
+      'q-10': 'opt-10-a',
+    },
+  },
+  {
+    id: 'att-sk-rdf-01',
+    attemptNumber: 1,
+    moduleCode: 'SK-RDF-01',
+    moduleTitle: 'RDF TripleStore Data Model',
+    quizTitle: 'Skill Assessment: RDF TripleStore Data Model',
+    date: '2026-09-20 15:10',
+    score: 90,
+    correctCount: 9,
+    totalQuestions: 10,
+    timeTaken: '12m 45s',
+    answers: {
+      'q-1': 'opt-1-a',
+      'q-2': 'opt-2-a',
+      'q-3': 'opt-3-a',
+      'q-4': 'opt-4-a',
+      'q-5': 'opt-5-a',
+      'q-6': 'opt-6-a',
+      'q-7': 'opt-7-b',
+      'q-8': 'opt-8-a',
+      'q-9': 'opt-9-a',
+      'q-10': 'opt-10-a',
+    },
+  },
+  {
     id: 'att-mod301-1',
     attemptNumber: 1,
     moduleCode: 'MOD-301',
@@ -678,6 +751,107 @@ const PATHWAY_QUIZZES: PathwayQuiz[] = [
   },
 ]
 
+export interface SkillQuiz {
+  id: string
+  skillCode: string
+  skillName: string
+  description: string
+  currentMastery: number
+  targetMastery: number
+  status: 'completed' | 'eligible' | 'locked'
+  lastScore?: number
+  durationMinutes: number
+  questionCount: number
+  passingScore: number
+  parentModuleCode: string
+}
+
+export const SKILL_QUIZZES: SkillQuiz[] = [
+  {
+    id: 'quiz-sk-pyg-02',
+    skillCode: 'SK-PYG-02',
+    skillName: 'PyTorch Geometric (PyG) Pipeline',
+    description: 'Constructing Data and HeteroData tensors with sparse adjacency representations.',
+    currentMastery: 75,
+    targetMastery: 70,
+    status: 'eligible',
+    durationMinutes: 20,
+    questionCount: 10,
+    passingScore: 80,
+    parentModuleCode: 'MOD-301',
+  },
+  {
+    id: 'quiz-sk-rdf-01',
+    skillCode: 'SK-RDF-01',
+    skillName: 'RDF TripleStore Data Model',
+    description: 'Representing entity-relationship graphs using URIs, blank nodes, and literal values.',
+    currentMastery: 92,
+    targetMastery: 80,
+    status: 'completed',
+    lastScore: 90,
+    durationMinutes: 15,
+    questionCount: 8,
+    passingScore: 80,
+    parentModuleCode: 'MOD-101',
+  },
+  {
+    id: 'quiz-sk-sparql-02',
+    skillCode: 'SK-SPARQL-02',
+    skillName: 'SPARQL 1.1 Query Engine',
+    description: 'Pattern matching, FILTER conditions, OPTIONAL clauses, and aggregation on RDF graphs.',
+    currentMastery: 88,
+    targetMastery: 75,
+    status: 'completed',
+    lastScore: 88,
+    durationMinutes: 20,
+    questionCount: 10,
+    passingScore: 75,
+    parentModuleCode: 'MOD-101',
+  },
+  {
+    id: 'quiz-sk-cyp-01',
+    skillCode: 'SK-CYP-01',
+    skillName: 'Declarative Cypher MATCH & MERGE',
+    description: 'Path traversal syntax, bidirectional relationship matching, and atomic merge semantics.',
+    currentMastery: 91,
+    targetMastery: 70,
+    status: 'completed',
+    lastScore: 92,
+    durationMinutes: 15,
+    questionCount: 8,
+    passingScore: 75,
+    parentModuleCode: 'MOD-204',
+  },
+  {
+    id: 'quiz-sk-neo-02',
+    skillCode: 'SK-NEO-02',
+    skillName: 'Index-Free Adjacency & Schema Constraints',
+    description: 'Unique node constraints, text/range indexes, and point-in-time schema validation.',
+    currentMastery: 85,
+    targetMastery: 75,
+    status: 'completed',
+    lastScore: 88,
+    durationMinutes: 20,
+    questionCount: 10,
+    passingScore: 80,
+    parentModuleCode: 'MOD-204',
+  },
+  {
+    id: 'quiz-sk-opt-04',
+    skillCode: 'SK-OPT-04',
+    skillName: 'Cypher Query Profiling (EXPLAIN / PROFILE)',
+    description: 'DbHits analysis, card estimation, cache hits, and Cartesian product elimination.',
+    currentMastery: 87,
+    targetMastery: 70,
+    status: 'completed',
+    lastScore: 85,
+    durationMinutes: 15,
+    questionCount: 8,
+    passingScore: 75,
+    parentModuleCode: 'MOD-204',
+  },
+]
+
 export interface RiasecQuestionItem {
   id: number
   dimension: 'R' | 'I' | 'A' | 'S' | 'E' | 'C'
@@ -749,8 +923,9 @@ export function AssessmentPage() {
     return getActiveCompanyId() === 'comp-technova' ? [SKILL_CYPHER_ATTEMPT, ...INITIAL_ATTEMPTS] : []
   }
 
-  // Navigation tab state: 'pathway' | 'baseline' | 'history'
-  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'history'>('pathway')
+  // Navigation tab state: 'pathway' | 'baseline' | 'skills' | 'history'
+  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'skills' | 'history'>('pathway')
+  const [skillStatusFilter, setSkillStatusFilter] = React.useState<'all' | 'eligible' | 'completed' | 'locked'>('all')
 
   // Available Quiz Info Modal state
   const [selectedQuizModal, setSelectedQuizModal] = React.useState<PathwayQuiz | null>(null)
@@ -777,6 +952,40 @@ export function AssessmentPage() {
       return null
     }
   }, [hasCompletedRiasec])
+
+  const topRiasecTrait = React.useMemo(() => {
+    if (riasecData?.topTraits && riasecData.topTraits.length > 0) {
+      const topName = riasecData.topTraits[0]
+      return {
+        name: `${topName} (${riasecData.hollandCode?.[0] || 'I'})`,
+        title: topName === 'Investigative' ? 'Algorithmic & Analytical' : topName === 'Realistic' ? 'Hands-on & Infrastructure' : 'Product & Strategic',
+        explanation: topName === 'Investigative'
+          ? 'Excels at mathematical reasoning, graph modeling, and data architecture.'
+          : 'High engagement with practical engineering execution and structured pipelines.',
+      }
+    }
+    return {
+      name: 'Investigative (I)',
+      title: 'Algorithmic & Analytical',
+      explanation: 'Excels at mathematical reasoning, graph modeling, and data architecture.',
+    }
+  }, [riasecData])
+
+  const handleStartSkillExam = (quiz: SkillQuiz) => {
+    setAnswers({})
+    setFlagged({})
+    setSecondsRemaining((quiz.durationMinutes || 15) * 60)
+    setIsSubmitted(false)
+    setReviewAttemptId(null)
+    setCurrentIndex(0)
+    setIsTakingQuiz(true)
+    setSelectedQuizModal(null)
+    toast({
+      title: `Skill Assessment Started: ${quiz.skillName}`,
+      description: `${quiz.durationMinutes || 15}-minute benchmark exam is running. Good luck!`,
+      variant: 'info',
+    })
+  }
 
   // RIASEC In-Page Assessment Taking State
   const [isTakingRiasec, setIsTakingRiasec] = React.useState(false)
@@ -936,7 +1145,7 @@ export function AssessmentPage() {
       description: `Evaluates proficiency in core curriculum outcomes for ${m.title}.`,
       status: idx === 0 ? ('completed' as const) : idx === 1 ? ('available' as const) : ('locked' as const),
       durationMinutes: Math.min(30, Math.round((m.durationMinutes || 60) / 2)),
-      questionCount: (activeCompany.questions || []).filter((q: any) => q.moduleCode === m.code || q.assessedSkillId).length || 5,
+      questionCount: (activeCompany.questions || []).filter((q: { moduleCode?: string; assessedSkillId?: string }) => q.moduleCode === m.code || Boolean(q.assessedSkillId)).length || 5,
       passingScore: 80,
       lastScore: idx === 0 ? 88 : undefined,
       skills: [m.title],
@@ -950,9 +1159,24 @@ export function AssessmentPage() {
     if (!activeCompany?.questions || activeCompany.questions.length === 0) {
       return []
     }
-    return (activeCompany.questions as any[]).map((q, idx) => {
+    type QuestionLike = {
+      id: string
+      options?: (string | { id: string; text: string })[]
+      correctAnswerIndex?: number
+      correctOptionId?: string
+      prompt?: string
+      questionText?: string
+      code?: string
+      concept?: string
+      category?: string
+      difficulty?: string
+      points?: number
+      explanation?: string
+      feedback?: string
+    }
+    return (activeCompany.questions as unknown as QuestionLike[]).map((q, idx) => {
       const optionLetters = ['a', 'b', 'c', 'd', 'e']
-      const opts = (q.options || []).map((opt: any, oIdx: number) => {
+      const opts = (q.options || []).map((opt: string | { id: string; text: string }, oIdx: number) => {
         if (typeof opt === 'string') {
           return {
             id: `opt-${q.id}-${optionLetters[oIdx] || oIdx}`,
@@ -961,7 +1185,8 @@ export function AssessmentPage() {
         }
         return opt
       })
-      const correctOptId = q.correctOptionId || opts[q.correctAnswerIndex]?.id || opts[0]?.id || `opt-${q.id}-a`
+      const correctIdx = typeof q.correctAnswerIndex === 'number' ? q.correctAnswerIndex : 0
+      const correctOptId = q.correctOptionId || opts[correctIdx]?.id || opts[0]?.id || `opt-${q.id}-a`
 
       return {
         id: q.id,
@@ -969,7 +1194,7 @@ export function AssessmentPage() {
         concept: q.concept || q.code || 'Core Competency',
         category: q.category || q.difficulty || 'Intermediate',
         points: q.points || 1.0,
-        questionText: q.questionText || q.prompt,
+        questionText: q.questionText || q.prompt || 'Question Prompt',
         options: opts,
         correctOptionId: correctOptId,
         explanation: q.explanation || q.feedback || 'Verified correct response.',
@@ -1015,12 +1240,66 @@ export function AssessmentPage() {
     return () => clearInterval(timer)
   }, [isSubmitted, reviewAttemptId])
 
-  // Automatically open quiz modal if navigated with ?diagnostic=true
+  // Automatically handle URL navigation params: tab, diagnostic, module exam redirection
   React.useEffect(() => {
-    if (location.search.includes('diagnostic=true') && !isTakingQuiz && !isSubmitted) {
+    const params = new URLSearchParams(location.search)
+    const tabParam = params.get('tab')
+    if (tabParam === 'pathway' || tabParam === 'baseline' || tabParam === 'skills' || tabParam === 'history') {
+      setActiveTab(tabParam)
+    }
+
+    const skillParam = params.get('skill')
+    const shouldStart = params.get('start') === 'true'
+
+    if (skillParam || tabParam === 'skills') {
+      setActiveTab('skills')
+      if (shouldStart && skillParam && !isTakingQuiz && !isSubmitted) {
+        const normalizedSkill = skillParam.toLowerCase().replace(/[^a-z0-9]/g, '')
+        const targetSkill = SKILL_QUIZZES.find((s) => {
+          const normCode = s.skillCode.toLowerCase().replace(/[^a-z0-9]/g, '')
+          const normId = s.id.toLowerCase().replace(/[^a-z0-9]/g, '')
+          return normCode === normalizedSkill || normId === normalizedSkill || normCode.includes(normalizedSkill) || normalizedSkill.includes(normCode)
+        })
+        if (targetSkill && targetSkill.status === 'eligible') {
+          handleStartSkillExam(targetSkill)
+          return
+        }
+      }
+    }
+
+    const moduleParam = params.get('module') || params.get('moduleId') || params.get('quiz')
+
+    if (moduleParam && !isTakingQuiz && !isSubmitted && pathwayQuizzes.length > 0) {
+      const normalizedParam = moduleParam.toLowerCase().replace(/[^a-z0-9]/g, '')
+      const targetQuiz = pathwayQuizzes.find((q) => {
+        const normCode = q.moduleCode.toLowerCase().replace(/[^a-z0-9]/g, '')
+        const normId = q.id.toLowerCase().replace(/[^a-z0-9]/g, '')
+        return normCode === normalizedParam || normId === normalizedParam || normCode.includes(normalizedParam) || normalizedParam.includes(normCode)
+      }) || pathwayQuizzes[0]
+
+      if (targetQuiz) {
+        if (shouldStart) {
+          setAnswers({})
+          setFlagged({})
+          setSecondsRemaining((targetQuiz.durationMinutes || 25) * 60)
+          setIsSubmitted(false)
+          setReviewAttemptId(null)
+          setCurrentIndex(0)
+          setIsTakingQuiz(true)
+          setSelectedQuizModal(null)
+          toast({
+            title: `Assessment Started: ${targetQuiz.quizTitle}`,
+            description: `${targetQuiz.durationMinutes || 25}-minute countdown is running. Good luck!`,
+            variant: 'info',
+          })
+        } else {
+          setSelectedQuizModal(targetQuiz)
+        }
+      }
+    } else if (params.get('diagnostic') === 'true' && !isTakingQuiz && !isSubmitted) {
       setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0] || null)
     }
-  }, [location.search, isTakingQuiz, isSubmitted, pathwayQuizzes])
+  }, [location.search, isTakingQuiz, isSubmitted, pathwayQuizzes, toast])
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -2007,7 +2286,7 @@ export function AssessmentPage() {
                   <Tabs
                     value={activeTab}
                     onValueChange={(val) => {
-                      setActiveTab(val as 'pathway' | 'baseline' | 'history')
+                      setActiveTab(val as 'pathway' | 'baseline' | 'skills' | 'history')
                     }}
                     className="w-auto"
                   >
@@ -2019,6 +2298,10 @@ export function AssessmentPage() {
                       <TabsTrigger value="baseline" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                         <Sparkles className="h-4 w-4 text-primary" />
                         <span>Baseline</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="skills" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
+                        <Target className="h-4 w-4 text-primary" />
+                        <span>Skill</span>
                       </TabsTrigger>
                       <TabsTrigger value="history" className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card">
                         <History className="h-4 w-4 text-primary" />
@@ -2105,11 +2388,12 @@ export function AssessmentPage() {
                 )
               }
 
-              const availableQuizzes = pathwayQuizzes.filter((q) => q.status === 'available')
-              const completedQuizzes = pathwayQuizzes.filter((q) => q.status === 'completed')
-              const lockedQuizzes = pathwayQuizzes.filter((q) => q.status === 'locked')
-              const nextQuiz = availableQuizzes[0] || pathwayQuizzes[0]
-              const filteredUpcomingQuizzes = pathwayQuizzes.filter(
+              const isBaselineQuiz = (q: PathwayQuiz) => q.moduleCode === 'DIAG-BASE' || q.moduleCode === 'CAREER-RIASEC'
+              const pathwayOnlyQuizzes = pathwayQuizzes.filter((q) => !isBaselineQuiz(q))
+              const availableQuizzes = pathwayOnlyQuizzes.filter((q) => q.status === 'available')
+              const completedQuizzes = pathwayOnlyQuizzes.filter((q) => q.status === 'completed')
+              const lockedQuizzes = pathwayOnlyQuizzes.filter((q) => q.status === 'locked')
+              const filteredUpcomingQuizzes = pathwayOnlyQuizzes.filter(
                 (q) => upcomingStatusFilter === 'all' || q.status === upcomingStatusFilter
               )
 
@@ -2149,656 +2433,761 @@ export function AssessmentPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* LEFT COLUMN: Hero Milestone Card & Unified Adaptive Timeline Big Container (lg:col-span-8) */}
-                  <div className="lg:col-span-8 space-y-5">
-                    {/* 1. Hero Milestone Progress Card */}
-                    <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-xs">
-                      <div className="relative z-10 space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                              <Sparkles className="h-3.5 w-3.5" />
-                              {isSkillMode ? 'Skill Milestone Track' : 'Dynamic Pathway Quizzes'}
-                            </span>
-                            <span className="text-xs text-muted-foreground font-medium hidden sm:inline">
-                              {isSkillMode ? 'Single-Skill Specialization' : 'End-of-Module Evaluations'}
-                            </span>
-                          </div>
+                  {/* Top Pathway Assessment StatCards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                      title="Milestone Readiness"
+                      value={isSkillMode ? '100%' : '40%'}
+                      description={isSkillMode ? '1 of 1 milestone available' : '2 of 5 modules passed'}
+                      icon={<Award className="w-5 h-5 text-primary" />}
+                    >
+                      <Progress value={isSkillMode ? 100 : 40} variant="primary" className="h-1.5 mt-1" />
+                    </StatCard>
 
-                          <div className="flex items-center gap-2 text-xs font-semibold">
-                            <span className="text-muted-foreground">Milestone Progress:</span>
-                            <Badge variant="success" className="font-mono text-xs font-bold">
-                              {isSkillMode ? '1 of 1 Available (100%)' : '2 of 5 Cleared (40%)'}
-                            </Badge>
-                          </div>
-                        </div>
+                    <StatCard
+                      title="Highest Score"
+                      value={isSkillMode ? '85%' : '92%'}
+                      valueClassName="text-success font-mono"
+                      description={isSkillMode ? 'MOD-CYP-101 Traversal' : 'MOD-101 RDF & Knowledge Graphs'}
+                      icon={<Sparkles className="w-5 h-5 text-success" />}
+                    />
 
-                        <div>
-                          <Heading level={1} size="page" className="text-foreground tracking-tight text-xl sm:text-2xl font-bold">
-                            {isSkillMode
-                              ? `Upcoming Pathway Quizzes: ${profile.targetSkill || 'Neo4j Cypher Traversal'}`
-                              : 'Upcoming Pathway Quizzes'}
-                          </Heading>
-                          <Text variant="subtitle" className="mt-1 text-muted-foreground max-w-2xl leading-relaxed text-xs sm:text-sm">
-                            {isSkillMode
-                              ? `Targeted milestone evaluations calibrated to certify your operational mastery in ${profile.targetSkill || 'Neo4j Cypher Traversal'}.`
-                              : `Milestone assessment quizzes unlock sequentially as you finish each module in your Adaptive Learning Pathway for ${profile.targetRole || 'AI Knowledge Architect'}. Passing each quiz calibrates knowledge tracing and unlocks the next module.`}
-                          </Text>
-                        </div>
+                    <StatCard
+                      title="Average Score"
+                      value={isSkillMode ? '85%' : '91%'}
+                      valueClassName="text-primary font-mono"
+                      description={isSkillMode ? '1 assessment completed' : 'Across 2 passed evaluations'}
+                      icon={<Zap className="w-5 h-5 text-primary" />}
+                    />
 
-                        {/* Pathway Sequential Progress Step Bar */}
-                        <div className="pt-2">
-                          {isSkillMode ? (
-                            <>
-                              <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5 flex-wrap gap-1">
-                                <span className="text-primary font-bold flex items-center gap-1">
-                                  <Sparkles size={11} /> MOD-CYP-101 (Cypher Traversal) • Ready to Take
-                                </span>
-                                <span className="text-xs text-muted-foreground font-mono">1 Assessment</span>
-                              </div>
-                              <div className="grid grid-cols-1 gap-1.5 h-2 w-full rounded-full overflow-hidden bg-muted/80 p-0.5">
-                                <div className="bg-primary rounded-full animate-pulse" title="MOD-CYP-101: Ready to Take" />
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1.5 flex-wrap gap-1">
-                                <span className="text-success font-bold">MOD-101 (RDF) ✓</span>
-                                <span className="text-success font-bold">MOD-204 (Neo4j) ✓</span>
-                                <span className="text-primary font-bold flex items-center gap-1">
-                                  <Sparkles size={11} /> MOD-301 (GNN) • Ready
-                                </span>
-                                <span className="text-foreground font-bold flex items-center gap-1">
-                                  <Lock size={11} className="text-muted-foreground" /> MOD-305 (DKT)
-                                </span>
-                                <span className="text-foreground font-bold flex items-center gap-1">
-                                  <Lock size={11} className="text-muted-foreground" /> MOD-401 (Capstone)
-                                </span>
-                              </div>
-                              <div className="grid grid-cols-5 gap-1.5 h-2 w-full rounded-full overflow-hidden bg-muted/80 p-0.5">
-                                <div className="bg-success rounded-full" title="MOD-101: Passed (92%)" />
-                                <div className="bg-success rounded-full" title="MOD-204: Passed (90%)" />
-                                <div className="bg-primary rounded-full animate-pulse" title="MOD-301: Ready to Take" />
-                                <div className="bg-muted-foreground/50 rounded-full" title="MOD-305: Locked" />
-                                <div className="bg-muted-foreground/50 rounded-full" title="MOD-401: Locked" />
-                              </div>
-                            </>
-                          )}
+                    <StatCard
+                      title="Skills Verified"
+                      value={isSkillMode ? '1 / 2' : '6 / 18'}
+                      valueClassName="font-mono"
+                      description={isSkillMode ? '+1 on next pass' : '6 verified • 2 in-progress along pathway'}
+                      icon={<Target className="w-5 h-5 text-primary" />}
+                    />
+                  </div>
+
+                  {/* ADAPTIVE TIMELINE (UNIFIED FULL-WIDTH CONTAINER) */}
+                  <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+                    {/* Big Container Header: Title, Summary & Status Filters */}
+                    <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-5 w-5 text-primary shrink-0" />
+                          <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                            Adaptive Pathway Timeline
+                          </h2>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          Sequential milestone evaluations calibrated to your demonstrated competency
+                        </p>
                       </div>
 
-                      {/* Ambient decorative glow */}
-                      <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
+                      {/* Interactive Filter Pills Integrated into the Header */}
+                      <div className="flex items-center gap-1 flex-wrap p-1 rounded-xl bg-card border border-border shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => setUpcomingStatusFilter('all')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                            upcomingStatusFilter === 'all'
+                              ? 'bg-secondary text-primary shadow-2xs font-bold'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          All ({pathwayOnlyQuizzes.length})
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setUpcomingStatusFilter('available')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            upcomingStatusFilter === 'available'
+                              ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          <span>Ready ({availableQuizzes.length})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setUpcomingStatusFilter('completed')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            upcomingStatusFilter === 'completed'
+                              ? 'bg-success/15 text-success font-bold'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>Done ({completedQuizzes.length})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setUpcomingStatusFilter('locked')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            upcomingStatusFilter === 'locked'
+                              ? 'bg-foreground text-background font-bold shadow-2xs'
+                              : 'text-foreground/80 hover:text-foreground hover:bg-muted/70 font-medium'
+                          }`}
+                        >
+                          <Lock className="h-3 w-3 text-muted-foreground" />
+                          <span>Locked ({lockedQuizzes.length})</span>
+                        </button>
+                      </div>
                     </div>
 
-                    {/* 2. ADAPTIVE TIMELINE (SINGLE BIG UNIFIED CONTAINER) */}
-                    <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
-                      {/* Big Container Header: Title, Summary & Status Filters */}
-                      <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Layers className="h-5 w-5 text-primary shrink-0" />
-                            <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                              Adaptive Pathway Timeline
-                            </h2>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Sequential milestone evaluations calibrated to your demonstrated competency
-                          </p>
-                        </div>
+                    {/* Big Container Body: Continuous Adaptive Timeline Track */}
+                    <div className="p-5 sm:p-7 relative">
+                      <div className="relative">
+                        {/* Continuous Vertical Timeline Line */}
+                        <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
 
-                        {/* Interactive Filter Pills Integrated into the Header */}
-                        <div className="flex items-center gap-1 flex-wrap p-1 rounded-xl bg-card border border-border shadow-2xs">
-                          <button
-                            type="button"
-                            onClick={() => setUpcomingStatusFilter('all')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                              upcomingStatusFilter === 'all'
-                                ? 'bg-secondary text-primary shadow-2xs font-bold'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                            }`}
-                          >
-                            All ({pathwayQuizzes.length})
-                          </button>
+                        <div className="space-y-6">
+                          {filteredUpcomingQuizzes.map((quiz) => {
+                            const isAvailable = quiz.status === 'available'
+                            const isLocked = quiz.status === 'locked'
+                            const isCompleted = quiz.status === 'completed'
 
-                          <button
-                            type="button"
-                            onClick={() => setUpcomingStatusFilter('available')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                              upcomingStatusFilter === 'available'
-                                ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                            }`}
-                          >
-                            <Sparkles className="h-3 w-3" />
-                            <span>Ready ({availableQuizzes.length})</span>
-                          </button>
+                            return (
+                              <div key={quiz.id} className="relative flex items-start gap-3.5 sm:gap-5 group">
+                                {/* Timeline Node Bullet Pin */}
+                                <div
+                                  className={`relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all ${
+                                    isCompleted
+                                      ? 'border-success bg-success text-white shadow-2xs'
+                                      : isAvailable
+                                        ? 'border-primary bg-primary text-primary-foreground shadow-xs ring-4 ring-primary/20 animate-pulse'
+                                        : 'border-border bg-muted text-foreground'
+                                  }`}
+                                >
+                                  {isCompleted ? (
+                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                                  ) : isAvailable ? (
+                                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                                  ) : (
+                                    <Lock className="h-4 w-4 sm:h-4 sm:w-4 text-muted-foreground" />
+                                  )}
+                                </div>
 
-                          <button
-                            type="button"
-                            onClick={() => setUpcomingStatusFilter('completed')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                              upcomingStatusFilter === 'completed'
-                                ? 'bg-success/15 text-success font-bold'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                            }`}
-                          >
-                            <CheckCircle2 className="h-3 w-3" />
-                            <span>Done ({completedQuizzes.length})</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setUpcomingStatusFilter('locked')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                              upcomingStatusFilter === 'locked'
-                                ? 'bg-foreground text-background font-bold shadow-2xs'
-                                : 'text-foreground/80 hover:text-foreground hover:bg-muted/70 font-medium'
-                            }`}
-                          >
-                            <Lock className="h-3 w-3 text-muted-foreground" />
-                            <span>Locked ({lockedQuizzes.length})</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Big Container Body: Continuous Adaptive Timeline Track */}
-                      <div className="p-5 sm:p-7 relative">
-                        <div className="relative">
-                          {/* Continuous Vertical Timeline Line */}
-                          <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
-
-                          <div className="space-y-6">
-                            {filteredUpcomingQuizzes.map((quiz) => {
-                              const isAvailable = quiz.status === 'available'
-                              const isLocked = quiz.status === 'locked'
-                              const isCompleted = quiz.status === 'completed'
-
-                              return (
-                                <div key={quiz.id} className="relative flex items-start gap-3.5 sm:gap-5 group">
-                                  {/* Timeline Node Bullet Pin */}
-                                  <div
-                                    className={`relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all ${
-                                      isCompleted
-                                        ? 'border-success bg-success text-white shadow-2xs'
-                                        : isAvailable
-                                          ? 'border-primary bg-primary text-primary-foreground shadow-xs ring-4 ring-primary/20 animate-pulse'
-                                          : 'border-border bg-muted text-foreground'
-                                    }`}
-                                  >
-                                    {isCompleted ? (
-                                      <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    ) : isAvailable ? (
-                                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    ) : (
-                                      <Lock className="h-4 w-4 sm:h-4 sm:w-4 text-muted-foreground" />
-                                    )}
-                                  </div>
-
-                                  {/* Timeline Step Content Surface Panel */}
-                                  <div
-                                    className={`flex-1 min-w-0 rounded-xl p-4 sm:p-5 border transition-all ${
-                                      isAvailable
-                                        ? 'border-primary/50 bg-secondary/35 shadow-xs ring-1 ring-primary/25 cursor-pointer hover:border-primary'
-                                        : isCompleted
-                                          ? 'border-border bg-card hover:border-success/50 shadow-2xs'
-                                          : 'border-border bg-muted/20'
-                                    }`}
-                                    onClick={() => {
-                                      if (isAvailable) {
-                                        setSelectedQuizModal(quiz)
-                                      }
-                                    }}
-                                  >
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                      <div className="space-y-2.5 flex-1 min-w-0">
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                          <Badge
-                                            variant="outline"
-                                            className={`font-mono text-xs font-bold shrink-0 ${
-                                              isLocked ? 'text-muted-foreground bg-muted/60 border-border' : 'text-primary bg-secondary/60 border-primary/30'
-                                            }`}
-                                          >
-                                            {quiz.moduleCode}
-                                          </Badge>
-
-                                          {isCompleted && (
-                                            <Badge variant="success" className="gap-1 text-xs font-semibold shrink-0">
-                                              <CheckCircle className="h-3 w-3" />
-                                              Completed &bull; Passed ({quiz.lastScore}%)
-                                            </Badge>
-                                          )}
-
-                                          {isAvailable && (
-                                            <Badge variant="primary" className="gap-1 text-xs font-semibold bg-primary text-primary-foreground shadow-xs shrink-0">
-                                              <Sparkles className="h-3 w-3" />
-                                              Ready to Take
-                                            </Badge>
-                                          )}
-
-                                          {isLocked && (
-                                            <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted text-foreground border-border shrink-0">
-                                              <Lock className="h-3 w-3 text-foreground" />
-                                              Locked Gate
-                                            </Badge>
-                                          )}
-
-                                          <span className="text-xs font-medium text-foreground truncate min-w-0">
-                                            {quiz.moduleTitle}
-                                          </span>
-                                        </div>
-
-                                        <div>
-                                          <h3 className="text-base font-bold text-foreground transition-colors">
-                                            {quiz.quizTitle}
-                                          </h3>
-                                          <p className="text-xs sm:text-sm mt-1 leading-relaxed max-w-2xl text-muted-foreground font-normal">
-                                            {quiz.description}
-                                          </p>
-                                        </div>
-
-                                        {/* Skills Tested Badges */}
-                                        <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                                          <span className="text-[11px] font-bold mr-1 text-muted-foreground">
-                                            Skills Tested:
-                                          </span>
-                                          {quiz.skills.map((skill) => (
-                                            <Badge
-                                              key={skill}
-                                              variant="outline"
-                                              className="text-[11px] px-2 py-0.5 font-semibold bg-muted/40 text-foreground border-border"
-                                            >
-                                              {skill}
-                                            </Badge>
-                                          ))}
-                                        </div>
-                                      </div>
-
-                                      {/* Action Column */}
-                                      <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border md:pl-4">
-                                        <div className="flex items-center gap-3 text-xs font-mono">
-                                          <span className="flex items-center gap-1 font-bold text-foreground">
-                                            <Clock className="h-3.5 w-3.5 text-primary" />
-                                            {quiz.durationMinutes}m
-                                          </span>
-                                          <span className="text-muted-foreground font-bold">&bull;</span>
-                                          <span className="flex items-center gap-1 font-bold text-foreground">
-                                            <FileText className="h-3.5 w-3.5 text-primary" />
-                                            {quiz.questionCount} Questions
-                                          </span>
-                                        </div>
-
-                                        {isAvailable && (
-                                          <Button
-                                            variant="primary"
-                                            size="sm"
-                                            rightIcon={<ArrowRight className="h-4 w-4" />}
-                                            className="shadow-xs font-semibold"
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              setSelectedQuizModal(quiz)
-                                            }}
-                                          >
-                                            Take Quiz Now
-                                          </Button>
-                                        )}
+                                {/* Timeline Step Content Surface Panel */}
+                                <div
+                                  className={`flex-1 min-w-0 rounded-xl p-4 sm:p-5 border transition-all ${
+                                    isAvailable
+                                      ? 'border-primary/50 bg-secondary/35 shadow-xs ring-1 ring-primary/25 cursor-pointer hover:border-primary'
+                                      : isCompleted
+                                        ? 'border-border bg-card hover:border-success/50 shadow-2xs'
+                                        : 'border-border bg-muted/20'
+                                  }`}
+                                  onClick={() => {
+                                    if (isAvailable) {
+                                      setSelectedQuizModal(quiz)
+                                    }
+                                  }}
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="space-y-2.5 flex-1 min-w-0">
+                                      <div className="flex items-center gap-2.5 min-w-0">
+                                        <Badge
+                                          variant="outline"
+                                          className={`font-mono text-xs font-bold shrink-0 ${
+                                            isLocked ? 'text-muted-foreground bg-muted/60 border-border' : 'text-primary bg-secondary/60 border-primary/30'
+                                          }`}
+                                        >
+                                          {quiz.moduleCode}
+                                        </Badge>
 
                                         {isCompleted && (
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            leftIcon={<History className="h-3.5 w-3.5 text-primary" />}
-                                            className="font-medium hover:border-primary/40"
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              setHistorySearch(`${quiz.moduleCode}: ${quiz.moduleTitle}`)
-                                              setActiveTab('history')
-                                            }}
-                                          >
-                                            Review Attempt
-                                          </Button>
+                                          <Badge variant="success" className="gap-1 text-xs font-semibold shrink-0">
+                                            <CheckCircle className="h-3 w-3" />
+                                            Completed &bull; Passed ({quiz.lastScore}%)
+                                          </Badge>
+                                        )}
+
+                                        {isAvailable && (
+                                          <Badge variant="primary" className="gap-1 text-xs font-semibold bg-primary text-primary-foreground shadow-xs shrink-0">
+                                            <Sparkles className="h-3 w-3" />
+                                            Ready to Take
+                                          </Badge>
                                         )}
 
                                         {isLocked && (
-                                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground font-bold text-xs border border-border shadow-2xs">
-                                            <Lock className="h-3.5 w-3.5 text-foreground" />
-                                            <span>Locked Gate</span>
-                                          </div>
+                                          <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted text-foreground border-border shrink-0">
+                                            <Lock className="h-3 w-3 text-foreground" />
+                                            Locked Gate
+                                          </Badge>
                                         )}
+
+                                        <span className="text-xs font-medium text-foreground truncate min-w-0">
+                                          {quiz.moduleTitle}
+                                        </span>
                                       </div>
+
+                                      <div>
+                                        <h3 className="text-base font-bold text-foreground transition-colors">
+                                          {quiz.quizTitle}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm mt-1 leading-relaxed max-w-2xl text-muted-foreground font-normal">
+                                          {quiz.description}
+                                        </p>
+                                      </div>
+
+                                      {/* Skills Tested Badges */}
+                                      <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                                        <span className="text-[11px] font-bold mr-1 text-muted-foreground">
+                                          Skills Tested:
+                                        </span>
+                                        {quiz.skills.map((skill) => (
+                                          <Badge
+                                            key={skill}
+                                            variant="outline"
+                                            className="text-[11px] px-2 py-0.5 font-semibold bg-muted/40 text-foreground border-border"
+                                          >
+                                            {skill}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Action Column */}
+                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border md:pl-4">
+                                      <div className="flex items-center gap-3 text-xs font-mono">
+                                        <span className="flex items-center gap-1 font-bold text-foreground">
+                                          <Clock className="h-3.5 w-3.5 text-primary" />
+                                          {quiz.durationMinutes}m
+                                        </span>
+                                        <span className="text-muted-foreground font-bold">&bull;</span>
+                                        <span className="flex items-center gap-1 font-bold text-foreground">
+                                          <FileText className="h-3.5 w-3.5 text-primary" />
+                                          {quiz.questionCount} Questions
+                                        </span>
+                                      </div>
+
+                                      {isAvailable && (
+                                        <Button
+                                          variant="primary"
+                                          size="sm"
+                                          rightIcon={<ArrowRight className="h-4 w-4" />}
+                                          className="shadow-xs font-semibold"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedQuizModal(quiz)
+                                          }}
+                                        >
+                                          Take Quiz Now
+                                        </Button>
+                                      )}
+
+                                      {isCompleted && (
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          leftIcon={<History className="h-3.5 w-3.5 text-primary" />}
+                                          className="font-medium hover:border-primary/40"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setHistorySearch(`${quiz.moduleCode}: ${quiz.moduleTitle}`)
+                                            setActiveTab('history')
+                                          }}
+                                        >
+                                          Review Attempt
+                                        </Button>
+                                      )}
+
+                                      {isLocked && (
+                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground font-bold text-xs border border-border shadow-2xs">
+                                          <Lock className="h-3.5 w-3.5 text-foreground" />
+                                          <span>Locked Gate</span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
-                              )
-                            })}
-                          </div>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* RIGHT COLUMN: Supporting Hub & Contextual Cards (lg:col-span-4) */}
-                  <div className="lg:col-span-4 space-y-5">
-                    {/* Card A: Target Track Readiness & Summary */}
-                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold shadow-2xs">
-                            {isSkillMode ? <Sparkles size={19} /> : <Target size={19} />}
-                          </div>
-                          <div>
-                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                              {isSkillMode ? 'Target Skill' : 'Target Role'}
-                            </h3>
-                            <p className="text-sm font-bold text-foreground">
-                              {isSkillMode ? (profile.targetSkill || 'Neo4j Cypher Traversal') : (profile.targetRole || 'AI Knowledge Architect')}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant="secondary" className="font-mono text-[11px] font-bold text-primary">
-                          {isSkillMode ? (profile.targetSkillLevel || 'Intermediate') : 'Staff Level'}
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-muted-foreground">Milestone Readiness</span>
-                          <span className="text-foreground font-mono font-bold">
-                            {isSkillMode ? '100% (1 / 1 Available)' : '40% (2 / 5 Passed)'}
-                          </span>
-                        </div>
-                        <Progress value={isSkillMode ? 100 : 40} variant="primary" />
-                      </div>
-
-                      {/* 2x2 Metric Tile Grid */}
-                      <div className="grid grid-cols-2 gap-2.5 pt-1">
-                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
-                          <div className="text-[11px] font-semibold text-muted-foreground">Highest Score</div>
-                          <div className="text-xl font-bold text-success mt-0.5 font-mono">{isSkillMode ? '85%' : '92%'}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono truncate">{isSkillMode ? 'MOD-CYP-101' : 'MOD-101 RDF'}</div>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
-                          <div className="text-[11px] font-semibold text-muted-foreground">Average Score</div>
-                          <div className="text-xl font-bold text-primary mt-0.5 font-mono">{isSkillMode ? '85%' : '91%'}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{isSkillMode ? '1 Assessment' : '2 Assessments'}</div>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
-                          <div className="text-[11px] font-semibold text-muted-foreground">Est. Time Left</div>
-                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">{isSkillMode ? '20m' : '1h 35m'}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{isSkillMode ? '1 Quiz Left' : '3 Quizzes Left'}</div>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
-                          <div className="text-[11px] font-semibold text-muted-foreground">Skills Verified</div>
-                          <div className="text-xl font-bold text-foreground mt-0.5 font-mono">{isSkillMode ? '1 / 2' : '6 / 18'}</div>
-                          <div className="text-[10px] text-success font-semibold flex items-center gap-0.5">
-                            <CheckCircle2 size={11} /> +1 on next pass
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card B: Next Action Priority Spotlight */}
-                    {nextQuiz && (
-                      <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-secondary/60 via-card to-card p-5 shadow-xs space-y-3.5 relative overflow-hidden">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="primary" className="text-[11px] font-bold px-2.5 py-0.5 gap-1 shadow-2xs">
-                            <Sparkles size={12} />
-                            <span>Next Priority Milestone</span>
-                          </Badge>
-                          <span className="font-mono text-xs font-bold text-primary">{nextQuiz.moduleCode}</span>
-                        </div>
-
-                        <div>
-                          <h4 className="text-sm font-bold text-foreground leading-snug">
-                            {nextQuiz.quizTitle}
-                          </h4>
-                          <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                            {isSkillMode
-                              ? `Covers pattern matching, variable-length relationship traversal, and query execution profiling to certify operational mastery in ${profile.targetSkill || 'Neo4j Cypher Traversal'}.`
-                              : 'Covers Graph Neural Networks, Spatial GCN convolution, and DKT models. Clearing this milestone unlocks Module MOD-305 in your pathway.'}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 border-t border-border/60 font-mono">
-                          <span className="flex items-center gap-1 font-semibold text-foreground">
-                            <Clock size={13} className="text-primary" /> {nextQuiz.durationMinutes} mins
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <FileText size={13} className="text-primary" /> {nextQuiz.questionCount} Questions
-                          </span>
-                          <span>•</span>
-                          <span className="text-success font-semibold">Pass: {nextQuiz.passingScore}%</span>
-                        </div>
-
-                        <Button
-                          variant="primary"
-                          size="default"
-                          className="w-full justify-center shadow-xs font-semibold mt-1"
-                          rightIcon={<ArrowRight size={15} />}
-                          onClick={() => setSelectedQuizModal(nextQuiz)}
-                        >
-                          Launch Milestone Quiz
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Card C: Supporting Pathway & Gap Analysis Hub */}
-                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-lg bg-secondary text-primary flex items-center justify-center">
-                          <Compass size={15} />
-                        </div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                          Connected Curriculum
-                        </h4>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Milestone assessment results feed directly into your Bayesian Knowledge Tracing parameters, updating prerequisite gates and competency radars.
-                      </p>
-
-                      <div className="space-y-2 pt-1">
-                        <Link
-                          to="/employee/gap-analysis"
-                          className="flex items-center justify-between p-2.5 rounded-xl border border-border/70 hover:border-primary/40 hover:bg-muted/50 transition-all text-xs group cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                              <Award size={14} />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                                Competency Gap Analysis
-                              </div>
-                              <div className="text-[10.5px] text-muted-foreground truncate">
-                                Compare verified mastery vs. target standards
-                              </div>
-                            </div>
-                          </div>
-                          <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-2" />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
                 </div>
               )
             })()}
 
             {/* TAB 2: BASELINE & RIASEC DIAGNOSTICS */}
-            {activeTab === 'baseline' && (
-              <div className="space-y-6 max-w-3xl mx-auto py-2">
-                {/* 1. Target Role Baseline Diagnostic Assessment */}
-                <Card className="border border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md overflow-hidden">
-                  <CardHeader className="p-6 border-b border-border/80">
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-                        <Sparkles size={14} /> Target Role Diagnostic Baseline
-                      </span>
-                      <Badge variant={isLearningLocked ? "warning" : "success"} className="text-xs font-bold">
-                        {isLearningLocked ? "Diagnostic Required" : "Diagnostic Cleared (92% Mastery)"}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-xl font-extrabold text-foreground mt-2.5">
-                      Target Role Baseline Diagnostic: {profile.targetRole || 'AI Knowledge Architect'}
-                    </CardTitle>
-                    <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
-                      Calibrate your competency graph across prerequisite knowledge, graph data models, and adaptive tracing to establish your optimal personalized curriculum.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-5">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Duration</div>
-                        <div className="text-base font-bold text-foreground mt-0.5">25 Mins</div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Questions</div>
-                        <div className="text-base font-bold text-foreground mt-0.5">10 Items</div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Pass Score</div>
-                        <div className="text-base font-bold text-success mt-0.5">80%</div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Grading</div>
-                        <div className="text-base font-bold text-primary mt-0.5">Instant</div>
-                      </div>
-                    </div>
+            {activeTab === 'baseline' && (() => {
+              const baselineQuizzes = pathwayQuizzes.filter(
+                (q) => q.moduleCode === 'DIAG-BASE' || q.moduleCode === 'CAREER-RIASEC'
+              )
 
-                    <div className="p-4 rounded-xl border border-border/80 bg-card/60 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-foreground">Bayesian Knowledge Model Calibration</span>
-                        <span className="text-success font-bold font-mono">92% Calibrated</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                        <div className="bg-success h-2 rounded-full" style={{ width: '92%' }} />
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        Diagnostic evaluations update prerequisite gates and skill mastery parameters directly in the Neo4j ontology graph.
-                      </p>
-                    </div>
+              return (
+                <div className="space-y-5">
+                  {/* Top Baseline Assessment StatCards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                      title="Baseline Diagnostic Score"
+                      value="92%"
+                      valueClassName="text-success font-mono"
+                      description="Initial competency diagnostic passed"
+                      icon={<Award className="w-5 h-5 text-success" />}
+                    />
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                      <span className="text-xs text-muted-foreground">
-                        Version: <strong className="text-foreground">{profile.targetRoleVersion || 'v2.4'}</strong>
-                      </span>
-                      {isLearningLocked ? (
-                        <Button
-                          variant="primary"
-                          size="default"
-                          className="font-bold shadow-xs px-6"
-                          rightIcon={<ArrowRight size={16} />}
-                          onClick={() => setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0])}
-                        >
-                          Take Diagnostic Assessment Now
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2 p-2.5 rounded-lg border border-success/30 bg-success/5 text-xs font-semibold text-success shadow-2xs">
-                          <CheckCircle2 size={16} className="text-success shrink-0" />
-                          <span>Assessment Completed & Calibrated • Retakes Locked</span>
+                    <StatCard
+                      title="Dominant RIASEC Theme"
+                      value={topRiasecTrait.name}
+                      valueClassName="text-primary font-mono"
+                      description="Holland Vocational Profile"
+                      icon={<Compass className="w-5 h-5 text-primary" />}
+                    />
+
+                    <StatCard
+                      title="Personality Orientation"
+                      value={topRiasecTrait.title}
+                      description={topRiasecTrait.explanation}
+                      icon={<Sparkles className="w-5 h-5 text-primary" />}
+                    />
+
+                    <StatCard
+                      title="Holland Code & Profile"
+                      value={riasecData?.hollandCode || 'ICR'}
+                      valueClassName="font-mono text-primary"
+                      description="Calibrated against target role vectors"
+                      icon={<Target className="w-5 h-5 text-primary" />}
+                    />
+                  </div>
+
+                  {/* ADAPTIVE TIMELINE (UNIFIED FULL-WIDTH CONTAINER FOR BASELINE) */}
+                  <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+                    {/* Big Container Header */}
+                    <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                          <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                            Baseline Diagnostic Evaluations
+                          </h2>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 2. RIASEC Career Interest Assessment */}
-                <Card className="border border-border bg-card shadow-md overflow-hidden">
-                  <CardHeader className="p-6 border-b border-border/80 bg-muted/10">
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-                        <Compass size={14} /> Vocational Interest Assessment
-                      </span>
-                      <Badge variant={hasCompletedRiasec ? "success" : "warning"} className="text-xs font-bold">
-                        {hasCompletedRiasec ? `Profile Completed (${riasecData?.hollandCode || 'ICR'})` : "Assessment Pending"}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-xl font-extrabold text-foreground mt-2.5">
-                      Holland RIASEC Vocational Interest Assessment
-                    </CardTitle>
-                    <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
-                      Evaluates your engagement across 6 engineering dimensions (Realistic, Investigative, Artistic, Social, Enterprising, Conventional) to calculate optimal role compatibility.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-5">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Statements</div>
-                        <div className="text-base font-bold text-foreground mt-0.5">18 Criteria</div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Dimensions</div>
-                        <div className="text-base font-bold text-foreground mt-0.5">6 Themes</div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Scale</div>
-                        <div className="text-base font-bold text-primary mt-0.5">1–5 Likert</div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Outcome</div>
-                        <div className="text-base font-bold text-success mt-0.5">Holland Code</div>
-                      </div>
-                    </div>
-
-                    {hasCompletedRiasec && (
-                      <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-semibold">
-                          <span className="text-foreground">Dominant Holland Profile</span>
-                          <span className="text-primary font-bold font-mono">
-                            {riasecData?.hollandCode || 'ICR'} — {(riasecData?.topTraits || ['Investigative', 'Conventional', 'Realistic']).join(' • ')}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          Vocational interest vectors successfully calibrated. Career role compatibility has been linked to your target role recommendations.
+                        <p className="text-xs text-muted-foreground">
+                          Calibrated foundational evaluations initializing your competency graph and vocational trait orientation
                         </p>
                       </div>
-                    )}
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                      <span className="text-xs text-muted-foreground">
-                        Methodology: <strong className="text-foreground">Holland Occupational Themes (RIASEC)</strong>
-                      </span>
-                      {hasCompletedRiasec ? (
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-success/30 bg-success/5 text-xs font-semibold text-success shadow-2xs">
-                            <CheckCircle2 size={16} className="text-success shrink-0" />
-                            <span>RIASEC Profile Calibrated • Retakes Locked</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="font-semibold text-xs gap-1.5 shadow-2xs"
-                            onClick={() => setIsRiasecDetailModalOpen(true)}
-                          >
-                            <Compass size={14} className="text-primary" />
-                            <span>View Full Report</span>
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="default"
-                          className="font-bold shadow-xs px-6"
-                          rightIcon={<ArrowRight size={16} />}
-                          onClick={() => {
-                            setRiasecCurrentIndex(0)
-                            setIsTakingRiasec(true)
-                          }}
-                        >
-                          Take RIASEC Assessment Now
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Badge variant="success" className="gap-1 font-semibold text-xs px-3 py-1">
+                          <CheckCircle2 size={13} />
+                          <span>All Baselines Cleared</span>
+                        </Badge>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+
+                    {/* Timeline Body */}
+                    <div className="p-5 sm:p-7 relative">
+                      <div className="relative">
+                        {/* Continuous Vertical Timeline Line */}
+                        <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
+
+                        <div className="space-y-6">
+                          {baselineQuizzes.map((quiz) => {
+                            const isRiasec = quiz.moduleCode === 'CAREER-RIASEC'
+
+                            return (
+                              <div key={quiz.id} className="relative flex items-start gap-3.5 sm:gap-5 group">
+                                {/* Timeline Node Bullet Pin */}
+                                <div className="relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border-2 border-success bg-success text-white shadow-2xs">
+                                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </div>
+
+                                {/* Content Panel */}
+                                <div className="flex-1 min-w-0 rounded-xl p-4 sm:p-5 border border-border bg-card hover:border-success/50 shadow-2xs transition-all">
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="space-y-2.5 flex-1 min-w-0">
+                                      <div className="flex items-center gap-2.5 min-w-0">
+                                        <Badge
+                                          variant="outline"
+                                          className="font-mono text-xs font-bold shrink-0 text-primary bg-secondary/60 border-primary/30"
+                                        >
+                                          {quiz.moduleCode}
+                                        </Badge>
+
+                                        <Badge variant="success" className="gap-1 text-xs font-semibold shrink-0">
+                                          <CheckCircle className="h-3 w-3" />
+                                          Completed &bull; Passed ({quiz.lastScore}%)
+                                        </Badge>
+
+                                        <span className="text-xs font-medium text-foreground truncate min-w-0">
+                                          {quiz.moduleTitle}
+                                        </span>
+                                      </div>
+
+                                      <div>
+                                        <h3 className="text-base font-bold text-foreground transition-colors">
+                                          {quiz.quizTitle}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm mt-1 leading-relaxed max-w-2xl text-muted-foreground font-normal">
+                                          {quiz.description}
+                                        </p>
+                                      </div>
+
+                                      {/* Skills / Dimensions Tested */}
+                                      <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                                        <span className="text-[11px] font-bold mr-1 text-muted-foreground">
+                                          {isRiasec ? 'Dimensions Assessed:' : 'Competencies Tested:'}
+                                        </span>
+                                        {quiz.skills.map((skill) => (
+                                          <Badge
+                                            key={skill}
+                                            variant="outline"
+                                            className="text-[11px] px-2 py-0.5 font-semibold bg-muted/40 text-foreground border-border"
+                                          >
+                                            {skill}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Action Column */}
+                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border md:pl-4">
+                                      <div className="flex items-center gap-3 text-xs font-mono">
+                                        <span className="flex items-center gap-1 font-bold text-foreground">
+                                          <Clock className="h-3.5 w-3.5 text-primary" />
+                                          {quiz.durationMinutes}m
+                                        </span>
+                                        <span className="text-muted-foreground font-bold">&bull;</span>
+                                        <span className="flex items-center gap-1 font-bold text-foreground">
+                                          <FileText className="h-3.5 w-3.5 text-primary" />
+                                          {quiz.questionCount} {isRiasec ? 'Statements' : 'Questions'}
+                                        </span>
+                                      </div>
+
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {isRiasec && (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            leftIcon={<Compass className="h-3.5 w-3.5 text-primary" />}
+                                            className="font-medium hover:border-primary/40"
+                                            onClick={() => setIsRiasecDetailModalOpen(true)}
+                                          >
+                                            View Full Report
+                                          </Button>
+                                        )}
+
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          leftIcon={<History className="h-3.5 w-3.5 text-primary" />}
+                                          className="font-medium hover:border-primary/40"
+                                          onClick={() => {
+                                            const attemptId = isRiasec ? 'att-career-riasec' : 'att-diag-base'
+                                            setReviewAttemptId(attemptId)
+                                            setIsTakingQuiz(true)
+                                          }}
+                                        >
+                                          Review Attempt
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* TAB 3: SKILL ASSESSMENTS */}
+            {activeTab === 'skills' && (() => {
+              const eligibleSkills = SKILL_QUIZZES.filter((s) => s.status === 'eligible')
+              const completedSkills = SKILL_QUIZZES.filter((s) => s.status === 'completed')
+              const lockedSkills = SKILL_QUIZZES.filter((s) => s.status === 'locked')
+
+              const filteredSkillQuizzes = SKILL_QUIZZES.filter(
+                (s) => skillStatusFilter === 'all' || s.status === skillStatusFilter
+              )
+
+              return (
+                <div className="space-y-5">
+                  {/* Top Skill Assessment StatCards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                      title="Benchmark Mastery Gate"
+                      value="70% – 80%"
+                      valueClassName="text-primary font-mono"
+                      description="Expert-configured qualification threshold"
+                      icon={<Target className="w-5 h-5 text-primary" />}
+                    />
+
+                    <StatCard
+                      title="Eligible for Exam"
+                      value={`${eligibleSkills.length} Skills`}
+                      valueClassName="text-success font-mono"
+                      description="Current mastery meets qualification gate"
+                      icon={<Zap className="w-5 h-5 text-success" />}
+                    />
+
+                    <StatCard
+                      title="Certified Micro-Skills"
+                      value={`${completedSkills.length} Passed`}
+                      valueClassName="text-success font-mono"
+                      description="Skill assessment exams cleared"
+                      icon={<Award className="w-5 h-5 text-success" />}
+                    />
+
+                    <StatCard
+                      title="In-Progress Skills"
+                      value={`${lockedSkills.length} In Study`}
+                      description="Building mastery in coursework"
+                      icon={<Clock className="w-5 h-5 text-muted-foreground" />}
+                    />
+                  </div>
+
+                  {/* ADAPTIVE TIMELINE (UNIFIED FULL-WIDTH CONTAINER FOR SKILL ASSESSMENTS) */}
+                  <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+                    {/* Big Container Header: Title, Summary & Status Filters */}
+                    <div className="p-5 sm:p-6 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Target className="h-5 w-5 text-primary shrink-0" />
+                          <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                            Micro-Skill Certification Assessments
+                          </h2>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Attempt formal skill evaluations once your coursework mastery reaches the expert-defined qualification threshold
+                        </p>
+                      </div>
+
+                      {/* Filter Pills */}
+                      <div className="flex items-center gap-1 flex-wrap p-1 rounded-xl bg-card border border-border shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => setSkillStatusFilter('all')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                            skillStatusFilter === 'all'
+                              ? 'bg-secondary text-primary shadow-2xs font-bold'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          All ({SKILL_QUIZZES.length})
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSkillStatusFilter('eligible')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            skillStatusFilter === 'eligible'
+                              ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          <Zap className="h-3 w-3" />
+                          <span>Eligible ({eligibleSkills.length})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSkillStatusFilter('completed')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            skillStatusFilter === 'completed'
+                              ? 'bg-success/15 text-success font-bold'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>Certified ({completedSkills.length})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSkillStatusFilter('locked')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            skillStatusFilter === 'locked'
+                              ? 'bg-foreground text-background font-bold shadow-2xs'
+                              : 'text-foreground/80 hover:text-foreground hover:bg-muted/70 font-medium'
+                          }`}
+                        >
+                          <Lock className="h-3 w-3 text-muted-foreground" />
+                          <span>Locked ({lockedSkills.length})</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Timeline Body */}
+                    <div className="p-5 sm:p-7 relative">
+                      <div className="relative">
+                        {/* Continuous Vertical Timeline Line */}
+                        <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
+
+                        <div className="space-y-6">
+                          {filteredSkillQuizzes.map((quiz) => {
+                            const isEligible = quiz.status === 'eligible'
+                            const isCompleted = quiz.status === 'completed'
+                            const isLocked = quiz.status === 'locked'
+
+                            return (
+                              <div key={quiz.id} className="relative flex items-start gap-3.5 sm:gap-5 group">
+                                {/* Bullet Pin */}
+                                <div
+                                  className={`relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all ${
+                                    isCompleted
+                                      ? 'border-success bg-success text-white shadow-2xs'
+                                      : isEligible
+                                        ? 'border-primary bg-primary text-primary-foreground shadow-xs ring-4 ring-primary/20 animate-pulse'
+                                        : 'border-border bg-muted text-foreground'
+                                  }`}
+                                >
+                                  {isCompleted ? (
+                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                                  ) : isEligible ? (
+                                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                                  ) : (
+                                    <Lock className="h-4 w-4 sm:h-4 sm:w-4 text-muted-foreground" />
+                                  )}
+                                </div>
+
+                                {/* Content Surface */}
+                                <div
+                                  className={`flex-1 min-w-0 rounded-xl p-4 sm:p-5 border transition-all ${
+                                    isEligible
+                                      ? 'border-primary/50 bg-secondary/35 shadow-xs ring-1 ring-primary/25 hover:border-primary'
+                                      : isCompleted
+                                        ? 'border-border bg-card hover:border-success/50 shadow-2xs'
+                                        : 'border-border bg-muted/20'
+                                  }`}
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="space-y-2.5 flex-1 min-w-0">
+                                      <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+                                        <Badge
+                                          variant="outline"
+                                          className={`font-mono text-xs font-bold shrink-0 ${
+                                            isLocked
+                                              ? 'text-muted-foreground bg-muted/60 border-border'
+                                              : 'text-primary bg-secondary/60 border-primary/30'
+                                          }`}
+                                        >
+                                          {quiz.skillCode}
+                                        </Badge>
+
+                                        {isCompleted && (
+                                          <Badge variant="success" className="gap-1 text-xs font-semibold shrink-0">
+                                            <CheckCircle className="h-3 w-3" />
+                                            Certified &bull; Passed ({quiz.lastScore}%)
+                                          </Badge>
+                                        )}
+
+                                        {isEligible && (
+                                          <Badge variant="primary" className="gap-1 text-xs font-semibold bg-primary text-primary-foreground shadow-xs shrink-0">
+                                            <Zap className="h-3 w-3" />
+                                            Eligible &bull; Target Met ({quiz.currentMastery}% &ge; {quiz.targetMastery}%)
+                                          </Badge>
+                                        )}
+
+                                        {isLocked && (
+                                          <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted text-foreground border-border shrink-0">
+                                            <Lock className="h-3 w-3 text-foreground" />
+                                            Locked &bull; {quiz.currentMastery}% of {quiz.targetMastery}% Target
+                                          </Badge>
+                                        )}
+
+                                        <span className="text-xs text-muted-foreground">
+                                          Curriculum: <strong className="text-foreground">{quiz.parentModuleCode}</strong>
+                                        </span>
+                                      </div>
+
+                                      <div>
+                                        <h3 className="text-base font-bold text-foreground transition-colors">
+                                          {quiz.skillName}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm mt-1 leading-relaxed max-w-2xl text-muted-foreground font-normal">
+                                          {quiz.description}
+                                        </p>
+                                      </div>
+
+                                      {/* Mastery Progress Meter */}
+                                      <div className="pt-1 max-w-md space-y-1.5">
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="text-muted-foreground font-medium">Coursework Mastery:</span>
+                                          <span className={isEligible || isCompleted ? 'text-success font-bold font-mono' : 'text-primary font-bold font-mono'}>
+                                            {quiz.currentMastery}% / {quiz.targetMastery}% Benchmark Gate
+                                          </span>
+                                        </div>
+                                        <Progress
+                                          value={Math.min(100, Math.round((quiz.currentMastery / quiz.targetMastery) * 100))}
+                                          variant={isEligible || isCompleted ? 'success' : 'primary'}
+                                          className="h-2"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Action Column */}
+                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border md:pl-4">
+                                      <div className="flex items-center gap-3 text-xs font-mono">
+                                        <span className="flex items-center gap-1 font-bold text-foreground">
+                                          <Clock className="h-3.5 w-3.5 text-primary" />
+                                          {quiz.durationMinutes}m
+                                        </span>
+                                        <span className="text-muted-foreground font-bold">&bull;</span>
+                                        <span className="flex items-center gap-1 font-bold text-foreground">
+                                          <FileText className="h-3.5 w-3.5 text-primary" />
+                                          {quiz.questionCount} Questions
+                                        </span>
+                                      </div>
+
+                                      {isEligible && (
+                                        <Button
+                                          variant="primary"
+                                          size="sm"
+                                          rightIcon={<Award className="h-4 w-4" />}
+                                          className="shadow-xs font-bold"
+                                          onClick={() => handleStartSkillExam(quiz)}
+                                        >
+                                          Take Skill Exam
+                                        </Button>
+                                      )}
+
+                                      {isCompleted && (
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          leftIcon={<History className="h-3.5 w-3.5 text-primary" />}
+                                          className="font-medium hover:border-primary/40"
+                                          onClick={() => {
+                                            setReviewAttemptId('att-sk-rdf-01')
+                                            setIsTakingQuiz(true)
+                                          }}
+                                        >
+                                          Review Attempt
+                                        </Button>
+                                      )}
+
+                                      {isLocked && (
+                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground font-bold text-xs border border-border shadow-2xs">
+                                          <Lock className="h-3.5 w-3.5 text-foreground" />
+                                          <span>Locked ({quiz.targetMastery}% Target)</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* TAB 3: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
             {activeTab === 'history' && (
@@ -3549,13 +3938,13 @@ export function AssessmentPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     { dim: 'R', name: 'Realistic', title: 'Hands-on & Infrastructure', desc: 'Practical execution, DevOps, distributed systems, networks.', defaultScore: 78, color: 'hsl(var(--primary))' },
-                    { dim: 'I', name: 'Investigative', title: 'Algorithmic & Analytical', desc: 'Mathematical problem-solving, data science, deep architecture.', defaultScore: 92, color: '#0284C7' },
-                    { dim: 'A', name: 'Artistic', title: 'Creative & Conceptual', desc: 'UI/UX design, visual storytelling, exploratory software designs.', defaultScore: 65, color: '#8B5CF6' },
+                    { dim: 'I', name: 'Investigative', title: 'Algorithmic & Analytical', desc: 'Mathematical problem-solving, data science, deep architecture.', defaultScore: 92, color: 'hsl(var(--primary))' },
+                    { dim: 'A', name: 'Artistic', title: 'Creative & Conceptual', desc: 'UI/UX design, visual storytelling, exploratory software designs.', defaultScore: 65, color: 'hsl(var(--primary-hover))' },
                     { dim: 'S', name: 'Social', title: 'Collaborative & Mentoring', desc: 'Team enablement, knowledge sharing, cross-functional leadership.', defaultScore: 70, color: 'hsl(var(--success))' },
                     { dim: 'E', name: 'Enterprising', title: 'Product & Strategic', desc: 'Product vision, driving deliverables, tech-business alignment.', defaultScore: 60, color: 'hsl(var(--warning))' },
-                    { dim: 'C', name: 'Conventional', title: 'Systematic & Precision', desc: 'Quality assurance, formal schema integrity, reliability engineering.', defaultScore: 84, color: '#64748B' },
+                    { dim: 'C', name: 'Conventional', title: 'Systematic & Precision', desc: 'Quality assurance, formal schema integrity, reliability engineering.', defaultScore: 84, color: 'hsl(var(--muted-foreground))' },
                   ].map((dimItem) => {
-                    const found = riasecData?.scores?.find((s: any) => s.dim === dimItem.dim)
+                    const found = riasecData?.scores?.find((s: { dim: string; score: number }) => s.dim === dimItem.dim)
                     const scoreVal = found ? found.score : dimItem.defaultScore
                     return (
                       <div key={dimItem.dim} className="p-3.5 rounded-xl border border-border bg-card space-y-2">

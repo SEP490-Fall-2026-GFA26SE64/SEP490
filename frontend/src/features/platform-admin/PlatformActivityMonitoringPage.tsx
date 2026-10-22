@@ -89,9 +89,8 @@ export function PlatformActivityMonitoringPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
+        {/* Actions Bar */}
         <PageHeader
-          title="Platform Activity & Audit Telemetry"
-          description="Cross-tenant telemetry monitoring workspace setup outcomes, PayOS subscription settlements, service latencies, and platform security audits."
           actions={
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={reloadLogs} className="flex items-center gap-1.5 text-xs">

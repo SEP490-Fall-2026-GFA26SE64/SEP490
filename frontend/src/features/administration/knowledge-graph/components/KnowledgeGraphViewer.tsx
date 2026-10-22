@@ -193,7 +193,7 @@ export function KnowledgeGraphViewer() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <NetworkIcon className="h-5 w-5 text-primary" />
-              <span>Neo4j Semantic Knowledge Graph Explorer</span>
+              <span>Enterprise Competency Graph Explorer</span>
             </CardTitle>
             <CardDescription className="mt-1">
               Interactive visualization of organizational roles, competencies, skills, and prerequisite learning modules. Click any node to inspect semantic properties.
@@ -281,8 +281,8 @@ export function KnowledgeGraphViewer() {
                 <code className="font-mono text-primary font-bold">{selectedNode.id}</code>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Database Storage:</span>
-                <span className="font-medium text-foreground">Neo4j Property Graph (`:CompetencyNode`)</span>
+                <span className="text-muted-foreground">Ontology Layer:</span>
+                <span className="font-medium text-foreground">Enterprise Competency Model</span>
               </div>
             </div>
 

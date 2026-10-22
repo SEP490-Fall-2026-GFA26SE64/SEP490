@@ -484,8 +484,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     return path === itemHref
   }
 
-  // Collapsible sidebar state (persisted per actor; default: collapsed for employee, expanded for other actors)
+  // Collapsible sidebar state (persisted per actor; default: collapsed for employee, expanded for other actors; automatically minimized on module learning)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<boolean>(() => {
+    if (location.pathname.includes('/modules/')) {
+      return true
+    }
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (saved !== null) {
       return saved === 'true'
@@ -493,15 +496,25 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     return isEmployee
   })
 
-  // Synchronize state when switching actor roles
+  // Synchronize state when switching actor roles or entering module learning
   React.useEffect(() => {
+    if (location.pathname.includes('/modules/')) {
+      setIsSidebarCollapsed(true)
+      return
+    }
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true')
     } else {
       setIsSidebarCollapsed(isEmployee)
     }
-  }, [activeActor, isEmployee])
+  }, [activeActor, isEmployee, location.pathname])
+
+  React.useEffect(() => {
+    const handleMinimize = () => setIsSidebarCollapsed(true)
+    window.addEventListener('minimize-system-sidebar', handleMinimize)
+    return () => window.removeEventListener('minimize-system-sidebar', handleMinimize)
+  }, [])
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
@@ -528,15 +541,17 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         <div className="workspace-topbar">
           {/* Left: Sidebar Collapse/Expand Toggle + Brand + My Learning link */}
           <div className="flex items-center justify-start gap-2.5 sm:gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
-            </button>
+            {!location.pathname.includes('/modules/') && (
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+              </button>
+            )}
             <Link className="brand shrink-0" to={brandHomeUrl}>
               <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
               <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate hidden md:inline">
@@ -809,35 +824,45 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Workspace Body: Sidebar + Main Content */}
-      <div className="workspace-body">
-        {/* Collapsible Left Sidebar */}
-        <aside
-          className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
-          aria-label="Sidebar navigation"
-        >
-          {/* Actor-specific feature navigation items */}
-          <nav className="workspace-sidebar-nav" aria-label="Portal feature tabs">
-            {actorTabs.map((item) => {
-              const active = isTabActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`workspace-sidebar-link ${active ? 'active' : ''}`}
-                  title={isSidebarCollapsed ? item.label : undefined}
-                >
-                  <span className="sidebar-link-icon">{item.icon}</span>
-                  {!isSidebarCollapsed && (
-                    <span className="sidebar-link-label">{item.label}</span>
-                  )}
-                </Link>
-              )
-            })}
-          </nav>
-        </aside>
+      <div className={`workspace-body ${location.pathname.includes('/modules/') ? 'module-reading-mode' : ''}`}>
+        {/* Collapsible Left Sidebar - Hidden completely on module learning pages */}
+        {!location.pathname.includes('/modules/') && (
+          <aside
+            className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
+            aria-label="Sidebar navigation"
+          >
+            {/* Actor-specific feature navigation items */}
+            <nav className="workspace-sidebar-nav" aria-label="Portal feature tabs">
+              {actorTabs.map((item) => {
+                const active = isTabActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`workspace-sidebar-link ${active ? 'active' : ''}`}
+                    title={isSidebarCollapsed ? item.label : undefined}
+                  >
+                    <span className="sidebar-link-icon">{item.icon}</span>
+                    {!isSidebarCollapsed && (
+                      <span className="sidebar-link-label">{item.label}</span>
+                    )}
+                  </Link>
+                )
+              })}
+            </nav>
+          </aside>
+        )}
 
         {/* Main Content Area */}
-        <main className="workspace-main">{children}</main>
+        <main
+          className={`workspace-main ${
+            location.pathname.includes('/modules/')
+              ? '!p-0 !m-0 !max-w-none !w-full module-reading-main'
+              : ''
+          }`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   )

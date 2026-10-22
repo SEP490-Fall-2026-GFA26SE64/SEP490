@@ -28,7 +28,6 @@ import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Dialog } from '../../../shared/components/ui/Dialog'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
@@ -119,9 +118,6 @@ export function TeamMatrixPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
-        {/* Actions Bar */}
-        <PageHeader />
-
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
@@ -167,7 +163,7 @@ export function TeamMatrixPage() {
                   Team Role Progression & Gap Identification
                 </CardTitle>
                 <CardDescription>
-                  Live competency scores mapped against target role ontologies from the Neo4j Knowledge Graph.
+                  Live competency scores mapped against benchmark target role proficiencies.
                 </CardDescription>
               </div>
 
@@ -186,7 +182,7 @@ export function TeamMatrixPage() {
                 <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'ready' | 'on_track' | 'needs_attention')}
                     aria-label="Filter by Status"
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
@@ -470,7 +466,7 @@ export function TeamMatrixPage() {
               <Tabs
                 value={learnerModalTab}
                 onValueChange={(val) => {
-                  setLearnerModalTab(val as any)
+                  setLearnerModalTab(val as 'overview' | 'pathway' | 'quiz')
                   setReviewAttemptId(null)
                 }}
                 className="w-full flex flex-col flex-1 min-h-0 bg-background"
@@ -546,7 +542,7 @@ export function TeamMatrixPage() {
                           <ArrowRight className="h-3 w-3 text-primary" />
                         </div>
                         <span className="text-[10px] text-muted-foreground mt-1 font-mono">
-                          Neo4j Graph Engine v2.4
+                          Adaptive Competency Engine
                         </span>
                       </div>
 
@@ -784,7 +780,7 @@ export function TeamMatrixPage() {
                             </div>
                           </div>
                           <Badge variant="secondary" className="text-[10px] font-mono text-primary font-bold">
-                            Neo4j Verified
+                            Competency Validated
                           </Badge>
                         </div>
 
@@ -1182,7 +1178,7 @@ export function TeamMatrixPage() {
               <div className="px-5 sm:px-6 py-3.5 border-t border-border bg-card shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 self-start sm:self-center">
                   <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span>Calibrated via Neo4j Knowledge Graph v2.4</span>
+                  <span>Calibrated via Competency Benchmark Engine</span>
                   <span className="text-border">•</span>
                   <span>Employee ID: <strong>{selectedLearner.id.toUpperCase()}</strong></span>
                 </div>

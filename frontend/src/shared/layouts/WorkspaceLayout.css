@@ -243,6 +243,18 @@
   padding: 24px 32px;
 }
 
+.workspace-body.module-reading-mode {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.workspace-main.module-reading-main {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 .workspace-footer {
   display: flex;
   justify-content: space-between;

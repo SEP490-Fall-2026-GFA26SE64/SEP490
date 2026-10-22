@@ -99,6 +99,20 @@
   box-shadow: 0 2px 8px -2px hsl(var(--success) / 0.2);
 }
 
+/* Exam Ready Status (System In-Progress Warning Token #EAB308) */
+.roadmap-skill-box.is-exam-ready {
+  background-color: hsl(var(--warning) / 0.12);
+  border: 1.5px solid hsl(var(--warning));
+  color: hsl(var(--foreground));
+  box-shadow: 0 2px 8px -2px hsl(var(--warning) / 0.2);
+}
+
+.roadmap-skill-box.is-exam-ready:hover {
+  border-color: hsl(var(--warning));
+  background-color: hsl(var(--warning) / 0.18);
+  box-shadow: 0 4px 12px -2px hsl(var(--warning) / 0.3);
+}
+
 /* Not Achieved Status (Secondary Color Palette) */
 .roadmap-skill-box.is-not-achieved {
   background-color: hsl(var(--secondary));

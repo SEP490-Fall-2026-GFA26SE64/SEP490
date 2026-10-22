@@ -65,6 +65,7 @@ export function GuestRegisterPage() {
   const [password, setPassword] = React.useState('')
   const [confirmPassword, setConfirmPassword] = React.useState('')
   const [hasDraft, setHasDraft] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   // Verification code modal state
   const [isVerifyOpen, setIsVerifyOpen] = React.useState(false)
@@ -161,6 +162,7 @@ export function GuestRegisterPage() {
       return
     }
 
+    setIsSubmitting(true)
     // Otherwise navigate to plans
     navigate('/guest/plans')
   }
@@ -178,6 +180,7 @@ export function GuestRegisterPage() {
     const updated = { ...form, isEmailVerified: true }
     persistDraft(updated)
     setIsVerifyOpen(false)
+    setIsSubmitting(true)
     toast({
       title: 'Email Verified Successfully',
       description: 'Account security check confirmed. Proceeding to subscription selection.',
@@ -383,7 +386,7 @@ export function GuestRegisterPage() {
               <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs text-muted-foreground flex items-start gap-2.5">
                 <ShieldCheck size={16} className="text-success mt-0.5 shrink-0" />
                 <span>
-                  All employee assessments, micro-skill graphs, and training monetary benefit records are strictly isolated within your organization schema.
+                  All employee assessments, micro-skill competency profiles, and training ROI records are strictly isolated within your secure organization workspace.
                 </span>
               </div>
             </CardContent>
@@ -395,8 +398,14 @@ export function GuestRegisterPage() {
               ← Return to Login
             </Link>
 
-            <Button type="submit" variant="primary" size="lg" className="w-full sm:w-auto order-1 sm:order-2">
-              Continue to Subscription Plans →
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto order-1 sm:order-2"
+            >
+              {isSubmitting ? 'Processing Workspace...' : 'Continue to Subscription Plans →'}
             </Button>
           </div>
         </form>

@@ -28,7 +28,7 @@ export interface ImportPreset {
   badge: string
   itemCount: number
   previewSnippet: string
-  payload: any
+  payload: unknown
 }
 
 interface QuickConfigImportModalProps {
@@ -38,7 +38,7 @@ interface QuickConfigImportModalProps {
   entityName: string
   description: string
   presets: ImportPreset[]
-  onImport: (data: any, source: 'preset' | 'custom') => void
+  onImport: (data: unknown, source: 'preset' | 'custom') => void
   sampleJsonPlaceholder?: string
 }
 
@@ -112,10 +112,10 @@ export function QuickConfigImportModal({
       })
       onOpenChange(false)
       setCustomJson('')
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Invalid JSON Format',
-        description: err?.message || 'Check your syntax and try again.',
+        description: err instanceof Error ? err.message : 'Check your syntax and try again.',
         variant: 'destructive',
       })
     }
@@ -160,7 +160,7 @@ export function QuickConfigImportModal({
           </div>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'presets' | 'custom')} className="w-full">
           <TabsList className="grid grid-cols-2 bg-muted/60 p-1 rounded-xl max-w-md mb-4">
             <TabsTrigger
               value="presets"

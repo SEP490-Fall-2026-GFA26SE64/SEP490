@@ -147,9 +147,8 @@ export function OrganizationSubscriptionPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
+        {/* Actions Bar */}
         <PageHeader
-          title="Organization Subscription & Seat Entitlements"
-          description="View active subscription period, monitor employee seat quotas, examine PayOS transaction invoices, and renew workspace licenses."
           actions={
             <Button variant="primary" size="sm" onClick={handleOpenRenew} className="flex items-center gap-1.5 shadow-xs">
               <RotateCcw size={14} />

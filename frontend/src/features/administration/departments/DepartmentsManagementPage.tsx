@@ -261,9 +261,8 @@ export function DepartmentsManagementPage() {
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
+        {/* Actions Bar */}
         <PageHeader
-          title="Organization Department Management"
-          description="Structure internal business units, assign department leadership, align O*NET occupations, and manage employee department assignments."
           actions={
             <Button variant="primary" size="sm" onClick={handleOpenCreate} className="flex items-center gap-1.5">
               <Plus size={15} />
@@ -303,8 +302,8 @@ export function DepartmentsManagementPage() {
                   <Building2 className="h-4 w-4 text-primary" />
                   Department Directory
                 </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Structure internal business units, assign department leadership, align O*NET occupations, and manage workforce capacity ({totalDepts} units in {activeCompany.name}).
+                <CardDescription className="text-sm text-muted-foreground mt-1">
+                  Browse and manage organizational departments, review designated leads, and track workforce distribution ({totalDepts} units in {activeCompany.name}).
                 </CardDescription>
               </div>
 
