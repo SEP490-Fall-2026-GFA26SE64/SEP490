@@ -16,11 +16,15 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** TMP-REQ002-03: explicit bank + tenant, no component/bean registration until A6's authorized gated API wiring. */
 public final class JdbcAdaptiveBlueprintPreviewAdapter implements AdaptiveBlueprintPreviewPort {
+    private final boolean demoDraft;
     private final NamedParameterJdbcTemplate jdbc;
     private final ObjectMapper mapper;
     private final UUID bankId;
 
-    public JdbcAdaptiveBlueprintPreviewAdapter(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper, UUID bankId) {
+    public JdbcAdaptiveBlueprintPreviewAdapter(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper, UUID bankId) { this(jdbc, mapper, bankId, false); }
+
+    public JdbcAdaptiveBlueprintPreviewAdapter(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper, UUID bankId, boolean demoDraft) {
+        this.demoDraft = demoDraft;
         this.jdbc = Objects.requireNonNull(jdbc);
         this.mapper = Objects.requireNonNull(mapper).copy();
         this.bankId = Objects.requireNonNull(bankId, "Explicit server question bank required");
@@ -35,10 +39,10 @@ public final class JdbcAdaptiveBlueprintPreviewAdapter implements AdaptiveBluepr
                     FROM platform.item_version item
                     JOIN platform.question_bank bank ON bank.question_bank_id=item.question_bank_id
                     JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:org
-                    WHERE item.question_bank_id=:bank AND item.item_version_id IN (:ids) AND item.publication_state='PUBLISHED'
+                    WHERE item.question_bank_id=:bank AND item.item_version_id IN (:ids) AND (item.publication_state='PUBLISHED' OR (:demoDraft AND item.publication_state='DRAFT'))
                       AND NOT EXISTS (SELECT 1 FROM platform.item_version newer WHERE newer.item_id=item.item_id AND newer.version>item.version)
                     ORDER BY item.item_version_id
-                    """, new MapSqlParameterSource("org", scope.organizationId()).addValue("bank", bankId).addValue("ids", ids),
+                    """, new MapSqlParameterSource("demoDraft", demoDraft).addValue("org", scope.organizationId()).addValue("bank", bankId).addValue("ids", ids),
                     (rs, row) -> new Item(rs.getObject("item_version_id", UUID.class), rs.getString("micro_skill_id"),
                             rs.getString("prompt"), options(rs.getString("options"))));
         } catch (DataAccessException | IllegalArgumentException | IllegalStateException cause) {

@@ -39,12 +39,17 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                    owners,properties(roleLevel) AS roleLevel,properties(level) AS level,
                    properties(requirement) AS requirement,properties(skill) AS skill
             """;
+    private final boolean demoReview;
     private final Driver driver;
     private final AdaptiveBlueprintJson json;
     private final UUID organizationId;
     private final Set<String> occupations;
 
     public Neo4jAdaptiveBaselineCatalogAdapter(Driver driver, ObjectMapper mapper, UUID organizationId, Set<String> occupations) {
+        this(driver, mapper, organizationId, occupations, false);
+    }
+    public Neo4jAdaptiveBaselineCatalogAdapter(Driver driver, ObjectMapper mapper, UUID organizationId, Set<String> occupations, boolean demoReview) {
+        this.demoReview = demoReview;
         this.driver = Objects.requireNonNull(driver);
         this.json = new AdaptiveBlueprintJson(mapper);
         this.organizationId = Objects.requireNonNull(organizationId, "Explicit local organization required");
@@ -112,7 +117,8 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
         }
     }
 
-    private static boolean published(Map<String, Object> properties) {
+    private boolean published(Map<String, Object> properties) {
+        if (demoReview) return "ACTIVE".equals(properties.get("status"));
         if (!"ACTIVE".equals(properties.get("status")) || !"APPROVED".equals(properties.get("reviewStatus"))) return false;
         text(properties, "reviewedBy");
         OffsetDateTime.parse(text(properties, "reviewedAt"));

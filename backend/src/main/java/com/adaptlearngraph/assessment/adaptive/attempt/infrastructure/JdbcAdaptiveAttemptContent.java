@@ -10,10 +10,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** Exact immutable content, including superseded publications; never query latest/current on resume. */
 public final class JdbcAdaptiveAttemptContent implements AdaptiveAttemptContentPort {
+    private final boolean demoDraft;
     private final NamedParameterJdbcTemplate jdbc;
     private final UUID bankId;
     private final ObjectMapper json = new ObjectMapper();
-    public JdbcAdaptiveAttemptContent(NamedParameterJdbcTemplate jdbc, UUID bankId) {
+    public JdbcAdaptiveAttemptContent(NamedParameterJdbcTemplate jdbc, UUID bankId) { this(jdbc, bankId, false); }
+
+    public JdbcAdaptiveAttemptContent(NamedParameterJdbcTemplate jdbc, UUID bankId, boolean demoDraft) {
+        this.demoDraft = demoDraft;
         this.jdbc = jdbc; this.bankId = Objects.requireNonNull(bankId);
     }
     @Override public Item read(Scope scope, UUID itemVersionId) {
@@ -21,8 +25,8 @@ public final class JdbcAdaptiveAttemptContent implements AdaptiveAttemptContentP
                 SELECT item.item_version_id,item.prompt,item.response_schema->'options' AS options
                 FROM platform.item_version item JOIN platform.question_bank bank USING(question_bank_id)
                 JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:org
-                WHERE item.item_version_id=:item AND item.question_bank_id=:bank AND item.publication_state='PUBLISHED'
-                """, Map.of("org", scope.organizationId(), "item", itemVersionId, "bank", bankId),
+                WHERE item.item_version_id=:item AND item.question_bank_id=:bank AND (item.publication_state='PUBLISHED' OR (:demoDraft AND item.publication_state='DRAFT'))
+                """, Map.of("demoDraft", demoDraft, "org", scope.organizationId(), "item", itemVersionId, "bank", bankId),
                 (rs, row) -> new Item(rs.getObject(1, UUID.class), rs.getString(2), options(rs.getString(3))));
         if (items.size() != 1 || items.getFirst().prompt() == null || items.getFirst().prompt().isBlank()) {
             throw new Failure(Code.DEPENDENCY_UNAVAILABLE);

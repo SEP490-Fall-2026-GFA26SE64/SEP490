@@ -13,16 +13,22 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 /** TMP-REQ002-08: explicit server-configured Employee, never client headers or production identity. */
 public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContextPort {
     private final NamedParameterJdbcTemplate jdbc;
-    private final UUID actorId, organizationId;
+    private final java.util.function.Supplier<UUID> actor;
+    private final UUID organizationId;
     private final Set<String> occupations;
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveAttemptSnapshotResolver snapshots;
     public LocalAdaptiveAttemptContext(NamedParameterJdbcTemplate jdbc, UUID actorId, UUID organizationId,
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
-        this.jdbc = jdbc; this.actorId = actorId; this.organizationId = Objects.requireNonNull(organizationId);
+        this(() -> actorId, jdbc, organizationId, occupations, catalog, snapshots);
+    }
+    public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, NamedParameterJdbcTemplate jdbc, UUID organizationId,
+            Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
+        this.jdbc = jdbc; this.actor = actor; this.organizationId = Objects.requireNonNull(organizationId);
         this.occupations = Set.copyOf(occupations); this.catalog = catalog; this.snapshots = snapshots;
     }
     @Override public Employee requireEmployee() {
+        UUID actorId = actor.get();
         if (actorId == null) throw new Failure(Code.UNAUTHENTICATED);
         var accounts = jdbc.query("SELECT organization_id,active FROM platform.account WHERE account_id=:actor", Map.of("actor", actorId),
                 (rs, row) -> new Object[]{rs.getObject(1, UUID.class), rs.getBoolean(2)});

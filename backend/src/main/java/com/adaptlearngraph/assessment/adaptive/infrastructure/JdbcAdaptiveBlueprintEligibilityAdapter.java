@@ -61,6 +61,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
                 AND options.total>=2 AND options.total=options.distinct_ids AND options.valid AND options.has_key
             ORDER BY item.item_version_id
             """;
+    private final boolean demoDraft;
     private final NamedParameterJdbcTemplate jdbc;
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveTechnicalVersionPort technical;
@@ -68,8 +69,10 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
     private final ObjectMapper policies;
     private final Properties settings;
 
-    public JdbcAdaptiveBlueprintEligibilityAdapter(NamedParameterJdbcTemplate jdbc, AdaptiveBaselineCatalogPort catalog,
-            AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings) {
+    public JdbcAdaptiveBlueprintEligibilityAdapter(NamedParameterJdbcTemplate jdbc, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings) { this(jdbc, catalog, technical, mapper, settings, false); }
+
+    public JdbcAdaptiveBlueprintEligibilityAdapter(NamedParameterJdbcTemplate jdbc, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings, boolean demoDraft) {
+        this.demoDraft = demoDraft;
         this.jdbc = Objects.requireNonNull(jdbc);
         this.catalog = Objects.requireNonNull(catalog);
         this.technical = Objects.requireNonNull(technical);
@@ -113,7 +116,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
                     """, params, Boolean.class);
             if (!Boolean.TRUE.equals(allowed)) return Optional.empty();
             var versions = pins.isPresent() ? technical.findPinned(pins.get())
-                    : technical.findPromoted(settings.modelVersionId(), settings.masteryMappingVersionId());
+                    : technical.findEffective(scope.organizationId(), settings.questionBankId(), settings.modelVersionId(), settings.masteryMappingVersionId());
             var technicalVersions = versions.orElseThrow(() -> new DependencyUnavailable("Approved technical versions unavailable", null));
             var selected = technicalVersions.pins();
             Model model = policies.readValue(technicalVersions.modelConfigurationJson(), Model.class);
@@ -121,7 +124,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
             var parameterRows = technical.findParameters(selected, skills);
             var parameters = parameterRows.stream().collect(Collectors.toMap(
                     AdaptiveTechnicalVersionPort.ItemParameter::itemVersionId, AdaptiveTechnicalVersionPort.ItemParameter::microSkillId));
-            List<Item> items = skills.isEmpty() ? List.of() : jdbc.query(ITEMS, params.addValue("skills", skills),
+            List<Item> items = skills.isEmpty() ? List.of() : jdbc.query(demoDraft ? ITEMS.replace("item.publication_state='PUBLISHED'", "item.publication_state IN ('DRAFT','PUBLISHED')") : ITEMS, params.addValue("skills", skills),
                     (rs, row) -> new Item(rs.getObject("item_version_id", UUID.class), rs.getString("micro_skill_id"), rs.getString("content_hash")));
             Set<UUID> published = items.stream().map(Item::id).collect(Collectors.toSet());
             parameterRows.stream().filter(item -> published.contains(item.itemVersionId())).forEach(item -> model.validate(
