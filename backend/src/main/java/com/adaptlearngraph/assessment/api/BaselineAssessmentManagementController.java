@@ -55,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(
         prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/ld/baseline-assessments")
 public class BaselineAssessmentManagementController {
     private final BaselineAssessmentManagementUseCase management;

@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("local")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/ld/baseline-blueprints")
 public class BaselineBlueprintController {
     private final BaselineBlueprintUseCase blueprints;

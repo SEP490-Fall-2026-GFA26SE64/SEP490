@@ -17,9 +17,12 @@ learning:
 
 assessment:
   baseline:
+    legacy-authoring:
+      # Historical fixed Generate/Review/Publish wiring; never the official baseline fallback.
+      enabled: false
     answer-review:
       # Temporary local/demo reveal boundary. Production has no matching bean/controller.
-      enabled: ${BASELINE_ANSWER_REVIEW_ENABLED:true}
+      enabled: ${BASELINE_ANSWER_REVIEW_ENABLED:false}
     occupation-catalog:
       # Opt-in only: ontology 0.8 currently has no production tenant/publication mapping.
       enabled: ${BASELINE_OCCUPATION_CATALOG_ENABLED:false}
