@@ -20,7 +20,12 @@ type Confirmation = { action: 'finalize' | 'disable' | 'convert' | 'refresh' | '
 /** Remount by Occupation so drafts, local preview and pending keys never cross scopes. */
 export function AdaptiveBaselineRoute() {
   const { occupationId, '*': legacyPath } = useParams<{ occupationId: string; '*': string }>()
+  const { t } = useTranslation()
   if (occupationId && legacyPath) return <Navigate to={`/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`} replace />
+  if (import.meta.env.VITE_ADAPTIVE_BASELINE_ENABLED !== 'true') return <WorkspaceLayout><div className="space-y-4">
+    <PageHeader title={t('adaptiveBaseline.title')} />
+    <Card><CardContent className="p-6"><Text role="status">{t('adaptiveBaseline.unavailable')}</Text></CardContent></Card>
+  </div></WorkspaceLayout>
   return <WorkspaceLayout>{occupationId ? <AdaptiveBaselineWorkspace key={occupationId} occupationId={occupationId} /> : <AdaptiveBaselineDirectory />}</WorkspaceLayout>
 }
 export const AdaptiveBaselinePage = AdaptiveBaselineRoute

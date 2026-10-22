@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
+import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { employeeBaselineEnabled, startCommand } from './baselineApi'
@@ -14,7 +15,11 @@ import { useBaselineAttempt } from './useBaselineAttempt'
 
 export function EmployeeBaselineRoute() {
   const { attemptId } = useParams<{ attemptId: string }>()
-  return employeeBaselineEnabled ? <EmployeeBaselinePage key={attemptId ?? 'start'} attemptId={attemptId} /> : <Navigate to="/employee/assessment" replace />
+  const { t } = useTranslation()
+  return employeeBaselineEnabled ? <EmployeeBaselinePage key={attemptId ?? 'start'} attemptId={attemptId} /> : <WorkspaceLayout><div className="space-y-4">
+    <PageHeader title={t('employeeBaseline.title')} />
+    <Card><CardContent className="p-6"><Text role="status">{t('employeeBaseline.unavailable')}</Text></CardContent></Card>
+  </div></WorkspaceLayout>
 }
 export function BaselineHandoff() {
   const { t } = useTranslation()
