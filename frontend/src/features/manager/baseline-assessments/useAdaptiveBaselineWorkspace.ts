@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AdaptiveBaselineApiError, disableAdaptiveBlueprint, finalizeAdaptiveBlueprint, getAdaptiveWorkspace,
-  saveAdaptiveWorking, testAdaptiveBlueprint,
-  type AdaptiveConfiguration, type AdaptivePreview, type AdaptiveWorkspace,
+  saveAdaptiveWorking, convertAdaptiveWorking, testAdaptiveBlueprint, isCommonConfiguration,
+  type AdaptivePreview, type AdaptiveWorkspace, type AdaptiveVersionId,
 } from './adaptiveBaselineApi'
-import { adaptiveConfiguration, createAdaptiveDraft, type AdaptiveDraft } from './adaptiveBaselineDraft'
+import { adaptiveConfiguration, createAdaptiveDraft, sameAdaptiveConfiguration, type AdaptiveDraft } from './adaptiveBaselineDraft'
 
-export type AdaptiveAction = 'save' | 'finalize' | 'disable'
+export type AdaptiveAction = 'save' | 'convert' | 'finalize' | 'disable'
+export interface AdaptiveApproval { workingId: string | null; workingRevision: number; activationRevision: number; current: AdaptiveVersionId | null }
+export const adaptiveApproval = (value: AdaptiveWorkspace): AdaptiveApproval => ({ workingId: value.working?.workingRevisionId ?? null, workingRevision: value.working?.revision ?? 0, activationRevision: value.activation?.revision ?? 0, current: value.activation?.current ?? null })
 const failure = (cause: unknown) => cause instanceof AdaptiveBaselineApiError ? cause : new AdaptiveBaselineApiError(0, 'NETWORK_ERROR')
-const canonical = (config: AdaptiveConfiguration) => JSON.stringify({ ...config, roles: Object.fromEntries(Object.entries(config.roles).sort(([a], [b]) => a.localeCompare(b))) })
 
 /** The route keys this hook's owner by Occupation; language changes never reload it. */
 export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
@@ -18,18 +19,24 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
   const [error, setError] = useState<AdaptiveBaselineApiError | null>(null)
   const [busy, setBusy] = useState(Boolean(occupationId))
   const [pending, setPending] = useState(false)
+  const [writeCommitted, setWriteCommitted] = useState(false)
   const [needsRefresh, setNeedsRefresh] = useState(false)
-  const [notice, setNotice] = useState<AdaptiveAction | null>(null)
+  const [notice, setNotice] = useState<AdaptiveAction | 'noop' | null>(null)
+  const [previewBinding, setPreviewBinding] = useState<string | null>(null)
   const generation = useRef(0)
   const locked = useRef(Boolean(occupationId))
   const retry = useRef<(() => Promise<void>) | null>(null)
   const needsRead = useRef(false)
   const configuration = workspace && draft ? adaptiveConfiguration(draft, workspace.capacity) : null
-  const dirty = Boolean(workspace && draft && JSON.stringify(draft) !== JSON.stringify(createAdaptiveDraft(workspace)))
-  const saved = Boolean(configuration && workspace?.working && canonical(configuration) === canonical(workspace.working.configuration))
+  const working = workspace?.working
+  const legacy = Boolean(working && !isCommonConfiguration(working.configuration))
+  const saved = Boolean(configuration && working && isCommonConfiguration(working.configuration) && sameAdaptiveConfiguration(configuration, working.configuration))
+  const dirty = !saved && Boolean(workspace && draft && JSON.stringify(draft) !== JSON.stringify(createAdaptiveDraft(workspace)))
+  const binding = working ? `${working.workingRevisionId}:${working.revision}` : null
+  const canActivate = saved && Boolean(preview?.feasible) && previewBinding === binding
 
   const accept = useCallback((value: AdaptiveWorkspace) => {
-    setWorkspace(value); setDraft(createAdaptiveDraft(value)); setPreview(null)
+    setWorkspace(value); setDraft(createAdaptiveDraft(value)); setPreview(null); setPreviewBinding(null)
     setError(null); setNeedsRefresh(false)
   }, [])
 
@@ -60,14 +67,14 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
 
   function edit(value: AdaptiveDraft) {
     if (locked.current || retry.current || needsRefresh) return
-    setDraft(value); setPreview(null); setError(null); setNotice(null)
+    setDraft(value); setPreview(null); setPreviewBinding(null); setError(null); setNotice(null)
   }
 
   async function test() {
-    if (!occupationId || !configuration || locked.current || retry.current || needsRefresh) return
+    if (!occupationId || !saved || !working || locked.current || retry.current || needsRefresh) return
     const token = generation.current
-    locked.current = true; setBusy(true); setError(null); setPreview(null); setNotice(null)
-    try { const value = await testAdaptiveBlueprint(occupationId, configuration); if (token === generation.current) setPreview(value) }
+    locked.current = true; setBusy(true); setError(null); setPreview(null); setPreviewBinding(null); setNotice(null)
+    try { const value = await testAdaptiveBlueprint(occupationId, working.workingRevisionId, working.revision); if (token === generation.current) { setPreview(value); setPreviewBinding(binding) } }
     catch (cause) {
       if (token === generation.current) { const value = failure(cause); setError(value); if ([401, 403, 409].includes(value.status)) setNeedsRefresh(true) }
     } finally { if (token === generation.current) { locked.current = false; setBusy(false) } }
@@ -89,31 +96,39 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
     } finally { if (token === generation.current) { locked.current = false; setBusy(false) } }
   }
 
-  function command(action: AdaptiveAction, reason = '') {
+  function command(action: AdaptiveAction, reason = '', confirmed?: AdaptiveApproval) {
     if (!occupationId || !workspace || locked.current || retry.current || needsRefresh) return
-    if ((action === 'save' && !configuration) || (action === 'finalize' && !saved) || (action === 'disable' && (!workspace.current || !reason.trim()))) return
+    if (action === 'save' && (!configuration || saved || legacy)) return
+    if (action === 'convert' && (!configuration || !legacy || !working)) return
+    if (action === 'finalize' && !canActivate) return
+    if (action === 'disable' && (!workspace.current || !reason.trim())) return
+    const snapshot = adaptiveApproval(workspace)
+    if (action !== 'save' && (!confirmed || JSON.stringify(confirmed) !== JSON.stringify(snapshot))) {
+      setError(new AdaptiveBaselineApiError(409, 'VERSION_CONFLICT')); setNeedsRefresh(true); return
+    }
     const key = crypto.randomUUID(), token = generation.current
-    const revision = workspace.activation?.revision ?? 0
-    const write = action === 'save' ? () => saveAdaptiveWorking(occupationId, workspace.working?.revision ?? 0, configuration!, key)
-      : action === 'finalize' ? () => finalizeAdaptiveBlueprint(occupationId, workspace.working!.workingRevisionId, workspace.working!.revision, revision, key)
-        : () => disableAdaptiveBlueprint(occupationId, revision, reason.trim(), key)
+    const write = action === 'save' ? () => saveAdaptiveWorking(occupationId, working?.revision ?? 0, working?.workingRevisionId ?? null, configuration!, key)
+      : action === 'convert' ? () => convertAdaptiveWorking(occupationId, confirmed!.workingId!, confirmed!.workingRevision, configuration!, key)
+      : action === 'finalize' ? () => finalizeAdaptiveBlueprint(occupationId, confirmed!.workingId!, confirmed!.workingRevision, confirmed!.activationRevision, confirmed!.current, key)
+      : () => disableAdaptiveBlueprint(occupationId, confirmed!.activationRevision, confirmed!.current!, reason.trim(), key)
     const reconcile = async () => {
       const value = await getAdaptiveWorkspace(occupationId)
       if (token !== generation.current) return
-      accept(value); retry.current = null; needsRead.current = false; setPending(false); setNotice(action)
+      accept(value); retry.current = null; needsRead.current = false; setPending(false); setWriteCommitted(false); setNotice(action)
     }
     needsRead.current = false
     retry.current = async () => {
       await write()
       if (token !== generation.current) return
+      setWriteCommitted(true)
       // Once the write succeeded, retry GET only; never submit a second command after a refresh failure.
       needsRead.current = true; retry.current = reconcile
       await reconcile()
     }
-    setPending(true); setPreview(null); setNotice(null)
+    setPending(true); setWriteCommitted(false); setPreview(null); setPreviewBinding(null); setNotice(null)
     void runPending()
   }
 
-  return { workspace, draft, preview, error, busy, pending, needsRefresh, notice, dirty, saved,
+  return { workspace, draft, preview, error, busy, pending, writeCommitted, needsRefresh, notice, dirty, saved, legacy, canActivate,
     valid: Boolean(configuration), edit, refresh, test, command, retry: runPending }
 }

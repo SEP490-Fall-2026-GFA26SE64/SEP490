@@ -3,7 +3,8 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Input } from '../../../shared/components/ui/Input'
-import { Heading } from '../../../shared/components/typography/Heading'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { employeeBaselineEnabled, startCommand } from './baselineApi'
@@ -26,17 +27,16 @@ function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
   const { t } = useTranslation(), tr = (key: string) => t(`employeeBaseline.${key}`)
   const state = useBaselineAttempt(attemptId)
   const [occupation, setOccupation] = useState('')
-  return <WorkspaceLayout><div className="mx-auto w-full max-w-3xl space-y-5">
-    <Heading level={1} size="page">{tr('title')}</Heading>
-    <p className="text-sm text-muted-foreground">{tr('intro')}</p>
+  return <WorkspaceLayout><div className="min-w-0 space-y-4">
+    <PageHeader title={tr('title')} description={tr('intro')} />
     <Link className="inline-block text-sm text-primary underline" to="/employee/assessment?tab=baseline">{tr('otherAssessments')}</Link>
-    {state.busy && <p role="status">{tr('loading')}</p>}
+    {state.busy && <LoadingCard label={tr('loading')} />}
     {state.error && <div role="alert" className="space-y-2 rounded-md border border-border p-4">
       <p>{t(`employeeBaseline.errors.${state.error.code}`, tr('requestError'))}</p>
       {state.pending ? <><p className="text-sm">{tr('retryNotice')}</p><Button disabled={state.busy} onClick={() => void state.run(state.pending!)}>{tr('retry')}</Button></>
         : attemptId && <Button variant="outline" disabled={state.busy} onClick={() => void state.refresh()}>{tr('refresh')}</Button>}
     </div>}
-    {!attemptId && <Card><CardHeader><CardTitle>{tr('start')}</CardTitle></CardHeader><CardContent className="space-y-4">
+    {!attemptId && <Card id="baseline-start"><CardHeader><CardTitle>{tr('start')}</CardTitle></CardHeader><CardContent className="space-y-4">
       <Button disabled={state.locked} onClick={() => void state.run(startCommand())}>{tr('selectedRole')}</Button>
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="baseline-occupation">{tr('occupationId')}</label>

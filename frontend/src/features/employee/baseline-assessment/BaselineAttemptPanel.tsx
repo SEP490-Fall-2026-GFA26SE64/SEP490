@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
@@ -14,7 +15,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, run }: {
   const [choice, setChoice] = useState(''), [confirm, setConfirm] = useState(false)
   const expired = attempt.expired || seconds <= 0
   return <Card>
-    <CardHeader><CardTitle>{attempt.occupationName}</CardTitle></CardHeader>
+    <CardHeader><CardTitle>{attempt.occupationName}</CardTitle><Badge variant="outline" className="w-fit max-w-full whitespace-normal">{tr(`scopes.${attempt.assessmentScope}`)}</Badge></CardHeader>
     <CardContent className="space-y-5">
       <div className="flex flex-wrap justify-between gap-3 text-sm">
         <span>{tr('answered')}: {attempt.answeredCount} / {attempt.maxQuestions} {tr('maximum')}</span>

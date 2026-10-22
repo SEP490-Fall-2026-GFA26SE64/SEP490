@@ -14,6 +14,9 @@ export function useBaselineAttempt(attemptId?: string) {
   const [seconds, setSeconds] = useState(0)
   const clock = useRef({ remaining: 0, receivedAt: 0 })
   const lock = useRef(false), alive = useRef(true)
+  function clearDenied(cause: unknown) {
+    if (cause instanceof BaselineError && [401, 403, 404].includes(cause.status)) { setAttempt(null); setResult(null) }
+  }
   function accept(value: BaselineAttempt) {
     setAttempt(value); setResult(null)
     clock.current = { remaining: Math.max(0, Date.parse(value.deadlineAt) - Date.parse(value.observedAt)), receivedAt: performance.now() }
@@ -32,7 +35,7 @@ export function useBaselineAttempt(attemptId?: string) {
           const detail = await readResult(value.id, controller.signal)
           if (!controller.signal.aborted) setResult(detail)
         }
-      }).catch(cause => { if (!controller.signal.aborted) { setError(asError(cause)); setNeedsRefresh(true) } })
+      }).catch(cause => { if (!controller.signal.aborted) { clearDenied(cause); setError(asError(cause)); setNeedsRefresh(true) } })
         .finally(() => { if (!controller.signal.aborted) { lock.current = false; setBusy(false) } })
     }
     return () => { alive.current = false; controller.abort() }
@@ -55,7 +58,7 @@ export function useBaselineAttempt(attemptId?: string) {
         if (alive.current) setResult(detail)
       }
       if (alive.current) setNeedsRefresh(false)
-    } catch (cause) { if (alive.current) { setError(asError(cause)); setNeedsRefresh(true) } }
+    } catch (cause) { if (alive.current) { clearDenied(cause); setError(asError(cause)); setNeedsRefresh(true) } }
     finally { if (alive.current) { lock.current = false; setBusy(false) } }
   }
   async function run(value: BaselineCommand) {
@@ -70,12 +73,12 @@ export function useBaselineAttempt(attemptId?: string) {
       if (!attemptId || next.id !== attemptId) { navigate(attemptPath(next.id)); return }
       if (next.state !== 'IN_PROGRESS') {
         try { const detail = await readResult(next.id); if (alive.current) setResult(detail) }
-        catch (cause) { if (alive.current) { setError(asError(cause)); setNeedsRefresh(true) } }
+        catch (cause) { if (alive.current) { clearDenied(cause); setError(asError(cause)); setNeedsRefresh(true) } }
       }
     } catch (cause) {
       if (!alive.current) return
       const failure = asError(cause)
-      setError(failure)
+      clearDenied(failure); setError(failure)
       if (!failure.ambiguous) { setPending(null); setNeedsRefresh(Boolean(attemptId)) }
     } finally { if (alive.current) { lock.current = false; setBusy(false) } }
   }
