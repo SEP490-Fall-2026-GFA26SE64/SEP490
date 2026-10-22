@@ -7,7 +7,6 @@ import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveTech
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.sql.DataSource;
 import org.neo4j.driver.Driver;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +19,7 @@ import org.springframework.jdbc.support.JdbcTransactionManager;
 @Configuration(proxyBeanMethods = false)
 @Profile("(local | demo) & !prod")
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.persistence", name = "enabled", havingValue = "true")
-@EnableConfigurationProperties({AdaptiveTechnicalBootstrap.Properties.class, JdbcAdaptiveBlueprintEligibilityAdapter.Properties.class})
+@EnableConfigurationProperties(JdbcAdaptiveBlueprintEligibilityAdapter.Properties.class)
 public class LocalAdaptiveBlueprintConfiguration {
     @Bean
     AdaptiveBlueprintStore adaptiveBlueprintStore(DataSource dataSource, ObjectMapper mapper) {
@@ -45,10 +44,4 @@ public class LocalAdaptiveBlueprintConfiguration {
         return new JdbcAdaptiveBlueprintEligibilityAdapter(new NamedParameterJdbcTemplate(dataSource), catalog, technical, mapper, settings);
     }
 
-    @Bean
-    @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.bootstrap", name = "enabled", havingValue = "true")
-    ApplicationRunner adaptiveTechnicalBootstrap(DataSource dataSource, ObjectMapper mapper, AdaptiveTechnicalBootstrap.Properties settings) {
-        var initializer = new AdaptiveTechnicalBootstrap(new NamedParameterJdbcTemplate(dataSource), mapper, new JdbcTransactionManager(dataSource));
-        return arguments -> initializer.initialize(settings);
-    }
 }
