@@ -1,6 +1,36 @@
 import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
+  employeeBaseline: {
+    recordedOutcome: 'Máy chủ đã lưu kết quả.', reasons: { MANUAL: 'Bạn đã nộp bài.', ADAPTIVE_STOP: 'Máy chủ đã đạt điều kiện dừng đánh giá.', DEADLINE: 'Đã đến hạn chót trên máy chủ.', TECHNICAL_FAILURE: 'Sự cố kỹ thuật khiến bài không thể hoàn tất.' },
+    title: 'Đánh giá nền tảng thích ứng', intro: 'Bắt đầu hoặc tiếp tục đánh giá theo Occupation. Câu trả lời đã chấp nhận và hạn chót được lưu trên máy chủ.',
+    open: 'Mở đánh giá nền tảng', otherAssessments: 'Các đánh giá khác', start: 'Bắt đầu hoặc tiếp tục', selectedRole: 'Dùng vai trò mục tiêu đã chọn',
+    occupationId: 'Mã Occupation', occupationNotice: 'Để tự khám phá, nhập mã Occupation do tổ chức cung cấp. Máy chủ kiểm tra khả dụng và quyền truy cập.',
+    explore: 'Khám phá Occupation này', loading: 'Đang tải…', answered: 'Câu trả lời đã chấp nhận', maximum: 'tối đa', remaining: 'Thời gian còn lại',
+    timerNotice: 'Đồng hồ chỉ là ước tính. Máy chủ quyết định hạn chót; câu trả lời đến từ thời điểm đó trở đi không được chấp nhận.',
+    expired: 'Đang kiểm tra hạn chót và kết quả trên máy chủ…', chooseAnswer: 'Chọn một câu trả lời', saveNext: 'Lưu trả lời và tiếp tục',
+    submit: 'Nộp bài đánh giá', submitConfirm: 'Nộp các câu trả lời đã chấp nhận và kết thúc? Nếu chưa đủ bằng chứng, máy chủ giữ bài đang làm khi vẫn còn thời gian.',
+    cancel: 'Hủy', confirm: 'Xác nhận nộp', refresh: 'Tải lại từ máy chủ', refreshNeeded: 'Tải lại để lấy câu hỏi hiện tại.',
+    retry: 'Gửi lại đúng yêu cầu', retryNotice: 'Chưa rõ kết quả. Gửi lại dùng nguyên yêu cầu trước. Giữ trang này đến khi xử lý xong; tải lại trang sẽ khôi phục trạng thái đã lưu trên máy chủ.',
+    requestError: 'Không thể hoàn tất yêu cầu. Tải lại từ máy chủ trước khi tiếp tục.',
+    result: 'Kết quả đánh giá nền tảng', history: 'Lịch sử đánh giá nền tảng', historyError: 'Chưa tải được lịch sử. Hãy thử tải lại.', emptyHistory: 'Chưa có bài đánh giá nền tảng hoàn tất hoặc bị vô hiệu.',
+    originalRole: 'Vai trò mục tiêu ban đầu', exploration: 'Tự khám phá Occupation', rawScore: 'Điểm thô',
+    masteryNotice: 'Điểm thô giải thích câu trả lời. Mức thành thạo từng kỹ năng có xét độ bất định và được trình bày riêng.', confidence: 'Độ tin cậy',
+    LOW: 'Thấp', MEDIUM: 'Trung bình', HIGH: 'Cao', SUBMITTED: 'Đã hoàn tất', AUTO_SUBMITTED: 'Đã tự động hoàn tất', INVALIDATED: 'Bị vô hiệu — không có mức thành thạo',
+    invalidatedNotice: 'Bài này không tạo mức thành thạo. Máy chủ có thể cho phép một bài thay thế có liên kết.', noRetake: 'Bài hoàn tất đóng quyền đánh giá lại cho Occupation này.',
+    previousAttempt: 'Xem bài bị vô hiệu trước đó', replacement: 'Mở bài thay thế được liên kết', startReplacement: 'Bắt đầu hoặc tiếp tục bài thay thế cho Occupation này',
+    errors: {
+      NETWORK_ERROR: 'Kết nối bị gián đoạn.', INVALID_RESPONSE: 'Không thể đọc an toàn phản hồi của máy chủ.',
+      UNAUTHENTICATED: 'Cần ngữ cảnh Employee được xác thực.', FORBIDDEN: 'Bạn không có quyền truy cập Occupation này.', NOT_FOUND: 'Không thể truy cập bài đánh giá này.',
+      SELECTION_UNAVAILABLE: 'Hãy chọn vai trò mục tiêu khả dụng trước, hoặc khám phá một Occupation.', BLUEPRINT_UNAVAILABLE: 'Occupation này chưa có Blueprint đánh giá khả dụng.',
+      BLUEPRINT_STALE: 'L&D cần cập nhật Blueprint trước khi bắt đầu bài mới.', INFEASIBLE_SCOPE: 'Blueprint chưa cung cấp đủ câu hỏi hợp lệ.',
+      POLICY_UNAVAILABLE: 'Chính sách đánh giá chưa khả dụng. Hãy liên hệ quản trị viên.', ALLOWANCE_CLOSED: 'Đã có bài hoàn tất cho Occupation này. Hãy mở từ lịch sử đánh giá nền tảng.',
+      IDEMPOTENCY_CONFLICT: 'Khóa yêu cầu xung đột với yêu cầu trước. Hãy tải lại.', VERSION_CONFLICT: 'Bài đã thay đổi bởi yêu cầu khác. Hãy tải lại trước khi tiếp tục.',
+      DEPENDENCY_UNAVAILABLE: 'Một dịch vụ cần thiết chưa khả dụng.', ATTEMPT_CLOSED: 'Bài đã kết thúc. Tải lại để xem kết quả đã lưu.', DEADLINE_REACHED: 'Đã đến hạn chót trên máy chủ. Tải lại để xem kết quả.',
+      ANSWER_NOT_PRESENTED: 'Câu hỏi này không còn chờ trả lời. Hãy tải lại.', INVALID_OPTION: 'Lựa chọn không khả dụng. Hãy tải lại câu hỏi.',
+      MINIMUM_EVIDENCE_NOT_MET: 'Cần thêm câu trả lời trước khi nộp thủ công. Hãy tải lại và tiếp tục cùng bài này.',
+    },
+  },
   adaptiveBaseline: {
     title: 'Blueprint baseline thích ứng',
     description: 'Chọn Occupation được cấp quyền để cấu hình Blueprint thích ứng hiện hành.',

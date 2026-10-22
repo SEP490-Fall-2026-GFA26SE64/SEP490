@@ -31,7 +31,9 @@ import {
   Zap,
 } from 'lucide-react'
 import * as React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
+import { BaselineHandoff } from '../baseline-assessment/EmployeeBaselinePage'
+import { employeeBaselineEnabled } from '../baseline-assessment/baselineApi'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -924,7 +926,10 @@ export function AssessmentPage() {
   }
 
   // Navigation tab state: 'pathway' | 'baseline' | 'skills' | 'history'
-  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'skills' | 'history'>('pathway')
+  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'skills' | 'history'>(() => {
+    const tab = new URLSearchParams(location.search).get('tab')
+    return tab === 'baseline' || tab === 'skills' || tab === 'history' ? tab : 'pathway'
+  })
   const [skillStatusFilter, setSkillStatusFilter] = React.useState<'all' | 'eligible' | 'completed' | 'locked'>('all')
 
   // Available Quiz Info Modal state
@@ -1132,7 +1137,7 @@ export function AssessmentPage() {
       ]
     }
     if (activeCompany.id === 'comp-technova') {
-      return PATHWAY_QUIZZES
+      return employeeBaselineEnabled ? PATHWAY_QUIZZES.filter(quiz => quiz.id !== 'quiz-baseline') : PATHWAY_QUIZZES
     }
     if (!activeCompany?.modules || activeCompany.modules.length === 0) {
       return []
@@ -1296,7 +1301,7 @@ export function AssessmentPage() {
           setSelectedQuizModal(targetQuiz)
         }
       }
-    } else if (params.get('diagnostic') === 'true' && !isTakingQuiz && !isSubmitted) {
+    } else if (!employeeBaselineEnabled && params.get('diagnostic') === 'true' && !isTakingQuiz && !isSubmitted) {
       setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0] || null)
     }
   }, [location.search, isTakingQuiz, isSubmitted, pathwayQuizzes, toast])
@@ -1346,6 +1351,7 @@ export function AssessmentPage() {
   const filteredAttempts = React.useMemo(() => {
     return attempts
       .filter((a) => {
+        if (employeeBaselineEnabled && a.moduleCode === 'DIAG-BASE') return false
         // Skill vs Role mode filtering
         if (isSkillMode) {
           const isSkillAttempt =
@@ -1453,13 +1459,13 @@ export function AssessmentPage() {
     setCurrentIndex(0)
 
     // Unlock learning pathway if diagnostic requirement is active
-    if (isLearningLocked) {
+    if (isLearningLocked && !employeeBaselineEnabled) {
       completeDiagnosticAssessment(scorePct)
     }
 
     toast({
-      title: isLearningLocked ? 'Diagnostic Assessment Passed! 🎉' : `Assessment Completed: ${scorePct}%`,
-      description: isLearningLocked
+      title: isLearningLocked && !employeeBaselineEnabled ? 'Diagnostic Assessment Passed! 🎉' : `Assessment Completed: ${scorePct}%`,
+      description: isLearningLocked && !employeeBaselineEnabled
         ? `Score: ${scorePct}%. Your Adaptive Learning Pathway and Interactive Roadmap are now unlocked!`
         : `You got ${correct} of ${totalQuestions} correct. You are now in Review Mode to inspect your answers.`,
       variant: 'success',
@@ -1506,6 +1512,8 @@ export function AssessmentPage() {
   }
 
   const isQuizViewActive = isTakingQuiz || isReviewMode
+
+  if (employeeBaselineEnabled && new URLSearchParams(location.search).get('diagnostic') === 'true') return <Navigate to="/employee/baseline-assessment" replace />
 
   return (
     <WorkspaceLayout>
@@ -2318,6 +2326,7 @@ export function AssessmentPage() {
             {activeTab === 'pathway' && (() => {
               // If diagnostic is locked and in role mode, employee can ONLY see and take the diagnostic assessment!
               if (isLearningLocked && !isSkillMode) {
+                if (employeeBaselineEnabled) return <BaselineHandoff />
                 return (
                   <div className="space-y-6 max-w-3xl mx-auto py-2">
                     <Card className="border border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md overflow-hidden">
@@ -2720,20 +2729,21 @@ export function AssessmentPage() {
             {/* TAB 2: BASELINE & RIASEC DIAGNOSTICS */}
             {activeTab === 'baseline' && (() => {
               const baselineQuizzes = pathwayQuizzes.filter(
-                (q) => q.moduleCode === 'DIAG-BASE' || q.moduleCode === 'CAREER-RIASEC'
+                (q) => (!employeeBaselineEnabled && q.moduleCode === 'DIAG-BASE') || q.moduleCode === 'CAREER-RIASEC'
               )
 
               return (
                 <div className="space-y-5">
+                  {employeeBaselineEnabled && <BaselineHandoff />}
                   {/* Top Baseline Assessment StatCards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${employeeBaselineEnabled ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4`}>
+                    {!employeeBaselineEnabled && <StatCard
                       title="Baseline Diagnostic Score"
                       value="92%"
                       valueClassName="text-success font-mono"
                       description="Initial competency diagnostic passed"
                       icon={<Award className="w-5 h-5 text-success" />}
-                    />
+                    />}
 
                     <StatCard
                       title="Dominant RIASEC Theme"
@@ -2775,12 +2785,14 @@ export function AssessmentPage() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Badge variant="success" className="gap-1 font-semibold text-xs px-3 py-1">
-                          <CheckCircle2 size={13} />
-                          <span>All Baselines Cleared</span>
-                        </Badge>
-                      </div>
+                      {!employeeBaselineEnabled && (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="success" className="gap-1 font-semibold text-xs px-3 py-1">
+                            <CheckCircle2 size={13} />
+                            <span>All Baselines Cleared</span>
+                          </Badge>
+                        </div>
+                      )}
                     </div>
 
                     {/* Timeline Body */}
@@ -3190,8 +3202,9 @@ export function AssessmentPage() {
             })()}
 
             {/* TAB 3: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
+            {activeTab === 'history' && employeeBaselineEnabled && !isLearningLocked && <BaselineHandoff />}
             {activeTab === 'history' && (
-              isLearningLocked ? (
+              employeeBaselineEnabled && isLearningLocked ? <BaselineHandoff /> : isLearningLocked ? (
                 <div className="max-w-xl mx-auto py-8">
                   <Card className="border border-warning/30 bg-card shadow-xs text-center p-8 space-y-4">
                     <div className="w-12 h-12 rounded-2xl bg-warning/15 text-warning flex items-center justify-center mx-auto">
