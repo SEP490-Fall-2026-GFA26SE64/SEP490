@@ -1,8 +1,9 @@
 package com.adaptlearngraph.assessment.adaptive.attempt.application.port.in;
 
-import java.util.UUID;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 /** REQ-002-F01 application contract, not an HTTP DTO. Capabilities expose safe presented-item projections.
  * Implementations resolve actor/tenant, reauthorize receipts and commit before returning.
@@ -26,6 +27,11 @@ public interface AdaptiveAttemptUseCase {
         }
     }
     interface Submitting { View submit(Submit command); }
+    /** Employee-safe immutable result/history projection. */
+    interface Results {
+        List<Result> history();
+        Result result(UUID attemptId);
+    }
     record Submit(UUID attemptId, long expectedRevision, String idempotencyKey) {
         public Submit {
             if (attemptId == null || attemptId.equals(new UUID(0, 0)) || expectedRevision < 1
@@ -45,6 +51,14 @@ public interface AdaptiveAttemptUseCase {
                 String state, long revision, Instant startedAt, Instant deadlineAt, Instant observedAt,
                 boolean expired, int maxQuestions, int answeredCount, List<Presented> items) {
         public View { items = List.copyOf(items); }
+    }
+    record SkillResult(String microSkillId, String microSkillName, BigDecimal mastery, String confidence) {}
+    /** Deliberately excludes theta/SE, answers, scoring keys, item parameters and evidence/receipt data. */
+    record Result(UUID attemptId, String occupationId, String occupationName, String purpose,
+                  String roleId, String roleName, String state, String completionReason,
+                  Instant startedAt, Instant completedAt, UUID replacesAttemptId,
+                  UUID replacementAttemptId, BigDecimal rawScore, List<SkillResult> skills) {
+        public Result { skills = List.copyOf(skills); }
     }
     enum Code { INVALID_REQUEST, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, SELECTION_UNAVAILABLE,
         BLUEPRINT_UNAVAILABLE, BLUEPRINT_STALE, INFEASIBLE_SCOPE, POLICY_UNAVAILABLE,

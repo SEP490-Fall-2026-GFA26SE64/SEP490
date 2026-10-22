@@ -2,6 +2,7 @@ package com.adaptlearngraph.assessment.adaptive.attempt.infrastructure;
 
 import com.adaptlearngraph.assessment.adaptive.attempt.application.*;
 import com.adaptlearngraph.assessment.adaptive.attempt.application.port.in.AdaptiveAttemptUseCase.Submitting;
+import com.adaptlearngraph.assessment.adaptive.attempt.application.port.in.AdaptiveAttemptUseCase.Results;
 import com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.sql.DataSource;
@@ -22,6 +23,10 @@ public class LocalAdaptiveAttemptFinalizationConfiguration {
     @Bean
     AdaptiveAttemptFinalizationPort adaptiveAttemptFinalization(AdaptiveAttemptStore store, AdaptiveAttemptPolicyPort policies, AdaptiveAttemptOutcomePort outcomes) {
         return new AdaptiveAttemptFinalizationService(store, policies, outcomes);
+    }
+    @Bean
+    Results adaptiveAttemptResults(DataSource source, AdaptiveAttemptContextPort context) {
+        return new JdbcAdaptiveAttemptResultQuery(new NamedParameterJdbcTemplate(source), context);
     }
     @Bean
     Submitting adaptiveAttemptSubmitting(AdaptiveAttemptContextPort context, AdaptiveAttemptStore store,
