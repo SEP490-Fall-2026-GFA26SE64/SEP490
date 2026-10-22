@@ -1,12 +1,10 @@
 # Adaptive Baseline Data Architecture
 
-**Current source checkpoint — slices 1–5, 2026-10-22:** The user accepted slices 2–3 and authorized slices 4–5. The common-configuration form/calculator, saved-preview and confirmed lifecycle actions, PostgreSQL-backed management directory, and safe full/legacy result/history are now implemented in uncommitted source. V1–V22 and historical data remain unchanged. Main Java compile, production-only TypeScript/lint and FE flag-off/on builds passed; bounded isolated live-client/HTTP/SQL observations are recorded in [slice 4–5 evidence](../../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md). Interactive browser review is unavailable in this session and remains unverified. No executable tests, acceptance certification, user-stack migration, stage/commit/push or automatic Cluster 3.
-
-**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier review qualifiers are superseded by this approval; implementation status remains explicit. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+**Current23 October2026:** full-Occupation slices1-5 and V20-V23 are implemented locally; read-only live V1-V23 checksums match. [Local demo exception](Local%20Demo%20Flow.md) bypasses owner readiness only under explicit profile/property/!prod; production dependencies remain open. [Current schema/review](../../testing/system/REQ-002-memory-schema-sync.md); [actual operations/limits](../../testing/system/REQ-002-local-demo.md). Browser/executable/numerical acceptance remains open; no history reset/repin.
 
 ## Status, ownership and version boundary
 
-**22 October 2026 — Cluster 1 approved; Cluster 2 in progress.** User-confirmed full-Occupation scope supersedes the 20 October role/exploration design. Schema extensions and lock/rollout choices below are **Approved design, not migrations or live-schema evidence**. Commit618d772 contains V18 adaptive configuration/IRT and V19 attempt/result schema plus B1–B9 local/demo code. The earlier V17-only technical snapshot/diagrams do not describe that source inventory or this future delta.
+**23 October2026:** approved full-Occupation schema/runtime changes are implemented. V18-V23 are applied on local PostgreSQL17.6 and match source checksums. [Generated current diagrams and exact metadata](../../diagrams/README.md) cover86 tables/703 columns. Historical slice observations below retain their original dates and are not production/executable acceptance.
 
 PostgreSQL owns configuration, admission pointers, attempts/pools/responses/deadlines, results/evidence, receipts, audit/outbox and analytics/mastery/pathway state. Neo4j owns authorized Catalog relationships; Java 21/Spring Boot 3.5 selects/estimates through ports. Redis is not a state authority. No learner state moves into Neo4j.
 
@@ -28,19 +26,17 @@ flowchart LR
 
 One stable Blueprint, multiple historical versions and one active pointer are compatible with one baseline per Occupation. Individual attempts are never a shared fixed manifest or a Role section.
 
-## Existing on-disk structures and planned delta
+## Applied structures and retained compatibility
 
-### Implementation checkpoint - slices S1/S2, 2026-10-22
+### Implemented scope
 
-V20 now adds nullable historical scope markers, explicit Occupation bounds, conditional membership/attempt validation and list/status indexes without rewriting V18/V19 or data. V21 adds the confirmed new-format name 100-character and average 30-120-second budget constraints. Domain, version JSON/SQL readers and pinned snapshot scope selection understand both formats. Legacy constructor/JSON/bounds remain supported; old immutable names/times are not revalidated as new input.
-
-At this historical S1/S2 checkpoint, only the compatibility foundation existed; the subsequent slices1–5 checkpoints supersede the then-pending API/conversion/admission/list/form/result-label cutover. Source requires the new migration columns before deployment. No user database was migrated. Java 21 main compile passed; bounded direct-SQL PostgreSQL 17.6 smoke applied V1-V21 to a new tmpfs database and V20/V21 over a disposable V19 Draft with unchanged row hash. Name 100/101 and rate30/120 boundaries were inspected; no Flyway/application/concurrency/executable-test acceptance is claimed. The temporary container was removed; existing stack/volumes were untouched. Future rollback must respect the approved dual-reader/admission gate policy, not remove new columns.
+V20 conditional full/legacy scope readers, V21 new-format name/time bounds and V22 explicit conversion receipts are implemented and applied locally. Earlier S1/S2 and slice1-only observations remain in dated product evidence; current common Save/Preview/Activate/admission/list/form/result source is present. Browser/executable/numerical acceptance and real owners remain open.
 
 ### Configuration
 
-**2026-10-22, remaining slice 1 of 5:** common Save/whole-union feasibility, saved-revision Preview and explicit legacy Draft conversion are now implemented in gated BE source. V22 extends only `baseline_blueprint_command.operation` to include CONVERT; its immutable response retains the original Draft and new working snapshot. Closure uses the existing ABANDONED state and actor/time audit; old configuration/creation columns are unchanged. Scope locking, one-OPEN registry and transaction rollback cover archive/new Draft/receipt together. V1-V21 were not modified. Existing current versions and all learner tables remain outside these commands' writes. Fresh Activate is temporarily blocked until slice-2 admission; no new version is issued by conversion. See [Configure](Configure%20Baseline%20Assessment.md) and [manual evidence](../../testing/system/REQ-002-F02-baseline-authoring.md) for wire/status/validation limits. The S1/S2 paragraph above records the earlier foundation checkpoint.
+Common Save/whole-union feasibility, saved-revision safe Preview and explicit legacy Draft conversion are implemented. Conversion archives the old row without changing original content/creation audit, creates the sole new Draft and appends a CONVERT receipt atomically. Normal Save cannot convert a legacy row in place; new Activate uses full-Occupation admission and current-version confirmation. V1-V23 remain unchanged; no learner/history reset. See the configuration/lifecycle contracts for exact wire and error behavior.
 
-| Actual V18 structure | Existing role/exploration representation | Planned new-format change |
+| Original V18 structure | Historical representation | Implemented V20-V22 compatibility |
 | --- | --- | --- |
 | baseline_blueprint | Stable organization+Occupation identity | Keep identity/cardinality and existing scope FK/registry |
 | baseline_adaptive_blueprint_working_revision | OPEN/FINALIZED/ABANDONED; configuration JSON requires exploration+roles | Dual shape reader/validator; new configuration contains name+one occupationBounds pair; only one OPEN per scope |
@@ -52,21 +48,23 @@ At this historical S1/S2 checkpoint, only the compatibility foundation existed; 
 | baseline_blueprint_command | Actor/tenant/key/request hash/outcome | Preserve legacy namespace/decoding; new commands/no-op/conversion receipts explicitly versioned |
 | baseline_blueprint_version_registry / baseline_blueprint_working_registry | Existing FIXED/ADAPTIVE version/working identity routing | Keep collision/history guarantees; ADAPTIVE alone does not distinguish old scope from new |
 
-**Approved design compatibility fields/checks:** existing scope_policy null is interpreted as LEGACY_ROLE_OR_EXPLORATION; only newly created versions explicitly carry FULL_OCCUPATION_V2. New-format occupation maximum/duration must be positive and nonnull; old exploration/role bounds remain required only for legacy-format rows and are null/not used for new format. Relax the old NOT NULL constraints only with conditional parent/child trigger validation, not an unconditional loss of integrity. Existing immutable-row triggers must still reject updates/deletes and late child insertion. Do not backfill old bounds or mark old rows as full-Occupation.
+**Applied V20 compatibility fields/checks:** existing scope_policy null is interpreted as LEGACY_ROLE_OR_EXPLORATION; only newly created versions explicitly carry FULL_OCCUPATION_V2. New-format occupation maximum/duration must be positive and nonnull; old exploration/role bounds remain required only for legacy-format rows and are null/not used for new format. Relax the old NOT NULL constraints only with conditional parent/child trigger validation, not an unconditional loss of integrity. Existing immutable-row triggers must still reject updates/deletes and late child insertion. Do not backfill old bounds or mark old rows as full-Occupation.
 
-Draft JSON format validation, immutable version insertion, version registry, serializers and receipt reconstruction must branch coherently; do not make one decoder infer policy from whether roleId is present. The proposed format marker is server-owned response/storage metadata, never an editable client field. Explicit Draft conversion preserves the old closed content and creates a new sole Draft with audit; no automatic aggregation of old values.
+Draft JSON format validation, immutable version insertion, version registry, serializers and receipt reconstruction must branch coherently; do not make one decoder infer policy from whether roleId is present. The implemented server-owned format marker is server-owned response/storage metadata, never an editable client field. Explicit Draft conversion preserves the old closed content and creates a new sole Draft with audit; no automatic aggregation of old values.
 
-Name/date/status/search/page indexes belong to PostgreSQL. Approved design status has no stored Retiring/Inactive enum: Draft=OPEN working row; Active=current pointer; otherwise Retiring if pinned IN_PROGRESS exists, else Inactive. Unknown counts fail the projection. Scope queries include organization and authorization before count/filter/page. Exact index definitions, DTO names and migration number are implementation design details subject to the approved proposal, not existing schema claims.
+Name/date/status/search/page indexes belong to PostgreSQL. Approved design status has no stored Retiring/Inactive enum: Draft=OPEN working row; Active=current pointer; otherwise Retiring if pinned IN_PROGRESS exists, else Inactive. Unknown counts fail the projection. Scope queries include organization and authorization before count/filter/page. Actual columns/constraints/indexes/triggers are in the verified V23 catalog. DTO names and public projections follow the linked lifecycle contract; no stored Retiring/Inactive enum is inferred from UI labels.
 
 ### Technical versions
+
+Session2 adds [calibration/promotion source and contract](Calibrate%20and%20Promote%20IRT%20Parameters.md). V18 remains unchanged for run/candidate storage. V23 adds irt_effective_parameter_selection and irt_parameter_promotion_command with scope/revision/immutable-receipt guards; Session3 explicitly applied it to main after verified backup/checksums, with both tables empty. New future-Blueprint selection uses findEffective(org,bank,model,mapping) with no global latest fallback; exact historical findPinned is unchanged. The user authorized isolated SYNTHETIC simulation and delegated technical selection of fixed-c MML/EM/minimal forward persistence. Offline135-item fitted results are not a DB candidate or production evidence. Owner Identity/grants/readiness, exact real model and actual-pilot alignment remain open; default-off APIs cannot invent them. [Session2 evidence](../../testing/system/REQ-002-official-question-bank-session2.md) · [Session3 live schema/preservation and limits](../../testing/system/REQ-002-official-question-bank-session3.md).
 
 Keep model_version, mastery_mapping_version, irt_parameter_set, irt_item_parameter and irt_calibration_run semantics. Model configuration pins MAP prior/minimum evidence/SE/response limits; mapping pins positive k and formulas; item parameters are exact item-version+skill tuples. System Administrator promotion applies only to future versions. New full-union feasibility must check every union skill's minimum evidence, model maximum and complete eligible parameter coverage at activate/start. No L&D model controls, invented numeric range, historic calibration rewrite or calibrated-truth claim.
 
 ### Attempts/results
 
-| Actual V19 structure | Retained invariant / proposed extension |
+| Actual V19 structure with V20 compatibility | Retained invariant / implemented extension |
 | --- | --- |
-| baseline_adaptive_attempt | Trusted organization/learner/Occupation, one IN_PROGRESS and one mastery-producing completion per Employee+Occupation, server time/revision, purpose/role provenance and replacement link. Add/copy immutable scope policy for new attempts; compare common bounds against pinned version |
+| baseline_adaptive_attempt | Trusted organization/learner/Occupation, one IN_PROGRESS and one mastery-producing completion per Employee+Occupation, server time/revision, purpose/role provenance and replacement link. V20 adds immutable scope policy for new attempts; common bounds are compared against the pinned version |
 | baseline_attempt_pool_item | Exact eligible item-version/skill/parameter-set pool stored at start; new full-union pool never reconstructed from current Catalog |
 | baseline_attempt_skill_state | Provisional theta/SE/information and minimum evidence for every pinned union skill; no unanswered prior becomes mastery |
 | baseline_attempt_item / baseline_attempt_response | Unique nonrepeating presented sequence, fixed option order, accepted server correctness and exact request identity; immutable audit preserved |
@@ -74,11 +72,11 @@ Keep model_version, mastery_mapping_version, irt_parameter_set, irt_item_paramet
 | baseline_mastery_evidence / outbox_event | Atomic idempotent initialization evidence/event; no result/evidence for invalidated below-minimum attempt; delivery/REQ-041 projection separate |
 | baseline_attempt_command | Scoped old/new exact command receipts; replay must not reinterpret a historical start using the new policy |
 
-Existing V19 insert checks match bounds and skills to selected role or exploration union. A future migration must branch on the **pinned policy**, validate full union for new format and retain old checks for old attempts. Cross-tenant FKs, one-root/replacement constraints, terminal immutability, deadline identity, command uniqueness and no duplicate evidence stay enforced. Purpose ROLE_REQUIREMENT/OCCUPATION_EXPLORATION remains optional entry provenance; it cannot select scope for new versions.
+V20 extends the original V19 checks by branching on the **pinned policy**: full union for new-format attempts, original Role/exploration bounds and skills for historical attempts. Cross-tenant FKs, one-root/replacement constraints, terminal immutability, deadline identity, command uniqueness and no duplicate evidence stay enforced. Purpose ROLE_REQUIREMENT/OCCUPATION_EXPLORATION remains optional entry provenance; it cannot select scope for new versions.
 
 Existing states remain IN_PROGRESS/SUBMITTED/AUTO_SUBMITTED/INVALIDATED; no INSUFFICIENT_EVIDENCE state, grace period or retake after a mastery-producing completion. Old role-specific completions consume the existing allowance without being relabeled full-Occupation. Invalidated linked replacement is a new start using a valid current new-format version; it never mutates the predecessor.
 
-## Ordered operations and concurrency — proposed extension
+## Ordered operations and concurrency - approved, locally implemented
 
 1. Authorize/serialize management on stable organization+Occupation; Save checks revision/replay before inserting/updating sole Draft. No-op server outcome references unchanged revision. Preview is read-only/ephemeral.
 2. Activate exclusively locks current scope, verifies Draft/activation/confirmed replacement target, revalidates union/pins, inserts immutable parent/children, closes Draft and appends pointer/event/receipt atomically. Deactivate uses same lock without requiring fresh Catalog/items. Neither command locks/modifies learner attempts to derive status.
@@ -93,7 +91,7 @@ The shared/exclusive activation protocol serializes new start versus activation/
 
 **Keep:** V1–V19 applied migrations; stable identity/FKs; old role/exploration JSON, purpose, bounds, skill/item snapshots, results/receipts/audit/events; generic module/fixed assessment structures and existing successful allowance.
 
-**Compatible extension/migrate:** scope discriminator and conditional bounds/JSON/trigger readers, union selection/feasibility, list projection/query, saved-preview/UI/no-op behavior and result naming. Inspect seeds, ports, API serializers, UI and all test consumers before any cutover. New schema is planned until a forward migration is implemented and verified; do not regenerate old live V17 diagrams as if this were applied.
+**Compatible extension/migrate:** scope discriminator and conditional bounds/JSON/trigger readers, union selection/feasibility, list projection/query, saved-preview/UI/no-op behavior and result naming. Inspect seeds, ports, API serializers, UI and all test consumers before any cutover. V20-V23 have now been applied and verified; current generated V23 diagrams replace the old V17 snapshot. No history backfill or relabeling occurred.
 
 **Deprecate:** Role/exploration configuration and role pool selection for new full-Occupation starts only. No approved physical removal in this Cluster 1. Historic fixed weights/counts/generation can remain with their owning legacy/module tables; do not repeat the old proposal to drop them without consumer approval.
 

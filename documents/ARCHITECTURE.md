@@ -1,14 +1,10 @@
-# Current Project Architecture
+# Current project architecture
 
-**Remaining slices 2–3, 2026-10-22:** full-Occupation new admission and management lifecycle now use the existing V20–V22 schema. Attempt inserts populate `scope_policy` from the immutable Blueprint; reconstruction verifies policy, exact technical pins, fingerprint and common/historical bounds. Resume/allowance/history remain pinned; no old row is backfilled/relabelled/reset. Shared scope advisory + activation FOR SHARE lock spans genuinely new start through receipt; management uses exclusive scope coordination and activation FOR UPDATE, with no learner locks for status counts. List/status/search/paging use read-only repeatable-read PostgreSQL projection, independent of Catalog; readiness remains separate. Fresh Save binds positive revision to Draft ID before no-op; Activate/Deactivate require confirmed current pair/none, preserving historical hashes/receipts. No new migration or graph schema change; user services/volumes were not migrated. Slices4–5 now implement the common Manager UI and scope-aware result/history reader/presentation; assessmentScope is derived public metadata, not a persisted column. Full-policy names come from the entire pinned union, legacy Role names retain original scope, and terminal history orders by completion time/attempt ID. Browser review remains unverified; source/build/manual evidence is not executable acceptance. See [contract](features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md) and [manual evidence](testing/system/REQ-002-F01-F02-occupation-admission-management.md).
+Updated2026-10-23. Current schema verified read-only: PostgreSQL17.6,23 successful Flyway migrations V1-V23 with source checksums matching,86 platform tables/703 columns. [Exact review/evidence and limitations](testing/system/REQ-002-memory-schema-sync.md). Historical build/test/manual results remain in their dated evidence; this review adds no executable acceptance.
 
-**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier Proposed/review qualifiers below retain design provenance and are superseded for these choices. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+## Product and implementation boundary
 
-## Current Scope Alignment
-
-**Product baseline:** [System Overview](adapt_learn_graph_system_overview.md). **Aligned:** 2026-10-20. Product responsibility changes below supersede earlier SaaS assumptions; the technical snapshot that follows is dated evidence, not proof of revised functionality.
-
-The deployment serves one organization. Human actors are System Administrator, L&D Manager, Expert, and Employee. Multi-organization registration/workspaces, subscriptions, payments and PayOS are outside product scope. Existing organization identifiers, account assignments, table names and actor codes remain technical compatibility data until an explicit forward migration is agreed; documentation does not silently remove fields or map privileges.
+[System overview](adapt_learn_graph_system_overview.md) and approved Function contracts define scope. The system serves one organization; existing organization IDs/isolation remain enforced compatibility boundaries. Human actors: System Administrator, L&D Manager, Expert, Employee. SaaS registration/subscriptions/payments/PayOS are excluded. Temporary SRSv2 actor/SaaS/S2-S4 differences remain unresolved; implementation does not silently settle them.
 
 | Boundary | Current product owner/responsibility | Design or migration gap |
 | --- | --- | --- |
@@ -16,197 +12,88 @@ The deployment serves one organization. Human actors are System Administrator, L
 | Discipline catalog | L&D manages disciplines and assigns/removes Experts; Experts author assigned-discipline content | Discipline identity, content membership and assignment history are not established by the V5 `JobDomain` label |
 | Target roles | L&D creates/assigns; Expert configures competencies/skills/proficiency/importance and submits completion; L&D publishes/unpublishes | Separate configuration-completion and publication contract from legacy `ACTIVE` status; L&D must not edit Expert requirements |
 | Learning offerings | Expert authors modules, lesson/practice content and module assessments; L&D approves or returns revisions | Module/content storage, versioned content membership, submission/approval state and learning availability require design |
-| Baseline assessment | One stable Blueprint per organization+Occupation with one maximum/time pair for the full deduplicated active-role skill/item union. Save draft → Preview assessment → Activate; direct Deactivate, atomic confirmed replacement and Draft/Active/Retiring/Inactive availability. Individual adaptive attempts retain pins/history; one mastery-producing completion per Employee+Occupation, invalidated linked replacement only. | 2026-10-22 Cluster 1 alignment for review: confirmed full-Occupation rules supersede role/exploration bounds. V18/V19+B1–B9 exist on disk at 618d772 but still implement that old split. Schema/lifecycle/transition proposals require approval and forward implementation; local/demo auth/catalog and numerical validation remain provisional. |
+| Baseline assessment | One Blueprint per org+Occupation; full deduplicated active-role skill/item union, common bounds; Save/Preview/Activate, direct Deactivate, confirmed replacement; pinned individual attempts/results/history | V18-V23 and full/legacy runtime paths implemented locally. Explicit demo bypass supports full operations; actual Identity/Catalog/review/model/pilot and executable/numerical validation remain open. |
 | RIASEC and role guidance | Employee completes RIASEC; system uses baseline/RIASEC to suggest roles/comments; Expert confirms/revises/rejects; Employee selects/confirms | Interest result, AI data contract and review workflow/versioning require design; legacy soft-skill evidence is not RIASEC |
 | Pathways | System generates from gaps; Expert reviews/adjusts/confirms before Employee starts | Initial access gate, review state, module overrides and later evidence-driven revision policy require design |
 | Individual skill learning | Employee selects skill and accesses the mapped approved Module without changing role pathway | Separate independent progress/context from pathway selection; reuse valid assessment evidence through tracing boundary |
 | Competency and adaptation | System traces estimates, calculates gaps, updates progress and revises remaining learning when needs change | Model/thresholds, evidence replay/versioning and override preservation remain open; failure-only triggers are superseded |
 | Monitoring | L&D views profiles/gaps/results/progress; System Administrator views permitted audit/operational activity | Privacy/read contracts and metrics; no platform subscription/organization-count workspace |
 
-Neo4j continues to describe catalog relationships; PostgreSQL continues to describe transactional identity, assessment, evidence and learning state. The adaptive baseline model in this document is a target design, not a claim that new tables, columns, enums or cross-store synchronization have been implemented. [neo4j_schema.md](neo4j_schema.md) retains the technical field inventory and records the same design gaps. Dataset preview fields are not automatically runtime schema fields.
+## Sources, processing, stores and output
 
-## Target Adaptive Baseline Architecture
+- Java21/Spring Boot3.5 is the only production backend. Application/domain rules depend on ports; JDBC/Neo4j/HTTP adapters supply integration. Java estimates IRT and selects items; there is no separate Python runtime service or Redis source of truth.
+- Neo4j owns catalog data: Occupation -> TargetRole -> Level -> Competency/MicroSkill requirements, and one LearningModule per MicroSkill. PostgreSQL pins stable IDs/display snapshots/relevant exact versions. Catalog IDs alone do not prove tenant visibility, publication or a consistent release.
+- PostgreSQL owns identity/roles, target selection, Blueprint configuration/activation, attempts/pools/responses/deadlines/results/mastery evidence, calibration provenance, receipts/audit/outbox and future mastery/gap/pathway/analytics state. Neo4j never owns learner mastery/pathways.
+- New baseline versions assess the full deduplicated active-role union with one maximum/duration pair; Role is entry provenance. Historical Role/exploration-specific versions/attempts retain their original pins/meaning. Current projections expose derived assessmentScope, not a new stored column or a reinterpretation of old evidence.
 
-**Aligned 2026-10-22; confirmed product rules plus proposals for review.** One stable baseline belongs to each organization+Occupation; every new entry assesses the same full active-role union with one bounds pair. Role is entry/provenance, never a separate test or new-start pool selector. Save draft does not activate; Preview is ephemeral; Activate atomically creates an immutable version and switches current after explicit replacement confirmation. Direct Deactivate stops new starts without changing pinned attempts/history. L&D enters no points/weights and creates no shared generated assessment/Review/Publish artifact. Java 3PL estimates theta/SE and the pinned mapping supplies point/conservative mastery.
-
-[Revised table/schema and transaction design](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md) · [Lifecycle/API/conversion/rollback proposals](features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md). The20 October [PlantUML](diagrams/postgresql-adaptive-baseline-target.puml)/[SVG](diagrams/postgresql-adaptive-baseline-target.svg) remain **superseded historical target drawings**, not the revised design or live schema. Use the revised scoped diagram/table in the data-architecture document.
-
-This target keeps PostgreSQL authoritative for configuration, attempts, deadlines, responses, results, calibration provenance and mastery evidence. Java performs numerical estimation and next-item selection. Neo4j supplies authorized catalog membership; versioned identifiers/snapshots are pinned in PostgreSQL. Redis is not an initial dependency and cannot become the source of truth for attempts or timers.
-
-V18/V19 source and B1–B9 already introduce versioned IRT configuration and a reload-safe adaptive aggregate/result/outbox with gated local/demo UI. Existing AdaptiveBlueprint.Configuration and AdaptiveAttemptSnapshot still select role/exploration bounds, V19 triggers enforce the older scope, and result skill-name queries restrict selected-role names. The revised schema proposes server-owned full-Occupation scope markers, a single bounds pair and dual historical readers/conditional checks. Retiring/Inactive are proposed read projections from current pointer and real IN_PROGRESS rows; PostgreSQL remains their source. A completed legacy Role result keeps its old meaning and consumed allowance. REQ-041 projection/delivery remains separate from durable evidence. Generic/module and fixed historical tables remain compatible.
-
-No migration/runtime/test accompanies this Cluster 1 update. After approval, use the next unused forward migration beyond the inspected inventory (currently V19); never edit applied files or historical snapshots. Explicitly convert legacy Draft/configuration, block legacy new-start fallback at cutover, continue pinned attempts and preserve allowance. Physical removal of old weights/bounds/legacy consumers is not approved here. Rollback gates new starts and requires a dual-reader-compatible binary; no down migration/reset or old-role start bypass.
-
-### Current source checkpoint versus historical diagrams
-
-**Remaining slice 1 of 5, 2026-10-22:** backend configuration commands now use one Occupation pair, safe pinned model/union feasibility and saved-revision Preview. Explicit legacy conversion archives original configuration/creation audit and creates a new Draft/CONVERT receipt in one scope transaction. New forward V22 extends receipt operation only; V1-V21 remain unchanged in this slice. Legacy command hashes/readers remain for replay. Fresh Activate is temporarily blocked pending slice-2 admission; current Active/learner/history state is untouched. Management/no-op Save, FE and result/history presentation remain pending. Exact API and compatibility boundaries are in [Configure](features/Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md).
-
-**Cluster2 slices S1/S2,2026-10-22:** V20/V21 source now provides full-Occupation format/conditional schema compatibility and the confirmed name<=100 / total=maxQuestions*(30..120 seconds) limits. AdaptiveBlueprint, snapshot, JSON and SQL version adapters have dual-format support. API/config conversion/new-start cutover/list/form/result presentation remain subsequent slices; this foundation does not change the existing entry behavior. Main compilation and isolated direct-SQL migration smoke passed; no user database migration, executable tests or production integration claim. See the data-architecture checkpoint for exact limits/evidence boundaries.
-
-At618d772, V18 adaptive Blueprint/IRT and V19 attempts/pools/responses/results/evidence are checked in; safe own-result/history reads, PostgreSQL active-attempt guard and gated Employee UI are present. Prior build/manual evidence is bounded, with browser/numerical/production/REQ-041 delivery open. This is an on-disk source inventory, not proof of which migrations ran in any live environment. All V17 database diagrams and dated counts below remain historical2026-10-19 snapshots; do not use them as current full-Occupation acceptance or silently regenerate them from user volumes.
-
-Current requirement traceability is in [features/README.md](features/README.md), including REQ-047 through REQ-059. Historical tests and diagrams must be reviewed against new acceptance before being used to claim feature completion. Do not rewrite a previous passing run as proof of publication, RIASEC, discipline authorization or independent learning.
-
-## Current V17 Technical Baseline Snapshot
-
-**Runtime and ontology snapshot: updated 2026-10-19.** This is a database/deployment baseline plus tested local implementation bases for REQ-001-F01 View Target Roles, REQ-001-F02 Choose Target Role and Occupation-scoped REQ-002-F02 Baseline Assessment Management; it is not an implementation of all drafted functions. REQ-002 has one organization + Occupation coordination series, a mutable working Blueprint revision, immutable Blueprint/assessment versions, one pending chain/open candidate, one active pointer, transition history, idempotent command receipts, replacement/restore/disable/abandon commands and persistent L&D management routes. Capacity-aware counts/weights, deterministic no-repeat generation and exact-hash review remain unchanged. Normal DTOs exclude protected answers; local/demo may fetch them through a dedicated audited `no-store` boundary. The corrective FE suite passed 83/83, FE build passed, and the full BE suite passed 204/204, including disposable PostgreSQL V17 and Neo4j Testcontainers. These results do not establish concurrent management-command behavior or the current Compose/Playwright Save → Publish lifecycle; both remain open. Evidence is recorded in [REQ-002-F02 testing](testing/REQ-002-F02-baseline-authoring.md). Employee attempt, response, scoring/evidence and RIASEC runtime are not implemented. Production security remains deny-by-default until real Identity and Catalog authorization contracts are integrated.
-
-Corrective local-runtime work added `/api/v1/ld/baseline-assessments/**` to the local security and CSRF rules. A manual Step 3 smoke exposed the V14 actor-scope trigger referencing fields from two different trigger row shapes; forward-only V17 now selects `actor_id` for transitions and `updated_by` for working revisions explicitly. The create-working-revision POST and following workspace reload succeeded manually; V17 trigger and cross-organization rollback checks subsequently passed in PostgreSQL Testcontainers. Full management browser and concurrency regression remain open.
-
-## Runtime topology
+## Runtime topology and local demo
 
 ![Runtime topology](diagrams/runtime-topology.svg)
 
-[PlantUML source](diagrams/runtime-topology.puml)
+[Source](diagrams/runtime-topology.puml). Main `docker compose -f compose.dev.yml up --build -d` runs migration `local,migrate` before API `local,local-baseline-demo`; web is Vite with source mounts. Flyway migrates PostgreSQL only. Former graph/sample bank/target-selection seeders and technical bootstrap were retired; `CATALOG_SEED_ENABLED=false` and legacy graph writers off. Existing graph/bank/volumes/history are retained. Official import is an explicit separate profile/operation, not startup.
 
-- One Spring Boot backend owns HTTP, security, migrations, and the future feature modules. There is no separate Python recommendation service or additional backend framework. PostgreSQL and Neo4j are data stores, not application servers.
-- The `migrate` profile runs Flyway first, then the Neo4j migrator under a PostgreSQL advisory lock, and exits. Compose starts the API only after that process succeeds. The `local` and `prod` API profiles do not run Flyway. A failed graph migration can leave PostgreSQL migrated; rerunning `migrate` is safe and checks Neo4j migration checksums.
-- Development Compose enables a repeatable, **sample-only** cross-store seed: stable Neo4j catalog IDs for two local target roles match immutable PostgreSQL catalog references plus the organization/account/learner fixture. Each local role maps to its own five-skill set with no overlap. A versioned 100-item baseline question bank provides ten questions per skill (`3 EASY`, `4 MEDIUM`, `3 HARD`) after validating those MicroSkills in Neo4j. Questions are global by stable skill ID and are not partitioned by organization; trusted organization context still controls role visibility. The seed does not create a target selection or reset learner revisions on an existing volume. Production initializes an empty catalog and never creates sample accounts, question banks or billing records. Docker named volumes persist both databases across restarts.
-- [compose.dev.yml](../compose.dev.yml) runs Vite with live source mounts and publishes services on loopback. [compose.prod.yml](../compose.prod.yml) builds static assets into Caddy and publishes only the HTTP web entry point on loopback. Database and API containers have no published production ports.
+The user explicitly approved [Local Demo Flow](features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md) to prioritize UI/full baseline operations. Gate: local-baseline-demo + assessment.baseline.local-demo.enabled=true + !prod. Explicit primary demo ports select fixed server personas, unreviewed ACTIVE graph/DRAFT bank and one exact SYNTHETIC fitted/reference pin. This is not authentication/review/model approval. Blueprint actor/grants use static persona data (no Identity revocation check); Employee context separately reloads persisted active account/EMPLOYEE role/org. No-cookie defaults to L&D. Dedicated demo provisioning is transactional, additive and idempotent; no completion/history reset or official content mutation. Detailed bypass/replacement: TMP-REQ002-12 and the demo contract.
 
-## Ownership and data
+Official source: ontology0.8.0/OCC-15-1212.00/8 Roles/24 Levels/15 skills/135 DRAFT items. Minimum3/skill ->45 questions; walkthrough45 questions/2700sec. Save/Preview/Activate/attempt/answer/resume/deadline/result/evidence/allowance/history use real domain/JDBC rules. Selected-role entry still needs owner REQ-001 selection; use direct Occupation exploration for demo. Admin persona has no calibration UI. Operational IRT administration, legacy fixed authoring and answer reveal remain off. REQ-041 delivery and downstream demo-data exclusion are open.
 
-| Store | Current responsibility | Current baseline |
-| --- | --- | --- |
-| PostgreSQL 17.6 | Organizations, accounts/roles, target selections, assessments, mastery/evidence, pathways, audit, outbox, analytics and benchmark records | Forward-only Flyway V1-V17 in [db/migration](../backend/src/main/resources/db/migration); V8-V13 establish baseline metadata, immutable Blueprint/generation/review and logical identity; V14 adds tenant-scoped series coordination, working revisions, candidate/active pointers and transition history; V15 adds immutable command receipts; V16 adds protected-answer reveal audit; V17 corrects management-actor trigger field routing. |
-| Neo4j 5.26 Community | Ontology 0.8.0: Occupation, TargetRole, Level, Competency, MicroSkill and LearningModule; legacy runtime adapters are still pending conversion | V1 remains the legacy baseline; V2 adds Level/Competency/Course constraints and V3 adds Occupation ID/code constraints. V4 retires the Course constraint, leaving 14 domain constraints plus SchemaMigration.version. No catalog data or learner results are rewritten. |
+Production remains deny-by-default. [compose.prod.yml](../compose.prod.yml) serves static assets through Caddy; local demo is excluded by !prod. Actual principal/grants/revocation, owner-approved catalog/review/model/pilot/readiness must replace temporary wiring; health/startup is not production readiness.
 
-## Database diagrams
+## PostgreSQL schema and generated diagrams
 
-### PostgreSQL — live V17
+[Schema catalog](diagrams/postgresql-schema-catalog.json):86 tables,703 columns,610 constraints/185 FKs,207 indexes,97 user triggers,39 functions. Source SHA-256 and Flyway checksums are recorded. [Foreign-key inventory](diagrams/postgresql-foreign-keys.md) preserves all composite/cross-group definitions. No business rows/credentials captured. Current diagrams replace the stale V17/62-table sources/SVGs.
 
-The checked-in PostgreSQL PlantUML sources and SVGs were regenerated from a clean PostgreSQL 17.6 database migrated through Flyway V17 (62 `platform` tables). They show columns and same-group foreign keys; `?` marks a nullable column, and `[PK]`/`[FK]` mark key participation. They do not show indexes, check constraints, cross-group foreign keys or trigger bodies. In particular, consult V14 for organization-scoped uniqueness and V17 for the corrected management-actor trigger.
+![PostgreSQL overview](diagrams/postgresql-overview.svg)
 
-![PostgreSQL identity, catalog and processing tables](diagrams/postgresql.svg)
+| Storage view | Owned tables | Diagram |
+| --- | ---: | --- |
+| Identity/catalog/processing |17 | [SVG](diagrams/postgresql.svg) |
+| Legacy assessment/shared learning |32 | [SVG](diagrams/postgresql-assessment.svg) |
+| Pathway/analytics/evaluation |13 | [SVG](diagrams/postgresql-pathway.svg) |
+| Adaptive Blueprint/activation/receipts |9 | [SVG](diagrams/postgresql-adaptive-blueprint.svg) |
+| Adaptive attempt/result/evidence |9 | [SVG](diagrams/postgresql-adaptive-attempt.svg) |
+| IRT/mapping/effective selection |6 | [SVG](diagrams/postgresql-irt.svg) |
 
-[Identity and catalog PlantUML source](diagrams/postgresql.puml)
+All columns are drawn once in their owning group; cross-group parents appear as reference stubs. PK/FK and nullable markers are structural, not business authorization/cardinality proof. [Generation commands/source/limits](diagrams/README.md). The20 October adaptive target drawing is explicitly historical and superseded; no longer a live-schema reference.
 
-The assessment SVG was rendered with PlantUML 1.2025.10 from the V17 schema. Its relation lines are not a substitute for the V14 organization-scoped unique index.
+### Migration ownership and compatibility
 
-![PostgreSQL assessment and learning tables](diagrams/postgresql-assessment.svg)
-
-[Assessment and learning PlantUML source](diagrams/postgresql-assessment.puml)
-
-For the new baseline path, an `item_version` carries the stable Neo4j string `micro_skill_id`, a display-only `micro_skill_name_snapshot`, and one `EASY`, `MEDIUM`, or `HARD` difficulty. The three fields must be either all present or all absent. They remain absent only on legacy item versions so V8 does not invent catalog names/difficulty or break existing writers; baseline selection ignores those legacy rows. Direct-metadata items can be published without a new `catalog_reference`; legacy items still require `item_skill_mapping` weights to sum to one, and the table remains available for existing evidence consumers.
-
-V9 stores each L&D save as an immutable `baseline_blueprint_version`; role and skill rows pin stable IDs, display snapshots, counts and score weights. V13 separates the stable blueprint identity from those immutable revisions:
-
-| V13 layer | Identity and relationship | Responsibility |
-| --- | --- | --- |
-| Neo4j `Occupation` | Stable string `Occupation.id` | Catalog source for the Occupation and its current roles/skills; PostgreSQL does not create a duplicate Occupation entity. |
-| PostgreSQL `baseline_blueprint` | `blueprint_id` primary key; nullable `occupation_id`; `created_by` and `created_at` | One immutable logical blueprint identity for one non-null Occupation. `occupation_id IS NULL` is retained only for migrated legacy identities whose earlier versions had no Occupation. |
-| PostgreSQL `baseline_blueprint_version` | `(blueprint_id, version)` primary key; `blueprint_id` references `baseline_blueprint` | Immutable saved revisions. Each revision keeps the Occupation name snapshot, actor/idempotency metadata and request hash; its `occupation_id` must equal the logical identity's value. |
-| PostgreSQL `baseline_blueprint_role` / `baseline_blueprint_skill` | Composite foreign keys to the exact blueprint version | Complete role membership and per-role/per-skill configuration captured for that revision. |
-| PostgreSQL `assessment_version` | Optional `(blueprint_id, blueprint_version)` foreign key | Pins a generated baseline assessment to the exact immutable blueprint revision that produced it. |
-
-At V13, a partial unique index on `baseline_blueprint(occupation_id)` enforced one identity per non-null Occupation. Before backfill, V13 rejected conflicting historical versions or multiple blueprint IDs for one Occupation, then created the logical identities without rewriting V9-V12 history. **V14 drops that index** and adds `baseline_blueprint.organization_id`, backfilled only when the creator/version actors consistently belong to one organization. The current partial unique index is on `(organization_id, occupation_id)` for non-null values; version creators and management actors are checked against the identity/series organization. Legacy null-Occupation identities remain for compatibility.
-
-The resulting baseline chain is `Occupation.id -> baseline_blueprint.occupation_id -> baseline_blueprint_version(blueprint_id, version) -> baseline_blueprint_role -> baseline_blueprint_skill`; generation continues from the pinned blueprint pair into `assessment_version` and `assessment_item`. The cross-store `Occupation.id` remains a string reference rather than a PostgreSQL foreign key. The Occupation display name is deliberately version-snapshotted instead of stored on the logical identity, so historical revisions retain what L&D saw when saving.
-
-Each new version must contain all and only the current roles and resolved skills of its Occupation. A role total of zero remains visible and stored but does not participate in coverage, generation or scoring; at least one role must be non-zero. V14 already scopes Blueprint identity and the management series by organization plus Occupation; production tenant-safe Catalog visibility and Identity authorization remain separate integration dependencies.
-
-The baseline editor derives its displayed role total from detailed skill/difficulty counts. It loads current published capacity through `GET /api/v1/ld/baseline-blueprint-catalog/occupations/{occupationId}/capacity`. For a role with `N` skills, explicit Apply accepts `0` or `[3 × N, feasibleMax]`, reserves one question in every Easy/Medium/Hard cell, then distributes the remainder deterministically without exceeding capacity after other roles' shared demand. Manual cell edits do not redistribute siblings. Client checks provide early feedback only; save re-reads authoritative published coverage.
-
-Participating score weights are independent from question counts and use one linked state represented as whole-percentage text inputs without sliders. The wire values remain decimals and must total one with `hard > medium > easy >= 0.01`; Apply defaults to `0.20/0.30/0.50`. The legacy `BaselineBlueprint.RoleConfig` constructor requires all persisted role weights to total one even for a zero-question role; the frontend request boundary therefore supplies `0.3334/0.3333/0.3333` for that excluded role and converts them back to `0/0/0` in editor state. This is compatibility mapping only: server participation and every coverage/generation/scoring decision continue to use the detailed count total.
-
-V10 adds an actor-scoped idempotency key and normalized request hash to each blueprint version. The local-only `/api/v1/ld/baseline-blueprints` adapter can create, read and revise a blueprint; revise requires the expected latest version and always inserts a new immutable version. A repeated key with identical content returns the original result, while key reuse with different content and concurrent version changes return conflicts. The local actor comes from server-side configuration and is temporarily granted the seeded `LD_MANAGER` role behind the local-actor flag. The production chain exposes none of these endpoints until the Identity owner supplies trusted authentication and authorization.
-
-The baseline boundary resolves `Occupation -> HAS_ROLE -> TargetRole -> HAS_LEVEL -> REQUIRES_SKILL -> MicroSkill`, unions skills by stable ID across Levels, rejects missing/injected roles or skills, and captures canonical display snapshots. Zero-total roles still require valid membership but skip coverage. PostgreSQL coverage counts the latest `PUBLISHED` version of each question identity and aggregates demand for shared role/skill/difficulty buckets, because a generated assessment cannot repeat an item version. The Neo4j adapter is local-only and opt-in; tenant visibility, approved publication and catalog release/snapshot consistency remain provisional until the Catalog owner delivers them.
-
-V11 extends the existing `assessment_version`/`assessment_item` pair instead of creating a separate draft or manifest table. Generation pins the immutable blueprint ID/version, random seed, actor, request idempotency metadata, content hash, exact published `item_version_id`, TargetRole snapshot, item position, and per-item score contribution. One blueprint identity owns one assessment series (`assessment_id = blueprint_id`): each new generation key creates the next draft version and retrying the same actor/key returns the original draft. Candidate selection uses the latest published question version, includes only roles with `total_question_count > 0`, and selects globally without replacement for exact role/skill/difficulty counts. Draft reads expose prompt and response schema but never `protected_key`. `pass_threshold` is nullable for authoring; attempt/result compatibility is deferred to the Employee lifecycle migration.
-
-V12 records the L&D reviewer, review time, and exact reviewed content hash on `assessment_version`. A generated baseline can move from `DRAFT` to `PUBLISHED` only while that reviewed hash still equals its current manifest hash. Review freezes both the assessment header and its `assessment_item` manifest; publication is the only remaining state transition, and the existing published-definition guard keeps the published version immutable. Review/publish responses continue to omit `protected_key`.
-
-V14-V16 extend that authoring chain into one tenant-scoped release line:
-
-| Structure | Responsibility and invariant |
+| Versions | Stored contract |
 | --- | --- |
-| `baseline_assessment_series` | First coordination lock for one organization + Occupation. Stores `series_revision`, the stable Blueprint identity, optional working revision, pending Blueprint version, open assessment candidate and active assessment. Working and finalized pending Blueprint states cannot coexist; open and active assessment IDs must differ. |
-| `baseline_blueprint_working_revision` | The only mutable Blueprint representation. Optimistic `revision` protects repeated Save; Finalize/Abandon closes it while retaining history. A partial unique index permits one open working revision per scope. |
-| `assessment_version.draft_revision` / `baseline_candidate_state` | Optimistic manifest editing and the `OPEN`/`CLOSED` lifecycle marker. A partial unique index permits one open candidate per Blueprint identity. Reviewed/published content remains immutable. |
-| `baseline_assessment_transition` | Append-only pointer/history audit for revision start/save/finalize, draft open/edit/review/replace, active switch, restore, disable and abandonment. The series revision and transition insert are changed in the same command transaction. |
-| `baseline_management_command` | Immutable actor + idempotency-key receipt with operation, request hash and response JSON. Same key/same request replays; key reuse for another request conflicts. |
-| `baseline_answer_reveal_audit` | Append-only organization/assessment/actor/time/item-count record written with the tenant-scoped protected-answer read. |
+| V1-V7 | Platform schema; identity/catalog release/reference; assessment/evidence/learning; pathway/analytics/evaluation; publication/activity guards; organization baseline; target selection snapshot/idempotent command |
+| V8-V13 | Item MicroSkill/difficulty metadata; fixed Blueprint identity/immutable versions/counts/weights; authoring receipts; generated manifest/exact-hash review/publication; Occupation identity |
+| V14-V17 | Tenant-scoped fixed series/working revisions/transitions, command receipts, protected-answer audit and corrected actor trigger |
+| V18 | Adaptive working/version/role/skill/activation registries/commands; model configuration/mastery mapping/IRT run/set/item provenance |
+| V19 | Adaptive attempts/pool/presented item/response/skill state/command/result/skill result/mastery evidence |
+| V20 | Explicit new full-Occupation scope/bounds and conditional legacy compatibility; no historical relabeling |
+| V21 | New-format name<=100 Unicode chars and total=maxQuestions*(30..120sec); legacy rules retained |
+| V22 | Explicit audited legacy Draft conversion receipt |
+| V23 | org+bank+model effective parameter selection/revision and immutable promotion-command receipt |
 
-All management writes run inside the infrastructure transaction wrapper; the application core depends only on ports. The required write order is series coordination row first, then working revision or immutable Blueprint/assessment child, then pointer transition and command receipt. Publishing a reviewed candidate updates the active pointer atomically and leaves the former active definition immutable. Restore/replacement clone into the sole Draft, while disable/abandon clear pointers without deleting definitions. Database constraints are the final cardinality guard under concurrency; the application lifecycle policy supplies deterministic conflicts before persistence where possible.
+V1-V23 remain forward-only/unchanged. Actual schema already includes V23; no new migration was needed for demo or this review. Applied schema does not imply operational promotion: demo uses an exact V18 SEEDED/PROMOTED storage set with SYNTHETIC provenance, no actual-pilot run/V23 pointer/receipt. Production C2 rejects synthetic; [calibration contract](features/Baseline%20knowledge%20assessment/Calibrate%20and%20Promote%20IRT%20Parameters.md).
 
-The intended runtime route is `/ld-manager/baseline-assessments`: landing → Occupation workspace → Blueprint Versions/Assessment Versions → persistent detail URLs. Legacy `/ld-manager/assessment-bank` and `/manager/assessment-bank` paths redirect to this route and no longer own generated state. The local answer-reveal endpoint exists only under the `local` profile plus `assessment.baseline.answer-review.enabled=true`; production has no matching bean/controller and remains deny-by-default.
+Retain V8 direct-metadata item compatibility (all metadata present or absent; absent legacy rows excluded from baseline), legacy weighted item_skill_mapping and all fixed definitions/manifests/history. V14 changed logical Blueprint uniqueness to organization+Occupation, preserving legacy null compatibility. Fixed series locks/working revision/transition/receipt/audit tables remain, but new UI follows adaptive Save/Preview/Activate; old Generate/Review/Publish and protected-answer handlers additionally require default-off legacy-authoring gates.
 
-![PostgreSQL recommendation, analytics and evaluation tables](diagrams/postgresql-pathway.svg)
+Adaptive writes retain scope coordination, Draft-ID/revision CAS, expected-current confirmation, exact normalized hash/receipt replay and atomic activation/admission ordering. Reads/list/Deactivate can use PostgreSQL authorization/projection without current Catalog; new changed config/new start still need exact source readiness. Resume/finalization/results read pinned data. Detailed operations/errors/locks: [lifecycle contract](features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md) and [data architecture](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md).
 
-[Pathway and analytics PlantUML source](diagrams/postgresql-pathway.puml)
+## Neo4j and target-selection integration
 
-`organization_id` is currently nullable on `organizational_unit` and `account` to preserve older records. The catalog references shown here are PostgreSQL snapshots, not extra Neo4j nodes.
+![Ontology0.8.0](diagrams/neo4j.svg)
 
-### Neo4j
+[Schema fields/invariants](neo4j_schema.md), [ontology source](dataset/ONTOLOGY.md). Six entity labels/seven relationship types;48 independent reported-title Roles, three local Levels each; only MicroSkill prerequisite links; one-to-one LearningModule TEACHES. Occupation has six normalized O*NET RIASEC values. Scores/ranges/membership/acyclicity/publication require owner/import validation beyond Community uniqueness constraints.
 
-The current ontology contract has six entity labels and seven relationship types, defined in [neo4j_schema.md](neo4j_schema.md) and [dataset 0.8.0](dataset/ONTOLOGY.md).
+Official graph cutover/readback on22 October recorded827 nodes/4536 relationships/six constraints; no graph mutation or fresh full payload verification is claimed by this23 October schema review. Legacy graph seeder/migration utilities are removed from main source or test-only. Legacy CRUD is off until owner conversion; old adapters/selection domain contracts are not automatically migrated by importing0.8.0.
 
-![Occupation-based ontology 0.8.0](diagrams/neo4j.svg)
+PostgreSQL catalog_release/catalog_reference and legacy stable graph id/code contracts need Person2's approved mapping/release/visibility. REQ-001 F02 uses learner-scoped locking/revision, immutable role_snapshot, target_selection_request, audit/outbox in one transaction; it never creates a missing catalog reference. Local configured actor/CSRF wiring is not production security. AssessmentActivityGuardPort now reads real organization+learner-scoped IN_PROGRESS adaptive attempts; the old boolean/property bean was removed. Other assessment families/pathway SUPERSEDED mapping and cross-owner locking still need owner alignment. No startup cross-store seed or sample selection is recreated.
 
-[PlantUML source](diagrams/neo4j.puml)
+## Implementation layout and verification
 
-Each TargetRole belongs to one Occupation and owns three local Levels. Each Level owns its competency groups and skill requirements, with no direct link to learning content. Competency achievement is derived from all member skills passing the owning Level's requirements; there is no independent score. Only MicroSkills use HAS_SKILL_PREREQUISITE; Course and its edges are removed. There are 48 independent reported-title TargetRoles; recommendation uses each role’s Level requirements directly. Occupation stores six normalized RIASEC values sourced from O*NET 31.0. The catalog consolidates prior content into 79 Modules, one for each of 79 skills. Module practice and role/Level suitability remain pending expert review. Rubric configuration, content bodies and learner results remain outside the ontology graph.
+Backend feature packages use api/application/domain/infrastructure. Main resources contain PostgreSQL V1-V23; graph migration helpers/fixtures are test-only. Assessment includes adaptive Blueprint/attempt/psychometrics/calibration/demo packages and explicit official importer. Frontend extends src/app, src/features, src/shared; one adaptive baseline route with legacy aliases redirecting. Production fixture fallback/diagnostic local-completion caller are removed. Shared module/RIASEC/profile/localStorage consumers remain until separately scoped replacement; their data is not PostgreSQL baseline truth.
 
-**Legacy runtime adapter contract (pending migration):** All catalog nodes use stable `id` and `code` keys. `TargetRole.organizationId` provides the initial tenant-scoping contract; `seniority` is the domain-neutral grade code (`P1`–`P5` for `PROFESSIONAL`, `M3`–`M4` for `MANAGEMENT`) used for role discovery, while each domain/role family owns the grade's detailed meaning. `responsibilities` supports employee-facing detail. `version` (e.g. `1.0`, `1.1`) and `assignedExpertId` support the expert authoring lifecycle and successor drafts. Relationships also carry lifecycle `status`, `createdAt`, and `updatedAt`; their additional fields are shown on the relevant arrows. Learner mastery, assessment results, and pathway state belong in PostgreSQL, not on Neo4j nodes.
+Recorded22 October:294 main Java sources package; production TypeScript140 roots/0 diagnostics/0 test imports; Vite/panel lint exit0. Bounded local HTTP Save/Preview/Activate and Employee C45 answers/AUTO_SUBMITTED/result15 skills/history, resume, allowance409 and foreign result404; repeat startup86-table digests unchanged. [Evidence/limits](testing/system/REQ-002-local-demo.md). These are not executable or rendered-browser acceptance. Historical fixed FE83/83 and BE204/204 results remain only in their [dated evidence](testing/REQ-002-F02-baseline-authoring.md).
 
-V2 adds ontology entity constraints and V3 adds Occupation constraints after the preserved V1 baseline; V4 drops only the retired Course ID constraint; no catalog or learner data is deleted. The technical SchemaMigration label is not an ontology entity. Community uniqueness constraints do not enforce publication, score ranges, ownership, one-to-one TEACHES, membership completeness or acyclicity; the v0.8 importer validates these invariants.
+Current tech versions are defined by backend/pom.xml, frontend/package.json and Compose images; evidence environments are dated. Java21/Spring Boot3.5/PostgreSQL17.6/Neo4j5.26 are the current architecture boundary. Do not turn a dependency inventory into proof of unimplemented owner features.
 
-**Runtime compatibility:** DevelopmentCatalogSeeder, Neo4jTargetRoleCatalogAdapter, Neo4jTargetRoleMapper and role-selection domain/API contracts still use the legacy model. They have not been converted by this schema change. Import the new seed in an isolated database until the runtime and cross-store references are migrated. The legacy development seeder now refuses an Occupation catalog instead of mixing legacy fixtures into it. The current dataset is under dataset/; existing learner decisions must retain their original catalog context.
-
-PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the legacy runtime uses stable `id`/`code`; ontology 0.8.0 adds version metadata but no separate graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. Successful request outcomes persist the selection, target revision, and original `changed` value so an idempotent replay returns the same observable result. F02 uses the trusted learner as the outbox aggregate, the target revision as source revision, and the request ID as correlation ID; selection, request outcome, audit, and outbox writes share the caller's PostgreSQL transaction. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. The provisional runtime adapter rechecks F01 availability under the trusted organization and then resolves exactly one `TARGET_ROLE` reference from the PostgreSQL release whose catalog guard is `OPEN`; mismatch is a dependency failure and the command never creates a reference. The local migrate flow may seed matching cross-store references, but that seed is not a published production release.
-
-F02's temporary assessment guard and `SUPERSEDED` pathway archive mapping are local/demo adapters behind application ports. They load only with the explicit local-dependency property and are absent from the production profile. The real assessment/pathway adapters must share the learner lock/revision transaction contract or provide an owner-approved equivalent before F02 is production-complete.
-
-F02's HTTP adapter is currently a local-only vertical slice. Its configured-actor security chain permits only GET/PUT on `/api/v1/employee/target-role-selection` when the local actor flag is enabled and excludes that endpoint from CSRF because no browser-authenticated principal exists yet. The production security chain is unchanged and denies the endpoint until the real Identity/Security adapter is delivered.
-
-The local assessment guard is controlled server-side through `TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS`, which Compose passes to the API container with a default of `false`. It exists only to exercise the provisional `AssessmentActivityGuardPort`; production must replace it with the assessment owner's lifecycle query. The frontend repository has a scoped Playwright system runner that targets the Compose web proxy with an installed Chrome executable; Vitest remains limited to `src/**/*.test.{ts,tsx}` so unit/component and browser suites do not cross-discover each other.
-
-## Backend structure
-
-```text
-backend/
-  pom.xml, Dockerfile
-  src/main/java/com/adaptlearngraph/
-    AdaptLearnGraphApplication.java
-    platform/            startup, status API, migration orchestration
-    catalog/             Target-role domain/use case/API, Neo4j adapter, constraints and development-only seed
-    identity/            security boundary; account APIs not yet built
-    assessment/          baseline blueprint domain/use case/API, PostgreSQL adapter and development question import
-    competency/          reserved feature package
-    learning/            F02 target-role selection domain, application ports/service, HTTP and PostgreSQL/local adapters
-    recommendation/      reserved feature package
-    pathway/             reserved feature package
-    synchronization/     reserved feature package
-    analytics/           reserved feature package
-    evaluation/          reserved feature package
-  src/main/resources/
-    application*.yml     local, prod, migrate, starter, worker profiles
-    db/migration/        PostgreSQL Flyway V1-V17
-    db/neo4j/            graph constraints packaged in the backend JAR
-  src/test/java/com/adaptlearngraph/
-    platform/            unit, security, database and graph tests
-    architecture/        module dependency rules
-frontend/               existing src/app, src/features, src/shared layout
-documents/features/     drafted functions and their current decisions
-documents/diagrams/     PlantUML sources, PostgreSQL generator, rendered SVGs
-documents/testing/      unit, integration, and system test plans
-compose.dev.yml, compose.prod.yml, .env.example
-```
-
-Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). `catalog` applies this structure for the recorded REQ-001-F01 baseline: controllers call `TargetRoleQueryUseCase`, the application service reads trusted actor context and `TargetRoleCatalogPort`, and the Neo4j adapter maps driver records into domain outputs. Existing placeholders remain placeholders; add current-scope implementations only after contracts are clarified, not as empty scaffolding. Billing is excluded from current product scope. The frontend baseline has feature-local target-role browse/detail and selection API/type/query boundaries. The routed F02 page composes an active-selection summary and catalog that share the server selection query; catalog cards and detail use it for active-state and confirmation. The mutation receives one prepared idempotency key and invalidates that query after success. The unreferenced legacy page-level mock hero/write handler was removed; F02 does not synchronize server selection into localStorage. `TargetRoleSelector`, `useEmployeeLearningState`, `NotificationDropdown`, and their overview/assessment/gap/pathway child consumers remain a separate migration follow-up. The L&D route `/ld-manager/assessment-bank` has a feature-local API client for Occupation list/detail/capacity, blueprint save/revise, coverage errors, generation, review and publication. Feature-local policies compute feasible capacity, deterministic minimum-first allocation, shared-pool validation and linked weight projection; controls preserve invalid raw text until blur/Enter instead of silently coercing it. Editor state survives capacity retry and the global EN/VI switch, and roles use a multiple-open accordion. The page calls the local opt-in Occupation API first; only DEV may fall back to the isolated catalog fixture on defined unavailable responses. Capacity never falls back to a fabricated maximum. Production still requires the Catalog owner's tenant-safe visibility/publication/snapshot adapter.
-
-## Technologies
-
-| Layer | Technology in use |
-| --- | --- |
-| Backend | Java 21, Maven, Spring Boot 3.5.16 (Web MVC, Security, Validation, Actuator, Data JPA/JDBC), Flyway, Neo4j Java driver |
-| Persistence | PostgreSQL 17.6, Neo4j 5.26 Community; JPA is available, but there are no domain entities/repositories yet |
-| Frontend | React 19, TypeScript 6, Vite 8, React Router 7, TanStack Query, vis-network; Caddy 2 serves production assets and proxies `/api` |
-| Delivery | Docker multi-stage builds and Docker Compose; Node 22 for frontend builds |
-| Testing | JUnit 5, Spring Boot Test/Security Test, Testcontainers (PostgreSQL and Neo4j), ArchUnit; see [testing/README.md](testing/README.md) |
-
-## Run and verify
+## Run, replace and rollback
 
 From the repository root with Docker Desktop running:
 
@@ -216,27 +103,8 @@ Invoke-RestMethod http://127.0.0.1:8088/api/v1/system/status
 docker compose -f compose.dev.yml ps
 ```
 
-Dev frontend: `http://127.0.0.1:8088`; API: `http://127.0.0.1:18080`; PostgreSQL host port `15432`; Neo4j Browser: `http://127.0.0.1:7474` (Bolt `7687`). The dev Compose file uses explicit local-only fallback passwords; override them with `.env` for a shared development machine. The raw backend default is `local` and needs reachable databases plus `DB_PASSWORD` and `NEO4J_PASSWORD`. The `starter` profile is an intentional no-database test mode, not the deployed API.
+Loopback WEB8088/API18080/PostgreSQL15432/Neo4j7474+7687 (defaults). [User walkthrough](../../../s2%20work/Test%20Guides/REQ-002-F02-full-walkthrough-test-guide.md). Production Compose requires operator-provided secrets/HTTPS/domain/backup/monitoring and real owner integrations; this local scope does not make it deployment-ready.
 
-For production-mode Compose, supply nonempty `DB_PASSWORD` and `NEO4J_PASSWORD` in a private `.env` or secret-injection environment, then run:
+Open replacement owners: Person1 Identity/grants/revocation; Person2 catalog publication/release/discovery/reference mapping; content/model owners approved review/real parameters/actual-pilot dataset and numerical validity; Person3 operational C ports; REQ-041 delivery/downstream demo exclusion. Actor-code migration, discipline/content ownership, pathways/independent progress/guidance/privacy and production operations remain open in their Function contracts. No arbitrary mapping from legacy actor codes grants new permissions.
 
-```powershell
-docker compose -f compose.prod.yml up --build -d
-Invoke-RestMethod http://127.0.0.1:8088/api/v1/system/status
-```
-
-Production publishes HTTP on `127.0.0.1:${WEB_PORT:-8088}`. Place a separately managed HTTPS ingress/reverse proxy in front before external access; TLS domain, certificates, secret storage, backups and observability still need an operator decision. The Compose profiles start correctly but **do not make the unfinished product or authorization system production-ready**. Do not use `down -v` on databases whose data must be kept.
-
-## Decisions to confirm
-
-1. **Catalog identity and history:** How should stable ontology IDs and the legacy Neo4j V5 contract map to the existing PostgreSQL `catalog_reference` fields (`entity_id`, `version_id`, `release_id`), and how are in-progress attempts/pathways pinned when the graph changes? Do not assume a fake graph version.
-2. **Single-organization catalog and publication:** Retain existing `organizationId` compatibility fields until a forward migration is agreed. Design discipline assignment and L&D publication gates through the owning catalog/authorization boundaries; unpublished roles must not be treated as available merely because they are `ACTIVE`.
-3. **Actor-code migration:** Existing `EMPLOYEE`, `DOMAIN_EXPERT`, `ORGANIZATION_ADMINISTRATOR`, `PLATFORM_ADMINISTRATOR`, `LEARNER`, `LD_MANAGER` and `ADMINISTRATOR` codes are legacy technical data, not the current actor list. Agree an explicit migration to System Administrator, L&D Manager, Expert and Employee permissions without granting unintended privileges.
-4. **Graph operational metadata:** Confirm whether the non-domain `SchemaMigration` label is acceptable alongside seven ontology labels and the five legacy V5 catalog labels, or whether migration history must be stored outside Neo4j.
-5. **Catalog learning content:** The dev catalog is illustrative only. Dataset 0.8.0 has documented sources and still requires expert review. Confirm production discipline/role/skill data, one-to-one module/skill content mapping, contentUri deployment and L&D approval; current scope is not dummy-only. Keep existing `LearningModule.sourceUrl` semantics until a versioned storage contract is agreed.
-6. **Provisional technical configuration:** REQ-002 product behavior is approved for Cluster 1. MAP/minimum-evidence/SE/`k` constants, calibration bounds and runtime library are system-owned/versioned and initially backend-configured; their future operational UI owner is deferred.
-7. **Deployment, tests and integrations:** Choose production HTTPS/domain, secret manager, backup/restore, monitoring and automation/CI. Confirm baseline/RIASEC AI guidance and any operational email contracts before integration. PayOS/billing are excluded; no non-Spring Boot backend runtime is proposed.
-
-## Slices 4–5 projection boundary — 2026-10-22
-
-No additional schema/migration/Neo4j fields. Manager common payload and calculator follow existing name/occupationBounds; list/Deactivate remain PostgreSQL-only. Safe assessmentScope is derived from attempt/version policy plus original Role, without disclosing internal pins. Read inconsistencies fail explicitly; no current Catalog fallback, fabricated skill evidence or historical rewrite. Refer to the [client/result contract](features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md#slices-45-implemented-client-and-result-contract--2026-10-22) and [evidence/checklist](testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+Disable demo profile/property/FE flags and rebuild to remove the exception, preserving all volumes/schema/history/pins/evidence. Never down-migrate, reset learners, repin/rescore histories or restore an old role-only admission binary after new-format data exists. Destructive cleanup requires an exact approved inventory; code/doc review does not authorize DROP or shared consumer deletion. Executable tests require separately approved Cluster3; no stage/commit/push in this review.

@@ -1,8 +1,6 @@
 # Complete Baseline Assessment
 
-**Current source checkpoint — slices 1–5, 2026-10-22:** The user accepted slices 2–3 and authorized slices 4–5. The common-configuration form/calculator, saved-preview and confirmed lifecycle actions, PostgreSQL-backed management directory, and safe full/legacy result/history are now implemented in uncommitted source. V1–V22 and historical data remain unchanged. Main Java compile, production-only TypeScript/lint and FE flag-off/on builds passed; bounded isolated live-client/HTTP/SQL observations are recorded in [slice 4–5 evidence](../../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md). Interactive browser review is unavailable in this session and remains unverified. No executable tests, acceptance certification, user-stack migration, stage/commit/push or automatic Cluster 3.
-
-**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier review qualifiers are superseded by this approval; implementation status remains explicit. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+**Current23 October2026:** full-Occupation slices1-5 and V20-V23 are implemented locally; read-only live V1-V23 checksums match. [Local demo exception](Local%20Demo%20Flow.md) bypasses owner readiness only under explicit profile/property/!prod; production dependencies remain open. [Current schema/review](../../testing/system/REQ-002-memory-schema-sync.md); [actual operations/limits](../../testing/system/REQ-002-local-demo.md). Browser/executable/numerical acceptance remains open; no history reset/repin.
 
 ## Current adaptive contract
 
@@ -59,8 +57,10 @@ P(correct | theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
 - The selector chooses an eligible unseen item with useful information while satisfying Blueprint bounds.
 - The attempt may stop early at sufficient precision; maximum questions and server deadline remain hard stops.
 - Difficulty labels are for authoring/cold-start explanation. The algorithm does not follow a fixed Easy → Medium → Hard ladder.
-- Demo cold-start values may be Easy `(1,-1,.25)`, Medium `(1,0,.25)`, Hard `(1,1,.25)` for four-option items. They are system-owned seeded technical values, not L&D fields or calibrated truth.
+- Historical demo allowance: Easy `(1,-1,.25)`, Medium `(1,0,.25)`, Hard `(1,1,.25)` were seeded technical values, not calibrated truth. **Superseded for new source by the user's Session1/Session2 direction:** bootstrap/auto-promotion is removed; do not create a/b from labels or restore the seed path. [Session2 contract](Calibrate%20and%20Promote%20IRT%20Parameters.md) permits separate explicitly SYNTHETIC demonstration only, with generated-versus-fitted provenance and no operational promotion. Existing historical seeded pins retain their original meaning.
 - The initial MAP prior, minimum-evidence gate, `SE` stop target and conservative-mastery factor are system-owned/versioned technical configuration. They are initially supplied as backend code/config constants; assigning an operational UI owner is deferred.
+
+The implemented reference estimator uses bounded MAP/grid-bracketed mode search and local posterior curvature. Its SE is a local Laplace posterior SD, not exact/frequentist uncertainty or simply1/sqrt(data Fisher information). A finite grid cannot certify the global mode for every multimodal3PL history. Boundary/nonfinite/nonpositive-curvature/unresolved fits fail explicitly; no clipped mastery/default is fabricated. Numerical reference/adversarial vectors, calibration/stopping behavior and representative performance remain unverified pending approved Cluster3/model-owner work.
 
 ### Ordered operations
 
@@ -136,8 +136,8 @@ The client timer is display-only. PostgreSQL owns deadlines; a worker may claim 
 
 - REQ-001 selected-role provenance for `ROLE_REQUIREMENT`; authorized organization Occupation catalog for `OCCUPATION_EXPLORATION`; REQ-002-F02 current Blueprint; authorized question versions; versioned IRT model/parameters/mapping; REQ-041 mastery/BKT handoff; REQ-009 result/history.
 - Target persistence is defined in [Adaptive Baseline Data Architecture](Adaptive%20Baseline%20Data%20Architecture.md).
-- V18/V19 on disk and B1–B9 code provide adaptive configuration/attempt/pool/response/result/evidence, estimator/selector, deadline finalization/worker, safe result/history and gated UI. This is a source inventory, not live-schema or production/executable acceptance evidence. AdaptiveAttemptSnapshot still selects role-specific versus union bounds/pool, and V19 insert/scope triggers enforce that older rule; both require a forward-compatible change. Resume, allowance, guards, exact retry and immutable evidence are retained.
-- Production Identity/Catalog and Employee-authorized Occupation discovery remain open. Local/demo gates use trusted configured identities, not arbitrary client actor/tenant input. REQ-041 consumer/delivery is not established by durable outbox alone. No wider role-selection/gap/pathway implementation is authorized by this Function.
+- V18/V19 on disk and B1–B9 code provide adaptive configuration/attempt/pool/response/result/evidence, estimator/selector, deadline finalization/worker, safe result/history and gated UI. This is a source inventory, not live-schema or production/executable acceptance evidence. V20 conditional scope checks and dual readers now select full union for new-format versions while historical role/union attempts keep their original bounds/pool. Resume, allowance, guards, exact retry and immutable evidence are retained.
+- Production Identity/Catalog and Employee-authorized Occupation discovery remain open; the explicit demo provides narrow fixed discovery, not the production owner adapter. Local/demo gates use trusted configured identities, not arbitrary client actor/tenant input. REQ-041 consumer/delivery is not established by durable outbox alone. No wider role-selection/gap/pathway implementation is authorized by this Function.
 
 ### Acceptance-to-test mapping
 

@@ -1,8 +1,6 @@
 # Occupation Baseline Lifecycle and Transition
 
-**Current source checkpoint — slices 1–5, 2026-10-22:** The user accepted slices 2–3 and authorized slices 4–5. The common-configuration form/calculator, saved-preview and confirmed lifecycle actions, PostgreSQL-backed management directory, and safe full/legacy result/history are now implemented in uncommitted source. V1–V22 and historical data remain unchanged. Main Java compile, production-only TypeScript/lint and FE flag-off/on builds passed; bounded isolated live-client/HTTP/SQL observations are recorded in [slice 4–5 evidence](../../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md). Interactive browser review is unavailable in this session and remains unverified. No executable tests, acceptance certification, user-stack migration, stage/commit/push or automatic Cluster 3.
-
-**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier review qualifiers are superseded by this approval; implementation status remains explicit. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+**Current23 October2026:** full-Occupation slices1-5 and V20-V23 are implemented locally; read-only live V1-V23 checksums match. [Local demo exception](Local%20Demo%20Flow.md) bypasses owner readiness only under explicit profile/property/!prod; production dependencies remain open. [Current schema/review](../../testing/system/REQ-002-memory-schema-sync.md); [actual operations/limits](../../testing/system/REQ-002-local-demo.md). Browser/executable/numerical acceptance remains open; no history reset/repin.
 
 ## Scope and authority
 
@@ -77,15 +75,15 @@ Client cannot edit actor/tenant/learner, format policy, timestamps, pins, correc
 - An absent activation row needs serialized scope creation; locking a missing row is insufficient. Cross-store readiness uses before/after catalog/version fingerprints, not a distributed ACID claim. Drift rolls back/conflicts.
 - Preview reserves nothing. Exact key/body replays after authorization; stale/mismatched requests conflict. Pointer/version/Draft-close/audit/receipt changes are atomic. Pending UI locks synchronously and obtains fresh replacement confirmation when current changes.
 
-## Approved forward migration and rollout — source through V22, user deployment not performed
+## Approved forward migration and rollout - applied locally through V23
 
 1. Inventory config/pool/JSON/SQL/trigger/API/FE/seed/test consumers. Add server-owned scope marker: null/legacy means historical role/exploration; new full-Occupation versions explicitly use new marker and single pair. Add conditional shape/field/FK/trigger checks and dual readers; [Data architecture](Adaptive%20Baseline%20Data%20Architecture.md) names affected tables. Do not rewrite old values/pins/pools/responses/results. Metadata defaults must not imply historical full scope.
 2. Preserve legacy Draft content. An explicit Update baseline configuration action closes/archives it with audit and creates the sole new-format Draft in one scope transaction. Carry name/context only; an old exploration pair may be shown as unconfirmed suggestion but requires explicit L&D input/save. No per-Role aggregation. Conversion command/receipt is itself Approved design.
 3. At new-flow cutover, block new starts on old-format current with actionable update reason. No fallback to Role sampling or silent reuse of old exploration bounds. Resume/answer/submit/worker/history retain dual readers. Activate a validated new-format Draft to reopen starts. Do not reset reported Role A completion or its allowance.
-4. Inspect actual migration inventory before choosing the next unused number (currently latest V19). Never edit applied V18/V19. Roll out one intended admission policy across instances and gate starts during upgrade; old binaries must not start old-role attempts after cutover or read new rows incorrectly. Production deny-by-default and existing local/demo gates remain.
+4. Inspect actual migration inventory before choosing the next unused number (currently latest V23, verified23 October2026). Never edit applied V18/V19. Roll out one intended admission policy across instances and gate starts during upgrade; old binaries must not start old-role attempts after cutover or read new rows incorrectly. Production deny-by-default and existing local/demo gates remain.
 5. Rollback disables new starts and retains data. A compatible dual-reader binary must finish/read both formats; do not downgrade to a role-only binary after new rows exist, down-migrate, reseed volumes or reactivate old config to bypass admission. Keep event/receipt identities; durable outbox is not REQ-041 delivery.
 
-## Existing behavior disposition at 618d772
+## Historical transition inventory at618d772 - changes now implemented locally
 
 | Surface | Disposition | Required alignment |
 | --- | --- | --- |

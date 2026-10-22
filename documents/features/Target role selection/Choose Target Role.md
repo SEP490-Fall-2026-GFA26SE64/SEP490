@@ -1,5 +1,7 @@
 # Choose Target Role
 
+**Local official-data cutover,2026-10-22:** demo graph seeder/cross-store fixture seeder removed; main graph now uses official OCC-/ROLE-/LV-/MS- IDs. Existing11 PostgreSQL selections/references remain unchanged historical data. The legacy UUID/F01 selection bridge has not been remapped to new catalog IDs; authoritative owner integration remains open and must fail closed, not fabricate references. The old deterministic-seed description below is historical. [Actual scope/evidence](../../testing/system/REQ-002-official-local-cutover.md).
+
 ## Current Scope Alignment
 Employee selects/confirms an authorized available role immediately. The selection transaction does not wait for baseline. If no mastery-producing baseline exists for the role's Occupation, the committed selection requires that Occupation baseline before gap/pathway steps; a completed baseline for the same Occupation is reused, and another Occupation has its own allowance. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 

@@ -1,14 +1,14 @@
 # Schema Neo4j — Ontology v0.8.0
 
-**Lát4–5,22/10/2026:** UI dùng cấu hình chung đã duyệt. Result/history đọc tên skill và phạm vi từ snapshot PostgreSQL đã pin, không tra Catalog hiện tại; không thêm node/property/relationship, không sửa graph hoặc lịch sử. Xem [evidence/checklist](testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+Cập nhật23/10/2026: giữ nguyên contract node/relationship/field bên dưới. Learner/assessment/mastery/pathway state thuộc PostgreSQL. [Local Demo Flow](features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md) chỉ cho adapter demo đọc unreviewed ACTIVE scope OCC-15-1212.00; không sửa reviewer/publication/graph. Adapter mặc định vẫn yêu cầu review, production owner integration còn mở.
 
-**Mốc triển khai lát2–3,22/10/2026:** admission mới đọc hợp skill/item active Roles, kiểm tra fingerprint trước/sau và pin vào PostgreSQL; Role chỉ là provenance. Khóa chuyển Active, list/status/counts và Deactivate thuộc PostgreSQL, không thêm property/relationship/state vào Neo4j. Danh sách/Deactivate không cần Catalog hoạt động. Không import/migrate/reset graph người dùng; xem [contract](features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md).
+Readback22/10 sau cutover/startup ghi nhận đúng827 nodes/4536 relationships/6 constraints, ontology0.8.0 còn NEEDS_EXPERT_REVIEW. Graph seeders/migrator đã bỏ khỏi main source hoặc chuyển test-only; legacy CRUD tắt. Ngày23/10 chỉ xác minh schema PostgreSQL V23 và đồng bộ tài liệu, không kiểm tra lại toàn payload hay ghi Neo4j. [Cutover evidence](testing/system/REQ-002-official-local-cutover.md) · [Session3 preservation](testing/system/REQ-002-official-question-bank-session3.md) · [review/schema hiện hành](testing/system/REQ-002-memory-schema-sync.md).
 
-Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.8.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
+Baseline mới lấy full active-role union, pin snapshot/pool vào PostgreSQL. Result/history lấy tên/scope từ pin, list/Deactivate dùng PostgreSQL; không thêm property mastery hay attempt vào graph. Catalog visibility/publication/release và REQ-001 legacy-reference mapping còn chờ Person2.
 
-![Sơ đồ ontology](diagrams/neo4j.svg)
+![Sơ đồ ontology0.8.0](diagrams/neo4j.svg)
 
-[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
+[PlantUML](diagrams/neo4j.puml) · [Nguồn dataset](dataset/ONTOLOGY.md) · [Import guide](dataset/NEO4J_IMPORT_GUIDE.md)
 
 ## 1. Cấu trúc tổng quát
 

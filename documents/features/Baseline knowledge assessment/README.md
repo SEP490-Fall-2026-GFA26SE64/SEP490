@@ -1,39 +1,23 @@
-# Baseline Knowledge Assessment
+# Baseline knowledge assessment
 
-**Current source checkpoint — slices 1–5, 2026-10-22:** The user accepted slices 2–3 and authorized slices 4–5. The common-configuration form/calculator, saved-preview and confirmed lifecycle actions, PostgreSQL-backed management directory, and safe full/legacy result/history are now implemented in uncommitted source. V1–V22 and historical data remain unchanged. Main Java compile, production-only TypeScript/lint and FE flag-off/on builds passed; bounded isolated live-client/HTTP/SQL observations are recorded in [slice 4–5 evidence](../../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md). Interactive browser review is unavailable in this session and remains unverified. No executable tests, acceptance certification, user-stack migration, stage/commit/push or automatic Cluster 3.
+Current23 October2026: full-Occupation baseline source and main PostgreSQL V1-V23 are present. User-approved [Local Demo Flow](Local%20Demo%20Flow.md) permits UI/real persisted operations while Identity/Catalog/review/model dependencies wait. Main Compose enables its explicit profile/property/!prod gate. All bypasses and replacement owners remain registered in TMP-REQ002-01..12; production authorization/operational C2 are unchanged.
 
-**Current source, 2026-10-22:** remaining slice 1 of 5 adds gated BE common Save, full-union feasibility, saved-Draft Preview and explicit audited legacy Draft conversion (V22). Fresh Activate awaits slice-2 admission; FE is still the legacy form until slice 4. Existing Active/history/allowance stay unchanged. This supersedes older runtime-inventory statements below only for these implemented surfaces; see [Configure](Configure%20Baseline%20Assessment.md).
+REQ-002-F02 L&D: one stable Blueprint per org+Occupation; one name/maximum/duration pair for the full deduplicated active-role union. Save -> safe zero-write Preview -> Activate; directory, confirmed replacement/direct Deactivate and Draft/Active/Retiring/Inactive projection. Name<=100 Unicode chars; total=maxQuestions*(30..120sec). REQ-002-F01 Employee: pinned individual sequence/resume/deadline/result/evidence; one mastery completion/Employee+Occupation, linked no-mastery invalidation replacement only. Role is entry provenance. Historical Role-specific versions/results preserve their meaning/pins/allowance.
 
-**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier review qualifiers are superseded by this approval; implementation status remains explicit. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+Actual22 October: official135 DRAFT items/15 skills; dedicated demo reference model and135 SYNTHETIC fitted parameters. Employee C completed45 responses/AUTO_SUBMITTED/15-skill result/history; resume/deadline, allowance409 and foreign404 observed. A/B were fresh at handoff; do not reset after user use. [Commands/results/limits](../../testing/system/REQ-002-local-demo.md). Selected-role entry still needs REQ-001 owner selection; demo walkthrough uses direct Occupation exploration. Admin persona is not a calibration UI.
 
-## Current scope —2026-10-22 Cluster 1 approved alignment
+Read-only23 October schema review:23 source/history checksums match,86 tables/703 columns; [current diagrams/catalog](../../diagrams/README.md) and [review](../../testing/system/REQ-002-memory-schema-sync.md). No DB mutation/tests in this review. Java/TS/Vite/lint/manual HTTP observations are not browser/executable/numerical acceptance. Production Identity/grants/revocation, reviewed publication/catalog release/discovery, actual-pilot model/data/numerics, operational C ports and REQ-041/downstream delivery/demo exclusion remain open.
 
-**Requirement:** REQ-002. **Actors:** L&D Manager configures; Employee starts/resumes/submits an individual adaptive baseline. Confirmed user rules supersede the 20 October role/exploration split; implementation/schema/list details are approved targets, with implementation tracked per slice.
-
-One organization+Occupation owns one stable Blueprint, at most one open Draft and one Active version. **One name and maximum-question/total-duration pair covers the deduplicated union of every active Role's skills/items.** Selected Role is entry/provenance, never a separate test/section/budget. Individual sequences may differ and stop early after required skill evidence; “full” does not require every bank item.
-
-~~~text
-authorized Catalog Occupation union
- -> L&D Save draft -> Preview assessment -> Activate version
- -> atomic confirmed replacement, or direct Deactivate
- -> individual Employee full-Occupation attempt pins exact inputs/deadline
- -> immutable result/evidence and safe own history
-~~~
-
-Draft/Active/Retiring/Inactive describe availability while preserving in-progress attempts and history. Derived status, list granularity/date/paging, preview binding, transition/concurrency and rollback are recommendations in the linked design, not already-approved APIs.
-
-One mastery-producing completion closes Employee+Occupation allowance across Role choices; invalidated/no-mastery attempts alone permit linked replacement. Existing Role-specific attempts/results retain their pins and original meaning; no relabel/rescore/reset. Current-format migration never follows from reinterpreting old limits.
-
-At618d772, B1–B9 and V18/V19 exist as gated local/demo source. Config and start still use per-Role/exploration pools/bounds; result-name lookup has a Role restriction. The old claim that no adaptive runtime exists is superseded, but full-Occupation runtime, production Identity/Catalog and delivered REQ-041 integration are not established.
+Legacy fixed authoring/answer review/graph CRUD are off; shared generic/module/RIASEC/REQ-001/history consumers are preserved. Original content/review/hashes/versions/history unchanged. Historical Session1/2/3 status/commands remain in dated evidence, not current setup instructions.
 
 ## Canonical documents
 
 | Document | Status |
 | --- | --- |
-| [Configure Baseline Assessment](Configure%20Baseline%20Assessment.md) | F02 confirmed single-pair/lifecycle/form requirements; review approved designs |
+| [Configure Baseline Assessment](Configure%20Baseline%20Assessment.md) | F02 confirmed single-pair/lifecycle/form requirements; approved designs; local implementation present |
 | [Complete Baseline Assessment](Complete%20Baseline%20Assessment.md) | F01 full-union scope, retained adaptive/security/allowance rules and historical compatibility |
-| [Adaptive Baseline Data Architecture](Adaptive%20Baseline%20Data%20Architecture.md) | Actual V18/V19 source inventory versus planned forward schema/transaction delta |
-| [Occupation Baseline Lifecycle and Transition](Occupation%20Baseline%20Lifecycle%20and%20Transition.md) | OB-P01–P10 recommended API/list/status/transition decisions; approved; runtime integration pending |
+| [Adaptive Baseline Data Architecture](Adaptive%20Baseline%20Data%20Architecture.md) | Applied V18-V23 storage, full/legacy transaction contracts; current generated schema links |
+| [Occupation Baseline Lifecycle and Transition](Occupation%20Baseline%20Lifecycle%20and%20Transition.md) | OB-P01–P10 approved; local source implemented; real owners/browser/executable evidence open |
 | [Acceptance-to-test plan](../../testing/REQ-002-adaptive-baseline-test-plan.md) | Canonical planned acceptance only, no new executable evidence |
 | [Own result](../Assessment%20results/View%20Assessment%20Result.md) / [history](../Assessment%20results/View%20Assessment%20History.md) | Scoped REQ-009 disclosure and original/new scope preservation |
 

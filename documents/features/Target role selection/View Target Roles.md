@@ -1,5 +1,7 @@
 # View Target Roles
 
+**Local official-data cutover,2026-10-22:** Backend P3/Platform P4 seed data is removed from the main graph/source. Official0.8.0 uses Occupation→Role→Level→MicroSkill and string IDs; the legacy role DTO/query contract is not silently redefined by this cleanup. Related old-schema CRUD routes are default-off pending owner alignment. Existing local history remains retained; [scope/evidence](../../testing/system/REQ-002-official-local-cutover.md). Historical fixture-based results below do not certify new-catalog browsing.
+
 ## Current Scope Alignment
 Employee browsing uses the authorized role-availability contract and is independent of adaptive-Blueprint readiness. Viewing/selecting an available role is not blocked by missing Occupation baseline mastery; that dependency is enforced afterward before gap/pathway steps. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 

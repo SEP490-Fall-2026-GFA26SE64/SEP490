@@ -1,12 +1,10 @@
 # Configure Baseline Assessment
 
-**Current source checkpoint — slices 1–5, 2026-10-22:** The user accepted slices 2–3 and authorized slices 4–5. The common-configuration form/calculator, saved-preview and confirmed lifecycle actions, PostgreSQL-backed management directory, and safe full/legacy result/history are now implemented in uncommitted source. V1–V22 and historical data remain unchanged. Main Java compile, production-only TypeScript/lint and FE flag-off/on builds passed; bounded isolated live-client/HTTP/SQL observations are recorded in [slice 4–5 evidence](../../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md). Interactive browser review is unavailable in this session and remains unverified. No executable tests, acceptance certification, user-stack migration, stage/commit/push or automatic Cluster 3.
-
-**Approval update - 2026-10-22:** The user approved OB-P01-P10 and the proposed schema/API/transition/concurrency/rollback design and authorized Cluster 2 implementation in small slices. Earlier review qualifiers are superseded by this approval; implementation status remains explicit. The user then confirmed a maximum of 100 Unicode characters for the name and a total budget of 30-120 seconds multiplied by maxQuestions; this is an average budget, not a per-item timer. Nearest-whole-second calculation is approved. Existing legacy values/history stay unchanged. No Cluster 3/test execution, new commit or push is authorized. Planned schema/behavior is not implemented merely by this approval.
+**Current23 October2026:** full-Occupation slices1-5 and V20-V23 are implemented locally; read-only live V1-V23 checksums match. [Local demo exception](Local%20Demo%20Flow.md) bypasses owner readiness only under explicit profile/property/!prod; production dependencies remain open. [Current schema/review](../../testing/system/REQ-002-memory-schema-sync.md); [actual operations/limits](../../testing/system/REQ-002-local-demo.md). Browser/executable/numerical acceptance remains open; no history reset/repin.
 
 ## Current contract — 2026-10-22
 
-**Function:** REQ-002-F02. **Actor:** L&D Manager. **Status:** Cluster 1 approved; Cluster 2 in progress. Confirmed rules supersede the 2026-10-20 role/exploration contract; Detailed design choices are now approved. At commit 618d772, B1–B9 local/demo runtime exists and still implements the earlier configuration.
+**Function:** REQ-002-F02. **Actor:** L&D Manager. **Status:** Cluster 1 approved; Cluster 2 in progress. Confirmed rules supersede the 2026-10-20 role/exploration contract; Detailed design choices are now approved. Current common configuration/form/lifecycle is implemented; legacy readers remain for historical compatibility.
 
 ### Goal and position
 
@@ -94,7 +92,7 @@ Return only safe working/version/readiness and authorized aggregate lifecycle me
 
 All routes retain the existing organization/actor checks and local/demo/non-prod gates. V22 extends receipt operations; V1-V21 are untouched in this slice. At the slice-1 checkpoint fresh Activate failed closed; slices 2–3 now remove that temporary guard only with the coherent full-Occupation resolver and confirmed current-version protocol. Exact historical receipts still replay before new-write checks. Save/conversion/Preview leave existing Active, versions, attempts, results and allowance unchanged. Slice 3 now authorizes Deactivate using persisted actor plus server scope grants without consulting Catalog/items.
 
-FE still sends the old role/exploration form and needs slice 4; it is not yet compatible with new Save/Preview. No-op Save, list/lifecycle/replacement confirmation and admission cutover are implemented in slices 2–3; frontend integration and result/history presentation remain pending. Preserve old JSON/purpose/bounds snapshots and generic/module history; do not deploy an old role-only binary after new rows exist. Build/manual observations and their limits are in [system evidence](../../testing/system/REQ-002-F02-baseline-authoring.md); no executable acceptance is claimed.
+The common form/calculator, saved Preview, no-op/exact retry, lifecycle confirmations, directory and full/legacy result/history presentation are implemented in slices4-5. Browser acceptance remains unverified. Preserve old JSON/purpose/bounds snapshots and generic/module history; do not deploy an old role-only binary after new rows exist. Build/manual observations and their limits are in [system evidence](../../testing/system/REQ-002-F02-baseline-authoring.md); no executable acceptance is claimed.
 
 ### Acceptance and decisions
 
