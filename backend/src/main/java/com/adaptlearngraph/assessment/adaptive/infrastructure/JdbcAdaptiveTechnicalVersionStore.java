@@ -31,9 +31,34 @@ public final class JdbcAdaptiveTechnicalVersionStore implements AdaptiveTechnica
     }
 
     @Override
+    @Deprecated
     public Optional<TechnicalVersions> findPromoted(UUID modelVersionId, UUID mappingVersionId) {
         return versions(VERSIONS + " ORDER BY parameters.activated_at DESC,parameters.parameter_set_id LIMIT 1",
                 new MapSqlParameterSource("model", modelVersionId).addValue("mapping", mappingVersionId));
+    }
+
+    @Override
+    public Optional<TechnicalVersions> findEffective(UUID organizationId, UUID bankId, UUID modelVersionId, UUID mappingVersionId) {
+        String lock = org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()
+                ? " FOR SHARE OF effective" : "";
+        return versions("""
+                SELECT parameters.parameter_set_id,parameters.model_version_id,mapping.mastery_mapping_version_id,
+                       model.configuration AS model_configuration,mapping.configuration AS mapping_configuration
+                FROM platform.irt_effective_parameter_selection effective
+                JOIN platform.irt_parameter_set parameters USING(parameter_set_id,model_version_id)
+                JOIN platform.model_version model USING(model_version_id)
+                JOIN platform.mastery_mapping_version mapping ON mapping.mastery_mapping_version_id=:mapping
+                JOIN platform.irt_calibration_run run ON run.output_parameter_set_id=parameters.parameter_set_id AND run.model_version_id=model.model_version_id
+                JOIN platform.question_bank bank ON bank.question_bank_id=effective.question_bank_id
+                JOIN platform.account owner ON owner.account_id=bank.created_by
+                WHERE effective.organization_id=:organization AND effective.question_bank_id=:bank AND effective.model_version_id=:model
+                  AND owner.organization_id=:organization AND parameters.status='PROMOTED' AND parameters.source='CALIBRATED'
+                  AND model.algorithm='IRT_3PL' AND model.approved_by IS NOT NULL AND model.approved_at IS NOT NULL
+                  AND run.status='SUCCEEDED' AND run.configuration->>'origin'='ACTUAL_PILOT'
+                  AND run.configuration->'request'->'scope'->>'organizationId'=CAST(:organization AS text)
+                  AND run.configuration->'request'->'scope'->>'bankId'=CAST(:bank AS text)
+                """ + lock, new MapSqlParameterSource("organization",organizationId).addValue("bank",bankId)
+                .addValue("model",modelVersionId).addValue("mapping",mappingVersionId));
     }
 
     @Override

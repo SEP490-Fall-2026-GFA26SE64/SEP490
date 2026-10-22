@@ -10,7 +10,14 @@ import java.util.UUID;
 
 /** System-owned version reads. Callers authorize catalog scope before requesting skill parameters. */
 public interface AdaptiveTechnicalVersionPort {
+    /** Historical compatibility only. New Blueprint selection must use findEffective with trusted scope. */
+    @Deprecated
     Optional<TechnicalVersions> findPromoted(UUID modelVersionId, UUID mappingVersionId);
+
+    /** Missing scoped selection is unavailable, never a fallback to a model-global PROMOTED set. */
+    default Optional<TechnicalVersions> findEffective(UUID organizationId, UUID bankId, UUID modelVersionId, UUID mappingVersionId) {
+        return Optional.empty();
+    }
 
     /** Exact pins only; no fallback to latest after Blueprint/attempt creation. */
     Optional<TechnicalVersions> findPinned(VersionPins pins);
