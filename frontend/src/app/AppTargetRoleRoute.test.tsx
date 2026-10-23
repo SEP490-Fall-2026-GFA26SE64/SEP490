@@ -6,6 +6,7 @@ const legacySelectionHandler = vi.hoisted(() => vi.fn())
 
 vi.mock('../features/employee/target-roles/EmployeeTargetRolesPage', () => ({
   EmployeeTargetRolesPage: () => <div>Server-backed target-role page</div>,
+  EmployeeUpskillingPage: () => <div>Upskilling page</div>,
 }))
 
 vi.mock('../shared/hooks/useEmployeeLearningState', () => ({

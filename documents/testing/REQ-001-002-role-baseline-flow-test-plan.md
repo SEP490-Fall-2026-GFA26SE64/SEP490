@@ -1,6 +1,8 @@
 # REQ-001/002 Role-to-baseline acceptance plan
 
-Date: 2026-10-23 Asia/Bangkok. Cluster 1 document only. All cases **Planned / Not run**; no test file/method created, runner executed, build or runtime smoke performed for this amendment. [Canonical contract](../features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md). Prior passes certify only their dated contract.
+**Current execution update — 2026-10-23, Cluster 4:** [Synchronized evidence and limitations](system/REQ-001-002-cluster4-evidence.md) supersede the original Planned/Not run statements below for the actually executed RB01–17, VB01–04, MM01–05 and affected regression assertions. Current unique results are 131 Pass/0 Fail/0 final skipped across targeted runs; 122 are carried from Cluster 3 and nine are the post-repair system cases. C3-UI-01/MM05 is repaired and passes; original 127 Pass/1 Fail evidence remains historical. This is not complete production, numerical or performance acceptance. [Actual unit files/methods](unit/REQ-001-002-cluster3-execution.md), [real-adapter files/methods](integration/REQ-001-002-cluster3-execution.md), [browser titles/acceptance mapping](system/REQ-001-002-cluster3-execution.md) and [latest commands/results](../../../../.tools/cluster4/20261023/commands.json) replace proposed file names/TBD commands for executed cases. No test-plan row implies unexecuted branches passed.
+
+Historical planning baseline: 2026-10-23 Asia/Bangkok, Cluster 1 document only. All cases **Planned / Not run**; no test file/method created, runner executed, build or runtime smoke performed for this amendment. [Canonical contract](../features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md). Prior passes certify only their dated contract.
 
 ## Fixtures and trusted actors
 
@@ -10,7 +12,7 @@ Use isolated organization A and B, Employee E1/E2, L&D and unauthorized Admin co
 
 ## Acceptance mapping
 
-Each case runs as E1/org A unless the actor column says otherwise. All results are Planned / Not run.
+Each case runs as E1/org A unless the actor column says otherwise. The table retains the initial planned mapping; current executed outcomes and unrun branches are in the Cluster 4 notice above.
 
 | ID / Function | Actor/fixture; trigger | Expected outcome | Planned levels |
 | --- | --- | --- | --- |
@@ -53,7 +55,7 @@ Confirmed: acceptance boundaries | Proposed: suite names/commands and existing-D
 
 ## Profile/result presentation follow-up — 2026-10-23
 
-MM01–MM05 are additional planned checks for the existing profile-read dependency, not new Function IDs. All are Planned / Not run; build/manual observations are separate evidence.
+MM01–MM05 are additional planned checks for the existing profile-read dependency, not new Function IDs. These were initially Planned / Not run; current MM outcomes and method mapping are in the linked execution receipts. Build/manual observations remain separate evidence.
 
 | ID / related scope | Actor/fixture/trigger | Expected outcome | Planned executable mapping |
 | --- | --- | --- | --- |
@@ -63,4 +65,4 @@ MM01–MM05 are additional planned checks for the existing profile-read dependen
 | MM04 / REQ-002-F02 | 45 questions/50min, time clear/re-enter/record switch | Integer inputs; approximate display only; exact3000 seconds and version-isolated values | FE/unit/system, TBD |
 | MM05 / REQ-001/002 presentation | EN/VI, keyboard/mobile, submitted-answer review and help | Usable navigation/scroll/help; no answer mutation/key disclosure or false later-learning integration claim | Browser system, TBD |
 
-Current implementation and manual observations: [synchronization review](system/REQ-001-002-final-synchronization-review.md). Existing RB/VB results remain Planned / Not run. Separate approval is required before executable implementation/execution.
+Current implementation and manual observations: [synchronization review](system/REQ-001-002-final-synchronization-review.md). RB/VB/MM executed assertions and their limits are recorded in the current Cluster 4 evidence; no new scope or automatic cluster transition is authorized.

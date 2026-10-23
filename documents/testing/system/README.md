@@ -1,5 +1,7 @@
 # System testing
 
+**2026-10-23 current REQ-001/002:** [Cluster 4 synchronized evidence](REQ-001-002-cluster4-evidence.md) records 131 unique Pass/0 Fail/0 final skipped across targeted runs, including nine post-header-repair system cases. The old mobile failure remains historical. Acceptance/branch limits, blocked numerical/performance and provisional production integrations are explicit; earlier dated Planned/Not run or historical fixed-lifecycle evidence is not silently relabeled.
+
 Current local baseline: [demo contract](../../features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md), [actual manual observations/limits](REQ-002-local-demo.md), [user walkthrough](../../../../../s2%20work/Test%20Guides/REQ-002-F02-full-walkthrough-test-guide.md). Rendered-browser/executable acceptance is still unverified. Production owner integrations/operational C are separate.
 
 [23 October memory/code/doc/schema review](REQ-002-memory-schema-sync.md) records current read-only V23/86-table verification, regenerated diagrams and retained bypasses; no tests were run. Historical [Session1](REQ-002-official-question-bank-session1.md), [cutover](REQ-002-official-local-cutover.md), [Session2](REQ-002-official-question-bank-session2.md) and [Session3](REQ-002-official-question-bank-session3.md) evidence preserve their original environment/date, not current startup instructions.

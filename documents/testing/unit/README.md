@@ -1,5 +1,7 @@
 # Unit Testing Directory & Standards
 
+**2026-10-23 current REQ-001/002:** [Cluster 4 synchronized evidence](../system/REQ-001-002-cluster4-evidence.md) records 131 unique Pass/0 Fail/0 final skipped across targeted runs, including nine post-header-repair system cases. The old mobile failure remains historical. Acceptance/branch limits, blocked numerical/performance and provisional production integrations are explicit; earlier dated Planned/Not run or historical fixed-lifecycle evidence is not silently relabeled.
+
 ## Current Scope Alignment
 
 Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Revised unit/API contracts must cover the four actors, discipline/role assignments, L&D adaptive Blueprint/Test Blueprint, Expert content/guidance, initial confirmation, and independent learning/evidence. Existing PASSED labels and runtime actor codes below are historical evidence, not revised-scope acceptance.

@@ -1,5 +1,7 @@
 # Integration Testing Directory & Standards
 
+**2026-10-23 current REQ-001/002:** [Cluster 4 synchronized evidence](../system/REQ-001-002-cluster4-evidence.md) records 131 unique Pass/0 Fail/0 final skipped across targeted runs, including nine post-header-repair system cases. The old mobile failure remains historical. Acceptance/branch limits, blocked numerical/performance and provisional production integrations are explicit; earlier dated Planned/Not run or historical fixed-lifecycle evidence is not silently relabeled.
+
 ## Current Scope Alignment
 
 Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Test agreed discipline/role assignment, L&D publication/approval, reviewed guidance, independent progress/evidence, retained versions and idempotent tracing/pathways against disposable stores. Assert every agreed architectural field after round-trip; do not invent new fields from preview datasets.
