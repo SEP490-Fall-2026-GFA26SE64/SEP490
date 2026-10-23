@@ -1,10 +1,10 @@
 # Adapt-Learn-Graph: Product Overview
 
-**Current source checkpoint,2026-10-22:** approved slices1–5 now include full-Occupation admission, common Manager form/calculator/list/lifecycle and pinned full/legacy Employee result/history. Main compile, production FE type/lint/build and bounded isolated manual observations passed. Browser interaction remains unverified; no executable acceptance, user-data migration, stage/commit/push or automatic Cluster3. See [evidence/checklist](testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+**REQ-001/002 contract:** [Role selection and Occupation baseline](features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md). Implementation status and evidence are reported separately in the [synchronization review](testing/system/REQ-001-002-final-synchronization-review.md).
 
-**Current scope baseline:** [Adapt-Learn-Graph System Overview](adapt_learn_graph_system_overview.md)  
-**Aligned:** 2026-10-14  
-**Product model:** Internal enterprise system serving one organization  
+**Current scope baseline:** [Adapt-Learn-Graph System Overview](adapt_learn_graph_system_overview.md)
+**Aligned:** 2026-10-14
+**Product model:** Internal enterprise system serving one organization
 **Status:** Scope and traceability baseline, not a finalized SRS or claim of implementation.
 
 ## Current Product Purpose
@@ -104,10 +104,10 @@ Registration performance/research targets remain historical until adopted for th
 
 The following material is retained for historical requirement/test traceability only. It is not the current product model, actor matrix, scope, or acceptance contract. Conflicting confirmed/proposed statements below are superseded by the current sections above.
 
-**Full name:** Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform  
-**Domain:** Software Engineering  
-**Product model:** Subscription-based platform serving enterprises  
-**Document language:** English  
+**Full name:** Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform
+**Domain:** Software Engineering
+**Product model:** Subscription-based platform serving enterprises
+**Document language:** English
 **Status:** Product overview based on the capstone registration and stakeholder clarification dated 2026-09-25; not a finalized Software Requirements Specification.
 
 ## 1. Product Purpose

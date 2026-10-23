@@ -1,8 +1,8 @@
 # Feature and Function Documentation
 
-**Current source checkpoint,2026-10-22:** approved slices1–5 now include full-Occupation admission, common Manager form/calculator/list/lifecycle and pinned full/legacy Employee result/history. Main compile, production FE type/lint/build and bounded isolated manual observations passed. Browser interaction remains unverified; no executable acceptance, user-data migration, stage/commit/push or automatic Cluster3. See [evidence/checklist](../testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+**REQ-001/002:** [Role-to-baseline contract](Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md) defines selected-Role entry, profile-authoritative coverage, retained learner versions and exact settings identity. [Implementation/evidence](../testing/system/REQ-001-002-final-synchronization-review.md) is reported separately.
 
-**Current source:** [System Overview](../adapt_learn_graph_system_overview.md), with requirement mapping in [Product Overview](../PRODUCT_OVERVIEW.md).  
+**Current source:** [System Overview](../adapt_learn_graph_system_overview.md), with requirement mapping in [Product Overview](../PRODUCT_OVERVIEW.md).
 **Aligned:** 2026-10-20. This catalog supersedes the historical SaaS index and interview queue below.
 
 ## Current Reading Rules
@@ -12,7 +12,7 @@
 - Existing requirement/function IDs and file paths remain stable for traceability. Legacy filenames do not establish current business scope.
 - A **Current Scope Alignment** section in an existing feature/function document controls over its retained historical description, decisions, status, and acceptance rules. Old test results do not certify revised scope.
 - New feature READMEs contain function-level IDs, inputs/outcomes, acceptance scenarios, and open decisions. They are scope drafts, not implementation-ready approved contracts.
-- REQ-002 was aligned2026-10-22 for Cluster 1 review: confirmed one full-Occupation baseline/pair for all new entry paths, lifecycle/list/form rules and preserved historical scope/allowance. The approved slices1–5 now implement that scope with dual readers for historical Role/exploration rows; browser review and executable acceptance remain unverified. Target-role selection remains immediate; dependent Functions and their own gates remain separate.
+- REQ-002 uses full-Occupation scope, one bounds pair and profile coverage after Role selection; historical pins/allowance remain preserved.
 - Architecture/schema documents describe existing technical fields separately from product design gaps; do not fabricate fields, scoring formulas, or implementation evidence.
 
 ## Current Feature Index
@@ -20,7 +20,7 @@
 | ID | Feature | Current actor or performer | Contract status |
 | --- | --- | --- | --- |
 | REQ-001 | [Target role selection](Target%20role%20selection/README.md) | Employee | Reclarify reviewed-guidance/publication gates |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | 2026-10-22 slices1–5 full-Occupation source implemented; historical scope preserved, browser/acceptance unverified |
+| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Confirmed contract; implementation/evidence reported separately |
 | REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | Employee | Initial Expert confirmation required |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | Employee | Retained; detail draft |
 | REQ-006 | [Competency graph](Competency%20graph/README.md) | Employee | Retained; detail draft |
@@ -97,8 +97,8 @@ Record future decisions in the owning function. Maintain per-REQ unit/integratio
 
 All statuses, counts, actor names, and confirmed rules below describe the earlier scope. Use the current index and each document's alignment section for present requirements.
 
-**Source:** [Product Overview](../PRODUCT_OVERVIEW.md)  
-**Created:** 2026-09-26  
+**Source:** [Product Overview](../PRODUCT_OVERVIEW.md)
+**Created:** 2026-09-26
 **Scope:** 46 feature folders and 84 function documents. Each feature uses the name from the overview and includes its own README. CRUD functions and distinct user operations are documented separately.
 
 ## How to Read the Documents
@@ -111,12 +111,6 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 - One function can require several questions. A function becomes **Clarified** only when its important behavior, access, inputs, outputs, validation, exceptional states, and acceptance criteria are agreed and documented.
 
 ## Clarification Tracker
-
-**Current REQ-002 direction (2026-10-22):** [Configure](Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md) and [Complete](Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) define one whole-Occupation adaptive 3PL baseline with one pair of bounds for every new entry. Save draft→Preview→Activate, direct Deactivate and lifecycle/list/form rules preserve pinned attempts/history and one-success allowance. [Transition contract](Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md) is approved and implemented in slices1–5 source; browser review remains pending. No shared generated assessment/Review/Publish or score weights.
-
-**Cluster 1 decision boundary:** Product flow, active-role/exploration sampling, capacity validation, one-success Employee + Occupation allowance, no-grace deadline, invalidated/no-mastery replacement, result disclosure, System Administrator calibration promotion and conservative mastery use are approved. Exact IRT constants/library remain system-owned versioned technical implementation configuration and are not L&D fields.
-
-**Progress:** Cluster 1 Function contracts, target database architecture and acceptance plan are approved. V17 remains the superseded local/demo fixed lifecycle; no adaptive migration/runtime/test completion is claimed.
 
 **Clarified selection function (2026-10-01):** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02, owns only the selection transaction. Baseline/gap/pathway generation and soft-skill reuse remain in their owning functions.
 
@@ -164,7 +158,7 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 | Requirement | Feature folder | Function count | Clarified |
 | --- | --- | --- | --- |
 | REQ-001 | [Target role selection](Target%20role%20selection/README.md) | 2 | 2 |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | 2 | 2 |
+| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Confirmed contract; implementation/evidence reported separately |
 | REQ-003 | [Soft skill assessment](Soft%20skill%20assessment/README.md) | 1 | 0 |
 | REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | 1 | 0 |
 | REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | 1 | 0 |

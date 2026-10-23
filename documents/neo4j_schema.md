@@ -1,10 +1,6 @@
 # Schema Neo4j — Ontology v0.8.0
 
-Cập nhật23/10/2026: giữ nguyên contract node/relationship/field bên dưới. Learner/assessment/mastery/pathway state thuộc PostgreSQL. [Local Demo Flow](features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md) chỉ cho adapter demo đọc unreviewed ACTIVE scope OCC-15-1212.00; không sửa reviewer/publication/graph. Adapter mặc định vẫn yêu cầu review, production owner integration còn mở.
-
-Readback22/10 sau cutover/startup ghi nhận đúng827 nodes/4536 relationships/6 constraints, ontology0.8.0 còn NEEDS_EXPERT_REVIEW. Graph seeders/migrator đã bỏ khỏi main source hoặc chuyển test-only; legacy CRUD tắt. Ngày23/10 chỉ xác minh schema PostgreSQL V23 và đồng bộ tài liệu, không kiểm tra lại toàn payload hay ghi Neo4j. [Cutover evidence](testing/system/REQ-002-official-local-cutover.md) · [Session3 preservation](testing/system/REQ-002-official-question-bank-session3.md) · [review/schema hiện hành](testing/system/REQ-002-memory-schema-sync.md).
-
-Baseline mới lấy full active-role union, pin snapshot/pool vào PostgreSQL. Result/history lấy tên/scope từ pin, list/Deactivate dùng PostgreSQL; không thêm property mastery hay attempt vào graph. Catalog visibility/publication/release và REQ-001 legacy-reference mapping còn chờ Person2.
+Catalog uses current string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection/profile/evidence/attempt/pathway state. [Role-first contract](features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md) defines consumers; [read-only verification](testing/system/REQ-001-002-final-synchronization-review.md) records observed metadata separately from this field contract.
 
 ![Sơ đồ ontology0.8.0](diagrams/neo4j.svg)
 
@@ -16,16 +12,7 @@ Baseline mới lấy full active-role union, pin snapshot/pool vào PostgreSQL. 
 
 Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.8.0.
 
-```mermaid
-flowchart LR
- O[Occupation] -->|HAS_ROLE| R[TargetRole]
- R -->|HAS_LEVEL| L[Level]
- L -->|HAS_COMPETENCY| C[Competency]
- C -->|HAS_SKILL| S[MicroSkill]
- L -->|REQUIRES_SKILL| S
- M[LearningModule] -->|TEACHES 1–1| S
- S -->|HAS_SKILL_PREREQUISITE| S
-```
+The ontology diagram above shows the complete relationship set; its PlantUML source is linked beside the image.
 
 | Relationship | Hướng | Ý nghĩa |
 |---|---|---|
@@ -87,7 +74,6 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 | `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
 | `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
 | `scope` | String | Phạm vi công việc của role: làm gì, phụ trách phần nào. Đây là mô tả do nhóm tổng hợp theo nguồn và cần chuyên gia xác nhận. |
-
 
 `occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
 
@@ -222,7 +208,7 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 O*NET cung cấp Occupation, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
 
-[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **827 node, 4.536 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 79 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.8. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **827 node, 4.536 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 79 LearningModule. Có 11 prerequisite skill; không còn Course. Schema/dataset định nghĩa ontology0.8.0. Trạng thái consumer và giới hạn tích hợp được ghi riêng trong [báo cáo đối chiếu](testing/system/REQ-001-002-final-synchronization-review.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
 
 File nguồn, URI đối chiếu và minh chứng được giữ trong [ONTOLOGY.md](dataset/ONTOLOGY.md) và thư mục `dataset/sources/`, không đưa thành các property `sourceConceptUri`, `sourceLocator`, `sourceVerification` trên graph.
 

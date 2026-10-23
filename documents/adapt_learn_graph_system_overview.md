@@ -1,6 +1,6 @@
 # Adapt-Learn-Graph System Overview
 
-**Current source checkpoint,2026-10-22:** approved slices1–5 now include full-Occupation admission, common Manager form/calculator/list/lifecycle and pinned full/legacy Employee result/history. Main compile, production FE type/lint/build and bounded isolated manual observations passed. Browser interaction remains unverified; no executable acceptance, user-data migration, stage/commit/push or automatic Cluster3. See [evidence/checklist](testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md).
+[Role-to-baseline contract](features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md): choose Role → authoritative Occupation profile coverage → required baseline if incomplete. Existing profiles retain their applicable skill set/version. Role guidance, gap and pathway remain dependent Functions.
 
 ## 1. System Overview
 
