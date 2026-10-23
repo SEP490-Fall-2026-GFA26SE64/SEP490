@@ -1232,7 +1232,7 @@ export function TeamMatrixPage() {
                     setSelectedLearner(null)
                   }}
                 >
-                  Export
+                  Export Learner Dossier
                 </Button>
               </div>
             </Dialog>
