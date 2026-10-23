@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ResearchPage } from '../features/administration/research/ResearchPage'
 import { AdminDashboardPage } from '../features/administration/dashboard/AdminDashboardPage'
 import { DesignSystemShowcasePage } from '../features/administration/design-system/DesignSystemShowcasePage'
 import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/KnowledgeGraphPage'
@@ -111,6 +112,7 @@ export default function App() {
 
             {/* 4. Administrator routes (Taxonomy, Knowledge Graph, Design System) */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/admin/research" element={<ResearchPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
             <Route path="/admin/knowledge-graph" element={<KnowledgeGraphPage />} />
             <Route path="/knowledge-graph" element={<Navigate to="/admin/knowledge-graph" replace />} />

@@ -25,6 +25,6 @@ docker compose -f compose.dev.yml up --build -d
 java -jar path\to\plantuml.jar -tsvg documents/diagrams
 ```
 
-Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
+Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.9.0. LearningModule TEACHES MicroSkill is many-to-many (at least one mapping on each side in this dataset); only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
 
 The V7 PlantUML sources are updated. Regenerate `postgresql.svg` and `runtime-topology.svg` when Docker and PlantUML are available; the checked-in SVGs may temporarily show the pre-V7 view.

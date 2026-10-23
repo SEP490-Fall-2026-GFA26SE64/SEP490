@@ -3,6 +3,8 @@
 ## Current Scope Alignment
 Expert updates/organizes an assigned-discipline module and submits revisions for L&D approval; version effects on learning remain open. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
+**Module–Skill mapping (v0.9.0):** A Module may teach several skills and a skill may have several teaching Modules. Return all current mapped skill IDs for authoring/viewing. Published mappings require actual teaching content; completion does not automatically pass all skills.
+
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
 

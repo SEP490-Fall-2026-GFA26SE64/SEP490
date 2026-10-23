@@ -65,7 +65,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Manage role competency requirements:** For target roles assigned by the L&D Manager, add or remove required competencies and micro-skills, and set their required proficiency levels and relative importance.
 - **Manage skill prerequisites:** Define, update, or remove prerequisite relationships between micro-skills.
 - **Manage learning modules:** Create, update, organize, and submit modules for approval; map modules to the micro-skills they teach.
-- **Manage learning content:** Add, update, organize, and remove lesson/practice content within a learning module. Each module teaches exactly one micro-skill, and each skill has exactly one module.
+- **Manage learning content:** Add, update, organize, and remove lesson/practice content within a learning module. A module can teach multiple micro-skills and a micro-skill can be taught by multiple modules.
 - **Manage module assessments:** Create and update assessment questions for assigned learning modules, classify questions by micro-skill and difficulty, configure module assessment rules, and submit assessments for approval.
 - **Review AI role guidance:** Review AI-suggested target roles and comments based on an employee’s baseline and RIASEC assessments; confirm, revise, or reject the guidance.
 - **Review initial learning pathways:** Review the first pathway generated for an employee and target role before the employee starts it; include or exclude suggested modules and confirm the reviewed pathway.
@@ -81,7 +81,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Review target role guidance:** View Expert-reviewed AI suggestions and comments, then select or confirm a target role.
 - **Review competency profile and gaps:** View estimated competency levels and gaps against the selected target role.
 - **Follow a learning pathway:** View and follow the pathway after Expert review.
-- **Learn an individual skill:** Browse available micro-skills, choose one to learn, and access its one mapped module without starting or changing a target role pathway.
+- **Learn an individual skill:** Browse available micro-skills, choose one to learn, and access its approved mapped modules without starting or changing a target role pathway.
 - **Complete learning and assessments:** Access assigned modules, take their assessments, and submit responses.
 - **Track learning progress:** View completed activities, assessment outcomes, and pathway status.
 
@@ -110,7 +110,7 @@ These functions are performed by the system and are not separate actors:
 - **Knowledge tracing:** Updates estimated skill mastery using assessment evidence and configured rules.
 - **Pathway recalculation:** Revises the remaining pathway when new evidence changes the Employee’s learning needs.
 - **Progress tracking:** Records assessment, module, and pathway completion status.
-- **Skill-based content discovery:** Shows the module mapped to an Employee-selected micro-skill, independent of target role pathway recommendations.
+- **Skill-based content discovery:** Shows the approved modules mapped to an Employee-selected micro-skill, independent of target role pathway recommendations.
 
 ## 7. Responsibility Boundaries
 

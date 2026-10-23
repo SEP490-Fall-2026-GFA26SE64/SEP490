@@ -292,3 +292,8 @@ All statuses, counts, actor names, and confirmed rules below describe the earlie
 | REQ-046 | [Consistent learning state](Consistent%20learning%20state/README.md) | 2 | 0 |
 
 </details>
+
+
+## Admin Research RQ2 — 2026-10-21
+
+Scoped user-approved implementation: Admin sidebar Research, ontology data generation, real Neo4j traversal benchmark, persisted mean/P95 results, PDF/JSON/CSV and frozen Markdown exports. REQ-033-F02, REQ-034-F01/F02 and REQ-035-F01 are in scope; RQ1/RQ3 remain deferred. See [Research workspace](../research/README.md) for setup and verification.

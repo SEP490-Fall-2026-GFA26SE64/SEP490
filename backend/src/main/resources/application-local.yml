@@ -15,3 +15,12 @@ learning:
     local-dependencies:
       enabled: ${TARGET_SELECTION_LOCAL_DEPENDENCIES_ENABLED:true}
       assessment-in-progress: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:false}
+
+research:
+  enabled: ${RESEARCH_ENABLED:false}
+  source: ${RESEARCH_SOURCE:../documents/dataset/import/ontology_seed.json}
+  rules: ${RESEARCH_RULES:../documents/research/RQ2/RULES.md}
+  neo4j-uri: ${RESEARCH_NEO4J_URI:bolt://localhost:17687}
+  neo4j-user: ${RESEARCH_NEO4J_USER:neo4j}
+  neo4j-password: ${RESEARCH_NEO4J_PASSWORD:local-only-research-neo4j}
+  environment-label: ${RESEARCH_ENVIRONMENT_LABEL:Local environment; hardware limits not specified}

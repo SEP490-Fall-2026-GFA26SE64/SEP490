@@ -1,15 +1,17 @@
 # Adapt-Learn-Graph: Product Overview
 
 **Current scope baseline:** [Adapt-Learn-Graph System Overview](adapt_learn_graph_system_overview.md)  
-**Aligned:** 2026-10-14  
+**Aligned:** 2026-10-21
 **Product model:** Internal enterprise system serving one organization  
 **Status:** Scope and traceability baseline, not a finalized SRS or claim of implementation.
 
 ## Current Product Purpose
 
-Adapt-Learn-Graph manages employee competencies and personalized learning within one organization. Its knowledge graph connects disciplines, target roles, competencies, micro-skills, learning modules, courses, and assessment mappings. Evidence supports competency estimates, gap analysis, Expert-reviewed AI role guidance, and adaptive pathways.
+Adapt-Learn-Graph manages employee competencies and personalized learning within one organization. Its knowledge graph connects disciplines, target roles, competencies, micro-skills, learning modules and assessment mappings. Evidence supports competency estimates, gap analysis, Expert-reviewed AI role guidance, and adaptive pathways.
 
 The System Overview controls current scope and responsibilities. Older requirements, clarification logs, registration material, and test results below are historical where they conflict. Architecture and schema documents remain the authority for existing technical fields; this update does not change code or databases.
+
+**Ontology 0.9.0:** Module–Skill teaching is many-to-many: one Module can teach several skills and one skill can have several teaching Modules. Course is absent from the current ontology. Recommendation selects suitable Modules for actual gaps; assessment success remains skill-specific.
 
 ## Actors and Boundaries
 
@@ -19,7 +21,7 @@ There are exactly four human actors. Automated services are not actors.
 | --- | --- | --- |
 | System Administrator | Accounts, roles/permissions, organization-wide technical configuration, audit and operational activity. | Assessment business rules remain with L&D/Expert. |
 | L&D Manager | Disciplines, discipline Expert assignments, target-role creation and Expert assignment, baseline assessment configuration, role publication, learning approval, employee monitoring. | Does not edit the Expert's role competency requirements. |
-| Expert | Assigned-discipline skills, prerequisites, modules, courses, questions/module assessments; assigned-role competency requirements; AI guidance and initial pathway review. | Does not publish target roles or approve organizational learning offerings on behalf of L&D. |
+| Expert | Assigned-discipline skills, prerequisites, modules, content and questions/module assessments; assigned-role competency requirements; AI guidance and initial pathway review. | Does not publish target roles or approve organizational learning offerings on behalf of L&D. |
 | Employee | Personal profile, baseline/RIASEC and learning assessments, reviewed role guidance and role selection/confirmation, reviewed pathways, independent skill learning, progress tracking. | Does not author graph definitions or manually alter target-role pathway modules. |
 
 Single-organization deployment does not imply unrestricted access. Assignment, authorized review, and personal-record permissions still apply. Multiple roles per person and reviewer delegation remain open.
@@ -29,11 +31,11 @@ Single-organization deployment does not imply unrestricted access. Assignment, a
 1. System Administrator maintains accounts, permissions, system settings, and activity records.
 2. L&D creates/updates/deactivates disciplines and assigns/removes Experts from disciplines.
 3. L&D creates a target role and assigns an Expert. The Expert configures competencies, micro-skills, required proficiency and importance, and submits the configuration as complete. L&D reviews and publishes/unpublishes it without editing those requirements.
-4. Experts maintain assigned-discipline skills, prerequisites, modules, courses/content, and module assessments. L&D approves submitted modules, courses, and assessments or returns them for revision.
+4. Experts maintain assigned-discipline skills, prerequisites, modules, learning content and module assessments. L&D approves submitted modules and assessments or returns them for revision.
 5. L&D defines baseline competencies covered, question selection, and scoring. Employee completes baseline and RIASEC assessments; the system suggests roles/comments; an Expert confirms, revises, or rejects guidance; Employee views reviewed guidance and selects/confirms a role.
 6. The system calculates gaps and proposes an ordered pathway. An Expert reviews it, includes/excludes modules, and confirms it before Employee learning starts.
 7. Learning and assessments update progress and competency estimates through configured knowledge-tracing rules. New evidence can change remaining learning needs and cause pathway recalculation; exact triggers remain open, not a confirmed failure-only restriction.
-8. Employee can independently browse/select a micro-skill and learn its mapped modules/courses without starting or changing a target-role pathway. Assessment evidence can update competency estimates.
+8. Employee can independently browse/select a micro-skill and learn its mapped Modules without starting or changing a target-role pathway. Assessment evidence can update competency estimates.
 9. L&D monitors profiles, gaps, assessment results, and learning progress.
 
 **Out of scope:** Multi-organization registration/workspaces, subscriptions, payment processing, PayOS, cancellation, and SaaS billing. Platform Administrator and Organization Administrator are not current actors. Soft-skill comments are not a replacement for baseline/RIASEC role guidance. Learning content is not restricted to dummy modules. A research benchmark workspace and report exports are not committed by the System Overview.
@@ -358,3 +360,8 @@ The following do not block this overview, but must be agreed before their detail
 - Stakeholder product clarification supplied in this conversation on 2026-09-25.
 
 </details>
+
+
+## Admin Research RQ2 — 2026-10-21
+
+Scoped user-approved implementation: Admin sidebar Research, ontology data generation, real Neo4j traversal benchmark, persisted mean/P95 results, PDF/JSON/CSV and frozen Markdown exports. REQ-033-F02, REQ-034-F01/F02 and REQ-035-F01 are in scope; RQ1/RQ3 remain deferred. See [Research workspace](research/README.md) for setup and verification.

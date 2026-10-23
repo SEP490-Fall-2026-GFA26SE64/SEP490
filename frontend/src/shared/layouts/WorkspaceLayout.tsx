@@ -13,6 +13,7 @@ import {
   Compass,
   FileQuestion,
   FolderTree,
+  FlaskConical,
   GraduationCap,
   HelpCircle,
   LayoutDashboard,
@@ -48,7 +49,7 @@ interface NavTabItem {
 
 export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin'
 
-export function WorkspaceLayout({ children }: { children: ReactNode }) {
+export function WorkspaceLayout({ children, mobileOverlay = false }: { children: ReactNode; mobileOverlay?: boolean }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -272,6 +273,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Network size={15} />,
       },
       {
+        label: t('nav.research', 'Research'),
+        href: '/admin/research',
+        icon: <FlaskConical size={15} />,
+      },
+      {
         label: t('nav.designSystem'),
         href: '/admin/design-system',
         icon: <Palette size={15} />,
@@ -401,6 +407,15 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
   }, [activeActor, isEmployee])
 
+  React.useEffect(() => {
+    if (!mobileOverlay) return
+    const viewport = window.matchMedia('(max-width: 768px)')
+    const collapseOnMobile = () => { if (viewport.matches) setIsSidebarCollapsed(true) }
+    collapseOnMobile()
+    viewport.addEventListener('change', collapseOnMobile)
+    return () => viewport.removeEventListener('change', collapseOnMobile)
+  }, [mobileOverlay])
+
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
       const next = !prev
@@ -418,7 +433,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     : '/admin/dashboard'
 
   return (
-    <div className="workspace">
+    <div className={`workspace ${mobileOverlay ? 'workspace--mobile-overlay' : ''}`}>
       {/* Top Header */}
       <header className="workspace-header">
         <div className="workspace-topbar">
@@ -430,6 +445,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
               title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-expanded={!isSidebarCollapsed}
+              aria-controls="workspace-sidebar"
             >
               {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
             </button>
@@ -659,6 +676,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       <div className="workspace-body">
         {/* Collapsible Left Sidebar */}
         <aside
+          id="workspace-sidebar"
           className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
           aria-label="Sidebar navigation"
         >

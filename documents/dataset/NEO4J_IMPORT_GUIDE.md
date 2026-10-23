@@ -1,6 +1,6 @@
-# Import ontology 0.8.0 into Neo4j
+# Import ontology 0.9.0 into Neo4j
 
-The current seed has **827 nodes and 4,536 relationships**. It contains occupation RIASEC, Level-owned competencies, 79 one-to-one Module–Skill mappings and HAS_SKILL_PREREQUISITE. Earlier snapshots are incompatible; use an empty isolated graph rather than overlaying releases.
+The current seed has **833 nodes and 4,638 relationships**. It contains occupation RIASEC, Level-owned competencies, 85 Modules, 79 Skills, 181 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. Earlier snapshots are incompatible; use an empty isolated graph rather than overlaying releases.
 
 ## 1. Validate the local package
 
@@ -16,9 +16,9 @@ Regression checks (no database connection):
 python3 documents/dataset/import/test_dataset.py
 ```
 
-Expected: `Local checks passed: 827 nodes, 4536 relationships, 30 source RIASEC ratings.`
+Expected: `Local checks passed: 833 nodes, 4638 relationships, 30 source RIASEC ratings.`
 
-The validator checks source title membership, parent ownership, competency memberships, Level requirements, threshold bounds, module content, the skill prerequisite DAG, exact one-to-one TEACHES cardinality and all 30 normalized RIASEC source values. The seed, scripts and lesson content are in `import/`; official source files and local evidence are in the sibling `sources/`. Full source/teaching approval remains a human review responsibility; a structural PASS does not constitute expert approval.
+The validator checks source title membership, parent ownership, competency memberships, Level requirements, threshold bounds, module content, the skill prerequisite DAG, many-to-many teaching coverage and duplicate-pair checks and all 30 normalized RIASEC source values. The seed, scripts and lesson content are in `import/`; official source files and local evidence are in the sibling `sources/`. Full source/teaching approval remains a human review responsibility; a structural PASS does not constitute expert approval.
 
 ## 2. Create a separate review instance
 
@@ -27,25 +27,25 @@ In zsh:
 ```bash
 read -s 'ONTOLOGY_NEO4J_PASSWORD?Password for ontology review: '
 export ONTOLOGY_NEO4J_PASSWORD
-docker run -d --name ontology-v08-neo4j \
+docker run -d --name ontology-v09-neo4j \
   -p 127.0.0.1:7479:7474 \
   -p 127.0.0.1:7692:7687 \
   -e NEO4J_AUTH="neo4j/${ONTOLOGY_NEO4J_PASSWORD}" \
-  -v ontology_v08_neo4j_data:/data \
+  -v ontology_v09_neo4j_data:/data \
   neo4j:5.26-community
 ```
 
 Use an eight-character-or-longer password. In bash use `read -s -p 'Password: ' ONTOLOGY_NEO4J_PASSWORD`. If ports/container names are taken, choose free ones. Existing Browser/database on port 7475 is unaffected by these instructions.
 
-Open [Neo4j Browser](http://localhost:7479/browser/), connect to `bolt://localhost:7692`, user `neo4j`. Existing instance: `docker start ontology-v08-neo4j`.
+Open [Neo4j Browser](http://localhost:7479/browser/), connect to `bolt://localhost:7692`, user `neo4j`. Existing instance: `docker start ontology-v09-neo4j`.
 
 ## 3. Import the JSON seed
 
 ```bash
-python3 -m venv /tmp/ontology-v08-import-venv
-/tmp/ontology-v08-import-venv/bin/python -m pip install 'neo4j>=5.26,<6'
+python3 -m venv /tmp/ontology-v09-import-venv
+/tmp/ontology-v09-import-venv/bin/python -m pip install 'neo4j>=5.26,<6'
 export ONTOLOGY_NEO4J_URI='bolt://localhost:7692'
-/tmp/ontology-v08-import-venv/bin/python documents/dataset/import/import_neo4j.py
+/tmp/ontology-v09-import-venv/bin/python documents/dataset/import/import_neo4j.py
 unset ONTOLOGY_NEO4J_PASSWORD
 ```
 
@@ -95,18 +95,18 @@ RETURN p;
 ```cypher
 MATCH (s:MicroSkill)
 OPTIONAL MATCH (m:LearningModule)-[t:TEACHES]->(s)
-WITH s, count(t) AS providers WHERE providers <> 1
+WITH s, count(t) AS providers WHERE providers = 0
 RETURN s.id, providers;
 ```
 
 ```cypher
 MATCH (m:LearningModule)
 OPTIONAL MATCH (m)-[t:TEACHES]->(:MicroSkill)
-WITH m, count(t) AS skills WHERE skills <> 1
+WITH m, count(t) AS skills WHERE skills = 0
 RETURN m.id, skills;
 ```
 
-Both cardinality queries must return no rows.
+Both orphan-detection queries must return no rows.
 
 ```cypher
 MATCH p = (:MicroSkill)-[:HAS_SKILL_PREREQUISITE]->(:MicroSkill) RETURN p;
@@ -118,7 +118,7 @@ To view the entire graph:
 MATCH (a)-[r]->(b) RETURN a,r,b;
 ```
 
-Browser can limit displayed records/visual graph size. Use scoped queries for readability; the all-graph view contains 827 nodes and 4,536 relationships.
+Browser can limit displayed records/visual graph size. Use scoped queries for readability; the all-graph view contains 833 nodes and 4,638 relationships.
 
 [Field rules](ONTOLOGY.md) and [source/scale specification](ONTOLOGY.md) accompany the seed. Newly added reading/practice scaffolds are sample content pending detailed lesson/lab authoring and review; teaching-edge coverage alone does not prove content is suitable for official assessment.
 
@@ -145,4 +145,28 @@ The last query must return 0.
 
 ## Excel and seed synchronization
 
-[ontology_dataset.xlsx](ontology_dataset.xlsx) is the review workbook. [import/ontology_seed.json](import/ontology_seed.json) is the executable import seed. Both files have been regenerated for 0.8.0 and checked for record equality. The importer reads JSON; it does not read Excel or automatically apply human review inputs. If you edit workbook records, regenerate the seed and rerun validation before importing. Assessment policies/rubrics/readiness tasks remain outside the seed and Neo4j; learner results are stored separately.
+[ontology_dataset.xlsx](ontology_dataset.xlsx) is the review workbook. [import/ontology_seed.json](import/ontology_seed.json) is the executable import seed. Both files have been regenerated for 0.9.0 and checked for record equality. The importer reads JSON; it does not read Excel or automatically apply human review inputs. If you edit workbook records, regenerate the seed and rerun validation before importing. Assessment policies/rubrics/readiness tasks remain outside the seed and Neo4j; learner results are stored separately.
+
+## Inspect many-to-many candidates
+
+The following query inspects candidate coverage only; it does not approve content or compute a final pathway. Set `levelId` and `gapSkillIds` from the learner's selected Level and confirmed gaps.
+
+```cypher
+MATCH (:Level {id: $levelId})-[:REQUIRES_SKILL]->(s:MicroSkill)
+      <-[:TEACHES]-(m:LearningModule)
+WHERE s.id IN $gapSkillIds
+RETURN m.id AS moduleId, m.title AS title, m.contentUri AS contentUri,
+       collect(DISTINCT s.id) AS matchedGapSkillIds
+ORDER BY moduleId;
+```
+
+The grouped result includes a Module once with all matched gaps. Multiple rows for the same skill indicate candidate providers, not a requirement to learn them all. Official selection also checks review/publication, content depth, skill readiness and feasible activity order. Module completion never creates PASS results for every TEACHES target.
+
+## Manual verification checklist
+
+- URL: http://localhost:7479/browser/ for an isolated review database; workbook: ontology_dataset.xlsx.
+- Prerequisites: validate the package and import this exact snapshot into an empty graph using the guide above. Existing databases are not modified by these instructions.
+- Steps: inspect LearningModules and TEACHES sheets, run entity/relationship counts and both orphan queries, then run the candidate query with an actual Level and confirmed gap IDs.
+- Expected: 85 Modules, 79 Skills and 181 TEACHES pairs; 833 total nodes and 4,638 relationships; no orphan rows. Some Modules teach multiple skills and some skills have multiple providers. Course and retired assessment/profile fields are absent.
+
+Current automated evidence: local validation/dry-run and ten regression tests pass; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.

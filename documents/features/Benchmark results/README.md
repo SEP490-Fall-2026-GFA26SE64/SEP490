@@ -15,3 +15,6 @@ Present experiment metrics together with the context needed to interpret them.
 ## Functions
 
 - [View Benchmark Results](View%20Benchmark%20Results.md)
+## RQ2 implementation update — 2026-10-21
+
+The user authorized RQ2 generation, execution, persisted status/results and PDF/rule exports in the Admin Research workspace. The RQ2 function specs and [research rules](../../research/RQ2/RULES.md) supersede the historical-only disposition below for RQ2. RQ1/RQ3 remain deferred.

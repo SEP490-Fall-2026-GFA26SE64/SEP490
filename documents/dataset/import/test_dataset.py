@@ -1,4 +1,4 @@
-"""Regression checks for the v0.8 catalog boundary. No database connection."""
+"""Regression checks for the v0.9 catalog boundary. No database connection."""
 import copy,json,unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -20,18 +20,40 @@ class CatalogContractTest(unittest.TestCase):
 
     def test_valid_payload_has_no_export_join_fields(self):
         nodes,edges,_=build_payload(self.data)
-        self.assertEqual((len(nodes),len(edges)),(827,4536))
+        self.assertEqual((len(nodes),len(edges)),(833,4638))
         for _,props in nodes.values():self.assertFalse({'occupationId','targetRoleId','levelId','levelIds'} & props.keys())
 
-    def test_two_providers_leave_another_skill_without_module(self):
-        def mutate(d):
-            edges=[e for e in d['relationships'] if e['type']=='TEACHES'];edges[0]['toId']=edges[1]['toId']
-        self.check_invalid(mutate,'Each skill must have exactly one module')
+    def test_many_to_many_teaching_is_accepted(self):
+        from collections import Counter
+        edges=[e for e in self.data['relationships'] if e['type']=='TEACHES']
+        self.assertTrue(any(n>1 for n in Counter(e['fromId'] for e in edges).values()))
+        self.assertTrue(any(n>1 for n in Counter(e['toId'] for e in edges).values()))
 
-    def test_one_module_teaches_two_skills_leaving_an_orphan(self):
+    def test_module_without_skills_rejected(self):
+        from collections import Counter
         def mutate(d):
-            edges=[e for e in d['relationships'] if e['type']=='TEACHES'];edges[0]['fromId']=edges[1]['fromId']
-        self.check_invalid(mutate,'Each module must teach exactly one skill')
+            edges=[e for e in d['relationships'] if e['type']=='TEACHES']
+            counts=Counter(e['fromId'] for e in edges)
+            edge=next(e for e in edges if counts[e['fromId']]==1)
+            occupied={(e['fromId'],e['toId']) for e in edges}
+            edge['fromId']=next(m['id'] for m in d['LearningModules'] if m['id']!=edge['fromId'] and (m['id'],edge['toId']) not in occupied)
+        self.check_invalid(mutate,'Each module must teach at least one skill')
+
+    def test_skill_without_provider_rejected(self):
+        from collections import Counter
+        def mutate(d):
+            edges=[e for e in d['relationships'] if e['type']=='TEACHES']
+            counts=Counter(e['toId'] for e in edges)
+            edge=next(e for e in edges if counts[e['toId']]==1)
+            occupied={(e['fromId'],e['toId']) for e in edges}
+            edge['toId']=next(skill['id'] for skill in d['MicroSkills'] if skill['id']!=edge['toId'] and (edge['fromId'],skill['id']) not in occupied)
+        self.check_invalid(mutate,'Each skill must have at least one module')
+
+    def test_duplicate_teaching_pair_rejected(self):
+        def mutate(d):
+            edges=[e for e in d['relationships'] if e['type']=='TEACHES']
+            edges[0].update(fromId=edges[1]['fromId'],toId=edges[1]['toId'])
+        self.check_invalid(mutate,'Duplicate edge pair')
 
     def test_retired_field_rejected(self):
         self.check_invalid(lambda d:d['LearningModules'][0].update(learningOutcome='retired'),'fields leaked')

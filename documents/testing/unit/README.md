@@ -67,3 +67,10 @@ When implementing or updating a requirement (`REQ-nnn`):
 2. **Include Acceptance Criteria**: Pin every test method to an AC from the corresponding `documents/features/<Feature>/<Function>.md`.
 3. **Assert Architectural Completeness**: Explicitly verify all architecturally defined fields (e.g., track, seniority, responsibilities, version, assignedExpertId).
 4. **Link to this index**: Add the requirement to the table above.
+
+
+## Admin Research RQ2
+
+- [REQ-033 Research RQ2](REQ-033-rq2-research.md)
+- [REQ-034 Research RQ2](REQ-034-rq2-research.md)
+- [REQ-035 Research RQ2](REQ-035-rq2-research.md)

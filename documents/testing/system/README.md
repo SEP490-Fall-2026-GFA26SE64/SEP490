@@ -67,3 +67,10 @@ When writing system tests for a new requirement (`REQ-nnn`):
 2. **Define User Journeys**: Specify multi-tier workflows connecting user actions (in UI/API) to persistent state changes across PostgreSQL and Neo4j.
 3. **Manual Browser Checklist**: If the requirement includes UI components, provide or link to a structured step-by-step manual browser testing checklist (`documents/testing/system/<REQ-ID>-manual-browser-check.md`).
 4. **Link to this index**: Add the requirement to the table above.
+
+
+## Admin Research RQ2
+
+- [REQ-033 Research RQ2](REQ-033-rq2-research.md)
+- [REQ-034 Research RQ2](REQ-034-rq2-research.md)
+- [REQ-035 Research RQ2](REQ-035-rq2-research.md)

@@ -1,7 +1,10 @@
 # View Learning Module
 
 ## Current Scope Alignment
-Employee accesses approved module/course content through a confirmed pathway or independent skill learning, including mapped outcomes and assessments. Dummy-only content is superseded. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+Employee accesses approved Module content through a confirmed pathway or independent skill learning, including mapped outcomes and assessments. Dummy-only content is superseded. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+
+The current Module view must show the mapped skills. A Module may cover several skills, and other Modules may teach the same skills. Availability and assessment evidence are evaluated independently of the number of mappings.
+
 
 ## Historical Dummy-Only Specification
 Conflicting constraints below are superseded; delivery/completion policy remains open.

@@ -63,3 +63,10 @@ When writing integration tests for a new requirement (`REQ-nnn`):
 2. **Specify Container Fixtures**: Define the exact Testcontainers image (e.g. `neo4j:5.26-community`), seed nodes, and tenant isolation scope (`org-alpha` vs `org-beta`).
 3. **Verify Database Persistence**: Assert that every architecturally defined field is accurately persisted and reconstructed upon reading back.
 4. **Link to this index**: Add the requirement to the table above.
+
+
+## Admin Research RQ2
+
+- [REQ-033 Research RQ2](REQ-033-rq2-research.md)
+- [REQ-034 Research RQ2](REQ-034-rq2-research.md)
+- [REQ-035 Research RQ2](REQ-035-rq2-research.md)

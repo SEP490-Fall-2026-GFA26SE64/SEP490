@@ -1,0 +1,51 @@
+# Middle Application services and data - Module 1: Independent implementation
+
+Module ID: MOD-FS-M-SERVICE-01. Content version: 1.2. Review: NEEDS_EXPERT_REVIEW.
+
+## Learn
+
+Read [the local lesson: Making service boundaries explicit](../topics/FS-SERVICE.md). It includes a conceptual explanation, worked example and a self-check with an answer. Then use the linked official resources for additional detail.
+
+## Skill focus
+
+- **MS-FS03: design application interfaces** — Define interfaces through which application components exchange information.
+- **MS-FS04: use query languages** — Retrieve and manipulate data using a query language.
+- **MS-FS05: integrate system components** — Connect components and verify their combined behaviour.
+
+## Study and practice sequence
+
+1. Read the linked local explanation and work through its example.
+2. Answer the self-check before looking at the answer.
+3. Inspect the official learning resources below for the techniques used in this module.
+4. Complete the assigned tasks below and record checks and evidence.
+
+## Learning prerequisites
+
+- Before MS-FS05, demonstrate MS-FS03: Understand the component contract before connecting components.
+
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+
+## Assigned tasks and submission evidence
+
+
+In Application services and data, demonstrate the following middle tasks:
+
+- MS-FS03: Design application contracts and error behaviour across components independently; test consumers.
+- MS-FS04: Develop queries with joins, constraints and boundary cases independently; verify correctness.
+- MS-FS05: Integrate components independently; verify contracts, error propagation and consistent data flow.
+
+Submit evidence:
+
+- MS-FS03: Interface specification, request/response examples, contract tests and design rationale.
+- MS-FS04: Query scripts, expected results, edge-case data and execution measurements.
+- MS-FS05: Integration diagram, runnable feature, contract checks and failure tests.
+
+## Official learning resources
+
+- [MDN Fetch guide](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+- [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+- [PostgreSQL transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html)
+
+## Assessment boundary
+
+Completion is not an attainment decision. An approved external assessment task/rubric, skill-specific evidence at the selected Level and approved catalog dependencies are required for official assessment. Completion does not automatically pass all taught skills. This lesson has not yet received that approval.

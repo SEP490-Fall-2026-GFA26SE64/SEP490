@@ -281,3 +281,18 @@
     padding: 16px;
   }
 }
+
+@media (max-width: 768px) {
+  .workspace--mobile-overlay .workspace-sidebar {
+    position: fixed;
+    top: 54px;
+    bottom: 0;
+    left: 0;
+    height: calc(100dvh - 54px);
+  }
+  .workspace--mobile-overlay .workspace-sidebar.collapsed { display: none; }
+  .workspace--mobile-overlay .workspace-sidebar.expanded {
+    width: 240px;
+    box-shadow: 4px 0 16px hsl(var(--foreground) / .12);
+  }
+}

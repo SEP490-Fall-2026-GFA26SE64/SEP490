@@ -64,3 +64,8 @@ For high-level summaries combining all testing levels into a single document per
 - [REQ-018 Target-Role Graph Editing Master Plan](REQ-018-target-role-graph-editing.md)
 - [REQ-023 Target Role Management Master Plan](REQ-023-target-role-management.md)
 - [REQ-024 Expert Assignment Master Plan](REQ-024-expert-assignment.md)
+
+
+## Research RQ2 verification
+
+REQ-033-F02 / REQ-034-F01,F02 / REQ-035-F01: dedicated records in [unit](unit/REQ-034-rq2-research.md), [integration](integration/REQ-034-rq2-research.md), [system](system/REQ-034-rq2-research.md), and [manual procedures](system/REQ-034-manual-browser-check.md). Status is recorded per level, not inferred from earlier benchmark drafts.
