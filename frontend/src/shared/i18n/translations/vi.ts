@@ -1,6 +1,14 @@
 import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
+  upskillingUi: {
+    roles: 'Vị trí', skills: 'Kỹ năng', activeRole: 'Vị trí đang chọn',
+    searchPlaceholder: 'Tìm vị trí theo tên hoặc nghề nghiệp…', clearFilters: 'Xóa bộ lọc',
+    roleCatalog: 'Danh mục vị trí', skillCount: 'Kỹ năng yêu cầu', levels: 'Cấp độ',
+    allRoles: 'Tất cả vị trí', status: 'Trạng thái', noResults: 'Không có vị trí phù hợp với bộ lọc',
+    noResultsHint: 'Hãy thử từ khóa khác hoặc xóa bộ lọc để xem các vị trí hiện có.',
+    roleSelection: 'Vị trí đã chọn và đánh giá đầu vào', showDetails: 'Xem chi tiết',
+  },
   baselineUi: {
     approxHint: '≈ Giá trị hiển thị làm tròn tới số nguyên gần nhất. Thời lượng lưu theo giây vẫn giữ chính xác.',
     helpTitle: 'Hiểu mức thành thạo và độ tin cậy',
@@ -66,6 +74,10 @@ export const vi: TranslationKeys = {
     },
   },
   roleFlow: {
+    openEmployee: 'Mở không gian nhân viên',
+    sessionFailed: 'Chưa thể mở không gian nhân viên. Vui lòng thử lại.',
+    accessDenied: 'Tài khoản của bạn không có quyền xem trang này. Hãy đăng nhập bằng tài khoản nhân viên có quyền truy cập.',
+    demoAccountRequired: 'Hãy chọn một tài khoản demo trong danh sách để tiếp tục.',
     occupation: 'Nghề nghiệp', allOccupations: 'Tất cả nghề nghiệp', sort: 'Sắp xếp theo', roleName: 'Tên vị trí',
     loading: 'Đang tải vị trí và trạng thái baseline…', selectedRole: 'Vị trí đã chọn', previousUnavailable: 'Vị trí đã chọn trước đây không còn khả dụng',
     selectedAt: 'Đã chọn lúc', search: 'Tìm vị trí', refresh: 'Tải lại', empty: 'Không có vị trí phù hợp đang khả dụng.', details: 'Yêu cầu của vị trí',
@@ -73,8 +85,8 @@ export const vi: TranslationKeys = {
     chooseNotice: 'Chọn vị trí này, sau đó kiểm tra baseline cần làm của nghề nghiệp tương ứng.', changeNotice: 'Thay vị trí hiện tại? Mastery và lịch sử làm bài được giữ nguyên.',
     coverage: 'Kỹ năng đã có mastery', baselineVersion: 'Phiên bản baseline', start: 'Làm baseline bắt buộc', resume: 'Tiếp tục baseline', continue: 'Tiếp tục xem khoảng cách kỹ năng',
     retry: 'Thử lại', retryNotice: 'Giữ trang này mở. Thử lại để đối chiếu an toàn cùng yêu cầu.',
-    requestError: 'Chưa tải được vị trí hoặc trạng thái baseline. Vui lòng thử lại.', employeeRequired: 'Chọn persona Employee trong bảng demo để chọn vị trí và làm baseline.',
-    selectFirst: 'Chọn một vị trí trong mục Vị trí làm việc mong muốn. Hệ thống sẽ kiểm tra mastery của nghề nghiệp và hướng dẫn làm baseline nếu cần.',
+    requestError: 'Chưa tải được vị trí hoặc trạng thái baseline. Vui lòng thử lại.', employeeRequired: 'Phiên hiện tại chưa ở không gian nhân viên. Hãy mở không gian này để xem vị trí và mức độ thành thạo.',
+    selectFirst: 'Chọn một vị trí ở thẻ Vị trí trong mục Nâng cao kỹ năng. Mức độ thành thạo theo nghề nghiệp sẽ quyết định bạn có cần làm đánh giá đầu vào hay không.',
     mandatory: 'Bắt buộc', requiredScore: 'Mức năng lực yêu cầu',
     states: {
       SELECT_ROLE: 'Chọn vị trí để tiếp tục.', ROLE_UNAVAILABLE: 'Vị trí cũ không còn khả dụng. Hãy chọn vị trí hiện tại ở bên dưới.',
@@ -90,6 +102,13 @@ export const vi: TranslationKeys = {
       NETWORK_ERROR: 'Chưa xác định được kết quả. Hãy thử lại cùng yêu cầu.', INVALID_RESPONSE: 'Chưa xác minh được phản hồi. Hãy thử lại an toàn.' },
   },
   adaptiveBaseline: {
+    previewReader: {
+      close: 'Đóng xem trước', page: 'Trang', navigation: 'Điều hướng câu hỏi xem trước',
+      zoom: 'Cỡ chữ và cửa sổ xem trước', zoomIn: 'Phóng to chữ', zoomOut: 'Thu nhỏ chữ',
+      resetZoom: 'Đặt lại cỡ chữ 100%', expand: 'Mở rộng cửa sổ', restore: 'Khôi phục kích thước cửa sổ',
+      keyboard: 'Dùng ← → để chuyển trang', empty: 'Chưa có câu hỏi mẫu được trả về.',
+    },
+
     createNew: 'Tạo mới', deleteDraft: 'Xóa bản nháp', cancelEditing: 'Hủy chỉnh sửa',
     deleteDraftNotice: 'Xóa bản nháp này? Bạn sẽ không thể tiếp tục chỉnh sửa bản nháp. Các phiên bản đã kích hoạt và lịch sử làm bài được giữ nguyên.',
     existingDraftNotice: 'Đã có bản nháp. Bạn có thể tiếp tục chỉnh sửa hoặc xóa bản nháp trước khi tạo bản mới.',

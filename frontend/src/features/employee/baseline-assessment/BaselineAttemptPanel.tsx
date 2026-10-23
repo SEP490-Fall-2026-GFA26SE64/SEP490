@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Clock, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
@@ -21,19 +22,19 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, run }: {
   const ui = (key: string) => t(`baselineUi.${key}`)
   const [choice, setChoice] = useState(''), [confirm, setConfirm] = useState(false)
   const expired = attempt.expired || seconds <= 0
-  return <div className="space-y-6">
-    <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-6">
-      <div className="min-w-0 space-y-2"><Badge variant="outline">{tr(`scopes.${attempt.assessmentScope}`)}</Badge><CardTitle>{tr('title')}</CardTitle>
-        <Text className="break-words text-muted-foreground">{ui('occupation')}: {attempt.occupationName}</Text></div>
+  return <div className="min-w-0 space-y-5">
+    <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
+      <div className="min-w-0 space-y-2"><Badge variant="outline">{tr(`scopes.${attempt.assessmentScope}`)}</Badge><Heading level={2} size="card">{attempt.occupationName}</Heading>
+        </div>
       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-4"><Clock className="text-primary" size={20} />
         <div><Text variant="caption">{tr('remaining')}</Text><span role="timer" className="block font-mono font-semibold">{Math.floor(Math.max(0, seconds) / 60)}:{String(Math.max(0, seconds) % 60).padStart(2, '0')}</span></div></div>
     </CardContent></Card>
-    <div className="grid items-start gap-6 lg:grid-cols-4">
-      <Card className="lg:col-span-1"><CardHeader className="border-b border-border"><CardTitle>{ui('navigation')}</CardTitle><Badge variant="outline" className="w-fit">{ui('answered')}: {attempt.answeredCount}</Badge></CardHeader>
-        <CardContent className="space-y-4 pt-4">
+    <div className="grid items-start gap-4 lg:grid-cols-4">
+      <Card className="lg:col-span-1"><CardHeader className="border-b border-border p-5"><Heading level={2} size="card">{ui('navigation')}</Heading><Badge variant="outline" className="w-fit">{ui('answered')}: {attempt.answeredCount}</Badge></CardHeader>
+        <CardContent className="space-y-4 p-5">
           <nav aria-label={ui('navigation')} className="grid max-h-64 grid-cols-5 gap-2 overflow-y-auto">
-            {attempt.items.map(value => <Button key={value.position} variant={value.position === position ? 'primary' : 'outline'}
-              className={value.selectedOptionId !== null && value.position !== position ? 'border-primary bg-secondary' : ''}
+            {attempt.items.map(value => <Button size="icon" key={value.position} variant={value.position === position ? 'primary' : 'outline'}
+              className={value.selectedOptionId !== null && value.position !== position ? 'h-9 w-full min-w-0 border-primary bg-secondary' : 'h-9 w-full min-w-0'}
               aria-current={value.position === position ? 'step' : undefined}
               aria-label={`${ui('question')} ${value.position}: ${ui(value.selectedOptionId === null ? 'unanswered' : 'answered')}`}
               onClick={() => setPosition(value.position)}>{value.position}</Button>)}
@@ -42,11 +43,11 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, run }: {
           <div className="space-y-3 border-t border-border pt-4"><Text variant="caption">{ui('savedHint')}</Text>
             <Button className="w-full" disabled={locked || expired} onClick={() => setConfirm(true)}>{tr('submit')}</Button></div>
         </CardContent></Card>
-      <Card className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}</Badge>{review && <Badge variant="secondary">{ui('review')}</Badge>}</div></CardHeader>
-    <CardContent className="space-y-5 pt-6">
-      <p className="text-sm text-muted-foreground">{tr('timerNotice')}</p>
+      <Card className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border p-5"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}</Badge>{review && <Badge variant="secondary">{ui('review')}</Badge>}</div></CardHeader>
+    <CardContent className="space-y-4 p-5">
+      <Text variant="caption">{tr('timerNotice')}</Text>
       {expired ? <p role="status">{tr('expired')}</p> : item ? <fieldset disabled={locked || review} className="min-w-0 space-y-5">
-        <legend className="mb-5 whitespace-pre-wrap break-words text-body font-semibold">{item.prompt}</legend>
+        <legend className="mb-5 whitespace-pre-wrap break-words text-body-sm font-semibold">{item.prompt}</legend>
         <RadioGroup value={item.selectedOptionId ?? choice} onChange={setChoice} disabled={locked || review} aria-label={tr('chooseAnswer')}>
           {item.options.map(option => <label key={option.id} htmlFor={`baseline-option-${option.id}`} className={`flex items-start gap-3 rounded-lg border p-4 text-body-sm ${option.id === (item.selectedOptionId ?? choice) ? 'border-primary bg-secondary' : 'border-border'} ${review || locked ? '' : 'cursor-pointer hover:bg-muted'}`}>
             <RadioGroupItem id={`baseline-option-${option.id}`} name="baseline-answer" value={option.id} />

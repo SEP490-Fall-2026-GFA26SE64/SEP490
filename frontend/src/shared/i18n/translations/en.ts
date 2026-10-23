@@ -1,4 +1,12 @@
 export const en = {
+  upskillingUi: {
+    roles: 'Roles', skills: 'Skills', activeRole: 'Active Role',
+    searchPlaceholder: 'Search Roles by name or Occupation…', clearFilters: 'Clear filters',
+    roleCatalog: 'Role catalog', skillCount: 'Required skills', levels: 'Levels',
+    allRoles: 'All Roles', status: 'Status', noResults: 'No Roles match your filters',
+    noResultsHint: 'Try another search or clear your filters to browse available Roles.',
+    roleSelection: 'Role selection and baseline', showDetails: 'View details',
+  },
   baselineUi: {
     approxHint: '≈ Rounded to the nearest whole number for display. The saved duration in seconds stays exact.',
     helpTitle: 'Understanding mastery and confidence',
@@ -64,6 +72,10 @@ export const en = {
     },
   },
   roleFlow: {
+    openEmployee: 'Open Employee workspace',
+    sessionFailed: 'Could not open the Employee workspace. Please try again.',
+    accessDenied: 'Your account cannot access this Employee view. Sign in with an authorized Employee account.',
+    demoAccountRequired: 'Choose one of the listed demo accounts to continue.',
     occupation: 'Occupation', allOccupations: 'All Occupations', sort: 'Sort by', roleName: 'Role name',
     loading: 'Loading roles and baseline status…', selectedRole: 'Selected Role', previousUnavailable: 'Previous Role is no longer available',
     selectedAt: 'Selected', search: 'Search Roles', refresh: 'Refresh', empty: 'No matching Roles are available.', details: 'Role requirements',
@@ -71,8 +83,8 @@ export const en = {
     chooseNotice: 'Select this Role, then check the baseline required for its Occupation.', changeNotice: 'Replace your current Role? Assessment history and mastery are retained.',
     coverage: 'Skills with mastery', baselineVersion: 'Baseline version', start: 'Take required baseline', resume: 'Resume baseline', continue: 'Continue to skill gaps',
     retry: 'Retry', retryNotice: 'Keep this page open. Retry safely to reconcile the same request.',
-    requestError: 'Could not load current Roles or baseline status. Please retry.', employeeRequired: 'Select an Employee demo persona to choose a Role and take its baseline.',
-    selectFirst: 'Choose a Role in Target Roles. The system will check mastery for its Occupation and guide you to the required baseline.',
+    requestError: 'Could not load current Roles or baseline status. Please retry.', employeeRequired: 'This session is not in the Employee workspace. Open it to view Roles and My Mastery.',
+    selectFirst: 'Choose a Role in the Roles tab of Upskilling. Your Occupation mastery will determine whether a baseline is needed.',
     mandatory: 'Required', requiredScore: 'Target proficiency',
     states: {
       SELECT_ROLE: 'Choose a Role to continue.', ROLE_UNAVAILABLE: 'Your previous Role is unavailable. Choose a current Role below.',
@@ -88,6 +100,13 @@ export const en = {
       NETWORK_ERROR: 'The response is unknown. Retry the same request.', INVALID_RESPONSE: 'The response could not be verified. Retry safely.' },
   },
   adaptiveBaseline: {
+    previewReader: {
+      close: 'Close preview', page: 'Page', navigation: 'Preview question navigation',
+      zoom: 'Text size and preview window', zoomIn: 'Increase text size', zoomOut: 'Decrease text size',
+      resetZoom: 'Reset text size to 100%', expand: 'Expand preview', restore: 'Restore preview size',
+      keyboard: 'Use ← → to turn pages', empty: 'No sample questions were returned.',
+    },
+
     createNew: 'Create new', deleteDraft: 'Delete draft', cancelEditing: 'Cancel editing',
     deleteDraftNotice: 'Delete this draft? Its settings will no longer be editable. Released versions and learner history stay unchanged.',
     existingDraftNotice: 'A draft already exists. Continue editing it, or delete it before creating a new draft.',

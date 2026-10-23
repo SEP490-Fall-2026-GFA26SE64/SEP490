@@ -98,7 +98,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
 
   const handleSelectRole = (role: CurrentRole) => {
     setIsOpen(false)
-    navigate(`/employee/target-roles?search=${encodeURIComponent(role.name)}`)
+    navigate(`/employee/upskilling?tab=roles&search=${encodeURIComponent(role.name)}`)
   }
 
   const handleSelectSkill = (skill: MicroSkillDto) => {
@@ -112,7 +112,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
     setIsOpen(false)
     // If top match is a role and query strongly matches, navigate to roles, else generic
     if (matchingRoles.length > 0 && matchingSkills.length === 0) {
-      navigate(`/employee/target-roles?search=${encodeURIComponent(query.trim())}`)
+      navigate(`/employee/upskilling?tab=roles&search=${encodeURIComponent(query.trim())}`)
     } else if (matchingSkills.length > 0 && matchingRoles.length === 0) {
       navigate(`/employee/upskilling?tab=skills&search=${encodeURIComponent(query.trim())}`)
     } else {

@@ -183,11 +183,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Target size={15} />,
       },
       {
-        label: t('nav.targetRoles'),
-        href: '/employee/target-roles',
-        icon: <Target size={15} />,
-      },
-      {
         label: t('baselineUi.myMastery'),
         href: '/employee/my-mastery',
         icon: <Award size={15} />,
@@ -386,7 +381,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       )
     }
     if (itemHref === '/employee/upskilling' || itemHref === '/learner/upskilling') {
-      return path === '/employee/upskilling' || path === '/learner/upskilling'
+      return path === '/employee/upskilling' || path === '/learner/upskilling' || path === '/employee/target-roles' || path === '/learner/target-roles'
     }
     if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
       return path === '/employee/target-roles' || path === '/learner/target-roles'
@@ -540,7 +535,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     : '/admin/dashboard'
 
   return (
-    <div className="workspace">
+    <div className={`workspace ${isEmployee ? 'workspace--employee' : ''}`}>
       {/* Top Header */}
       <header className="workspace-header">
         <div className="workspace-topbar">
@@ -595,7 +590,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
           {/* Center: Coursera-style Global Searchbar (Employee only) */}
           {isEmployee && (
-            <div className="flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
+            <div className="workspace-header-search flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
               <GlobalSearchbar />
             </div>
           )}

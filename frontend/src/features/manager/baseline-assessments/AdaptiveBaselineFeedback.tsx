@@ -17,8 +17,8 @@ export function AdaptiveShortages({ values, skillNames = {} }: { values: Adaptiv
 }
 export function AdaptiveErrorNotice({ error }: { error: AdaptiveBaselineApiError }) {
   const { t } = useTranslation()
-  return <div role="alert" className="space-y-2 rounded-lg border border-destructive bg-card p-4 text-destructive">
-    <Text>{t(`adaptiveBaseline.errors.${error.code}`, t('adaptiveBaseline.errors.REQUEST_FAILED'))}</Text>
+  return <div role="alert" className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-destructive">
+    <Text variant="body-sm" tone="destructive">{t(`adaptiveBaseline.errors.${error.code}`, t('adaptiveBaseline.errors.REQUEST_FAILED'))}</Text>
     <AdaptiveShortages values={error.shortages} />
   </div>
 }
