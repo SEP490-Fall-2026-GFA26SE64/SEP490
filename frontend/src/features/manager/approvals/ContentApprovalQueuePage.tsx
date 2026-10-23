@@ -52,7 +52,7 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     code: 'MOD-004',
     title: 'Graph Neural Networks & Relational Inductive Biases',
     type: 'module',
-    occupation: 'Software Developers (15-1252.00)',
+    occupation: 'Software Developers',
     submittedBy: 'Dr. Sarah Chen',
     submittedAt: '2026-10-13 16:30',
     status: 'PENDING_REVIEW',
@@ -64,7 +64,7 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     code: 'ASMT-009',
     title: 'Dynamic Knowledge Tracing Assessment Blueprint',
     type: 'assessment',
-    occupation: 'Software Developers (15-1252.00)',
+    occupation: 'Software Developers',
     submittedBy: 'Chen Wei',
     submittedAt: '2026-10-13 14:15',
     status: 'PENDING_REVIEW',
@@ -76,7 +76,7 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     code: 'MOD-005',
     title: 'High-Concurrency Outbox Pattern in Spring Boot',
     type: 'module',
-    occupation: 'Computer Systems Engineers/Architects (15-1299.08)',
+    occupation: 'Computer Systems Engineers/Architects',
     submittedBy: 'Chen Wei',
     submittedAt: '2026-10-12 11:20',
     status: 'PENDING_REVIEW',
@@ -88,7 +88,7 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     code: 'MOD-001',
     title: 'Foundations of Knowledge Graphs & Cypher Querying',
     type: 'module',
-    occupation: 'Database Architects (15-1243.00)',
+    occupation: 'Database Architects',
     submittedBy: 'Dr. Sarah Chen',
     submittedAt: '2026-10-10 09:00',
     status: 'APPROVED',
@@ -197,13 +197,13 @@ export function ContentApprovalQueuePage() {
     switch (type) {
       case 'module':
         return (
-          <Badge variant="primary" className="text-[10px] font-semibold uppercase tracking-wider">
+          <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider">
             Module
           </Badge>
         )
       case 'assessment':
         return (
-          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider bg-secondary/40 text-primary border-primary/30">
+          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">
             Assessment
           </Badge>
         )
@@ -400,28 +400,31 @@ export function ContentApprovalQueuePage() {
                               {getTypeBadge(item.type)}
                             </td>
                             <td className="py-3 px-3">
-                              <div className="text-xs font-semibold text-foreground">{item.occupation}</div>
+                              <div className="text-xs font-semibold text-foreground">
+                                {item.occupation.replace(/\s*\(\d{2}-\d{4}\.\d{2}\)/g, '')}
+                              </div>
                               <div className="text-[11px] text-muted-foreground mt-0.5">By {item.submittedBy}</div>
                             </td>
                             <td className="py-3 px-3">
-                              {item.microSkillsMapped.length > 0 && (
+                              {item.microSkillsMapped.length > 0 ? (
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span
-                                    className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/70 text-foreground font-mono border border-primary/20 font-medium inline-flex items-center gap-1 shadow-2xs"
+                                    className="text-xs font-medium text-foreground"
                                     title={item.microSkillsMapped[0]}
                                   >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
                                     {item.microSkillsMapped[0]}
                                   </span>
                                   {item.microSkillsMapped.length > 1 && (
                                     <span
-                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/25 cursor-default shadow-2xs"
+                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/20 cursor-default"
                                       title={`+${item.microSkillsMapped.length - 1} more: ${item.microSkillsMapped.slice(1).join(', ')}`}
                                     >
                                       +{item.microSkillsMapped.length - 1}
                                     </span>
                                   )}
                                 </div>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground italic">None</span>
                               )}
                             </td>
                             <td className="py-3 px-3">
@@ -557,12 +560,19 @@ export function ContentApprovalQueuePage() {
       {/* REVISION FEEDBACK DIALOG */}
       <Dialog open={isRevisionModalOpen} onOpenChange={setIsRevisionModalOpen} className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-warning" />
-            Request Revision for {selectedSubmission?.code}
-          </DialogTitle>
+          <div className="flex items-center justify-between pr-4">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              {selectedSubmission?.title || 'Request Revision'}
+            </DialogTitle>
+            {selectedSubmission && (
+              <Badge variant="warning">
+                REVISION
+              </Badge>
+            )}
+          </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Provide actionable curricular feedback for {selectedSubmission?.submittedBy}.
+            Provide actionable curricular feedback for {selectedSubmission?.submittedBy} ({selectedSubmission?.code}).
           </DialogDescription>
         </DialogHeader>
 
@@ -606,7 +616,7 @@ export function ContentApprovalQueuePage() {
               <div className="flex items-center justify-between gap-3 pr-6">
                 <DialogTitle className="text-base font-bold flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-primary" />
-                  View Details
+                  {viewingSubmission.title}
                 </DialogTitle>
                 <div className="flex items-center gap-1.5">
                   {getTypeBadge(viewingSubmission.type)}
@@ -614,7 +624,7 @@ export function ContentApprovalQueuePage() {
                 </div>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
-                <strong className="text-foreground">{viewingSubmission.title}</strong> • Code: {viewingSubmission.code}
+                Review curricular submission details, structural attributes, and pedagogical criteria.
               </DialogDescription>
             </DialogHeader>
 
@@ -633,7 +643,9 @@ export function ContentApprovalQueuePage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div className="p-2.5 rounded-lg border border-border bg-background">
                   <span className="text-[11px] text-muted-foreground block">Occupation</span>
-                  <strong className="text-foreground text-xs">{viewingSubmission.occupation}</strong>
+                  <strong className="text-foreground text-xs">
+                    {viewingSubmission.occupation.replace(/\s*\(\d{2}-\d{4}\.\d{2}\)/g, '')}
+                  </strong>
                 </div>
                 <div className="p-2.5 rounded-lg border border-border bg-background">
                   <span className="text-[11px] text-muted-foreground block">Submitted By</span>
@@ -690,7 +702,7 @@ export function ContentApprovalQueuePage() {
                     leftIcon={<ThumbsDown size={14} />}
                     className="font-semibold shadow-2xs"
                   >
-                    Reject / Request Revision
+                    Reject
                   </Button>
                   <Button
                     variant="primary"
@@ -703,7 +715,7 @@ export function ContentApprovalQueuePage() {
                     leftIcon={<ThumbsUp size={14} />}
                     className="font-semibold shadow-2xs"
                   >
-                    Approve Offering
+                    Approve
                   </Button>
                 </div>
               )}

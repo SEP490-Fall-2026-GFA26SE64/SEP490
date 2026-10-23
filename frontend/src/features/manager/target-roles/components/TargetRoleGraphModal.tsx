@@ -364,12 +364,12 @@ export function TargetRoleGraphModal({
       <DialogHeader className="p-4 border-b border-border bg-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <DialogTitle className="flex items-center gap-2 text-lg">
+              <DialogTitle className="flex items-center gap-2 text-base font-bold">
                 <GitBranch className="h-5 w-5 text-primary" />
-                Target-Role Knowledge Graph: {graphData?.roleName || roleTitle || 'Role Subgraph'}
+                {graphData?.roleName || roleTitle || 'Role Subgraph'}
               </DialogTitle>
-              <DialogDescription className="text-xs">
-                Inspect required micro-skills, minimum proficiencies, and pedagogical prerequisite sequencing.
+              <DialogDescription className="text-xs text-muted-foreground">
+                Inspect required micro-skills, minimum proficiencies, and prerequisite sequencing.
               </DialogDescription>
             </div>
 

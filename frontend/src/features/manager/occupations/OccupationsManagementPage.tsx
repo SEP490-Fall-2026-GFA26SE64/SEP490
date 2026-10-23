@@ -700,22 +700,22 @@ export function OccupationsManagementPage() {
             variant="gradient"
             icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
             title="Unassigned Occupations"
-            value={`${unassignedCount} Domains`}
+            value={`${unassignedCount} Occupations`}
             valueClassName="text-destructive"
-            description="Requiring expert lead"
+            description="Awaiting expert assignment"
           />
         </div>
 
         {/* OCCUPATIONS CATALOG TABLE CARD */}
         <Card className="border border-border shadow-xs overflow-hidden">
-          <CardHeader className="bg-card border-b border-border pb-4">
+          <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2">
                   <FolderTree className="h-4 w-4 text-primary" />
                   Occupations Directory
                 </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                <CardDescription>
                   Browse and govern knowledge domains, track SME coverage, and assign domain leads.
                 </CardDescription>
               </div>
@@ -784,7 +784,7 @@ export function OccupationsManagementPage() {
                           </div>
                         </td>
                         <td className="py-3 px-3 text-center font-medium">
-                          <span className="font-semibold text-primary">{occ.microSkillCount}</span> skills
+                          <span className="font-semibold text-foreground">{occ.microSkillCount}</span> skills
                         </td>
                         <td className="py-3 px-3 text-center font-medium">
                           <span className="font-semibold text-foreground">{occ.moduleCount}</span> modules
@@ -932,10 +932,10 @@ export function OccupationsManagementPage() {
       />
 
       {/* VIEW DETAILS MODAL (WITH RIASEC INTEREST PROFILE) */}
-      <Dialog open={!!viewingDetailsOccupation} onOpenChange={() => setViewingDetailsOccupation(null)}>
+      <Dialog open={!!viewingDetailsOccupation} onOpenChange={() => setViewingDetailsOccupation(null)} className="max-w-xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
         {viewingDetailsOccupation && (
-          <div className="space-y-4 max-w-xl">
-            <DialogHeader>
+          <>
+            <DialogHeader className="shrink-0 mb-3">
               <div className="flex items-center justify-between gap-3">
                 <DialogTitle className="text-base font-bold flex items-center gap-2">
                   <FolderTree className="h-4 w-4 text-primary" />
@@ -946,11 +946,11 @@ export function OccupationsManagementPage() {
                 </Badge>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
-                O*NET-SOC: <code className="font-mono font-bold text-foreground">{viewingDetailsOccupation.code}</code> • Job Zone {viewingDetailsOccupation.jobZone}
+                View Details &amp; RIASEC profile
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-3.5 py-1 text-xs">
+            <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 py-1 text-xs min-h-0">
               {/* Description Box */}
               <div className="p-3 rounded-lg border border-border bg-muted/20">
                 <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
@@ -964,7 +964,7 @@ export function OccupationsManagementPage() {
               {/* Coverage Metrics */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-2.5 rounded-lg border border-border bg-background">
-                  <span className="text-[11px] text-muted-foreground block">Micro-Skills Required</span>
+                  <span className="text-[11px] text-muted-foreground block">Micro-Skills</span>
                   <strong className="text-foreground text-sm font-semibold">{viewingDetailsOccupation.microSkillCount} Skills</strong>
                 </div>
                 <div className="p-2.5 rounded-lg border border-border bg-background">
@@ -977,9 +977,8 @@ export function OccupationsManagementPage() {
               <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/20 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
-                    O*NET 31.0 RIASEC Interest Profile
+                    RIASEC Profile
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">Normalized [0.0 - 1.0]</span>
                 </div>
 
                 <div className="space-y-2">
@@ -1082,38 +1081,79 @@ export function OccupationsManagementPage() {
               </div>
             </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
               <Button
-                variant="outline"
+                variant={viewingDetailsOccupation.status === 'active' ? 'destructive' : 'outline'}
                 size="sm"
+                leftIcon={
+                  viewingDetailsOccupation.status === 'active' ? (
+                    <Power className="h-3.5 w-3.5" />
+                  ) : (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                  )
+                }
                 onClick={() => {
                   const occ = viewingDetailsOccupation
                   setViewingDetailsOccupation(null)
-                  handleOpenAssignExpert(occ)
+                  if (occ.status === 'active') {
+                    setOccupationToDeactivate(occ)
+                  } else {
+                    handleToggleStatus(occ)
+                  }
                 }}
               >
-                Manage Experts
+                {viewingDetailsOccupation.status === 'active' ? 'Deactivate Occupation' : 'Activate Occupation'}
               </Button>
-              <Button variant="primary" size="sm" onClick={() => setViewingDetailsOccupation(null)}>
-                Close
-              </Button>
+
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setViewingDetailsOccupation(null)}>
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                  onClick={() => {
+                    const occ = viewingDetailsOccupation
+                    setViewingDetailsOccupation(null)
+                    handleOpenEdit(occ)
+                  }}
+                >
+                  Edit Occupation
+                </Button>
+              </div>
             </DialogFooter>
-          </div>
+          </>
         )}
       </Dialog>
 
       {/* CREATE / EDIT OCCUPATION MODAL (WITH RIASEC EDITING) */}
-      <Dialog open={isOccupationModalOpen} onOpenChange={setIsOccupationModalOpen} className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-base font-bold">
-            {editingOccupation ? 'Edit Occupation' : 'Create New Occupation'}
-          </DialogTitle>
+      <Dialog open={isOccupationModalOpen} onOpenChange={setIsOccupationModalOpen} className="max-w-lg max-h-[88vh] flex flex-col p-6 overflow-hidden">
+        <DialogHeader className="shrink-0 mb-3">
+          <div className="flex items-center justify-between pr-4">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <FolderTree className="h-5 w-5 text-primary" />
+              {editingOccupation ? (occName || editingOccupation.name) : 'Create New Occupation'}
+            </DialogTitle>
+            {editingOccupation ? (
+              <Badge variant={editingOccupation.status === 'active' ? 'success' : 'outline'}>
+                {editingOccupation.status.toUpperCase()}
+              </Badge>
+            ) : (
+              <Badge variant="primary" className="bg-primary/10 text-primary border-primary/25">
+                NEW
+              </Badge>
+            )}
+          </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Define the curricular scope to organize micro-skills, calibrate RIASEC interests, and assign Experts.
+            {editingOccupation
+              ? 'Update curricular scope, calibrate RIASEC interest weights, and configure requirements.'
+              : 'Define a new occupation to structure micro-skills, instructional modules, and expert assignments.'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSaveOccupation} className="space-y-4 py-2">
+        <form onSubmit={handleSaveOccupation} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto pr-1.5 space-y-4 py-1 min-h-0">
           <div>
             <label className="text-xs font-semibold text-foreground block mb-1">
               O*NET-SOC Code <span className="text-destructive">*</span>
@@ -1166,88 +1206,99 @@ export function OccupationsManagementPage() {
             />
           </div>
 
-          {/* RIASEC Profile Calibration Accordion/Inputs */}
-          <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2">
-            <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block">
-              Calibrate RIASEC Interest Weights (0.00 – 1.00)
-            </span>
-            <div className="grid grid-cols-3 gap-2 text-xs">
+          {/* RIASEC Profile Calibration (Volume Slider + Direct Percentage Input) */}
+          <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/20 space-y-3">
+            <div className="flex items-center justify-between">
               <div>
-                <label className="text-[11px] text-muted-foreground block mb-0.5">Realistic</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={occInterests.realistic}
-                  onChange={(e) => setOccInterests((prev) => ({ ...prev, realistic: parseFloat(e.target.value) || 0 }))}
-                  className="h-7 text-xs font-mono"
-                />
+                <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
+                  Calibrate RIASEC Interest Weights
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Drag the slider or enter a percentage to configure the Holland Code profile.
+                </span>
               </div>
-              <div>
-                <label className="text-[11px] text-muted-foreground block mb-0.5">Investigative</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={occInterests.investigative}
-                  onChange={(e) => setOccInterests((prev) => ({ ...prev, investigative: parseFloat(e.target.value) || 0 }))}
-                  className="h-7 text-xs font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] text-muted-foreground block mb-0.5">Artistic</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={occInterests.artistic}
-                  onChange={(e) => setOccInterests((prev) => ({ ...prev, artistic: parseFloat(e.target.value) || 0 }))}
-                  className="h-7 text-xs font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] text-muted-foreground block mb-0.5">Social</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={occInterests.social}
-                  onChange={(e) => setOccInterests((prev) => ({ ...prev, social: parseFloat(e.target.value) || 0 }))}
-                  className="h-7 text-xs font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] text-muted-foreground block mb-0.5">Enterprising</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={occInterests.enterprising}
-                  onChange={(e) => setOccInterests((prev) => ({ ...prev, enterprising: parseFloat(e.target.value) || 0 }))}
-                  className="h-7 text-xs font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] text-muted-foreground block mb-0.5">Conventional</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  value={occInterests.conventional}
-                  onChange={(e) => setOccInterests((prev) => ({ ...prev, conventional: parseFloat(e.target.value) || 0 }))}
-                  className="h-7 text-xs font-mono"
-                />
-              </div>
+              <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-card/60">
+                0% – 100%
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              {[
+                { key: 'realistic' as const, code: 'Realistic (R)', desc: 'Hands-on / Technical' },
+                { key: 'investigative' as const, code: 'Investigative (I)', desc: 'Analytical / Problem-Solving' },
+                { key: 'artistic' as const, code: 'Artistic (A)', desc: 'Design / Expression' },
+                { key: 'social' as const, code: 'Social (S)', desc: 'Support / Helping' },
+                { key: 'enterprising' as const, code: 'Enterprising (E)', desc: 'Leadership / Persuasion' },
+                { key: 'conventional' as const, code: 'Conventional (C)', desc: 'Structured Data / Rules' },
+              ].map((dim) => {
+                const rawVal = occInterests[dim.key] ?? 0
+                const percentVal = Math.round(rawVal * 100)
+
+                return (
+                  <div
+                    key={dim.key}
+                    className="p-2.5 rounded-lg border border-border/80 bg-card shadow-2xs space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="text-xs font-semibold text-foreground block truncate">
+                          {dim.code}
+                        </span>
+                        <span className="text-[10.5px] text-muted-foreground block truncate">
+                          {dim.desc}
+                        </span>
+                      </div>
+
+                      {/* Direct manual percent input */}
+                      <div className="flex items-center gap-1 shrink-0 bg-muted/40 px-1.5 py-0.5 rounded border border-border">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={percentVal}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? 0 : Number(e.target.value)
+                            const clamped = Math.min(100, Math.max(0, isNaN(val) ? 0 : val))
+                            setOccInterests((prev) => ({
+                              ...prev,
+                              [dim.key]: Number((clamped / 100).toFixed(3)),
+                            }))
+                          }}
+                          className="w-8 text-right text-xs font-mono font-bold bg-transparent text-foreground focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          aria-label={`${dim.code} percentage`}
+                        />
+                        <span className="text-xs font-bold text-muted-foreground">%</span>
+                      </div>
+                    </div>
+
+                    {/* Volume-Style Slider (Drag Left & Right) */}
+                    <div className="pt-0.5">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={percentVal}
+                        onChange={(e) => {
+                          const num = Number(e.target.value) || 0
+                          setOccInterests((prev) => ({
+                            ...prev,
+                            [dim.key]: Number((num / 100).toFixed(3)),
+                          }))
+                        }}
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                        aria-label={`${dim.code} slider`}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
+          </div>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3">
             <Button
               variant="outline"
               size="sm"
@@ -1268,10 +1319,10 @@ export function OccupationsManagementPage() {
         <DialogHeader>
           <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Deactivate Occupation Domain?
+            Deactivate Occupation?
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Are you sure you want to suspend <strong className="text-foreground">{occupationToDeactivate?.name}</strong> ({occupationToDeactivate?.code})?
+            Are you sure you want to suspend <strong className="text-foreground">{occupationToDeactivate?.name}</strong>?
           </DialogDescription>
         </DialogHeader>
 
@@ -1279,7 +1330,7 @@ export function OccupationsManagementPage() {
           <div className="space-y-3 py-2 text-xs">
             <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
               <div className="font-semibold text-foreground">
-                {occupationToDeactivate.name} ({occupationToDeactivate.code})
+                {occupationToDeactivate.name}
               </div>
               <div className="text-[11px] text-muted-foreground flex items-center gap-2">
                 <span>{occupationToDeactivate.microSkillCount} Skills</span>
@@ -1324,7 +1375,7 @@ export function OccupationsManagementPage() {
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-primary" />
-            Assign Experts — {activeOccupationInModal?.name} ({activeOccupationInModal?.code})
+            {activeOccupationInModal?.name}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             Manage subject matter expert assignments for this curricular occupation domain.
@@ -1340,7 +1391,10 @@ export function OccupationsManagementPage() {
                   Currently Assigned Experts ({assignedExpertsInModal.length})
                 </h3>
                 {newlyAssignedCount > 0 && (
-                  <Badge variant="primary" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-semibold bg-primary/10 text-primary border-primary/25 hover:bg-primary hover:text-white transition-colors"
+                  >
                     +{newlyAssignedCount} Added This Session
                   </Badge>
                 )}

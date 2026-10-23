@@ -149,10 +149,10 @@ public final class DevelopmentCatalogSeeder {
                                 MERGE (role:TargetRole {code: 'ROLE-AI-ARCH'})
                                 SET role.id = '20000000-0000-0000-0000-000000000003',
                                     role.name = 'AI Knowledge Architect',
-                                    role.familyCode = 'AI_ML', role.track = 'PROFESSIONAL',
+                                    role.familyCode = 'AI_ML', role.track = 'MANAGEMENT',
                                     role.domainCode = 'AI',
                                     role.organizationId = 'comp-technova',
-                                    role.seniority = 'P4',
+                                    role.seniority = 'M3',
                                     role.assignedExpertId = 'expert-chen',
                                     role.version = '1.0',
                                     role.description = 'Enterprise architect responsible for multi-modal knowledge modeling, graph ML pipelines, and ontological integration.',

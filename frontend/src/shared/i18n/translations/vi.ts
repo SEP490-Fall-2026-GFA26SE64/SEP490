@@ -17,7 +17,7 @@ export const vi: TranslationKeys = {
     ontology: 'Bản thể tri thức',
     modules: 'Mô-đun học tập',
     assessmentBank: 'Ngân hàng câu hỏi',
-    learningOutcomes: 'Kết quả đào tạo',
+    learningOutcomes: 'Bảng điều khiển',
     userDirectory: 'Tài khoản người dùng',
     adminConsole: 'Bảng điều khiển hệ thống',
     teamMatrix: 'Ma trận đội ngũ',

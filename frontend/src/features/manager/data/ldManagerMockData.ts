@@ -318,6 +318,7 @@ export interface AssessmentBlueprintModel {
 
 export interface LearningOutcomeCohort {
   id: string
+  cohortSnapshotId?: string
   cohortName: string
   department: string
   targetRole: string
@@ -326,7 +327,7 @@ export interface LearningOutcomeCohort {
   completionRate: number
   gapClosureRate: number
   velocityTrend: string
-  status: 'Exceeding' | 'On Track' | 'Attention'
+  status: 'Exceeding' | 'On Track' | 'Behind Pace' | 'Attention'
 }
 
 export interface SkillAcquisitionMetric {
@@ -334,7 +335,7 @@ export interface SkillAcquisitionMetric {
   skillName: string
   masteryRate: number
   avgAttemptsToPass: number
-  difficultyTag: 'High Velocity' | 'Standard' | 'Bottleneck'
+  difficultyTag: 'Exceeding' | 'On Track' | 'Behind Pace'
 }
 
 // ----------------------------------------------------
@@ -727,6 +728,7 @@ export const INITIAL_PROVENANCE_LEDGER: ProvenanceRecord[] = [
 export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   {
     id: 'coh-01',
+    cohortSnapshotId: 'CS-2026-Q1-01',
     cohortName: 'Q1 AI Architecture Onboarding Cohort',
     department: 'Machine Learning & Cognitive Architecture',
     targetRole: 'AI Knowledge Architect',
@@ -739,6 +741,7 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   },
   {
     id: 'coh-02',
+    cohortSnapshotId: 'CS-2026-Q1-02',
     cohortName: 'Platform Data Engineers Up-skilling',
     department: 'Platform Engineering',
     targetRole: 'Senior MLOps & Graph Systems Engineer',
@@ -751,6 +754,7 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   },
   {
     id: 'coh-03',
+    cohortSnapshotId: 'CS-2026-Q1-03',
     cohortName: 'Enterprise Data Analysts Cross-Skilling',
     department: 'Data Analytics & BI',
     targetRole: 'AI Knowledge Architect',
@@ -759,14 +763,17 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
     completionRate: 58.0,
     gapClosureRate: 42.5,
     velocityTrend: '-3.1% vs Q4',
-    status: 'Attention',
+    status: 'Behind Pace',
   },
 ]
 
 export const SKILL_ACQUISITION_METRICS: SkillAcquisitionMetric[] = [
-  { skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL', masteryRate: 92, avgAttemptsToPass: 1.3, difficultyTag: 'High Velocity' },
-  { skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL', masteryRate: 84, avgAttemptsToPass: 1.8, difficultyTag: 'Standard' },
-  { skillCode: 'SKILL-EMB-03', skillName: 'Node2Vec Embeddings', masteryRate: 78, avgAttemptsToPass: 2.1, difficultyTag: 'Standard' },
-  { skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', masteryRate: 63, avgAttemptsToPass: 3.4, difficultyTag: 'Bottleneck' },
-  { skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search', masteryRate: 71, avgAttemptsToPass: 2.4, difficultyTag: 'Standard' },
+  { skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL', masteryRate: 92, avgAttemptsToPass: 1.3, difficultyTag: 'Exceeding' },
+  { skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL', masteryRate: 84, avgAttemptsToPass: 1.8, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-EMB-03', skillName: 'Node2Vec Embeddings', masteryRate: 78, avgAttemptsToPass: 2.1, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', masteryRate: 63, avgAttemptsToPass: 3.4, difficultyTag: 'Behind Pace' },
+  { skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search', masteryRate: 71, avgAttemptsToPass: 2.4, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-DKT-06', skillName: 'Dynamic Knowledge Tracing & Pedagogy', masteryRate: 59, avgAttemptsToPass: 3.6, difficultyTag: 'Behind Pace' },
+  { skillCode: 'SKILL-ATTN-07', skillName: 'Multi-Head Attention & Transformers', masteryRate: 88, avgAttemptsToPass: 1.4, difficultyTag: 'Exceeding' },
+  { skillCode: 'SKILL-PROMPT-08', skillName: 'Prompt Engineering & Context Injection', masteryRate: 82, avgAttemptsToPass: 1.9, difficultyTag: 'On Track' },
 ]

@@ -18,7 +18,6 @@ import {
   Sliders,
   Trash2,
   Upload,
-  Users,
 } from 'lucide-react'
 
 import * as React from 'react'
@@ -251,7 +250,9 @@ export function TargetRolesPage() {
     responsibilitiesText: '',
     assignedExpertId: 'expert-chen',
     description: '',
+    competencyIds: [] as string[],
   })
+  const [createCompSearch, setCreateCompSearch] = React.useState('')
 
   // Form states for editing role (L&D Manager view/edit scope)
   const [editRoleForm, setEditRoleForm] = React.useState({
@@ -263,7 +264,9 @@ export function TargetRolesPage() {
     responsibilitiesText: '',
     assignedExpertId: '',
     description: '',
+    competencyIds: [] as string[],
   })
+  const [editCompSearch, setEditCompSearch] = React.useState('')
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
   const [sortBy, setSortBy] = React.useState<'latest' | 'title'>('latest')
@@ -320,7 +323,6 @@ export function TargetRolesPage() {
   const draftRoles = roles.filter((r) => r.status === 'draft').length
   const sentRoles = roles.filter((r) => r.status === 'sent').length
   const rejectedRoles = roles.filter((r) => r.status === 'rejected').length
-  const activeLearners = roles.reduce((acc, r) => acc + r.activeEnrollments, 0)
 
   // Dispatch draft to Domain Expert for micro-skill configuration
   const handleSendToExpert = async (role: TargetRoleModel) => {
@@ -381,7 +383,9 @@ export function TargetRolesPage() {
       responsibilitiesText: '',
       assignedExpertId: 'expert-chen',
       description: '',
+      competencyIds: [],
     })
+    setCreateCompSearch('')
     setIsCreateRoleModalOpen(true)
   }
 
@@ -429,6 +433,7 @@ export function TargetRolesPage() {
           responsibilities: parsedResponsibilities,
           assignedExpertId: roleForm.assignedExpertId,
           description: roleForm.description,
+          competencyIds: roleForm.competencyIds,
         }),
       })
 
@@ -474,7 +479,7 @@ export function TargetRolesPage() {
       description: roleForm.description || 'Enterprise role profile awaiting competency mappings.',
       version: '1.0',
       status: 'draft',
-      competencyIds: [],
+      competencyIds: roleForm.competencyIds || [],
       skillTargets: [],
       activeEnrollments: 0,
       createdAt: new Date().toISOString(),
@@ -605,7 +610,9 @@ export function TargetRolesPage() {
       responsibilitiesText: Array.isArray(role.responsibilities) ? role.responsibilities.join('\n') : '',
       assignedExpertId: role.assignedExpertId || '',
       description: role.description || '',
+      competencyIds: role.competencyIds || [],
     })
+    setEditCompSearch('')
     setIsSkillTargetsModalOpen(true)
   }
 
@@ -648,6 +655,7 @@ export function TargetRolesPage() {
           status: selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'rejected' ? 'REJECTED' : 'DRAFT',
           version: selectedRole.version,
           skillTargets: selectedRole.skillTargets,
+          competencyIds: editRoleForm.competencyIds,
         }),
       })
       if (res.ok) {
@@ -669,6 +677,7 @@ export function TargetRolesPage() {
       assignedExpertName: assignedExpert ? assignedExpert.name : '',
       department: domainObj ? domainObj.name : selectedRole.department,
       description: editRoleForm.description,
+      competencyIds: editRoleForm.competencyIds,
       updatedAt: new Date().toISOString(),
     }
 
@@ -680,11 +689,6 @@ export function TargetRolesPage() {
       description: `Saved changes to ${updatedRole.code} - ${updatedRole.title}.`,
       variant: 'success',
     })
-  }
-
-  // Open skill targets modal with first unassigned skill (deprecated helper alias)
-  const handleOpenSkillTargets = (role: TargetRoleModel) => {
-    handleOpenEditRole(role)
   }
 
 
@@ -825,7 +829,7 @@ export function TargetRolesPage() {
         />
 
         {/* Aggregate KPI StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard
             variant="gradient"
             icon={<Briefcase className="h-4 w-4 text-primary" />}
@@ -851,15 +855,6 @@ export function TargetRolesPage() {
             value={(draftRoles + sentRoles + rejectedRoles).toString()}
             valueClassName="text-warning"
             description={`${draftRoles} drafts · ${sentRoles} sent · ${rejectedRoles} rejected`}
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<Users className="h-4 w-4 text-primary" />}
-            title="Active Role Assignments"
-            value={activeLearners.toString()}
-            valueClassName="text-primary"
-            description="Employees pursuing target goals"
           />
         </div>
 
@@ -1075,7 +1070,7 @@ export function TargetRolesPage() {
                                 {role.track || 'PROFESSIONAL'}
                               </Badge>
                               {role.seniority && (
-                                <Badge variant="primary" className="text-[10px] font-semibold whitespace-nowrap">
+                                <Badge variant={role.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold whitespace-nowrap">
                                   {role.seniority}
                                 </Badge>
                               )}
@@ -1096,31 +1091,14 @@ export function TargetRolesPage() {
                             )}
                           </td>
                           <td className="py-3 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setSelectedRole(role)
-                                setIsMappingsModalOpen(true)
-                              }}
-                              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
-                            >
-                              <BookOpen className="h-3 w-3" />
+                            <span className="font-semibold text-foreground text-xs">
                               {role.competencyIds.length} linked
-                            </button>
+                            </span>
                           </td>
                           <td className="py-3 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleOpenEditRole(role)
-                              }}
-                              className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-primary hover:underline cursor-pointer"
-                            >
-                              <Sliders className="h-3 w-3 text-primary" />
+                            <span className="font-semibold text-foreground text-xs">
                               {role.skillTargets.length} targets
-                            </button>
+                            </span>
                           </td>
                           <td className="py-3 px-3">
                             {isPublished && <Badge variant="success">PUBLISHED</Badge>}
@@ -1185,7 +1163,7 @@ export function TargetRolesPage() {
                               {/* Create Successor Draft (Newest published version only) */}
                               {isPublished && isNewestPublished && (
                                 <Button
-                                  variant="secondary"
+                                  variant="outline"
                                   size="sm"
                                   className="h-8 w-8 p-0"
                                   onClick={(e) => {
@@ -1201,9 +1179,9 @@ export function TargetRolesPage() {
 
                               {/* Delete Role */}
                               <Button
-                                variant="destructive"
+                                variant="outline"
                                 size="sm"
-                                className="h-8 w-8 p-0"
+                                className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setDeletingRole(role)
@@ -1241,20 +1219,23 @@ export function TargetRolesPage() {
       </div>
 
       {/* 1. CREATE TARGET ROLE MODAL */}
-      <Dialog open={isCreateRoleModalOpen} onOpenChange={setIsCreateRoleModalOpen}>
-        <div className="space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      <Dialog open={isCreateRoleModalOpen} onOpenChange={setIsCreateRoleModalOpen} className="max-w-xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
+        <DialogHeader className="shrink-0 mb-3">
+          <div className="flex items-center justify-between pr-4">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" />
-              Create Target Role (Draft)
+              {roleForm.title.trim() || 'Create Target Role'}
             </DialogTitle>
-            <DialogDescription>
-              Initialize a unique role code and title as a draft. Required competency mappings must be configured
-              before publication.
-            </DialogDescription>
-          </DialogHeader>
+            <Badge variant="primary" className="bg-primary/10 text-primary border-primary/25">
+              NEW
+            </Badge>
+          </div>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Define a new target role architecture, configure competency mappings, and assign domain experts.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="space-y-3 text-xs">
+        <div className="flex-1 overflow-y-auto pr-1.5 space-y-3 text-xs min-h-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="font-semibold text-foreground block mb-1">
@@ -1404,17 +1385,120 @@ export function TargetRolesPage() {
               <span className="text-[10px] text-muted-foreground">Each line represents a distinct job responsibility / duty for the Job Description.</span>
             </div>
 
-          </div>
+            {/* Linked Competencies */}
+            <div className="space-y-2 pt-2 border-t border-border/80">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5 text-primary" />
+                  <span>Mapped Competencies</span>
+                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
+                    {roleForm.competencyIds.length} linked
+                  </Badge>
+                </label>
+                <span className="text-[10px] text-muted-foreground font-normal">
+                  Select ontology competencies required for this role
+                </span>
+              </div>
 
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setIsCreateRoleModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleCreateRoleSubmit}>
-              Create Draft Role
-            </Button>
-          </DialogFooter>
+              {/* Quick Search */}
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search competencies by code or name..."
+                  value={createCompSearch}
+                  onChange={(e) => setCreateCompSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                />
+              </div>
+
+              {/* Scrollable List */}
+              <div className="border border-border rounded-lg max-h-40 overflow-y-auto divide-y divide-border bg-card">
+                {companyCompetencies.length === 0 ? (
+                  <div className="p-3 text-center text-muted-foreground text-xs">
+                    No competencies registered for this organization.
+                  </div>
+                ) : (() => {
+                  const filtered = companyCompetencies.filter(
+                    (comp) =>
+                      !createCompSearch.trim() ||
+                      comp.code.toLowerCase().includes(createCompSearch.toLowerCase()) ||
+                      comp.name.toLowerCase().includes(createCompSearch.toLowerCase()) ||
+                      (comp.description || '').toLowerCase().includes(createCompSearch.toLowerCase())
+                  )
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="p-3 text-center text-muted-foreground text-xs">
+                        No competencies match &ldquo;{createCompSearch}&rdquo;.
+                      </div>
+                    )
+                  }
+                  return filtered.map((comp) => {
+                    const isLinked = roleForm.competencyIds.includes(comp.id)
+                    const isArchived = comp.status === 'archived'
+                    return (
+                      <div
+                        key={comp.id}
+                        onClick={() => {
+                          if (isArchived) return
+                          setRoleForm((prev) => ({
+                            ...prev,
+                            competencyIds: isLinked
+                              ? prev.competencyIds.filter((id) => id !== comp.id)
+                              : [...prev.competencyIds, comp.id],
+                          }))
+                        }}
+                        className={`p-2.5 flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
+                          isLinked
+                            ? 'bg-primary/5 hover:bg-primary/10'
+                            : isArchived
+                            ? 'opacity-50 cursor-not-allowed bg-muted/20'
+                            : 'hover:bg-muted/40'
+                        }`}
+                      >
+                        <div className="min-w-0 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isLinked}
+                            disabled={isArchived}
+                            onChange={() => {}}
+                            className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-mono font-bold text-xs text-foreground">{comp.code}</span>
+                              <span className="font-semibold text-xs text-foreground truncate">{comp.name}</span>
+                            </div>
+                            {comp.description && (
+                              <p className="text-[10px] text-muted-foreground truncate max-w-md mt-0.5">
+                                {comp.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 flex items-center gap-1.5">
+                          <Badge variant={isArchived ? 'outline' : isLinked ? 'success' : 'outline'} className="text-[10px] py-0 px-1.5">
+                            {isArchived ? 'Archived' : isLinked ? 'Linked' : 'Available'}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
+              </div>
+            </div>
+
         </div>
+
+        <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3">
+          <Button variant="outline" size="sm" onClick={() => setIsCreateRoleModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleCreateRoleSubmit}>
+            Create Draft Role
+          </Button>
+        </DialogFooter>
       </Dialog>
 
       {/* 2. MAINTAIN ROLE-COMPETENCY MAPPINGS MODAL */}
@@ -1422,13 +1506,25 @@ export function TargetRolesPage() {
         <Dialog open={isMappingsModalOpen} onOpenChange={setIsMappingsModalOpen}>
           <div className="space-y-4">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Maintain Role–Competency Mappings
-              </DialogTitle>
-              <DialogDescription>
-                Link or unlink active competencies to {selectedRole.title} ({selectedRole.code} v{selectedRole.version}).
-                Missing or archived competencies are rejected.
+              <div className="flex items-center justify-between pr-4">
+                <DialogTitle className="text-base font-bold flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  {selectedRole.title}
+                </DialogTitle>
+                <Badge
+                  variant={
+                    selectedRole.status === 'sent'
+                      ? 'success'
+                      : selectedRole.status === 'draft'
+                        ? 'warning'
+                        : 'outline'
+                  }
+                >
+                  {selectedRole.status.toUpperCase()}
+                </Badge>
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Link and maintain active competency requirements for this target role.
               </DialogDescription>
             </DialogHeader>
 
@@ -1546,24 +1642,23 @@ export function TargetRolesPage() {
 
       {/* 3. SET ROLE SKILL TARGETS MODAL */}
       {selectedRole && (
-        <Dialog open={isSkillTargetsModalOpen} onOpenChange={setIsSkillTargetsModalOpen} className="max-w-3xl">
-          <div className="space-y-4">
-            <DialogHeader>
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <DialogTitle className="flex items-center gap-2">
-                  <Edit3 className="h-5 w-5 text-primary shrink-0" />
-                  <span>Edit Target Role: {selectedRole.title}</span>
-                </DialogTitle>
-                <Badge variant={selectedRole.status === 'draft' ? 'warning' : 'success'}>
-                  v{selectedRole.version} {selectedRole.status.toUpperCase()}
-                </Badge>
-              </div>
-              <DialogDescription>
-                Refine role attributes and governance metadata. Domain Experts configure micro-skill benchmark thresholds.
-              </DialogDescription>
-            </DialogHeader>
+        <Dialog open={isSkillTargetsModalOpen} onOpenChange={setIsSkillTargetsModalOpen} className="max-w-3xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
+          <DialogHeader className="shrink-0 mb-3">
+            <div className="flex items-center justify-between pr-4">
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-primary shrink-0" />
+                <span>{editRoleForm?.title || selectedRole.title}</span>
+              </DialogTitle>
+              <Badge variant={selectedRole.status === 'draft' ? 'warning' : 'success'}>
+                {selectedRole.status.toUpperCase()}
+              </Badge>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Refine role attributes, governance metadata, and micro-skill benchmark thresholds.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="space-y-4 text-xs">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-xs min-h-0">
               {/* Role Metadata & Governance Configuration */}
               <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1713,6 +1808,109 @@ export function TargetRolesPage() {
                 </div>
               </div>
 
+              {/* Linked Competencies */}
+              <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                    <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    <span>Mapped Competencies</span>
+                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
+                      {editRoleForm.competencyIds.length} linked
+                    </Badge>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground font-normal">
+                    {selectedRole.status === 'published'
+                      ? 'Published role (Competency links locked)'
+                      : 'Select ontology competencies required for this role'}
+                  </span>
+                </div>
+
+                {/* Quick Search */}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search competencies by code or name..."
+                    value={editCompSearch}
+                    onChange={(e) => setEditCompSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                  />
+                </div>
+
+                {/* Scrollable List */}
+                <div className="border border-border rounded-lg max-h-40 overflow-y-auto divide-y divide-border bg-card">
+                  {companyCompetencies.length === 0 ? (
+                    <div className="p-3 text-center text-muted-foreground text-xs">
+                      No competencies registered for this organization.
+                    </div>
+                  ) : (() => {
+                    const filtered = companyCompetencies.filter(
+                      (comp) =>
+                        !editCompSearch.trim() ||
+                        comp.code.toLowerCase().includes(editCompSearch.toLowerCase()) ||
+                        comp.name.toLowerCase().includes(editCompSearch.toLowerCase()) ||
+                        (comp.description || '').toLowerCase().includes(editCompSearch.toLowerCase())
+                    )
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="p-3 text-center text-muted-foreground text-xs">
+                          No competencies match &ldquo;{editCompSearch}&rdquo;.
+                        </div>
+                      )
+                    }
+                    const isLocked = selectedRole.status === 'published'
+                    return filtered.map((comp) => {
+                      const isLinked = editRoleForm.competencyIds.includes(comp.id)
+                      const isArchived = comp.status === 'archived'
+                      return (
+                        <div
+                          key={comp.id}
+                          onClick={() => {
+                            if (isArchived || isLocked) return
+                            setEditRoleForm((prev) => ({
+                              ...prev,
+                              competencyIds: isLinked
+                                ? prev.competencyIds.filter((id) => id !== comp.id)
+                                : [...prev.competencyIds, comp.id],
+                            }))
+                          }}
+                          className={`p-2.5 flex items-center justify-between gap-2.5 transition-colors ${
+                            isLocked || isArchived ? 'opacity-70 cursor-not-allowed bg-muted/20' : 'cursor-pointer'
+                          } ${isLinked ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/40'}`}
+                        >
+                          <div className="min-w-0 flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isLinked}
+                              disabled={isArchived || isLocked}
+                              onChange={() => {}}
+                              className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-mono font-bold text-xs text-foreground">{comp.code}</span>
+                                <span className="font-semibold text-xs text-foreground truncate">{comp.name}</span>
+                              </div>
+                              {comp.description && (
+                                <p className="text-[10px] text-muted-foreground truncate max-w-md mt-0.5">
+                                  {comp.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 flex items-center gap-1.5">
+                            <Badge variant={isArchived ? 'outline' : isLinked ? 'success' : 'outline'} className="text-[10px] py-0 px-1.5">
+                              {isArchived ? 'Archived' : isLinked ? (isLocked ? 'Linked (Locked)' : 'Linked') : 'Available'}
+                            </Badge>
+                          </div>
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+
               {/* Current assigned targets table (Read-only for L&D Manager) */}
               <div>
                 <div className="font-semibold text-foreground mb-2 flex items-center justify-between">
@@ -1750,46 +1948,45 @@ export function TargetRolesPage() {
                   </div>
                 )}
               </div>
-            </div>
-
-            <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
-              <Button
-                variant="destructive"
-                size="sm"
-                leftIcon={<Trash2 className="h-4 w-4" />}
-                onClick={() => {
-                  const r = selectedRole
-                  setIsSkillTargetsModalOpen(false)
-                  setDeletingRole(r)
-                }}
-              >
-                {selectedRole.status === 'draft' ? 'Delete Draft Role' : 'Delete Role'}
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
-                  Cancel
-                </Button>
-                {selectedRole.status !== 'published' && (
-                  <>
-                    <Button variant="outline" size="sm" onClick={handleSaveEditRole}>
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      leftIcon={<Send className="h-4 w-4" />}
-                      onClick={async () => {
-                        await handleSaveEditRole()
-                        handleSendToExpert({ ...selectedRole, ...editRoleForm, status: 'sent' })
-                      }}
-                    >
-                      {selectedRole.status === 'rejected' ? 'Save & Re-send to Expert' : 'Save & Send to Expert'}
-                    </Button>
-                  </>
-                )}
-              </div>
-            </DialogFooter>
           </div>
+
+          <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
+            <Button
+              variant="destructive"
+              size="sm"
+              leftIcon={<Trash2 className="h-4 w-4" />}
+              onClick={() => {
+                const r = selectedRole
+                setIsSkillTargetsModalOpen(false)
+                setDeletingRole(r)
+              }}
+            >
+              {selectedRole.status === 'draft' ? 'Delete Draft Role' : 'Delete Role'}
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                Cancel
+              </Button>
+              {selectedRole.status !== 'published' && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleSaveEditRole}>
+                    Save Changes
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Send className="h-4 w-4" />}
+                    onClick={async () => {
+                      await handleSaveEditRole()
+                      handleSendToExpert({ ...selectedRole, ...editRoleForm, status: 'sent' })
+                    }}
+                  >
+                    {selectedRole.status === 'rejected' ? 'Save & Re-send to Expert' : 'Save & Send to Expert'}
+                  </Button>
+                </>
+              )}
+            </div>
+          </DialogFooter>
         </Dialog>
       )}
 
@@ -1799,11 +1996,16 @@ export function TargetRolesPage() {
         <Dialog open={isPublishModalOpen} onOpenChange={setIsPublishModalOpen}>
           <div className="space-y-4">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-primary" />
-                Publish Target Role: {selectedRole.title} (v{selectedRole.version})
-              </DialogTitle>
-              <DialogDescription>
+              <div className="flex items-center justify-between pr-4">
+                <DialogTitle className="text-base font-bold flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                  {selectedRole.title}
+                </DialogTitle>
+                <Badge variant={selectedRole.status === 'published' ? 'success' : 'outline'}>
+                  {selectedRole.status.toUpperCase()}
+                </Badge>
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground">
                 Verify all required competency links and skill thresholds before releasing to enterprise diagnostics.
               </DialogDescription>
             </DialogHeader>
@@ -1903,32 +2105,33 @@ export function TargetRolesPage() {
         <Dialog
           open={Boolean(viewingDetailsRole)}
           onOpenChange={(open) => !open && setViewingDetailsRole(null)}
-          className="max-w-2xl"
+          className="max-w-2xl max-h-[88vh] flex flex-col p-6 overflow-hidden"
         >
-          <div className="space-y-4">
-            <DialogHeader>
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <DialogTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-primary shrink-0" />
-                  <span>Target Role Details: {viewingDetailsRole.title}</span>
-                </DialogTitle>
-                <Badge
-                  variant={
-                    viewingDetailsRole.status === 'published'
-                      ? 'success'
-                      : viewingDetailsRole.status === 'draft'
-                        ? 'warning'
-                        : 'outline'
-                  }
-                  className="font-bold text-xs"
-                >
-                  {viewingDetailsRole.status.toUpperCase()}
-                </Badge>
-              </div>
-              <DialogDescription>
-                Comprehensive role architecture, ontology requirements, and active enterprise enrollments.
-              </DialogDescription>
-            </DialogHeader>
+          <DialogHeader className="shrink-0 mb-3">
+            <div className="flex items-center justify-between pr-4">
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary shrink-0" />
+                <span>{viewingDetailsRole.title}</span>
+              </DialogTitle>
+              <Badge
+                variant={
+                  viewingDetailsRole.status === 'published'
+                    ? 'success'
+                    : viewingDetailsRole.status === 'draft'
+                      ? 'warning'
+                      : 'outline'
+                }
+                className="font-bold text-xs"
+              >
+                {viewingDetailsRole.status.toUpperCase()}
+              </Badge>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Comprehensive role architecture, ontology requirements, and active enterprise enrollments.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto pr-1.5 space-y-4 text-xs min-h-0">
 
             {/* Rejection Reason Notice */}
             {viewingDetailsRole.status === 'rejected' && viewingDetailsRole.rejectionReason && (
@@ -1954,7 +2157,7 @@ export function TargetRolesPage() {
                     {viewingDetailsRole.track || 'PROFESSIONAL'}
                   </Badge>
                   {viewingDetailsRole.seniority && (
-                    <Badge variant="primary" className="text-[10px] font-semibold">
+                    <Badge variant={viewingDetailsRole.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold">
                       {viewingDetailsRole.seniority}
                     </Badge>
                   )}
@@ -2070,40 +2273,41 @@ export function TargetRolesPage() {
               </div>
             </div>
 
-            <DialogFooter className="pt-2 flex items-center justify-between sm:justify-between w-full">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  const r = viewingDetailsRole
-                  setViewingDetailsRole(null)
-                  setDeletingRole(r)
-                }}
-                leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-              >
-                Delete Role
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setViewingDetailsRole(null)}>
-                  Close
-                </Button>
-                {viewingDetailsRole.status === 'draft' && (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      const r = viewingDetailsRole
-                      setViewingDetailsRole(null)
-                      handleOpenSkillTargets(r)
-                    }}
-                    leftIcon={<Sliders className="h-3 w-3" />}
-                  >
-                    Edit Micro-skills
-                  </Button>
-                )}
-              </div>
-            </DialogFooter>
           </div>
+
+          <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                const r = viewingDetailsRole
+                setViewingDetailsRole(null)
+                setDeletingRole(r)
+              }}
+              leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+            >
+              Delete Role
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setViewingDetailsRole(null)}>
+                Close
+              </Button>
+              {viewingDetailsRole.status !== 'published' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    setViewingDetailsRole(null)
+                    handleOpenEditRole(r)
+                  }}
+                  leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                >
+                  Edit Target Role
+                </Button>
+              )}
+            </div>
+          </DialogFooter>
         </Dialog>
       )}
 
@@ -2111,80 +2315,49 @@ export function TargetRolesPage() {
       <Dialog
         open={Boolean(deletingRole)}
         onOpenChange={(open) => !open && setDeletingRole(null)}
-        className="max-w-md p-0 overflow-hidden"
       >
         {deletingRole && (
-          <div>
-            <div className="p-5 sm:p-6 space-y-4">
-              {/* Header with Circular Icon Badge */}
-              <div className="flex items-start gap-3.5">
-                <div className="h-11 w-11 rounded-full bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center shrink-0 shadow-sm">
-                  <Trash2 className="h-5 w-5" />
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                {deletingRole.status === 'published' ? 'Delete Published Target Role?' : 'Delete Draft Target Role?'}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Are you sure you want to delete <strong className="text-foreground">{deletingRole.title}</strong>?
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
+                <div className="font-semibold text-foreground">
+                  {deletingRole.title}
                 </div>
-                <div className="space-y-1">
-                  <DialogTitle className="text-base font-bold text-foreground">
-                    {deletingRole.status === 'published' ? 'Delete Published Target Role?' : 'Discard Draft Target Role?'}
-                  </DialogTitle>
-                  <p className="text-xs text-muted-foreground leading-normal">
-                    This action is permanent and cannot be undone.
-                  </p>
+                <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                  <span>{deletingRole.track || 'PROFESSIONAL'}</span>
+                  <span>•</span>
+                  <span>v{deletingRole.version}</span>
+                  <span>•</span>
+                  <span>{deletingRole.skillTargets?.length || 0} Skills</span>
+                  <span>•</span>
+                  <span>{deletingRole.competencyIds?.length || 0} Competencies</span>
                 </div>
               </div>
 
-              {/* Role Context Card */}
-              <div className="p-3.5 rounded-lg border border-border bg-muted/30 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-bold text-foreground text-xs truncate">{deletingRole.title}</div>
-                    <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                      {deletingRole.code} • v{deletingRole.version}
-                    </div>
-                  </div>
-                  <Badge
-                    variant={
-                      deletingRole.status === 'published'
-                        ? 'success'
-                        : deletingRole.status === 'draft'
-                        ? 'warning'
-                        : 'outline'
-                    }
-                    className="text-[10px] font-bold uppercase shrink-0"
-                  >
-                    {deletingRole.status}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-2 border-t border-border/60 text-[10px] text-muted-foreground">
-                  <Badge variant={deletingRole.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold">
-                    {deletingRole.track || 'PROFESSIONAL'}
-                  </Badge>
-                  {deletingRole.seniority && (
-                    <Badge variant="primary" className="text-[10px] font-semibold">
-                      {deletingRole.seniority}
-                    </Badge>
-                  )}
-                  <span className="ml-auto font-mono text-[10px]">
-                    {deletingRole.skillTargets?.length || 0} micro-skills
-                  </span>
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
+                <div className="text-[11.5px] leading-relaxed text-foreground">
+                  <strong className="text-destructive font-semibold">
+                    {deletingRole.status === 'published' ? 'Active Role Impact:' : 'Draft Removal Impact:'}
+                  </strong>{' '}
+                  {deletingRole.status === 'published'
+                    ? 'Deleting this published role will detach all micro-skill targets and remove it from active employee career pathways immediately. This action cannot be undone.'
+                    : 'All uncommitted micro-skill benchmark thresholds, responsibilities, and configuration changes for this draft will be permanently deleted from the database.'}
                 </div>
               </div>
-
-              {/* Warning Notice Card */}
-              {deletingRole.status === 'published' ? (
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
-                  <div className="text-[11.5px] leading-relaxed text-foreground">
-                    <strong className="text-destructive font-semibold">Active Role Impact:</strong> Deleting this published role will detach all micro-skill targets and remove it from active employee career pathways immediately.
-                  </div>
-                </div>
-              ) : (
-                <div className="p-3 rounded-lg bg-secondary/70 border border-border text-[11.5px] text-muted-foreground leading-relaxed">
-                  All uncommitted micro-skill benchmark thresholds, responsibilities, and configuration changes for this draft will be permanently deleted from the database.
-                </div>
-              )}
             </div>
 
-            <DialogFooter className="px-5 py-3.5 bg-muted/20 border-t border-border flex items-center justify-end gap-2.5">
+            <DialogFooter className="pt-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -2202,10 +2375,10 @@ export function TargetRolesPage() {
                 }}
                 leftIcon={<Trash2 className="h-3.5 w-3.5" />}
               >
-                {deletingRole.status === 'published' ? 'Delete Published Role' : 'Discard Draft'}
+                {deletingRole.status === 'published' ? 'Delete Published Role' : 'Delete Draft Role'}
               </Button>
             </DialogFooter>
-          </div>
+          </>
         )}
       </Dialog>
 

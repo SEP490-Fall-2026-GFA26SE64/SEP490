@@ -34,7 +34,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     actorKey: 'ld-manager',
     email: 'sarah.connor@adaptlearn.internal',
     label: 'Sarah Connor (L&D Manager)',
-    targetRoute: '/ld-manager/learning-outcomes',
+    targetRoute: '/ld-manager/dashboard',
   },
   {
     role: 'Admin',

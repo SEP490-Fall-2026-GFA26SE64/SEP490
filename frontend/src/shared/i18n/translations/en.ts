@@ -15,7 +15,7 @@ export const en = {
     ontology: 'Ontology',
     modules: 'Modules',
     assessmentBank: 'Assessment Bank',
-    learningOutcomes: 'Outcomes',
+    learningOutcomes: 'Dashboard',
     userDirectory: 'User Accounts',
     adminConsole: 'System Console',
     teamMatrix: 'Team Matrix',
