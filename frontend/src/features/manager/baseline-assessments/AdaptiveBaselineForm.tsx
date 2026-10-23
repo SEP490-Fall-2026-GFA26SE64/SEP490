@@ -17,8 +17,8 @@ export function AdaptiveBaselineForm({ value, capacity, onChange, disabled, unch
   const limits = capacity.occupation
   const fields: { field: AdaptiveTimeField; label: string; min?: number; max?: number; step: string }[] = [
     { field: 'maxQuestions', label: tr('maximum'), min: limits?.minimumQuestions, max: limits ? Math.min(limits.eligibleCapacity, limits.modelMaxQuestions) : undefined, step: '1' },
-    { field: 'totalMinutes', label: tr('totalMinutes'), step: 'any' },
-    { field: 'secondsPerQuestion', label: tr('secondsPerQuestion'), min: 30, max: 120, step: 'any' },
+    { field: 'totalMinutes', label: tr('totalMinutes'), step: '1' },
+    { field: 'secondsPerQuestion', label: tr('secondsPerQuestion'), min: 30, max: 120, step: '1' },
   ]
   function save(event: FormEvent) {
     event.preventDefault(); setSubmitted(true)
@@ -42,14 +42,15 @@ export function AdaptiveBaselineForm({ value, capacity, onChange, disabled, unch
         <fieldset disabled={disabled} className="grid gap-4 md:grid-cols-3">
           <legend className="sr-only">{tr('occupationBounds')}</legend>
           {fields.map(({ field, label, min, max, step }) => <div key={field} className="space-y-2">
-            <label htmlFor={`${id}-${field}`} className="text-body-sm font-medium">{label}</label>
-            <Input id={`${id}-${field}`} type="number" min={min} max={max} step={step} required value={value.occupation[field]}
+            <label htmlFor={`${id}-${field}`} className="text-body-sm font-medium">{label}{value.occupation[field] && Number.isFinite(Number(value.occupation[field])) && !Number.isInteger(Number(value.occupation[field])) ? ' ≈' : ''}</label>
+            <Input id={`${id}-${field}`} type="number" inputMode="numeric" min={min} max={max} step={step} required value={value.occupation[field] && Number.isFinite(Number(value.occupation[field])) ? Math.round(Number(value.occupation[field])) : value.occupation[field]}
               aria-invalid={Boolean(visible(field))} aria-describedby={`${id}-${field}-help`}
               onBlur={() => setTouched(previous => ({ ...previous, [field]: true }))}
-              onChange={event => onChange({ ...value, occupation: editAdaptiveBounds(value.occupation, field, event.target.value) })} />
+              onChange={event => { if (/^\d*$/.test(event.target.value)) onChange({ ...value, occupation: editAdaptiveBounds(value.occupation, field, event.target.value) }) }} />
             <Text id={`${id}-${field}-help`} variant="caption" className={visible(field) ? 'text-destructive' : 'text-muted-foreground'}>
               {visible(field) ? tr(`validation.${errors[field]}`) : field === 'maxQuestions' ? limits && limits.minimumQuestions <= Math.min(limits.eligibleCapacity, limits.modelMaxQuestions) ? `${tr('coverageRange')}: ${limits.minimumQuestions}–${Math.min(limits.eligibleCapacity, limits.modelMaxQuestions)}` : tr('infeasible') : tr(field === 'totalMinutes' ? 'totalHint' : 'rateHint')}
             </Text>
+            {value.occupation[field] && Number.isFinite(Number(value.occupation[field])) && !Number.isInteger(Number(value.occupation[field])) && <Text variant="caption" className="text-muted-foreground">{t('baselineUi.approxHint')}</Text>}
           </div>)}
         </fieldset>
         <Text variant="body-sm" className="text-muted-foreground">{tr('timeHint')}</Text>

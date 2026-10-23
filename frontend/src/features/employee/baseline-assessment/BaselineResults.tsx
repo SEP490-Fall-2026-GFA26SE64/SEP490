@@ -5,20 +5,26 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
-import { Progress } from '../../../shared/components/ui/Progress'
+import { useQuery } from '@tanstack/react-query'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { readMyMastery } from '../target-roles/currentRoleFlowApi'
+import { MasterySkills } from './MasterySkills'
+import { MasteryHelp } from './MasteryHelp'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { attemptPath, readHistory, startCommand, type BaselineCommand, type BaselineResult } from './baselineApi'
+import { attemptPath, readHistory, type BaselineCommand, type BaselineResult } from './baselineApi'
 
-export function BaselineResultPanel({ result, locked, run }: { result: BaselineResult; locked: boolean; run: (command: BaselineCommand) => Promise<void> }) {
+export function BaselineResultPanel({ result }: { result: BaselineResult; locked: boolean; run: (command: BaselineCommand) => Promise<void> }) {
   const { t, language } = useTranslation(), tr = (key: string) => t(`employeeBaseline.${key}`)
   const invalidated = result.state === 'INVALIDATED'
+  const profile = useQuery({ queryKey: ['my-mastery'], queryFn: ({ signal }) => readMyMastery(signal), enabled: !invalidated, retry: false })
   return <Card>
-    <CardHeader><CardTitle className="break-words">{tr('result')}: {result.occupationName}</CardTitle>
+    <CardHeader><div className="flex items-start justify-between gap-3"><CardTitle className="break-words">{tr('result')}: {result.occupationName}</CardTitle><MasteryHelp /></div>
       <div className="flex flex-wrap gap-2"><Badge variant="outline" className="max-w-full whitespace-normal">{tr(`scopes.${result.assessmentScope}`)}</Badge><Badge variant={invalidated ? 'warning' : 'success'}>{tr(result.state)}</Badge></div>
     </CardHeader>
     <CardContent className="space-y-4">
+      {invalidated && result.completionReason === 'MANUAL' && <Text role="status">{tr('insufficientEvidence')}</Text>}
       <Text variant="body-sm" className="text-muted-foreground">{tr('scopeNotice')}</Text>
       <dl className="grid gap-3 text-body-sm sm:grid-cols-2">
         <div><dt className="text-muted-foreground">{tr('startedDate')}</dt><dd><time dateTime={result.startedAt}>{new Date(result.startedAt).toLocaleString(language)}</time></dd></div>
@@ -27,17 +33,18 @@ export function BaselineResultPanel({ result, locked, run }: { result: BaselineR
       </dl>
       <Text>{t(`employeeBaseline.reasons.${result.completionReason}`, tr('recordedOutcome'))}</Text>
       {invalidated ? <Text>{tr('invalidatedNotice')}</Text> : <>
-        <StatCard title={tr('rawScore')} value={result.rawScore === null ? '—' : `${(result.rawScore * 100).toFixed(1)}%`} description={tr('masteryNotice')} />
-        <ul className="grid gap-3 lg:grid-cols-2">{result.skills.map(skill => <li key={skill.microSkillId} className="space-y-3 rounded-lg border border-border p-4">
-          <div className="flex flex-wrap justify-between gap-2"><Text className="min-w-0 break-words font-semibold">{skill.microSkillName}</Text><Text>{(skill.mastery * 100).toFixed(1)}%</Text></div>
-          <Progress value={skill.mastery * 100} role="progressbar" aria-label={skill.microSkillName} aria-valuemin={0} aria-valuemax={100} aria-valuenow={skill.mastery * 100} />
-          <Text variant="caption" className="text-muted-foreground">{tr('confidence')}: {tr(skill.confidence)}</Text>
-        </li>)}</ul>
+        <Text variant="body-sm">{t('baselineUi.completedHint')}</Text>
+        <StatCard title={t('baselineUi.score')} value={result.rawScore === null ? '—' : `${(result.rawScore * 100).toFixed(1)}%`} description={t('baselineUi.scoreHint')} />
+        <Heading level={3} size="subsection">{t('baselineUi.masteryTitle')}</Heading>
+        <Text variant="body-sm" className="text-muted-foreground">{t('baselineUi.confidenceHint')}</Text>
+        <MasterySkills skills={result.skills.map(skill => ({ id: skill.microSkillId, name: skill.microSkillName, mastery: skill.mastery, confidence: skill.confidence }))} />
+        {profile.isPending ? <LoadingCard label={tr('loading')} /> : profile.isError ? <div role="alert"><Text>{t('baselineUi.profileError')}</Text><Button variant="outline" onClick={() => void profile.refetch()}>{tr('retry')}</Button></div> : <Text role="status">{t(profile.data.some(p => p.attemptId === result.attemptId) ? 'baselineUi.profileSaved' : 'baselineUi.profilePending')}</Text>}
+        <Link className="inline-block text-primary underline" to="/employee/my-mastery">{t('baselineUi.myMastery')}</Link>
         <Text variant="body-sm" className="text-muted-foreground">{tr('noRetake')}</Text>
       </>}
       {result.replacesAttemptId && <Link className="block text-primary underline" to={attemptPath(result.replacesAttemptId)}>{tr('previousAttempt')}</Link>}
       {result.replacementAttemptId ? <Link className="block text-primary underline" to={attemptPath(result.replacementAttemptId)}>{tr('replacement')}</Link>
-        : invalidated && <Button disabled={locked} onClick={() => void run(startCommand(result.occupationId))}>{tr('startReplacement')}</Button>}
+        : invalidated && <Link className="block text-primary underline" to="/employee/target-roles">{tr('startReplacement')}</Link>}
     </CardContent>
   </Card>
 }

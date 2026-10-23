@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Clock, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Text } from '../../../shared/components/typography/Text'
 import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
@@ -11,33 +13,57 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, run }: {
   attempt: BaselineAttempt; seconds: number; locked: boolean; run: (command: BaselineCommand) => Promise<void>
 }) {
   const { t } = useTranslation(), tr = (key: string) => t(`employeeBaseline.${key}`)
-  const item = attempt.items.find(value => value.selectedOptionId === null)
+  const pending = attempt.items.find(value => value.selectedOptionId === null)
+  const [position, setPosition] = useState(pending?.position ?? attempt.items.at(-1)?.position)
+  const item = attempt.items.find(value => value.position === position)
+  const review = item?.selectedOptionId != null
+  const index = attempt.items.findIndex(value => value.position === position)
+  const ui = (key: string) => t(`baselineUi.${key}`)
   const [choice, setChoice] = useState(''), [confirm, setConfirm] = useState(false)
   const expired = attempt.expired || seconds <= 0
-  return <Card>
-    <CardHeader><CardTitle>{attempt.occupationName}</CardTitle><Badge variant="outline" className="w-fit max-w-full whitespace-normal">{tr(`scopes.${attempt.assessmentScope}`)}</Badge></CardHeader>
-    <CardContent className="space-y-5">
-      <div className="flex flex-wrap justify-between gap-3 text-sm">
-        <span>{tr('answered')}: {attempt.answeredCount} / {attempt.maxQuestions} {tr('maximum')}</span>
-        <span role="timer" className="font-mono">{tr('remaining')}: {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</span>
-      </div>
+  return <div className="space-y-6">
+    <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-6">
+      <div className="min-w-0 space-y-2"><Badge variant="outline">{tr(`scopes.${attempt.assessmentScope}`)}</Badge><CardTitle>{tr('title')}</CardTitle>
+        <Text className="break-words text-muted-foreground">{ui('occupation')}: {attempt.occupationName}</Text></div>
+      <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-4"><Clock className="text-primary" size={20} />
+        <div><Text variant="caption">{tr('remaining')}</Text><span role="timer" className="block font-mono font-semibold">{Math.floor(Math.max(0, seconds) / 60)}:{String(Math.max(0, seconds) % 60).padStart(2, '0')}</span></div></div>
+    </CardContent></Card>
+    <div className="grid items-start gap-6 lg:grid-cols-4">
+      <Card className="lg:col-span-1"><CardHeader className="border-b border-border"><CardTitle>{ui('navigation')}</CardTitle><Badge variant="outline" className="w-fit">{ui('answered')}: {attempt.answeredCount}</Badge></CardHeader>
+        <CardContent className="space-y-4 pt-4">
+          <nav aria-label={ui('navigation')} className="grid max-h-64 grid-cols-5 gap-2 overflow-y-auto">
+            {attempt.items.map(value => <Button key={value.position} variant={value.position === position ? 'primary' : 'outline'}
+              className={value.selectedOptionId !== null && value.position !== position ? 'border-primary bg-secondary' : ''}
+              aria-current={value.position === position ? 'step' : undefined}
+              aria-label={`${ui('question')} ${value.position}: ${ui(value.selectedOptionId === null ? 'unanswered' : 'answered')}`}
+              onClick={() => setPosition(value.position)}>{value.position}</Button>)}
+          </nav>
+          <Text variant="body-sm">{ui('limit')}: {attempt.maxQuestions}</Text><Text variant="caption" className="text-muted-foreground">{ui('adaptiveHint')}</Text>
+          <div className="space-y-3 border-t border-border pt-4"><Text variant="caption">{ui('savedHint')}</Text>
+            <Button className="w-full" disabled={locked || expired} onClick={() => setConfirm(true)}>{tr('submit')}</Button></div>
+        </CardContent></Card>
+      <Card className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}</Badge>{review && <Badge variant="secondary">{ui('review')}</Badge>}</div></CardHeader>
+    <CardContent className="space-y-5 pt-6">
       <p className="text-sm text-muted-foreground">{tr('timerNotice')}</p>
-      {expired ? <p role="status">{tr('expired')}</p> : item ? <fieldset disabled={locked} className="space-y-4">
-        <legend className="mb-3 whitespace-pre-wrap break-words font-semibold">{item.position}. {item.prompt}</legend>
-        <RadioGroup value={choice} onChange={setChoice} disabled={locked} aria-label={tr('chooseAnswer')}>
-          {item.options.map(option => <label key={option.id} htmlFor={`baseline-option-${option.id}`} className="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3 text-sm">
+      {expired ? <p role="status">{tr('expired')}</p> : item ? <fieldset disabled={locked || review} className="min-w-0 space-y-5">
+        <legend className="mb-5 whitespace-pre-wrap break-words text-body font-semibold">{item.prompt}</legend>
+        <RadioGroup value={item.selectedOptionId ?? choice} onChange={setChoice} disabled={locked || review} aria-label={tr('chooseAnswer')}>
+          {item.options.map(option => <label key={option.id} htmlFor={`baseline-option-${option.id}`} className={`flex items-start gap-3 rounded-lg border p-4 text-body-sm ${option.id === (item.selectedOptionId ?? choice) ? 'border-primary bg-secondary' : 'border-border'} ${review || locked ? '' : 'cursor-pointer hover:bg-muted'}`}>
             <RadioGroupItem id={`baseline-option-${option.id}`} name="baseline-answer" value={option.id} />
             <span className="whitespace-pre-wrap break-words">{option.text}</span>
           </label>)}
         </RadioGroup>
-        <Button disabled={locked || !item.options.some(option => option.id === choice)} onClick={() => void run(answerCommand(attempt, item, choice))}>{tr('saveNext')}</Button>
       </fieldset> : <p role="status">{tr('refreshNeeded')}</p>}
-      <Button variant="outline" disabled={locked || expired} onClick={() => setConfirm(true)}>{tr('submit')}</Button>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+        <Button variant="outline" disabled={index <= 0} leftIcon={<ArrowLeft size={16} />} onClick={() => setPosition(attempt.items[index - 1].position)}>{ui('previous')}</Button>
+        {review ? <Button variant="outline" disabled={index >= attempt.items.length - 1} rightIcon={<ArrowRight size={16} />} onClick={() => setPosition(attempt.items[index + 1].position)}>{ui('next')}</Button>
+          : item && <Button disabled={locked || expired || !item.options.some(option => option.id === choice)} rightIcon={<ArrowRight size={16} />} onClick={() => void run(answerCommand(attempt, item, choice))}>{tr('saveNext')}</Button>}
+      </div>
+    </CardContent></Card></div>
       <Dialog open={confirm} onOpenChange={open => { if (!locked) setConfirm(open) }} ariaLabel={tr('submit')}>
         <DialogHeader><DialogTitle>{tr('submit')}</DialogTitle><DialogDescription>{tr('submitConfirm')}</DialogDescription></DialogHeader>
         <DialogFooter><Button variant="outline" disabled={locked} onClick={() => setConfirm(false)}>{tr('cancel')}</Button>
           <Button disabled={locked} onClick={() => { setConfirm(false); void run(submitCommand(attempt)) }}>{tr('confirm')}</Button></DialogFooter>
       </Dialog>
-    </CardContent>
-  </Card>
+  </div>
 }

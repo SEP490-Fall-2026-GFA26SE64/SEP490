@@ -2,11 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AdaptiveBaselineApiError, disableAdaptiveBlueprint, finalizeAdaptiveBlueprint, getAdaptiveWorkspace,
   saveAdaptiveWorking, convertAdaptiveWorking, testAdaptiveBlueprint, isCommonConfiguration,
+  discardAdaptiveWorking,
   type AdaptivePreview, type AdaptiveWorkspace, type AdaptiveVersionId,
 } from './adaptiveBaselineApi'
 import { adaptiveConfiguration, createAdaptiveDraft, sameAdaptiveConfiguration, type AdaptiveDraft } from './adaptiveBaselineDraft'
 
-export type AdaptiveAction = 'save' | 'convert' | 'finalize' | 'disable'
+export type AdaptiveAction = 'save' | 'convert' | 'finalize' | 'disable' | 'discard'
 export interface AdaptiveApproval { workingId: string | null; workingRevision: number; activationRevision: number; current: AdaptiveVersionId | null }
 export const adaptiveApproval = (value: AdaptiveWorkspace): AdaptiveApproval => ({ workingId: value.working?.workingRevisionId ?? null, workingRevision: value.working?.revision ?? 0, activationRevision: value.activation?.revision ?? 0, current: value.activation?.current ?? null })
 const failure = (cause: unknown) => cause instanceof AdaptiveBaselineApiError ? cause : new AdaptiveBaselineApiError(0, 'NETWORK_ERROR')
@@ -102,12 +103,14 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
     if (action === 'convert' && (!configuration || !legacy || !working)) return
     if (action === 'finalize' && !canActivate) return
     if (action === 'disable' && (!workspace.current || !reason.trim())) return
+    if (action === 'discard' && !working) return
     const snapshot = adaptiveApproval(workspace)
     if (action !== 'save' && (!confirmed || JSON.stringify(confirmed) !== JSON.stringify(snapshot))) {
       setError(new AdaptiveBaselineApiError(409, 'VERSION_CONFLICT')); setNeedsRefresh(true); return
     }
     const key = crypto.randomUUID(), token = generation.current
-    const write = action === 'save' ? () => saveAdaptiveWorking(occupationId, working?.revision ?? 0, working?.workingRevisionId ?? null, configuration!, key)
+    const write = action === 'discard' ? () => discardAdaptiveWorking(occupationId, confirmed!.workingId!, confirmed!.workingRevision, key)
+      : action === 'save' ? () => saveAdaptiveWorking(occupationId, working?.revision ?? 0, working?.workingRevisionId ?? null, configuration!, key)
       : action === 'convert' ? () => convertAdaptiveWorking(occupationId, confirmed!.workingId!, confirmed!.workingRevision, configuration!, key)
       : action === 'finalize' ? () => finalizeAdaptiveBlueprint(occupationId, confirmed!.workingId!, confirmed!.workingRevision, confirmed!.activationRevision, confirmed!.current, key)
       : () => disableAdaptiveBlueprint(occupationId, confirmed!.activationRevision, confirmed!.current!, reason.trim(), key)

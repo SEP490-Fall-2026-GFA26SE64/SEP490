@@ -6,10 +6,11 @@ import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/K
 import { LoginPage } from '../features/auth/LoginPage'
 import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
 import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
+import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
 import { CompetencyGapAnalysisPage } from '../features/employee/gap-analysis/CompetencyGapAnalysisPage'
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
-import { EmployeeTargetRolesPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
+import { EmployeeTargetRolesPage, EmployeeUpskillingPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { AdaptiveBaselineRoute } from '../features/manager/baseline-assessments/AdaptiveBaselinePage'
 import { LegacyBaselineAssessmentRedirect } from '../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect'
@@ -69,8 +70,8 @@ export default function App() {
             {/* 1. Employee routes (Primary) */}
             <Route path="/employee" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/employee/overview" element={<EmployeeOverviewPage />} />
-            <Route path="/employee/upskilling" element={<EmployeeTargetRolesPage />} />
-            <Route path="/employee/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
+            <Route path="/employee/upskilling" element={<EmployeeUpskillingPage />} />
+            <Route path="/employee/target-roles" element={<EmployeeTargetRolesPage />} />
             <Route path="/employee/riasec" element={<Navigate to="/employee/assessment?tab=baseline" replace />} />
             <Route path="/employee/guidance" element={<Navigate to="/employee/upskilling?tab=roles" replace />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
@@ -81,6 +82,7 @@ export default function App() {
             <Route path="/employee/gap-analysis" element={<CompetencyGapAnalysisPage />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
             <Route path="/employee/baseline-assessment" element={<EmployeeBaselineRoute />} />
+            <Route path="/employee/my-mastery" element={<MyMasteryPage />} />
             <Route path="/employee/baseline-assessment/:attemptId" element={<EmployeeBaselineRoute />} />
             <Route path="/employee/profile" element={<Navigate to="/profile" replace />} />
 
@@ -91,7 +93,7 @@ export default function App() {
             <Route path="/learner" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/overview" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/upskilling" element={<Navigate to="/employee/upskilling" replace />} />
-            <Route path="/learner/target-roles" element={<Navigate to="/employee/upskilling" replace />} />
+            <Route path="/learner/target-roles" element={<Navigate to="/employee/target-roles" replace />} />
             <Route path="/learner/riasec" element={<Navigate to="/employee/riasec" replace />} />
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/learner/modules/:moduleId" element={<LearningModuleReaderPage />} />

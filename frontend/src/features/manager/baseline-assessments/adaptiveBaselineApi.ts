@@ -78,6 +78,16 @@ export async function listAdaptiveOccupations(signal?: AbortSignal): Promise<{ i
 }
 
 // Explicit command allowlists: calculator, actor, policy, pins and legacy fields never enter new writes.
+export const discardAdaptiveWorking = (occupation: string, workingRevisionId: string, expectedWorkingRevision: number, key: string) =>
+  request(occupation, '/working/discard', command('POST', { workingRevisionId, expectedWorkingRevision }, key), working)
+export const getAdaptiveVersion = (occupation: string, id: AdaptiveVersionId, signal?: AbortSignal) =>
+  request(occupation, `/versions/${encodeURIComponent(id.blueprintId)}/${id.version}`, { method: 'GET', signal }, value => {
+    const data = object(value), status = text(data.status)
+    if (!['ACTIVE', 'RETIRING', 'INACTIVE'].includes(status)) throw new Error('Invalid version status')
+    const result = version(data.version)
+    if (result.id.blueprintId !== id.blueprintId || result.id.version !== id.version) throw new Error('Version mismatch')
+    return { ...result, status }
+  })
 export const getAdaptiveWorkspace = (occupation: string, signal?: AbortSignal) =>
   request(occupation, '', { method: 'GET', signal }, value => { const result = workspace(value); if (result.occupationId !== occupation) throw new Error('Scope mismatch'); return result })
 export const saveAdaptiveWorking = (occupation: string, expectedRevision: number, expectedWorkingRevisionId: string | null, configuration: AdaptiveCommonConfiguration, key: string) =>

@@ -1,4 +1,4 @@
-import { LocalBaselineDemoPanel } from '../components/LocalBaselineDemoPanel'
+import { useLocalDemoSession } from '../hooks/useLocalDemoSession'
 import * as React from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -59,6 +59,7 @@ interface NavTabItem {
 export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'platform-admin'
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
+  const demo = useLocalDemoSession()
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -180,6 +181,16 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: t('nav.upskilling'),
         href: '/employee/upskilling',
         icon: <Target size={15} />,
+      },
+      {
+        label: t('nav.targetRoles'),
+        href: '/employee/target-roles',
+        icon: <Target size={15} />,
+      },
+      {
+        label: t('baselineUi.myMastery'),
+        href: '/employee/my-mastery',
+        icon: <Award size={15} />,
       },
       {
         label: t('nav.pathway'),
@@ -343,6 +354,15 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   // Active user profile metadata based on active actor
   const userProfile = getUserProfile(activeActor)
+  function switchPortal(event: React.MouseEvent<HTMLAnchorElement>, persona: string) {
+    setIsUserMenuOpen(false)
+    if (!demo.enabled) return
+    event.preventDefault()
+    const destination = event.currentTarget.href
+    void demo.choose(persona, destination).then(success => {
+      if (!success) toast({ title: t('common.error', 'Error'), description: t('employeeBaseline.requestError'), variant: 'destructive' })
+    })
+  }
 
   // Helper for determining whether a nav tab is active
   const isTabActive = (itemHref: string) => {
@@ -365,18 +385,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/'
       )
     }
-    if (
-      itemHref === '/employee/upskilling' ||
-      itemHref === '/employee/target-roles' ||
-      itemHref === '/learner/target-roles' ||
-      itemHref === '/learner/upskilling'
-    ) {
-      return (
-        path === '/employee/upskilling' ||
-        path === '/employee/target-roles' ||
-        path === '/learner/target-roles' ||
-        path === '/learner/upskilling'
-      )
+    if (itemHref === '/employee/upskilling' || itemHref === '/learner/upskilling') {
+      return path === '/employee/upskilling' || path === '/learner/upskilling'
+    }
+    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
+      return path === '/employee/target-roles' || path === '/learner/target-roles'
     }
     if (itemHref === '/employee/riasec') {
       return path === '/employee/riasec' || path === '/learner/riasec'
@@ -557,7 +570,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                 <Link
                   to="/employee/upskilling"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
-                    path === '/employee/upskilling' || path === '/employee/target-roles'
+                    path === '/employee/upskilling'
                       ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
@@ -696,7 +709,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 1. Employee */}
                         <Link
                           to="/employee/overview"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'employee-a')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isEmployee
                               ? 'bg-secondary text-primary font-semibold'
@@ -730,7 +743,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 3. L&D Manager */}
                         <Link
                           to="/ld-manager/learning-outcomes"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'ld')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager
                               ? 'bg-secondary text-primary font-semibold'
@@ -747,7 +760,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 4. Org Admin */}
                         <Link
                           to="/admin/dashboard"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'admin')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isAdmin
                               ? 'bg-secondary text-primary font-semibold'
@@ -853,7 +866,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               : ''
           }`}
         >
-          <LocalBaselineDemoPanel />
           {children}
         </main>
       </div>

@@ -1,14 +1,12 @@
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { employeeBaselineEnabled, startCommand } from './baselineApi'
+import { employeeBaselineEnabled } from './baselineApi'
 import { BaselineAttemptPanel } from './BaselineAttemptPanel'
 import { BaselineHistory, BaselineResultPanel } from './BaselineResults'
 import { useBaselineAttempt } from './useBaselineAttempt'
@@ -24,17 +22,19 @@ export function EmployeeBaselineRoute() {
 export function BaselineHandoff() {
   const { t } = useTranslation()
   return <Card><CardHeader><CardTitle>{t('employeeBaseline.title')}</CardTitle></CardHeader><CardContent className="space-y-3">
-    <p className="text-sm text-muted-foreground">{t('employeeBaseline.intro')}</p>
-    <Link className="text-primary underline" to="/employee/baseline-assessment">{t('employeeBaseline.open')}</Link>
+    <p className="text-sm text-muted-foreground">{t('roleFlow.selectFirst')}</p>
+    <Link className="text-primary underline" to="/employee/target-roles">{t('nav.targetRoles')}</Link>
   </CardContent></Card>
 }
 function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
   const { t } = useTranslation(), tr = (key: string) => t(`employeeBaseline.${key}`)
   const state = useBaselineAttempt(attemptId)
-  const [occupation, setOccupation] = useState('')
   return <WorkspaceLayout><div className="min-w-0 space-y-4">
     <PageHeader title={tr('title')} description={tr('intro')} />
-    <Link className="inline-block text-sm text-primary underline" to="/employee/assessment?tab=baseline">{tr('otherAssessments')}</Link>
+    <div className="flex flex-wrap gap-4">
+      <Link className="text-primary underline" to="/employee/my-mastery">{t('baselineUi.myMastery')}</Link>
+      <Link className="text-primary underline" to="/employee/assessment?tab=baseline">{tr('otherAssessments')}</Link>
+    </div>
     {state.busy && <LoadingCard label={tr('loading')} />}
     {state.error && <div role="alert" className="space-y-2 rounded-md border border-border p-4">
       <p>{t(`employeeBaseline.errors.${state.error.code}`, tr('requestError'))}</p>
@@ -42,13 +42,8 @@ function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
         : attemptId && <Button variant="outline" disabled={state.busy} onClick={() => void state.refresh()}>{tr('refresh')}</Button>}
     </div>}
     {!attemptId && <Card id="baseline-start"><CardHeader><CardTitle>{tr('start')}</CardTitle></CardHeader><CardContent className="space-y-4">
-      <Button disabled={state.locked} onClick={() => void state.run(startCommand())}>{tr('selectedRole')}</Button>
-      <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="baseline-occupation">{tr('occupationId')}</label>
-        <Input id="baseline-occupation" value={occupation} disabled={state.locked} onChange={event => setOccupation(event.target.value)} />
-        <p className="text-sm text-muted-foreground">{tr('occupationNotice')}</p>
-        <Button variant="outline" disabled={state.locked || !occupation.trim()} onClick={() => void state.run(startCommand(occupation))}>{tr('explore')}</Button>
-      </div>
+      <p>{t('roleFlow.selectFirst')}</p>
+      <Link className="text-primary underline" to="/employee/target-roles">{t('nav.targetRoles')}</Link>
     </CardContent></Card>}
     {state.attempt?.state === 'IN_PROGRESS' && <BaselineAttemptPanel key={`${state.attempt.id}:${state.attempt.revision}`} attempt={state.attempt} seconds={state.seconds} locked={state.locked} run={state.run} />}
     {state.result && <BaselineResultPanel result={state.result} locked={state.locked} run={state.run} />}

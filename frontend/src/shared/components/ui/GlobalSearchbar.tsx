@@ -2,8 +2,7 @@ import * as React from 'react'
 import { AlertCircle, Loader2, Search, Sparkles, Target, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { fetchMicroSkills, type MicroSkillDto } from '../../api/microSkillApi'
-import { getTargetRoles } from '../../../features/employee/target-roles/targetRoleApi'
-import type { TargetRoleSummary } from '../../../features/employee/target-roles/targetRoleTypes'
+import { currentRoles, type CurrentRole } from '../../../features/employee/target-roles/currentRoleFlowApi'
 import { getActiveCompanyId } from '../../stores/companyStore'
 import { Badge } from './Badge'
 import { cn } from '../../lib/utils'
@@ -13,7 +12,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
   const [query, setQuery] = React.useState('')
   const [isOpen, setIsOpen] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
-  const [roles, setRoles] = React.useState<TargetRoleSummary[]>([])
+  const [roles, setRoles] = React.useState<CurrentRole[]>([])
   const [skills, setSkills] = React.useState<MicroSkillDto[]>([])
   const containerRef = React.useRef<HTMLDivElement>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -28,7 +27,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
         setIsLoading(true)
         const orgId = getActiveCompanyId() || '00000000-0000-0000-0000-000000000001'
         const [rolesData, skillsData] = await Promise.all([
-          getTargetRoles({}, controller.signal).catch(() => [] as TargetRoleSummary[]),
+          currentRoles(controller.signal).catch(() => [] as CurrentRole[]),
           fetchMicroSkills(orgId).catch(() => [] as MicroSkillDto[]),
         ])
 
@@ -78,8 +77,8 @@ export function GlobalSearchbar({ className }: { className?: string }) {
     return roles
       .filter((r) =>
         r.name.toLowerCase().includes(trimmedQuery) ||
-        (r.description && r.description.toLowerCase().includes(trimmedQuery)) ||
-        (r.seniority && r.seniority.toLowerCase().includes(trimmedQuery))
+        r.scope.toLowerCase().includes(trimmedQuery) ||
+        r.occupationName.toLowerCase().includes(trimmedQuery)
       )
       .slice(0, 5)
   }, [roles, trimmedQuery])
@@ -97,9 +96,9 @@ export function GlobalSearchbar({ className }: { className?: string }) {
 
   const hasMatches = matchingRoles.length > 0 || matchingSkills.length > 0
 
-  const handleSelectRole = (role: TargetRoleSummary) => {
+  const handleSelectRole = (role: CurrentRole) => {
     setIsOpen(false)
-    navigate(`/employee/upskilling?tab=roles&search=${encodeURIComponent(role.name)}`)
+    navigate(`/employee/target-roles?search=${encodeURIComponent(role.name)}`)
   }
 
   const handleSelectSkill = (skill: MicroSkillDto) => {
@@ -113,7 +112,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
     setIsOpen(false)
     // If top match is a role and query strongly matches, navigate to roles, else generic
     if (matchingRoles.length > 0 && matchingSkills.length === 0) {
-      navigate(`/employee/upskilling?tab=roles&search=${encodeURIComponent(query.trim())}`)
+      navigate(`/employee/target-roles?search=${encodeURIComponent(query.trim())}`)
     } else if (matchingSkills.length > 0 && matchingRoles.length === 0) {
       navigate(`/employee/upskilling?tab=skills&search=${encodeURIComponent(query.trim())}`)
     } else {
@@ -205,15 +204,15 @@ export function GlobalSearchbar({ className }: { className?: string }) {
                           <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                             {role.name}
                           </div>
-                          {role.track && (
+                          {role.occupationName && (
                             <div className="text-[11px] text-muted-foreground capitalize">
-                              {role.track.toLowerCase()} track
+                              {role.occupationName}
                             </div>
                           )}
                         </div>
-                        {role.seniority && (
+                        {role.catalogVersion && (
                           <Badge variant="outline" className="font-mono text-[10px] shrink-0 font-bold">
-                            {role.seniority}
+                            {role.catalogVersion}
                           </Badge>
                         )}
                       </button>
