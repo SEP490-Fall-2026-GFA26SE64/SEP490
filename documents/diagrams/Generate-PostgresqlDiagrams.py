@@ -44,6 +44,7 @@ GROUPS = [
  ('postgresql-adaptive-blueprint','Adaptive baseline configuration','baseline_adaptive_blueprint_working_revision baseline_adaptive_blueprint_version baseline_adaptive_blueprint_role baseline_adaptive_blueprint_skill baseline_blueprint_working_registry baseline_blueprint_version_registry baseline_blueprint_activation baseline_blueprint_activation_event baseline_blueprint_command'.split()),
  ('postgresql-adaptive-attempt','Adaptive baseline attempts and evidence','baseline_adaptive_attempt baseline_attempt_pool_item baseline_attempt_item baseline_attempt_response baseline_attempt_skill_state baseline_attempt_command baseline_attempt_result baseline_attempt_skill_result baseline_mastery_evidence'.split()),
  ('postgresql-irt','IRT calibration and scoped selection','mastery_mapping_version irt_calibration_run irt_parameter_set irt_item_parameter irt_effective_parameter_selection irt_parameter_promotion_command'.split()),
+ ('postgresql-role-profile','Current Role selection and initial Occupation profile','employee_role_selection employee_role_selection_request employee_occupation_profile'.split()),
 ]
 
 def main():

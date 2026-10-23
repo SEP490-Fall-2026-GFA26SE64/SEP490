@@ -6,7 +6,7 @@ hide circle
 skinparam classAttributeIconSize 0
 skinparam defaultFontName SansSerif
 skinparam defaultFontSize 12
-title PostgreSQL 17.6 / platform / V1-V23\nLegacy assessment and shared learning (32 tables)
+title PostgreSQL 17.6 / platform / V1-V26\nLegacy assessment and shared learning (32 tables)
 legend top left
 PK = primary key; FK = foreign-key column; ? = nullable
 Arrows: referenced parent -> referencing child; no cardinality inference.

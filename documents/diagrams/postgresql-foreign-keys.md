@@ -1,6 +1,6 @@
 # PostgreSQL foreign-key inventory
 
-Generated from the same read-only V23 catalog. Each constraint, including composite keys, is listed. No data rows captured.
+Generated from the same read-only V26 catalog. Each constraint, including composite keys, is listed. No data rows captured.
 
 | Referencing table | Constraint | Definition |
 | --- | --- | --- |
@@ -110,6 +110,10 @@ Generated from the same read-only V23 catalog. Each constraint, including compos
 | `completion_pass` | `completion_pass_activity_id_assessment_version_id_fkey` | `FOREIGN KEY (activity_id, assessment_version_id) REFERENCES platform.activity_requirement(activity_id, assessment_version_id)` |
 | `completion_pass` | `completion_pass_activity_id_learner_id_fkey` | `FOREIGN KEY (activity_id, learner_id) REFERENCES platform.module_completion(activity_id, learner_id)` |
 | `completion_pass` | `completion_pass_attempt_id_learner_id_activity_id_assessme_fkey` | `FOREIGN KEY (attempt_id, learner_id, activity_id, assessment_version_id, passed) REFERENCES platform.assessment_result(attempt_id, learner_id, activity_id, assessment_version_id, passed)` |
+| `employee_occupation_profile` | `employee_occupation_profile_attempt_id_organization_id_lea_fkey` | `FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)` |
+| `employee_occupation_profile` | `employee_occupation_profile_blueprint_id_blueprint_version_fkey` | `FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(blueprint_id, version)` |
+| `employee_role_selection` | `employee_role_selection_learner_id_fkey` | `FOREIGN KEY (learner_id) REFERENCES platform.learner_state(learner_id)` |
+| `employee_role_selection_request` | `employee_role_selection_request_selection_id_fkey` | `FOREIGN KEY (selection_id) REFERENCES platform.employee_role_selection(selection_id)` |
 | `evaluation_artifact` | `evaluation_artifact_evaluation_run_id_fkey` | `FOREIGN KEY (evaluation_run_id) REFERENCES platform.evaluation_run(evaluation_run_id)` |
 | `evaluation_run` | `evaluation_run_catalog_release_id_fkey` | `FOREIGN KEY (catalog_release_id) REFERENCES platform.catalog_release(release_id)` |
 | `evaluation_run` | `evaluation_run_created_by_fkey` | `FOREIGN KEY (created_by) REFERENCES platform.account(account_id)` |

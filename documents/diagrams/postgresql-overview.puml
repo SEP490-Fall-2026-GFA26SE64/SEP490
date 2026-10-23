@@ -6,7 +6,7 @@ hide circle
 skinparam classAttributeIconSize 0
 skinparam defaultFontName SansSerif
 skinparam defaultFontSize 12
-title PostgreSQL 17.6 / platform / V1-V23\nAll 86 tables / storage groups
+title PostgreSQL 17.6 / platform / V1-V26\nAll 89 tables / storage groups
 legend top left
 PK = primary key; FK = foreign-key column; ? = nullable
 Arrows: referenced parent -> referencing child; no cardinality inference.
@@ -110,12 +110,20 @@ class "IRT calibration and scoped selection\n6 tables" as postgresql_irt {
   irt_effective_parameter_selection
   irt_parameter_promotion_command
 }
+class "Current Role selection and initial Occupation profile\n3 tables" as postgresql_role_profile {
+  employee_role_selection
+  employee_role_selection_request
+  employee_occupation_profile
+}
 postgresql --> postgresql_adaptive_attempt : 3 FK constraints
 postgresql --> postgresql_adaptive_blueprint : 6 FK constraints
 postgresql --> postgresql_assessment : 24 FK constraints
 postgresql --> postgresql_irt : 4 FK constraints
 postgresql --> postgresql_pathway : 12 FK constraints
+postgresql --> postgresql_role_profile : 1 FK constraints
+postgresql_adaptive_attempt --> postgresql_role_profile : 1 FK constraints
 postgresql_adaptive_blueprint --> postgresql_adaptive_attempt : 2 FK constraints
+postgresql_adaptive_blueprint --> postgresql_role_profile : 1 FK constraints
 postgresql_assessment --> postgresql_adaptive_attempt : 1 FK constraints
 postgresql_assessment --> postgresql_adaptive_blueprint : 8 FK constraints
 postgresql_assessment --> postgresql_irt : 5 FK constraints

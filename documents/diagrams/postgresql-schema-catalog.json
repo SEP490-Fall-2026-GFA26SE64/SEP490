@@ -185,6 +185,30 @@
       "script": "V23__irt_scoped_parameter_promotion.sql",
       "checksum": -1125147424,
       "success": true
+    },
+    {
+      "installed_rank": 24,
+      "version": "24",
+      "description": "baseline draft discard receipt",
+      "script": "V24__baseline_draft_discard_receipt.sql",
+      "checksum": -71600753,
+      "success": true
+    },
+    {
+      "installed_rank": 25,
+      "version": "25",
+      "description": "current role selection and occupation profile",
+      "script": "V25__current_role_selection_and_occupation_profile.sql",
+      "checksum": 1717114679,
+      "success": true
+    },
+    {
+      "installed_rank": 26,
+      "version": "26",
+      "description": "insufficient evidence manual submission",
+      "script": "V26__insufficient_evidence_manual_submission.sql",
+      "checksum": -738341887,
+      "success": true
     }
   ],
   "columns": [
@@ -4129,6 +4153,266 @@
       "fk": true
     },
     {
+      "table": "employee_occupation_profile",
+      "position": 1,
+      "name": "organization_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": true
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 2,
+      "name": "learner_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": true
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 3,
+      "name": "occupation_id",
+      "type": "text",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": true
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 4,
+      "name": "attempt_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": true
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 5,
+      "name": "blueprint_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": true
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 6,
+      "name": "blueprint_version",
+      "type": "integer",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": true
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 7,
+      "name": "catalog_fingerprint",
+      "type": "text",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 8,
+      "name": "required_skills",
+      "type": "jsonb",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 9,
+      "name": "mastery",
+      "type": "jsonb",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_occupation_profile",
+      "position": 10,
+      "name": "initialized_at",
+      "type": "timestamp with time zone",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 1,
+      "name": "selection_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 2,
+      "name": "organization_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 3,
+      "name": "learner_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": true
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 4,
+      "name": "role_id",
+      "type": "text",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 5,
+      "name": "occupation_id",
+      "type": "text",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 6,
+      "name": "role_snapshot",
+      "type": "jsonb",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 7,
+      "name": "target_revision",
+      "type": "bigint",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 8,
+      "name": "selected_at",
+      "type": "timestamp with time zone",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection",
+      "position": 9,
+      "name": "ended_at",
+      "type": "timestamp with time zone",
+      "required": false,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 1,
+      "name": "organization_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 2,
+      "name": "learner_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 3,
+      "name": "retry_key",
+      "type": "text",
+      "required": true,
+      "default": null,
+      "pk": true,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 4,
+      "name": "request_hash",
+      "type": "platform.content_hash",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 5,
+      "name": "selection_id",
+      "type": "uuid",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": true
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 6,
+      "name": "response",
+      "type": "jsonb",
+      "required": true,
+      "default": null,
+      "pk": false,
+      "fk": false
+    },
+    {
+      "table": "employee_role_selection_request",
+      "position": 7,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "required": true,
+      "default": "now()",
+      "pk": false,
+      "fk": false
+    },
+    {
       "table": "evaluation_artifact",
       "position": 1,
       "name": "artifact_id",
@@ -7918,14 +8202,6 @@
     },
     {
       "table": "baseline_adaptive_attempt",
-      "name": "baseline_adaptive_attempt_check4",
-      "kind": "c",
-      "parent": null,
-      "validated": true,
-      "definition": "CHECK (state = 'IN_PROGRESS'::text AND finished_at IS NULL AND completion_reason IS NULL OR finished_at IS NOT NULL AND completion_reason IS NOT NULL AND isfinite(finished_at) AND finished_at >= started_at AND (state = 'SUBMITTED'::text AND completion_reason = 'MANUAL'::text AND finished_at < deadline_at OR state = 'AUTO_SUBMITTED'::text AND (completion_reason = 'ADAPTIVE_STOP'::text AND finished_at < deadline_at OR completion_reason = 'DEADLINE'::text AND finished_at >= deadline_at) OR state = 'INVALIDATED'::text AND (completion_reason = 'TECHNICAL_FAILURE'::text OR completion_reason = 'DEADLINE'::text AND finished_at >= deadline_at)))"
-    },
-    {
-      "table": "baseline_adaptive_attempt",
       "name": "baseline_adaptive_attempt_learner_id_fkey",
       "kind": "f",
       "parent": "learner_state",
@@ -8019,6 +8295,14 @@
       "parent": null,
       "validated": true,
       "definition": "CHECK (target_selection_revision > 0)"
+    },
+    {
+      "table": "baseline_adaptive_attempt",
+      "name": "baseline_adaptive_attempt_terminal_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (state = 'IN_PROGRESS'::text AND finished_at IS NULL AND completion_reason IS NULL OR finished_at IS NOT NULL AND completion_reason IS NOT NULL AND isfinite(finished_at) AND finished_at >= started_at AND (state = 'SUBMITTED'::text AND completion_reason = 'MANUAL'::text AND finished_at < deadline_at OR state = 'AUTO_SUBMITTED'::text AND (completion_reason = 'ADAPTIVE_STOP'::text AND finished_at < deadline_at OR completion_reason = 'DEADLINE'::text AND finished_at >= deadline_at) OR state = 'INVALIDATED'::text AND (completion_reason = 'TECHNICAL_FAILURE'::text OR completion_reason = 'MANUAL'::text AND finished_at < deadline_at OR completion_reason = 'DEADLINE'::text AND finished_at >= deadline_at)))"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -9202,7 +9486,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (operation = ANY (ARRAY['SAVE'::text, 'CONVERT'::text, 'FINALIZE'::text, 'DISABLE'::text]))"
+      "definition": "CHECK (operation = ANY (ARRAY['SAVE'::text, 'CONVERT'::text, 'FINALIZE'::text, 'DISABLE'::text, 'DISCARD'::text]))"
     },
     {
       "table": "baseline_blueprint_command",
@@ -9931,6 +10215,150 @@
       "parent": null,
       "validated": true,
       "definition": "PRIMARY KEY (activity_id, assessment_version_id)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_attempt_id_key",
+      "kind": "u",
+      "parent": null,
+      "validated": true,
+      "definition": "UNIQUE (attempt_id)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_attempt_id_organization_id_lea_fkey",
+      "kind": "f",
+      "parent": "baseline_adaptive_attempt",
+      "validated": true,
+      "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_blueprint_id_blueprint_version_fkey",
+      "kind": "f",
+      "parent": "baseline_adaptive_blueprint_version",
+      "validated": true,
+      "definition": "FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(blueprint_id, version)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_blueprint_version_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (blueprint_version > 0)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_mastery_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (jsonb_typeof(mastery) = 'object'::text AND mastery <> '{}'::jsonb)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_pkey",
+      "kind": "p",
+      "parent": null,
+      "validated": true,
+      "definition": "PRIMARY KEY (organization_id, learner_id, occupation_id)"
+    },
+    {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_required_skills_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (jsonb_typeof(required_skills) = 'array'::text AND jsonb_array_length(required_skills) > 0)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (ended_at IS NULL OR ended_at >= selected_at)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_learner_id_fkey",
+      "kind": "f",
+      "parent": "learner_state",
+      "validated": true,
+      "definition": "FOREIGN KEY (learner_id) REFERENCES platform.learner_state(learner_id)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_occupation_id_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (btrim(occupation_id) <> ''::text)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_organization_id_learner_id_target_r_key",
+      "kind": "u",
+      "parent": null,
+      "validated": true,
+      "definition": "UNIQUE (organization_id, learner_id, target_revision)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_pkey",
+      "kind": "p",
+      "parent": null,
+      "validated": true,
+      "definition": "PRIMARY KEY (selection_id)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_role_id_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (btrim(role_id) <> ''::text)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_role_snapshot_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (jsonb_typeof(role_snapshot) = 'object'::text)"
+    },
+    {
+      "table": "employee_role_selection",
+      "name": "employee_role_selection_target_revision_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (target_revision > 0)"
+    },
+    {
+      "table": "employee_role_selection_request",
+      "name": "employee_role_selection_request_pkey",
+      "kind": "p",
+      "parent": null,
+      "validated": true,
+      "definition": "PRIMARY KEY (organization_id, learner_id, retry_key)"
+    },
+    {
+      "table": "employee_role_selection_request",
+      "name": "employee_role_selection_request_response_check",
+      "kind": "c",
+      "parent": null,
+      "validated": true,
+      "definition": "CHECK (jsonb_typeof(response) = 'object'::text)"
+    },
+    {
+      "table": "employee_role_selection_request",
+      "name": "employee_role_selection_request_selection_id_fkey",
+      "kind": "f",
+      "parent": "employee_role_selection",
+      "validated": true,
+      "definition": "FOREIGN KEY (selection_id) REFERENCES platform.employee_role_selection(selection_id)"
     },
     {
       "table": "evaluation_artifact",
@@ -12648,6 +13076,36 @@
       "indexdef": "CREATE UNIQUE INDEX completion_pass_pkey ON platform.completion_pass USING btree (activity_id, assessment_version_id)"
     },
     {
+      "tablename": "employee_occupation_profile",
+      "indexname": "employee_occupation_profile_attempt_id_key",
+      "indexdef": "CREATE UNIQUE INDEX employee_occupation_profile_attempt_id_key ON platform.employee_occupation_profile USING btree (attempt_id)"
+    },
+    {
+      "tablename": "employee_occupation_profile",
+      "indexname": "employee_occupation_profile_pkey",
+      "indexdef": "CREATE UNIQUE INDEX employee_occupation_profile_pkey ON platform.employee_occupation_profile USING btree (organization_id, learner_id, occupation_id)"
+    },
+    {
+      "tablename": "employee_role_selection",
+      "indexname": "employee_role_selection_current",
+      "indexdef": "CREATE UNIQUE INDEX employee_role_selection_current ON platform.employee_role_selection USING btree (organization_id, learner_id) WHERE (ended_at IS NULL)"
+    },
+    {
+      "tablename": "employee_role_selection",
+      "indexname": "employee_role_selection_organization_id_learner_id_target_r_key",
+      "indexdef": "CREATE UNIQUE INDEX employee_role_selection_organization_id_learner_id_target_r_key ON platform.employee_role_selection USING btree (organization_id, learner_id, target_revision)"
+    },
+    {
+      "tablename": "employee_role_selection",
+      "indexname": "employee_role_selection_pkey",
+      "indexdef": "CREATE UNIQUE INDEX employee_role_selection_pkey ON platform.employee_role_selection USING btree (selection_id)"
+    },
+    {
+      "tablename": "employee_role_selection_request",
+      "indexname": "employee_role_selection_request_pkey",
+      "indexdef": "CREATE UNIQUE INDEX employee_role_selection_request_pkey ON platform.employee_role_selection_request USING btree (organization_id, learner_id, retry_key)"
+    },
+    {
       "tablename": "evaluation_artifact",
       "indexname": "evaluation_artifact_evaluation_run_id_relative_path_key",
       "indexdef": "CREATE UNIQUE INDEX evaluation_artifact_evaluation_run_id_relative_path_key ON platform.evaluation_artifact USING btree (evaluation_run_id, relative_path)"
@@ -13524,6 +13982,18 @@
       "definition": "CREATE TRIGGER immutable_history BEFORE DELETE OR UPDATE ON platform.completion_pass FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
     },
     {
+      "table": "employee_occupation_profile",
+      "name": "employee_occupation_profile_initial_immutable",
+      "enabled": "O",
+      "definition": "CREATE TRIGGER employee_occupation_profile_initial_immutable BEFORE DELETE OR UPDATE ON platform.employee_occupation_profile FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
+    },
+    {
+      "table": "employee_role_selection_request",
+      "name": "employee_role_request_immutable",
+      "enabled": "O",
+      "definition": "CREATE TRIGGER employee_role_request_immutable BEFORE DELETE OR UPDATE ON platform.employee_role_selection_request FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
+    },
+    {
       "table": "evaluation_artifact",
       "name": "immutable_history",
       "enabled": "O",
@@ -13919,7 +14389,7 @@
       "definition": "CREATE OR REPLACE FUNCTION platform.validate_scoring_context()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nBEGIN\r\n    IF NOT EXISTS (SELECT 1 FROM platform.assessment_version definition\r\n        WHERE definition.assessment_version_id = NEW.assessment_version_id\r\n        AND definition.pass_threshold = NEW.pass_threshold AND definition.scoring_version = NEW.scoring_version) THEN\r\n        RAISE EXCEPTION 'Scoring context differs from pinned assessment' USING ERRCODE = '23514';\r\n    END IF;\r\n    RETURN NEW;\r\nEND;\r\n$function$\n"
     }
   ],
-  "capturedAtUtc": "2026-10-22T17:44:56.127669+00:00",
+  "capturedAtUtc": "2026-10-23T08:14:15.448161+00:00",
   "migrationSources": [
     {
       "file": "V10__baseline_blueprint_write_idempotency.sql",
@@ -13997,6 +14467,21 @@
       "checksum": -1125147424
     },
     {
+      "file": "V24__baseline_draft_discard_receipt.sql",
+      "sha256": "a8476158ff1106e9aaf3aa9f3fa15822ac5f4a9a22cff5764a5dd91dad6cd81d",
+      "checksum": -71600753
+    },
+    {
+      "file": "V25__current_role_selection_and_occupation_profile.sql",
+      "sha256": "6cd5aca9906be91e833c11c9db1df062b5e0d03fe6879445e987e442d5cfdbea",
+      "checksum": 1717114679
+    },
+    {
+      "file": "V26__insufficient_evidence_manual_submission.sql",
+      "sha256": "b25a285a6a41ef9c7f77c3e549917128c49e7b9eb59f95471b21626b185ca57c",
+      "checksum": -738341887
+    },
+    {
       "file": "V2__identity_catalog_and_processing.sql",
       "sha256": "18140b491728a917a92b8155ff4a696253ea4198f4d7f9421925f92987b94b0e",
       "checksum": -1975842268
@@ -14038,13 +14523,13 @@
     }
   ],
   "summary": {
-    "tables": 86,
-    "columns": 703,
-    "constraints": 610,
-    "foreignKeys": 185,
-    "foreignKeyTablePairs": 172,
-    "indexes": 207,
-    "triggers": 97,
+    "tables": 89,
+    "columns": 729,
+    "constraints": 628,
+    "foreignKeys": 189,
+    "foreignKeyTablePairs": 176,
+    "indexes": 213,
+    "triggers": 99,
     "functions": 39
   },
   "groups": [
@@ -14168,6 +14653,15 @@
         "irt_item_parameter",
         "irt_effective_parameter_selection",
         "irt_parameter_promotion_command"
+      ]
+    },
+    {
+      "file": "postgresql-role-profile",
+      "name": "Current Role selection and initial Occupation profile",
+      "tables": [
+        "employee_role_selection",
+        "employee_role_selection_request",
+        "employee_occupation_profile"
       ]
     }
   ]

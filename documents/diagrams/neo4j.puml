@@ -57,9 +57,13 @@ Occupation "1" --> "1..*" TargetRole : HAS_ROLE
 TargetRole "1" --> "1..*" Level : HAS_LEVEL
 Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
 Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
-Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL\nrequiredScore [0,1], isMandatory
+Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL
 LearningModule "1" -up-> "1" MicroSkill : TEACHES
-MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE\nrequiredScore [0,1]
+MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
+note bottom of MicroSkill
+REQUIRES_SKILL: requiredScore [0,1], isMandatory.
+HAS_SKILL_PREREQUISITE: requiredScore [0,1].
+end note
 note top of Competency
 Owned by one Level.
 All member skills PASS under that Level's requirements
