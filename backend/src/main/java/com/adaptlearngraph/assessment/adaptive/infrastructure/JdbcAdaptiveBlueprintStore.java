@@ -40,6 +40,21 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
         transactions.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
 
+    @Override public com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Status versionStatus(Scope scope, VersionId id) {
+        String status = jdbc.queryForObject("""
+                SELECT CASE WHEN EXISTS (
+                    SELECT 1 FROM platform.baseline_blueprint_activation
+                    WHERE organization_id=:org AND occupation_id=:occupation
+                      AND blueprint_id=:blueprint AND blueprint_version=:version
+                ) THEN 'ACTIVE' WHEN EXISTS (
+                    SELECT 1 FROM platform.baseline_adaptive_attempt
+                    WHERE organization_id=:org AND occupation_id=:occupation
+                      AND blueprint_id=:blueprint AND blueprint_version=:version AND state='IN_PROGRESS'
+                ) THEN 'RETIRING' ELSE 'INACTIVE' END
+                """, key(scope).addValue("blueprint", id.blueprintId()).addValue("version", id.version()), String.class);
+        return com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Status.valueOf(status);
+    }
+
     @Override public com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Page list(
             UUID organizationId, java.util.Set<String> occupations,
             com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Query query) {
@@ -198,6 +213,17 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
                 .addValue("actor", actorId).addValue("time", closedAt.atOffset(ZoneOffset.UTC))));
     }
 
+    @Override public void discardWorking(Scope scope, UUID id, long revision, UUID actor, Instant time) {
+        requireTransaction(scope);
+        changedOne(jdbc.update("""
+                UPDATE platform.baseline_adaptive_blueprint_working_revision
+                SET state='ABANDONED',revision=revision+1,updated_by=:actor,updated_at=:time,closed_at=:time
+                WHERE organization_id=:org AND occupation_id=:occupation AND working_revision_id=:working
+                  AND revision=:expected AND state='OPEN'
+                """, key(scope).addValue("working", id).addValue("expected", revision)
+                .addValue("actor", actor).addValue("time", time.atOffset(ZoneOffset.UTC))));
+    }
+
     @Override
     public void insertVersion(Scope scope, Version version) {
         requireTransaction(scope); sameScope(scope, version.scope());
@@ -269,6 +295,7 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
         requireTransaction(scope); sameScope(scope, receipt.scope());
         UUID blueprintId = identity(scope);
         UUID outcomeBlueprint = switch (receipt.outcome()) {
+            case Discarded discarded -> discarded.working().blueprintId();
             case Saved saved -> saved.working().blueprintId();
             case Converted converted -> converted.working().blueprintId();
             case Finalized finalized -> finalized.version().id().blueprintId();

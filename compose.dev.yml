@@ -56,13 +56,29 @@ services:
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,migrate
-      # Official graph is already seeded. This service runs PostgreSQL migrations only.
+      # Schema first; the separate local seed service initializes missing catalog/bank data.
       CATALOG_SEED_ENABLED: "false"
     depends_on:
       postgres:
         condition: service_healthy
       neo4j:
         condition: service_healthy
+    restart: "no"
+
+  seed:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,local-demo-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
+    volumes:
+      - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/catalog-scope.json:/seed/catalog-scope.json:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     restart: "no"
 
   api:
@@ -72,7 +88,7 @@ services:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,local-baseline-demo
     depends_on:
-      migrate:
+      seed:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${API_PORT:-18080}:8080"

@@ -23,6 +23,7 @@ public class LocalCatalogSecurityConfiguration {
                         "/api/v1/employee/target-roles",
                         "/api/v1/employee/target-roles/**",
                         "/api/v1/employee/target-role-selection",
+                        "/api/v1/employee/target-role-selection/**",
                         "/api/v1/ld/baseline-blueprint-catalog/occupations",
                         "/api/v1/ld/baseline-blueprint-catalog/occupations/**",
                         "/api/v1/ld/baseline-blueprints",
@@ -33,7 +34,8 @@ public class LocalCatalogSecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/employee/target-roles",
                                 "/api/v1/employee/target-roles/**",
-                                "/api/v1/employee/target-role-selection")
+                                "/api/v1/employee/target-role-selection",
+                                "/api/v1/employee/target-role-selection/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.PUT,
                                 "/api/v1/employee/target-role-selection")

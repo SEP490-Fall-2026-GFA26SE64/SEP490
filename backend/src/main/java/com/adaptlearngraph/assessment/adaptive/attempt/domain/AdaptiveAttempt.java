@@ -44,6 +44,8 @@ public record AdaptiveAttempt(UUID id, Scope scope, AdaptiveAttemptSnapshot snap
                     || completionReason.orElseThrow() == CompletionReason.DEADLINE
                     && !finishedAt.orElseThrow().isBefore(deadlineAt);
             case INVALIDATED -> completionReason.orElseThrow() == CompletionReason.TECHNICAL_FAILURE
+                    || completionReason.orElseThrow() == CompletionReason.MANUAL
+                    && finishedAt.orElseThrow().isBefore(deadlineAt)
                     || completionReason.orElseThrow() == CompletionReason.DEADLINE
                     && !finishedAt.orElseThrow().isBefore(deadlineAt);
         };
@@ -80,7 +82,6 @@ public record AdaptiveAttempt(UUID id, Scope scope, AdaptiveAttemptSnapshot snap
             boolean minimumEvidenceMet) {
         requireMutable(expectedRevision, observedAt);
         boolean expired = !observedAt.isBefore(deadlineAt);
-        if (!minimumEvidenceMet && !expired) throw new IllegalStateException("Minimum evidence not met; continue attempt");
         Status nextStatus = !minimumEvidenceMet ? Status.INVALIDATED
                 : expired || automatic ? Status.AUTO_SUBMITTED : Status.SUBMITTED;
         CompletionReason reason = expired ? CompletionReason.DEADLINE

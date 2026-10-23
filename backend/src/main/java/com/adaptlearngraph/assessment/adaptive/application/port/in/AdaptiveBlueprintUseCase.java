@@ -18,6 +18,8 @@ import java.util.UUID;
 public interface AdaptiveBlueprintUseCase {
     AdaptiveBlueprintListing.Page list(AdaptiveBlueprintListing.Query query);
     Workspace getWorkspace(String occupationId);
+    VersionDetails getVersion(String occupationId, VersionId id);
+    record VersionDetails(Version version, AdaptiveBlueprintListing.Status status) {}
 
     WorkingRevision save(Save command);
     SaveResult saveResult(Save command);
@@ -35,6 +37,7 @@ public interface AdaptiveBlueprintUseCase {
     Version finalizeBlueprint(Finalize command);
 
     Activation disable(Disable command);
+    WorkingRevision discard(PreviewSaved command, String idempotencyKey);
 
     /** expectedRevision=0 creates the sole working revision; positive revisions update it. */
     record Save(String occupationId, long expectedRevision, String idempotencyKey,

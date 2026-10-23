@@ -38,7 +38,11 @@ public final class AdaptiveAttemptFinalizationService implements AdaptiveAttempt
         } catch (AdaptiveIrtPolicy.Failure failure) {
             return technicalFailure(attempt, store.observedAt(attempt.scope()));
         }
-        if (decision.action() == AdaptiveItemSelector.Action.REJECT_SUBMIT) throw new Failure(Code.MINIMUM_EVIDENCE_NOT_MET);
+        if (decision.action() == AdaptiveItemSelector.Action.REJECT_SUBMIT) {
+            var next=attempt.complete(attempt.revision(),observed,false,false);
+            persist(next,store.progress(attempt.scope(),attempt.id()),Map.of());
+            return next;
+        }
         return finish(attempt, decision, observed);
     }
     @Override public AdaptiveAttempt finish(AdaptiveAttempt attempt, AdaptiveItemSelector.Outcome decision, Instant observed) {

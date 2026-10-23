@@ -1,5 +1,7 @@
 # REQ-001-F02 Choose Target Role — Test Plan
 
+**2026-10-23 amendment:** unified selection/coverage flow, shared trusted persona and current graph references use [RB acceptance plan](REQ-001-002-role-baseline-flow-test-plan.md); all new cases Planned / Not run. Existing UUID/P3 tests remain historical scope.
+
 ## Current Scope Alignment
 This is evidence of the recorded contract, not revised scope. [Current test criteria](README.md#current-scope-alignment) require baseline/RIASEC -> Expert-reviewed guidance -> selection of a published role. Previous selection/idempotency runs retain their dates/counts but do not certify that revised sequence.
 

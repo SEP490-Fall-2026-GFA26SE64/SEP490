@@ -33,6 +33,7 @@ public interface AdaptiveBlueprintStore {
     Optional<WorkingRevision> findWorking(Scope scope);
     Optional<Activation> findActivation(Scope scope);
     Optional<Version> findVersion(Scope scope, VersionId versionId);
+    com.adaptlearngraph.assessment.adaptive.application.AdaptiveBlueprintListing.Status versionStatus(Scope scope, VersionId versionId);
 
     /**
      * Tenant + actor + key identity, including reuse across Occupations. Check receipt.scope and
@@ -57,10 +58,14 @@ public interface AdaptiveBlueprintStore {
     void appendActivationEvent(Scope scope, Activation next, Operation operation, String reason);
     void insertReceipt(Scope scope, Receipt receipt);
 
-    enum Operation { SAVE, CONVERT, FINALIZE, DISABLE }
+    enum Operation { SAVE, CONVERT, FINALIZE, DISABLE, DISCARD }
 
     /** Typed immutable response snapshot: later edits must not change an exact replay. */
-    sealed interface Outcome permits Saved, Converted, Finalized, Disabled {}
+    sealed interface Outcome permits Saved, Converted, Finalized, Disabled, Discarded {}
+    record Discarded(WorkingRevision working) implements Outcome {
+        public Discarded { Objects.requireNonNull(working); }
+    }
+    void discardWorking(Scope scope, UUID id, long revision, UUID actor, Instant time);
     record Saved(WorkingRevision working, boolean noOp) implements Outcome {
         public Saved(WorkingRevision working) { this(working, false); }
         public Saved { Objects.requireNonNull(working, "working"); }
@@ -99,11 +104,13 @@ public interface AdaptiveBlueprintStore {
             if (!(operation == Operation.SAVE && outcome instanceof Saved
                     || operation == Operation.CONVERT && outcome instanceof Converted
                     || operation == Operation.FINALIZE && outcome instanceof Finalized
-                    || operation == Operation.DISABLE && outcome instanceof Disabled)) {
+                    || operation == Operation.DISABLE && outcome instanceof Disabled
+                    || operation == Operation.DISCARD && outcome instanceof Discarded)) {
                 throw new IllegalArgumentException("Command operation and outcome must match");
             }
             Scope outcomeScope = switch (outcome) {
                 case Saved saved -> saved.working().scope();
+                case Discarded discarded -> discarded.working().scope();
                 case Converted converted -> converted.working().scope();
                 case Finalized finalized -> finalized.version().scope();
                 case Disabled disabled -> disabled.activation().scope();

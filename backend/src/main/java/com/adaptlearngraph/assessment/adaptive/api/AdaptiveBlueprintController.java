@@ -59,10 +59,26 @@ public final class AdaptiveBlueprintController {
                 request.configuration().domain(), request.expectedWorkingRevisionId()))));
     }
 
+    @GetMapping("/occupations/{occupationId}/versions/{blueprintId}/{version}")
+    ResponseEntity<VersionDetailsResponse> version(@PathVariable String occupationId, @PathVariable java.util.UUID blueprintId,
+            @PathVariable int version) {
+        var value = blueprints.getVersion(occupationId,
+                new com.adaptlearngraph.assessment.adaptive.domain.AdaptiveBlueprint.VersionId(blueprintId, version));
+        return ok(new VersionDetailsResponse(VersionResponse.from(value.version()), value.status().name()));
+    }
+    record VersionDetailsResponse(VersionResponse version, String status) {}
+
     @PostMapping(value = "/occupations/{occupationId}/test", consumes = "application/json")
     ResponseEntity<PreviewResponse> test(@PathVariable String occupationId, @RequestBody String body) {
         TestRequest request = decode(body, TestRequest.class);
         return ok(PreviewResponse.from(blueprints.previewSaved(new PreviewSaved(occupationId, request.workingRevisionId(), request.expectedWorkingRevision()))));
+    }
+
+    @PostMapping(value = "/occupations/{occupationId}/working/discard", consumes = "application/json")
+    ResponseEntity<WorkingResponse> discard(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+        TestRequest request = decode(body, TestRequest.class);
+        return ok(WorkingResponse.from(blueprints.discard(new PreviewSaved(occupationId,
+                request.workingRevisionId(), request.expectedWorkingRevision()), key(key))));
     }
 
     @PostMapping(value = "/occupations/{occupationId}/working/convert", consumes = "application/json")

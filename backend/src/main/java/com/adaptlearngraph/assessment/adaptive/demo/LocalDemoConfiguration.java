@@ -49,7 +49,8 @@ public class LocalDemoConfiguration {
     @Bean @Primary AdaptiveBlueprintPreviewPort demoPreview(DataSource source,ObjectMapper json) { return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(source),json,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptContentPort demoContent(DataSource source) { return new JdbcAdaptiveAttemptContent(new NamedParameterJdbcTemplate(source),LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptScoringPort demoScoring(DataSource source) { return new JdbcAdaptiveAttemptScoring(new NamedParameterJdbcTemplate(source),LocalDemoIdentity.BANK,true); }
-    @Bean @Primary AdaptiveAttemptContextPort demoContext(DataSource source,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog) {
-        return new LocalAdaptiveAttemptContext(identity::actor,new NamedParameterJdbcTemplate(source),LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),catalog,new AdaptiveAttemptSnapshotResolver(store,eligibility,technical));
+    @Bean @Primary AdaptiveAttemptContextPort demoContext(DataSource source,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog,
+            AdaptiveSelectedRolePort selected,AdaptiveAttemptStore attempts,CurrentOccupationProfile profiles) {
+        return new LocalAdaptiveAttemptContext(identity::actor,new NamedParameterJdbcTemplate(source),LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),catalog,new AdaptiveAttemptSnapshotResolver(store,eligibility,technical),selected,attempts,profiles::exists);
     }
 }

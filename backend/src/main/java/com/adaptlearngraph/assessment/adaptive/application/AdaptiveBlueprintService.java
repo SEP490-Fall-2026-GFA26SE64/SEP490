@@ -69,6 +69,13 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
         });
     }
 
+    @Override public VersionDetails getVersion(String occupationId, VersionId id) {
+        Scope scope = scope(requireActor(), occupationId);
+        Version version = store.findVersion(scope, Objects.requireNonNull(id))
+                .orElseThrow(() -> failure(Code.NOT_FOUND, "Blueprint version unavailable"));
+        return new VersionDetails(version, store.versionStatus(scope, id));
+    }
+
     private AdmissionReadiness readiness(Scope scope, Optional<Version> current) {
         if (current.isEmpty()) return AdmissionReadiness.NO_ACTIVE;
         Version version = current.orElseThrow();
@@ -83,6 +90,16 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     }
 
     @Override public WorkingRevision save(Save command) { return saveResult(command).working(); }
+
+    @Override public WorkingRevision discard(PreviewSaved command, String key) {
+        Discarded result = (Discarded) execute(command.occupationId(), key, Operation.DISCARD,
+                List.of(command.workingRevisionId().toString(), Long.toString(command.expectedWorkingRevision())), (actor, scope) -> {
+                    WorkingRevision working = requireWorking(scope, command.workingRevisionId(), command.expectedWorkingRevision());
+                    store.discardWorking(scope, working.workingRevisionId(), working.revision(), actor.accountId(), now());
+                    return new Discarded(working);
+                });
+        return result.working();
+    }
 
     @Override public SaveResult saveResult(Save command) {
         var fields = new ArrayList<>(List.of(Long.toString(command.expectedRevision())));

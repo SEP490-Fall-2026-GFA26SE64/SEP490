@@ -18,6 +18,9 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
     private final Set<String> occupations;
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveAttemptSnapshotResolver snapshots;
+    private com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveSelectedRolePort currentRoles;
+    private com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveAttemptStore priorAttempts;
+    private java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists;
     public LocalAdaptiveAttemptContext(NamedParameterJdbcTemplate jdbc, UUID actorId, UUID organizationId,
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
         this(() -> actorId, jdbc, organizationId, occupations, catalog, snapshots);
@@ -26,6 +29,15 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
         this.jdbc = jdbc; this.actor = actor; this.organizationId = Objects.requireNonNull(organizationId);
         this.occupations = Set.copyOf(occupations); this.catalog = catalog; this.snapshots = snapshots;
+    }
+    public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, NamedParameterJdbcTemplate jdbc, UUID organizationId,
+            Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
+            com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveSelectedRolePort currentRoles,
+            com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveAttemptStore priorAttempts,
+            java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists) {
+        this(actor,jdbc,organizationId,occupations,catalog,snapshots);
+        this.currentRoles=Objects.requireNonNull(currentRoles);this.priorAttempts=Objects.requireNonNull(priorAttempts);
+        this.profileExists=Objects.requireNonNull(profileExists);
     }
     @Override public Employee requireEmployee() {
         UUID actorId = actor.get();
@@ -44,6 +56,12 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
                 || !employee.learnerId().equals(scope.learnerId()) || !occupations.contains(scope.occupationId())) throw new Failure(Code.FORBIDDEN);
     }
     @Override public AdaptiveAttempt.Scope resolveScope(Employee employee, StartTarget target) {
+        if(currentRoles!=null) {
+            if(!(target instanceof SelectedRole)) throw new Failure(Code.INVALID_REQUEST);
+            var selected=currentRoles.current(employee.organizationId(),employee.learnerId());
+            var scope=new AdaptiveAttempt.Scope(employee.organizationId(),employee.learnerId(),selected.occupationId());
+            authorizeScope(employee,scope);return scope;
+        }
         String occupation = target instanceof Exploration exploration ? exploration.occupationId() : occupation(selection(employee).role());
         var scope = new AdaptiveAttempt.Scope(employee.organizationId(), employee.learnerId(), occupation);
         authorizeScope(employee, scope);
@@ -57,6 +75,14 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         var learners = jdbc.query("SELECT learner_id FROM platform.learner_state WHERE learner_id=:actor FOR SHARE", params,
                 (rs, row) -> rs.getObject(1, UUID.class));
         if (learners.isEmpty()) throw new Failure(Code.SELECTION_UNAVAILABLE);
+        if(currentRoles!=null) {
+            var selected=currentRoles.current(scope.organizationId(),scope.learnerId());
+            if(!scope.occupationId().equals(selected.occupationId())) throw new Failure(Code.SELECTION_UNAVAILABLE);
+            if(profileExists.test(scope)) throw new Failure(Code.ALLOWANCE_CLOSED);
+            // Existing learners/replacement chains keep the original version and pool; never repin to a new activation.
+            var prior=priorAttempts.findLatest(scope);
+            if(prior.isPresent()) return prior.get().snapshot();
+        }
         Optional<String> role = Optional.empty(); Optional<Long> revision = Optional.empty();
         if (target instanceof SelectedRole) {
             var selected = selection(new Employee(scope.organizationId(), scope.learnerId()));
@@ -72,6 +98,9 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         return snapshots.resolve(scope, role, revision);
     }
     private Selection selection(Employee employee) {
+        if(currentRoles!=null) {
+            var s=currentRoles.current(employee.organizationId(),employee.learnerId());return new Selection(s.roleId(),s.revision());
+        }
         var rows = jdbc.query("""
                 SELECT reference.entity_id,learner.target_revision FROM platform.target_selection selection
                 JOIN platform.learner_state learner ON learner.learner_id=selection.learner_id

@@ -44,6 +44,7 @@ final class AdaptiveBlueprintJson {
     String writeOutcome(Outcome outcome) {
         ObjectNode envelope = mapper.createObjectNode();
         switch (outcome) {
+            case Discarded discarded -> { envelope.put("operation", "DISCARD"); envelope.set("value", mapper.valueToTree(discarded.working())); }
             case Saved saved -> { envelope.put("operation", "SAVE"); envelope.put("noOp", saved.noOp()); envelope.set("value", mapper.valueToTree(saved.working())); }
             case Converted converted -> { envelope.put("operation", "CONVERT"); envelope.set("value", mapper.valueToTree(converted)); }
             case Finalized finalized -> { envelope.put("operation", "FINALIZE"); envelope.set("value", mapper.valueToTree(finalized.version())); }
@@ -60,6 +61,7 @@ final class AdaptiveBlueprintJson {
             }
             JsonNode value = envelope.get("value");
             return switch (operation) {
+                case DISCARD -> new Discarded(mapper.treeToValue(value, WorkingRevision.class));
                 case SAVE -> new Saved(mapper.treeToValue(value, WorkingRevision.class), envelope.path("noOp").asBoolean(false));
                 case CONVERT -> mapper.treeToValue(value, Converted.class);
                 case FINALIZE -> new Finalized(mapper.treeToValue(value, Version.class));
