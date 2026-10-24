@@ -62,7 +62,7 @@ for (const actor of [
       const search = header.getByRole('searchbox', { name: 'Search skills and target roles directly' })
       await search.fill('Security')
       await search.press('Enter')
-      await expect(page).toHaveURL(/employee\/target-roles\?search=Security/)
+      await expect(page).toHaveURL(/employee\/upskilling\?tab=roles&search=Security/)
       await expect(header.getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('href', '/employee/upskilling')
       await expect(header.getByRole('link', { name: 'My Learning', exact: true })).toHaveAttribute('href', '/employee/pathway')
     }

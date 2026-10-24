@@ -16,6 +16,7 @@ beforeEach(() => vi.mocked(readMyMastery).mockResolvedValue([profile]))
 afterEach(cleanup)
 it('MM01/03 keeps valid zero mastery, source version and original result link', async () => {
  show(); await screen.findByText('Original Skill')
+ expect(screen.getByRole('heading', { level: 1 }).classList.contains('sr-only')).toBe(true)
  expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0')
  expect(screen.getByText(/roleFlow.baselineVersion.*1/)).toBeTruthy()
  expect(screen.getByRole('link', { name: 'baselineUi.viewResult' }).getAttribute('href')).toContain('attempt-v1')
@@ -26,7 +27,7 @@ it('MM01 empty profiles show an empty state, never fake zero mastery', async () 
 })
 it('MM02 dependency failure has explicit retry and recovers', async () => {
  vi.mocked(readMyMastery).mockRejectedValueOnce(Error('outage')).mockResolvedValueOnce([profile])
- show(); await screen.findByRole('alert'); fireEvent.click(screen.getByRole('button', { name: 'employeeBaseline.retry' }))
+ show(); await screen.findByRole('alert'); fireEvent.click(screen.getByRole('button', { name: 'roleFlow.retry' }))
  await screen.findByText('Original Skill'); expect(readMyMastery).toHaveBeenCalledTimes(2)
 })
 it('MM01 multiple profiles retain separate original versions', async () => {

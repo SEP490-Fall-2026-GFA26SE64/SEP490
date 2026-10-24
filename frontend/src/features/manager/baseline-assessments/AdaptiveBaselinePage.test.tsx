@@ -31,6 +31,7 @@ it('VB02/MM04 identified historical version never borrows Draft/Active values, t
 })
 it('VB03 stale Draft URL requires reconciliation and disables writes',()=>{
  show('?draft=stale-draft')
+ expect(screen.getByRole('heading', { level: 1 }).classList.contains('sr-only')).toBe(true)
  expect(screen.getByText('adaptiveBaseline.refreshRequired')).toBeTruthy()
  expect((screen.getByLabelText('adaptiveBaseline.name') as HTMLInputElement).disabled).toBe(true)
  expect(mock.command).not.toHaveBeenCalled()

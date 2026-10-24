@@ -44,10 +44,13 @@ it('RB05 unknown write outcome retains identical body/key and locks cancel', asy
  await waitFor(() => expect(api.chooseCurrentRole).toHaveBeenCalledTimes(2))
  expect(vi.mocked(api.chooseCurrentRole).mock.calls[1][0]).toEqual(vi.mocked(api.chooseCurrentRole).mock.calls[0][0])
 })
-it('RB07/14 complete low-score coverage exposes continuation without start', () => {
+it('RB07/14 complete low-score coverage keeps outlined history without start or redundant summary links', () => {
  show(<RoleBaselineGate view={{ ...selected, progress: { ...selected.progress, state: 'COMPLETE', coveredCount: 15, attemptId: 'original-v1' } }} />)
  expect(screen.queryByRole('button', { name: 'roleFlow.start' })).toBeNull()
- expect(screen.getByRole('link', { name: 'roleFlow.continue' }).getAttribute('href')).toBe('/employee/gap-analysis')
+ const history = screen.getByRole('link', { name: 'baselineUi.history' })
+ expect(history.getAttribute('href')).toBe('/employee/baseline-assessment')
+ expect(history.classList.contains('border')).toBe(true)
+ for (const name of ['roleFlow.continue', 'baselineUi.myMastery', 'baselineUi.viewResult']) expect(screen.queryByRole('link', { name })).toBeNull()
  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
 })
 it('RB13 resume links original attempt and disables every Role change', async () => {
@@ -69,5 +72,19 @@ it('RB01/17 paginates 12 choices and resets pagination after filtering without w
  expect(screen.getByText('Role 12')).toBeTruthy(); expect(screen.queryByText('Role 00')).toBeNull()
  fireEvent.change(screen.getByRole('searchbox',{name:'roleFlow.search'}),{target:{value:'Role 00'}})
  expect(screen.getByText('Role 00')).toBeTruthy(); expect(screen.queryByText('Role 12')).toBeNull()
+ expect(api.chooseCurrentRole).not.toHaveBeenCalled()
+})
+it('RB17 catalog loading is explicit, then empty is distinct from dependency failure', async () => {
+ let resolve!: (value: CurrentRole[]) => void
+ vi.mocked(api.currentRoles).mockImplementationOnce(() => new Promise(done => { resolve = done }))
+ show(); expect(screen.getByText('roleFlow.loading')).toBeTruthy()
+ await act(async () => resolve([])); await screen.findByText('upskillingUi.noResults')
+ expect(screen.queryByRole('alert')).toBeNull(); expect(api.chooseCurrentRole).not.toHaveBeenCalled()
+})
+it('RB11/17 dependency failure stays unavailable and explicit retry recovers without commands', async () => {
+ vi.mocked(api.currentRoles).mockRejectedValueOnce(new api.RoleFlowError('DEPENDENCY_UNAVAILABLE',503)).mockResolvedValueOnce([role])
+ show(); await screen.findByRole('alert')
+ expect(screen.queryByText('upskillingUi.noResults')).toBeNull()
+ fireEvent.click(screen.getByRole('button',{name:'roleFlow.retry'})); await screen.findByText('Role A')
  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
 })
