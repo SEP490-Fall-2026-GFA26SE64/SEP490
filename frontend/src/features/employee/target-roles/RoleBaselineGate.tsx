@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, History } from 'lucide-react'
+import { History } from 'lucide-react'
 import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Text } from '../../../shared/components/typography/Text'
@@ -25,10 +25,7 @@ export function RoleBaselineGate({ view }: { view: RoleFlowView }) {
       <div className="flex flex-wrap gap-2">
         {progress.state === 'BASELINE_REQUIRED' && <Button size="sm" disabled={state.locked} onClick={() => void state.run(startCommand())}>{tr('start')}</Button>}
         {progress.state === 'RESUME' && progress.attemptId && <Link className={buttonVariants({ size: 'sm' })} to={attemptPath(progress.attemptId)}>{tr('resume')}</Link>}
-        {progress.state === 'COMPLETE' && <Link className={buttonVariants({ size: 'sm', variant: 'secondary' })} to="/employee/gap-analysis">{tr('continue')}<ArrowRight size={14} aria-hidden="true" /></Link>}
-        <Link className={buttonVariants({ size: 'sm', variant: 'outline' })} to="/employee/my-mastery">{t('baselineUi.myMastery')}</Link>
-        {progress.state === 'COMPLETE' && progress.attemptId && <Link className={buttonVariants({ size: 'sm', variant: 'outline' })} to={attemptPath(progress.attemptId)}>{t('baselineUi.viewResult')}</Link>}
-        <Link className={buttonVariants({ size: 'sm', variant: 'ghost' })} to="/employee/baseline-assessment"><History size={14} aria-hidden="true" />{t('baselineUi.history')}</Link>
+        <Link className={buttonVariants({ size: 'sm', variant: 'outline' })} to="/employee/baseline-assessment"><History size={14} aria-hidden="true" />{t('baselineUi.history')}</Link>
       </div>
     </div>
     {state.error && <Text variant="body-sm" className="text-destructive" role="alert">{t(`employeeBaseline.errors.${state.error.code}`, tr('requestError'))}</Text>}

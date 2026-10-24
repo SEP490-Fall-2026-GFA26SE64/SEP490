@@ -20,6 +20,9 @@ import { boundsDraft, createAdaptiveDraft } from './adaptiveBaselineDraft'
 import { adaptiveApproval, useAdaptiveBaselineWorkspace, type AdaptiveApproval } from './useAdaptiveBaselineWorkspace'
 
 type Confirmation = { action: 'finalize' | 'disable' | 'discard' | 'convert' | 'refresh' | 'leave'; snapshot: AdaptiveApproval }
+// Actions must also fit the narrow content area beside an expanded mobile sidebar.
+const compactAction = 'h-auto min-h-8 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] [&>span]:whitespace-normal'
+const regularAction = 'h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] [&>span]:whitespace-normal'
 /** Remount by Occupation so drafts, local preview and pending keys never cross scopes. */
 export function AdaptiveBaselineRoute() {
   const { occupationId, '*': legacyPath } = useParams<{ occupationId: string; '*': string }>()
@@ -82,14 +85,14 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
     else if (action === 'refresh') { setEditing(null); setVersionReload(value => value + 1); void state.refresh() }
     else { if (action === 'discard') setDraftExistsNotice(false); state.command(action, reason, snapshot) }
   }
-  return <div className="min-w-0 space-y-5 pb-8">
+  return <div className="min-w-0 space-y-5 pb-8 [overflow-wrap:anywhere]">
     <Heading level={1} className="sr-only">{tr('workspaceTitle')}</Heading>
     <div className="flex flex-wrap items-center justify-between gap-3">
       <Text variant="body-sm" tone="foreground" className="min-w-0 break-words font-semibold">{workspace?.capacity.occupationName}</Text>
-      <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="ghost" disabled={state.busy || state.pending && !state.writeCommitted} onClick={() => state.dirty && !state.writeCommitted ? ask('leave') : navigate('/ld-manager/baseline-assessments')}>{tr('back')}</Button>
-      <Button size="sm" variant="outline" disabled={state.busy || state.pending} onClick={() => { if (state.dirty) ask('refresh'); else { setVersionReload(value => value + 1); void state.refresh() } }}>{tr('refresh')}</Button>
-      <Button size="sm" disabled={!workspace || locked || state.dirty} onClick={() => {
+      <div className="flex min-w-0 max-w-full flex-wrap gap-2">
+      <Button size="sm" className={compactAction} variant="ghost" disabled={state.busy || state.pending && !state.writeCommitted} onClick={() => state.dirty && !state.writeCommitted ? ask('leave') : navigate('/ld-manager/baseline-assessments')}>{tr('back')}</Button>
+      <Button size="sm" className={compactAction} variant="outline" disabled={state.busy || state.pending} onClick={() => { if (state.dirty) ask('refresh'); else { setVersionReload(value => value + 1); void state.refresh() } }}>{tr('refresh')}</Button>
+      <Button size="sm" className={compactAction} disabled={!workspace || locked || state.dirty} onClick={() => {
         if (workspace?.working) { setDraftExistsNotice(true); return }
         setDraftExistsNotice(false); setParams({}); state.edit({ name: '', occupation: boundsDraft() }); setEditing(null)
       }}>{tr('createNew')}</Button>
@@ -114,25 +117,25 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
     {workspace && state.draft && <>
       <Card className={workspace.current ? "overflow-hidden border-success/40" : "overflow-hidden border-primary/25"}><CardHeader className={workspace.current ? "border-b border-success/20 bg-success/5 p-5" : "border-b border-primary/20 bg-secondary/30 p-5"}><Heading level={2} size="subsection">{tr('current')}</Heading><CardDescription>{tr('historyNotice')}</CardDescription></CardHeader>
         <CardContent className="flex flex-wrap items-start justify-between gap-3 p-5">
-          <div className="min-w-0 space-y-2"><Text variant="body-sm" tone="foreground" className="break-words font-semibold">{workspace.current ? `${workspace.current.configuration.name} · v${workspace.current.id.version}` : tr('none')}</Text>
-            <Badge variant={workspace.current ? 'success' : 'outline'}>{tr(workspace.current ? 'statuses.ACTIVE' : 'notActive')}</Badge>
+          <div className="min-w-0 max-w-full space-y-2"><Text variant="body-sm" tone="foreground" className="break-words font-semibold">{workspace.current ? `${workspace.current.configuration.name} · v${workspace.current.id.version}` : tr('none')}</Text>
+            <Badge className="max-w-full whitespace-normal break-words" variant={workspace.current ? 'success' : 'outline'}>{tr(workspace.current ? 'statuses.ACTIVE' : 'notActive')}</Badge>
             <Text variant="body-sm" className="text-muted-foreground">{tr(`readiness.${workspace.admissionReadiness}`)}</Text>
             {workspace.current && <Text variant="caption">{tr('dates.ACTIVATED')}: {new Date(workspace.current.createdAt).toLocaleString(language)}</Text>}
           </div>
-          {workspace.current && <Button size="sm" variant="ghost" disabled={locked} onClick={() => ask('disable')}>{tr('disable')}</Button>}
+          {workspace.current && <Button size="sm" className={compactAction} variant="ghost" disabled={locked} onClick={() => ask('disable')}>{tr('disable')}</Button>}
         </CardContent>
       </Card>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-3 [&>*]:min-w-0 [&_*]:break-words [&_span]:min-w-0">
         <StatCard variant="gradient" icon={<ClipboardList size={16} />} valueClassName="text-primary" title={tr('capacity')} value={workspace.capacity.occupation?.eligibleCapacity ?? '—'} />
         <StatCard variant="gradient" icon={<Layers size={16} />} valueClassName="text-primary" title={tr('skillCount')} value={workspace.capacity.occupation?.skillCount ?? '—'} />
         <StatCard variant="gradient" icon={<Target size={16} />} valueClassName="text-primary" title={tr('minimumCoverage')} value={workspace.capacity.occupation?.minimumQuestions ?? '—'} description={tr('minimumHint')} />
       </div>
       {!viewingVersion && <div className="flex flex-wrap items-center gap-3">
         <Badge variant="secondary">{tr('statuses.DRAFT')}</Badge>
-        {workspace.working && <Button variant="destructive" disabled={locked} onClick={() => ask('discard')}>{tr('deleteDraft')}</Button>}
-        {state.dirty && <Button variant="outline" disabled={locked} onClick={() => ask('refresh')}>{tr('cancelEditing')}</Button>}
+        {workspace.working && <Button className={regularAction} variant="destructive" disabled={locked} onClick={() => ask('discard')}>{tr('deleteDraft')}</Button>}
+        {state.dirty && <Button className={regularAction} variant="outline" disabled={locked} onClick={() => ask('refresh')}>{tr('cancelEditing')}</Button>}
       </div>}
-      <Card><CardHeader className="p-5 pb-4"><Heading level={2} size="card">{tr('coverageTitle')}</Heading><CardDescription>{tr('coverageHint')}</CardDescription></CardHeader><CardContent className="flex flex-wrap gap-2 px-5 pb-5">{Object.entries(skills).map(([id, name]) => <Badge key={id} variant="secondary" className="max-w-full whitespace-normal break-words">{name}</Badge>)}</CardContent></Card>
+      <Card><CardHeader className="p-5 pb-4"><Heading level={2} size="card">{tr('coverageTitle')}</Heading><CardDescription>{tr('coverageHint')}</CardDescription></CardHeader><CardContent className="flex flex-wrap gap-2 px-5 pb-5">{Object.entries(skills).map(([id, name]) => <Badge key={id} variant="secondary" className="max-w-full whitespace-normal [overflow-wrap:anywhere]">{name}</Badge>)}</CardContent></Card>
       {legacy && <Card><CardHeader className="p-5 pb-4"><Heading level={2} size="card">{tr('legacyTitle')}</Heading><CardDescription>{tr('legacyNotice')}</CardDescription></CardHeader><CardContent className="space-y-2 px-5 pb-5">
         <Text variant="body-sm" className="break-words">{legacy.name}</Text>
         <Text variant="body-sm">{tr('earlierExploration')}: {legacy.exploration.maxQuestions} · {legacy.exploration.timeLimitSeconds} {tr('seconds')}</Text>
@@ -140,10 +143,10 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
       </CardContent></Card>}
       {viewingVersion && <Card><CardContent className="space-y-3 p-5">
         <Text variant="body-sm">{selectedVersion ? `${selectedVersion.configuration.name} · v${selectedVersion.id.version}` : tr(versionError ? 'unavailable' : 'loading')}</Text>
-        {selectedVersion && <Badge variant={selectedVersion.status === 'ACTIVE' ? 'success' : 'outline'}>{tr(`statuses.${selectedVersion.status}`)}</Badge>}
+        {selectedVersion && <Badge className="max-w-full whitespace-normal break-words" variant={selectedVersion.status === 'ACTIVE' ? 'success' : 'outline'}>{tr(`statuses.${selectedVersion.status}`)}</Badge>}
         <Text variant="body-sm">{tr('editVersionNotice')}</Text>
         <Text variant="body-sm">{tr(workspace.working ? 'existingDraftNotice' : 'editVersionNotice')}</Text>
-        <Button disabled={locked || !versionDraft} onClick={() => {
+        <Button className={regularAction} disabled={locked || !versionDraft} onClick={() => {
           if (workspace.working) setParams({ draft: workspace.working.workingRevisionId })
           else if (versionDraft) { state.edit(versionDraft); setEditing(versionKey) }
         }}>{tr(workspace.working ? 'continueDraft' : 'editVersion')}</Button>
@@ -151,8 +154,8 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
       {(!viewingVersion || versionDraft) && <AdaptiveBaselineForm key={viewingVersion ? `${blueprint}:${version}` : workspace.working?.workingRevisionId ?? 'new'} value={viewingVersion ? versionDraft! : state.draft} capacity={workspace.capacity} onChange={state.edit}
         disabled={viewingVersion || locked || confirmation !== null} unchanged={viewingVersion || state.saved} converting={state.legacy} onSave={() => state.legacy ? ask('convert') : state.command('save')} />}
       <Card><CardContent className="space-y-3 p-5"><div className="flex flex-wrap gap-3">
-        <Button variant="outline" disabled={viewingVersion || locked || !state.saved} leftIcon={<Eye size={16} />} onClick={() => { setPreviewOpen(true); void state.test() }}>{tr('test')}</Button>
-        <Button disabled={viewingVersion || locked || !state.canActivate} onClick={() => ask('finalize')}>{tr('finalize')}</Button>
+        <Button className={regularAction} variant="outline" disabled={viewingVersion || locked || !state.saved} leftIcon={<Eye size={16} />} onClick={() => { setPreviewOpen(true); void state.test() }}>{tr('test')}</Button>
+        <Button className={regularAction} disabled={viewingVersion || locked || !state.canActivate} onClick={() => ask('finalize')}>{tr('finalize')}</Button>
       </div><Text variant="body-sm" className="text-muted-foreground">{tr(state.canActivate ? 'readyToActivate' : state.saved ? 'previewFirst' : 'saveFirst')}</Text></CardContent></Card>
       {state.preview && <Card className={state.preview.feasible ? "border-success/40 bg-success/5" : "border-warning/50 bg-warning/5"}>
         <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
