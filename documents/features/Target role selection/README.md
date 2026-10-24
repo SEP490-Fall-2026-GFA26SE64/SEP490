@@ -1,30 +1,13 @@
 # Target Role Selection
 
-## Current Scope Alignment
+Employee browses authorized Roles, selects one desired Role, then receives its Occupation baseline next step. Selection is immediate; complete authoritative mastery coverage satisfies baseline admission independently of proficiency score.
 
-**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-001. **Actor:** Employee. **Status:** Reclarification required.
-Employee views available published roles and selects/confirms a role after Expert-reviewed baseline/RIASEC guidance. Publication-independent browsing and immediate selection before assessment/guidance are superseded. Revisit role-change, attempt, availability, and history rules without inventing new policies.
+| Contract | Responsibility |
+| --- | --- |
+| [Role selection and Occupation baseline](Role%20Selection%20and%20Occupation%20Baseline.md) | End-to-end rules, profile/version retention and settings identity |
+| [View Target Roles](View%20Target%20Roles.md) | REQ-001-F01, current Role/Occupation/Level discovery; read-only |
+| [Choose Target Role](Choose%20Target%20Role.md) | REQ-001-F02, one selection, revision/receipt/audit/outbox and change guard |
 
-## Historical Contract and Evidence
-The retained details below describe the prior contract, not acceptance of revised scope.
+Neo4j owns catalog requirements. PostgreSQL owns selection/history and learner state. Trusted identity/organization and authorization apply to every boundary. Baseline, results, gap and pathway remain distinct Functions. [Acceptance plan](../../testing/REQ-001-002-role-baseline-flow-test-plan.md); [implementation/evidence](../../testing/system/REQ-001-002-final-synchronization-review.md).
 
-**Requirement:** REQ-001
-**Actor:** Employee
-
-Employees browse organization-scoped target roles, inspect requirements, and choose one development goal. Browsing is read-only; choosing changes transactional state.
-
-## Functions
-
-| Function | Scope | Status |
-| --- | --- | --- |
-| [View Target Roles](View%20Target%20Roles.md) | List/detail same-organization, `ACTIVE`, catalog-valid roles | Local implementation/test review complete; production adapters provisional |
-| [Choose Target Role](Choose%20Target%20Role.md) | Create or replace the employee's single active selection | Local implementation/test/Cụm-4 review complete; production adapters provisional |
-
-## Shared boundary
-
-- Neo4j owns current role catalog data; PostgreSQL owns selection, revision, audit, outbox, and historical snapshots.
-- Tenant and actor identity come from trusted context, never client-supplied identity fields.
-- Selection rechecks role availability but does not check baseline settings or question coverage.
-- Baseline, gap, pathway generation, soft-skill reuse, and notification delivery belong to downstream Functions.
-- When a dependent Function finalizes or changes its contract—especially Auth, catalog availability, assessment activity/status, gap, pathway lifecycle, or notifications—its owner must recheck F01/F02 ports, provisional adapters, UI assumptions, and affected tests; completion downstream does not automatically make the current Choose implementation compatible.
-- Local/demo may use flagged server-side actor and deterministic seed; production remains deny-by-default until Auth and Catalog adapters are integrated.
+Confirmed.

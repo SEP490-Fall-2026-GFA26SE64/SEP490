@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -307,25 +306,6 @@ class TargetRoleSelectionPostgresIntegrationTest {
         assertThatThrownBy(() -> adapter.findSelectableRole(ORGANIZATION_A, ROLE_A_ID))
                 .isInstanceOf(TargetRoleSelectionCatalogPort.CatalogUnavailableException.class)
                 .hasMessageContaining("does not uniquely match");
-    }
-
-    @Test
-    void developmentSelectionSeederIsRepeatableWithTwoImmutableRoleReferences() {
-        jdbc.execute((ConnectionCallback<Void>) connection -> {
-            var seeder = new DevelopmentTargetSelectionSeeder(connection);
-            seeder.seed();
-            seeder.seed();
-            return null;
-        });
-
-        assertThat(jdbc.queryForObject("""
-                SELECT count(*)
-                FROM platform.catalog_reference
-                WHERE entity_id IN (?::uuid, ?::uuid)
-                  AND kind = 'TARGET_ROLE'
-                """, Long.class,
-                DevelopmentTargetSelectionSeeder.ROLE_ID,
-                DevelopmentTargetSelectionSeeder.ALTERNATE_ROLE_ID)).isEqualTo(2L);
     }
 
     private TargetRoleSelectionService service(

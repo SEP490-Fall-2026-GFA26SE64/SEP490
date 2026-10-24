@@ -1,36 +1,43 @@
 # View Assessment History
 
-## Current Scope Alignment
-Employee views own baseline, RIASEC and module history, including independent learning evidence. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); old soft-skill records retain their original meaning.
+**Function:** REQ-009-F02. **Actor:** Employee. This contract defines the adaptive-baseline portion only. RIASEC/module publication, comments and scoring remain separately scoped; interest is not hard-skill mastery. [Complete Baseline](../Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md) defines scoring and [Role-to-baseline](../Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md) defines profile coverage.
 
-## Historical Specification
-Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+### Goal, actor, trigger and inputs
 
-**Function ID:** REQ-009-F02  
-**Actor:** Employee  
-**Status:** Pending clarification  
-**Feature:** [Assessment Results](README.md)
+An Employee opens own baseline history to find recorded terminal attempts/results and invalidated replacement chains. Client sends only supported safe query parameters; trusted server context supplies actor/organization/learner. Choosing another Role inside the Occupation does not create another baseline entitlement or restrict history to the latest Role. One stable Occupation baseline may have invalidated predecessors plus its sole mastery-producing completion; those are distinct attempts, not separate Role baselines.
 
-## Description
+### Ordered read and output
 
-List the employee's previous assessment attempts and provide access to their available result details.
+1. Authenticate/reload authorized Employee and apply organization+learner predicates before filtering, ordering or counting.
+2. Read terminal PostgreSQL attempts and exact pinned/immutable result snapshots, including both historical role-scoped and new full-Occupation attempts. Never replace historical rows with current Blueprint/current mastery or read another employee's chain.
+3. Return recorded Occupation/optional Role, attempt state/reason, server start/completion times, safe raw/mastery/confidence summary and owned predecessor/successor links. Apply the result disclosure allowlist; an invalidated attempt has no invented mastery.
+4. Public scope wording reflects actual recorded scope: new full-Occupation versus earlier Role-specific/earlier union scope. The selected Role does not filter new full-union skill names. No rescore/relabel/reset and no need to reactivate an old Blueprint to view its result.
 
-**Input:** Employee and optional history filters.  
-**Outcome:** An own-attempt history spanning the supported assessment types.
+Baseline history returns terminal attempts by completion time descending, with stable attempt-ID ties. IN_PROGRESS resume belongs to REQ-002-F01. Bounded pagination and broader filtering remain separate open design work; Blueprint pagination does not implicitly approve history controls.
 
-## Confirmed Related Rule
+### Read guarantees and error branches
 
-- From [Choose Target Role](../Target%20role%20selection/Choose%20Target%20Role.md) (REQ-001-F02), 2026-09-27: After a role change, retain all previous assessment attempts in the employee's read-only history, labeled with their original role, date, and results.
-- A role change does not delete previous attempts, restrict history to the current role, or relabel past attempts as belonging to the new role. This confirms retention across role changes, not an indefinite data-retention period.
+| Branch | Outcome |
+| --- | --- |
+| Authorized learner with no terminal attempts | Helpful empty list, no fabricated attempts or writes |
+| Wrong actor/tenant or tampered scope | Deny without counts/names/results leakage |
+| Terminal/replacement added concurrently | One coherent committed query snapshot; next refresh may show new row, no duplicate identity |
+| Storage/projection unavailable | Explicit retryable read error, not falsely empty history |
+| Old/current Role/Blueprint renamed, deactivated or replaced | Recorded row/date/scope/result retained; read requires no current Catalog readiness |
+| Invalidated chain / completed legacy Role A | Show chain without fabricating evidence; preserve existing successful Employee+Occupation allowance |
 
-## Open Decisions
+GET changes no attempt/result/receipt/audit-domain event/pointer/outbox delivery and never finalizes expired attempts. No protected answers, per-response correctness, theta/SE, parameters, internal scope enums or foreign IDs. No baseline localStorage history source. Production Identity, retention duration and broader history comparison/filter policies remain dependencies.
 
-- Filters, sorting, additional displayed columns beyond role/date/results, and pagination.
-- How unfinished attempts are labeled and which date field is displayed.
-- Whether comparisons between attempts are needed and how long history is retained.
+### Acceptance and decisions
 
-## Acceptance Baseline
+AB-R01–R05 in the [test plan](../../testing/REQ-002-adaptive-baseline-test-plan.md) map full/legacy scope, own/foreign/empty/error reads, stable original dates/results, replacement linkage, and no-state-change. These are planned evidence, not execution results.
 
-Distinct attempts remain distinguishable and cannot be confused with the employee's latest competency state.
+## Profile versus recorded result
 
-- After a role change, all previous attempts remain accessible to the employee as read-only history with their original role, date, and recorded results, without exposing another employee's attempts.
+An attempt result is its immutable historical outcome. My Mastery reads authoritative profiles with source attempt/version provenance; it must not replace or relabel that result. Reads never manufacture profile initialization. Later-learning updates and retention/publication rules for other assessment families require their own contracts.
+
+## Alignment and open scope
+
+[Synchronization review](../../testing/system/REQ-001-002-final-synchronization-review.md) records implementation/evidence separately. RIASEC/module result publication and AI-comment visibility, broader history filters/comparison/pagination and retention duration remain Open. Preserve original Role/date/result across changes; no indefinite retention policy is inferred.
+
+Confirmed | Open: external integration and the separately scoped policies above | Rejected: history rewrite, raw score as mastery, protected-data disclosure or GET mutation.

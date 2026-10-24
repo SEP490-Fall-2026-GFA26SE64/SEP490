@@ -1,7 +1,7 @@
 # Create Question
 
 ## Current Scope Alignment
-Expert creates questions in assigned-discipline module assessments, including skill/difficulty/scoring information, and submits assessments for L&D approval. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+Expert creates versioned questions in assigned scope, including response schema, protected correct answer and authoring difficulty. Baseline use additionally requires one MicroSkill mapping and an eligible versioned IRT `a/b/c` tuple; it does not use author-entered point weights. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
@@ -13,16 +13,17 @@ Conflicting actors, policies and acceptance below are superseded; old evidence i
 
 ## Description
 
-Create an assessment question and its scoring information in authorized scope. Skill linking is a separate Question Mapping function.
+Create an assessment question and its response/correct-answer definition in authorized scope. Skill linking and IRT calibration/version promotion are separate concerns.
 
-**Input:** Question content, response format, scoring definition, and difficulty for baseline questions.  
+**Input:** Question content, response format, protected correct answer, and authoring difficulty.
 **Outcome:** A question record available for authorized mapping and assessment configuration.
 
 ## Confirmed Related Rules
 
-- From [Complete Baseline Assessment](../Baseline%20knowledge%20assessment/Complete%20Baseline%20Assessment.md), 2026-09-27: Questions used in baseline assessments are single-answer multiple-choice, with exactly one correct option and a difficulty label of Easy, Medium, or Hard. These labels support adaptive selection based on the preceding answer's result.
+- Current REQ-002 contract: a baseline item is single-answer multiple-choice, has exactly one correct option, one assessed MicroSkill and a difficulty label for authoring/cold start. Adaptive selection uses the pinned 3PL parameter version and item information, not a fixed previous-answer difficulty ladder.
+- L&D does not enter item points. An eligible baseline item needs a versioned `a > 0`, real `b`, and `0 <= c < 1`; calibration ownership/promotion is outside question creation.
 - These baseline constraints do not finalize question types or difficulty requirements for module and soft-skill assessments.
-- From [Configure Baseline Assessment](../Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), 2026-09-27, option B: Complete, active questions with valid required fields and skill mappings are eligible for baseline coverage and delivery without a separate publishing step. Creating a question alone does not establish eligibility if required mapping or validation is incomplete.
+- Current adaptive contract: only active, complete question versions with valid assessed-skill mapping and pinned IRT parameter coverage enter a new Blueprint/attempt pool. Creating a question alone does not establish eligibility.
 
 ## Open Decisions
 
@@ -32,7 +33,7 @@ Create an assessment question and its scoring information in authorized scope. S
 
 ## Acceptance Baseline
 
-A stored question retains the scoring information required by its configured response format.
+A stored question retains the response/correct-answer information required to score its configured response format reproducibly.
 
 - A question made eligible for baseline use must be single-answer multiple-choice, have exactly one correct option, and have an Easy, Medium, or Hard difficulty label.
-- A complete, active baseline question becomes eligible when its required fields and mappings are valid, without a publish action. Incomplete, inactive, or invalidly mapped questions do not count toward baseline coverage or enter the eligible delivery pool.
+- A baseline question enters the eligible delivery pool only when its required fields, one-skill mapping, status and pinned IRT parameter coverage satisfy the current Blueprint contract. Exact question-authoring activation terminology remains owned by this Function.

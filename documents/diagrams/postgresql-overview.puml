@@ -1,0 +1,133 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+hide circle
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+title PostgreSQL 17.6 / platform / V1-V26\nAll 89 tables / storage groups
+legend top left
+PK = primary key; FK = foreign-key column; ? = nullable
+Arrows: referenced parent -> referencing child; no cardinality inference.
+External tables are reference stubs. Full constraints/indexes/triggers: schema catalog.
+endlegend
+class "Identity, catalog and processing\n17 tables" as postgresql {
+  organization
+  organizational_unit
+  account
+  application_role
+  account_role
+  manager_scope
+  session
+  learner_state
+  catalog_guard
+  catalog_release
+  catalog_reference
+  target_selection
+  target_selection_request
+  outbox_event
+  processing_job
+  processing_receipt
+  audit_event
+}
+class "Legacy assessment and shared learning\n32 tables" as postgresql_assessment {
+  evidence_policy_version
+  model_version
+  question_bank
+  item_version
+  assessment_version
+  assessment_availability
+  assessment_item
+  item_skill_mapping
+  baseline_blueprint
+  baseline_blueprint_version
+  baseline_blueprint_role
+  baseline_blueprint_skill
+  baseline_assessment_series
+  baseline_blueprint_working_revision
+  baseline_assessment_transition
+  baseline_management_command
+  baseline_answer_reveal_audit
+  module_assessment_binding
+  learning_activity
+  activity_requirement
+  assessment_assignment
+  assessment_attempt
+  item_response
+  assessment_result
+  evidence_observation
+  processing_stream
+  profile_revision
+  mastery_estimate
+  evidence_application
+  progress_revision
+  module_completion
+  completion_pass
+}
+class "Recommendation, analytics and evaluation\n13 tables" as postgresql_pathway {
+  recommendation_version
+  recommendation_run
+  recommendation_candidate
+  pathway_revision
+  pathway_step
+  pathway_approval
+  publication_request
+  cohort_snapshot
+  cohort_member
+  analytics_snapshot
+  roi_scenario
+  evaluation_run
+  evaluation_artifact
+}
+class "Adaptive baseline configuration\n9 tables" as postgresql_adaptive_blueprint {
+  baseline_adaptive_blueprint_working_revision
+  baseline_adaptive_blueprint_version
+  baseline_adaptive_blueprint_role
+  baseline_adaptive_blueprint_skill
+  baseline_blueprint_working_registry
+  baseline_blueprint_version_registry
+  baseline_blueprint_activation
+  baseline_blueprint_activation_event
+  baseline_blueprint_command
+}
+class "Adaptive baseline attempts and evidence\n9 tables" as postgresql_adaptive_attempt {
+  baseline_adaptive_attempt
+  baseline_attempt_pool_item
+  baseline_attempt_item
+  baseline_attempt_response
+  baseline_attempt_skill_state
+  baseline_attempt_command
+  baseline_attempt_result
+  baseline_attempt_skill_result
+  baseline_mastery_evidence
+}
+class "IRT calibration and scoped selection\n6 tables" as postgresql_irt {
+  mastery_mapping_version
+  irt_calibration_run
+  irt_parameter_set
+  irt_item_parameter
+  irt_effective_parameter_selection
+  irt_parameter_promotion_command
+}
+class "Current Role selection and initial Occupation profile\n3 tables" as postgresql_role_profile {
+  employee_role_selection
+  employee_role_selection_request
+  employee_occupation_profile
+}
+postgresql --> postgresql_adaptive_attempt : 3 FK constraints
+postgresql --> postgresql_adaptive_blueprint : 6 FK constraints
+postgresql --> postgresql_assessment : 24 FK constraints
+postgresql --> postgresql_irt : 4 FK constraints
+postgresql --> postgresql_pathway : 12 FK constraints
+postgresql --> postgresql_role_profile : 1 FK constraints
+postgresql_adaptive_attempt --> postgresql_role_profile : 1 FK constraints
+postgresql_adaptive_blueprint --> postgresql_adaptive_attempt : 2 FK constraints
+postgresql_adaptive_blueprint --> postgresql_role_profile : 1 FK constraints
+postgresql_assessment --> postgresql_adaptive_attempt : 1 FK constraints
+postgresql_assessment --> postgresql_adaptive_blueprint : 8 FK constraints
+postgresql_assessment --> postgresql_irt : 5 FK constraints
+postgresql_assessment --> postgresql_pathway : 9 FK constraints
+postgresql_irt --> postgresql_adaptive_attempt : 4 FK constraints
+postgresql_irt --> postgresql_adaptive_blueprint : 2 FK constraints
+@enduml

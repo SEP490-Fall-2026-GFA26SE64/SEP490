@@ -1,24 +1,28 @@
 package com.adaptlearngraph.learning.infrastructure;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.UUID;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
+import java.util.*;
 import org.junit.jupiter.api.Test;
-
-/** Provisional assessment dependency contract; does not require Docker or prove owner integration. */
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.dao.DataAccessResourceFailureException;
+/** RB13 regression: retained filename, tests the replacement PostgreSQL activity adapter. */
 class ConfiguredAssessmentActivityGuardAdapterTest {
-    private static final UUID LEARNER_ID = UUID.fromString(
-            "00000000-0000-0000-0000-000000000003");
-
-    @Test
-    void hasExplicitAllowBlockAndInvalidIdentityBehavior() {
-        assertThat(new ConfiguredAssessmentActivityGuardAdapter(false)
-                .hasBlockingAssessment(LEARNER_ID)).isFalse();
-        assertThat(new ConfiguredAssessmentActivityGuardAdapter(true)
-                .hasBlockingAssessment(LEARNER_ID)).isTrue();
-        assertThatThrownBy(() -> new ConfiguredAssessmentActivityGuardAdapter(false)
-                .hasBlockingAssessment(new UUID(0L, 0L)))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
+ @Test void persistedActivityAndOutage() {
+  var jdbc=mock(NamedParameterJdbcTemplate.class);
+  var guard=new AdaptiveBaselineAssessmentActivityGuardAdapter(jdbc);
+  when(jdbc.queryForObject(anyString(),anyMap(),eq(Boolean.class))).thenReturn(false,true);
+  assertThat(guard.hasBlockingAssessment(new UUID(0,3))).isFalse();
+  assertThat(guard.hasBlockingAssessment(new UUID(0,3))).isTrue();
+  when(jdbc.queryForObject(anyString(),anyMap(),eq(Boolean.class))).thenThrow(new DataAccessResourceFailureException("outage"));
+  assertThatThrownBy(()->guard.hasBlockingAssessment(new UUID(0,3))).isInstanceOf(
+   com.adaptlearngraph.learning.application.port.out.AssessmentActivityGuardPort.ActivityGuardUnavailableException.class);
+ }
+ @Test void invalidIdentityNeverQueries() {
+  var jdbc=mock(NamedParameterJdbcTemplate.class);
+  var guard=new AdaptiveBaselineAssessmentActivityGuardAdapter(jdbc);
+  assertThatThrownBy(()->guard.hasBlockingAssessment(new UUID(0,0))).isInstanceOf(IllegalArgumentException.class);
+  assertThatThrownBy(()->guard.hasBlockingAssessment(null)).isInstanceOf(NullPointerException.class);
+  verifyNoInteractions(jdbc);
+ }
 }

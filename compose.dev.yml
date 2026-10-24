@@ -11,6 +11,11 @@ x-backend-environment: &backend-environment
   NEO4J_USER: neo4j
   NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
   TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:-false}
+  # Main startup never restores retired graph/bank/model seeds or fixed authoring.
+  CATALOG_SEED_ENABLED: "false"
+  ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED: "false"
+  BASELINE_ANSWER_REVIEW_ENABLED: "false"
+  ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED: "false"
 
 services:
   postgres:
@@ -51,7 +56,8 @@ services:
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,migrate
-      CATALOG_SEED_ENABLED: "true"
+      # Schema first; the separate local seed service initializes missing catalog/bank data.
+      CATALOG_SEED_ENABLED: "false"
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,14 +65,30 @@ services:
         condition: service_healthy
     restart: "no"
 
+  seed:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,local-demo-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
+    volumes:
+      - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/catalog-scope.json:/seed/catalog-scope.json:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
   api:
     image: adapt-learn-graph-backend:dev
     build: *backend-build
     environment:
       <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: local,local-baseline-demo
     depends_on:
-      migrate:
+      seed:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${API_PORT:-18080}:8080"
@@ -83,6 +105,10 @@ services:
       target: dev
     environment:
       API_PROXY_TARGET: http://api:8080
+      VITE_LOCAL_BASELINE_DEMO_ENABLED: "true"
+      # Visibility gates only; these grant no backend identity, publication or model readiness.
+      VITE_ADAPTIVE_BASELINE_ENABLED: ${VITE_ADAPTIVE_BASELINE_ENABLED:-true}
+      VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED: ${VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED:-true}
     volumes:
       - ./frontend:/workspace
       - /workspace/node_modules

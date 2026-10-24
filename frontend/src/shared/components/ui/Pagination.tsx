@@ -11,6 +11,7 @@ export interface PaginationProps {
   itemLabel?: string
   className?: string
   disabled?: boolean
+  labels?: Partial<{ navigation: string; first: string; previous: string; next: string; last: string; showing: string; of: string }>
 }
 
 /**
@@ -45,7 +46,9 @@ export function Pagination({
   itemLabel = 'items',
   className,
   disabled = false,
+  labels,
 }: PaginationProps) {
+  const copy = { navigation: 'Pagination', first: 'First page', previous: 'Prev', next: 'Next', last: 'Last page', showing: 'Showing', of: 'of', ...labels }
   if (totalPages <= 0 && (!totalItems || totalItems === 0)) {
     return null
   }
@@ -62,28 +65,28 @@ export function Pagination({
         'flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-3 border-t border-border bg-card/40 text-xs select-none',
         className
       )}
-      aria-label="Pagination Navigation"
+      aria-label={copy.navigation}
     >
       {/* Left: Item Range & Summary */}
       <div className="flex items-center gap-3 text-muted-foreground order-2 sm:order-1">
         {showItemRange && totalItems !== undefined && (
           <span className="text-xs">
-            Showing <strong className="font-semibold text-foreground">{totalItems === 0 ? 0 : startItem}</strong>–
-            <strong className="font-semibold text-foreground">{endItem}</strong> of{' '}
+            {copy.showing} <strong className="font-semibold text-foreground">{totalItems === 0 ? 0 : startItem}</strong>–
+            <strong className="font-semibold text-foreground">{endItem}</strong> {copy.of}{' '}
             <strong className="font-semibold text-foreground">{totalItems}</strong> {itemLabel}
           </span>
         )}
       </div>
 
       {/* Right: Page Navigation Buttons */}
-      <nav className="flex items-center gap-1.5 order-1 sm:order-2" aria-label="Pagination">
+      <nav className="flex items-center gap-1.5 order-1 sm:order-2" aria-label={copy.navigation}>
         {/* First Page */}
         <button
           type="button"
           onClick={() => onPageChange(1)}
           disabled={disabled || safeCurrentPage <= 1}
-          title="First page"
-          aria-label="First page"
+          title={copy.first}
+          aria-label={copy.first}
           className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors select-none cursor-pointer"
         >
           <ChevronsLeft className="h-3.5 w-3.5" />
@@ -94,12 +97,12 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={disabled || safeCurrentPage <= 1}
-          title="Previous page"
-          aria-label="Previous page"
+          title={copy.previous}
+          aria-label={copy.previous}
           className="h-8 px-3 inline-flex items-center justify-center gap-1.5 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors select-none cursor-pointer whitespace-nowrap"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span>Prev</span>
+          <span>{copy.previous}</span>
         </button>
 
         {/* Page Number Buttons */}
@@ -142,11 +145,11 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={disabled || safeCurrentPage >= totalPages}
-          title="Next page"
-          aria-label="Next page"
+          title={copy.next}
+          aria-label={copy.next}
           className="h-8 px-3 inline-flex items-center justify-center gap-1.5 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors select-none cursor-pointer whitespace-nowrap"
         >
-          <span>Next</span>
+          <span>{copy.next}</span>
           <ChevronRight className="h-3.5 w-3.5 shrink-0" />
         </button>
 
@@ -155,8 +158,8 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(totalPages)}
           disabled={disabled || safeCurrentPage >= totalPages}
-          title="Last page"
-          aria-label="Last page"
+          title={copy.last}
+          aria-label={copy.last}
           className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors select-none cursor-pointer"
         >
           <ChevronsRight className="h-3.5 w-3.5" />

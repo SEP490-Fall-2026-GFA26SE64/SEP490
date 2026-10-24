@@ -1,5 +1,7 @@
 # Phase 2 Screens Specification: Organization Administration & L&D Baseline Configuration
 
+> Status note (2026-10-20): the administration/billing material and the baseline screen implementation inventory below are historical. The current REQ-002 target is the adaptive contract in [Configure Baseline Assessment](../Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md). This file is not an implementation contract for the adaptive redesign.
+
 ## 1. Overview & Architectural Scope Alignment
 
 Phase 2 introduces the complete operational infrastructure for **Tenant System Administrators** and **L&D Managers**, fulfilling the multi-tenant SaaS organizational structure, subscription billing management, and diagnostic baseline assessment configuration as specified in the Capstone Architecture and Proposal.
@@ -47,15 +49,14 @@ All screens strictly follow the **UI-UX Pro Max** standard:
 ### Screen 4: Baseline Assessment Configuration (`/ld-manager/baseline-config`)
 - **Actor:** L&D Manager (in alignment with REQ-002-F02 specifications)
 - **Path:** [frontend/src/features/manager/baseline-config/BaselineAssessmentConfigPage.tsx](file:///d:/Code/Capstone/SEP490/frontend/src/features/manager/baseline-config/BaselineAssessmentConfigPage.tsx)
-- **Key Capabilities:**
-  - **Target Role Selector:** Search and switch between published and drafted target roles within the organization.
-  - **Prerequisite Expansion Depth (0 - 5 hops):** Configurable traversal depth; depth 0 evaluates only direct micro-skills, up to 5 hops into prerequisite skills.
-  - **Question Cap per Micro-Skill (3 - 10 items):** Sets the delivery maximum per assessed skill.
-  - **Initial Starting Difficulty:** Uniformly set to `Easy`, `Medium`, or `Hard` (defaults to Medium).
-  - **Bayesian Early Stopping Rule:** Configurable confidence threshold (70% - 95%) with early stopping toggle.
-  - **Live Question Bank Inventory Matrix:** Inspects each assessed micro-skill (direct + prerequisites) against required items across Easy, Medium, and Hard.
-  - **Blocker Prevention & Expert Notification:** Automatically blocks activation if shortages exist and provides a one-click notification alert to the assigned Domain Expert with once-per-period suppression.
-  - **Simulation Modal:** Previews item delivery load and employee diagnostic sequence.
+- **Current target capabilities (not implemented):**
+  - Select an authorized Occupation and edit one working adaptive Blueprint.
+  - Configure required maximum/time pairs for exploration and each active role; each maximum is server-validated against the current deduplicated eligible item capacity.
+  - In each row, configure server time through synchronized total-duration and seconds-per-question controls. Initial suggestion is 60 seconds per question; editing either control recalculates the other, while only that row's final total duration persists and no backend default fills a blank value.
+  - Show active-role, MicroSkill, eligible-item and IRT-parameter coverage without score-weight controls; omit draft/inactive/archived/removed roles.
+  - **Test Blueprint:** answer-safe ephemeral validation/preview with no stored assessment or attempt.
+  - Finalize an immutable version and atomically make it current, without Review/Publish.
+  - Reuse established shared components, button variants, responsive layout and EN/VI patterns.
 
 ---
 

@@ -12,6 +12,7 @@ import com.adaptlearngraph.competency.domain.MicroSkillInUseException;
 import com.adaptlearngraph.competency.domain.SkillStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
+@ConditionalOnProperty(prefix = "catalog.legacy-api", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/organizations/{organizationId}/micro-skills")
 public class MicroSkillController {
 

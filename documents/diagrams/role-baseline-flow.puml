@@ -1,0 +1,32 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+title Role selection and Occupation baseline
+rectangle "Target Roles" as A
+rectangle "Confirm Role selection" as B
+rectangle "Resolve Occupation and applicable skill set" as C
+rectangle "Complete valid mastery coverage?" as D
+rectangle "Baseline not required" as E
+rectangle "Existing attempt or available baseline?" as F
+rectangle "Resume pinned attempt" as G
+rectangle "Start required Occupation baseline" as H
+rectangle "No baseline configured" as I
+rectangle "Finalize sufficient evidence\nand initialize profile" as J
+rectangle "View result and My Mastery" as K
+A --> B
+B --> C
+C --> D
+D --> E : Yes
+D --> F : No
+F --> G : Existing attempt
+F --> H : Available
+F --> I : Absent
+H --> J
+G --> J
+J --> K
+note bottom of F
+Dependency failure is unavailable/retry,
+never absent configuration.
+end note
+@enduml

@@ -1,0 +1,122 @@
+[
+  {
+    "moduleId": "MOD-MS-FS13",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-FS13.md",
+    "sha256": "b8f12964cc274872de69fbdcaae855728b1abbf6464c1ca1a2c6c23e0fa522e1",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [MDN Fetch guide](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)\n- [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)\n- [PostgreSQL transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html)\n- [the local lesson: Making service boundaries explicit](../topics/FS-SERVICE.md)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-INF01",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-INF01.md",
+    "sha256": "abbdeff69d3bcb59e876adeb93740c9e1ddb9dc5f80a9ce84eed67d24655a59e",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Network support](https://sfia-online.org/en/sfia-9/skills/network-support)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-INF04",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-INF04.md",
+    "sha256": "ae0ade191afb2f99757a41dd6ccc1f8f4bcf80fcc0b75a15a982e71b48fe8edb",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Configuration management](https://sfia-online.org/en/sfia-9/skills/configuration-management)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-INF05",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-INF05.md",
+    "sha256": "83bc55105bfdb5c9fd4710a3fc8748a6545a27de01bd2c5a73fe2308aae019b0",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Infrastructure operations](https://sfia-online.org/en/sfia-9/skills/infrastructure-operations)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-INF08",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-INF08.md",
+    "sha256": "7e01423fadb5f0c0a23dd7c0ce36da6c8322dff89994ab240989316b58315bd8",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Infrastructure operations](https://sfia-online.org/en/sfia-9/skills/infrastructure-operations)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC01",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC01.md",
+    "sha256": "c6864da324ed4b9e66f8c6c539e441b18ea0ef745b90e8be9b6654a3fbd51b85",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Information security](https://sfia-online.org/en/sfia-9/skills/information-security)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC02",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC02.md",
+    "sha256": "38e6dd1cba98b41f812e44c4c8cb9d9df8145eb333051203c810dcbe49dfefa4",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Designing secure systems; enabling and informing risk-based decisions](https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC03",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC03.md",
+    "sha256": "aedb3fc113cea7f3624b8034b6ba6df7a080a62ce49dc7a54729deaf9f20ec68",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Identity and access management](https://sfia-online.org/en/sfia-9/skills/identity-and-access-management)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC04",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC04.md",
+    "sha256": "86b06950ca685d77958d520f1ca84e1b2010cda05239b84b8ee2acfcdc386c9b",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Security operations](https://sfia-online.org/en/sfia-9/skills/security-operations)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC05",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC05.md",
+    "sha256": "d3a98f9cc055aead9bf278edc6acd513d44b711658887c744d309602bdd8e06c",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Security operations](https://sfia-online.org/en/sfia-9/skills/security-operations)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC06",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC06.md",
+    "sha256": "c63e03e6638bd4c70143cb0b683d6304c785be85e142515121d18912a618253e",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Vulnerability assessment](https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC07",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC07.md",
+    "sha256": "99b420e442f4065bafe53129346ff4053fae0424931ad6c4803f5babd439d676",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Security operations](https://sfia-online.org/en/sfia-9/skills/security-operations)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC08",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC08.md",
+    "sha256": "e9938aace5a1f6963a633c51c9cfac74f622c06f83130c28ce7a0897f268e868",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Information security](https://sfia-online.org/en/sfia-9/skills/information-security)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC09",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC09.md",
+    "sha256": "77464f9edda8ebdb1cfbba6599e7b9d0901ba727861c47c1d2667f0de6e05260",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Communication (security architect)](https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "moduleId": "MOD-MS-SEC10",
+    "contentVersion": "2.0",
+    "path": "documents/dataset/import/content/modules/MOD-MS-SEC10.md",
+    "sha256": "e52ac837e71368024e4cdecfe60343ecf299656c2b5e2ed502da2df04217479b",
+    "studyMaterial": "This module consolidates existing source-linked material for this skill. Read only the sections relevant to this skill; integrated examples may mention supporting skills without claiming to teach or assess them. Content depth and role suitability still require expert review.\n\n- [Information security](https://sfia-online.org/en/sfia-9/skills/information-security)",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  }
+]

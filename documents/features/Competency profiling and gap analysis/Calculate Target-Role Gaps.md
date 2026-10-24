@@ -1,7 +1,7 @@
 # Calculate Target-Role Gaps
 
 ## Current Scope Alignment
-System compares evidence-based competency estimates with selected-role requirements, including proficiency and relative importance. Exact gap measures remain open. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+System compares the current mapped mastery with selected-role requirements. For adaptive baseline initialization, downstream mastery is the pinned conservative value `logistic(theta - k × SE)`, so gap is `max(0, targetMastery - mastery)`. A below-minimum invalidated attempt emits no mastery and therefore cannot trigger gap/pathway calculation; the Employee must use the permitted replacement baseline. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.

@@ -9,9 +9,26 @@ export interface DialogProps {
   className?: string
   containerClassName?: string
   ariaLabel?: string
+  closeLabel?: string
 }
 
-export function Dialog({ open, onOpenChange, children, className, containerClassName, ariaLabel }: DialogProps) {
+export function Dialog({ open, onOpenChange, children, className, containerClassName, ariaLabel, closeLabel = 'Close dialog' }: DialogProps) {
+  const content = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    if (!open) return
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const focusable = () => Array.from(content.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],[tabindex]:not([tabindex="-1"])') ?? []).filter(element => element.getClientRects().length > 0)
+    const frame = requestAnimationFrame(() => (focusable()[0] ?? content.current)?.focus())
+    function trap(event: KeyboardEvent) {
+      if (event.key !== 'Tab') return
+      const nodes = focusable(), first = nodes[0], last = nodes[nodes.length - 1]
+      if (!first) { event.preventDefault(); content.current?.focus(); return }
+      if (!content.current?.contains(document.activeElement) || event.shiftKey && document.activeElement === first) { event.preventDefault(); (event.shiftKey ? last : first).focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    document.addEventListener('keydown', trap)
+    return () => { cancelAnimationFrame(frame); document.removeEventListener('keydown', trap); if (previous?.isConnected) previous.focus() }
+  }, [open])
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && open) {
@@ -33,6 +50,8 @@ export function Dialog({ open, onOpenChange, children, className, containerClass
       />
       {/* Dialog content */}
       <div
+        ref={content}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
@@ -46,7 +65,7 @@ export function Dialog({ open, onOpenChange, children, className, containerClass
           type="button"
           onClick={() => onOpenChange(false)}
           className="absolute right-4.5 top-4.5 z-20 rounded-lg p-1.5 text-muted-foreground/70 hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-          aria-label="Close dialog"
+          aria-label={closeLabel}
         >
           <X className="h-4 w-4" />
         </button>
