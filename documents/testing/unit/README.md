@@ -1,6 +1,6 @@
 # Unit Testing Directory & Standards
 
-**2026-10-23 current REQ-001/002:** [Cluster 4 synchronized evidence](../system/REQ-001-002-cluster4-evidence.md) records 131 unique Pass/0 Fail/0 final skipped across targeted runs, including nine post-header-repair system cases. The old mobile failure remains historical. Acceptance/branch limits, blocked numerical/performance and provisional production integrations are explicit; earlier dated Planned/Not run or historical fixed-lifecycle evidence is not silently relabeled.
+**Latest, 2026-10-24 REQ-001/002/009:** [Unit/API/component evidence](REQ-001-002-009-20261024-execution.md) records74 BE/61 FE pass,0 fail/skipped. [Consolidated gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md) retains four synthetic-browser mobile failures, blocked integration, unexecuted system and numerical/performance limits: **Cluster 3/4 incomplete**. [23 October131P/0F](../system/REQ-001-002-cluster4-evidence.md) is dated history, not current acceptance.
 
 ## Current Scope Alignment
 
@@ -39,7 +39,7 @@ Unit testing in this workspace validates pure domain invariants, application ser
 
 - The executable-test cluster for `REQ-001-F01` was approved and its domain/application, API/security and frontend component suites passed on 2026-09-30; cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md).
 - `REQ-001-F02` Cluster 2 completed on 2026-10-02: T1 domain/command/hash passed 8 tests, T2 application policy/replay passed 15 tests, T3 HTTP/security passed 16 tests, and T5 frontend selection plus F01 regression passed 30 tests across eight files. Cases, deterministic fake boundaries, MVC/security slices, frontend fetch/hook fakes, and commands are tracked in [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md).
-- Vitest is scoped to `src/**/*.test.{ts,tsx}`; Playwright specs live under `system-tests/` and are system evidence, not unit evidence. Other targets such as REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved.
+- Vitest is scoped to `src/**/*.test.{ts,tsx}`. Playwright specs under `system-tests/` are system evidence only when they execute the real stack; intercepted HTTP/component fixtures are FE browser evidence. The latest REQ-002 baseline assertions and remaining gates are linked above; unrelated REQ-015/041 scope remains separately planned.
 
 ---
 

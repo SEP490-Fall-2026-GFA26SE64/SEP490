@@ -1,6 +1,6 @@
 # Test Documentation
 
-**2026-10-23 current REQ-001/002:** [Cluster 4 synchronized evidence](system/REQ-001-002-cluster4-evidence.md) records 131 unique Pass/0 Fail/0 final skipped across targeted runs, including nine post-header-repair system cases. The old mobile failure remains historical. Acceptance/branch limits, blocked numerical/performance and provisional production integrations are explicit; earlier dated Planned/Not run or historical fixed-lifecycle evidence is not silently relabeled.
+**Latest, 2026-10-24 REQ-001/002/009:** [Cluster 4 evidence and gate audit](system/REQ-001-002-009-cluster4-20261024-evidence.md): 74 BE + 61 FE pass; synthetic browser fixtures33 pass/4 fail. Real-adapter integration Blocked; nine real-stack journeys Not run; numerical/performance Blocked/Not run. **Cluster 3/4 incomplete.** Dedicated [unit/API/component](unit/REQ-001-002-009-20261024-execution.md) and [integration blocker](integration/REQ-001-002-009-20261024-execution.md) receipts retain actual method/fixture/command mappings. The [23 October131P/0F evidence](system/REQ-001-002-cluster4-evidence.md) is historical before the latest UI; no old passes are carried forward. No executable tests were run during this documentation synchronization.
 
 **Slices4–5,2026-10-22:** common UI and pinned full/legacy result/history source implemented; no schema/diagram regeneration or executable acceptance. [Evidence and unverified browser checklist](system/REQ-002-F02-REQ-009-occupation-ui-results.md).
 

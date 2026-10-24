@@ -1,5 +1,7 @@
 # REQ-001/002 — Cluster 4 evidence synchronization
 
+**Historical 23 October evidence.** Latest source/UI results and incomplete gates are in [24 October REQ-001/002/009 evidence](REQ-001-002-009-cluster4-20261024-evidence.md). The131P/0F and completion wording below apply only to this dated execution; they are not current acceptance or a carry-forward pass. Original results/failure artifacts remain preserved.
+
 Date: 2026-10-23, Asia/Bangkok. Product HEAD: 480b890352e26612d1991aab4e098724ce68ac41 plus uncommitted scoped changes. The user approved Cluster 4 and the C3-UI-01 shared-header repair. The runtime repair was compiled/built before the affected previously approved executable scope was rerun; evidence synchronization followed. Cluster 5, commit and push remain unapproved.
 
 The visible flow remains Role selection → full Occupation baseline when required → PostgreSQL result/profile/history → safe Employee views. This update records executed behavior and limitations; it changes no business contract.
