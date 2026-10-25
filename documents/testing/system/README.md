@@ -1,4 +1,10 @@
-# System Testing Directory & Standards
+# System testing
+
+**Latest, 2026-10-24 REQ-001/002/009:** [Cluster 4 evidence/gate audit](REQ-001-002-009-cluster4-20261024-evidence.md) reconciles the [original Cluster 3 receipt](REQ-001-002-009-cluster3-20261024-execution.md): 168 pass/4 fail across BE, FE and synthetic browser fixtures. **0 current real-stack system passes; nine journeys Not run (`--list` only)**. Integration/numerical/performance remain blocked; Cluster 3/4 incomplete. [23 October131P/0F](REQ-001-002-cluster4-evidence.md) retains its dated source/fixture, with no pass carry-forward.
+
+Local baseline manual history: [demo contract](../../features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md), [dated manual observations/limits](REQ-002-local-demo.md), [user walkthrough](../../../../../s2%20work/Test%20Guides/REQ-002-F02-full-walkthrough-test-guide.md). These observations do not establish current rendered/system acceptance; latest fixture browser results and real-stack gaps are linked above. Production owner integrations/operational C are separate.
+
+[23 October memory/code/doc/schema review](REQ-002-memory-schema-sync.md) records current read-only V23/86-table verification, regenerated diagrams and retained bypasses; no tests were run. Historical [Session1](REQ-002-official-question-bank-session1.md), [cutover](REQ-002-official-local-cutover.md), [Session2](REQ-002-official-question-bank-session2.md) and [Session3](REQ-002-official-question-bank-session3.md) evidence preserve their original environment/date, not current startup instructions.
 
 ## Current Scope Alignment
 
@@ -9,7 +15,7 @@ Older browser checklists and PASSED labels below retain their original scope and
 
 **Location:** Docker Compose Environment (`compose.dev.yml`) and Browser Workflows
 
-System testing validates complete end-to-end integration across all system tiers (PostgreSQL database, Neo4j graph database, Flyway/graph migrations, Spring Boot REST API, Vite frontend web client, and Nginx reverse proxy).
+System testing validates complete end-to-end integration across all system tiers (PostgreSQL database, Neo4j graph database, PostgreSQL Flyway migrations and explicitly managed catalog import, Spring Boot REST API, Vite development frontend web client or Caddy production web proxy).
 
 > [!NOTE]
 > Detailed test scenarios, environment scopes, and execution evidence are maintained in **dedicated markdown files per requirement (REQ)** below. This README serves as the index and execution guide, not the central registry.
@@ -20,8 +26,11 @@ System testing validates complete end-to-end integration across all system tiers
 
 | Requirement ID | Feature Name | Workflows Covered | System Test Document | Manual Procedure | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-002 local cutover follow-up** | Official graph/V22/local DRAFT seed | Exact graph replacement/rerun, real Flyway upgrade,135-item import/readback and retained-data digests | [REQ-002-official-local-cutover.md](REQ-002-official-local-cutover.md) | [Local operation mode](../../dataset/question-bank/15-1212.00/OPERATOR_IMPORT.md) | **Manual observations only; executable acceptance Not run** |
+| **REQ-002-F01/F02 dependency Session1** | Official DRAFT question bank/import | Full scope, source/hash inventory and main builds; future QBI acceptance mapping | [REQ-002-official-question-bank-session1.md](REQ-002-official-question-bank-session1.md) | [Operator prerequisites, not executed](../../dataset/question-bank/15-1212.00/OPERATOR_IMPORT.md) | **Acceptance Not run; live/import blocked** |
 | **REQ-001-F01** | View Target Roles | Learner Role Catalog Browse | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | [REQ-001-F01-manual-browser-check.md](REQ-001-F01-manual-browser-check.md) | **PASSED** (API) / Manual Available |
 | **REQ-001-F02** | Choose Target Role | Target Role Selection Flow | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | [Playwright Spec](../../../frontend/system-tests/REQ-001-F02-target-role-selection.spec.ts) | **PASSED** (Compose API & Playwright) |
+| **REQ-002-F02 historical V17** | Fixed Baseline Blueprint Authoring | Save, Generate, Replay, Review & Publish | [REQ-002-F02-baseline-authoring.md](REQ-002-F02-baseline-authoring.md) | [Playwright Spec](../../../frontend/system-tests/REQ-002-F02-baseline-authoring.spec.ts) | **PASSED for superseded contract** |
 | **REQ-011** | Assigned Target Roles | Expert Queue Isolation | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | [REQ-023-manual-browser-check.md](REQ-023-manual-browser-check.md#4-domain-expert-perspective--queue-isolation-req-011--req-023-f05) | **PASSED** |
 | **REQ-012** | Micro-Skill Management | Micro-Skill Catalog & Linking | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | [REQ-012-REQ-018-manual-browser-check.md](REQ-012-REQ-018-manual-browser-check.md) | **PASSED** |
 | **REQ-015** | Role Requirements | Micro-Skill Benchmark Authoring | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | [REQ-023-manual-browser-check.md](REQ-023-manual-browser-check.md#4-domain-expert-perspective--queue-isolation-req-011--req-023-f05) | **PASSED** |

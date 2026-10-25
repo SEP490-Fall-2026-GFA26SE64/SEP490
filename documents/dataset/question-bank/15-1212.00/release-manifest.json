@@ -1,0 +1,53 @@
+{
+  "manifestPath": "backend/src/main/resources/db/seed/question-bank-15-1212.00-v1.json",
+  "manifestVersion": "information-security-analysts-en-v1",
+  "manifestSha256": "52d065a031aa9adca51808c59a7682872b7436343f0c300db84cfe1beb2fe882",
+  "scopePath": "documents/dataset/question-bank/15-1212.00/catalog-scope.json",
+  "scopeSha256": "c2454bde23764d061b6b25b54d434141715326d75eaa3201026618e7e4136231",
+  "sourceSha256": "0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125",
+  "bankId": "2f79de6b-dc62-51a1-982d-0be9d6f588dc",
+  "occupationId": "OCC-15-1212.00",
+  "catalogVersion": "0.8.0",
+  "counts": {
+    "roles": 8,
+    "levels": 24,
+    "skills": 15,
+    "items": 135,
+    "difficulty": {
+      "EASY": 45,
+      "MEDIUM": 45,
+      "HARD": 45
+    },
+    "correctOption": {
+      "A": 30,
+      "B": 28,
+      "C": 40,
+      "D": 37
+    }
+  },
+  "contentReview": "NEEDS_EXPERT_REVIEW",
+  "publication": "DRAFT",
+  "catalogReview": "NEEDS_EXPERT_REVIEW",
+  "liveGraphVerification": "EXACT_MATCH: authorized main graph replacement,827 nodes/4536 relationships/6 official constraints; identical rerun no changes",
+  "postgresImport": "IMPORTED_DRAFT: main PostgreSQLV22;135 created, rerun0 new/135 existing; full all-field readback match",
+  "irtParameters": "NOT CREATED; C is separate",
+  "identityScheme": "UUIDv5 namespace derived from an identifier URI; URI is not a network endpoint. Stable key uses skill+difficulty+ordinal; item-version key adds version:1. Do not reorder to change identity; new content requires new version.",
+  "artifactSha256": {
+    "authoring-review.json": "202ed7c6144a2bf122fbd000419ba84011e28e8fe7f6b632ea9bb1670fb197f6",
+    "catalog-scope.json": "c2454bde23764d061b6b25b54d434141715326d75eaa3201026618e7e4136231",
+    "coverage.csv": "71dd1dbffc092462a005db93086675cd208987acfbe1fad576e8ada469271f12",
+    "IMPORT_CONTRACT.md": "a674e11f2127943a64ecc39b0e6a78b53fdbca73e7a9b3c46d268e742a0a1d1c",
+    "local-readback.json": "f023d56f0e0d2737f8bb8bd55eaef6cd76e3a416e421dffe838c3e5acb3b0381",
+    "LOCAL_CUTOVER.md": "4191f5a2811a8e5946304811aaf9608c2f9aa3d8013cfd215e771b78cdb1ccc1",
+    "module-source-observation.json": "74e906412635562f79fdab515180262b57cf4a84b98e1df76fb1e3f7b0a41ecb",
+    "OPERATOR_IMPORT.md": "d17775931cc0bdbc04984f0e9c5eafbbea66c9da2ed94597dc7cb528719e69ff",
+    "README.md": "df0e8e49ab2a95cd7ca59077d0be36f1e95be6ef2d440284e71588167275477c",
+    "scope-paths.csv": "f6ba4249e0f5bf3463022c9f83a0e37e10d38402350e4b45e4e7daf405d04b60",
+    "SOURCE_INVENTORY.md": "6dfa0f6cfe5d91bb64e04542ecf32705e340f6180359fc073e5ebef4b498382c",
+    "SOURCE_REVIEW.md": "3593b84c72dbeb4dc5d2f5f4977df486f581a00a0819dc25f59805fb841e53c0",
+    "static-observation.json": "5833287744a945a89d3a59f345beb61fc90895ad1a26c36d192c78439fb3fe61",
+    "workbook-observation.json": "51bb0a570a940a7b42ef17a4aee6f7efff9a6dcd72f94494511ceb10241575a5"
+  },
+  "localSeedMode": "Explicit local/demo + question-bank-import + enabled/local-seed flags, excludes prod; existing EMPLOYEE creator FK only, no Admin/review fabricated",
+  "runtimeReadiness": "NOT READY: DRAFT/unreviewed catalog/content, no approved model/IRT parameters; C and owner integration remain open"
+}

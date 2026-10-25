@@ -3,18 +3,29 @@
 left to right direction
 skinparam componentStyle rectangle
 skinparam shadowing false
-
+title Observed development startup topology / 2026-10-23
 actor Browser
-component "React/Vite (dev)\nCaddy (production)" as Web
-component "Spring Boot API" as API
-component "Spring Boot migrate profile" as Migrate
-database "PostgreSQL" as PG
-database "Neo4j" as Graph
-
+component "React/Vite\n:8088" as Web
+component "Java21 / Spring Boot3.5 API\n:18080" as API
+component "PostgreSQL migration\nthen exit" as Migrate
+component "Catalog/content initialization\nthen exit" as Seed
+database "PostgreSQL17.6\nV1-V26 / 89 tables\n:15432" as PG
+database "Neo4j5.26.31\nontology0.8.0\n:7474 / :7687" as Graph
 Browser --> Web
-Web --> API : /api
-API --> PG
-API --> Graph
-Migrate --> PG : Flyway V1-V7
-Migrate --> Graph : V5 catalog constraints
+Web --> API : /api proxy
+Migrate --> PG : Flyway
+Migrate ..> Seed : success required
+Seed --> Graph : initialize empty catalog only
+Seed --> PG : insert missing bank content
+Seed ..> API : success required
+API --> PG : transactional learner/assessment state
+API --> Graph : catalog reads
+note bottom of Seed
+No Blueprint, selection, attempt
+or learner completion is generated.
+end note
+note bottom of API
+Development observation is not
+production integration certification.
+end note
 @enduml

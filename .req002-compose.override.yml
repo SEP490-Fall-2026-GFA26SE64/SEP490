@@ -1,0 +1,4 @@
+﻿services:
+  api:
+    environment:
+      BASELINE_OCCUPATION_CATALOG_ENABLED: "true"

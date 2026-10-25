@@ -23,7 +23,7 @@ Nguồn: [System Overview](adapt_learn_graph_system_overview.md), [phân công h
 
 1. Chốt identity/actor-code migration, discipline mapping, course/content storage và lifecycle; không đổi schema để khớp mock/dataset preview.
 2. Expert chỉ author assigned-discipline content và assigned-role requirements; L&D configure baseline, publish role, approve offerings nhưng không sửa Expert requirements.
-3. Role mới cho Employee phải được publish; assessment/guidance order là baseline và RIASEC -> Expert-reviewed AI suggestions -> Employee selects/confirms. Attempt/scoring/reuse policy cũ cần reclarification.
+3. REQ-002 dùng Blueprint thích ứng theo Occupation với pool role active, question maximum không vượt capacity, time limit bắt buộc và attempt 3PL riêng cho Employee. Mỗi Employee + Occupation chỉ có một lần hoàn thành sinh mastery; attempt lỗi/không sinh mastery mới được thay thế. Raw score chỉ để giải thích; theta/SE được map sang point mastery và conservative mastery có version; không dùng weight hay Generate/Review/Publish đề chung.
 4. Initial pathway chỉ bắt đầu sau Expert confirmation. Revised pathway policy dùng new evidence/changed learning needs, không khóa theo failed-only trigger; exact thresholds và override handling phải được duyệt trước implementation.
 5. Individual skill selection/content access không tạo/sửa target-role pathway; assessment evidence có thể cập nhật competency estimate. Thống nhất tương tác với subsequent recalculation riêng.
 6. Chạy Unit, Integration/Testcontainers, System/Compose và manual theo REQ khi implementation sẵn sàng; historical pass không chứng minh revised scope. Không nghiệm thu bằng mock UI hoặc chỉ database table tồn tại.
@@ -122,6 +122,6 @@ Nguồn phân công: [Phân công 4 người](PHAN_CONG_4_NGUOI.md); mục tiêu
 2. **Cuối sprint 3:** Người 2 bàn giao role requirements và question mapping có version; sprint 4 chốt prerequisite và kiểm tra coverage câu hỏi trước khi cho baseline production. Configure Baseline Assessment sprint 3 là phần implementation với fixture, chưa được tính là đã nghiệm thu production.
 3. **Cuối sprint 5/7/9:** lần lượt demo baseline + evidence; gap + initial pathway có lý do; và failed question -> giữ hoặc tính lại pathway (có version và idempotency). UI mock của Người 4 không tính là hoàn thành cho đến khi kiểm thử trên contract thật ở sprint 8-9.
 4. **Thanh toán:** Verify PayOS (sprint 7) phải được kiểm thử trước Apply Confirmed Payment (sprint 8); redirect không kích hoạt subscription. Benchmark RQ1/RQ3 chỉ được xem là hoàn tất sau khi chạy trên engine versioned với dữ liệu synthetic (sprint 9).
-5. **Sức chứa:** 4 x 5 x 10 = 200 ngày-công; các bảng dự kiến dùng hết 200, gần như **không có dự phòng**. Bayesian baseline, cross-store consistency, PayOS và RQ1/RQ3 có thể cần hơn ước lượng. Nếu trễ, giữ P0 và gate an toàn; đẩy P2 (thống kê, report, benchmark comparison, destructive CRUD) ra ngoài mốc 10 sprint thay vì bỏ qua test hay cho phép function phụ thuộc chạy trên dữ liệu giả.
+5. **Sức chứa:** 4 x 5 x 10 = 200 ngày-công; các bảng dự kiến dùng hết 200, gần như **không có dự phòng**. Adaptive IRT/calibration, cross-store consistency và evidence/mastery handoff có thể cần hơn ước lượng. Nếu trễ, giữ P0 và gate an toàn; đẩy P2 ra ngoài mốc 10 sprint thay vì bỏ qua test hay cho phép function phụ thuộc chạy trên dữ liệu giả.
 
 </details>

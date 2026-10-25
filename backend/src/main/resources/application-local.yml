@@ -14,4 +14,15 @@ learning:
   target-selection:
     local-dependencies:
       enabled: ${TARGET_SELECTION_LOCAL_DEPENDENCIES_ENABLED:true}
-      assessment-in-progress: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:false}
+
+assessment:
+  baseline:
+    legacy-authoring:
+      # Historical fixed Generate/Review/Publish wiring; never the official baseline fallback.
+      enabled: false
+    answer-review:
+      # Temporary local/demo reveal boundary. Production has no matching bean/controller.
+      enabled: ${BASELINE_ANSWER_REVIEW_ENABLED:false}
+    occupation-catalog:
+      # Opt-in only: ontology 0.8 currently has no production tenant/publication mapping.
+      enabled: ${BASELINE_OCCUPATION_CATALOG_ENABLED:false}

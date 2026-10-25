@@ -1,5 +1,7 @@
 # Adapt-Learn-Graph System Overview
 
+[Role-to-baseline contract](features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md): choose Role → authoritative Occupation profile coverage → required baseline if incomplete. Existing profiles retain their applicable skill set/version. Role guidance, gap and pathway remain dependent Functions.
+
 ## 1. System Overview
 
 **Adapt-Learn-Graph** is an internal enterprise system for managing employee competencies and supporting personalized learning within one organization. It connects target roles, competencies, micro-skills, learning modules and assessments through a knowledge graph. The system identifies skill gaps, recommends learning pathways, and updates those pathways based on assessment outcomes.
@@ -53,7 +55,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 - **Assign Experts:** Assign or remove Experts from disciplines and review current assignments.
 - **Manage target roles:** Create and update target role details, assign each target role to an Expert for competency configuration, and view its configuration status.
 - **Manage target role publication:** Review the Expert’s completed competency configuration, then publish or unpublish the target role. L&D does not edit the Expert’s competency requirements.
-- **Manage baseline assessment configuration:** Define the competencies covered and configure the baseline assessment’s question selection and scoring rules.
+- **Manage baseline assessment configuration:** Maintain one stable versioned baseline per Occupation and one capacity-valid maximum-question/total-duration pair for the full deduplicated active-role skill/item union. Save draft → Preview assessment → Activate, with confirmed atomic replacement, direct Deactivate and Draft/Active/Retiring/Inactive availability that preserves pinned attempts/history. Time-per-question is a calculator aid with an explicit one-minute suggestion, not a separate timeout/default. There are no per-Role/exploration settings, points/weights or shared generated assessment. Detailed lifecycle/transition proposals and unresolved limits are marked in the 2026-10-22 REQ-002 contracts; they are not implementation claims.
 - **Approve learning offerings:** Review submitted modules and assessments; approve them for organizational use or return them for revision.
 - **Monitor employee development:** View employee competency profiles, skill gaps, assessment results, and learning progress.
 
@@ -76,7 +78,7 @@ The system has four human actors: **System Administrator, L&D Manager, Expert, a
 **Purpose:** Understand current competencies and develop toward a relevant target role.
 
 - **Manage personal profile:** View and update personal and work-related profile information used by the system.
-- **Complete baseline assessment:** Answer the questions used to estimate current competency levels.
+- **Complete baseline assessment:** Every new entry, through any selected Role or an authorized Occupation, assesses the full Occupation union using the same bounds pair. The Employee receives an individual server-timed adaptive 3PL sequence, not separate Role tests; valid early stopping remains. One prior mastery-producing completion closes the Employee+Occupation allowance across Role choices; only invalidated/no-mastery attempts permit linked replacement. Old attempts/results retain their recorded scope/pins and are never rescored, relabeled or reset by this change.
 - **Complete RIASEC assessment:** Answer the questions used to inform interest-based role guidance.
 - **Review target role guidance:** View Expert-reviewed AI suggestions and comments, then select or confirm a target role.
 - **Review competency profile and gaps:** View estimated competency levels and gaps against the selected target role.
@@ -107,7 +109,7 @@ These functions are performed by the system and are not separate actors:
 - **Competency gap analysis:** Compares current competency estimates with target role requirements.
 - **Knowledge graph recommendation:** Finds relevant modules using skill mappings and prerequisites.
 - **Pathway generation:** Proposes an ordered set of learning modules from the Employee’s competency gaps and the knowledge graph; the Expert reviews the initial pathway, includes or excludes modules, and confirms it before the Employee starts. Later pathway recalculations respond to new assessment evidence.
-- **Knowledge tracing:** Updates estimated skill mastery using assessment evidence and configured rules.
+- **Knowledge tracing:** Initializes mastery from versioned baseline IRT evidence, then updates it from later learning evidence without double-counting the baseline responses.
 - **Pathway recalculation:** Revises the remaining pathway when new evidence changes the Employee’s learning needs.
 - **Progress tracking:** Records assessment, module, and pathway completion status.
 - **Skill-based content discovery:** Shows the module mapped to an Employee-selected micro-skill, independent of target role pathway recommendations.

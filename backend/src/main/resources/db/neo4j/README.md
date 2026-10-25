@@ -1,4 +1,12 @@
-# Neo4j ontology 0.8.0
+# Neo4j ontology 0.8.0 — active source
+
+User-authorized local cutover on 2026-10-22 replaced the backed-up Backend P3/Platform P4 fixture with the official documents/dataset/import/ontology_seed.json:827 nodes/4536 relationships. Six official node-ID uniqueness constraints are created by that package's importer. No SchemaMigration/JobDomain/MacroCompetency/Course seed is active.
+
+Historical V1–V4 graph scripts and GraphSchemaMigrator are now only in src/test scope for an existing legacy compatibility test; production migrate startup cannot load them. DevelopmentCatalogSeeder/DevelopmentTargetSelectionSeeder and obsolete fixture-only checks are removed. Legacy graph CRUD controllers require explicit catalog.legacy-api.enabled=true and must never be enabled against the official graph until their owner aligns the schema. Read adapters still need authoritative review/permission integration; no fabricated fields are added to official nodes.
+
+See documents/dataset/question-bank/15-1212.00/LOCAL_CUTOVER.md for source/data backups, approved replacement and actual migration/import observations. Earlier Session1 notes below are historical and superseded by this explicit cleanup authorization.
+
+Session1 (2026-10-22): the already-seeded official graph is an external read-only dependency for question-bank preparation/import. DatabaseInitialization no longer invokes GraphSchemaMigrator or DevelopmentCatalogSeeder. Do not run a graph import, clear or reseed to prepare the bank. The importer checks the exact selected snapshot and fails on missing/drifted/unreachable data; see documents/dataset/question-bank/15-1212.00/IMPORT_CONTRACT.md. Guidance below about creating an isolated graph is historical import documentation, not Session1 execution authority.
 
 The active ontology contract is defined in `documents/neo4j_schema.md` and `documents/dataset/ONTOLOGY.md` at the repository root. It has six node labels and seven relationship types. Course is retired. LearningModule TEACHES MicroSkill is exactly one-to-one; skill prerequisites retain only requiredScore plus common metadata.
 

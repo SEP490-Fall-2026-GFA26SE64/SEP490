@@ -3,7 +3,7 @@
 ## Current Scope Alignment
 
 **Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-037. **Actors:** System Administrator, L&D Manager, Expert, Employee; system enforces. **Status:** Reclarification required.
-Authenticate and enforce account permissions, discipline/role assignments and authorized Employee reviews within one organization. L&D owns baseline settings/publication/approval; Expert owns assigned content/requirements/reviews; Employee owns learning/profile. Legacy tenant identifiers may remain technically without requiring multi-organization registration. Old actor codes need explicit migration, not automatic mapping.
+Authenticate and enforce account permissions, discipline/role assignments and authorized Employee reviews within one organization. L&D owns adaptive baseline Blueprint configuration/finalization; this has no baseline Review/Publish permission. Target-role publication and learning-offering approval remain separate L&D responsibilities. Expert owns assigned content/requirements/reviews; Employee owns their attempts/results/learning/profile. Legacy tenant identifiers may remain technically without requiring multi-organization registration.
 
 ## Historical Specification
 Use the alignment above where older details conflict.

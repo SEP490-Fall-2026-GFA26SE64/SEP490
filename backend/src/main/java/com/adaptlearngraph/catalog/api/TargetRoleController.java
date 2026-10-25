@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@Profile("local")
+@Profile("local & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/employee/target-roles")

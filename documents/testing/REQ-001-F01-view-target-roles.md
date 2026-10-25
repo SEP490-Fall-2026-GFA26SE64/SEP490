@@ -1,5 +1,7 @@
 # REQ-001-F01 — View Target Roles test plan and evidence
 
+**2026-10-23 amendment:** current string-ID catalog/sidebar and deleted-role behavior use [RB acceptance plan](REQ-001-002-role-baseline-flow-test-plan.md); all new cases Planned / Not run. Historical passes below do not certify current graph compatibility.
+
 ## Current Scope Alignment
 This is evidence of the recorded contract, not revised scope. [Current test criteria](README.md#current-scope-alignment) require published-role availability and reviewed-guidance flow; earlier `ACTIVE`-only catalog tests do not certify those gates. Dates/counts below are preserved.
 

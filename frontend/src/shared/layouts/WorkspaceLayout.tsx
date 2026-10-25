@@ -1,3 +1,4 @@
+import { useLocalDemoSession } from '../hooks/useLocalDemoSession'
 import * as React from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -9,6 +10,7 @@ import {
   CheckCircle2,
   CheckSquare,
   ChevronDown,
+  ClipboardCheck,
   Compass,
   CreditCard,
   FileQuestion,
@@ -26,7 +28,6 @@ import {
   Server,
   Settings,
   ShieldCheck,
-  Sliders,
   Sparkles,
   Target,
   User,
@@ -57,6 +58,7 @@ interface NavTabItem {
 export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'platform-admin'
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
+  const demo = useLocalDemoSession()
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -175,6 +177,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Target size={15} />,
       },
       {
+        label: t('baselineUi.myMastery'),
+        href: '/employee/my-mastery',
+        icon: <Award size={15} />,
+      },
+      {
         label: t('nav.pathway'),
         href: '/employee/pathway',
         icon: <GitFork size={15} />,
@@ -251,9 +258,14 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Briefcase size={15} />,
       },
       {
-        label: t('nav.baselineConfig', 'Baseline Config'),
-        href: '/ld-manager/baseline-config',
-        icon: <Sliders size={15} />,
+        label: t('nav.baselineAssessments'),
+        href: '/ld-manager/baseline-assessments',
+        icon: <ClipboardCheck size={15} />,
+      },
+      {
+        label: t('nav.userDirectory'),
+        href: '/ld-manager/users',
+        icon: <Users size={15} />,
       },
       {
         label: t('nav.contentApprovals', 'Content Approvals'),
@@ -336,6 +348,15 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   // Active user profile metadata based on active actor
   const userProfile = getUserProfile(activeActor)
+  function switchPortal(event: React.MouseEvent<HTMLAnchorElement>, persona: string) {
+    setIsUserMenuOpen(false)
+    if (!demo.enabled) return
+    event.preventDefault()
+    const destination = event.currentTarget.href
+    void demo.choose(persona, destination).then(success => {
+      if (!success) toast({ title: t('common.error', 'Error'), description: t('employeeBaseline.requestError'), variant: 'destructive' })
+    })
+  }
 
   // Helper for determining whether a nav tab is active
   const isTabActive = (itemHref: string) => {
@@ -358,18 +379,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/'
       )
     }
-    if (
-      itemHref === '/employee/upskilling' ||
-      itemHref === '/employee/target-roles' ||
-      itemHref === '/learner/target-roles' ||
-      itemHref === '/learner/upskilling'
-    ) {
-      return (
-        path === '/employee/upskilling' ||
-        path === '/employee/target-roles' ||
-        path === '/learner/target-roles' ||
-        path === '/learner/upskilling'
-      )
+    if (itemHref === '/employee/upskilling' || itemHref === '/learner/upskilling') {
+      return path === '/employee/upskilling' || path === '/learner/upskilling' || path === '/employee/target-roles' || path === '/learner/target-roles'
+    }
+    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
+      return path === '/employee/target-roles' || path === '/learner/target-roles'
     }
     if (itemHref === '/employee/riasec') {
       return path === '/employee/riasec' || path === '/learner/riasec'
@@ -408,7 +422,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       return path === '/expert/modules' || path === '/ld-manager/modules' || path === '/manager/modules'
     }
     if (itemHref === '/expert/assessment-bank') {
-      return path === '/expert/assessment-bank' || path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+      return path === '/expert/assessment-bank'
     }
     if (itemHref === '/ld-manager/dashboard' || itemHref === '/ld-manager/learning-outcomes') {
       return (
@@ -428,8 +442,8 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
-    if (itemHref === '/ld-manager/baseline-config') {
-      return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config'
+    if (itemHref === '/ld-manager/baseline-assessments') {
+      return path.startsWith('/ld-manager/baseline-assessments')
     }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'
@@ -518,7 +532,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     : '/admin/dashboard'
 
   return (
-    <div className="workspace">
+    <div className={`workspace ${isEmployee ? 'workspace--employee' : ''}`}>
       {/* Top Header */}
       <header className="workspace-header">
         <div className="workspace-topbar">
@@ -548,7 +562,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                 <Link
                   to="/employee/upskilling"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
-                    path === '/employee/upskilling' || path === '/employee/target-roles'
+                    path === '/employee/upskilling'
                       ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
@@ -573,7 +587,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
           {/* Center: Coursera-style Global Searchbar (Employee only) */}
           {isEmployee && (
-            <div className="flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
+            <div className="workspace-header-search flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
               <GlobalSearchbar />
             </div>
           )}
@@ -687,7 +701,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 1. Employee */}
                         <Link
                           to="/employee/overview"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'employee-a')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isEmployee
                               ? 'bg-secondary text-primary font-semibold'
@@ -721,7 +735,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 3. L&D Manager */}
                         <Link
                           to="/ld-manager/dashboard"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'ld')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager
                               ? 'bg-secondary text-primary font-semibold'
@@ -738,7 +752,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 4. Org Admin */}
                         <Link
                           to="/admin/dashboard"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'admin')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isAdmin
                               ? 'bg-secondary text-primary font-semibold'

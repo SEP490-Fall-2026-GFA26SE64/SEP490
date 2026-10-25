@@ -4,8 +4,9 @@ import App from './App'
 
 const legacySelectionHandler = vi.hoisted(() => vi.fn())
 
-vi.mock('../features/employee/target-roles/EmployeeTargetRolesPage', () => ({
-  EmployeeTargetRolesPage: () => <div>Server-backed target-role page</div>,
+vi.mock('../features/employee/target-roles/EmployeeTargetRolesPage', async () => ({
+  ...await vi.importActual('../features/employee/target-roles/EmployeeTargetRolesPage'),
+  EmployeeUpskillingPage: () => <div>Upskilling page</div>,
 }))
 
 vi.mock('../shared/hooks/useEmployeeLearningState', () => ({
@@ -22,12 +23,18 @@ describe('target-role application route', () => {
     window.history.pushState({}, '', '/')
   })
 
-  it('routes to the server-backed F02 page without legacy selection or localStorage writes', () => {
+  it.each(['/employee/target-roles?search=Security&other=kept#catalog', '/employee/target-roles?tab=skills&search=Security&other=kept#catalog'])('RB01 redirects %s to Upskilling Roles preserving query/hash without writes', (path) => {
+    window.history.replaceState({}, '', path)
     const storageWrite = vi.spyOn(Storage.prototype, 'setItem')
 
     render(<App />)
 
-    expect(screen.getByText('Server-backed target-role page')).toBeTruthy()
+    expect(screen.getByText('Upskilling page')).toBeTruthy()
+    expect(window.location.pathname).toBe('/employee/upskilling')
+    expect(new URLSearchParams(window.location.search).get('tab')).toBe('roles')
+    expect(new URLSearchParams(window.location.search).get('search')).toBe('Security')
+    expect(new URLSearchParams(window.location.search).get('other')).toBe('kept')
+    expect(window.location.hash).toBe('#catalog')
     expect(legacySelectionHandler).not.toHaveBeenCalled()
     expect(storageWrite).not.toHaveBeenCalled()
   })

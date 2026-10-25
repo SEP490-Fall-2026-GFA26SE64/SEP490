@@ -31,7 +31,8 @@ import {
   Zap,
 } from 'lucide-react'
 import * as React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
+import { BaselineHandoff } from '../baseline-assessment/EmployeeBaselinePage'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -42,7 +43,6 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '../../../shared/components/ui/Card'
@@ -434,30 +434,6 @@ export const SKILL_CYPHER_ATTEMPT: QuizAttempt = {
 const INITIAL_ATTEMPTS: QuizAttempt[] = [
   SKILL_CYPHER_ATTEMPT,
   {
-    id: 'att-diag-base',
-    attemptNumber: 1,
-    moduleCode: 'DIAG-BASE',
-    moduleTitle: 'Baseline Competency Diagnostic Assessment',
-    quizTitle: 'Initial Baseline Diagnostic Assessment',
-    date: '2026-09-10 09:15',
-    score: 92,
-    correctCount: 9,
-    totalQuestions: 10,
-    timeTaken: '18m 20s',
-    answers: {
-      'q-1': 'opt-1-a',
-      'q-2': 'opt-2-a',
-      'q-3': 'opt-3-a',
-      'q-4': 'opt-4-a',
-      'q-5': 'opt-5-a',
-      'q-6': 'opt-6-a',
-      'q-7': 'opt-7-b',
-      'q-8': 'opt-8-a',
-      'q-9': 'opt-9-a',
-      'q-10': 'opt-10-a',
-    },
-  },
-  {
     id: 'att-career-riasec',
     attemptNumber: 1,
     moduleCode: 'CAREER-RIASEC',
@@ -643,20 +619,6 @@ export interface PathwayQuiz {
 }
 
 const PATHWAY_QUIZZES: PathwayQuiz[] = [
-  {
-    id: 'quiz-baseline',
-    moduleCode: 'DIAG-BASE',
-    moduleTitle: 'Baseline Competency Diagnostic Assessment',
-    quizTitle: 'Initial Baseline Diagnostic Assessment',
-    description:
-      'Evaluates initial knowledge states across foundational graph algorithms, data structures, and architecture to initialize Bayesian knowledge tracing.',
-    status: 'completed',
-    durationMinutes: 30,
-    questionCount: 15,
-    passingScore: 70,
-    lastScore: 92,
-    skills: ['Baseline Competencies', 'Graph Theory', 'Neural Networks', 'Database Querying'],
-  },
   {
     id: 'quiz-riasec',
     moduleCode: 'CAREER-RIASEC',
@@ -902,7 +864,7 @@ export const RIASEC_LIKERT_OPTIONS = [
 export function AssessmentPage() {
   const { toast } = useToast()
   const location = useLocation()
-  const { profile, isLearningLocked, completeDiagnosticAssessment } = useEmployeeLearningState()
+  const { profile, isLearningLocked } = useEmployeeLearningState()
   const isSkillMode = profile.selectedViewType === 'skill'
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
 
@@ -924,7 +886,10 @@ export function AssessmentPage() {
   }
 
   // Navigation tab state: 'pathway' | 'baseline' | 'skills' | 'history'
-  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'skills' | 'history'>('pathway')
+  const [activeTab, setActiveTab] = React.useState<'pathway' | 'baseline' | 'skills' | 'history'>(() => {
+    const tab = new URLSearchParams(location.search).get('tab')
+    return tab === 'baseline' || tab === 'skills' || tab === 'history' ? tab : 'pathway'
+  })
   const [skillStatusFilter, setSkillStatusFilter] = React.useState<'all' | 'eligible' | 'completed' | 'locked'>('all')
 
   // Available Quiz Info Modal state
@@ -1268,6 +1233,7 @@ export function AssessmentPage() {
     }
 
     const moduleParam = params.get('module') || params.get('moduleId') || params.get('quiz')
+    if (moduleParam === 'DIAG-BASE' || moduleParam === 'quiz-baseline') return
 
     if (moduleParam && !isTakingQuiz && !isSubmitted && pathwayQuizzes.length > 0) {
       const normalizedParam = moduleParam.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -1296,8 +1262,6 @@ export function AssessmentPage() {
           setSelectedQuizModal(targetQuiz)
         }
       }
-    } else if (params.get('diagnostic') === 'true' && !isTakingQuiz && !isSubmitted) {
-      setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0] || null)
     }
   }, [location.search, isTakingQuiz, isSubmitted, pathwayQuizzes, toast])
 
@@ -1346,6 +1310,7 @@ export function AssessmentPage() {
   const filteredAttempts = React.useMemo(() => {
     return attempts
       .filter((a) => {
+        if (a.moduleCode === 'DIAG-BASE') return false
         // Skill vs Role mode filtering
         if (isSkillMode) {
           const isSkillAttempt =
@@ -1452,16 +1417,9 @@ export function AssessmentPage() {
     setReviewAttemptId(newAttempt.id)
     setCurrentIndex(0)
 
-    // Unlock learning pathway if diagnostic requirement is active
-    if (isLearningLocked) {
-      completeDiagnosticAssessment(scorePct)
-    }
-
     toast({
-      title: isLearningLocked ? 'Diagnostic Assessment Passed! 🎉' : `Assessment Completed: ${scorePct}%`,
-      description: isLearningLocked
-        ? `Score: ${scorePct}%. Your Adaptive Learning Pathway and Interactive Roadmap are now unlocked!`
-        : `You got ${correct} of ${totalQuestions} correct. You are now in Review Mode to inspect your answers.`,
+      title: `Assessment Completed: ${scorePct}%`,
+      description: `You got ${correct} of ${totalQuestions} correct. You are now in Review Mode to inspect your answers.`,
       variant: 'success',
     })
   }
@@ -1506,6 +1464,10 @@ export function AssessmentPage() {
   }
 
   const isQuizViewActive = isTakingQuiz || isReviewMode
+
+  const entryParams = new URLSearchParams(location.search)
+  const quizEntry = entryParams.get('module') || entryParams.get('moduleId') || entryParams.get('quiz')
+  if (entryParams.get('diagnostic') === 'true' || quizEntry === 'DIAG-BASE' || quizEntry === 'quiz-baseline') return <Navigate to="/employee/baseline-assessment" replace />
 
   return (
     <WorkspaceLayout>
@@ -2316,77 +2278,7 @@ export function AssessmentPage() {
 
             {/* TAB 1: PATHWAY ASSESSMENTS */}
             {activeTab === 'pathway' && (() => {
-              // If diagnostic is locked and in role mode, employee can ONLY see and take the diagnostic assessment!
-              if (isLearningLocked && !isSkillMode) {
-                return (
-                  <div className="space-y-6 max-w-3xl mx-auto py-2">
-                    <Card className="border border-primary/40 bg-gradient-to-br from-card via-card to-primary/5 shadow-md overflow-hidden">
-                      <CardHeader className="p-6 border-b border-border/80">
-                        <div className="flex items-center justify-between gap-3 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-                            <Sparkles size={14} /> Mandatory Diagnostic Baseline
-                          </span>
-                          <Badge variant="warning" className="text-xs font-bold">
-                            Diagnostic Assessment Required
-                          </Badge>
-                        </div>
-                        <CardTitle className="text-xl font-extrabold text-foreground mt-2.5">
-                          Target Role Baseline Diagnostic: {profile.targetRole || 'AI Knowledge Architect'}
-                        </CardTitle>
-                        <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
-                          Self-directed target role track. Complete this 10-question baseline to calibrate your competency graph and unlock your adaptive learning curriculum.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-6 space-y-5">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Duration</div>
-                            <div className="text-base font-bold text-foreground mt-0.5">25 Mins</div>
-                          </div>
-                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Questions</div>
-                            <div className="text-base font-bold text-foreground mt-0.5">10 Items</div>
-                          </div>
-                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Pass Score</div>
-                            <div className="text-base font-bold text-success mt-0.5">80%</div>
-                          </div>
-                          <div className="p-3 rounded-xl bg-muted/40 border border-border">
-                            <div className="text-[10px] uppercase font-bold text-muted-foreground">Grading</div>
-                            <div className="text-base font-bold text-primary mt-0.5">Instant</div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                          <span className="text-xs text-muted-foreground">
-                            Version: <strong className="text-foreground">{profile.targetRoleVersion || 'v2.4'}</strong>
-                          </span>
-                          <Button
-                            variant="primary"
-                            size="default"
-                            className="font-bold shadow-xs px-6"
-                            rightIcon={<ArrowRight size={16} />}
-                            onClick={() => setSelectedQuizModal(PATHWAY_QUIZZES[2])}
-                          >
-                            Take Diagnostic Assessment Now
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Regular milestone quizzes blocked banner */}
-                    <div className="p-5 rounded-2xl border border-border bg-muted/30 text-center space-y-2">
-                      <div className="flex items-center justify-center gap-2 text-xs font-bold text-foreground">
-                        <Lock size={15} className="text-muted-foreground" />
-                        <span>Curriculum Module Quizzes Locked</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                        End-of-module quizzes (MOD-101, MOD-204, MOD-301, MOD-305, MOD-401) and attempt history are locked until you complete this diagnostic assessment.
-                      </p>
-                    </div>
-                  </div>
-                )
-              }
+              if (isLearningLocked && !isSkillMode) return <BaselineHandoff />
 
               const isBaselineQuiz = (q: PathwayQuiz) => q.moduleCode === 'DIAG-BASE' || q.moduleCode === 'CAREER-RIASEC'
               const pathwayOnlyQuizzes = pathwayQuizzes.filter((q) => !isBaselineQuiz(q))
@@ -2399,40 +2291,6 @@ export function AssessmentPage() {
 
               return (
                 <div className="space-y-5">
-                  {/* DIAGNOSTIC ASSESSMENT REQUIRED BANNER WHEN LEARNING IS LOCKED */}
-                  {isLearningLocked && !isSkillMode && (
-                    <div className="rounded-2xl border border-warning/40 bg-gradient-to-r from-warning/15 via-warning/10 to-card p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-start sm:items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-warning/20 text-warning shrink-0">
-                          <Target size={22} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-foreground">
-                              Mandatory Diagnostic Assessment Required
-                            </span>
-                            <Badge variant="warning" className="text-[10px] font-bold">
-                              Action Required
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Your L&D Manager assigned target role &ldquo;<strong className="text-foreground">{profile.targetRole || 'AI Knowledge Architect'}</strong>&rdquo;.
-                            Complete this diagnostic quiz to calibrate your knowledge model and unlock your Interactive Roadmap &amp; Timeline.
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="shrink-0 font-bold"
-                        onClick={() => setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0] || null)}
-                        rightIcon={<ArrowRight size={14} />}
-                      >
-                        Start Diagnostic Quiz
-                      </Button>
-                    </div>
-                  )}
-
                   {/* Top Pathway Assessment StatCards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
@@ -2720,21 +2578,14 @@ export function AssessmentPage() {
             {/* TAB 2: BASELINE & RIASEC DIAGNOSTICS */}
             {activeTab === 'baseline' && (() => {
               const baselineQuizzes = pathwayQuizzes.filter(
-                (q) => q.moduleCode === 'DIAG-BASE' || q.moduleCode === 'CAREER-RIASEC'
+                (q) => q.moduleCode === 'CAREER-RIASEC'
               )
 
               return (
                 <div className="space-y-5">
+                  <BaselineHandoff />
                   {/* Top Baseline Assessment StatCards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                      title="Baseline Diagnostic Score"
-                      value="92%"
-                      valueClassName="text-success font-mono"
-                      description="Initial competency diagnostic passed"
-                      icon={<Award className="w-5 h-5 text-success" />}
-                    />
-
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <StatCard
                       title="Dominant RIASEC Theme"
                       value={topRiasecTrait.name}
@@ -2775,12 +2626,6 @@ export function AssessmentPage() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Badge variant="success" className="gap-1 font-semibold text-xs px-3 py-1">
-                          <CheckCircle2 size={13} />
-                          <span>All Baselines Cleared</span>
-                        </Badge>
-                      </div>
                     </div>
 
                     {/* Timeline Body */}
@@ -3190,38 +3035,9 @@ export function AssessmentPage() {
             })()}
 
             {/* TAB 3: HISTORY (VIEW OLD QUIZ ASSESSMENTS) */}
+            {activeTab === 'history' && !isLearningLocked && <BaselineHandoff />}
             {activeTab === 'history' && (
-              isLearningLocked ? (
-                <div className="max-w-xl mx-auto py-8">
-                  <Card className="border border-warning/30 bg-card shadow-xs text-center p-8 space-y-4">
-                    <div className="w-12 h-12 rounded-2xl bg-warning/15 text-warning flex items-center justify-center mx-auto">
-                      <Lock size={24} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <h3 className="text-base font-bold text-foreground">Attempt History Locked</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Your attempt history for <strong className="text-foreground">{profile.targetRole || 'AI Knowledge Architect'}</strong> is unavailable until you complete the baseline diagnostic assessment.
-                      </p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Tip: You can switch to a previous completed target role using the <strong>TARGET ROLE</strong> dropdown above to review historical attempt records.
-                      </p>
-                    </div>
-                    <div className="pt-2">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => {
-                          setActiveTab('baseline')
-                          setSelectedQuizModal(pathwayQuizzes[2] || pathwayQuizzes[0] || null)
-                        }}
-                        rightIcon={<ArrowRight size={14} />}
-                      >
-                        Take Diagnostic Assessment
-                      </Button>
-                    </div>
-                  </Card>
-                </div>
-              ) : (
+              isLearningLocked ? <BaselineHandoff /> : (
               <div className="space-y-5">
                 {/* Attempts Stats Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

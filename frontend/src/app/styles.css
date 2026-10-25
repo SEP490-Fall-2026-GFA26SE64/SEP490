@@ -44,7 +44,6 @@
 @import '../shared/styles/tokens.css';
 @import '../shared/styles/base.css';
 @import '../shared/styles/typography.css';
-
 /* Global hold / grabbing cursor while dragging */
 body.cursor-grabbing-active,
 body.cursor-grabbing-active * {

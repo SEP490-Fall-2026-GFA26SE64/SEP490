@@ -22,7 +22,7 @@ Display the employee's generated module sequence and module statuses. The employ
 
 - From [Choose Target Role](../Target%20role%20selection/Choose%20Target%20Role.md) (REQ-001-F02), 2026-09-26: Changing the target role archives the previous pathway as read-only history, preserving its recorded sequence and progress. The archived pathway cannot be resumed, including after returning to that role.
 - Only the selected role may have an active pathway. Archived pathways do not permit edits or new assessment attempts; archiving does not remove mastery evidence available for the agreed role-change baseline rules.
-- From the role-readiness interview, 2026-09-27, option A: Loss of baseline readiness alone does not interrupt learning through an existing active pathway. Employees may continue accessing its modules and module assessments subject to their own authorization and availability checks. Do not pause or archive that pathway solely because baseline setup becomes unready. Catalog visibility and baseline-start restrictions remain separate.
+- Current adaptive-baseline dependency: Blueprint replacement, disablement or stale catalog fingerprint governs new baseline starts only. It does not erase completed mastery or independently pause/archive an existing pathway; module and module-assessment authorization still applies.
 
 ## Open Decisions
 
@@ -37,10 +37,10 @@ Display the employee's generated module sequence and module statuses. The employ
 The displayed sequence matches the employee's current authorized pathway and does not offer employee editing controls.
 
 - An archived pathway is distinguishable from the active pathway and remains read-only, with no resume or start-assessment action. Returning to its target role does not reactivate it.
-- Given an active pathway with otherwise accessible modules and eligible assessments, loss of the role's baseline question coverage does not hide that pathway or block its learning actions. Preserve progress. An independently unavailable module or assessment remains restricted, and an archived pathway remains non-resumable.
+- Given an active pathway with otherwise accessible modules and eligible assessments, a later Blueprint availability/catalog change does not hide the pathway or remove recorded progress. An independently unavailable module or assessment remains restricted, and an archived pathway remains non-resumable.
 
 ## Decision Log
 
 | Date | Question | Confirmed answer |
 | --- | --- | --- |
-| 2026-09-27 | Should existing pathway learning continue if the role loses baseline readiness? | Option A: Continue modules and module assessments, subject to their own availability checks. Baseline readiness loss alone does not pause the existing pathway. |
+| 2026-10-20 | Does an adaptive Blueprint change invalidate an existing pathway? | No. It controls new baseline starts and does not erase completed mastery or independently pause/archive a pathway. |

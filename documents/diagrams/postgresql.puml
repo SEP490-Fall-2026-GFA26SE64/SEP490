@@ -2,146 +2,155 @@
 !pragma layout smetana
 top to bottom direction
 skinparam shadowing false
-title PostgreSQL - Identity, catalog and processing
+hide circle
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+title PostgreSQL 17.6 / platform / V1-V26\nIdentity, catalog and processing (17 tables)
+legend top left
+PK = primary key; FK = foreign-key column; ? = nullable
+Arrows: referenced parent -> referencing child; no cardinality inference.
+External tables are reference stubs. Full constraints/indexes/triggers: schema catalog.
+endlegend
 class organization {
-    organization_id : uuid [PK]
-    code : text
-    name : text
-    status : text
-    created_at : timestamp with time zone
+  organization_id : uuid [PK]
+  code : text
+  name : text
+  status : text
+  created_at : timestamp with time zone
 }
 class organizational_unit {
-    unit_id : uuid [PK]
-    parent_unit_id? : uuid [FK]
-    name : text
-    organization_id? : uuid [FK]
+  unit_id : uuid [PK]
+  parent_unit_id? : uuid [FK]
+  name : text
+  organization_id? : uuid [FK]
 }
 class account {
-    account_id : uuid [PK]
-    unit_id? : uuid [FK]
-    identifier : text
-    normalized_identifier : text
-    password_hash : text
-    active : boolean
-    created_at : timestamp with time zone
-    organization_id? : uuid [FK]
+  account_id : uuid [PK]
+  unit_id? : uuid [FK]
+  identifier : text
+  normalized_identifier : text
+  password_hash : text
+  active : boolean
+  created_at : timestamp with time zone
+  organization_id? : uuid [FK]
 }
 class application_role {
-    role_code : text [PK]
+  role_code : text [PK]
 }
 class account_role {
-    account_id : uuid [PK, FK]
-    role_code : text [PK, FK]
+  account_id : uuid [PK, FK]
+  role_code : text [PK, FK]
 }
 class manager_scope {
-    manager_id : uuid [PK, FK]
-    unit_id : uuid [PK, FK]
+  manager_id : uuid [PK, FK]
+  unit_id : uuid [PK, FK]
 }
 class session {
-    session_id : uuid [PK]
-    account_id : uuid [FK]
-    token_hash : platform.content_hash
-    created_at : timestamp with time zone
-    expires_at : timestamp with time zone
-    revoked_at? : timestamp with time zone
+  session_id : uuid [PK]
+  account_id : uuid [FK]
+  token_hash : platform.content_hash
+  created_at : timestamp with time zone
+  expires_at : timestamp with time zone
+  revoked_at? : timestamp with time zone
 }
 class learner_state {
-    learner_id : uuid [PK, FK]
-    submission_sequence : bigint
-    profile_revision : bigint
-    progress_revision : bigint
-    target_revision : bigint
+  learner_id : uuid [PK, FK]
+  submission_sequence : bigint
+  profile_revision : bigint
+  progress_revision : bigint
+  target_revision : bigint
 }
 class catalog_guard {
-    guard_id : integer [PK]
-    state : text
-    intent_id? : uuid
-    release_id? : uuid
-    source_revision : bigint
-    availability_revision : bigint
-    manifest_hash? : platform.content_hash
-    updated_at : timestamp with time zone
+  guard_id : integer [PK]
+  state : text
+  intent_id? : uuid
+  release_id? : uuid
+  source_revision : bigint
+  availability_revision : bigint
+  manifest_hash? : platform.content_hash
+  updated_at : timestamp with time zone
 }
 class catalog_release {
-    release_id : uuid [PK]
-    source_revision : bigint
-    manifest_hash : platform.content_hash
-    source_event_id : uuid
-    confirmed_at : timestamp with time zone
+  release_id : uuid [PK]
+  source_revision : bigint
+  manifest_hash : platform.content_hash
+  source_event_id : uuid
+  confirmed_at : timestamp with time zone
 }
 class catalog_reference {
-    catalog_ref_id : uuid [PK]
-    entity_id : uuid
-    version_id : uuid
-    release_id : uuid [FK]
-    kind : text
-    source_hash : platform.content_hash
-    confirmed_at : timestamp with time zone
+  catalog_ref_id : uuid [PK]
+  entity_id : uuid
+  version_id : uuid
+  release_id : uuid [FK]
+  kind : text
+  source_hash : platform.content_hash
+  confirmed_at : timestamp with time zone
 }
 class target_selection {
-    selection_id : uuid [PK]
-    learner_id : uuid [FK]
-    role_ref_id : uuid [FK]
-    role_kind : text [FK]
-    selected_at : timestamp with time zone
-    ended_at? : timestamp with time zone
-    role_snapshot? : jsonb
+  selection_id : uuid [PK]
+  learner_id : uuid [FK]
+  role_ref_id : uuid [FK]
+  role_kind : text [FK]
+  selected_at : timestamp with time zone
+  ended_at? : timestamp with time zone
+  role_snapshot? : jsonb
 }
 class target_selection_request {
-    request_id : uuid [PK]
-    actor_id : uuid [FK]
-    operation : text
-    idempotency_key : text
-    request_hash : platform.content_hash
-    status : text
-    result_selection_id? : uuid [FK]
-    result_target_revision? : bigint
-    result_changed? : boolean
-    outcome_code? : text
-    created_at : timestamp with time zone
-    completed_at? : timestamp with time zone
+  request_id : uuid [PK]
+  actor_id : uuid [FK]
+  operation : text
+  idempotency_key : text
+  request_hash : platform.content_hash
+  status : text
+  result_selection_id? : uuid [FK]
+  result_target_revision? : bigint
+  result_changed? : boolean
+  outcome_code? : text
+  created_at : timestamp with time zone
+  completed_at? : timestamp with time zone
 }
 class outbox_event {
-    event_id : uuid [PK]
-    event_type : text
-    aggregate_id : uuid
-    source_revision : bigint
-    payload : jsonb
-    correlation_id : uuid
-    created_at : timestamp with time zone
-    delivered_at? : timestamp with time zone
+  event_id : uuid [PK]
+  event_type : text
+  aggregate_id : uuid
+  source_revision : bigint
+  payload : jsonb
+  correlation_id : uuid
+  created_at : timestamp with time zone
+  delivered_at? : timestamp with time zone
 }
 class processing_job {
-    job_id : uuid [PK]
-    event_id : uuid [FK]
-    handler : text
-    learner_id? : uuid [FK]
-    submission_sequence? : bigint
-    predecessor_job_id? : uuid [FK]
-    status : text
-    lease_owner? : text
-    lease_expires_at? : timestamp with time zone
-    attempts : integer
-    next_retry_at : timestamp with time zone
-    failure_code? : text
-    created_at : timestamp with time zone
+  job_id : uuid [PK]
+  event_id : uuid [FK]
+  handler : text
+  learner_id? : uuid [FK]
+  submission_sequence? : bigint
+  predecessor_job_id? : uuid [FK]
+  status : text
+  lease_owner? : text
+  lease_expires_at? : timestamp with time zone
+  attempts : integer
+  next_retry_at : timestamp with time zone
+  failure_code? : text
+  created_at : timestamp with time zone
 }
 class processing_receipt {
-    event_id : uuid [PK]
-    handler : text [PK]
-    source_revision : bigint
-    applied_at : timestamp with time zone
+  event_id : uuid [PK]
+  handler : text [PK]
+  source_revision : bigint
+  applied_at : timestamp with time zone
 }
 class audit_event {
-    audit_event_id : uuid [PK]
-    actor_id? : uuid [FK]
-    service_name? : text
-    action : text
-    resource_id : uuid
-    resource_revision? : text
-    occurred_at : timestamp with time zone
-    outcome : text
-    correlation_id : uuid
+  audit_event_id : uuid [PK]
+  actor_id? : uuid [FK]
+  service_name? : text
+  action : text
+  resource_id : uuid
+  resource_revision? : text
+  occurred_at : timestamp with time zone
+  outcome : text
+  correlation_id : uuid
 }
 account --> account_role
 account --> audit_event
