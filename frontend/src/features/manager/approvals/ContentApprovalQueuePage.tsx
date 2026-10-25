@@ -31,6 +31,13 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import {
+  getStoredLearningContents,
+  approveContentPackage,
+  rejectContentPackage,
+  subscribeToLearningContents,
+  type LearningContentPackage,
+} from '../../../shared/stores/learningContentStore'
 
 export interface SubmissionItem {
   id: string
@@ -44,21 +51,10 @@ export interface SubmissionItem {
   microSkillsMapped: string[]
   itemDetails: string
   revisionNotes?: string
+  rawContentPkg?: LearningContentPackage
 }
 
 const INITIAL_SUBMISSIONS: SubmissionItem[] = [
-  {
-    id: 'sub-01',
-    code: 'MOD-004',
-    title: 'Graph Neural Networks & Relational Inductive Biases',
-    type: 'module',
-    occupation: 'Software Developers',
-    submittedBy: 'Dr. Sarah Chen',
-    submittedAt: '2026-10-13 16:30',
-    status: 'PENDING_REVIEW',
-    microSkillsMapped: ['MS-004 (Graph Neural Networks)', 'MS-007 (Relational Inductive Biases)'],
-    itemDetails: '18 Interactive exercises, 1 Capstone coding notebook.',
-  },
   {
     id: 'sub-02',
     code: 'ASMT-009',
@@ -71,37 +67,22 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     microSkillsMapped: ['MS-008 (DKT Modeling)', 'MS-002 (Knowledge State Tracking)'],
     itemDetails: '12 MCQ Questions, 3 Difficulty Tiers, 80% Mastery Threshold.',
   },
-  {
-    id: 'sub-03',
-    code: 'MOD-005',
-    title: 'High-Concurrency Outbox Pattern in Spring Boot',
-    type: 'module',
-    occupation: 'Computer Systems Engineers/Architects',
-    submittedBy: 'Chen Wei',
-    submittedAt: '2026-10-12 11:20',
-    status: 'PENDING_REVIEW',
-    microSkillsMapped: ['MS-012 (Transactional Outbox)', 'MS-015 (Hexagonal Architecture)'],
-    itemDetails: '4 Lessons, 90 mins total duration, 1 integration test verification step.',
-  },
-  {
-    id: 'sub-04',
-    code: 'MOD-001',
-    title: 'Foundations of Knowledge Graphs & Cypher Querying',
-    type: 'module',
-    occupation: 'Database Architects',
-    submittedBy: 'Dr. Sarah Chen',
-    submittedAt: '2026-10-10 09:00',
-    status: 'APPROVED',
-    microSkillsMapped: ['MS-001 (Graph Theory Basics)', 'MS-003 (Cypher Fundamentals)'],
-    itemDetails: 'Instructional module approved for enterprise onboarding pathways.',
-  },
 ]
 
 export function ContentApprovalQueuePage() {
   const { toast } = useToast()
 
   const [activeTab, setActiveTab] = React.useState<'offerings' | 'baseline'>('offerings')
-  const [submissions, setSubmissions] = React.useState<SubmissionItem[]>(INITIAL_SUBMISSIONS)
+  const [storeContents, setStoreContents] = React.useState<LearningContentPackage[]>(() =>
+    getStoredLearningContents()
+  )
+
+  React.useEffect(() => {
+    return subscribeToLearningContents(() => {
+      setStoreContents(getStoredLearningContents())
+    })
+  }, [])
+
   const [searchQuery, setSearchQuery] = React.useState('')
   const [typeFilter, setTypeFilter] = React.useState<string>('ALL')
   const [statusFilter, setStatusFilter] = React.useState<string>('ALL')
@@ -117,6 +98,35 @@ export function ContentApprovalQueuePage() {
   const [baselineSelectionMode, setBaselineSelectionMode] = React.useState('ADAPTIVE_DIAGNOSTIC')
   const [isSavingBaseline, setIsSavingBaseline] = React.useState(false)
 
+  // Map store contents into submission items
+  const submissions: SubmissionItem[] = React.useMemo(() => {
+    const fromStore: SubmissionItem[] = storeContents.map((pkg) => {
+      let st: SubmissionItem['status'] = 'PENDING_REVIEW'
+      if (pkg.status === 'APPROVED') st = 'APPROVED'
+      else if (pkg.status === 'REVISION_REQUESTED') st = 'REVISION_REQUESTED'
+      else if (pkg.status === 'DRAFT') st = 'PENDING_REVIEW' // allow review if listed
+
+      return {
+        id: pkg.id,
+        code: pkg.code,
+        title: pkg.title,
+        type: 'module' as const,
+        occupation: pkg.occupation || 'Software Developers',
+        submittedBy: pkg.submittedBy || 'Domain Expert',
+        submittedAt: pkg.submittedAt
+          ? pkg.submittedAt.slice(0, 16).replace('T', ' ')
+          : pkg.updatedAt.slice(0, 10),
+        status: st,
+        microSkillsMapped: [`${pkg.skillCode} (${pkg.skillName})`],
+        itemDetails: `${pkg.lessons.length} lessons, ${pkg.estimatedDuration} mins total duration. Full interactive reading sections and video lectures.`,
+        revisionNotes: pkg.feedbackNotes,
+        rawContentPkg: pkg,
+      }
+    })
+
+    return [...fromStore, ...INITIAL_SUBMISSIONS]
+  }, [storeContents])
+
   // Filter submissions
   const filteredSubmissions = submissions.filter((item) => {
     const matchesSearch =
@@ -131,9 +141,8 @@ export function ContentApprovalQueuePage() {
 
   // Approve Offering
   const handleApprove = (item: SubmissionItem) => {
-    setSubmissions((prev) =>
-      prev.map((s) => (s.id === item.id ? { ...s, status: 'APPROVED' } : s))
-    )
+    approveContentPackage(item.id, 'Marcus Vance (L&D Manager)')
+    setStoreContents(getStoredLearningContents())
     toast({
       title: 'Learning Offering Approved',
       description: `${item.title} (${item.code}) is approved for organizational use in pathways and individual learning.`,
@@ -152,13 +161,12 @@ export function ContentApprovalQueuePage() {
   const handleSubmitRevision = () => {
     if (!selectedSubmission || !revisionFeedback.trim()) return
 
-    setSubmissions((prev) =>
-      prev.map((s) =>
-        s.id === selectedSubmission.id
-          ? { ...s, status: 'REVISION_REQUESTED', revisionNotes: revisionFeedback.trim() }
-          : s
-      )
+    rejectContentPackage(
+      selectedSubmission.id,
+      'Marcus Vance (L&D Manager)',
+      revisionFeedback.trim()
     )
+    setStoreContents(getStoredLearningContents())
 
     toast({
       title: 'Revision Feedback Returned',
@@ -680,6 +688,27 @@ export function ContentApprovalQueuePage() {
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive space-y-1">
                   <strong className="block font-semibold">Revision Feedback Sent:</strong>
                   <p>{viewingSubmission.revisionNotes}</p>
+                </div>
+              )}
+
+              {/* Interactive Lesson Preview CTA */}
+              {viewingSubmission.type === 'module' && (
+                <div className="pt-2">
+                  <a
+                    href={`/employee/modules/${viewingSubmission.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-center gap-2 font-semibold text-primary border-primary/30 hover:bg-secondary/50 text-xs py-2"
+                    >
+                      <BookOpen size={14} className="text-primary" />
+                      <span>Preview Full Interactive Lessons in Reader</span>
+                    </Button>
+                  </a>
                 </div>
               )}
             </div>

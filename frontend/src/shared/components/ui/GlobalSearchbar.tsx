@@ -205,17 +205,13 @@ export function GlobalSearchbar({ className }: { className?: string }) {
                           <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                             {role.name}
                           </div>
-                          {role.track && (
-                            <div className="text-[11px] text-muted-foreground capitalize">
-                              {role.track.toLowerCase()} track
-                            </div>
-                          )}
+                          <div className="text-[11px] text-muted-foreground font-mono">
+                            {role.code}
+                          </div>
                         </div>
-                        {role.seniority && (
-                          <Badge variant="outline" className="font-mono text-[10px] shrink-0 font-bold">
-                            {role.seniority}
-                          </Badge>
-                        )}
+                        <Badge variant="outline" className="font-mono text-[10px] shrink-0 font-bold text-primary border-primary/30">
+                          J · M · S
+                        </Badge>
                       </button>
                     ))}
                   </div>

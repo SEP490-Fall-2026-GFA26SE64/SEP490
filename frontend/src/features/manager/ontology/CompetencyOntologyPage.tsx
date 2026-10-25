@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  ArrowDown,
   ArrowRight,
   BookOpen,
   Check,
@@ -14,6 +15,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  ShieldCheck,
   Trash2,
   Upload,
   ZoomIn,
@@ -26,6 +28,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Progress } from '../../../shared/components/ui/Progress'
 import {
   Dialog,
   DialogDescription,
@@ -41,6 +44,7 @@ import {
   type ImportPreset,
 } from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
+import { cn } from '../../../shared/lib/utils'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
   getActiveCompany,
@@ -1002,19 +1006,19 @@ export function CompetencyOntologyPage() {
           <StatCard
             variant="gradient"
             icon={<Layers className="h-4 w-4 text-primary" />}
-            title="Atomic Micro-skills"
+            title="Micro-skills"
             value={microSkills.length.toString()}
             valueClassName="text-primary"
-            description="Granular competency building blocks"
+            description="Target learning objectives and skills"
           />
 
           <StatCard
             variant="gradient"
             icon={<GitBranch className="h-4 w-4 text-warning" />}
-            title="Prerequisite Edges"
+            title="Skill Prerequisites"
             value={prerequisites.length.toString()}
             valueClassName="text-warning"
-            description="Acyclic dependency relationships"
+            description="Foundational learning sequences"
           />
 
           <StatCard
@@ -1050,78 +1054,80 @@ export function CompetencyOntologyPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: ATOMIC MICRO-SKILLS */}
+          {/* TAB 1: MICRO-SKILLS */}
           <TabsContent value="skills" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                  <div className="min-w-0 pr-2">
                     <CardTitle className="flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-primary" />
-                      Atomic Micro-skills Catalog
+                      <Layers className="h-4 w-4 text-primary shrink-0" />
+                      <span>Micro-skills Catalog</span>
                     </CardTitle>
                     <CardDescription>
-                      Draft and published technical capabilities configured with mastery benchmarks and prerequisite gates.
+                      Explore and manage technical micro-skills, competency alignments, and required learning prerequisites.
                     </CardDescription>
                   </div>
 
-                  {/* Search and Filter Controls */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative min-w-[210px]">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  {/* Search and Filter Controls - Guaranteed 1 Single Row */}
+                  <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                    <div className="relative w-44 sm:w-52 shrink-0">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                       <input
                         type="text"
-                        placeholder="Search skills or outcomes..."
+                        placeholder="Search skills..."
                         value={skillSearchQuery}
                         onChange={(e) => {
                           setSkillSearchQuery(e.target.value)
                           setSkillCurrentPage(1)
                         }}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                       />
                     </div>
 
-                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
+                      <span className="text-[11px] text-muted-foreground font-medium">Competency:</span>
                       <select
                         value={skillMacroFilter}
                         onChange={(e) => {
                           setSkillMacroFilter(e.target.value)
                           setSkillCurrentPage(1)
                         }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="all">All Competencies ({microSkills.length})</option>
+                        <option value="all">All ({microSkills.length})</option>
                         <option value="KNOWLEDGE">Knowledge</option>
                         <option value="COMMUNICATION">Communication</option>
                         <option value="INNOVATION">Innovation</option>
                       </select>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
+                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
                       <select
                         value={skillStatusFilter}
                         onChange={(e) => {
                           setSkillStatusFilter(e.target.value)
                           setSkillCurrentPage(1)
                         }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="all">All Statuses</option>
+                        <option value="all">All</option>
                         <option value="ACTIVE">Active</option>
                         <option value="DRAFT">Draft</option>
                       </select>
                     </div>
 
-                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1">
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
                         value={skillSortBy}
                         onChange={(e) => setSkillSortBy(e.target.value as 'latest' | 'title' | 'code')}
                         className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="latest">Latest Created / Updated</option>
-                        <option value="title">Skill Title (A–Z)</option>
-                        <option value="code">Skill Code (A–Z)</option>
+                        <option value="latest">Latest</option>
+                        <option value="title">Title (A–Z)</option>
+                        <option value="code">Code (A–Z)</option>
                       </select>
                     </div>
                   </div>
@@ -1197,36 +1203,21 @@ export function CompetencyOntologyPage() {
                                 </td>
                                 <td className="py-3 px-3 whitespace-nowrap">
                                   <Badge
-                                    variant={
-                                      macro === 'COMMUNICATION'
-                                        ? 'success'
-                                        : macro === 'INNOVATION'
-                                        ? 'primary'
-                                        : 'secondary'
-                                    }
-                                    className="text-[10px] font-semibold"
+                                    variant="outline"
+                                    className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
                                   >
                                     {macro}
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-3 text-center whitespace-nowrap">
-                                  {prereqCount > 0 ? (
-                                    <Badge variant="primary" className="text-[10px] font-semibold inline-flex items-center gap-1">
-                                      <GitBranch className="h-3 w-3" />
-                                      {prereqCount} {prereqCount === 1 ? 'prereq' : 'prereqs'}
-                                    </Badge>
-                                  ) : (
-                                    <span className="text-[11px] text-muted-foreground italic">None</span>
-                                  )}
+                                  <span className="font-mono text-xs font-semibold text-foreground">
+                                    {prereqCount}
+                                  </span>
                                 </td>
                                 <td className="py-3 px-3 text-center whitespace-nowrap">
-                                  {boundRolesCount > 0 ? (
-                                    <Badge variant="outline" className="text-[10px] font-semibold font-mono">
-                                      {boundRolesCount} {boundRolesCount === 1 ? 'role' : 'roles'}
-                                    </Badge>
-                                  ) : (
-                                    <span className="text-[11px] text-muted-foreground italic">Unassigned</span>
-                                  )}
+                                  <span className="font-mono text-xs font-semibold text-foreground">
+                                    {boundRolesCount}
+                                  </span>
                                 </td>
                                 <td className="py-3 px-3 whitespace-nowrap">
                                   <Badge
@@ -1308,46 +1299,46 @@ export function CompetencyOntologyPage() {
           <TabsContent value="prerequisites" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                  <div className="min-w-0 pr-2">
                     <CardTitle className="flex items-center gap-2">
-                      <GitBranch className="h-4 w-4 text-primary" />
-                      Skill Prerequisite Edges &amp; Thresholds
+                      <GitBranch className="h-4 w-4 text-primary shrink-0" />
+                      <span>Skill Prerequisites &amp; Readiness</span>
                     </CardTitle>
                     <CardDescription>
-                      Directed dependency constraints. System automatically blocks self-edges, duplicates, and cycles.
+                      Define foundational skill dependencies to guide adaptive learning sequences and readiness.
                     </CardDescription>
                   </div>
 
-                  {/* Search and Filters */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative min-w-[200px]">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  {/* Search and Filters - Guaranteed 1 Single Row */}
+                  <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                    <div className="relative w-48 sm:w-56 shrink-0">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                       <input
                         type="text"
-                        placeholder="Filter prereq edges..."
+                        placeholder="Search prerequisites..."
                         value={prereqSearchQuery}
                         onChange={(e) => {
                           setPrereqSearchQuery(e.target.value)
                           setPrereqCurrentPage(1)
                         }}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                       />
                     </div>
 
-                    <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
-                      <Filter className="h-3 w-3 text-muted-foreground" />
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
+                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
                       <select
                         value={prereqTypeFilter}
                         onChange={(e) => {
                           setPrereqTypeFilter(e.target.value)
                           setPrereqCurrentPage(1)
                         }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="all">All Statuses</option>
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="INACTIVE">INACTIVE</option>
+                        <option value="all">All</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
                       </select>
                     </div>
                   </div>
@@ -1357,7 +1348,7 @@ export function CompetencyOntologyPage() {
                 {filteredPrerequisites.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                    <p className="text-sm font-semibold">No prerequisite edges match your search or filter.</p>
+                    <p className="text-sm font-semibold">No skill prerequisites match your search or filter.</p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1406,7 +1397,10 @@ export function CompetencyOntologyPage() {
                                   {target?.name || edge.targetSkillName}
                                 </td>
                                 <td className="py-3 px-3 text-center">
-                                  <Badge variant="primary" className="font-bold">
+                                  <Badge
+                                    variant="outline"
+                                    className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
+                                  >
                                     {Math.round(edge.minMastery * 100)}% Mastery
                                   </Badge>
                                 </td>
@@ -1470,10 +1464,10 @@ export function CompetencyOntologyPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <NetworkIcon className="h-4 w-4 text-primary" />
-                      Interactive Ontology Graph Explorer
+                      Competency &amp; Skill Graph Explorer
                     </CardTitle>
                     <CardDescription>
-                      Hierarchical visualizer of domain competencies, atomic micro-skills, and prerequisite pathways.
+                      Visualize the relationships between competencies, micro-skills, and foundational learning pathways.
                     </CardDescription>
                   </div>
 
@@ -1759,36 +1753,56 @@ export function CompetencyOntologyPage() {
 
 
       {/* CREATE / EDIT MICRO-SKILL MODAL */}
-      <Dialog open={isSkillModalOpen} onOpenChange={setIsSkillModalOpen}>
-        <div className="space-y-4">
+      {/* CREATE / EDIT MICRO-SKILL MODAL */}
+      <Dialog
+        open={isSkillModalOpen}
+        onOpenChange={setIsSkillModalOpen}
+        className="max-w-xl w-full p-6 sm:p-7 overflow-hidden"
+      >
+        <div className="space-y-5">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Layers className="h-5 w-5 text-primary" />
-              {selectedSkill ? `Edit Micro-skill (${selectedSkill.code})` : 'Create Micro-skill'}
-            </DialogTitle>
-            <DialogDescription>
-              Define an atomic micro-skill categorized under its competency domain.
-            </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                <Layers className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                  <span>{selectedSkill ? 'Edit Micro-skill' : 'Create New Micro-skill'}</span>
+                  {selectedSkill && (
+                    <Badge variant="outline" className="font-mono text-[10px] text-primary border-primary/30 bg-primary/5">
+                      {selectedSkill.code}
+                    </Badge>
+                  )}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Define an atomic micro-skill and align it with its macro competency domain.
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="space-y-3 text-xs">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4 text-xs">
+            {/* Code & Title Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Unique Atomic Code <span className="text-destructive">*</span>
+                <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
+                  Micro-skill code <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. SKILL-CYPHER-01"
                   disabled={Boolean(selectedSkill)}
                   value={skillForm.code}
-                  onChange={(e) => setSkillForm({ ...skillForm, code: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-60"
+                  onChange={(e) => setSkillForm({ ...skillForm, code: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary disabled:opacity-60 disabled:bg-muted/50 transition-all shadow-2xs"
                 />
+                <span className="text-[10px] text-muted-foreground mt-1 block">
+                  {selectedSkill ? 'Skill code is immutable.' : 'Uppercase identifier for graph indexing.'}
+                </span>
               </div>
 
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
                   Skill Title <span className="text-destructive">*</span>
                 </label>
                 <input
@@ -1796,159 +1810,333 @@ export function CompetencyOntologyPage() {
                   placeholder="e.g. Neo4j Cypher DDL"
                   value={skillForm.name}
                   onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs"
                 />
+                <span className="text-[10px] text-muted-foreground mt-1 block">
+                  Clear, action-oriented capability title.
+                </span>
               </div>
             </div>
 
+            {/* Competency Group Selection Cards */}
             <div>
-              <label className="font-semibold text-foreground block mb-1">Competency Group</label>
-              <select
-                value={skillForm.macroCompetencyCode}
-                onChange={(e) => setSkillForm({ ...skillForm, macroCompetencyCode: e.target.value as 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION' })}
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
-              >
-                <option value="KNOWLEDGE">KNOWLEDGE (Cognitive / Technical)</option>
-                <option value="COMMUNICATION">COMMUNICATION (Interpersonal)</option>
-                <option value="INNOVATION">INNOVATION (Creative / Problem Solving)</option>
-              </select>
+              <label className="font-semibold text-foreground block mb-1.5">
+                Competency Group <span className="text-destructive">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {[
+                  {
+                    code: 'KNOWLEDGE' as const,
+                    label: 'Knowledge',
+                    desc: 'Technical & Cognitive',
+                  },
+                  {
+                    code: 'COMMUNICATION' as const,
+                    label: 'Communication',
+                    desc: 'Interpersonal & Team',
+                  },
+                  {
+                    code: 'INNOVATION' as const,
+                    label: 'Innovation',
+                    desc: 'Creative Problem Solving',
+                  },
+                ].map((item) => {
+                  const isSelected = skillForm.macroCompetencyCode === item.code
+                  return (
+                    <button
+                      key={item.code}
+                      type="button"
+                      onClick={() => setSkillForm({ ...skillForm, macroCompetencyCode: item.code })}
+                      className={cn(
+                        'p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none flex flex-col justify-between h-full',
+                        isSelected
+                          ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary shadow-2xs'
+                          : 'border-border bg-card hover:bg-muted/30 text-muted-foreground'
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={cn('text-xs font-bold uppercase', isSelected ? 'text-primary' : 'text-foreground')}>
+                          {item.label}
+                        </span>
+                        {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
+                      </div>
+                      <span className="text-[10.5px] text-muted-foreground leading-tight">
+                        {item.desc}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
+            {/* Description Textarea */}
             <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Description <span className="text-destructive">*</span>
+              <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
+                Description &amp; Observable Scope <span className="text-destructive">*</span>
               </label>
               <textarea
                 rows={3}
-                placeholder="Description of what learner needs to know or do (e.g. Formulate declarative Cypher queries including MATCH and MERGE)..."
+                placeholder="Describe what learners will know, understand, or perform upon mastering this micro-skill (e.g., Formulate declarative Cypher queries including MATCH and MERGE)..."
                 value={skillForm.description}
                 onChange={(e) => setSkillForm({ ...skillForm, description: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs leading-relaxed"
               />
-            </div>
-
-            <div className="p-3 rounded-lg bg-secondary border border-border/80 text-[11.5px] text-foreground space-y-1">
-              <div className="font-semibold text-primary flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5 text-primary" />
-                Micro-Skill Competency Scope
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                As a Subject Matter Expert, you are defining an atomic skill categorized under <strong>{skillForm.macroCompetencyCode}</strong>. Once saved, this micro-skill can be linked to Target Roles with benchmark proficiency targets.
-              </p>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsSkillModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSaveSkill}>
-              Save Micro-skill
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!skillForm.code.trim() || !skillForm.name.trim() || !skillForm.description.trim()}
+              onClick={handleSaveSkill}
+              className="gap-1.5 font-semibold shadow-2xs"
+            >
+              <Check size={14} />
+              <span>{selectedSkill ? 'Save Changes' : 'Create Micro-skill'}</span>
             </Button>
           </DialogFooter>
         </div>
       </Dialog>
 
       {/* ADD PREREQUISITE EDGE MODAL (WITH CYCLE PREVENTION) */}
-      <Dialog open={isPrereqModalOpen} onOpenChange={setIsPrereqModalOpen}>
-        <div className="space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5 text-primary" />
-              Add Skill Prerequisite Edge
-            </DialogTitle>
-            <DialogDescription>
-              Define a directed dependency constraint. The engine strictly rejects self-edges, duplicates, and cycles.
-            </DialogDescription>
-          </DialogHeader>
+      <Dialog
+        open={isPrereqModalOpen}
+        onOpenChange={setIsPrereqModalOpen}
+        className="max-w-xl w-full p-6 sm:p-7 overflow-hidden"
+      >
+        {(() => {
+          const selectedSourceSkill = microSkills.find((s) => s.id === prereqForm.sourceSkillId)
+          const selectedTargetSkill = microSkills.find((s) => s.id === prereqForm.targetSkillId)
+          const isSelfPrereq = Boolean(
+            prereqForm.sourceSkillId && prereqForm.sourceSkillId === prereqForm.targetSkillId
+          )
 
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Source Skill (Prerequisite) <span className="text-destructive">*</span>
-              </label>
-              <select
-                value={prereqForm.sourceSkillId}
-                onChange={(e) => setPrereqForm({ ...prereqForm, sourceSkillId: e.target.value })}
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              >
-                {microSkills.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.code} - {s.name}
-                  </option>
-                ))}
-              </select>
+          return (
+            <div className="space-y-5">
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                    <GitBranch className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <DialogTitle className="text-base font-bold text-foreground">
+                      Add Skill Prerequisite Edge
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                      Define directed learning sequences between micro-skills to enforce prerequisite mastery before progression.
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-4 text-xs">
+                {/* Visual Sequence Card */}
+                <div className="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3">
+                  {/* Step 1: Source Skill */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-semibold text-foreground flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
+                          1
+                        </span>
+                        <span>Source Skill (Must Master First)</span>
+                        <span className="text-destructive">*</span>
+                      </label>
+                      {selectedSourceSkill && (
+                        <Badge
+                          variant="outline"
+                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                        >
+                          {selectedSourceSkill.macroCompetencyCode || 'KNOWLEDGE'}
+                        </Badge>
+                      )}
+                    </div>
+                    <select
+                      value={prereqForm.sourceSkillId}
+                      onChange={(e) => setPrereqForm({ ...prereqForm, sourceSkillId: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs"
+                    >
+                      {microSkills.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.code} — {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedSourceSkill?.description && (
+                      <p className="text-[11px] text-muted-foreground line-clamp-1 italic px-0.5">
+                        "{selectedSourceSkill.description}"
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Directional Connector Bridge */}
+                  <div className="flex items-center justify-center my-0.5">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-mono text-[10px] font-bold tracking-wider shadow-2xs">
+                      <span>MUST BE MASTERED BEFORE</span>
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+
+                  {/* Step 2: Target Skill */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-semibold text-foreground flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
+                          2
+                        </span>
+                        <span>Target Skill (Unlocked Next)</span>
+                        <span className="text-destructive">*</span>
+                      </label>
+                      {selectedTargetSkill && (
+                        <Badge
+                          variant="outline"
+                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                        >
+                          {selectedTargetSkill.macroCompetencyCode || 'KNOWLEDGE'}
+                        </Badge>
+                      )}
+                    </div>
+                    <select
+                      value={prereqForm.targetSkillId}
+                      onChange={(e) => setPrereqForm({ ...prereqForm, targetSkillId: e.target.value })}
+                      className={cn(
+                        'w-full px-3 py-2 rounded-lg bg-background border text-foreground text-xs font-medium focus:outline-none focus:ring-2 transition-all shadow-2xs',
+                        isSelfPrereq
+                          ? 'border-destructive focus:ring-destructive/25 focus:border-destructive'
+                          : 'border-border focus:ring-primary/25 focus:border-primary'
+                      )}
+                    >
+                      {microSkills.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.code} — {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    {isSelfPrereq ? (
+                      <p className="text-[11px] text-destructive font-medium px-0.5 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        Source and target skills cannot be identical.
+                      </p>
+                    ) : selectedTargetSkill?.description ? (
+                      <p className="text-[11px] text-muted-foreground line-clamp-1 italic px-0.5">
+                        "{selectedTargetSkill.description}"
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Minimum Required Mastery Threshold */}
+                <div className="space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="font-semibold text-foreground flex items-center gap-1">
+                        Minimum Required Mastery (%) <span className="text-destructive">*</span>
+                      </label>
+                      <span className="text-[11px] text-muted-foreground block mt-0.5">
+                        Benchmark score learners must reach on the source skill to unlock the target skill.
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono font-bold text-primary text-base">
+                        {prereqForm.minMasteryPercent}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Buttons & Input slider */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      step="5"
+                      value={prereqForm.minMasteryPercent}
+                      onChange={(e) =>
+                        setPrereqForm({ ...prereqForm, minMasteryPercent: parseInt(e.target.value) || 0 })
+                      }
+                      className="flex-1 accent-primary cursor-pointer h-2 bg-muted rounded-lg"
+                    />
+                    <div className="flex items-center gap-1 shrink-0">
+                      {[60, 70, 75, 80, 90].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setPrereqForm({ ...prereqForm, minMasteryPercent: preset })}
+                          className={cn(
+                            'px-2 py-0.5 rounded text-[10.5px] font-mono font-semibold transition-all cursor-pointer',
+                            prereqForm.minMasteryPercent === preset
+                              ? 'bg-primary text-primary-foreground shadow-2xs'
+                              : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                          )}
+                        >
+                          {preset}%
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Automatic Graph Validation Banner */}
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-[11px] text-muted-foreground flex items-center gap-2.5">
+                  <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    <strong className="text-foreground font-semibold">Acyclic Graph Guard:</strong> Automated cycle detection verifies this edge will not create circular dependency deadlocks before saving.
+                  </span>
+                </div>
+              </div>
+
+              <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => setIsPrereqModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={
+                    isSelfPrereq ||
+                    !prereqForm.sourceSkillId ||
+                    !prereqForm.targetSkillId ||
+                    prereqForm.minMasteryPercent < 1
+                  }
+                  onClick={handleSavePrerequisite}
+                  className="gap-1.5 font-semibold shadow-2xs"
+                >
+                  <Check size={14} />
+                  <span>Create Edge</span>
+                </Button>
+              </DialogFooter>
             </div>
-
-            <div className="text-center">
-              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">
-                MUST BE MASTERED BEFORE <ArrowRight className="h-3 w-3" />
-              </span>
-            </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Target Skill (Dependent) <span className="text-destructive">*</span>
-              </label>
-              <select
-                value={prereqForm.targetSkillId}
-                onChange={(e) => setPrereqForm({ ...prereqForm, targetSkillId: e.target.value })}
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              >
-                {microSkills.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.code} - {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Minimum Required Mastery (%) <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={prereqForm.minMasteryPercent}
-                onChange={(e) =>
-                  setPrereqForm({ ...prereqForm, minMasteryPercent: parseInt(e.target.value) || 0 })
-                }
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                Learners must achieve at least this mastery score on the source skill before unlocking the dependent skill.
-              </span>
-            </div>
-
-            <div className="p-2.5 rounded bg-muted/40 border border-border text-[11px] text-muted-foreground flex items-center gap-2">
-              <Check className="h-4 w-4 text-primary shrink-0" />
-              <span>Acyclic graph validation is executed automatically before edge persistence.</span>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setIsPrereqModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSavePrerequisite}>
-              Create Edge
-            </Button>
-          </DialogFooter>
-        </div>
+          )
+        })()}
       </Dialog>
 
       {/* 6. VIEW MICRO-SKILL DETAILS MODAL (Miro Flow) */}
       <Dialog
         open={Boolean(viewingSkillDetails)}
         onOpenChange={(open) => !open && setViewingSkillDetails(null)}
-        className="max-w-2xl"
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
       >
         {viewingSkillDetails && (() => {
           const parentComps = competencies.filter((c) => c.skillIds.includes(viewingSkillDetails.id))
-          const incomingPrereqs = prerequisites.filter((p) => p.targetSkillId === viewingSkillDetails.id)
-          const outgoingPrereqs = prerequisites.filter((p) => p.sourceSkillId === viewingSkillDetails.id)
+          const incomingPrereqs = prerequisites.filter(
+            (p) => p.targetSkillId === viewingSkillDetails.id || p.targetSkillId === viewingSkillDetails.code
+          )
+          const companyRoles = getActiveCompany()?.targetRoles || []
+          const boundRoles = companyRoles.filter((r) =>
+            (r.skillTargets || []).some(
+              (st) => st.skillId === viewingSkillDetails.id || st.skillCode === viewingSkillDetails.code
+            )
+          )
+          const companyModules = getActiveCompany()?.modules || []
+          const boundModules = companyModules.filter((m) =>
+            (m.teachesSkillIds || []).some(
+              (tId) => tId === viewingSkillDetails.id || tId === viewingSkillDetails.code
+            )
+          )
 
           return (
             <div className="space-y-4">
@@ -1967,27 +2155,21 @@ export function CompetencyOntologyPage() {
                   </div>
                 </div>
                 <DialogDescription>
-                  Atomic micro-skill definition with competency mapping and proficiency benchmarks.
+                  View micro-skill details, mapped competencies, and role prerequisites.
                 </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 text-xs">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-muted/40 border border-border">
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/40 border border-border">
                   <div>
                     <span className="text-muted-foreground block text-[11px]">Skill Code</span>
                     <strong className="font-mono text-foreground font-bold text-sm">{viewingSkillDetails.code}</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Competency</span>
-                    <Badge variant="outline" className="font-semibold text-xs mt-0.5 uppercase">
-                      {viewingSkillDetails.macroCompetencyCode || 'KNOWLEDGE'}
-                    </Badge>
-                  </div>
-                  <div>
                     <span className="text-muted-foreground block text-[11px]">Status</span>
                     <span className="text-foreground font-semibold">{viewingSkillDetails.status || 'ACTIVE'}</span>
                   </div>
-                  <div className="col-span-2 sm:col-span-3">
+                  <div className="col-span-2">
                     <span className="text-muted-foreground block text-[11px]">Skill Name</span>
                     <strong className="text-foreground text-sm font-semibold">{viewingSkillDetails.name}</strong>
                   </div>
@@ -2000,8 +2182,8 @@ export function CompetencyOntologyPage() {
                   </div>
                 </div>
 
-                {/* Graph Placement: Parents, Incoming Prereqs, Outgoing Prereqs */}
-                <div className="space-y-3 pt-1">
+                {/* Parent Competencies */}
+                {parentComps.length > 0 && (
                   <div>
                     <span className="font-semibold text-foreground block mb-1.5">
                       Parent Competencies ({parentComps.length})
@@ -2018,69 +2200,125 @@ export function CompetencyOntologyPage() {
                       ))}
                     </div>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <span className="font-semibold text-foreground block mb-1.5">
-                        Prerequisites Required ({incomingPrereqs.length})
-                      </span>
-                      {incomingPrereqs.length === 0 ? (
-                        <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
-                          Foundational skill (no prerequisites required).
-                        </div>
-                      ) : (
-                        <div className="space-y-1.5">
-                          {incomingPrereqs.map((p) => {
-                            const srcSkill = microSkills.find((s) => s.id === p.sourceSkillId)
-                            return (
-                              <div
-                                key={p.id}
-                                className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
-                              >
-                                <span className="truncate">
-                                  <strong className="font-mono text-primary mr-1">{srcSkill?.code || p.sourceSkillCode}</strong>
-                                  {srcSkill?.name || p.sourceSkillName}
-                                </span>
-                                <Badge variant="primary" className="text-[10px] shrink-0">
-                                  ≥ {Math.round(p.minMastery * 100)}%
+                {/* Relationship Lists: Prerequisites, Target Roles, Modules */}
+                <div className="space-y-3 pt-1">
+                  {/* 1. Prerequisites */}
+                  <div>
+                    <span className="font-semibold text-foreground block mb-1.5">
+                      Prerequisites ({incomingPrereqs.length})
+                    </span>
+                    {incomingPrereqs.length === 0 ? (
+                      <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
+                        0 prerequisites required (foundational micro-skill).
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {incomingPrereqs.map((p) => {
+                          const srcSkill = microSkills.find(
+                            (s) => s.id === p.sourceSkillId || s.code === p.sourceSkillId || s.code === p.sourceSkillCode
+                          )
+                          return (
+                            <div
+                              key={p.id}
+                              className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
+                            >
+                              <span className="truncate">
+                                <strong className="font-mono text-primary mr-1">
+                                  {srcSkill?.code || p.sourceSkillCode || p.sourceSkillId}
+                                </strong>
+                                {srcSkill?.name || p.sourceSkillName || 'Prerequisite Skill'}
+                              </span>
+                              <Badge variant="primary" className="text-[10px] shrink-0 font-mono">
+                                ≥ {Math.round((p.minMastery || 0) * 100)}%
+                              </Badge>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. Target Role Bindings */}
+                  <div>
+                    <span className="font-semibold text-foreground block mb-1.5">
+                      Target Role Bindings ({boundRoles.length})
+                    </span>
+                    {boundRoles.length === 0 ? (
+                      <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
+                        0 target roles bound to this micro-skill.
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {boundRoles.map((role) => {
+                          const target = (role.skillTargets || []).find(
+                            (st) => st.skillId === viewingSkillDetails.id || st.skillCode === viewingSkillDetails.code
+                          )
+                          return (
+                            <div
+                              key={role.id}
+                              className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between gap-2"
+                            >
+                              <span className="truncate">
+                                <strong className="font-mono text-primary mr-1">{role.code}</strong>
+                                {role.title}
+                              </span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {target && (
+                                  <Badge variant="outline" className="text-[10px] font-mono">
+                                    Target: {target.threshold}%
+                                  </Badge>
+                                )}
+                                <Badge
+                                  variant={role.status === 'published' ? 'success' : 'secondary'}
+                                  className="text-[10px] capitalize"
+                                >
+                                  {role.status}
                                 </Badge>
                               </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                    <div>
-                      <span className="font-semibold text-foreground block mb-1.5">
-                        Skills Unlocked ({outgoingPrereqs.length})
-                      </span>
-                      {outgoingPrereqs.length === 0 ? (
-                        <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
-                          Terminal skill (does not gate further skills).
-                        </div>
-                      ) : (
-                        <div className="space-y-1.5">
-                          {outgoingPrereqs.map((p) => {
-                            const tgtSkill = microSkills.find((s) => s.id === p.targetSkillId)
-                            return (
-                              <div
-                                key={p.id}
-                                className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
+                  {/* 3. Module Bindings */}
+                  <div>
+                    <span className="font-semibold text-foreground block mb-1.5">
+                      Module Bindings ({boundModules.length})
+                    </span>
+                    {boundModules.length === 0 ? (
+                      <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
+                        0 learning modules bound to teach this micro-skill.
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {boundModules.map((mod) => (
+                          <div
+                            key={mod.id}
+                            className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between gap-2"
+                          >
+                            <span className="truncate">
+                              <strong className="font-mono text-primary mr-1">{mod.code}</strong>
+                              {mod.title}
+                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-[10px] text-muted-foreground font-mono">
+                                v{mod.version}
+                              </span>
+                              <Badge
+                                variant={mod.status === 'published' ? 'success' : 'secondary'}
+                                className="text-[10px] capitalize"
                               >
-                                <span className="truncate">
-                                  <strong className="font-mono text-primary mr-1">{tgtSkill?.code || p.targetSkillCode}</strong>
-                                  {tgtSkill?.name || p.targetSkillName}
-                                </span>
-                                <Badge variant="secondary" className="text-[10px] shrink-0">
-                                  ≥ {Math.round(p.minMastery * 100)}%
-                                </Badge>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                                {mod.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2118,90 +2356,196 @@ export function CompetencyOntologyPage() {
       <Dialog
         open={Boolean(viewingEdgeDetails)}
         onOpenChange={(open) => !open && setViewingEdgeDetails(null)}
-        className="max-w-xl"
+        className="max-w-xl w-full p-6 sm:p-7 overflow-hidden"
       >
         {viewingEdgeDetails && (() => {
-          const source = microSkills.find((s) => s.id === viewingEdgeDetails.sourceSkillId)
-          const target = microSkills.find((s) => s.id === viewingEdgeDetails.targetSkillId)
+          const source = microSkills.find(
+            (s) => s.id === viewingEdgeDetails.sourceSkillId || s.code === viewingEdgeDetails.sourceSkillId
+          )
+          const target = microSkills.find(
+            (s) => s.id === viewingEdgeDetails.targetSkillId || s.code === viewingEdgeDetails.targetSkillId
+          )
+          const masteryPct = Math.round((viewingEdgeDetails.minMastery || 0) * 100)
 
           return (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <DialogHeader>
-                <div className="flex flex-wrap items-center justify-between gap-2.5">
-                  <DialogTitle className="flex items-center gap-2">
-                    <GitBranch className="h-5 w-5 text-primary shrink-0" />
-                    <span>Prerequisite Edge Details</span>
-                  </DialogTitle>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                      <GitBranch className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-base font-bold text-foreground">
+                        Prerequisite Relationship Details
+                      </DialogTitle>
+                      <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                        Directed learning sequence governing skill progression and curriculum unlocks.
+                      </DialogDescription>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <Badge variant="primary" className="font-bold">
-                      ≥ {Math.round(viewingEdgeDetails.minMastery * 100)}% Mastery
+                    <Badge
+                      variant="outline"
+                      className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
+                    >
+                      ≥ {masteryPct}% Mastery
                     </Badge>
-                    <Badge variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}>
+                    <Badge
+                      variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}
+                      className="text-[10px] uppercase font-semibold"
+                    >
                       {viewingEdgeDetails.status || 'ACTIVE'}
                     </Badge>
                   </div>
                 </div>
-                <DialogDescription>
-                  Directed dependency relationship enforcing knowledge sequencing and curriculum progression.
-                </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 text-xs">
-                {/* Visual Flow diagram */}
-                <div className="p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between gap-3">
-                  <div className="flex-1 p-2 rounded bg-card border border-border">
-                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Source Skill</span>
-                    <strong className="font-mono text-primary font-bold block">{source?.code || viewingEdgeDetails.sourceSkillCode}</strong>
-                    <span className="text-foreground font-semibold text-xs line-clamp-1">{source?.name || viewingEdgeDetails.sourceSkillName}</span>
-                  </div>
+                {/* Visual Sequence Pipeline Flow Banner */}
+                <div className="p-4 rounded-xl bg-muted/20 border border-border/80">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    {/* Source Card */}
+                    <div className="flex-1 p-3.5 rounded-lg bg-card border border-border/90 shadow-2xs flex flex-col justify-between">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                          Foundational Prerequisite
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                        >
+                          {source?.macroCompetencyCode || 'KNOWLEDGE'}
+                        </Badge>
+                      </div>
+                      <strong className="font-mono text-primary font-bold text-sm block">
+                        {source?.code || viewingEdgeDetails.sourceSkillCode}
+                      </strong>
+                      <span className="text-foreground font-semibold text-xs mt-0.5 line-clamp-1">
+                        {source?.name || viewingEdgeDetails.sourceSkillName}
+                      </span>
+                    </div>
 
-                  <div className="flex flex-col items-center shrink-0">
-                    <span className="text-[10px] font-mono text-primary font-bold">≥ {Math.round(viewingEdgeDetails.minMastery * 100)}% req</span>
-                    <ArrowRight className="h-5 w-5 text-primary" />
-                    <span className="text-[9px] text-muted-foreground uppercase">{viewingEdgeDetails.status || 'ACTIVE'}</span>
-                  </div>
+                    {/* Arrow Connector with Mastery Badge */}
+                    <div className="flex sm:flex-col items-center justify-center shrink-0 px-2 gap-1 text-center">
+                      <span className="text-[10px] font-mono text-primary font-bold bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full shadow-2xs">
+                        ≥ {masteryPct}% req
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-primary hidden sm:block mt-0.5" />
+                      <ArrowDown className="h-4 w-4 text-primary sm:hidden" />
+                      <span className="text-[9.5px] text-muted-foreground uppercase font-bold tracking-wider">
+                        Unlocks
+                      </span>
+                    </div>
 
-                  <div className="flex-1 p-2 rounded bg-card border border-border">
-                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Target Skill</span>
-                    <strong className="font-mono text-primary font-bold block">{target?.code || viewingEdgeDetails.targetSkillCode}</strong>
-                    <span className="text-foreground font-semibold text-xs line-clamp-1">{target?.name || viewingEdgeDetails.targetSkillName}</span>
+                    {/* Target Card */}
+                    <div className="flex-1 p-3.5 rounded-lg bg-card border border-border/90 shadow-2xs flex flex-col justify-between">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                          Dependent Target
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                        >
+                          {target?.macroCompetencyCode || 'KNOWLEDGE'}
+                        </Badge>
+                      </div>
+                      <strong className="font-mono text-primary font-bold text-sm block">
+                        {target?.code || viewingEdgeDetails.targetSkillCode}
+                      </strong>
+                      <span className="text-foreground font-semibold text-xs mt-0.5 line-clamp-1">
+                        {target?.name || viewingEdgeDetails.targetSkillName}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-card border border-border">
-                  <div>
-                    <span className="text-muted-foreground block text-[11px]">Minimum Required Mastery</span>
-                    <strong className="font-mono text-primary font-bold text-sm">{Math.round(viewingEdgeDetails.minMastery * 100)}%</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[11px]">Relationship Status</span>
-                    <Badge variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'} className="mt-0.5">
-                      {viewingEdgeDetails.status || 'ACTIVE'}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
-                    <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="font-mono text-primary font-bold">{source?.code || viewingEdgeDetails.sourceSkillCode}</span>
-                      Description:
+                {/* Metric Summary Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-[11px] font-medium">Minimum Required Mastery</span>
+                      <span className="font-mono font-bold text-primary text-sm">{masteryPct}%</span>
+                    </div>
+                    <Progress value={masteryPct} max={100} variant="primary" className="h-2" />
+                    <span className="text-[10.5px] text-muted-foreground block">
+                      Learners must score at or above this proficiency threshold.
                     </span>
-                    <p className="text-muted-foreground text-xs">{source?.description}</p>
                   </div>
 
-                  <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
-                    <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="font-mono text-primary font-bold">{target?.code || viewingEdgeDetails.targetSkillCode}</span>
-                      Description:
+                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs flex flex-col justify-between">
+                    <div>
+                      <span className="text-muted-foreground text-[11px] font-medium block">Relationship Status</span>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Badge
+                          variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}
+                          className="text-xs font-semibold"
+                        >
+                          {viewingEdgeDetails.status || 'ACTIVE'}
+                        </Badge>
+                        <span className="text-[11px] text-muted-foreground">Enforced in adaptive graph</span>
+                      </div>
+                    </div>
+                    <span className="text-[10.5px] text-muted-foreground/80 mt-2 block">
+                      Updated {formatDate(viewingEdgeDetails.updatedAt || viewingEdgeDetails.createdAt)}
                     </span>
-                    <p className="text-muted-foreground text-xs">{target?.description}</p>
                   </div>
                 </div>
 
+                {/* Skill Descriptions Section */}
+                <div className="space-y-2.5">
+                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                        <BookOpen className="h-3.5 w-3.5 text-primary" />
+                        <span>Prerequisite:</span>
+                        <span className="font-mono text-primary font-bold">
+                          {source?.code || viewingEdgeDetails.sourceSkillCode}
+                        </span>
+                        <span className="text-muted-foreground">
+                          — {source?.name || viewingEdgeDetails.sourceSkillName}
+                        </span>
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                      {source?.description || 'Foundational prerequisite capability and knowledge scope.'}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                        <BookOpen className="h-3.5 w-3.5 text-primary" />
+                        <span>Target:</span>
+                        <span className="font-mono text-primary font-bold">
+                          {target?.code || viewingEdgeDetails.targetSkillCode}
+                        </span>
+                        <span className="text-muted-foreground">
+                          — {target?.name || viewingEdgeDetails.targetSkillName}
+                        </span>
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                      {target?.description || 'Advanced competency requiring verified mastery of prerequisite skill.'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-between gap-2">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                  onClick={() => {
+                    const edgeToDelete = viewingEdgeDetails
+                    setViewingEdgeDetails(null)
+                    setDeletingEdge(edgeToDelete)
+                  }}
+                >
+                  Delete Edge
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => setViewingEdgeDetails(null)}>
                   Close
                 </Button>

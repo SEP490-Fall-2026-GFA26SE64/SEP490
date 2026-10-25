@@ -13,6 +13,7 @@ export const en = {
     occupations: 'Occupations',
     contentApprovals: 'Content Approvals',
     ontology: 'Ontology',
+    learningContent: 'Learning Content',
     modules: 'Modules',
     assessmentBank: 'Assessment Bank',
     learningOutcomes: 'Dashboard',

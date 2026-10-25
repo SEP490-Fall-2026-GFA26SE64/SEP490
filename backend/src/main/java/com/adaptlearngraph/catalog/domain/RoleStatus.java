@@ -3,6 +3,7 @@ package com.adaptlearngraph.catalog.domain;
 public enum RoleStatus {
     DRAFT,
     SENT,
+    SUBMITTED,
     REJECTED,
     ACTIVE,
     RETIRED;

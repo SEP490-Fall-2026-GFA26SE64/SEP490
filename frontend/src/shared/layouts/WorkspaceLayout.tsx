@@ -12,6 +12,7 @@ import {
   Compass,
   CreditCard,
   FileQuestion,
+  FileText,
   FolderTree,
   GitFork,
   GraduationCap,
@@ -205,6 +206,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: t('nav.ontology'),
         href: '/expert/ontology',
         icon: <Network size={15} />,
+      },
+      {
+        label: t('nav.learningContent', 'Learning Content'),
+        href: '/expert/learning-content',
+        icon: <FileText size={15} />,
       },
       {
         label: t('nav.modules'),

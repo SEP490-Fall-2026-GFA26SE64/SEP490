@@ -11,8 +11,10 @@ import { EmployeeTargetRolesPage } from '../features/employee/target-roles/Emplo
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
+import { LearningContentAuthoringPage } from '../features/expert/content/LearningContentAuthoringPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
+import { ExpertPathwayDetailPage } from '../features/expert/pathway-review/ExpertPathwayDetailPage'
 import { OccupationsManagementPage } from '../features/manager/occupations/OccupationsManagementPage'
 import { ContentApprovalQueuePage } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { Dashboard } from '../features/manager/learning-outcomes/Dashboard'
@@ -101,8 +103,10 @@ export default function App() {
             <Route path="/expert/target-roles" element={<ExpertAssignedRolesPage />} />
             <Route path="/expert/assigned-roles" element={<Navigate to="/expert/target-roles" replace />} />
             <Route path="/expert/pathway-review" element={<ExpertPathwayReviewPage />} />
+            <Route path="/expert/pathway-review/:pathwayId" element={<ExpertPathwayDetailPage />} />
             <Route path="/expert/guidance-review" element={<Navigate to="/expert/pathway-review" replace />} />
             <Route path="/expert/ontology" element={<CompetencyOntologyPage />} />
+            <Route path="/expert/learning-content" element={<LearningContentAuthoringPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />
 

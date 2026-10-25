@@ -15,6 +15,7 @@ export const vi: TranslationKeys = {
     occupations: 'Nghề nghiệp',
     contentApprovals: 'Duyệt nội dung',
     ontology: 'Bản thể tri thức',
+    learningContent: 'Nội dung học tập',
     modules: 'Mô-đun học tập',
     assessmentBank: 'Ngân hàng câu hỏi',
     learningOutcomes: 'Bảng điều khiển',

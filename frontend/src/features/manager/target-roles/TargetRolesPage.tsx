@@ -10,6 +10,7 @@ import {
   CornerDownRight,
   Edit3,
   Eye,
+  FileCheck,
   History,
   Network as NetworkIcon,
   Plus,
@@ -18,6 +19,7 @@ import {
   Sliders,
   Trash2,
   Upload,
+  XCircle,
 } from 'lucide-react'
 
 import * as React from 'react'
@@ -46,62 +48,49 @@ import {
   updateActiveCompany,
 } from '../../../shared/stores/companyStore'
 import {
-  CAREER_FAMILIES,
   ELIGIBLE_EXPERTS,
-  JOB_DOMAINS,
+  ONET_OCCUPATIONS,
+  ONTOLOGY_LEVELS,
   compareRoleVersions,
   formatDate,
+  getEligibleExpertsForOccupation,
+  resolveOccupationForRole,
   sortTargetRolesWithDraftsBelowPublished,
+  type RoleLevelThresholds,
   type TargetRoleModel,
 } from '../data/ldManagerMockData'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 
-const TRACK_OPTIONS: ComboboxOption[] = [
-  { value: 'PROFESSIONAL', label: 'PROFESSIONAL (IC Technical Specialist)', description: 'Engineering, architecture & deep technical crafts' },
-  { value: 'MANAGEMENT', label: 'MANAGEMENT (Engineering Leadership)', description: 'Team leadership, delivery & technical coordination' },
-]
-
-const PROFESSIONAL_SENIORITIES: ComboboxOption[] = [
-  { value: 'P1', label: 'P1 - Associate / Junior', description: 'Early-career contributor' },
-  { value: 'P2', label: 'P2 - Mid-Level Specialist', description: 'Autonomous practitioner' },
-  { value: 'P3', label: 'P3 - Senior Specialist', description: 'Advanced contributor' },
-  { value: 'P4', label: 'P4 - Lead / Staff Specialist', description: 'Deep technical leader' },
-  { value: 'P5', label: 'P5 - Principal / Fellow', description: 'Domain authority' },
-]
-
-const MANAGEMENT_SENIORITIES: ComboboxOption[] = [
-  { value: 'M3', label: 'M3 - Engineering Manager / Team Lead', description: 'People & delivery leadership' },
-  { value: 'M4', label: 'M4 - Director / Group Lead', description: 'Strategic leadership' },
-]
-
-const getSeniorityOptions = (track?: string): ComboboxOption[] => {
-  return track === 'MANAGEMENT' ? MANAGEMENT_SENIORITIES : PROFESSIONAL_SENIORITIES
-}
-
-const DOMAIN_OPTIONS: ComboboxOption[] = JOB_DOMAINS.map((dom) => ({
-  value: dom.code,
-  label: `${dom.name} (${dom.code})`,
-  description: `Domain code: ${dom.code}`,
+const OCCUPATION_OPTIONS: ComboboxOption[] = ONET_OCCUPATIONS.map((occ) => ({
+  value: occ.code,
+  label: `${occ.code} — ${occ.name}`,
+  description: occ.description,
 }))
 
-const getFamilyOptions = (selectedDomain?: string): ComboboxOption[] => {
-  return CAREER_FAMILIES.map((fam) => ({
-    value: fam.code,
-    label: `${fam.name} (${fam.domain})`,
-    description: `Career family: ${fam.code}`,
-    disabled: selectedDomain ? fam.domain !== selectedDomain : false,
+const getExpertOptionsForOccupation = (occupationCode?: string): ComboboxOption[] => {
+  const eligible = getEligibleExpertsForOccupation(occupationCode)
+  return eligible.map((exp) => ({
+    value: exp.id,
+    label: exp.name,
+    description: exp.title,
   }))
 }
-
-const EXPERT_OPTIONS: ComboboxOption[] = ELIGIBLE_EXPERTS.map((exp) => ({
-  value: exp.id,
-  label: `${exp.name}`,
-  description: exp.title,
-}))
 
 
 
 const ROLE_PRESETS: ImportPreset[] = []
+
+export type ManagerRoleStatus = 'published' | 'submitted' | 'sent' | 'draft' | 'feedback' | 'rejected'
+
+export const getManagerEffectiveStatus = (role: TargetRoleModel): ManagerRoleStatus => {
+  if (role.status === 'published') return 'published'
+  if (role.status === 'submitted') return 'submitted'
+  if (role.status === 'sent') return 'sent'
+  if (role.status === 'rejected') {
+    return role.rejectionReason?.startsWith('[LD_MANAGER]:') ? 'rejected' : 'feedback'
+  }
+  return 'draft'
+}
 
 export function TargetRolesPage() {
   const { toast } = useToast()
@@ -111,7 +100,7 @@ export function TargetRolesPage() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
-    'all' | 'published' | 'draft' | 'sent' | 'rejected'
+    'all' | 'published' | 'draft' | 'submitted' | 'sent' | 'feedback' | 'rejected'
   >('all')
   const [expandedLineages, setExpandedLineages] = React.useState<Record<string, boolean>>({})
 
@@ -134,29 +123,45 @@ export function TargetRolesPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => ({
-          id: String(r.id || ''),
-          stableId: String(r.code || ''),
-          code: String(r.code || ''),
-          title: String(r.name || ''),
-          domainCode: String(r.domainCode || ''),
-          familyCode: String(r.familyCode || ''),
-          track: r.track as TargetRoleModel['track'],
-          seniority: String(r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3')),
-          assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
-          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
-          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || String(r.domainCode || 'Information Technology'),
-          description: String(r.description || ''),
-          responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
-          version: String(r.version || '1.0'),
-          status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
-          rejectionReason: String(r.rejectionReason || ''),
-          competencyIds: [],
-          skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
-          activeEnrollments: 0,
-          createdAt: String(r.createdAt || r.updatedAt || new Date().toISOString()),
-          updatedAt: String(r.updatedAt || r.createdAt || new Date().toISOString()),
-        }))
+        const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => {
+          const occ = resolveOccupationForRole({
+            code: String(r.code || ''),
+            title: String(r.name || ''),
+            domainCode: String(r.domainCode || ''),
+            familyCode: String(r.familyCode || ''),
+            occupationCode: typeof r.occupationCode === 'string' ? r.occupationCode : undefined,
+          })
+          return {
+            id: String(r.id || ''),
+            stableId: String(r.code || ''),
+            code: String(r.code || ''),
+            title: String(r.name || ''),
+            occupationCode: occ.code,
+            occupationTitle: occ.name,
+            scope: String(r.scope || r.description || occ.description),
+            levels: ['Junior', 'Middle', 'Senior'],
+            levelThresholds: (r.levelThresholds as RoleLevelThresholds) || { J: 60, M: 75, S: 90 },
+            domainCode: String(r.domainCode || 'ICT'),
+            familyCode: String(r.familyCode || occ.profiles[0] || 'DEV'),
+            track: (r.track as TargetRoleModel['track']) || 'PROFESSIONAL',
+            seniority: String(r.seniority || 'P3'),
+            assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
+            assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
+            department: occ.name,
+            description: String(r.description || ''),
+            responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
+            version: String(r.version || '1.0'),
+            status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+            rejectionReason: String(r.rejectionReason || ''),
+            competencyIds: Array.isArray(r.competencyIds) && (r.competencyIds as string[]).length > 0
+              ? (r.competencyIds as string[])
+              : ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.competencyIds || []),
+            skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
+            activeEnrollments: 0,
+            createdAt: String(r.createdAt || r.updatedAt || new Date().toISOString()),
+            updatedAt: String(r.updatedAt || r.createdAt || new Date().toISOString()),
+          }
+        })
         setRoles(mapped)
       } else {
         setRoles([])
@@ -206,6 +211,9 @@ export function TargetRolesPage() {
   const [isMappingsModalOpen, setIsMappingsModalOpen] = React.useState(false)
   const [isSkillTargetsModalOpen, setIsSkillTargetsModalOpen] = React.useState(false)
   const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false)
+  const [isManagerRejectDialogOpen, setIsManagerRejectDialogOpen] = React.useState(false)
+  const [managerRejectingRole, setManagerRejectingRole] = React.useState<TargetRoleModel | null>(null)
+  const [managerRejectionReason, setManagerRejectionReason] = React.useState('')
   const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
   const [selectedRole, setSelectedRole] = React.useState<TargetRoleModel | null>(null)
   const [viewingDetailsRole, setViewingDetailsRole] = React.useState<TargetRoleModel | null>(null)
@@ -229,7 +237,7 @@ export function TargetRolesPage() {
         department: String(item.department || 'Machine Learning & Cognitive Architecture').trim(),
         description: String(item.description || 'Target career role definition').trim(),
         version: String(item.version || '1.0'),
-        status: (item.status === 'draft' || item.status === 'sent' || item.status === 'rejected') ? item.status : 'published',
+        status: (item.status === 'draft' || item.status === 'submitted' || item.status === 'sent' || item.status === 'rejected') ? item.status : 'published',
         competencyIds: Array.isArray(item.competencyIds) ? (item.competencyIds as string[]) : [],
         skillTargets: Array.isArray(item.skillTargets) ? (item.skillTargets as TargetRoleModel['skillTargets']) : [],
         activeEnrollments: Number(item.activeEnrollments) || 0,
@@ -243,10 +251,13 @@ export function TargetRolesPage() {
   const [roleForm, setRoleForm] = React.useState({
     code: '',
     title: '',
+    occupationCode: '15-1252.00',
+    scope: 'Design, code, and test applications, systems software, and infrastructure pipelines.',
+    familyCode: 'DEV',
     domainCode: 'ICT' as 'ICT' | 'DATA' | 'AI',
-    familyCode: 'JAVA_BACKEND',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
     seniority: 'P3',
+    levelThresholds: { J: 60, M: 75, S: 90 },
     responsibilitiesText: '',
     assignedExpertId: 'expert-chen',
     description: '',
@@ -257,16 +268,28 @@ export function TargetRolesPage() {
   // Form states for editing role (L&D Manager view/edit scope)
   const [editRoleForm, setEditRoleForm] = React.useState({
     title: '',
+    occupationCode: '15-1252.00',
+    scope: '',
+    familyCode: 'DEV',
     domainCode: 'ICT' as 'ICT' | 'DATA' | 'AI',
-    familyCode: 'JAVA_BACKEND',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
     seniority: 'P3',
+    levelThresholds: { J: 60, M: 75, S: 90 },
     responsibilitiesText: '',
     assignedExpertId: '',
     description: '',
     competencyIds: [] as string[],
   })
   const [editCompSearch, setEditCompSearch] = React.useState('')
+
+  // Dynamic expert options filtered to experts certified for the selected occupation
+  const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
+    return getExpertOptionsForOccupation(roleForm.occupationCode)
+  }, [roleForm.occupationCode])
+
+  const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
+    return getExpertOptionsForOccupation(editRoleForm.occupationCode)
+  }, [editRoleForm.occupationCode])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
   const [sortBy, setSortBy] = React.useState<'latest' | 'title'>('latest')
@@ -284,7 +307,10 @@ export function TargetRolesPage() {
   const filteredRoles = React.useMemo(() => {
     const sorted = sortTargetRolesWithDraftsBelowPublished(roles, sortBy)
     return sorted.filter((r) => {
-      const matchesStatus = statusFilter === 'all' || r.status === statusFilter
+      const effStatus = getManagerEffectiveStatus(r)
+      const matchesStatus =
+        statusFilter === 'all' ||
+        effStatus === statusFilter
       const matchesSearch =
         r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -319,10 +345,12 @@ export function TargetRolesPage() {
 
   // Aggregate stats
   const totalRoles = roles.length
-  const publishedRoles = roles.filter((r) => r.status === 'published').length
-  const draftRoles = roles.filter((r) => r.status === 'draft').length
-  const sentRoles = roles.filter((r) => r.status === 'sent').length
-  const rejectedRoles = roles.filter((r) => r.status === 'rejected').length
+  const publishedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'published').length
+  const draftRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'draft').length
+  const sentRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'sent').length
+  const submittedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'submitted').length
+  const feedbackRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'feedback').length
+  const rejectedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'rejected').length
 
   // Dispatch draft to Domain Expert for micro-skill configuration
   const handleSendToExpert = async (role: TargetRoleModel) => {
@@ -373,16 +401,21 @@ export function TargetRolesPage() {
 
   // Handlers
   const handleOpenCreateRole = () => {
+    const defaultOcc = ONET_OCCUPATIONS[0]
+    const eligibleExperts = getEligibleExpertsForOccupation(defaultOcc.code)
     setRoleForm({
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       title: '',
+      occupationCode: defaultOcc.code,
+      scope: defaultOcc.description,
+      familyCode: defaultOcc.profiles[0] || 'DEV',
       domainCode: 'ICT',
-      familyCode: 'JAVA_BACKEND',
       track: 'PROFESSIONAL',
       seniority: 'P3',
+      levelThresholds: { J: 60, M: 75, S: 90 },
       responsibilitiesText: '',
-      assignedExpertId: 'expert-chen',
-      description: '',
+      assignedExpertId: eligibleExperts[0]?.id || 'expert-chen',
+      description: defaultOcc.description,
       competencyIds: [],
     })
     setCreateCompSearch('')
@@ -403,7 +436,7 @@ export function TargetRolesPage() {
     if (roles.some((r) => r.code.toUpperCase() === roleForm.code.trim().toUpperCase())) {
       toast({
         title: 'Duplicate Role Code',
-        description: `Role Code ${roleForm.code} already exists in the ontology catalog.`,
+        description: `Role Code ${roleForm.code} already exists in the role catalog.`,
         variant: 'destructive',
       })
       return
@@ -415,6 +448,8 @@ export function TargetRolesPage() {
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean)
+
+    const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === roleForm.occupationCode) || ONET_OCCUPATIONS[0]
 
     try {
       const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
@@ -432,7 +467,7 @@ export function TargetRolesPage() {
           seniority: roleForm.seniority,
           responsibilities: parsedResponsibilities,
           assignedExpertId: roleForm.assignedExpertId,
-          description: roleForm.description,
+          description: roleForm.scope || roleForm.description || selectedOcc.description,
           competencyIds: roleForm.competencyIds,
         }),
       })
@@ -461,22 +496,26 @@ export function TargetRolesPage() {
     }
 
     const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
-    const domainObj = JOB_DOMAINS.find((d) => d.code === roleForm.domainCode)
 
     const newRole: TargetRoleModel = {
       id: generatedId,
       stableId: `role-uuid-${Date.now()}`,
       code: roleForm.code.trim().toUpperCase(),
       title: roleForm.title.trim(),
-      domainCode: roleForm.domainCode,
-      familyCode: roleForm.familyCode,
-      track: roleForm.track,
-      seniority: roleForm.seniority,
+      occupationCode: selectedOcc.code,
+      occupationTitle: selectedOcc.name,
+      scope: roleForm.scope || selectedOcc.description,
+      levels: ['Junior', 'Middle', 'Senior'],
+      levelThresholds: roleForm.levelThresholds,
+      domainCode: roleForm.domainCode || 'ICT',
+      familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
+      track: roleForm.track || 'PROFESSIONAL',
+      seniority: roleForm.seniority || 'P3',
       responsibilities: parsedResponsibilities,
       assignedExpertId: roleForm.assignedExpertId,
       assignedExpertName: assignedExpert ? assignedExpert.name : '',
-      department: domainObj ? domainObj.name : 'Information & Communication Technology',
-      description: roleForm.description || 'Enterprise role profile awaiting competency mappings.',
+      department: selectedOcc.name,
+      description: roleForm.scope || roleForm.description || selectedOcc.description,
       version: '1.0',
       status: 'draft',
       competencyIds: roleForm.competencyIds || [],
@@ -505,7 +544,7 @@ export function TargetRolesPage() {
     const existingDraft = roles.find(
       (r) =>
         (r.stableId === publishedRole.stableId || r.code === publishedRole.code) &&
-        (r.status === 'draft' || r.status === 'sent' || r.status === 'rejected'),
+        (r.status === 'draft' || r.status === 'submitted' || r.status === 'sent' || r.status === 'rejected'),
     )
     if (existingDraft) {
       toast({
@@ -600,16 +639,27 @@ export function TargetRolesPage() {
 
   // Open edit role modal (L&D Manager scope: edit attributes & assigned expert)
   const handleOpenEditRole = (role: TargetRoleModel) => {
+    const occ = resolveOccupationForRole(role)
+    const occCode = role.occupationCode || occ.code
+    const eligibleExperts = getEligibleExpertsForOccupation(occCode)
+    const isCurrentEligible = eligibleExperts.some((e) => e.id === role.assignedExpertId)
+    const effectiveExpertId = isCurrentEligible
+      ? (role.assignedExpertId || '')
+      : (eligibleExperts[0]?.id || role.assignedExpertId || '')
+
     setSelectedRole(role)
     setEditRoleForm({
       title: role.title,
+      occupationCode: occCode,
+      scope: role.scope || role.description || occ.description,
+      familyCode: role.familyCode || occ.profiles[0] || 'DEV',
       domainCode: (role.domainCode || 'ICT') as 'ICT' | 'DATA' | 'AI',
-      familyCode: role.familyCode || 'JAVA_BACKEND',
       track: (role.track || 'PROFESSIONAL') as 'PROFESSIONAL' | 'MANAGEMENT',
-      seniority: role.seniority || (role.track === 'MANAGEMENT' ? 'M3' : 'P3'),
+      seniority: role.seniority || 'P3',
+      levelThresholds: role.levelThresholds || { J: 60, M: 75, S: 90 },
       responsibilitiesText: Array.isArray(role.responsibilities) ? role.responsibilities.join('\n') : '',
-      assignedExpertId: role.assignedExpertId || '',
-      description: role.description || '',
+      assignedExpertId: effectiveExpertId,
+      description: role.description || role.scope || occ.description,
       competencyIds: role.competencyIds || [],
     })
     setEditCompSearch('')
@@ -629,11 +679,12 @@ export function TargetRolesPage() {
     }
 
     const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
-    const domainObj = JOB_DOMAINS.find((d) => d.code === editRoleForm.domainCode)
     const parsedResponsibilities = editRoleForm.responsibilitiesText
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean)
+
+    const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === editRoleForm.occupationCode) || ONET_OCCUPATIONS[0]
 
     const orgId = activeComp?.id || 'comp-technova'
     try {
@@ -651,8 +702,8 @@ export function TargetRolesPage() {
           seniority: editRoleForm.seniority,
           responsibilities: parsedResponsibilities,
           assignedExpertId: editRoleForm.assignedExpertId,
-          description: editRoleForm.description,
-          status: selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'rejected' ? 'REJECTED' : 'DRAFT',
+          description: editRoleForm.scope || editRoleForm.description || selectedOcc.description,
+          status: selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'submitted' ? 'SUBMITTED' : 'DRAFT',
           version: selectedRole.version,
           skillTargets: selectedRole.skillTargets,
           competencyIds: editRoleForm.competencyIds,
@@ -668,15 +719,20 @@ export function TargetRolesPage() {
     const updatedRole: TargetRoleModel = {
       ...selectedRole,
       title: editRoleForm.title.trim(),
-      domainCode: editRoleForm.domainCode,
-      familyCode: editRoleForm.familyCode,
-      track: editRoleForm.track,
-      seniority: editRoleForm.seniority,
+      occupationCode: selectedOcc.code,
+      occupationTitle: selectedOcc.name,
+      scope: editRoleForm.scope || editRoleForm.description || selectedOcc.description,
+      levels: selectedRole.levels || ['Junior', 'Middle', 'Senior'],
+      levelThresholds: editRoleForm.levelThresholds,
+      domainCode: editRoleForm.domainCode || selectedRole.domainCode || 'ICT',
+      familyCode: editRoleForm.familyCode || selectedRole.familyCode || selectedOcc.profiles[0] || 'DEV',
+      track: editRoleForm.track || selectedRole.track || 'PROFESSIONAL',
+      seniority: editRoleForm.seniority || selectedRole.seniority || 'P3',
       responsibilities: parsedResponsibilities,
       assignedExpertId: editRoleForm.assignedExpertId,
       assignedExpertName: assignedExpert ? assignedExpert.name : '',
-      department: domainObj ? domainObj.name : selectedRole.department,
-      description: editRoleForm.description,
+      department: selectedOcc.name,
+      description: editRoleForm.scope || editRoleForm.description || selectedOcc.description,
       competencyIds: editRoleForm.competencyIds,
       updatedAt: new Date().toISOString(),
     }
@@ -688,6 +744,132 @@ export function TargetRolesPage() {
       title: 'Target Role Updated',
       description: `Saved changes to ${updatedRole.code} - ${updatedRole.title}.`,
       variant: 'success',
+    })
+  }
+
+  // L&D Manager: Approve and Publish submitted configuration (REQ-052)
+  const handleApproveAndPublishRole = async (role: TargetRoleModel) => {
+    const orgId = activeComp?.id || 'comp-technova'
+    const updatedRole: TargetRoleModel = {
+      ...role,
+      status: 'published',
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'LD_MANAGER',
+        },
+        body: JSON.stringify({
+          name: role.title,
+          domainCode: role.domainCode,
+          familyCode: role.familyCode,
+          track: role.track,
+          seniority: role.seniority,
+          responsibilities: role.responsibilities,
+          assignedExpertId: role.assignedExpertId,
+          description: role.description,
+          status: 'ACTIVE',
+          version: role.version,
+          skillTargets: role.skillTargets,
+          competencyIds: role.competencyIds,
+        }),
+      })
+      if (res.ok) {
+        await fetchRoles()
+      } else {
+        saveAndSetRoles((prev) => prev.map((r) => (r.id === role.id ? updatedRole : r)))
+      }
+    } catch {
+      saveAndSetRoles((prev) => prev.map((r) => (r.id === role.id ? updatedRole : r)))
+    }
+
+    if (viewingDetailsRole?.id === role.id) {
+      setViewingDetailsRole(updatedRole)
+    }
+
+    toast({
+      title: 'Target Role Published',
+      description: `${role.title} (${role.code} v${role.version}) has been approved and published to the organization catalog.`,
+      variant: 'success',
+    })
+  }
+
+  // L&D Manager: Open Reject dialog
+  const handleOpenManagerRejectDialog = (role: TargetRoleModel) => {
+    setManagerRejectingRole(role)
+    setManagerRejectionReason('')
+    setIsManagerRejectDialogOpen(true)
+  }
+
+  // L&D Manager: Confirm Reject & return configuration to expert for revision (REQ-052)
+  const handleConfirmManagerRejection = async () => {
+    if (!managerRejectingRole) return
+    if (!managerRejectionReason.trim()) {
+      toast({
+        title: 'Revision Feedback Required',
+        description: 'Please specify clear guidance or revision notes for the domain expert.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const orgId = activeComp?.id || 'comp-technova'
+    const fullRejectionReason = `[LD_MANAGER]: ${managerRejectionReason.trim()}`
+    const updatedRole: TargetRoleModel = {
+      ...managerRejectingRole,
+      status: 'rejected',
+      rejectionReason: fullRejectionReason,
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${managerRejectingRole.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'LD_MANAGER',
+        },
+        body: JSON.stringify({
+          name: managerRejectingRole.title,
+          domainCode: managerRejectingRole.domainCode,
+          familyCode: managerRejectingRole.familyCode,
+          track: managerRejectingRole.track,
+          seniority: managerRejectingRole.seniority,
+          responsibilities: managerRejectingRole.responsibilities,
+          assignedExpertId: managerRejectingRole.assignedExpertId,
+          description: managerRejectingRole.description,
+          status: 'REJECTED',
+          version: managerRejectingRole.version,
+          skillTargets: managerRejectingRole.skillTargets,
+          competencyIds: managerRejectingRole.competencyIds,
+          rejectionReason: fullRejectionReason,
+        }),
+      })
+      if (res.ok) {
+        await fetchRoles()
+      } else {
+        saveAndSetRoles((prev) => prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)))
+      }
+    } catch {
+      saveAndSetRoles((prev) => prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)))
+    }
+
+    if (viewingDetailsRole?.id === managerRejectingRole.id) {
+      setViewingDetailsRole(updatedRole)
+    }
+
+    setIsManagerRejectDialogOpen(false)
+    setManagerRejectingRole(null)
+    setManagerRejectionReason('')
+
+    toast({
+      title: 'Target Role Returned for Revision',
+      description: `${updatedRole.title} (${updatedRole.code}) returned to draft status with revision guidance for the expert.`,
+      variant: 'info',
     })
   }
 
@@ -852,62 +1034,65 @@ export function TargetRolesPage() {
             variant="gradient"
             icon={<Edit3 className="h-4 w-4 text-warning" />}
             title="In-Flight Profiles"
-            value={(draftRoles + sentRoles + rejectedRoles).toString()}
+            value={(draftRoles + sentRoles + submittedRoles + feedbackRoles + rejectedRoles).toString()}
             valueClassName="text-warning"
-            description={`${draftRoles} drafts · ${sentRoles} sent · ${rejectedRoles} rejected`}
+            description={`${draftRoles} drafts · ${sentRoles} sent · ${submittedRoles} submitted · ${feedbackRoles} feedback`}
           />
         </div>
 
         {/* Roles Table and Filters */}
         <Card>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div className="min-w-0 pr-2">
                 <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-primary" />
-                  Target Role Version Catalog
+                  <Briefcase className="h-4 w-4 text-primary shrink-0" />
+                  <span>Target Role Version Catalog</span>
                 </CardTitle>
                 <CardDescription>
                   Draft and published role definitions with mapped competencies and micro-skill thresholds.
                 </CardDescription>
               </div>
 
-              {/* Search and Status Filters */}
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative min-w-[200px]">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              {/* Search and Status Filters - Guaranteed 1 Single Row */}
+              <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                <div className="relative w-48 sm:w-56 shrink-0">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   <input
                     type="text"
-                    placeholder="Search roles or codes..."
+                    placeholder="Search roles..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                   />
                 </div>
 
-                <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
+                <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
+                  <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft' | 'sent' | 'rejected')}
-                    className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft' | 'sent' | 'submitted' | 'feedback' | 'rejected')}
+                    className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                   >
-                    <option value="all">All Statuses ({totalRoles})</option>
+                    <option value="all">All ({totalRoles})</option>
                     <option value="published">Published ({publishedRoles})</option>
                     <option value="sent">Sent ({sentRoles})</option>
+                    <option value="submitted">Submitted ({submittedRoles})</option>
                     <option value="draft">Drafts ({draftRoles})</option>
+                    <option value="feedback">Feedback ({feedbackRoles})</option>
                     <option value="rejected">Rejected ({rejectedRoles})</option>
                   </select>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1">
+                <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                   <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as 'latest' | 'title')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                   >
-                    <option value="latest">Latest Created / Updated</option>
-                    <option value="title">Role Title (A–Z)</option>
+                    <option value="latest">Latest</option>
+                    <option value="title">Title (A–Z)</option>
                   </select>
                 </div>
               </div>
@@ -935,8 +1120,8 @@ export function TargetRolesPage() {
                     <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                       <th className="py-2.5 px-3">Role Code</th>
                       <th className="py-2.5 px-3">Title &amp; Version</th>
-                      <th className="py-2.5 px-3">Domain &amp; Family</th>
-                      <th className="py-2.5 px-3 whitespace-nowrap">Track &amp; Seniority</th>
+                      <th className="py-2.5 px-3">Occupation</th>
+                      <th className="py-2.5 px-3 whitespace-nowrap">Proficiency Tiers (J • M • S)</th>
                       <th className="py-2.5 px-3">Assigned Expert</th>
                       <th className="py-2.5 px-3 text-center">Competency</th>
                       <th className="py-2.5 px-3 text-center">Micro-skill</th>
@@ -953,10 +1138,14 @@ export function TargetRolesPage() {
                       </tr>
                     ) : (
                       paginatedRoles.map((role) => {
-                      const isDraft = role.status === 'draft'
-                      const isSent = role.status === 'sent'
-                      const isRejected = role.status === 'rejected'
-                      const isPublished = role.status === 'published'
+                      const effStatus = getManagerEffectiveStatus(role)
+                      const isDraft = effStatus === 'draft'
+                      const isSent = effStatus === 'sent'
+                      const isSubmitted = effStatus === 'submitted'
+                      const isFeedback = effStatus === 'feedback'
+                      const isRejected = effStatus === 'rejected'
+                      const isPublished = effStatus === 'published'
+                      const cleanRejectionReason = (role.rejectionReason || '').replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
 
                       // Lineage identification for published versions
                       const publishedInLineage = roles
@@ -982,7 +1171,6 @@ export function TargetRolesPage() {
                       const isSuccessor = !isPublished && Boolean(predecessorPublished)
 
                       const expert = ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
-                      const domain = JOB_DOMAINS.find((d) => d.code === role.domainCode)
 
                       return (
                         <tr
@@ -1052,28 +1240,38 @@ export function TargetRolesPage() {
                               </Badge>
                               <span>Updated {formatDate(role.updatedAt)}</span>
                             </div>
-                            {isRejected && role.rejectionReason && (
-                              <div className="text-[11px] text-destructive flex items-center gap-1 mt-1 bg-destructive/5 px-2 py-0.5 rounded border border-destructive/20 w-fit" title={role.rejectionReason}>
+                            {isFeedback && cleanRejectionReason && (
+                              <div className="text-[11px] text-black flex items-center gap-1 mt-1 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25 w-fit" title={cleanRejectionReason}>
+                                <AlertTriangle className="h-3 w-3 shrink-0 text-black" />
+                                <span className="font-semibold text-black">Expert Feedback:</span>
+                                <span className="truncate max-w-xs text-black">{cleanRejectionReason}</span>
+                              </div>
+                            )}
+                            {isRejected && cleanRejectionReason && (
+                              <div className="text-[11px] text-destructive flex items-center gap-1 mt-1 bg-destructive/5 px-2 py-0.5 rounded border border-destructive/20 w-fit" title={cleanRejectionReason}>
                                 <AlertTriangle className="h-3 w-3 shrink-0" />
-                                <span className="font-semibold">Reason:</span>
-                                <span className="truncate max-w-xs">{role.rejectionReason}</span>
+                                <span className="font-semibold">Revision Notes:</span>
+                                <span className="truncate max-w-xs">{cleanRejectionReason}</span>
                               </div>
                             )}
                           </td>
                           <td className="py-3 px-3">
-                            <div className="text-xs font-semibold text-foreground">{domain ? domain.name : role.domainCode || role.department || 'ICT'}</div>
-                            <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{role.familyCode || 'GENERAL'}</div>
+                            {(() => {
+                              const occ = resolveOccupationForRole(role)
+                              return (
+                                <span className="text-xs font-medium text-foreground">
+                                  {role.occupationTitle || occ.name}
+                                </span>
+                              )
+                            })()}
                           </td>
                           <td className="py-3 px-3 whitespace-nowrap">
-                            <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                              <Badge variant={role.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold whitespace-nowrap">
-                                {role.track || 'PROFESSIONAL'}
-                              </Badge>
-                              {role.seniority && (
-                                <Badge variant={role.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold whitespace-nowrap">
-                                  {role.seniority}
-                                </Badge>
-                              )}
+                            <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                              <span>J ({role.levelThresholds?.J ?? 60}%)</span>
+                              <span className="text-muted-foreground">·</span>
+                              <span>M ({role.levelThresholds?.M ?? 75}%)</span>
+                              <span className="text-muted-foreground">·</span>
+                              <span>S ({role.levelThresholds?.S ?? 90}%)</span>
                             </div>
                           </td>
                           <td className="py-3 px-3">
@@ -1091,20 +1289,30 @@ export function TargetRolesPage() {
                             )}
                           </td>
                           <td className="py-3 px-3 text-center">
-                            <span className="font-semibold text-foreground text-xs">
-                              {role.competencyIds.length} linked
+                            <span className="font-semibold text-foreground text-xs font-mono">
+                              {role.competencyIds.length}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-center">
-                            <span className="font-semibold text-foreground text-xs">
-                              {role.skillTargets.length} targets
+                            <span className="font-semibold text-foreground text-xs font-mono">
+                              {role.skillTargets.length}
                             </span>
                           </td>
                           <td className="py-3 px-3">
                             {isPublished && <Badge variant="success">PUBLISHED</Badge>}
-                            {isSent && (
+                            {isSubmitted && (
                               <Badge variant="primary" className="bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400">
+                                SUBMITTED
+                              </Badge>
+                            )}
+                            {isSent && (
+                              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold dark:text-amber-400">
                                 SENT
+                              </Badge>
+                            )}
+                            {isFeedback && (
+                              <Badge variant="outline" className="bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black">
+                                FEEDBACK
                               </Badge>
                             )}
                             {isRejected && <Badge variant="destructive">REJECTED</Badge>}
@@ -1143,7 +1351,7 @@ export function TargetRolesPage() {
                               </Button>
 
 
-                              {/* Edit Role (Draft, Sent, or Rejected) */}
+                              {/* Edit Role (Draft/Sent/Feedback) or Review Role (Submitted) */}
                               {!isPublished && (
                                 <Button
                                   variant="outline"
@@ -1153,10 +1361,32 @@ export function TargetRolesPage() {
                                     e.stopPropagation()
                                     handleOpenEditRole(role)
                                   }}
-                                  title="Edit Role Details"
-                                  aria-label="Edit Role Details"
+                                  title={
+                                    isSubmitted
+                                      ? "Review Submitted Configuration"
+                                      : isFeedback
+                                      ? "Edit & Address Expert Feedback"
+                                      : isSent
+                                      ? "Edit Sent Role Details"
+                                      : "Edit Role Details"
+                                  }
+                                  aria-label={
+                                    isSubmitted
+                                      ? "Review Submitted Configuration"
+                                      : isFeedback
+                                      ? "Edit & Address Expert Feedback"
+                                      : isSent
+                                      ? "Edit Sent Role Details"
+                                      : "Edit Role Details"
+                                  }
                                 >
-                                  <Edit3 className="h-4 w-4" />
+                                  {isSubmitted ? (
+                                    <FileCheck className="h-4 w-4 text-foreground" />
+                                  ) : isFeedback ? (
+                                    <Edit3 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  ) : (
+                                    <Edit3 className="h-4 w-4" />
+                                  )}
                                 </Button>
                               )}
 
@@ -1219,26 +1449,31 @@ export function TargetRolesPage() {
       </div>
 
       {/* 1. CREATE TARGET ROLE MODAL */}
-      <Dialog open={isCreateRoleModalOpen} onOpenChange={setIsCreateRoleModalOpen} className="max-w-xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
+      <Dialog open={isCreateRoleModalOpen} onOpenChange={setIsCreateRoleModalOpen} className="max-w-2xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
         <DialogHeader className="shrink-0 mb-3">
           <div className="flex items-center justify-between pr-4">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              {roleForm.title.trim() || 'Create Target Role'}
+              <Briefcase className="h-5 w-5 text-primary shrink-0" />
+              <span>{roleForm.title.trim() || 'Create Target Role'}</span>
             </DialogTitle>
-            <Badge variant="primary" className="bg-primary/10 text-primary border-primary/25">
-              NEW
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/25 font-bold text-xs">
+              NEW DRAFT
             </Badge>
           </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Define a new target role architecture, configure competency mappings, and assign domain experts.
+            Define a target role profile, align with industry standards, and establish benchmark proficiency targets for your workforce.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto pr-1.5 space-y-3 text-xs min-h-0">
+        <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 text-xs min-h-0">
+          {/* Card 1: Role Identity */}
+          <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              Role Identification &amp; Code
+            </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="text-[11px] font-semibold text-foreground block mb-1">
                   Unique Role Code <span className="text-destructive">*</span>
                 </label>
                 <input
@@ -1246,12 +1481,12 @@ export function TargetRolesPage() {
                   placeholder="e.g. ROLE-AI-ARCH"
                   value={roleForm.code}
                   onChange={(e) => setRoleForm({ ...roleForm, code: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="text-[11px] font-semibold text-foreground block mb-1">
                   Role Title <span className="text-destructive">*</span>
                 </label>
                 <input
@@ -1259,236 +1494,343 @@ export function TargetRolesPage() {
                   placeholder="e.g. AI Knowledge Architect"
                   value={roleForm.title}
                   onChange={(e) => setRoleForm({ ...roleForm, title: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                 />
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Card 2: Industry Occupation Alignment */}
+          <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Track <span className="text-muted-foreground text-[10px] font-normal">(Technical vs Leadership)</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+                  Industry Occupation Alignment
+                </span>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Align this role with a recognized O*NET industry occupation and benchmark standard.
+                </p>
+              </div>
+              <Badge variant="secondary" className="text-[10px] font-semibold shrink-0 self-start sm:self-center">
+                Job Zone 4
+              </Badge>
+            </div>
+
+              <div className="pt-1">
+                <label className="text-[11px] font-semibold text-foreground block mb-1">
+                  Occupation <span className="text-destructive">*</span>
                 </label>
                 <Combobox
                   size="sm"
                   clearable={false}
-                  options={TRACK_OPTIONS}
-                  value={roleForm.track}
+                  options={OCCUPATION_OPTIONS}
+                  value={roleForm.occupationCode}
                   onChange={(val) => {
                     if (!val) return
-                    const newTrack = val as 'PROFESSIONAL' | 'MANAGEMENT'
-                    const validSeniorities = getSeniorityOptions(newTrack).map((o) => o.value)
-                    const newSeniority = validSeniorities.includes(roleForm.seniority)
-                      ? roleForm.seniority
-                      : (newTrack === 'MANAGEMENT' ? 'M3' : 'P3')
-                    setRoleForm({ ...roleForm, track: newTrack, seniority: newSeniority })
+                    const occ = ONET_OCCUPATIONS.find((o) => o.code === val)
+                    const eligible = getEligibleExpertsForOccupation(val)
+                    const isCurrentEligible = eligible.some((e) => e.id === roleForm.assignedExpertId)
+                    const newExpertId = isCurrentEligible ? roleForm.assignedExpertId : (eligible[0]?.id || '')
+                    setRoleForm((prev) => ({
+                      ...prev,
+                      occupationCode: val,
+                      assignedExpertId: newExpertId,
+                      scope: prev.scope || occ?.description || '',
+                      description: prev.description || occ?.description || '',
+                    }))
                   }}
-                  placeholder="Select track..."
-                  searchPlaceholder="Search track..."
+                  placeholder="Select Occupation..."
+                  searchPlaceholder="Search occupation..."
                 />
               </div>
 
+            {(() => {
+              const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === roleForm.occupationCode)
+              if (!selectedOcc) return null
+              return (
+                <p className="text-[10.5px] text-muted-foreground bg-background/60 p-2 rounded border border-primary/10 leading-relaxed">
+                  {selectedOcc.description}
+                </p>
+              )
+            })()}
+          </div>
+
+          {/* Card 3: Proficiency Benchmark Tiers */}
+          <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+            <div className="flex items-center justify-between">
               <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Seniority Level <span className="text-destructive">*</span>
-                </label>
-                <Combobox
-                  size="sm"
-                  clearable={false}
-                  options={getSeniorityOptions(roleForm.track)}
-                  value={roleForm.seniority}
-                  onChange={(val) => val && setRoleForm({ ...roleForm, seniority: val })}
-                  placeholder="Select seniority..."
-                  searchPlaceholder="Search seniority level..."
-                />
+                <span className="text-xs font-bold text-foreground block">
+                  Proficiency Benchmark Tiers
+                </span>
+                <span className="text-[10px] text-muted-foreground">
+                  Benchmark passing thresholds for Junior, Middle, and Senior levels
+                </span>
               </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30">
+                Junior • Middle • Senior
+              </Badge>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Job Domain <span className="text-destructive">*</span>
-                </label>
-                <Combobox
-                  size="sm"
-                  clearable={false}
-                  options={DOMAIN_OPTIONS}
-                  value={roleForm.domainCode}
-                  onChange={(val) => {
-                    if (!val) return
-                    const newDomain = val as 'ICT' | 'DATA' | 'AI'
-                    const compatibleFamily = CAREER_FAMILIES.find((f) => f.domain === newDomain)
-                    setRoleForm({
-                      ...roleForm,
-                      domainCode: newDomain,
-                      familyCode: compatibleFamily ? compatibleFamily.code : roleForm.familyCode,
-                    })
-                  }}
-                  placeholder="Select domain..."
-                  searchPlaceholder="Search job domain..."
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+              <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-foreground text-xs">Junior (J)</span>
+                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 1</Badge>
+                  </div>
+                  <div className="text-muted-foreground text-[10px] mt-0.5">Foundational execution &amp; guidance</div>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
+                  <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={10}
+                      max={100}
+                      step={5}
+                      value={roleForm.levelThresholds.J}
+                      onChange={(e) => {
+                        const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 60))
+                        setRoleForm({
+                          ...roleForm,
+                          levelThresholds: { ...roleForm.levelThresholds, J: val },
+                        })
+                      }}
+                      className="w-14 px-1.5 py-0.5 rounded border border-border bg-background text-foreground font-bold font-mono text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                    <span className="font-semibold text-muted-foreground text-xs">%</span>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-foreground block mb-1">
-                  Career Family <span className="text-destructive">*</span>
-                </label>
-                <Combobox
-                  size="sm"
-                  clearable={false}
-                  options={getFamilyOptions(roleForm.domainCode)}
-                  value={roleForm.familyCode}
-                  onChange={(val) => val && setRoleForm({ ...roleForm, familyCode: val })}
-                  placeholder="Select family..."
-                  searchPlaceholder="Search career family..."
-                />
+              <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-foreground text-xs">Middle (M)</span>
+                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 2</Badge>
+                  </div>
+                  <div className="text-muted-foreground text-[10px] mt-0.5">Independent delivery &amp; core systems</div>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
+                  <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={10}
+                      max={100}
+                      step={5}
+                      value={roleForm.levelThresholds.M}
+                      onChange={(e) => {
+                        const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 75))
+                        setRoleForm({
+                          ...roleForm,
+                          levelThresholds: { ...roleForm.levelThresholds, M: val },
+                        })
+                      }}
+                      className="w-14 px-1.5 py-0.5 rounded border border-border bg-background text-foreground font-bold font-mono text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                    <span className="font-semibold text-muted-foreground text-xs">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-foreground text-xs">Senior (S)</span>
+                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 3</Badge>
+                  </div>
+                  <div className="text-muted-foreground text-[10px] mt-0.5">Technical leadership &amp; architecture</div>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
+                  <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={10}
+                      max={100}
+                      step={5}
+                      value={roleForm.levelThresholds.S}
+                      onChange={(e) => {
+                        const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 90))
+                        setRoleForm({
+                          ...roleForm,
+                          levelThresholds: { ...roleForm.levelThresholds, S: val },
+                        })
+                      }}
+                      className="w-14 px-1.5 py-0.5 rounded border border-border bg-background text-foreground font-bold font-mono text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                    <span className="font-semibold text-muted-foreground text-xs">%</span>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
+          {/* Card 4: Assigned Subject Matter Expert */}
+          <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                Assigned Subject Matter Expert
+              </span>
+              <span className="text-[10px] text-primary font-medium">
+                {createExpertOptions.length} eligible expert{createExpertOptions.length !== 1 ? 's' : ''} available for this occupation
+              </span>
+            </div>
             <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Assigned Domain Expert <span className="text-destructive">*</span>
-              </label>
               <Combobox
                 size="sm"
                 clearable={false}
-                options={EXPERT_OPTIONS}
+                options={createExpertOptions}
                 value={roleForm.assignedExpertId}
                 onChange={(val) => val && setRoleForm({ ...roleForm, assignedExpertId: val })}
-                placeholder="Select domain expert..."
-                searchPlaceholder="Search eligible expert..."
+                placeholder="Select assigned domain expert..."
+                searchPlaceholder="Search eligible expert for this occupation..."
               />
+              <span className="text-[10px] text-muted-foreground mt-1 block">
+                Only subject matter experts assigned to {roleForm.occupationCode} ({ONET_OCCUPATIONS.find(o => o.code === roleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
+              </span>
             </div>
+          </div>
 
+          {/* Card 5: Role Scope & Key Responsibilities */}
+          <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              Role Scope &amp; Key Responsibilities
+            </span>
             <div>
-              <label className="font-semibold text-foreground block mb-1">Profile Description</label>
+              <label className="text-[11px] font-semibold text-foreground block mb-1">
+                Role Scope &amp; Summary
+              </label>
               <textarea
                 rows={2}
-                placeholder="Enterprise scope, expected responsibilities, and architectural domain..."
-                value={roleForm.description}
-                onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Summarize the purpose, scope, and strategic objectives of this target role..."
+                value={roleForm.scope}
+                onChange={(e) => setRoleForm({ ...roleForm, scope: e.target.value, description: e.target.value })}
+                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
               />
             </div>
 
             <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Key Responsibilities <span className="text-muted-foreground text-[10px] font-normal">(One duty per line)</span>
+              <label className="text-[11px] font-semibold text-foreground block mb-1">
+                Key Responsibilities <span className="text-muted-foreground text-[10px] font-normal">(One responsibility per line)</span>
               </label>
               <textarea
                 rows={3}
                 placeholder="Design and implement resilient backend microservices&#10;Optimize high-throughput data processing pipelines&#10;Mentor junior engineers on clean architecture"
                 value={roleForm.responsibilitiesText}
                 onChange={(e) => setRoleForm({ ...roleForm, responsibilitiesText: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-sans"
+                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-sans shadow-2xs"
               />
-              <span className="text-[10px] text-muted-foreground">Each line represents a distinct job responsibility / duty for the Job Description.</span>
+              <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                Enter distinct job duties to be displayed on employee role roadmaps and career matrix.
+              </span>
+            </div>
+          </div>
+
+          {/* Card 6: Required Competencies */}
+          <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-primary" />
+                <span>Required Competencies</span>
+                <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
+                  {roleForm.competencyIds.length} linked
+                </Badge>
+              </label>
+              <span className="text-[10px] text-muted-foreground font-normal">
+                Select knowledge competencies required for employees targeting this role
+              </span>
             </div>
 
-            {/* Linked Competencies */}
-            <div className="space-y-2 pt-2 border-t border-border/80">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                  <BookOpen className="h-3.5 w-3.5 text-primary" />
-                  <span>Mapped Competencies</span>
-                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
-                    {roleForm.competencyIds.length} linked
-                  </Badge>
-                </label>
-                <span className="text-[10px] text-muted-foreground font-normal">
-                  Select ontology competencies required for this role
-                </span>
-              </div>
+            {/* Quick Search */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search competencies by code or name..."
+                value={createCompSearch}
+                onChange={(e) => setCreateCompSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+              />
+            </div>
 
-              {/* Quick Search */}
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search competencies by code or name..."
-                  value={createCompSearch}
-                  onChange={(e) => setCreateCompSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
-                />
-              </div>
-
-              {/* Scrollable List */}
-              <div className="border border-border rounded-lg max-h-40 overflow-y-auto divide-y divide-border bg-card">
-                {companyCompetencies.length === 0 ? (
-                  <div className="p-3 text-center text-muted-foreground text-xs">
-                    No competencies registered for this organization.
-                  </div>
-                ) : (() => {
-                  const filtered = companyCompetencies.filter(
-                    (comp) =>
-                      !createCompSearch.trim() ||
-                      comp.code.toLowerCase().includes(createCompSearch.toLowerCase()) ||
-                      comp.name.toLowerCase().includes(createCompSearch.toLowerCase()) ||
-                      (comp.description || '').toLowerCase().includes(createCompSearch.toLowerCase())
+            {/* Scrollable List */}
+            <div className="border border-border rounded-lg max-h-40 overflow-y-auto divide-y divide-border bg-background/50">
+              {companyCompetencies.length === 0 ? (
+                <div className="p-3 text-center text-muted-foreground text-xs">
+                  No competencies registered for this organization.
+                </div>
+              ) : (() => {
+                const filtered = companyCompetencies.filter(
+                  (comp) =>
+                    !createCompSearch.trim() ||
+                    comp.code.toLowerCase().includes(createCompSearch.toLowerCase()) ||
+                    comp.name.toLowerCase().includes(createCompSearch.toLowerCase()) ||
+                    (comp.description || '').toLowerCase().includes(createCompSearch.toLowerCase())
+                )
+                if (filtered.length === 0) {
+                  return (
+                    <div className="p-3 text-center text-muted-foreground text-xs">
+                      No competencies match &ldquo;{createCompSearch}&rdquo;.
+                    </div>
                   )
-                  if (filtered.length === 0) {
-                    return (
-                      <div className="p-3 text-center text-muted-foreground text-xs">
-                        No competencies match &ldquo;{createCompSearch}&rdquo;.
-                      </div>
-                    )
-                  }
-                  return filtered.map((comp) => {
-                    const isLinked = roleForm.competencyIds.includes(comp.id)
-                    const isArchived = comp.status === 'archived'
-                    return (
-                      <div
-                        key={comp.id}
-                        onClick={() => {
-                          if (isArchived) return
-                          setRoleForm((prev) => ({
-                            ...prev,
-                            competencyIds: isLinked
-                              ? prev.competencyIds.filter((id) => id !== comp.id)
-                              : [...prev.competencyIds, comp.id],
-                          }))
-                        }}
-                        className={`p-2.5 flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
-                          isLinked
-                            ? 'bg-primary/5 hover:bg-primary/10'
-                            : isArchived
-                            ? 'opacity-50 cursor-not-allowed bg-muted/20'
-                            : 'hover:bg-muted/40'
-                        }`}
-                      >
-                        <div className="min-w-0 flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={isLinked}
-                            disabled={isArchived}
-                            onChange={() => {}}
-                            className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-mono font-bold text-xs text-foreground">{comp.code}</span>
-                              <span className="font-semibold text-xs text-foreground truncate">{comp.name}</span>
-                            </div>
-                            {comp.description && (
-                              <p className="text-[10px] text-muted-foreground truncate max-w-md mt-0.5">
-                                {comp.description}
-                              </p>
-                            )}
+                }
+                return filtered.map((comp) => {
+                  const isLinked = roleForm.competencyIds.includes(comp.id)
+                  const isArchived = comp.status === 'archived'
+                  return (
+                    <div
+                      key={comp.id}
+                      onClick={() => {
+                        if (isArchived) return
+                        setRoleForm((prev) => ({
+                          ...prev,
+                          competencyIds: isLinked
+                            ? prev.competencyIds.filter((id) => id !== comp.id)
+                            : [...prev.competencyIds, comp.id],
+                        }))
+                      }}
+                      className={`p-2.5 flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
+                        isLinked
+                          ? 'bg-primary/5 hover:bg-primary/10'
+                          : isArchived
+                          ? 'opacity-50 cursor-not-allowed bg-muted/20'
+                          : 'hover:bg-muted/40'
+                      }`}
+                    >
+                      <div className="min-w-0 flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isLinked}
+                          disabled={isArchived}
+                          onChange={() => {}}
+                          className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-mono font-bold text-xs text-foreground">{comp.code}</span>
+                            <span className="font-semibold text-xs text-foreground truncate">{comp.name}</span>
                           </div>
-                        </div>
-
-                        <div className="shrink-0 flex items-center gap-1.5">
-                          <Badge variant={isArchived ? 'outline' : isLinked ? 'success' : 'outline'} className="text-[10px] py-0 px-1.5">
-                            {isArchived ? 'Archived' : isLinked ? 'Linked' : 'Available'}
-                          </Badge>
+                          {comp.description && (
+                            <p className="text-[10px] text-muted-foreground truncate max-w-md mt-0.5">
+                              {comp.description}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    )
-                  })
-                })()}
-              </div>
-            </div>
 
+                      <div className="shrink-0 flex items-center gap-1.5">
+                        <Badge variant={isArchived ? 'outline' : isLinked ? 'success' : 'outline'} className="text-[10px] py-0 px-1.5">
+                          {isArchived ? 'Archived' : isLinked ? 'Linked' : 'Available'}
+                        </Badge>
+                      </div>
+                    </div>
+                  )
+                })
+              })()}
+            </div>
+          </div>
         </div>
 
         <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3">
@@ -1513,14 +1855,14 @@ export function TargetRolesPage() {
                 </DialogTitle>
                 <Badge
                   variant={
-                    selectedRole.status === 'sent'
+                    selectedRole.status === 'submitted' || selectedRole.status === 'sent'
                       ? 'success'
                       : selectedRole.status === 'draft'
                         ? 'warning'
                         : 'outline'
                   }
                 >
-                  {selectedRole.status.toUpperCase()}
+                  {(selectedRole.status === 'sent' ? 'SUBMITTED' : selectedRole.status).toUpperCase()}
                 </Badge>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -1551,7 +1893,7 @@ export function TargetRolesPage() {
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 {companyCompetencies.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground text-xs border border-dashed rounded-lg">
-                    No competencies registered for this company yet. Define competencies in Competency Ontology first.
+                    No competencies registered for this company yet. Define competencies in Competency Management first.
                   </div>
                 ) : (() => {
                   const filtered = companyCompetencies.filter(
@@ -1640,180 +1982,409 @@ export function TargetRolesPage() {
         </Dialog>
       )}
 
-      {/* 3. SET ROLE SKILL TARGETS MODAL */}
-      {selectedRole && (
+      {/* 3. SET ROLE SKILL TARGETS / REVIEW MODAL */}
+      {selectedRole && (() => {
+        const modalEffStatus = getManagerEffectiveStatus(selectedRole)
+        const isSubmittedRole = modalEffStatus === 'submitted'
+        const isSentRole = modalEffStatus === 'sent'
+        const isPublishedRole = modalEffStatus === 'published'
+        const isFeedbackRole = modalEffStatus === 'feedback'
+        const isRejectedRole = modalEffStatus === 'rejected'
+        const isDraftRole = modalEffStatus === 'draft' || isFeedbackRole || isRejectedRole
+        const cleanModalRejectionReason = (selectedRole.rejectionReason || '').replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
+
+        return (
         <Dialog open={isSkillTargetsModalOpen} onOpenChange={setIsSkillTargetsModalOpen} className="max-w-3xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
           <DialogHeader className="shrink-0 mb-3">
             <div className="flex items-center justify-between pr-4">
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Edit3 className="h-5 w-5 text-primary shrink-0" />
-                <span>{editRoleForm?.title || selectedRole.title}</span>
+                {isSubmittedRole ? (
+                  <FileCheck className="h-5 w-5 text-foreground shrink-0" />
+                ) : (
+                  <Edit3 className="h-5 w-5 text-primary shrink-0" />
+                )}
+                <span>
+                  {isSubmittedRole ? `Review Submitted Role: ${selectedRole.title}` : (editRoleForm?.title || selectedRole.title)}
+                </span>
               </DialogTitle>
-              <Badge variant={selectedRole.status === 'draft' ? 'warning' : 'success'}>
-                {selectedRole.status.toUpperCase()}
+              <Badge
+                variant={
+                  isPublishedRole
+                    ? 'success'
+                    : isSubmittedRole
+                    ? 'primary'
+                    : isFeedbackRole
+                    ? 'warning'
+                    : isRejectedRole
+                    ? 'destructive'
+                    : isSentRole
+                    ? 'outline'
+                    : 'warning'
+                }
+                className={
+                  isSubmittedRole
+                    ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400'
+                    : isSentRole
+                    ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold dark:text-amber-400'
+                    : isFeedbackRole
+                    ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black'
+                    : ''
+                }
+              >
+                {modalEffStatus.toUpperCase()}
               </Badge>
             </div>
             <DialogDescription className="text-xs text-muted-foreground">
-              Refine role attributes, governance metadata, and micro-skill benchmark thresholds.
+              {isSubmittedRole
+                ? 'Review the target role configuration, competencies, and micro-skills submitted by the domain expert.'
+                : isSentRole
+                ? 'This role has been dispatched to the domain expert for micro-skill authoring and threshold configuration.'
+                : isFeedbackRole
+                ? 'The domain expert provided feedback requesting revisions on this proposal. Update details and re-dispatch.'
+                : isRejectedRole
+                ? 'This configuration was returned to the domain expert for revision.'
+                : 'Update role details, customize benchmark proficiency targets, and manage expert assignments.'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-xs min-h-0">
-              {/* Role Metadata & Governance Configuration */}
-              <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Role Code <span className="text-[10px] text-muted-foreground font-normal">(System Identifier)</span>
-                    </label>
-                    <input
-                      type="text"
-                      disabled
-                      value={selectedRole.code}
-                      className="w-full px-2.5 py-1.5 rounded-md bg-muted/50 border border-border text-foreground font-mono text-xs cursor-not-allowed opacity-80"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Role Title <span className="text-destructive">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editRoleForm.title}
-                      onChange={(e) => setEditRoleForm({ ...editRoleForm, title: e.target.value })}
-                      className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Track <span className="text-muted-foreground text-[10px] font-normal">(Technical vs Leadership)</span>
-                    </label>
-                    <Combobox
-                      size="sm"
-                      clearable={false}
-                      options={TRACK_OPTIONS}
-                      value={editRoleForm.track}
-                      onChange={(val) => {
-                        if (!val) return
-                        const newTrack = val as 'PROFESSIONAL' | 'MANAGEMENT'
-                        const validSeniorities = getSeniorityOptions(newTrack).map((o) => o.value)
-                        const newSeniority = validSeniorities.includes(editRoleForm.seniority)
-                          ? editRoleForm.seniority
-                          : (newTrack === 'MANAGEMENT' ? 'M3' : 'P3')
-                        setEditRoleForm({ ...editRoleForm, track: newTrack, seniority: newSeniority })
-                      }}
-                      placeholder="Select track..."
-                      searchPlaceholder="Search track..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Seniority Level <span className="text-destructive">*</span>
-                    </label>
-                    <Combobox
-                      size="sm"
-                      clearable={false}
-                      options={getSeniorityOptions(editRoleForm.track)}
-                      value={editRoleForm.seniority}
-                      onChange={(val) => val && setEditRoleForm({ ...editRoleForm, seniority: val })}
-                      placeholder="Select seniority..."
-                      searchPlaceholder="Search seniority level..."
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Job Domain <span className="text-destructive">*</span>
-                    </label>
-                    <Combobox
-                      size="sm"
-                      clearable={false}
-                      options={DOMAIN_OPTIONS}
-                      value={editRoleForm.domainCode}
-                      onChange={(val) => {
-                        if (!val) return
-                        const newDomain = val as 'ICT' | 'DATA' | 'AI'
-                        const compatibleFamily = CAREER_FAMILIES.find((f) => f.domain === newDomain)
-                        setEditRoleForm({
-                          ...editRoleForm,
-                          domainCode: newDomain,
-                          familyCode: compatibleFamily ? compatibleFamily.code : editRoleForm.familyCode,
-                        })
-                      }}
-                      placeholder="Select domain..."
-                      searchPlaceholder="Search job domain..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Career Family <span className="text-destructive">*</span>
-                    </label>
-                    <Combobox
-                      size="sm"
-                      clearable={false}
-                      options={getFamilyOptions(editRoleForm.domainCode)}
-                      value={editRoleForm.familyCode}
-                      onChange={(val) => val && setEditRoleForm({ ...editRoleForm, familyCode: val })}
-                      placeholder="Select family..."
-                      searchPlaceholder="Search career family..."
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-foreground block mb-1">
-                    Assigned Domain Expert <span className="text-destructive">*</span>
-                  </label>
-                  <Combobox
-                    size="sm"
-                    clearable={false}
-                    options={EXPERT_OPTIONS}
-                    value={editRoleForm.assignedExpertId}
-                    onChange={(val) => val && setEditRoleForm({ ...editRoleForm, assignedExpertId: val })}
-                    placeholder="Select assigned expert..."
-                    searchPlaceholder="Search eligible expert..."
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-foreground block mb-1">Profile Description</label>
-                  <textarea
-                    rows={2}
-                    value={editRoleForm.description}
-                    onChange={(e) => setEditRoleForm({ ...editRoleForm, description: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-foreground block mb-1">
-                    Key Responsibilities <span className="text-muted-foreground text-[10px] font-normal">(One duty per line)</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Enter each responsibility on a new line..."
-                    value={editRoleForm.responsibilitiesText}
-                    onChange={(e) => setEditRoleForm({ ...editRoleForm, responsibilitiesText: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-sans"
-                  />
-                  <span className="text-[10px] text-muted-foreground">Each line will be saved as an individual responsibility.</span>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-3.5 text-xs min-h-0">
+            {/* Review Banner when submitted */}
+            {isSubmittedRole && (
+              <div className="p-3 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-800 dark:text-sky-300 flex items-start gap-2.5">
+                <FileCheck className="h-4 w-4 text-sky-600 dark:text-sky-400 mt-0.5 shrink-0" />
+                <div className="space-y-0.5 text-xs">
+                  <span className="font-semibold block">Configuration Submitted for Review</span>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    The assigned Domain Expert has completed micro-skill authoring and submitted this configuration for your confirmation. Review the specifications below. Choose <strong>Approve &amp; Publish</strong> to activate the role or <strong>Return for Revision</strong> to send it back to draft.
+                  </p>
                 </div>
               </div>
+            )}
+
+            {/* Revision Feedback Banner when in feedback state */}
+            {isFeedbackRole && cleanModalRejectionReason && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-black flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 text-black mt-0.5 shrink-0" />
+                <div className="space-y-0.5 text-xs text-black">
+                  <span className="font-semibold block text-black">Domain Expert Feedback</span>
+                  <p className="text-[11px] leading-relaxed text-black">
+                    {cleanModalRejectionReason}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Rejection Notes when manager returned configuration */}
+            {isRejectedRole && cleanModalRejectionReason && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                <div className="space-y-0.5 text-xs">
+                  <span className="font-semibold block">Revision Notes for Expert</span>
+                  <p className="text-[11px] leading-relaxed">
+                    {cleanModalRejectionReason}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Card 1: Role Identity */}
+            <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                Role Identification &amp; Code
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-foreground block mb-1">
+                    Role Code <span className="text-[10px] text-muted-foreground font-normal">(Identifier)</span>
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={selectedRole.code}
+                    className="w-full px-2.5 py-1.5 rounded-md bg-muted/50 border border-border text-foreground font-mono text-xs cursor-not-allowed opacity-80"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-foreground block mb-1">
+                    Role Title <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    disabled={isSubmittedRole || isPublishedRole}
+                    value={editRoleForm.title}
+                    onChange={(e) => setEditRoleForm({ ...editRoleForm, title: e.target.value })}
+                    className={`w-full px-2.5 py-1.5 rounded-md border text-xs shadow-2xs ${
+                      isSubmittedRole || isPublishedRole
+                        ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
+                        : 'bg-background border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary'
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Industry Occupation Alignment */}
+            <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+                    Industry Occupation Alignment
+                  </span>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Align this role with a recognized O*NET industry occupation and benchmark standard.
+                  </p>
+                </div>
+                <Badge variant="secondary" className="text-[10px] font-semibold shrink-0 self-start sm:self-center">
+                  Job Zone 4
+                </Badge>
+              </div>
+
+              <div className="pt-1">
+                <label className="text-[11px] font-semibold text-foreground block mb-1">
+                  Occupation <span className="text-destructive">*</span>
+                </label>
+                <Combobox
+                  size="sm"
+                  clearable={false}
+                  disabled={isSubmittedRole || isPublishedRole}
+                  options={OCCUPATION_OPTIONS}
+                  value={editRoleForm.occupationCode}
+                  onChange={(val) => {
+                    if (!val) return
+                    const occ = ONET_OCCUPATIONS.find((o) => o.code === val)
+                    const eligible = getEligibleExpertsForOccupation(val)
+                    const isCurrentEligible = eligible.some((e) => e.id === editRoleForm.assignedExpertId)
+                    const newExpertId = isCurrentEligible ? editRoleForm.assignedExpertId : (eligible[0]?.id || '')
+                    setEditRoleForm((prev) => ({
+                      ...prev,
+                      occupationCode: val,
+                      assignedExpertId: newExpertId,
+                      scope: prev.scope || occ?.description || '',
+                      description: prev.description || occ?.description || '',
+                    }))
+                  }}
+                  placeholder="Select Occupation..."
+                  searchPlaceholder="Search occupation..."
+                />
+              </div>
+
+              {(() => {
+                const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === editRoleForm.occupationCode)
+                if (!selectedOcc) return null
+                return (
+                  <p className="text-[10.5px] text-muted-foreground bg-background/60 p-2 rounded border border-primary/10 leading-relaxed">
+                    {selectedOcc.description}
+                  </p>
+                )
+              })()}
+            </div>
+
+            {/* Card 3: Proficiency Benchmark Tiers */}
+            <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    Proficiency Benchmark Tiers
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Benchmark passing thresholds for Junior, Middle, and Senior levels
+                  </span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30">
+                  Junior • Middle • Senior
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground text-xs">Junior (J)</span>
+                      <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 1</Badge>
+                    </div>
+                    <div className="text-muted-foreground text-[10px] mt-0.5">Foundational execution &amp; guidance</div>
+                  </div>
+                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
+                    <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min={10}
+                        max={100}
+                        step={5}
+                        disabled={isSubmittedRole || isPublishedRole}
+                        value={editRoleForm.levelThresholds.J}
+                        onChange={(e) => {
+                          const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 60))
+                          setEditRoleForm({
+                            ...editRoleForm,
+                            levelThresholds: { ...editRoleForm.levelThresholds, J: val },
+                          })
+                        }}
+                        className={`w-14 px-1.5 py-0.5 rounded border font-bold font-mono text-center text-xs ${
+                          isSubmittedRole || isPublishedRole
+                            ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
+                            : 'border-border bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none'
+                        }`}
+                      />
+                      <span className="font-semibold text-muted-foreground text-xs">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground text-xs">Middle (M)</span>
+                      <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 2</Badge>
+                    </div>
+                    <div className="text-muted-foreground text-[10px] mt-0.5">Independent delivery &amp; core systems</div>
+                  </div>
+                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
+                    <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min={10}
+                        max={100}
+                        step={5}
+                        disabled={isSubmittedRole || isPublishedRole}
+                        value={editRoleForm.levelThresholds.M}
+                        onChange={(e) => {
+                          const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 75))
+                          setEditRoleForm({
+                            ...editRoleForm,
+                            levelThresholds: { ...editRoleForm.levelThresholds, M: val },
+                          })
+                        }}
+                        className={`w-14 px-1.5 py-0.5 rounded border font-bold font-mono text-center text-xs ${
+                          isSubmittedRole || isPublishedRole
+                            ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
+                            : 'border-border bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none'
+                        }`}
+                      />
+                      <span className="font-semibold text-muted-foreground text-xs">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground text-xs">Senior (S)</span>
+                      <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 3</Badge>
+                    </div>
+                    <div className="text-muted-foreground text-[10px] mt-0.5">Technical leadership &amp; architecture</div>
+                  </div>
+                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
+                    <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min={10}
+                        max={100}
+                        step={5}
+                        disabled={isSubmittedRole || isPublishedRole}
+                        value={editRoleForm.levelThresholds.S}
+                        onChange={(e) => {
+                          const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 90))
+                          setEditRoleForm({
+                            ...editRoleForm,
+                            levelThresholds: { ...editRoleForm.levelThresholds, S: val },
+                          })
+                        }}
+                        className={`w-14 px-1.5 py-0.5 rounded border font-bold font-mono text-center text-xs ${
+                          isSubmittedRole || isPublishedRole
+                            ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
+                            : 'border-border bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none'
+                        }`}
+                      />
+                      <span className="font-semibold text-muted-foreground text-xs">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Assigned Subject Matter Expert */}
+            <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Assigned Subject Matter Expert
+                </span>
+                <span className="text-[10px] text-primary font-medium">
+                  {editExpertOptions.length} eligible expert{editExpertOptions.length !== 1 ? 's' : ''} available for this occupation
+                </span>
+              </div>
+              <div>
+                <Combobox
+                  size="sm"
+                  clearable={false}
+                  disabled={isSubmittedRole || isPublishedRole}
+                  options={editExpertOptions}
+                  value={editRoleForm.assignedExpertId}
+                  onChange={(val) => val && setEditRoleForm({ ...editRoleForm, assignedExpertId: val })}
+                  placeholder="Select assigned domain expert..."
+                  searchPlaceholder="Search eligible expert for this occupation..."
+                />
+                <span className="text-[10px] text-muted-foreground mt-1 block">
+                  Only subject matter experts assigned to {editRoleForm.occupationCode} ({ONET_OCCUPATIONS.find(o => o.code === editRoleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
+                </span>
+              </div>
+            </div>
+
+            {/* Card 5: Role Scope & Key Responsibilities */}
+            <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                Role Scope &amp; Key Responsibilities
+              </span>
+              <div>
+                <label className="text-[11px] font-semibold text-foreground block mb-1">
+                  Role Scope &amp; Summary
+                </label>
+                <textarea
+                  rows={2}
+                  disabled={isSubmittedRole || isPublishedRole}
+                  placeholder="Summarize the purpose, scope, and strategic objectives of this target role..."
+                  value={editRoleForm.scope}
+                  onChange={(e) => setEditRoleForm({ ...editRoleForm, scope: e.target.value, description: e.target.value })}
+                  className={`w-full px-2.5 py-1.5 rounded-md border text-xs shadow-2xs ${
+                    isSubmittedRole || isPublishedRole
+                      ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
+                      : 'bg-background border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-foreground block mb-1">
+                  Key Responsibilities <span className="text-muted-foreground text-[10px] font-normal">(One responsibility per line)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  disabled={isSubmittedRole || isPublishedRole}
+                  placeholder="Enter each responsibility on a new line..."
+                  value={editRoleForm.responsibilitiesText}
+                  onChange={(e) => setEditRoleForm({ ...editRoleForm, responsibilitiesText: e.target.value })}
+                  className={`w-full px-2.5 py-1.5 rounded-md border text-xs font-sans shadow-2xs ${
+                    isSubmittedRole || isPublishedRole
+                      ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
+                      : 'bg-background border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary'
+                  }`}
+                />
+                <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                  Enter distinct job duties to be displayed on employee role roadmaps and career matrix.
+                </span>
+              </div>
+            </div>
 
               {/* Linked Competencies */}
               <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
                     <BookOpen className="h-3.5 w-3.5 text-primary" />
-                    <span>Mapped Competencies</span>
+                    <span>Required Competencies</span>
                     <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
                       {editRoleForm.competencyIds.length} linked
                     </Badge>
@@ -1821,7 +2392,7 @@ export function TargetRolesPage() {
                   <span className="text-[10px] text-muted-foreground font-normal">
                     {selectedRole.status === 'published'
                       ? 'Published role (Competency links locked)'
-                      : 'Select ontology competencies required for this role'}
+                      : 'Select knowledge competencies required for employees targeting this role'}
                   </span>
                 </div>
 
@@ -1858,7 +2429,7 @@ export function TargetRolesPage() {
                         </div>
                       )
                     }
-                    const isLocked = selectedRole.status === 'published'
+                    const isLocked = isPublishedRole || isSubmittedRole
                     return filtered.map((comp) => {
                       const isLinked = editRoleForm.competencyIds.includes(comp.id)
                       const isArchived = comp.status === 'archived'
@@ -1951,24 +2522,57 @@ export function TargetRolesPage() {
           </div>
 
           <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
-            <Button
-              variant="destructive"
-              size="sm"
-              leftIcon={<Trash2 className="h-4 w-4" />}
-              onClick={() => {
-                const r = selectedRole
-                setIsSkillTargetsModalOpen(false)
-                setDeletingRole(r)
-              }}
-            >
-              {selectedRole.status === 'draft' ? 'Delete Draft Role' : 'Delete Role'}
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
-                Cancel
-              </Button>
-              {selectedRole.status !== 'published' && (
-                <>
+            {isSubmittedRole ? (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 border-destructive/30 font-medium"
+                    onClick={() => {
+                      const r = selectedRole
+                      setIsSkillTargetsModalOpen(false)
+                      handleOpenManagerRejectDialog(r)
+                    }}
+                    leftIcon={<XCircle className="h-3.5 w-3.5 text-destructive" />}
+                  >
+                    Return for Revision
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={async () => {
+                      const r = selectedRole
+                      setIsSkillTargetsModalOpen(false)
+                      handleApproveAndPublishRole(r)
+                    }}
+                    leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                  >
+                    Approve &amp; Publish
+                  </Button>
+                </div>
+              </>
+            ) : isDraftRole || isSentRole ? (
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  leftIcon={<Trash2 className="h-4 w-4" />}
+                  onClick={() => {
+                    const r = selectedRole
+                    setIsSkillTargetsModalOpen(false)
+                    setDeletingRole(r)
+                  }}
+                >
+                  {isDraftRole ? 'Delete Draft Role' : 'Delete Role'}
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                    Cancel
+                  </Button>
                   <Button variant="outline" size="sm" onClick={handleSaveEditRole}>
                     Save Changes
                   </Button>
@@ -1981,14 +2585,33 @@ export function TargetRolesPage() {
                       handleSendToExpert({ ...selectedRole, ...editRoleForm, status: 'sent' })
                     }}
                   >
-                    {selectedRole.status === 'rejected' ? 'Save & Re-send to Expert' : 'Save & Send to Expert'}
+                    {isSentRole || isFeedbackRole ? 'Save & Re-dispatch to Expert' : selectedRole.rejectionReason ? 'Save & Re-send to Expert' : 'Save & Send to Expert'}
                   </Button>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  leftIcon={<Trash2 className="h-4 w-4" />}
+                  onClick={() => {
+                    const r = selectedRole
+                    setIsSkillTargetsModalOpen(false)
+                    setDeletingRole(r)
+                  }}
+                >
+                  Delete Role
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                  Close
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </Dialog>
-      )}
+        )
+      })()}
 
 
       {/* 4. PUBLICATION READINESS VERIFICATION MODAL */}
@@ -2113,73 +2736,144 @@ export function TargetRolesPage() {
                 <Briefcase className="h-5 w-5 text-primary shrink-0" />
                 <span>{viewingDetailsRole.title}</span>
               </DialogTitle>
-              <Badge
-                variant={
-                  viewingDetailsRole.status === 'published'
-                    ? 'success'
-                    : viewingDetailsRole.status === 'draft'
-                      ? 'warning'
-                      : 'outline'
-                }
-                className="font-bold text-xs"
-              >
-                {viewingDetailsRole.status.toUpperCase()}
-              </Badge>
+              {(() => {
+                const viewEffStatus = getManagerEffectiveStatus(viewingDetailsRole)
+                return (
+                  <Badge
+                    variant={
+                      viewEffStatus === 'published'
+                        ? 'success'
+                        : viewEffStatus === 'feedback'
+                        ? 'outline'
+                        : viewEffStatus === 'rejected'
+                        ? 'destructive'
+                        : 'warning'
+                    }
+                    className={
+                      viewEffStatus === 'feedback'
+                        ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
+                        : viewEffStatus === 'submitted'
+                        ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 text-xs'
+                        : viewEffStatus === 'sent'
+                        ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold dark:text-amber-400 text-xs'
+                        : 'font-bold text-xs'
+                    }
+                  >
+                    {viewEffStatus.toUpperCase()}
+                  </Badge>
+                )
+              })()}
             </div>
             <DialogDescription className="text-xs text-muted-foreground">
-              Comprehensive role architecture, ontology requirements, and active enterprise enrollments.
+              Comprehensive role specifications, competency requirements, and workforce alignment.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto pr-1.5 space-y-4 text-xs min-h-0">
 
-            {/* Rejection Reason Notice */}
-            {viewingDetailsRole.status === 'rejected' && viewingDetailsRole.rejectionReason && (
-              <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5">
-                <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
-                <div>
-                  <div className="font-bold text-foreground">Rejection Feedback from Assigned Domain Expert:</div>
-                  <div className="mt-1 text-foreground leading-relaxed whitespace-pre-wrap">{viewingDetailsRole.rejectionReason}</div>
+            {/* Rejection / Feedback Notice */}
+            {(() => {
+              const viewEffStatus = getManagerEffectiveStatus(viewingDetailsRole)
+              const cleanViewRejectionReason = (viewingDetailsRole.rejectionReason || '').replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
+              if (!cleanViewRejectionReason) return null
+
+              if (viewEffStatus === 'feedback') {
+                return (
+                  <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-black flex items-start gap-2.5">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-black" />
+                    <div className="text-black">
+                      <div className="font-bold text-black">Domain Expert Feedback:</div>
+                      <div className="mt-1 text-black leading-relaxed whitespace-pre-wrap">{cleanViewRejectionReason}</div>
+                    </div>
+                  </div>
+                )
+              }
+
+              if (viewEffStatus === 'rejected') {
+                return (
+                  <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
+                    <div>
+                      <div className="font-bold text-foreground">Revision Notes:</div>
+                      <div className="mt-1 text-foreground leading-relaxed whitespace-pre-wrap">{cleanViewRejectionReason}</div>
+                    </div>
+                  </div>
+                )
+              }
+
+              return null
+            })()}
+
+            {/* O*NET Occupation & Ontology Levels Banner */}
+            {(() => {
+              const occ = resolveOccupationForRole(viewingDetailsRole)
+              return (
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                        Occupation
+                      </div>
+                      <div className="text-sm font-bold text-foreground flex items-center gap-2 mt-0.5">
+                        <span>{viewingDetailsRole.occupationTitle || occ.name}</span>
+                        <Badge variant="outline" className="font-mono text-xs font-semibold text-primary border-primary/30">
+                          {viewingDetailsRole.occupationCode || occ.code}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 max-w-xl">
+                        {occ.description}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right sm:border-l sm:border-border sm:pl-4">
+                      <Badge variant="secondary" className="text-[10px] font-semibold">
+                        Job Zone 4
+                      </Badge>
+                      <div className="text-[10px] text-muted-foreground mt-1">Considerable Preparation</div>
+                    </div>
+                  </div>
+
+                  {/* Proficiency Benchmark Levels */}
+                  <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-foreground">
+                        Proficiency Benchmark Levels
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">Standard Mastery Targets</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {ONTOLOGY_LEVELS.map((lvl) => {
+                        const targetThreshold = viewingDetailsRole.levelThresholds?.[lvl.code] ?? Math.round(lvl.threshold * 100)
+                        return (
+                          <div key={lvl.code} className="p-2 rounded-md bg-muted/30 border border-border/80">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-foreground text-xs">{lvl.name} ({lvl.code})</span>
+                              <Badge variant="primary" className="text-[9px] py-0 px-1 font-mono">
+                                {targetThreshold}% Target
+                              </Badge>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
+                              {lvl.context}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Meta Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 rounded-lg border border-border bg-card">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+              <div className="p-2.5 rounded-lg border border-border bg-card">
                 <span className="text-[10px] text-muted-foreground uppercase font-bold block">Role Code</span>
                 <span className="font-mono font-bold text-foreground mt-0.5 block">{viewingDetailsRole.code}</span>
               </div>
-              <div className="p-3 rounded-lg border border-border bg-card">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Track &amp; Seniority</span>
-                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  <Badge variant={viewingDetailsRole.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold">
-                    {viewingDetailsRole.track || 'PROFESSIONAL'}
-                  </Badge>
-                  {viewingDetailsRole.seniority && (
-                    <Badge variant={viewingDetailsRole.track === 'MANAGEMENT' ? 'secondary' : 'outline'} className="text-[10px] font-semibold">
-                      {viewingDetailsRole.seniority}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="p-3 rounded-lg border border-border bg-card">
+              <div className="p-2.5 rounded-lg border border-border bg-card">
                 <span className="text-[10px] text-muted-foreground uppercase font-bold block">Version</span>
                 <span className="font-mono font-bold text-foreground mt-0.5 block">v{viewingDetailsRole.version}</span>
               </div>
-              <div className="p-3 rounded-lg border border-border bg-card">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Job Domain</span>
-                <span className="font-semibold text-foreground mt-0.5 truncate block">
-                  {JOB_DOMAINS.find((d) => d.code === viewingDetailsRole.domainCode)?.name || viewingDetailsRole.domainCode || viewingDetailsRole.department || 'ICT'}
-                </span>
-              </div>
-              <div className="p-3 rounded-lg border border-border bg-card">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Career Family</span>
-                <span className="font-mono font-semibold text-foreground mt-0.5 truncate block">
-                  {viewingDetailsRole.familyCode || 'GENERAL'}
-                </span>
-              </div>
-              <div className="p-3 rounded-lg border border-border bg-card">
+              <div className="p-2.5 rounded-lg border border-border bg-card col-span-2 sm:col-span-1">
                 <span className="text-[10px] text-muted-foreground uppercase font-bold block">Assigned Domain Expert</span>
                 <span className="font-semibold text-primary mt-0.5 truncate block">
                   {viewingDetailsRole.assignedExpertName || ELIGIBLE_EXPERTS.find((e) => e.id === viewingDetailsRole.assignedExpertId)?.name || 'Unassigned'}
@@ -2187,17 +2881,14 @@ export function TargetRolesPage() {
               </div>
             </div>
 
-
-            {/* Description */}
-            <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2 text-xs">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
-                  Role Objective &amp; Scope
-                </span>
-                <p className="text-foreground leading-relaxed">
-                  {viewingDetailsRole.description || 'Defines standardized competency requirements for this enterprise role track.'}
-                </p>
-              </div>
+            {/* Role Scope & Operational Objectives */}
+            <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1.5 text-xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                Role Scope &amp; Summary
+              </span>
+              <p className="text-foreground leading-relaxed">
+                {viewingDetailsRole.scope || viewingDetailsRole.description || 'Defines standardized competency requirements and skill milestones for this enterprise role profile.'}
+              </p>
             </div>
 
             {/* Key Responsibilities */}
@@ -2292,7 +2983,35 @@ export function TargetRolesPage() {
               <Button variant="outline" size="sm" onClick={() => setViewingDetailsRole(null)}>
                 Close
               </Button>
-              {viewingDetailsRole.status !== 'published' && (
+              {(viewingDetailsRole.status === 'submitted' || viewingDetailsRole.status === 'sent') && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 border-destructive/30"
+                    onClick={() => {
+                      const r = viewingDetailsRole
+                      setViewingDetailsRole(null)
+                      handleOpenManagerRejectDialog(r)
+                    }}
+                    leftIcon={<XCircle className="h-3.5 w-3.5 text-destructive" />}
+                  >
+                    Return for Revision
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      const r = viewingDetailsRole
+                      handleApproveAndPublishRole(r)
+                    }}
+                    leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                  >
+                    Approve & Publish
+                  </Button>
+                </>
+              )}
+              {viewingDetailsRole.status !== 'published' && viewingDetailsRole.status !== 'submitted' && viewingDetailsRole.status !== 'sent' && (
                 <Button
                   variant="primary"
                   size="sm"
@@ -2381,6 +3100,83 @@ export function TargetRolesPage() {
           </>
         )}
       </Dialog>
+
+      {/* 6. MANAGER REJECTION / RETURN FOR REVISION MODAL */}
+      {managerRejectingRole && (
+        <Dialog
+          open={isManagerRejectDialogOpen}
+          onOpenChange={setIsManagerRejectDialogOpen}
+          className="max-w-md"
+        >
+          <div className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+                <span>Return for Revision: {managerRejectingRole.title}</span>
+              </DialogTitle>
+              <DialogDescription>
+                Return this target role configuration to the assigned domain expert for revision.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-foreground font-mono">{managerRejectingRole.code}</span>
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    v{managerRejectingRole.version}
+                  </Badge>
+                </div>
+                <div className="text-muted-foreground text-xs font-medium">
+                  {managerRejectingRole.title}
+                </div>
+                <div className="text-[11px] text-muted-foreground pt-1.5 border-t border-destructive/10 flex items-center justify-between">
+                  <span>Assigned Domain Expert:</span>
+                  <span className="font-semibold text-foreground">
+                    {managerRejectingRole.assignedExpertName || 'Domain Expert'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-foreground block mb-1">
+                  Revision Notes &amp; Feedback <span className="text-destructive">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={managerRejectionReason}
+                  onChange={(e) => setManagerRejectionReason(e.target.value)}
+                  placeholder="Specify clear revision feedback for the domain expert (e.g. required skill competencies are incomplete, benchmark thresholds need adjustment)..."
+                  className="w-full text-xs p-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="flex items-center justify-between sm:justify-between w-full pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsManagerRejectDialogOpen(false)
+                  setManagerRejectingRole(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={!managerRejectionReason.trim()}
+                onClick={handleConfirmManagerRejection}
+                leftIcon={<XCircle className="h-4 w-4" />}
+                className="font-semibold shadow-2xs"
+              >
+                Confirm Return
+              </Button>
+            </DialogFooter>
+          </div>
+        </Dialog>
+      )}
 
       <QuickConfigImportModal
         open={isImportModalOpen}
