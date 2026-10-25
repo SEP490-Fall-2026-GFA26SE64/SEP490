@@ -87,6 +87,7 @@ services:
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,local-baseline-demo
+      ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "true"
     depends_on:
       seed:
         condition: service_completed_successfully
