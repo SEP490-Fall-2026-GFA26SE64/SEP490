@@ -3,6 +3,7 @@ import * as React from 'react'
 import type { ReactNode } from 'react'
 import {
   Activity,
+  Award,
   BookOpen,
   Briefcase,
   Building,
