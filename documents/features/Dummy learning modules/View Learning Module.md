@@ -23,7 +23,7 @@ Display a recommended dummy module's description, intended outcome skills, and a
 
 ## Confirmed Related Rule
 
-- Existing-pathway decision, 2026-09-27, option A: Employees may continue viewing modules and accessing eligible module assessments in an existing active pathway after the selected role loses baseline readiness. Baseline readiness loss alone is not a module-access blocker. Module authorization and availability checks still apply; this does not restore removed modules or reactivate archived pathways.
+- Current adaptive-baseline dependency: later Blueprint replacement, disablement or catalog staleness is not a module-access rule and does not erase completed mastery. Module/pathway authorization and availability remain authoritative.
 
 ## Open Decisions
 
@@ -35,4 +35,4 @@ Display a recommended dummy module's description, intended outcome skills, and a
 
 An employee can understand the module's intended outcomes and locate its assessment without being required to consume real course content.
 
-- An otherwise available, authorized module in an active pathway remains accessible when the role's baseline question coverage becomes insufficient. Its assessment remains accessible only when the assessment's own checks pass.
+- An otherwise available, authorized module remains accessible after a later Blueprint/catalog change. Its assessment remains accessible only when the assessment's own checks pass.

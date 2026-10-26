@@ -17,6 +17,7 @@ interface TargetRoleDetailDialogProps {
   activeRoleId: string | null
   selectionUnavailable: boolean
   selectionPending: boolean
+  isCompleted?: boolean
   onClose: () => void
   onChoose: (role: TargetRoleDetail) => void
 }
@@ -26,13 +27,14 @@ export function TargetRoleDetailDialog({
   activeRoleId,
   selectionUnavailable,
   selectionPending,
+  isCompleted = false,
   onClose,
   onChoose,
 }: TargetRoleDetailDialogProps) {
   const detail = useTargetRole(roleId)
   const notAvailable = detail.error instanceof TargetRoleApiError
     && detail.error.code === 'ROLE_NOT_AVAILABLE'
-  const isActive = detail.data?.id === activeRoleId
+  const isActive = !isCompleted && detail.data?.id === activeRoleId
 
   return (
     <Dialog
@@ -79,7 +81,17 @@ export function TargetRoleDetailDialog({
               <DialogTitle>{detail.data.name}</DialogTitle>
               <Badge variant="primary" className="text-[10px] font-bold">{detail.data.seniority}</Badge>
               <Badge variant="outline" className="text-[10px]">{detail.data.track}</Badge>
-              {isActive && <Badge variant="success" className="text-[10px]">Active role</Badge>}
+              {isCompleted ? (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] text-success border-success/30 bg-success/5 font-semibold gap-1"
+                >
+                  <CheckCircle2 size={11} className="text-success shrink-0" />
+                  <span>Done</span>
+                </Badge>
+              ) : isActive ? (
+                <Badge variant="success" className="text-[10px]">Active role</Badge>
+              ) : null}
             </div>
             <DialogDescription>
               {detail.data.code} · {detail.data.familyCode}
@@ -134,18 +146,30 @@ export function TargetRoleDetailDialog({
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft size={14} />} onClick={onClose}>
               Back to roles
             </Button>
-            <Button
-              variant={isActive ? 'secondary' : 'primary'}
-              size="sm"
-              disabled={isActive || selectionUnavailable || selectionPending}
-              leftIcon={isActive ? <CheckCircle2 size={14} /> : <Target size={14} />}
-              onClick={() => {
-                onClose()
-                onChoose(detail.data)
-              }}
-            >
-              {isActive ? 'Current target role' : selectionPending ? 'Loading selection...' : 'Choose this role'}
-            </Button>
+            {isCompleted ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="bg-success/5 text-success border-success/30 font-semibold cursor-default opacity-95"
+                leftIcon={<CheckCircle2 size={14} className="text-success" />}
+              >
+                Done
+              </Button>
+            ) : (
+              <Button
+                variant={isActive ? 'secondary' : 'primary'}
+                size="sm"
+                disabled={isActive || selectionUnavailable || selectionPending}
+                leftIcon={isActive ? <CheckCircle2 size={14} /> : <Target size={14} />}
+                onClick={() => {
+                  onClose()
+                  onChoose(detail.data)
+                }}
+              >
+                {isActive ? 'Current target role' : selectionPending ? 'Loading selection...' : 'Choose this role'}
+              </Button>
+            )}
           </DialogFooter>
         </div>
       ) : null}

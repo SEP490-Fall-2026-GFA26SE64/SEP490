@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
+import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import {
@@ -360,8 +361,27 @@ export function ContentApprovalQueuePage() {
                     <tbody className="divide-y divide-border">
                       {paginatedSubmissions.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="text-center py-10 text-muted-foreground text-xs">
-                            No offerings found matching filter criteria.
+                          <td colSpan={7} className="p-6">
+                            <EmptyState
+                              icon={<CheckCircle2 className="h-10 w-10 text-success" />}
+                              title="All Pathways and Offerings Processed"
+                              description="There are currently no learning offerings or pathways awaiting review. Any new submissions from domain experts will appear here."
+                              action={
+                                searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL' ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSearchQuery('')
+                                      setTypeFilter('ALL')
+                                      setStatusFilter('ALL')
+                                    }}
+                                  >
+                                    Reset Filters
+                                  </Button>
+                                ) : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       ) : (
@@ -387,14 +407,15 @@ export function ContentApprovalQueuePage() {
                               {item.microSkillsMapped.length > 0 && (
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span
-                                    className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-foreground font-mono border border-border font-medium"
+                                    className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/70 text-foreground font-mono border border-primary/20 font-medium inline-flex items-center gap-1 shadow-2xs"
                                     title={item.microSkillsMapped[0]}
                                   >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
                                     {item.microSkillsMapped[0]}
                                   </span>
                                   {item.microSkillsMapped.length > 1 && (
                                     <span
-                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/20 cursor-default"
+                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/25 cursor-default shadow-2xs"
                                       title={`+${item.microSkillsMapped.length - 1} more: ${item.microSkillsMapped.slice(1).join(', ')}`}
                                     >
                                       +{item.microSkillsMapped.length - 1}
@@ -552,7 +573,7 @@ export function ContentApprovalQueuePage() {
             </label>
             <textarea
               rows={4}
-              placeholder="e.g. Please refine questions #3 and #7 to better target Bloom level 4 analysis..."
+              placeholder="e.g. Please refine questions #3 and #7 to better target practical scenario analysis..."
               value={revisionFeedback}
               onChange={(e) => setRevisionFeedback(e.target.value)}
               className="w-full rounded-lg border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25"
@@ -633,8 +654,9 @@ export function ContentApprovalQueuePage() {
                   {viewingSubmission.microSkillsMapped.map((skill) => (
                     <span
                       key={skill}
-                      className="px-2 py-0.5 rounded bg-muted text-foreground font-mono text-[11px] border border-border font-medium"
+                      className="px-2 py-0.5 rounded-md bg-secondary/70 text-foreground font-mono text-[11px] border border-primary/20 font-medium inline-flex items-center gap-1.5 shadow-2xs"
                     >
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
                       {skill}
                     </span>
                   ))}

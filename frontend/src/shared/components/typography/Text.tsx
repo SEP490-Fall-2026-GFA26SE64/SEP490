@@ -12,6 +12,7 @@ export type TextVariant =
 export interface TextProps extends ComponentPropsWithoutRef<'p'> {
   as?: ElementType
   variant?: TextVariant
+  tone?: 'foreground' | 'muted' | 'primary' | 'success' | 'destructive'
 }
 
 const VARIANT_CLASSES: Record<TextVariant, string> = {
@@ -24,10 +25,10 @@ const VARIANT_CLASSES: Record<TextVariant, string> = {
   muted: 'text-muted-foreground text-sm',
 }
 
-export function Text({ as: Component = 'p', variant = 'body', className = '', children, ...props }: TextProps) {
+export function Text({ as: Component = 'p', variant = 'body', tone, className = '', children, ...props }: TextProps) {
   const variantClass = VARIANT_CLASSES[variant] || VARIANT_CLASSES.body
   return (
-    <Component className={`${variantClass} ${className}`.trim()} {...props}>
+    <Component data-text-tone={tone} className={`${variantClass} ${className}`.trim()} {...props}>
       {children}
     </Component>
   )

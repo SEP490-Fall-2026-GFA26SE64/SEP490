@@ -20,7 +20,7 @@ Submit answers to the assessment associated with a recommended module. Retain qu
 
 ## Confirmed Related Rule
 
-- Existing-pathway decision, 2026-09-27, option A: Loss of the selected role's baseline readiness alone does not block starting or continuing module assessments in its existing active pathway. Apply the module assessment's own authorization, availability, and eligibility checks. This does not introduce a retake allowance, change scoring or recalculation rules, or permit assessments in archived pathways.
+- Current adaptive-baseline dependency: later Blueprint replacement, disablement or catalog staleness does not by itself block a module assessment. Apply the module assessment's own authorization, availability and eligibility checks; this does not change its retake/scoring rules or permit archived-pathway access.
 
 ## Open Decisions
 
@@ -32,4 +32,4 @@ Submit answers to the assessment associated with a recommended module. Retain qu
 
 A failed question can be traced to the assessed micro-skill; failure alone does not unconditionally replan the pathway.
 
-- Given an otherwise eligible module assessment in the employee's active pathway, a shortage in the role's baseline question bank does not by itself block starting or continuing that module assessment. A separate module-assessment eligibility failure still blocks the operation.
+- Given an otherwise eligible module assessment, a later adaptive-Blueprint/catalog change does not by itself block starting or continuing it. A separate module-assessment eligibility failure still blocks the operation.

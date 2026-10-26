@@ -1,0 +1,106 @@
+{
+  "recordedAt": "2026-10-22T22:51:54.006545+07:00",
+  "head": "70679bb43e1798f1235a17d6a9a843701e76a796",
+  "indexEmpty": true,
+  "stash": [
+    "3a8b19d1ea11fdb8592adb89518b85baeea1fac7"
+  ],
+  "protectedBeforePaths": 38,
+  "protectedHashMismatches": [],
+  "releaseSidecars": 14,
+  "sidecarMismatches": [],
+  "session2SourceMismatches": [],
+  "newChangedRuntimeConfigPaths": [
+    {
+      "path": "compose.dev.yml",
+      "beforeSha256": "658284adee76bc462fbdf292f224a860ca092ea45d6400c111a62bb228aafacb",
+      "afterSha256": "8a055ee9bc0e99058784d3b3fe9463cbb8dcd638b31e7986c2ac66c33aac20cc"
+    },
+    {
+      "path": "frontend/.env.example",
+      "beforeSha256": "3eee95a8c5b51174a45ae15415ee78ec16771600a165abf739553dedceca2bc4",
+      "afterSha256": "3ae74cfa7b28f3f8c2d12a60fd138909f506d46718580eaa39c41e1b7284230b"
+    },
+    {
+      "path": "frontend/src/app/App.tsx",
+      "beforeSha256": "08c505a7f7a10c1442d920b341a30ec417492c2ab57a1445df0810c3c97a8257",
+      "afterSha256": "812eda6ef607c3de25c2a5581e66a60e6e1075eea7afe9bda31402c1f9ae7a5d"
+    },
+    {
+      "path": "frontend/src/shared/i18n/translations/en.ts",
+      "beforeSha256": "6ee930279b9bfc097da003fb2d3244fa42d110a3962e502ac1654927ad926fa0",
+      "afterSha256": "429e673ba8e68f2fdff5079c5c67ecf3a41cd4f1e57a729da5a74446bc68b5f2"
+    },
+    {
+      "path": "frontend/src/shared/i18n/translations/vi.ts",
+      "beforeSha256": "03e923b6d9847bd1818101bba6fc26c87462246dc9f07a99bcfde5a64dbb7b12",
+      "afterSha256": "62f226a2ec77e4486ef8ed9f6b55bb5d0658282958dd519e1fb27ec0135f51b4"
+    },
+    {
+      "path": "frontend/src/features/manager/baseline-assessments/AdaptiveBaselinePage.tsx",
+      "beforeSha256": "66c5aad724e13d3190ad5949798b4eb2d6ebba1e34e41f0b0754f2949ba1a075",
+      "afterSha256": "5ab7150d399fcbacaaa985aea1706e9ad10a98ec19ae4c805ea65d48ae2f8054"
+    },
+    {
+      "path": "frontend/src/features/employee/assessment/AssessmentPage.tsx",
+      "beforeSha256": "9dd622433b97d9cb0c1bdc9f143eba85614a71dacea1abc34350c7d930d55dda",
+      "afterSha256": "1bed0fe0252fdc5942ff37ed95cc742bb3ea1ebe421ea5344ebad6e71e857887"
+    },
+    {
+      "path": "frontend/src/features/employee/baseline-assessment/EmployeeBaselinePage.tsx",
+      "beforeSha256": "4be37577810dbc0c8408a96db7d47f0c55e653b0a4f8b41de3e9fd7e3e843ed3",
+      "afterSha256": "0bba3f8fe043f167996aaaae14af45e12378ecb0e8e44a4546176210e11aa566"
+    },
+    {
+      "path": "backend/src/main/resources/application-local.yml",
+      "beforeSha256": "47f998225847efe46a1415b4771d3736c8ce59ba11c40667c988d66722a6ee24",
+      "afterSha256": "783fdf2094f40baef82e33ef8946672da77caeeac3f7796801372d9627a4fb14"
+    },
+    {
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/api/BaselineAnswerReviewController.java",
+      "beforeSha256": "c3fa79f88e4eb7bb954be38d6d356727b3dd192d1e2a265a88ade635aadfe753",
+      "afterSha256": "4940c76054f86803dc96f6b449bfed7c60bce898e56b5d18af648195b031af93"
+    },
+    {
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/api/BaselineAssessmentManagementController.java",
+      "beforeSha256": "7299e0bdb5594673b8e32bcfd4709113515ab45640d2b3c40f97325158f0add9",
+      "afterSha256": "d9336e9d5cdef5c5988901adc7055e1320f0c54852827a41f03a0db313302ccd"
+    },
+    {
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/api/BaselineBlueprintController.java",
+      "beforeSha256": "78fdab4d8b0cc0e79b4b7a9ae193b123b357d2650183de1dd5a3d1401f1be95d",
+      "afterSha256": "f10bab6e1a5d01c4f07bc7520f6859433ee9b1734770dd15c6c30a830cfe780a"
+    },
+    {
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/api/BaselineOccupationCatalogController.java",
+      "beforeSha256": "9be37726329e3b85e32eb16bb99ebb860ca33bce902045f2fda1da21f476a5b6",
+      "afterSha256": "03cb5daa883a6ca6609de1911ce954d62adfc9c4c187288c9559d59b77e648ba"
+    },
+    {
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/infrastructure/LocalBaselineBlueprintConfiguration.java",
+      "beforeSha256": "f3f8ccc3bb4804bbe3feea878ba1fb9d1f8b647090a21ff617949c54792cb333",
+      "afterSha256": "ffcad91c6b380bf7a96c0a3622ff9aa554061619bd6d82c6010f4f284c1e47c7"
+    }
+  ],
+  "newPhysicalSourceFileDeletions": [],
+  "trackedTestDiffUnchangedSinceIntake": true,
+  "gitDiffCheckExit": 0,
+  "verifiedSession3Links": 36,
+  "brokenLinks": [],
+  "currentLines": 50,
+  "limits": "Static preservation/link/diff checks only; no test runner, no authenticated/UI/business acceptance.",
+  "ontologyAndWorkbookChecks": {
+    "documents/dataset/ONTOLOGY.md": true,
+    "documents/dataset/ontology_dataset.xlsx": true,
+    "documents/dataset/import/ontology_seed.json": true
+  },
+  "finalDatabasePreservationAt": "2026-10-22T22:49:00.316100+07:00",
+  "finalProductionTypecheck": {
+    "roots": 139,
+    "testImports": 0,
+    "diagnostics": 0
+  },
+  "finalViteBuildExit": 0,
+  "finalLintExit": 0,
+  "finalLintWarningCount": 9
+}

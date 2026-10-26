@@ -20,6 +20,7 @@ export interface ComboboxProps {
   className?: string
   size?: 'default' | 'sm'
   clearable?: boolean
+  wrapOptions?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
@@ -34,6 +35,7 @@ export function Combobox({
   className,
   size = 'default',
   clearable = true,
+  wrapOptions = false,
   onOpenChange,
 }: ComboboxProps) {
   const [isOpen, setIsOpenState] = React.useState(false)
@@ -147,7 +149,7 @@ export function Combobox({
                     )}
                   >
                     <div className="flex flex-col min-w-0 pr-2">
-                      <span className="truncate">{option.label}</span>
+                      <span className={wrapOptions ? "whitespace-normal break-words" : "truncate"}>{option.label}</span>
                       {option.description && (
                         <span className="text-[11px] text-muted-foreground truncate">{option.description}</span>
                       )}

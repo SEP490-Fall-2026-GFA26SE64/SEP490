@@ -61,6 +61,24 @@ When implementing any feature, enhancement, or bug fix using AI, all agents must
 4. **Test Manual**: Interactively verify visual behavior, user flows, and field completeness (ensure all architectural fields are displayed and populated with meaningful data). Always provide the user with a structured Manual Test Checklist (URL, prerequisites, steps, expected results).
 5. **Update Document**: Update everything related to that task in the `documents/` folder. This strictly includes [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) (entity schemas, field definitions, and store responsibilities) and [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md), feature specifications (`documents/features/`), dedicated test evidence (`documents/testing/<level>/<REQ-ID>-<feature>.md`), and manual browser procedures (`documents/testing/system/`).
 
-Detailed guide: [.agents/rules/ai-feature-workflow.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/.agents/rules/ai-feature-workflow.md).
+Detailed guide: [.agents/rules/ai-feature-workflow.md](file:///d:/Code/Capstone/SEP490/.agents/rules/ai-feature-workflow.md).
+
+---
+
+## Capstone Committee Evaluation & UX Semantic Standard (Always Active)
+
+Every feature and modification must meet enterprise presentation standards for the **Capstone Evaluation Committee (Hội đồng chấm Capstone)**:
+
+1. **Human-Centric UX Semantics (Highest Priority)**:
+   - **Zero Spec Dumps**: Never dump technical architecture, database schemas, or developer checklists into UI labels, subtitles, or tooltips (e.g., replace *"Structure internal business units, assign department leadership, align O\*NET occupations, and manage workforce capacity..."* with clear, benefit-driven copy: *"Organize company departments, assign leadership, and track team competency coverage across your business units."*).
+   - **Zero Unusable Terms**: Never describe capabilities the user cannot actually perform on that screen.
+   - **Bi-directional i18n**: Both English and Vietnamese microcopy must be polished, professional, and natural.
+2. **Shared Component Reuse**: Mandatory reuse of `<PageHeader />`, `<StatCard />`, `<Card />`, `<Button />`, `<Badge />`, `<Dialog />`, `<Input />`, `<Tabs />`, etc. No unstyled ad-hoc HTML duplicates.
+3. **Clean Code & Strict Boundaries**: 100% strict TypeScript types (zero `any`), no unused code/console logs, strict Hexagonal boundaries.
+4. **Exhaustive Edge Cases**: Fully handle empty states (helpful empty state + CTA), long strings/truncation, async loading skeletons, double-click/mutation locking, and network error recovery.
+5. **Playwright E2E Flow Testing**: Validate complete end-to-end user journeys (navigate $\rightarrow$ interact $\rightarrow$ mutation $\rightarrow$ visual update $\rightarrow$ edge/cancel flows) with automated Playwright specs (`frontend/system-tests/`) running against the Compose stack.
+
+Detailed guide: [.agents/rules/ux-semantics-clean-code-playwright.md](file:///d:/Code/Capstone/SEP490/.agents/rules/ux-semantics-clean-code-playwright.md).
+
 
 

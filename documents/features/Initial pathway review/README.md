@@ -8,7 +8,7 @@ Review the first generated Employee/role pathway, evidence, gaps and recommendat
 ## Historical Specification
 Use the alignment above where older details conflict.
 
-Let a Domain Expert inspect an employee's generated pathway after baseline assessment.
+Let an Expert inspect an employee's generated pathway after baseline assessment.
 
 **Source:** [REQ-019](../../PRODUCT_OVERVIEW.md)  
 **Actor:** Domain Expert

@@ -1,0 +1,251 @@
+occupationId,roleId,roleName,levelId,levelName,levelRank,microSkillId,microSkillName,requirementId,requiredScore,isMandatory
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-C1FD07CFA41B0262F5,0.65,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-J,Junior,1,MS-SEC02,Select and verify security controls,REL-9F7E4FCCC552F8E27D,0.65,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-BE580F045DFFB19EE6,0.65,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-11FC372C96986B2058,0.8,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-M,Middle,2,MS-SEC01,Analyse information security risks,REL-681C795B584C7AA862,0.8,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-M,Middle,2,MS-SEC02,Select and verify security controls,REL-42E81F18A249F4847E,0.8,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-M,Middle,2,MS-SEC08,Document security control assurance,REL-0187232F988975E8CC,0.8,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-224465F6AD22852E90,0.8,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-645723DC781367D724,0.95,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-S,Senior,3,MS-SEC01,Analyse information security risks,REL-B8E737C18031D61A1E,0.95,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-S,Senior,3,MS-SEC02,Select and verify security controls,REL-9A79D165B0BC0F0A63,0.95,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-S,Senior,3,MS-SEC08,Document security control assurance,REL-4D5AE981B6D2467D8D,0.95,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-849038A1AEDAD393A7,0.95,True
+OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-2998A0BA45C5C3C4F0,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-FS13,Enforce application authorization,REL-6185CA3E613C8C177F,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-INF01,Configure and verify network connectivity,REL-2AD868893B434997B0,0.6,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-INF05,Monitor service health,REL-A1BF862B1486C7D8DA,0.6,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-B756444DCDE4F0CEC7,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-SEC02,Select and verify security controls,REL-78759D2513B792FFE7,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-SEC03,Configure identity and access controls,REL-3C55C320E08ABAB6A8,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-SEC04,Investigate security alerts,REL-596F4AEDA8A3F7C60C,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-SEC05,Execute a security incident response procedure,REL-6931D4FE643DCC373D,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-SEC07,Verify vulnerability remediation,REL-4B98CCCFF0B60552DF,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-F72D069F2B34255156,0.65,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-FS13,Enforce application authorization,REL-6A8F5F5D4CEEFD7C3B,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-INF01,Configure and verify network connectivity,REL-14B964FC29E22EACB3,0.75,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-INF05,Monitor service health,REL-D8148C3F2B9B4C36FA,0.75,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-FCD58F899CAE2B29DE,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC01,Analyse information security risks,REL-1653FDF5C62B731B2E,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC02,Select and verify security controls,REL-6E8C8F5EB6119C5300,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC03,Configure identity and access controls,REL-97172599A986693741,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC04,Investigate security alerts,REL-57BE8032C9E3CB1B40,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC05,Execute a security incident response procedure,REL-5E8F59E0B2026DF837,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC06,Assess technical vulnerabilities,REL-605F0D642E5646A602,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC07,Verify vulnerability remediation,REL-F363BF972B7C380076,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC08,Document security control assurance,REL-CACCDCEEC06A000CFD,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-BDA8C76C5B96B786C0,0.8,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-FS13,Enforce application authorization,REL-BF7DCC5A920C7F375C,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-INF01,Configure and verify network connectivity,REL-75FDD65A3E72DD56FB,0.9,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-INF05,Monitor service health,REL-CBC3C5B4FCF3678D75,0.9,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-EB3A5B229F0725BE53,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC01,Analyse information security risks,REL-9A2C116ED0581F88AD,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC02,Select and verify security controls,REL-F5A4ABD21ACB02E7CD,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC03,Configure identity and access controls,REL-BFAEA9B93FF7841686,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC04,Investigate security alerts,REL-2D1BC81D95E79D08F1,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC05,Execute a security incident response procedure,REL-DCDF32A7923A562A07,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC06,Assess technical vulnerabilities,REL-4C07B55E4A0B5DBE32,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC07,Verify vulnerability remediation,REL-9A6C82080ED7469A7A,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC08,Document security control assurance,REL-73F410A7E3C29797DE,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-D6024BD145420110FD,0.95,True
+OCC-15-1212.00,ROLE-9E24DD1E0AE6,Information Security Specialist,LV-9E24DD1E0AE6-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-0ECDB98DA48750EF3C,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-FS13,Enforce application authorization,REL-E6549280335EBE855D,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-INF01,Configure and verify network connectivity,REL-63DADC60CA8BBBAA77,0.6,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-INF05,Monitor service health,REL-CEB2244A5D418478DB,0.6,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-A0AC2BAAD502C13C90,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-SEC02,Select and verify security controls,REL-D19B70B3DFFEB29D0F,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-SEC03,Configure identity and access controls,REL-E34E05A04542FF4030,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-SEC04,Investigate security alerts,REL-87405433324A4C6D6A,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-SEC05,Execute a security incident response procedure,REL-3C8754542D13EE52D2,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-SEC07,Verify vulnerability remediation,REL-AF1F172D7CBF2F4827,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-05564C1DCE18F88D66,0.65,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-FS13,Enforce application authorization,REL-91B34020BC30A5E5A2,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-INF01,Configure and verify network connectivity,REL-C0D9A1E3A4634B4178,0.75,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-INF05,Monitor service health,REL-FF539086E0675726A3,0.75,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-2340897827B9B7C13F,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC01,Analyse information security risks,REL-72BE139DFDFC349A60,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC02,Select and verify security controls,REL-148556FE7BC343516B,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC03,Configure identity and access controls,REL-2500191641AC8797F7,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC04,Investigate security alerts,REL-5E817BAC25638643A8,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC05,Execute a security incident response procedure,REL-EDB76F7602B16048FA,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC06,Assess technical vulnerabilities,REL-0EC8BAC7AA4E675C55,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC07,Verify vulnerability remediation,REL-91A036FC14508B6BD3,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC08,Document security control assurance,REL-AD5FE70F2273EF7CAB,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-954167731415098B50,0.8,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-FS13,Enforce application authorization,REL-B392E7724D5B2CDD7F,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-INF01,Configure and verify network connectivity,REL-3E496175F6DB60E403,0.9,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-INF05,Monitor service health,REL-84C9B211859E4A2831,0.9,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-1A13AF7FF955D4A3BE,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC01,Analyse information security risks,REL-144049F68BC657594E,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC02,Select and verify security controls,REL-6DAE0A698137A08673,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC03,Configure identity and access controls,REL-BAA03E5CBE02169518,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC04,Investigate security alerts,REL-E482233F21B413CD0B,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC05,Execute a security incident response procedure,REL-4F832766ADF3C77D80,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC06,Assess technical vulnerabilities,REL-4174BA60BD95E2616F,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC07,Verify vulnerability remediation,REL-75C841F290C0B154A5,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC08,Document security control assurance,REL-AFA68BEA7EDAF46797,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-043A791D4F5938A1E0,0.95,True
+OCC-15-1212.00,ROLE-AF49BFEFFAE0,Information Systems Security Analyst,LV-AF49BFEFFAE0-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-64C07C094719AF6228,0.95,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-A0C291B677123D0AC9,0.65,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-J,Junior,1,MS-SEC02,Select and verify security controls,REL-39CC50C1B8AECE1E2A,0.65,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-CFE4BA1DC9AD6CA030,0.65,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-E5B1F7540D04D7D048,0.8,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-M,Middle,2,MS-SEC01,Analyse information security risks,REL-4E46A64E9B1D027F62,0.8,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-M,Middle,2,MS-SEC02,Select and verify security controls,REL-29B0B9D57B4C45D744,0.8,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-M,Middle,2,MS-SEC08,Document security control assurance,REL-B0A603386B176DD042,0.8,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-FE24E517479564B883,0.8,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-A167124863351D5B7B,0.95,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-S,Senior,3,MS-SEC01,Analyse information security risks,REL-5257DC786A84EAE8B6,0.95,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-S,Senior,3,MS-SEC02,Select and verify security controls,REL-BA7AD62A834953CAC8,0.95,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-S,Senior,3,MS-SEC08,Document security control assurance,REL-5D5D7D6C458AC89A77,0.95,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-B15175C0551B5B1F8A,0.95,True
+OCC-15-1212.00,ROLE-AAF660DA34D9,Information Systems Security Officer (ISSO),LV-AAF660DA34D9-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-FB2182BFCEAD6C6C21,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-FS13,Enforce application authorization,REL-CE2491AC6EFCE80B03,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-INF01,Configure and verify network connectivity,REL-C37155A3D84FD5EEC1,0.6,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-INF05,Monitor service health,REL-02852A86E913933184,0.6,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-BB0B15D75F3D42BDBD,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-SEC02,Select and verify security controls,REL-BAFDC7EEA82FD344B3,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-SEC03,Configure identity and access controls,REL-CEC941570AE36D31D7,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-SEC04,Investigate security alerts,REL-3396EFA0DEF619E390,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-SEC05,Execute a security incident response procedure,REL-FC4B284DA5D393533E,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-SEC07,Verify vulnerability remediation,REL-04BCE496A64A5168AC,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-90EF34566C87D290E5,0.65,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-FS13,Enforce application authorization,REL-071DE1ECB0A29B9F53,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-INF01,Configure and verify network connectivity,REL-BF852821E41135D492,0.75,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-INF05,Monitor service health,REL-6EF19B6C7E66DD731D,0.75,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-7923B4C11C0FD109E5,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC01,Analyse information security risks,REL-8595DD2460365B7158,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC02,Select and verify security controls,REL-36CA3C2B97431F19E4,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC03,Configure identity and access controls,REL-6E0AB93D3858B87B16,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC04,Investigate security alerts,REL-A08F296C168E023788,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC05,Execute a security incident response procedure,REL-437989D8800F512A94,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC06,Assess technical vulnerabilities,REL-BE2DD8F344B5FFCC31,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC07,Verify vulnerability remediation,REL-0D7BEEF5769CB12E49,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC08,Document security control assurance,REL-6D9022E0217F6B1F59,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-507080145299A2BC0B,0.8,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-FS13,Enforce application authorization,REL-CD506480C66BC7BC3D,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-INF01,Configure and verify network connectivity,REL-EE301B3EFE1CEF0793,0.9,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-INF05,Monitor service health,REL-CF0E91F5029DB11A6E,0.9,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-04D88B901BB6271ABC,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC01,Analyse information security risks,REL-931D012A0B53C02BD8,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC02,Select and verify security controls,REL-128DECD295C2FC4186,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC03,Configure identity and access controls,REL-E9A710F299CDAF559A,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC04,Investigate security alerts,REL-31C6B34B86CC1CB787,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC05,Execute a security incident response procedure,REL-1E1B6CCBDBA0045530,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC06,Assess technical vulnerabilities,REL-330DD38F6736AD8C1E,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC07,Verify vulnerability remediation,REL-32C831CE8A13DE0A37,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC08,Document security control assurance,REL-EE8B45745282E84FF0,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-42AFF4E57CD8037A59,0.95,True
+OCC-15-1212.00,ROLE-AC875FDD2CC1,Information Technology Security Analyst (IT Security Analyst),LV-AC875FDD2CC1-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-0541E53DBED981B16E,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-INF01,Configure and verify network connectivity,REL-099A54EBDBCD365186,0.6,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-INF04,Maintain configuration records,REL-279FA56ABEDF75D5BA,0.6,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-INF05,Monitor service health,REL-9910B1329845FA6237,0.6,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-E3F2023224913828BF,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-SEC02,Select and verify security controls,REL-B1834B47BCB8D10E58,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-SEC03,Configure identity and access controls,REL-B07A7E577E608A40D2,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-SEC04,Investigate security alerts,REL-3A3E1ADF5758C5DD73,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-SEC05,Execute a security incident response procedure,REL-67E42E0F071533EDFF,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-SEC07,Verify vulnerability remediation,REL-65D36941A6C6C8B965,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-6145469B44776E28B4,0.65,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-INF01,Configure and verify network connectivity,REL-1DDEF13AE598F570D3,0.75,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-INF04,Maintain configuration records,REL-56D56AEF85E8C9EA8E,0.75,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-INF05,Monitor service health,REL-4882ECC838271C6530,0.75,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-E8DDDFD59074C85704,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC01,Analyse information security risks,REL-4B02B0DC2D82B78438,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC02,Select and verify security controls,REL-F465710F106BA76F3F,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC03,Configure identity and access controls,REL-89EE1A73AF7BD72329,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC04,Investigate security alerts,REL-7D1BC8CD648E009FDA,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC05,Execute a security incident response procedure,REL-ACF0BD14DCBDB18823,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC06,Assess technical vulnerabilities,REL-4BCF402399FA581170,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC07,Verify vulnerability remediation,REL-004142F9818825A15F,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC08,Document security control assurance,REL-8AD710706F6E97E191,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-4CEF39B62283956655,0.8,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-INF01,Configure and verify network connectivity,REL-F25ABB2261D9DDECE3,0.9,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-INF04,Maintain configuration records,REL-0FB2F05E6EF332DBBC,0.9,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-INF05,Monitor service health,REL-2204A35B1AA3E194A1,0.9,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-B5368D9DE2DBF2C8CF,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC01,Analyse information security risks,REL-F8459BA673A1152AC6,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC02,Select and verify security controls,REL-F54DD16B6031373282,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC03,Configure identity and access controls,REL-DFA5E42122538823DA,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC04,Investigate security alerts,REL-729DC1BF25647100E7,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC05,Execute a security incident response procedure,REL-9F6086B1278B9F46EA,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC06,Assess technical vulnerabilities,REL-3A72BE3E02FCC46706,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC07,Verify vulnerability remediation,REL-4C1E0B8F7F5AC30261,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC08,Document security control assurance,REL-1490F7A0F7DE768445,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-2B1239F33F1070041A,0.95,True
+OCC-15-1212.00,ROLE-39DE5AAEA190,Network Security Analyst,LV-39DE5AAEA190-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-EA489B5B5D02C80E9C,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-FS13,Enforce application authorization,REL-D6490FF9BB1714342F,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-INF01,Configure and verify network connectivity,REL-588883FA6570D48002,0.6,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-INF05,Monitor service health,REL-C031CB4DF43097359D,0.6,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-80D9C9CEAD4D912B02,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-SEC02,Select and verify security controls,REL-4CA1B0FF6AA758BA55,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-SEC03,Configure identity and access controls,REL-2F24742A2CB70787C4,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-SEC04,Investigate security alerts,REL-F934225F07F3CA91CE,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-SEC05,Execute a security incident response procedure,REL-327D08A98086DBB6E8,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-SEC07,Verify vulnerability remediation,REL-C483420FD3090CDCB0,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-45607322C5531EA305,0.65,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-FS13,Enforce application authorization,REL-656C71A75BAB430F84,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-INF01,Configure and verify network connectivity,REL-CE979ABF0A1A8B6463,0.75,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-INF05,Monitor service health,REL-114A3FB98F3370CEDD,0.75,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-E3944562C45167BA04,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC01,Analyse information security risks,REL-6B4690DF12A3623681,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC02,Select and verify security controls,REL-899AB83B0C4F6987D8,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC03,Configure identity and access controls,REL-769EAD667873718584,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC04,Investigate security alerts,REL-F20C3400D09B31B6D8,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC05,Execute a security incident response procedure,REL-31912BBD63FD930BA5,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC06,Assess technical vulnerabilities,REL-FE761C1338A60A87B6,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC07,Verify vulnerability remediation,REL-F075A2C681317CB791,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC08,Document security control assurance,REL-F0EF095037CCA4090E,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-E7F76DFF43FBD3FA4A,0.8,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-FS13,Enforce application authorization,REL-9EEB891B003B73487B,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-INF01,Configure and verify network connectivity,REL-A27A5168F46A7B1872,0.9,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-INF05,Monitor service health,REL-68487F08EEEC52F9FB,0.9,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-BBD9A166CAD4B49066,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC01,Analyse information security risks,REL-AC7F7FAF5F13472A1A,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC02,Select and verify security controls,REL-9FEE567C73ADF10B2E,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC03,Configure identity and access controls,REL-EC47A99D345658379B,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC04,Investigate security alerts,REL-8CBA159AA70B05C32A,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC05,Execute a security incident response procedure,REL-B5B7163C00F525EE29,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC06,Assess technical vulnerabilities,REL-7A1009BAA56F4FC90E,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC07,Verify vulnerability remediation,REL-8E6DEDF24401BB85E8,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC08,Document security control assurance,REL-61263457948FF786E4,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-9F2D5E436B0D74DE24,0.95,True
+OCC-15-1212.00,ROLE-FE0775936B97,Security Analyst,LV-FE0775936B97-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-B319655E745E772EFF,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-FS13,Enforce application authorization,REL-4CEB62A55AB66DEF24,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-INF01,Configure and verify network connectivity,REL-BA5AD24809DFBCAE85,0.6,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-INF05,Monitor service health,REL-515FFB800F6D714C92,0.6,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-4EEB845D60C84C5A44,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-SEC02,Select and verify security controls,REL-6D2A199C52DBCB16C0,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-SEC03,Configure identity and access controls,REL-9D1B1FE55CB3C22FB2,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-SEC04,Investigate security alerts,REL-38C8194154A84DE50D,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-SEC05,Execute a security incident response procedure,REL-615884ADAFE80C8A8E,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-SEC07,Verify vulnerability remediation,REL-415C21237747C2F90A,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-F31EFA209E8879751E,0.65,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-FS13,Enforce application authorization,REL-4630CDB14C7CC03FFD,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-INF01,Configure and verify network connectivity,REL-0E694A83992B97FB12,0.75,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-INF05,Monitor service health,REL-12C1D4DC0AA95BDDC9,0.75,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-INF08,Apply infrastructure hardening and updates,REL-666904CD5340498341,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC01,Analyse information security risks,REL-80E1667B4BA9B69D15,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC02,Select and verify security controls,REL-84809C96A2321B1FC6,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC03,Configure identity and access controls,REL-711BE95111B5070E8F,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC04,Investigate security alerts,REL-A036A36840FDC6B380,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC05,Execute a security incident response procedure,REL-44A04D2692D321B808,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC06,Assess technical vulnerabilities,REL-B92B6A3C906FA84D1E,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC07,Verify vulnerability remediation,REL-B8D57D52C9ACA83967,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC08,Document security control assurance,REL-68EFE3824174BC40A6,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-M,Middle,2,MS-SEC09,Communicate security recommendations,REL-7B5F5B71880963B5CE,0.8,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-FS13,Enforce application authorization,REL-CE6C81A9AE6019AAF8,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-INF01,Configure and verify network connectivity,REL-71A36961841D30CD7F,0.9,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-INF05,Monitor service health,REL-890251C3B2B0868B96,0.9,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-INF08,Apply infrastructure hardening and updates,REL-880DD10DA4ED39FA97,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC01,Analyse information security risks,REL-FD1E496B289FBA05AA,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC02,Select and verify security controls,REL-CDF86DB09DAB2929FE,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC03,Configure identity and access controls,REL-1B6E6804322B9C0B8C,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC04,Investigate security alerts,REL-BC9C6B40049CC98BA1,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC05,Execute a security incident response procedure,REL-B85A00D14DEBCBE015,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC06,Assess technical vulnerabilities,REL-4F756BC561CA9462D8,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC07,Verify vulnerability remediation,REL-6ACFB607ECF5CA7462,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC08,Document security control assurance,REL-8275A4BC98B631DFDD,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC09,Communicate security recommendations,REL-988E107E89F9EE6790,0.95,True
+OCC-15-1212.00,ROLE-410E150F21A9,Systems Analyst,LV-410E150F21A9-S,Senior,3,MS-SEC10,Maintain security policy procedures,REL-91766CB8314567CBCE,0.95,True

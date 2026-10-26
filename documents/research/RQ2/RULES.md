@@ -59,7 +59,7 @@ Truy vấn dùng shortestPath với tối đa 5 cạnh, chỉ cho phép HAS_ROLE
 
 ## Lưu trữ, quyền và trạng thái
 
-- PostgreSQL V8 + V9: research_run lưu protocol, trạng thái, cấu hình, raw samples; research_graph lưu graph/workload với khóa (run_id,node_count,seed). V9 lấy seed từ payload của snapshot cũ để bảo toàn artifact. Không sửa bảng evaluation cũ.
+- PostgreSQL V27 + V28: research_run lưu protocol, trạng thái, cấu hình, raw samples; research_graph lưu graph/workload với khóa (run_id,node_count,seed). V28 lấy seed từ payload của snapshot cũ để bảo toàn artifact. Không sửa bảng evaluation cũ.
 - Checkpoint mỗi 100 lượt thử và mỗi vòng/phase; giữ cả mẫu lỗi. Crash có thể mất tối đa 99 mẫu từ checkpoint; restart đánh dấu run chưa xong FAILED.
 - Restart API đánh dấu lượt chưa hoàn tất FAILED. PostgreSQL advisory lock giữ độc quyền một Research worker; unique partial index chặn start trùng. Khi cấu hình nhiều instance, chỉ bật Research trên một API instance.
 - Dedicated Neo4j: so sánh database ID với database vận hành; từ chối nếu giống nhau hoặc chứa node không phải ResearchNode. Chỉ xóa ResearchNode trong instance riêng giữa các quy mô. ResearchNode là nhãn kỹ thuật phục vụ index, không thêm property nghiệp vụ.

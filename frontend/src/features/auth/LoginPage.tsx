@@ -1,7 +1,9 @@
+import { useLocalDemoSession } from '../../shared/hooks/useLocalDemoSession'
 import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Check, Network } from 'lucide-react'
 import { LanguageSwitcher } from '../../shared/components/ui/LanguageSwitcher'
+import { useTranslation } from '../../shared/i18n/LanguageContext'
 import { useToast } from '../../shared/hooks/useToast'
 import './LoginPage.css'
 
@@ -45,8 +47,11 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
 ]
 
 export function LoginPage() {
+  const demo = useLocalDemoSession()
+  const loginLock = React.useRef(false)
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const [email, setEmail] = React.useState('alex.chen@adaptlearn.internal')
   const [password, setPassword] = React.useState('••••••••••••')
@@ -63,47 +68,44 @@ export function LoginPage() {
     })
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loginLock.current) return
     if (!email.trim()) {
-      toast({
-        title: 'Email Required',
-        description: 'Please enter your work or organization email address.',
-        variant: 'destructive',
-      })
+      toast({ title: t('common.error', 'Error'), description: demo.enabled ? t('roleFlow.demoAccountRequired') : 'Please enter your work or organization email address.', variant: 'destructive' })
       return
     }
-
+    const normalizedEmail = email.toLowerCase().trim()
+    const matched = demo.enabled
+      ? DEMO_ACCOUNTS.find(account => account.email.toLowerCase() === normalizedEmail)
+      : DEMO_ACCOUNTS.find(account => account.email.toLowerCase() === normalizedEmail || normalizedEmail.startsWith(account.actorKey) || normalizedEmail.includes(account.actorKey))
+        ?? (normalizedEmail.includes('alex') ? DEMO_ACCOUNTS[0] : undefined)
+    if (demo.enabled && !matched) {
+      toast({ title: t('common.error', 'Error'), description: t('roleFlow.demoAccountRequired'), variant: 'destructive' })
+      return
+    }
+    loginLock.current = true
     setIsLoading(true)
-
-    setTimeout(() => {
-      setIsLoading(false)
-      const normalizedEmail = email.toLowerCase().trim()
-      const matched =
-        DEMO_ACCOUNTS.find(
-          (a) =>
-            a.email.toLowerCase() === normalizedEmail ||
-            normalizedEmail.startsWith(a.actorKey) ||
-            normalizedEmail.includes(a.actorKey)
-        ) || (normalizedEmail.includes('alex') ? DEMO_ACCOUNTS[0] : undefined)
-
-      const target = matched ? matched.targetRoute : '/employee/overview'
-
-      localStorage.setItem('auth_user', email)
-      if (matched) {
-        localStorage.setItem('active_actor', matched.actorKey)
-      } else {
-        localStorage.setItem('active_actor', 'employee')
+    try {
+      // Preset demo accounts select only server-allowlisted personas; this is not production login.
+      const persona = matched?.actorKey === 'employee' ? 'employee-a'
+        : matched?.actorKey === 'ld-manager' ? 'ld'
+          : matched?.actorKey === 'admin' ? 'admin' : null
+      if (demo.enabled && persona && !await demo.establish(persona)) {
+        toast({ title: t('common.error', 'Error'), description: t('roleFlow.sessionFailed'), variant: 'destructive' })
+        return
       }
-
-      toast({
-        title: 'Sign In Successful',
-        description: `Welcome back! Redirecting to workspace...`,
-        variant: 'success',
-      })
-
-      navigate(target)
-    }, 500)
+      const target = matched?.targetRoute ?? '/employee/overview'
+      localStorage.setItem('auth_user', email)
+      localStorage.setItem('active_actor', matched?.actorKey ?? 'employee')
+      toast({ title: 'Sign In Successful', description: 'Welcome back! Redirecting to workspace...', variant: 'success' })
+      // Reload after an identity switch so cached personal queries cannot cross demo accounts.
+      if (demo.enabled) window.location.assign(target)
+      else navigate(target)
+    } finally {
+      loginLock.current = false
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -189,6 +191,18 @@ export function LoginPage() {
                   {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
               </form>
+
+            {/* Guest Sign-Up Prompt */}
+            <p className="razor-signup-caption">
+              <span>{t("Don't have an account?")}</span>{' '}
+              <Link
+                to="/guest/register"
+                className="razor-signup-link"
+                id="guest-signup-link"
+              >
+                {t('Sign Up as Guest')}
+              </Link>
+            </p>
 
             {/* Quick Demo Role Switcher */}
             <div className="razor-demo-strip">

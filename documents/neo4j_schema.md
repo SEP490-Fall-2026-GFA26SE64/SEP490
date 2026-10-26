@@ -2,24 +2,19 @@
 
 Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.9.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
-![Sơ đồ ontology](diagrams/neo4j.svg)
+Catalog uses current string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection/profile/evidence/attempt/pathway state. [Role-first contract](features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md) defines consumers; [read-only verification](testing/system/REQ-001-002-final-synchronization-review.md) records observed metadata separately from this field contract.
 
-[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
+![Sơ đồ ontology0.9.0](diagrams/neo4j.svg)
+
+[PlantUML](diagrams/neo4j.puml) · [Nguồn dataset](dataset/ONTOLOGY.md) · [Import guide](dataset/NEO4J_IMPORT_GUIDE.md)
 
 ## 1. Cấu trúc tổng quát
 
+**Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md).
+
 Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.9.0.
 
-```mermaid
-flowchart LR
- O[Occupation] -->|HAS_ROLE| R[TargetRole]
- R -->|HAS_LEVEL| L[Level]
- L -->|HAS_COMPETENCY| C[Competency]
- C -->|HAS_SKILL| S[MicroSkill]
- L -->|REQUIRES_SKILL| S
- M[LearningModule] -->|TEACHES N–N| S
- S -->|HAS_SKILL_PREREQUISITE| S
-```
+The ontology diagram above shows the complete relationship set; its PlantUML source is linked beside the image.
 
 | Relationship | Hướng | Ý nghĩa |
 |---|---|---|
@@ -81,7 +76,6 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 | `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
 | `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
 | `scope` | String | Phạm vi công việc của role: làm gì, phụ trách phần nào. Đây là mô tả do nhóm tổng hợp theo nguồn và cần chuyên gia xác nhận. |
-
 
 `occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
 

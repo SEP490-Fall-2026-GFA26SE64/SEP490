@@ -1,7 +1,7 @@
 # Link Question to Micro-Skill
 
 ## Current Scope Alignment
-Expert links/classifies module questions to micro-skills and difficulty in assigned scope for evidence/tracing. Baseline eligibility/cardinality needs L&D policy agreement. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+Expert links/classifies questions to MicroSkills and authoring difficulty in assigned scope. A baseline item assesses exactly one MicroSkill; adaptive evidence strength comes from its versioned IRT parameters, not a mapping weight. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
@@ -20,11 +20,11 @@ Associate an authorized question with the skill evidence its answers provide.
 
 ## Confirmed Related Rules
 
-- From [Configure Baseline Assessment](../Baseline%20knowledge%20assessment/Configure%20Baseline%20Assessment.md), 2026-09-27, option A: A baseline question assesses exactly one micro-skill. Its coverage and answer evidence belong to that skill; multiple assessed-skill mappings are not supported for baseline questions. An unmapped question is not eligible for baseline use.
+- Current adaptive contract: each baseline presentation pins exactly one assessed MicroSkill and the matching item-parameter tuple. An unmapped question or a question without valid parameter coverage is ineligible; module/RIASEC mapping policies remain separate.
 
 ## Open Decisions
 
-- Mapping cardinality, primary versus supporting skills, and scoring distribution for module and soft-skill assessments. Baseline questions use exactly one assessed skill, without multi-skill weighting.
+- Mapping cardinality, primary versus supporting skills, and scoring distribution for module and RIASEC assessments. Baseline questions use exactly one assessed skill, without multi-skill or score weighting.
 - Mapping validation against role/module context and versioning after use.
 
 ## Acceptance Baseline

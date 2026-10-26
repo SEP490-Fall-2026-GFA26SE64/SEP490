@@ -1,3 +1,4 @@
+import { useLocalDemoSession } from '../hooks/useLocalDemoSession'
 import * as React from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -7,13 +8,17 @@ import {
   BookOpen,
   Briefcase,
   Building,
+  Building2,
   CheckCircle2,
   CheckSquare,
   ChevronDown,
+  ClipboardCheck,
   Compass,
+  CreditCard,
   FileQuestion,
   FolderTree,
   FlaskConical,
+  GitFork,
   GraduationCap,
   HelpCircle,
   LayoutDashboard,
@@ -22,6 +27,8 @@ import {
   Palette,
   PanelLeftClose,
   PanelLeftOpen,
+  Server,
+  Settings,
   ShieldCheck,
   Sparkles,
   Target,
@@ -34,8 +41,11 @@ import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
 import { useToast } from '../hooks/useToast'
 import { useTranslation } from '../i18n/LanguageContext'
+import { Badge } from '../components/ui/Badge'
 import {
   getActiveCompany,
+  loadCompanies,
+  setActiveCompanyId,
   type CompanyRecord,
 } from '../stores/companyStore'
 import { getUserProfile } from '../stores/userProfileStore'
@@ -47,9 +57,10 @@ interface NavTabItem {
   icon: React.ReactNode
 }
 
-export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin'
+export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'platform-admin'
 
 export function WorkspaceLayout({ children, mobileOverlay = false }: { children: ReactNode; mobileOverlay?: boolean }) {
+  const demo = useLocalDemoSession()
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -97,7 +108,9 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
 
   // Persist active actor context across route changes in useEffect
   React.useEffect(() => {
-    if (path.startsWith('/expert')) {
+    if (path.startsWith('/platform-admin')) {
+      localStorage.setItem('active_actor', 'platform-admin')
+    } else if (path.startsWith('/expert')) {
       localStorage.setItem('active_actor', 'expert')
     } else if (path.startsWith('/ld-manager') || path.startsWith('/manager')) {
       localStorage.setItem('active_actor', 'ld-manager')
@@ -118,6 +131,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
 
   // Pure resolver for active actor context
   const getActiveActor = (): ActorRole => {
+    if (path.startsWith('/platform-admin')) return 'platform-admin'
     if (path.startsWith('/expert')) return 'expert'
     if (path.startsWith('/ld-manager') || path.startsWith('/manager')) return 'ld-manager'
     if (
@@ -136,7 +150,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
     }
 
     const savedActor = localStorage.getItem('active_actor') as ActorRole | null
-    if (savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin') {
+    if (savedActor === 'platform-admin' || savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin') {
       return savedActor
     }
     return 'employee'
@@ -147,6 +161,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
   const isExpert = activeActor === 'expert'
   const isLdManager = activeActor === 'ld-manager'
   const isAdmin = activeActor === 'admin'
+  const isPlatformAdmin = activeActor === 'platform-admin'
 
   // Actor-specific navigation tabs for the navbar
   let actorTabs: NavTabItem[] = []
@@ -159,24 +174,24 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
         icon: <LayoutDashboard size={15} />,
       },
       {
+        label: t('nav.gapAnalysis'),
+        href: '/employee/gap-analysis',
+        icon: <Award size={15} />,
+      },
+      {
         label: t('nav.upskilling'),
         href: '/employee/upskilling',
         icon: <Target size={15} />,
       },
       {
-        label: t('nav.roleGuidance', 'AI Role Guidance'),
-        href: '/employee/guidance',
-        icon: <Sparkles size={15} />,
+        label: t('baselineUi.myMastery'),
+        href: '/employee/my-mastery',
+        icon: <Award size={15} />,
       },
       {
         label: t('nav.pathway'),
         href: '/employee/pathway',
-        icon: <Compass size={15} />,
-      },
-      {
-        label: t('nav.gapAnalysis'),
-        href: '/employee/gap-analysis',
-        icon: <Award size={15} />,
+        icon: <GitFork size={15} />,
       },
       {
         label: t('nav.assessmentQuiz'),
@@ -235,6 +250,16 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
         icon: <Briefcase size={15} />,
       },
       {
+        label: t('nav.baselineAssessments'),
+        href: '/ld-manager/baseline-assessments',
+        icon: <ClipboardCheck size={15} />,
+      },
+      {
+        label: t('nav.userDirectory'),
+        href: '/ld-manager/users',
+        icon: <Users size={15} />,
+      },
+      {
         label: t('nav.contentApprovals', 'Content Approvals'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
@@ -263,9 +288,24 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
         icon: <ShieldCheck size={15} />,
       },
       {
+        label: t('nav.departments', 'Departments'),
+        href: '/admin/departments',
+        icon: <Building2 size={15} />,
+      },
+      {
         label: t('nav.userDirectory', 'User Accounts'),
         href: '/admin/users',
         icon: <Users size={15} />,
+      },
+      {
+        label: t('nav.orgSettings', 'Org Settings'),
+        href: '/admin/organization-settings',
+        icon: <Settings size={15} />,
+      },
+      {
+        label: t('nav.subscription', 'Subscription'),
+        href: '/admin/subscription',
+        icon: <CreditCard size={15} />,
       },
       {
         label: t('nav.knowledgeGraph'),
@@ -288,10 +328,42 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
         icon: <Activity size={15} />,
       },
     ]
+  } else if (isPlatformAdmin) {
+    actorTabs = [
+      {
+        label: t('nav.platformOrgs', 'Organizations'),
+        href: '/platform-admin/organizations',
+        icon: <Building size={15} />,
+      },
+      {
+        label: t('nav.platformSubs', 'Subscriptions'),
+        href: '/platform-admin/subscriptions',
+        icon: <CreditCard size={15} />,
+      },
+      {
+        label: t('nav.platformActivity', 'Platform Activity'),
+        href: '/platform-admin/activity',
+        icon: <Activity size={15} />,
+      },
+      {
+        label: t('nav.serverStatus'),
+        href: '/system-status?portal=platform-admin',
+        icon: <Server size={15} />,
+      },
+    ]
   }
 
   // Active user profile metadata based on active actor
   const userProfile = getUserProfile(activeActor)
+  function switchPortal(event: React.MouseEvent<HTMLAnchorElement>, persona: string) {
+    setIsUserMenuOpen(false)
+    if (!demo.enabled) return
+    event.preventDefault()
+    const destination = event.currentTarget.href
+    void demo.choose(persona, destination).then(success => {
+      if (!success) toast({ title: t('common.error', 'Error'), description: t('employeeBaseline.requestError'), variant: 'destructive' })
+    })
+  }
 
   // Helper for determining whether a nav tab is active
   const isTabActive = (itemHref: string) => {
@@ -301,7 +373,8 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
         ((isEmployee && (!location.search || location.search.includes('portal=employee') || location.search.includes('portal=learner'))) ||
           (isExpert && location.search.includes('portal=expert')) ||
           (isLdManager && (location.search.includes('portal=ld-manager') || location.search.includes('portal=manager'))) ||
-          (isAdmin && location.search.includes('portal=admin')))
+          (isAdmin && location.search.includes('portal=admin')) ||
+          (isPlatformAdmin && location.search.includes('portal=platform-admin')))
       )
     }
     if (itemHref === '/employee/overview' || itemHref === '/learner/overview') {
@@ -313,24 +386,32 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
         path === '/'
       )
     }
-    if (
-      itemHref === '/employee/upskilling' ||
-      itemHref === '/employee/target-roles' ||
-      itemHref === '/learner/target-roles' ||
-      itemHref === '/learner/upskilling'
-    ) {
-      return (
-        path === '/employee/upskilling' ||
-        path === '/employee/target-roles' ||
-        path === '/learner/target-roles' ||
-        path === '/learner/upskilling'
-      )
+    if (itemHref === '/employee/upskilling' || itemHref === '/learner/upskilling') {
+      return path === '/employee/upskilling' || path === '/learner/upskilling' || path === '/employee/target-roles' || path === '/learner/target-roles'
+    }
+    if (itemHref === '/employee/target-roles' || itemHref === '/learner/target-roles') {
+      return path === '/employee/target-roles' || path === '/learner/target-roles'
+    }
+    if (itemHref === '/employee/riasec') {
+      return path === '/employee/riasec' || path === '/learner/riasec'
     }
     if (itemHref === '/employee/guidance') {
       return path === '/employee/guidance'
     }
     if (itemHref === '/employee/pathway' || itemHref === '/learner/pathway') {
-      return path === '/employee/pathway' || path === '/learner/pathway'
+      return (
+        path === '/employee/pathway' ||
+        path === '/learner/pathway' ||
+        path.startsWith('/employee/modules') ||
+        path.startsWith('/learner/modules')
+      )
+    }
+    if (itemHref === '/employee/skills-catalog') {
+      return (
+        path === '/employee/skills-catalog' ||
+        path === '/employee/skills' ||
+        path === '/learner/skills-catalog'
+      )
     }
     if (itemHref === '/employee/gap-analysis' || itemHref === '/learner/gap-analysis') {
       return path === '/employee/gap-analysis' || path === '/learner/gap-analysis'
@@ -351,7 +432,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
       return path === '/expert/modules' || path === '/ld-manager/modules' || path === '/manager/modules'
     }
     if (itemHref === '/expert/assessment-bank') {
-      return path === '/expert/assessment-bank' || path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
+      return path === '/expert/assessment-bank'
     }
     if (itemHref === '/ld-manager/learning-outcomes') {
       return (
@@ -370,6 +451,9 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
+    if (itemHref === '/ld-manager/baseline-assessments') {
+      return path.startsWith('/ld-manager/baseline-assessments')
+    }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'
     }
@@ -379,17 +463,38 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
     if (itemHref === '/admin/dashboard') {
       return path === '/admin/dashboard' || path === '/admin'
     }
+    if (itemHref === '/admin/departments') {
+      return path === '/admin/departments'
+    }
+    if (itemHref === '/admin/organization-settings') {
+      return path === '/admin/organization-settings'
+    }
+    if (itemHref === '/admin/subscription') {
+      return path === '/admin/subscription' || path === '/admin/billing'
+    }
     if (itemHref === '/admin/knowledge-graph') {
       return path === '/admin/knowledge-graph' || path === '/knowledge-graph'
     }
     if (itemHref === '/admin/design-system') {
       return path === '/admin/design-system' || path === '/design-system'
     }
+    if (itemHref === '/platform-admin/organizations') {
+      return path === '/platform-admin/organizations' || path === '/platform-admin'
+    }
+    if (itemHref === '/platform-admin/subscriptions') {
+      return path === '/platform-admin/subscriptions'
+    }
+    if (itemHref === '/platform-admin/activity') {
+      return path === '/platform-admin/activity'
+    }
     return path === itemHref
   }
 
-  // Collapsible sidebar state (persisted per actor; default: collapsed for employee, expanded for other actors)
+  // Collapsible sidebar state (persisted per actor; default: collapsed for employee, expanded for other actors; automatically minimized on module learning)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<boolean>(() => {
+    if (location.pathname.includes('/modules/')) {
+      return true
+    }
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (saved !== null) {
       return saved === 'true'
@@ -397,15 +502,25 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
     return isEmployee
   })
 
-  // Synchronize state when switching actor roles
+  // Synchronize state when switching actor roles or entering module learning
   React.useEffect(() => {
+    if (location.pathname.includes('/modules/')) {
+      setIsSidebarCollapsed(true)
+      return
+    }
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true')
     } else {
       setIsSidebarCollapsed(isEmployee)
     }
-  }, [activeActor, isEmployee])
+  }, [activeActor, isEmployee, location.pathname])
+
+  React.useEffect(() => {
+    const handleMinimize = () => setIsSidebarCollapsed(true)
+    window.addEventListener('minimize-system-sidebar', handleMinimize)
+    return () => window.removeEventListener('minimize-system-sidebar', handleMinimize)
+  }, [])
 
   React.useEffect(() => {
     if (!mobileOverlay) return
@@ -424,7 +539,9 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
     })
   }
 
-  const brandHomeUrl = isEmployee
+  const brandHomeUrl = isPlatformAdmin
+    ? '/platform-admin/organizations'
+    : isEmployee
     ? '/employee/upskilling'
     : isExpert
     ? '/expert/assigned-roles'
@@ -433,23 +550,25 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
     : '/admin/dashboard'
 
   return (
-    <div className={`workspace ${mobileOverlay ? 'workspace--mobile-overlay' : ''}`}>
+    <div className={`workspace ${isEmployee ? 'workspace--employee' : ''} ${mobileOverlay ? 'workspace--mobile-overlay' : ''}`}>
       {/* Top Header */}
       <header className="workspace-header">
         <div className="workspace-topbar">
           {/* Left: Sidebar Collapse/Expand Toggle + Brand + My Learning link */}
           <div className="flex items-center justify-start gap-2.5 sm:gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-expanded={!isSidebarCollapsed}
-              aria-controls="workspace-sidebar"
-            >
-              {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
-            </button>
+            {!location.pathname.includes('/modules/') && (
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-expanded={!isSidebarCollapsed}
+                aria-controls="workspace-sidebar"
+              >
+                {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+              </button>
+            )}
             <Link className="brand shrink-0" to={brandHomeUrl}>
               <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
               <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate hidden md:inline">
@@ -463,7 +582,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
                 <Link
                   to="/employee/upskilling"
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
-                    path === '/employee/upskilling' || path === '/employee/target-roles'
+                    path === '/employee/upskilling'
                       ? 'bg-secondary text-primary font-bold shadow-2xs border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
@@ -488,7 +607,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
 
           {/* Center: Coursera-style Global Searchbar (Employee only) */}
           {isEmployee && (
-            <div className="flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
+            <div className="workspace-header-search flex-1 max-w-xl mx-2 sm:mx-4 min-w-0">
               <GlobalSearchbar />
             </div>
           )}
@@ -560,6 +679,38 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
                     </p>
                   </div>
 
+                  {/* Active Organization Switcher for Multi-Tenant Testing */}
+                  <div className="px-3.5 py-2.5 border-b border-border bg-muted/15">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Building size={11} className="text-primary" /> Active Workspace
+                      </span>
+                      <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono">
+                        {activeCompany.packageTier}
+                      </Badge>
+                    </div>
+                    <select
+                      value={activeCompany.id}
+                      onChange={(e) => {
+                        const newId = e.target.value
+                        setActiveCompanyId(newId)
+                        const target = loadCompanies().find((c) => c.id === newId)
+                        toast({
+                          title: 'Workspace Switched',
+                          description: `Switched active organization to ${target?.name || newId}.`,
+                          variant: 'info',
+                        })
+                      }}
+                      className="w-full text-xs font-semibold py-1.5 px-2 rounded-lg bg-card border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer transition-all"
+                    >
+                      {loadCompanies().map((comp) => (
+                        <option key={comp.id} value={comp.id}>
+                          {comp.name} ({comp.packageTier})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="py-1">
                     {/* Switch Persona Shortcuts Across 4 Primary Roles */}
                     <div className="px-3.5 py-1.5">
@@ -570,7 +721,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
                         {/* 1. Employee */}
                         <Link
                           to="/employee/overview"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'employee-a')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isEmployee
                               ? 'bg-secondary text-primary font-semibold'
@@ -604,7 +755,7 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
                         {/* 3. L&D Manager */}
                         <Link
                           to="/ld-manager/learning-outcomes"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'ld')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager
                               ? 'bg-secondary text-primary font-semibold'
@@ -618,10 +769,10 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
                           {isLdManager && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
 
-                        {/* 4. Admin */}
+                        {/* 4. Org Admin */}
                         <Link
                           to="/admin/dashboard"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'admin')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isAdmin
                               ? 'bg-secondary text-primary font-semibold'
@@ -630,9 +781,26 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
                         >
                           <span className="flex items-center gap-1.5">
                             <ShieldCheck size={13} />
-                            <span>{t('roles.admin')}</span>
+                            <span>{t('roles.admin', 'System Admin')}</span>
                           </span>
                           {isAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
+                        </Link>
+
+                        {/* 5. Platform Superadmin */}
+                        <Link
+                          to="/platform-admin/organizations"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
+                            isPlatformAdmin
+                              ? 'bg-secondary text-primary font-semibold'
+                              : 'text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Building size={13} className="text-primary" />
+                            <span>Platform Admin</span>
+                          </span>
+                          {isPlatformAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
                         </Link>
                       </div>
                     </div>
@@ -673,36 +841,46 @@ export function WorkspaceLayout({ children, mobileOverlay = false }: { children:
       </header>
 
       {/* Workspace Body: Sidebar + Main Content */}
-      <div className="workspace-body">
-        {/* Collapsible Left Sidebar */}
-        <aside
-          id="workspace-sidebar"
-          className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
-          aria-label="Sidebar navigation"
-        >
-          {/* Actor-specific feature navigation items */}
-          <nav className="workspace-sidebar-nav" aria-label="Portal feature tabs">
-            {actorTabs.map((item) => {
-              const active = isTabActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`workspace-sidebar-link ${active ? 'active' : ''}`}
-                  title={isSidebarCollapsed ? item.label : undefined}
-                >
-                  <span className="sidebar-link-icon">{item.icon}</span>
-                  {!isSidebarCollapsed && (
-                    <span className="sidebar-link-label">{item.label}</span>
-                  )}
-                </Link>
-              )
-            })}
-          </nav>
-        </aside>
+      <div className={`workspace-body ${location.pathname.includes('/modules/') ? 'module-reading-mode' : ''}`}>
+        {/* Collapsible Left Sidebar - Hidden completely on module learning pages */}
+        {!location.pathname.includes('/modules/') && (
+          <aside
+            id="workspace-sidebar"
+            className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
+            aria-label="Sidebar navigation"
+          >
+            {/* Actor-specific feature navigation items */}
+            <nav className="workspace-sidebar-nav" aria-label="Portal feature tabs">
+              {actorTabs.map((item) => {
+                const active = isTabActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`workspace-sidebar-link ${active ? 'active' : ''}`}
+                    title={isSidebarCollapsed ? item.label : undefined}
+                  >
+                    <span className="sidebar-link-icon">{item.icon}</span>
+                    {!isSidebarCollapsed && (
+                      <span className="sidebar-link-label">{item.label}</span>
+                    )}
+                  </Link>
+                )
+              })}
+            </nav>
+          </aside>
+        )}
 
         {/* Main Content Area */}
-        <main className="workspace-main">{children}</main>
+        <main
+          className={`workspace-main ${
+            location.pathname.includes('/modules/')
+              ? '!p-0 !m-0 !max-w-none !w-full module-reading-main'
+              : ''
+          }`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   )

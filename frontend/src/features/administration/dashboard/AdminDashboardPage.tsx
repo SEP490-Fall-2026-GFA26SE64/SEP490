@@ -81,13 +81,13 @@ const INITIAL_AUDIT_LOGS: AuditLogRecord[] = [
   {
     id: 'AUD-8918',
     timestamp: '2026-10-13 16:58:44',
-    actorName: 'Knowledge Graph Engine',
+    actorName: 'Automated Catalog Sync',
     actorRole: 'System Automated',
-    action: 'GRAPH_SYNCHRONIZATION_CYCLE',
-    targetEntity: 'Neo4j Cluster Bolt Node 01',
+    action: 'CATALOG_SYNCHRONIZATION_CYCLE',
+    targetEntity: 'Competency Framework Graph',
     severity: 'info',
     ipAddress: '127.0.0.1',
-    details: 'Executed scheduled transactional outbox reconcile across 128 micro-skills and 42 prerequisite edges.',
+    details: 'Synchronized skill prerequisites across 128 micro-skills and 42 prerequisite connections.',
   },
   {
     id: 'AUD-8917',
@@ -117,10 +117,10 @@ const INITIAL_AUDIT_LOGS: AuditLogRecord[] = [
     actorName: 'System Monitor',
     actorRole: 'System Automated',
     action: 'SECURITY_INTEGRITY_HEARTBEAT',
-    targetEntity: 'PostgreSQL & Neo4j Bolt Driver',
+    targetEntity: 'Enterprise Storage & Graph Engine',
     severity: 'success',
     ipAddress: '127.0.0.1',
-    details: 'All micro-services, Flyway baseline migrations, and schema constraints verified.',
+    details: 'All micro-services, storage schemas, and ontology graph constraints verified.',
   },
 ]
 
@@ -201,7 +201,7 @@ export function AdminDashboardPage() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="px-3 py-1 font-medium flex items-center gap-1.5 shadow-2xs">
                 <Database className="h-4 w-4 text-primary" />
-                <span>Neo4j Bolt: Active</span>
+                <span>Competency Engine: Operational</span>
               </Badge>
               <Badge variant="outline" className="px-3 py-1 font-medium flex items-center gap-1.5 border-border shadow-2xs">
                 <ShieldCheck className="h-4 w-4 text-success" />
@@ -225,10 +225,10 @@ export function AdminDashboardPage() {
           <StatCard
             variant="gradient"
             icon={<CheckCircle2 className="h-4 w-4 text-success" />}
-            title="Cluster Connectivity"
+            title="System & Storage Health"
             value="Healthy"
             valueClassName="text-success"
-            description="PostgreSQL & Neo4j Bolt Online"
+            description="Core Services & Graph Engine Online"
           />
 
           <StatCard
@@ -404,7 +404,7 @@ export function AdminDashboardPage() {
 
                     <div>
                       <label className="text-xs font-semibold text-foreground block mb-1.5">
-                        Transactional Outbox Sync Heartbeat (ms)
+                        Data Synchronization Interval (ms)
                       </label>
                       <Input
                         type="number"
@@ -524,7 +524,7 @@ export function AdminDashboardPage() {
                       <th className="py-2.5 px-3">EVENT ID / TIME</th>
                       <th className="py-2.5 px-3">ACTOR</th>
                       <th className="py-2.5 px-3">ACTION</th>
-                      <th className="py-2.5 px-3">TARGET ENTITY</th>
+                      <th className="py-2.5 px-3">TARGET RESOURCE</th>
                       <th className="py-2.5 px-3">STATUS</th>
                       <th className="py-2.5 px-3 text-right">ACTIONS</th>
                     </tr>
@@ -626,14 +626,14 @@ export function AdminDashboardPage() {
             </div>
 
             <div>
-              <span className="font-semibold text-foreground block mb-1">Target Entity</span>
+              <span className="font-semibold text-foreground block mb-1">Target Resource</span>
               <p className="p-2 rounded bg-muted/20 border border-border text-foreground font-mono">
                 {selectedAuditLog.targetEntity}
               </p>
             </div>
 
             <div>
-              <span className="font-semibold text-foreground block mb-1">Event Narrative & Payload</span>
+              <span className="font-semibold text-foreground block mb-1">Event Details & Description</span>
               <p className="p-3 rounded-lg bg-muted/30 border border-border text-foreground leading-relaxed">
                 {selectedAuditLog.details}
               </p>

@@ -1,5 +1,16 @@
 import * as React from 'react'
-import { AlertCircle, ArrowRight, Award, ChevronDown, RefreshCw, Search, Sparkles, Target, X } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowUpDown,
+  Award,
+  CheckCircle2,
+  ChevronDown,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Target,
+  X,
+} from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
@@ -25,6 +36,29 @@ import type { Seniority, TargetRoleSummary } from './targetRoleTypes'
 const SENIORITY_OPTIONS: Seniority[] = ['P1', 'P2', 'P3', 'P4', 'P5', 'M3', 'M4']
 const PAGE_SIZE = 12
 
+const ROLE_RECOMMENDATIONS: Record<string, { score: number; reason: string }> = {
+  'TR-001': { score: 94, reason: 'High match with Investigative RIASEC profile and Knowledge Graph baseline.' },
+  'AI Knowledge Architect': { score: 94, reason: 'High match with Investigative RIASEC profile and Knowledge Graph baseline.' },
+  'TR-002': { score: 88, reason: 'Strong machine learning aptitude and software engineering baseline.' },
+  'Senior Machine Learning Engineer': { score: 88, reason: 'Strong machine learning aptitude and software engineering baseline.' },
+  'TR-003': { score: 85, reason: 'Balanced graph visualization and API architecture aptitude.' },
+  'Full-Stack Knowledge Engineer': { score: 85, reason: 'Balanced graph visualization and API architecture aptitude.' },
+  'TR-004': { score: 81, reason: 'Graph database modeling and ontology mapping profile.' },
+  'TR-005': { score: 79, reason: 'Data science and analytical reasoning alignment.' },
+}
+
+function getRoleRecommendationScore(role: TargetRoleSummary): number {
+  if (role.code && ROLE_RECOMMENDATIONS[role.code]) {
+    return ROLE_RECOMMENDATIONS[role.code].score
+  }
+  for (const [key, val] of Object.entries(ROLE_RECOMMENDATIONS)) {
+    if (role.name.toLowerCase().includes(key.toLowerCase())) {
+      return val.score
+    }
+  }
+  return role.track === 'PROFESSIONAL' ? 78 : 72
+}
+
 function getSearchFromLocation(): string {
   if (typeof window === 'undefined') return ''
   try {
@@ -39,6 +73,7 @@ export function TargetRoleBrowsePanel() {
   const [searchInput, setSearchInput] = React.useState(initialSearch)
   const [search, setSearch] = React.useState(initialSearch)
   const [seniority, setSeniority] = React.useState<Seniority | null>(null)
+  const [sortBy, setSortBy] = React.useState<'recommendation' | 'alphabetical'>('recommendation')
   const [currentPage, setCurrentPage] = React.useState(1)
   const [detailRoleId, setDetailRoleId] = React.useState<string | null>(null)
   const [pendingChoice, setPendingChoice] = React.useState<PendingTargetRoleChoice | null>(null)
@@ -68,13 +103,13 @@ export function TargetRoleBrowsePanel() {
 
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [seniority, statusFilter])
+  }, [seniority, statusFilter, sortBy])
 
   const roles = useTargetRoles({ search, seniority })
   const selection = useTargetRoleSelection()
   const chooseRole = useChooseTargetRoleMutation()
   const { selectTargetRole, profile } = useEmployeeLearningState()
-  const hasFilters = search.length > 0 || seniority !== null || statusFilter !== 'All'
+  const hasFilters = search.length > 0 || seniority !== null || statusFilter !== 'All' || sortBy !== 'recommendation'
   const showToolbarClear = hasFilters
     && (roles.isPending || roles.isError || (roles.data?.length ?? 0) > 0)
 
@@ -83,6 +118,7 @@ export function TargetRoleBrowsePanel() {
     setSearch('')
     setSeniority(null)
     setStatusFilter('All')
+    setSortBy('recommendation')
     setCurrentPage(1)
   }
 
@@ -96,24 +132,34 @@ export function TargetRoleBrowsePanel() {
       }
     }
     const deduplicated = Array.from(map.values())
-    if (statusFilter === 'All') return deduplicated
-
-    return deduplicated.filter((role) => {
-      const isActive = selection.data?.roleId === role.id ||
-        (profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
-      if (statusFilter === 'Active') return isActive
-      if (statusFilter === 'Done') {
+    let result = deduplicated
+    if (statusFilter !== 'All') {
+      result = deduplicated.filter((role) => {
         const prevRoles = profile?.previousRoles || []
-        return prevRoles.some(
+        const isDone = prevRoles.some(
           (pr) =>
             pr.status === 'completed' &&
             (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
              (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
         )
-      }
-      return true
-    })
-  }, [roles.data, statusFilter, selection.data?.roleId, profile?.targetRole, profile?.previousRoles])
+        const isActive = !isDone && (
+          selection.data?.roleId === role.id ||
+          Boolean(profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
+        )
+        if (statusFilter === 'Active') return isActive
+        if (statusFilter === 'Done') return isDone
+        return true
+      })
+    }
+
+    const sorted = [...result]
+    if (sortBy === 'recommendation') {
+      sorted.sort((a, b) => getRoleRecommendationScore(b) - getRoleRecommendationScore(a))
+    } else if (sortBy === 'alphabetical') {
+      sorted.sort((a, b) => a.name.localeCompare(b.name))
+    }
+    return sorted
+  }, [roles.data, statusFilter, sortBy, selection.data?.roleId, profile?.targetRole, profile?.previousRoles])
 
   const totalItems = filteredRoles.length
   const totalPages = Math.ceil(totalItems / PAGE_SIZE)
@@ -188,22 +234,6 @@ export function TargetRoleBrowsePanel() {
 
   return (
     <section ref={catalogRef} className="space-y-4" aria-labelledby="target-role-catalog-heading">
-      {/* Subtle compact link to dedicated AI Role Guidance tab */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl border border-border bg-card/60 text-xs">
-        <div className="flex items-center gap-2 text-muted-foreground min-w-0">
-          <Sparkles size={14} className="text-primary shrink-0" />
-          <span className="truncate">
-            Looking for AI career direction? Get recommendations based on your occupation baseline &amp; RIASEC profile.
-          </span>
-        </div>
-        <a
-          href="/employee/guidance"
-          className="text-primary hover:text-primary-hover font-semibold shrink-0 flex items-center gap-1 hover:underline"
-        >
-          <span>Open AI Role Guidance</span>
-          <ArrowRight size={13} />
-        </a>
-      </div>
 
       <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xs md:flex-row md:items-center">
         <label className="relative flex-1" htmlFor="target-role-search">
@@ -232,6 +262,35 @@ export function TargetRoleBrowsePanel() {
 
         {/* Filter Controls Group */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Sort By Filter Pill */}
+          <div
+            className={cn(
+              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none shrink-0",
+              sortBy !== 'recommendation'
+                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-border bg-background hover:bg-muted/60 text-foreground"
+            )}
+          >
+            <ArrowUpDown size={13} className={sortBy !== 'recommendation' ? 'text-primary' : 'text-muted-foreground'} />
+            <span className="text-muted-foreground font-normal">Sort:</span>
+            <span className="font-semibold text-foreground">
+              {sortBy === 'recommendation' ? 'Recommendation' : 'Alphabetical (A-Z)'}
+            </span>
+            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
+            <select
+              aria-label="Sort target roles"
+              value={sortBy}
+              onChange={(event) => {
+                setSortBy(event.target.value as 'recommendation' | 'alphabetical')
+                setCurrentPage(1)
+              }}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            >
+              <option value="recommendation" className="bg-card text-foreground">Recommendation (Default)</option>
+              <option value="alphabetical" className="bg-card text-foreground">Alphabetical (A-Z)</option>
+            </select>
+          </div>
+
           {/* Status Filter Pill */}
           <div
             className={cn(
@@ -300,40 +359,6 @@ export function TargetRoleBrowsePanel() {
         </div>
       </div>
 
-      {/* Expert-Reviewed AI Role Guidance Banner (Section 4.4) */}
-      <div className="p-4 rounded-xl border border-primary/20 bg-secondary/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary">
-            <Sparkles size={18} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                Expert-Reviewed AI Role Guidance
-              </span>
-              <Badge variant="success" className="text-[10px] py-0 px-1.5 font-semibold">
-                Confirmed by Dr. Sarah Chen
-              </Badge>
-            </div>
-            <p className="text-xs text-foreground mt-0.5">
-              Based on your <strong>Baseline Diagnostic (92%)</strong> and <strong>Investigative RIASEC Profile</strong>, the recommended target role is <strong>AI Knowledge Architect</strong>.
-            </p>
-          </div>
-        </div>
-        <Button
-          size="sm"
-          variant="primary"
-          className="text-xs font-semibold shadow-2xs shrink-0 whitespace-nowrap self-start sm:self-center"
-          onClick={() => {
-            const match = roles.data?.find((r) => r.code === 'TR-001' || r.name.includes('AI Knowledge Architect')) || roles.data?.[0]
-            if (match) {
-              openConfirmation(match)
-            }
-          }}
-        >
-          Select Recommended Role
-        </Button>
-      </div>
 
       {roles.isPending ? (
         <div role="status" className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
@@ -371,40 +396,55 @@ export function TargetRoleBrowsePanel() {
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {paginatedRoles.map((role) => {
-              const isActive = selection.data?.roleId === role.id ||
-                (profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
               const isDone = (profile?.previousRoles || []).some(
                 (pr) =>
                   pr.status === 'completed' &&
                   (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
                    (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
               )
+              const isActive = !isDone && (
+                selection.data?.roleId === role.id ||
+                Boolean(profile?.targetRole && profile.targetRole.toLowerCase() === role.name.toLowerCase())
+              )
+              const recScore = getRoleRecommendationScore(role)
               return (
                 <Card
                   key={role.id}
                   aria-label={`Target role ${role.name}`}
                   className={cn(
                     "flex flex-col justify-between hover:shadow-md transition-all duration-150 border-border bg-card group",
-                    isActive && "border-primary/50 ring-1 ring-primary/20"
+                    isActive && "border-primary/50 ring-1 ring-primary/20",
+                    isDone && "border-success/30 bg-card hover:border-success/50"
                   )}
                 >
                   <div className="p-5 space-y-2.5">
                     {/* Badges: Track & Seniority */}
                     <div className="flex items-center justify-between gap-2">
-                      <Badge variant="secondary" className="text-[11px] font-semibold text-primary truncate max-w-[170px]">
-                        {role.track === 'PROFESSIONAL' ? 'Professional' : role.track === 'MANAGEMENT' ? 'Management' : role.track}
-                      </Badge>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge variant="secondary" className="text-[11px] font-semibold text-primary truncate max-w-[170px]">
+                          {role.track === 'PROFESSIONAL' ? 'Professional' : role.track === 'MANAGEMENT' ? 'Management' : role.track}
+                        </Badge>
+                        {sortBy === 'recommendation' && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                            <Sparkles size={10} />
+                            {recScore}% Match
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5">
-                        {isActive && (
+                        {isDone ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] whitespace-nowrap text-success border-success/30 bg-success/5 font-semibold gap-1"
+                          >
+                            <CheckCircle2 size={11} className="text-success shrink-0" />
+                            <span>Done</span>
+                          </Badge>
+                        ) : isActive ? (
                           <Badge variant="success" className="text-[10px] whitespace-nowrap">
                             Active role
                           </Badge>
-                        )}
-                        {isDone && !isActive && (
-                          <Badge variant="outline" className="text-[10px] whitespace-nowrap text-muted-foreground border-border">
-                            Done
-                          </Badge>
-                        )}
+                        ) : null}
                         <span
                           className={cn(
                             "text-[10px] font-bold px-2 py-0.5 rounded-full",
@@ -446,7 +486,18 @@ export function TargetRoleBrowsePanel() {
                       >
                         View details
                       </Button>
-                      {isActive ? (
+                      {isDone ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="text-xs h-7.5 px-3 bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
+                          title="You have already completed this target role."
+                        >
+                          <CheckCircle2 size={12} className="mr-1 text-success shrink-0" />
+                          <span>Done</span>
+                        </Button>
+                      ) : isActive ? (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -489,6 +540,16 @@ export function TargetRoleBrowsePanel() {
       <TargetRoleDetailDialog
         roleId={detailRoleId}
         activeRoleId={selection.data?.roleId ?? null}
+        isCompleted={(profile?.previousRoles || []).some((pr) => {
+          if (!detailRoleId || !roles.data) return false
+          const role = roles.data.find((r) => r.id === detailRoleId)
+          if (!role) return false
+          return (
+            pr.status === 'completed' &&
+            (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
+             (role.code && pr.roleKey.toLowerCase() === role.code.toLowerCase()))
+          )
+        })}
         selectionUnavailable={selection.isError || chooseRole.isPending}
         selectionPending={selection.isPending}
         onClose={() => setDetailRoleId(null)}

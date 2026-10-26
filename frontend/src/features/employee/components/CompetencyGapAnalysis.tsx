@@ -8,6 +8,7 @@ import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { getOverviewSkills, normalizeRoleKey, normalizeSkillKey } from '../data/employeeOverviewData'
 
 export interface CompetencySkill {
   id: string
@@ -90,7 +91,19 @@ export function CompetencyGapAnalysis() {
 
   const companySkills = React.useMemo(() => {
     if (activeCompany.id === 'comp-technova') {
-      return SAMPLE_SKILLS
+      const isSkillMode = profile.selectedViewType === 'skill'
+      const roleKey = normalizeRoleKey(targetRole)
+      const skillKey = normalizeSkillKey(profile.targetSkill)
+      const overviewSkills = getOverviewSkills(isSkillMode, roleKey, skillKey)
+      return overviewSkills.map((s) => ({
+        id: s.id,
+        name: s.name,
+        category: s.category,
+        currentLevel: s.estimatedMastery,
+        requiredLevel: s.targetRoleRequirement,
+        priority: (s.status === 'critical_gap' ? 'high' : s.status === 'in_progress' ? 'medium' : 'low') as 'high' | 'medium' | 'low',
+        bridgeModule: s.recommendedModule || (s.teachingModule ? `${s.teachingModule.moduleCode}: ${s.teachingModule.title}` : 'Instructional Foundation Module'),
+      }))
     }
     if (!activeCompany?.microSkills || activeCompany.microSkills.length === 0) {
       return []
@@ -109,7 +122,7 @@ export function CompetencyGapAnalysis() {
           : 'Foundation Alignment Module',
       }
     })
-  }, [activeCompany])
+  }, [activeCompany, targetRole, profile.selectedViewType, profile.targetSkill])
 
   const totalRequired = companySkills.reduce((acc, s) => acc + s.requiredLevel, 0)
   const totalCurrent = companySkills.reduce((acc, s) => acc + s.currentLevel, 0)

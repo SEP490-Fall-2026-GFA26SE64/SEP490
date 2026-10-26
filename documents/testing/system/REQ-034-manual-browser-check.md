@@ -1,3 +1,5 @@
+> Current merged branch: use migrations through V28 (Research V27/V28). V8/V9 references below describe the original isolated Research branch. Existing Research V8/V9 databases require reviewed migration-history reconciliation before startup; do not reset volumes or run Flyway repair automatically.
+
 # RQ2 v3 — Manual browser checklist
 
 Date:2026-10-21. Functions REQ-033-F02 / REQ-034-F01,F02 / REQ-035-F01. Run after Compose migrations V1–V9 and API/frontend build. Prerequisites: valid ontology source, dedicated research Neo4j healthy, PostgreSQL available, existing Admin portal login. URL: http://127.0.0.1:8088/admin/research (Admin → Research). Other roles must remain unable to open Research.

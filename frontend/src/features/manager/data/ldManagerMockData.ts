@@ -89,14 +89,35 @@ export function sortTargetRolesWithDraftsBelowPublished(
     groups.get(key)!.push(r)
   }
 
-  const getGroupLatestTime = (groupRoles: TargetRoleModel[]): number => {
+  // A lineage is a brand-new role if it has NEVER been published (pure draft/sent/rejected).
+  // A lineage that has a published version is an existing role, even if a successor draft was spawned.
+  const isPureDraftLineage = (groupRoles: TargetRoleModel[]): boolean => {
+    return groupRoles.every((r) => r.status !== 'published')
+  }
+
+  // Base creation time for the lineage:
+  // For existing published roles, anchor to the published base version's creation time so spawning a successor draft does not alter the lineage order.
+  // For brand-new draft roles, use the creation time of that new role.
+  const getLineageBaseTime = (groupRoles: TargetRoleModel[]): number => {
+    const published = groupRoles.filter((r) => r.status === 'published')
+    if (published.length > 0) {
+      let baseTime = Infinity
+      for (const r of published) {
+        const t = r.createdAt ? new Date(r.createdAt).getTime() : 0
+        if (!isNaN(t) && t > 0 && t < baseTime) {
+          baseTime = t
+        }
+      }
+      return baseTime === Infinity ? 0 : baseTime
+    }
+
     let latest = 0
     for (const r of groupRoles) {
-      const updatedTime = r.updatedAt ? new Date(r.updatedAt).getTime() : 0
       const createdTime = r.createdAt ? new Date(r.createdAt).getTime() : 0
+      const updatedTime = r.updatedAt ? new Date(r.updatedAt).getTime() : 0
       const best = Math.max(
-        isNaN(updatedTime) ? 0 : updatedTime,
-        isNaN(createdTime) ? 0 : createdTime
+        isNaN(createdTime) ? 0 : createdTime,
+        isNaN(updatedTime) ? 0 : updatedTime
       )
       if (best > latest) {
         latest = best
@@ -115,22 +136,26 @@ export function sortTargetRolesWithDraftsBelowPublished(
     const roleB = rolesB[0]
 
     if (sortBy === 'latest') {
-      const timeA = getGroupLatestTime(rolesA)
-      const timeB = getGroupLatestTime(rolesB)
+      const isPureDraftA = isPureDraftLineage(rolesA)
+      const isPureDraftB = isPureDraftLineage(rolesB)
+
+      // Rule: Brand-new / pure draft roles (e.g. ROLE-GENAI-01 or newly created role) take precedence on top
+      if (isPureDraftA && !isPureDraftB) return -1
+      if (isPureDraftB && !isPureDraftA) return 1
+
+      // If both are pure drafts (e.g. brand new role vs existing draft role) or both have published versions:
+      // The newest created lineage goes to the top.
+      const timeA = getLineageBaseTime(rolesA)
+      const timeB = getLineageBaseTime(rolesB)
       if (timeB !== timeA) {
-        return timeB - timeA // Latest created or updated at the very top
+        return timeB - timeA
       }
-      // Priority 1: Newly dispatched / sent roles should be at the absolute top of the queue
+
+      // Priority: Newly dispatched / sent roles
       const hasSentA = rolesA.some((r) => r.status === 'sent')
       const hasSentB = rolesB.some((r) => r.status === 'sent')
       if (hasSentA && !hasSentB) return -1
       if (hasSentB && !hasSentA) return 1
-
-      // Priority 2: In-flight draft roles take precedence over older published roles
-      const hasDraftA = rolesA.some((r) => r.status === 'draft')
-      const hasDraftB = rolesB.some((r) => r.status === 'draft')
-      if (hasDraftA && !hasDraftB) return -1
-      if (hasDraftB && !hasDraftA) return 1
 
       // Fallback: reverse ID so newer entries go to top
       return (roleB?.id || '').localeCompare(roleA?.id || '')
@@ -266,6 +291,7 @@ export interface QuizQuestionModel {
   status: 'draft' | 'published' | 'archived'
   difficulty: 'Foundation' | 'Intermediate' | 'Advanced'
   provenance: string
+  updatedAt?: string
 }
 
 export interface BlueprintSkillRequirement {
@@ -343,6 +369,84 @@ export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = [
     targetSkillId: 'skill-dkt',
     minMastery: 0.85,
     status: 'ACTIVE',
+  },
+]
+
+export const INITIAL_COMPETENCIES: CompetencyModel[] = [
+  {
+    id: 'comp-knowledge',
+    code: 'KNOWLEDGE',
+    name: 'Knowledge Graph & Data Engineering',
+    description: 'Core semantic graph structures, RDF triplestores, and Cypher query languages.',
+    status: 'ACTIVE',
+    skillIds: ['skill-cypher', 'skill-owl-rdf', 'skill-vector-db'],
+  },
+  {
+    id: 'comp-innovation',
+    code: 'INNOVATION',
+    name: 'Cognitive AI & Inductive Modeling',
+    description: 'Deep graph representation learning, node embeddings, and dynamic knowledge tracing.',
+    status: 'ACTIVE',
+    skillIds: ['skill-gnn', 'skill-embeddings', 'skill-dkt', 'skill-attn-01'],
+  },
+]
+
+export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = [
+  {
+    id: 'skill-cypher',
+    code: 'SKILL-CYPHER-01',
+    name: 'Neo4j Cypher Traversal & DDL',
+    description: 'Declarative Cypher query patterns, property graph indexing, and idempotent schema constraints.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'KNOWLEDGE',
+  },
+  {
+    id: 'skill-gnn',
+    code: 'SKILL-GNN-02',
+    name: 'Graph Neural Networks & Inductive Representation',
+    description: 'Spatial and spectral neighborhood convolutions, message passing mechanisms, and over-smoothing mitigations.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'INNOVATION',
+  },
+  {
+    id: 'skill-embeddings',
+    code: 'SKILL-EMB-03',
+    name: 'Node2Vec & Transductive Graph Embeddings',
+    description: 'Biased random walks, skip-gram objective functions, and low-dimensional manifold representations.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'INNOVATION',
+  },
+  {
+    id: 'skill-owl-rdf',
+    code: 'SKILL-RDF-04',
+    name: 'OWL 2 DL Ontologies & RDF Triplestores',
+    description: 'Description logics, open-world assumption, functional properties, and SPARQL 1.1 query syntax.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'KNOWLEDGE',
+  },
+  {
+    id: 'skill-vector-db',
+    code: 'SKILL-VEC-05',
+    name: 'HNSW Vector Indexes & Approximate Nearest Neighbors',
+    description: 'Hierarchical Navigable Small World graphs for high-dimensional semantic search and similarity retrieval.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'KNOWLEDGE',
+  },
+  {
+    id: 'skill-dkt',
+    code: 'SKILL-DKT-06',
+    name: 'Dynamic Knowledge Tracing & Pedagogical Modeling',
+    description: 'Sequential neural attention models tracking learner latent knowledge states and mastery probabilities.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'INNOVATION',
+  },
+  {
+    id: 'skill-attn-01',
+    code: 'SKILL-ATTN-07',
+    name: 'Multi-Head Attention & Transformer Architectures',
+    description: 'Self-attention mechanisms, scaled dot-product matrices, and contextual sequence representation.',
+    status: 'ACTIVE',
+    macroCompetencyCode: 'INNOVATION',
   },
 ]
 

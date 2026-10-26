@@ -1,5 +1,7 @@
 import {
   INITIAL_BLUEPRINTS,
+  INITIAL_COMPETENCIES,
+  INITIAL_MICRO_SKILLS,
   INITIAL_MODULES,
   INITIAL_PREREQUISITES,
   INITIAL_QUESTIONS,
@@ -44,6 +46,9 @@ export interface CompanyRecord {
   targetRoles: TargetRoleModel[]
   questions: QuizQuestionModel[]
   blueprints: AssessmentBlueprintModel[]
+  isSuspended?: boolean
+  suspensionReason?: string
+  domain?: string
 }
 
 const STORAGE_KEY_COMPANIES = 'adaptlearn_companies_v3'
@@ -112,8 +117,8 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       avatar: 'CB',
     },
   ],
-  competencies: [],
-  microSkills: [],
+  competencies: INITIAL_COMPETENCIES,
+  microSkills: INITIAL_MICRO_SKILLS,
   prerequisites: INITIAL_PREREQUISITES,
   modules: INITIAL_MODULES,
   targetRoles: INITIAL_TARGET_ROLES,
@@ -162,8 +167,8 @@ const SEED_COMPANY_ACME: CompanyRecord = {
       avatar: 'ES',
     },
   ],
-  competencies: [],
-  microSkills: [],
+  competencies: INITIAL_COMPETENCIES,
+  microSkills: INITIAL_MICRO_SKILLS,
   prerequisites: INITIAL_PREREQUISITES.slice(0, 2),
   modules: INITIAL_MODULES.slice(0, 2),
   targetRoles: INITIAL_TARGET_ROLES.slice(0, 1),
@@ -195,8 +200,16 @@ export function loadCompanies(): CompanyRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((comp: any) => ({
+        return (parsed as CompanyRecord[]).map((comp) => ({
           ...comp,
+          microSkills:
+            Array.isArray(comp.microSkills) && comp.microSkills.length > 0
+              ? comp.microSkills
+              : INITIAL_MICRO_SKILLS,
+          competencies:
+            Array.isArray(comp.competencies) && comp.competencies.length > 0
+              ? comp.competencies
+              : INITIAL_COMPETENCIES,
           blueprints: Array.isArray(comp.blueprints)
             ? comp.blueprints
             : comp.id === 'comp-technova'

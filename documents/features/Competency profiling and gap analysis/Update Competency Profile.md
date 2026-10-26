@@ -1,7 +1,7 @@
 # Update Competency Profile
 
 ## Current Scope Alignment
-System updates estimates using configured tracing and valid baseline/module evidence, including independent learning. RIASEC interests are not knowledge evidence. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
+System initializes each assessed skill from finalized adaptive-baseline theta/SE/mapped mastery once, then applies later module/independent-learning evidence through the configured BKT model. Baseline answers are not applied again as individual BKT evidence. RIASEC interests are not knowledge evidence. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
@@ -20,7 +20,7 @@ Derive and update an employee's skill state using assessment evidence and questi
 
 ## Open Decisions
 
-- Knowledge-tracing model, initial priors, evidence weights, mastery scale, and thresholds.
+- BKT parameters/thresholds, confidence propagation and mapping of later evidence; baseline mapping is independently versioned.
 - Repeated attempts, conflicting evidence, missing skills, and time decay.
 - Soft-skill integration, model versioning, and transfer of evidence between target roles.
 

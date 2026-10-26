@@ -38,3 +38,7 @@ User approved distinct pairs per hop, multiple seeds and shuffled measured round
 ## Dataset count input — 2026-10-23
 
 REQ-034-F01: replace comma-separated Dataset seeds with the numeric Datasets per graph size input (Vietnamese: Số bộ dữ liệu mỗi quy mô). Integer1..catalog.maxSeeds (currently10), default catalog.defaultSeeds.length (currently5). N creates N datasets per selected graph size, using automatic seeds[1..N]. Preview budget and POST seeds array use exactly that count. Keep all existing limits and saved explicit seeds/history; no endpoint or store migration. Reject zero, negative, fractional, empty, comma-separated and over-limit values before submission.
+
+## Merge compatibility — 2026-10-26
+
+The merged baseline branch numbers the unchanged Research SQL as V27/V28. Existing Research-only V8/V9 databases require explicit migration-history reconciliation before startup. The feature/API/protocol is unchanged. See [merge verification and manual checks](../../testing/system/REQ-001-002-034-merge-resolution.md).

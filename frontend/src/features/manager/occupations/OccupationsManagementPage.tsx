@@ -160,7 +160,7 @@ const INITIAL_OCCUPATIONS: OccupationRecord[] = [
     code: '15-1299.08',
     name: 'Computer Systems Engineers/Architects',
     jobZone: 4,
-    description: 'Design systems architecture, distributed multi-cloud orchestration, transactional outbox pattern, and hardware-software interfaces.',
+    description: 'Design systems architecture, distributed multi-cloud orchestration, reliable message queuing architectures, and hardware-software interfaces.',
     status: 'active',
     assignedExperts: [
       {
@@ -575,27 +575,29 @@ export function OccupationsManagementPage() {
   }
 
   // Import handler
-  const handleImportOccupations = (importedData: any, _source: 'preset' | 'custom') => {
-    const rawList = Array.isArray(importedData)
+  const handleImportOccupations = (importedData: unknown, _source: 'preset' | 'custom') => {
+    const rawList: unknown[] = Array.isArray(importedData)
       ? importedData
-      : Array.isArray(importedData?.occupations)
-      ? importedData.occupations
+      : (typeof importedData === 'object' && importedData !== null && 'occupations' in importedData && Array.isArray((importedData as Record<string, unknown>).occupations))
+      ? ((importedData as Record<string, unknown>).occupations as unknown[])
       : [importedData]
 
     const validOccupations: OccupationRecord[] = []
-    for (const item of rawList) {
-      if (!item || !item.name) continue
+    for (const rawItem of rawList) {
+      if (typeof rawItem !== 'object' || rawItem === null) continue
+      const item = rawItem as Record<string, unknown>
+      if (!item.name) continue
       validOccupations.push({
-        id: item.id || `occ-imp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        code: item.code || `15-${(1250 + occupations.length + validOccupations.length + 1).toString().padStart(4, '0')}.00`,
+        id: String(item.id || `occ-imp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`),
+        code: String(item.code || `15-${(1250 + occupations.length + validOccupations.length + 1).toString().padStart(4, '0')}.00`),
         name: String(item.name).trim(),
         jobZone: Number(item.jobZone) || 4,
-        description: item.description || 'Imported curricular occupation domain.',
+        description: String(item.description || 'Imported curricular occupation domain.'),
         status: item.status === 'inactive' ? 'inactive' : 'active',
-        assignedExperts: Array.isArray(item.assignedExperts) ? item.assignedExperts : [],
+        assignedExperts: Array.isArray(item.assignedExperts) ? (item.assignedExperts as OccupationRecord['assignedExperts']) : [],
         microSkillCount: Number(item.microSkillCount) || 0,
         moduleCount: Number(item.moduleCount) || 0,
-        interests: item.interests || {
+        interests: (item.interests as OccupationRecord['interests']) || {
           realistic: 0.4,
           investigative: 0.75,
           artistic: 0.2,
@@ -603,14 +605,14 @@ export function OccupationsManagementPage() {
           enterprising: 0.25,
           conventional: 0.8,
         },
-        createdAt: item.createdAt || new Date().toISOString().split('T')[0],
+        createdAt: String(item.createdAt || new Date().toISOString().split('T')[0]),
       })
     }
 
     if (validOccupations.length === 0) {
       toast({
         title: 'Import Failed',
-        description: 'No valid occupation records found in import payload.',
+        description: 'No valid occupation records found in the imported file.',
         variant: 'destructive',
       })
       return

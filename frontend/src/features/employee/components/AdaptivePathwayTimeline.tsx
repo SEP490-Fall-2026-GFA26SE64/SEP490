@@ -1,9 +1,12 @@
-import { CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { normalizeRoleKey } from '../data/employeeOverviewData'
 
 export interface PathwayStep {
   id: string
@@ -64,8 +67,100 @@ const INITIAL_PATHWAY: PathwayStep[] = [
   },
 ]
 
+const BACKEND_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-be-1',
+    code: 'MOD-108',
+    title: 'Event-Driven Microservices & Kafka Stream Processing',
+    status: 'completed',
+    estimatedHours: 4,
+    skillsTaught: ['Kafka Stream Processing', 'Outbox Relay Pattern'],
+    score: 90,
+  },
+  {
+    id: 'step-be-2',
+    code: 'MOD-202',
+    title: 'PostgreSQL Relational Schema Optimization & Indexing',
+    status: 'completed',
+    estimatedHours: 5,
+    skillsTaught: ['PostgreSQL Indexing', 'Lock Contention Analysis'],
+    score: 88,
+  },
+  {
+    id: 'step-be-3',
+    code: 'MOD-304',
+    title: 'Distributed Consensus & Replication Protocols',
+    status: 'recommended',
+    estimatedHours: 6,
+    skillsTaught: ['Raft Consensus', 'gRPC HTTP/2 Streaming'],
+    prerequisite: 'MOD-108',
+  },
+  {
+    id: 'step-be-4',
+    code: 'MOD-402',
+    title: 'Cloud-Native Container Orchestration & Telemetry',
+    status: 'locked',
+    estimatedHours: 8,
+    skillsTaught: ['Kubernetes Workload Meshes', 'OpenTelemetry Tracing'],
+    prerequisite: 'MOD-304',
+  },
+]
+
+const DATA_SCIENTIST_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-ds-1',
+    code: 'MOD-301',
+    title: 'Geometric Deep Learning & Message Passing Networks',
+    status: 'completed',
+    estimatedHours: 5,
+    skillsTaught: ['Graph Convolutional Networks', 'GraphSAGE Inductive Sampling'],
+    score: 86,
+  },
+  {
+    id: 'step-ds-2',
+    code: 'MOD-302',
+    title: 'Graph Representation Learning & Node Embeddings',
+    status: 'recommended',
+    estimatedHours: 6,
+    skillsTaught: ['Node2Vec Biased Random Walks', 'Topological Hyperbolic Geometry'],
+    prerequisite: 'MOD-301',
+  },
+  {
+    id: 'step-ds-3',
+    code: 'MOD-303',
+    title: 'Heterogeneous Knowledge Graphs & Link Prediction',
+    status: 'locked',
+    estimatedHours: 6,
+    skillsTaught: ['Translational Distance Embeddings (TransE / RotatE)', 'Entity Deduplication'],
+    prerequisite: 'MOD-302',
+  },
+  {
+    id: 'step-ds-4',
+    code: 'MOD-403',
+    title: 'Causal Inference & Graph Machine Learning Capstone',
+    status: 'locked',
+    estimatedHours: 8,
+    skillsTaught: ['DAG Causal Discovery', 'GNN Explainer & Subgraph Attribution'],
+    prerequisite: 'MOD-303',
+  },
+]
+
+const SKILL_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-sk-1',
+    code: 'MOD-CYP-101',
+    title: 'Accelerated Cypher Querying & Pattern Traversal',
+    status: 'recommended',
+    estimatedHours: 3,
+    skillsTaught: ['Declarative Cypher MATCH & MERGE', 'Cypher Query Profiling'],
+    score: 85,
+  },
+]
+
 export function AdaptivePathwayTimeline() {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+  const { profile } = useEmployeeLearningState()
+  const isSkillMode = profile.selectedViewType === 'skill'
 
   React.useEffect(() => {
     const handleSync = () => setActiveCompany(getActiveCompany())
@@ -79,6 +174,11 @@ export function AdaptivePathwayTimeline() {
 
   const defaultSteps: PathwayStep[] = React.useMemo(() => {
     if (activeCompany.id === 'comp-technova') {
+      const isSkillMode = profile.selectedViewType === 'skill'
+      const roleKey = normalizeRoleKey(profile.targetRole)
+      if (isSkillMode) return SKILL_PATHWAY
+      if (roleKey === 'senior-backend-engineer') return BACKEND_PATHWAY
+      if (roleKey === 'graph-data-scientist') return DATA_SCIENTIST_PATHWAY
       return INITIAL_PATHWAY
     }
     if (!activeCompany?.modules || activeCompany.modules.length === 0) {
@@ -94,7 +194,7 @@ export function AdaptivePathwayTimeline() {
       prerequisite: idx > 0 ? activeCompany.modules[idx - 1].code : undefined,
       score: idx === 0 ? 88 : undefined,
     }))
-  }, [activeCompany])
+  }, [activeCompany, profile.selectedViewType, profile.targetRole])
 
   const [steps, setSteps] = React.useState<PathwayStep[]>(defaultSteps)
   React.useEffect(() => {
@@ -143,7 +243,24 @@ export function AdaptivePathwayTimeline() {
     })
   }
 
-  if (steps.length === 0) {
+  const skillSteps: PathwayStep[] = React.useMemo(() => {
+    const currentSkillName = profile.targetSkill || 'Neo4j Cypher Traversal'
+    return [
+      {
+        id: 'step-skill-cypher',
+        code: 'MOD-CYP-101',
+        title: 'Accelerated Cypher Querying & Pattern Traversal',
+        status: 'recommended',
+        estimatedHours: 1,
+        skillsTaught: [currentSkillName],
+        score: 85,
+      },
+    ]
+  }, [profile.targetSkill])
+
+  const effectiveSteps = isSkillMode ? skillSteps : steps
+
+  if (effectiveSteps.length === 0) {
     return (
       <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
         <Sparkles size={32} className="mx-auto text-muted-foreground/60 mb-2" />
@@ -165,23 +282,29 @@ export function AdaptivePathwayTimeline() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                AI-Driven Adaptive Learning Pathway
+                {isSkillMode
+                  ? `Skill Pathway: ${profile.targetSkill || 'Neo4j Cypher Traversal'}`
+                  : 'AI-Driven Adaptive Learning Pathway'}
               </h2>
             </div>
             <p className="text-xs text-muted-foreground">
-              Dynamic graph-traversal route continually recalculated based on real-time assessment performance
+              {isSkillMode
+                ? 'Modular adaptive progression designed to achieve verified single-skill mastery'
+                : 'Dynamic graph-traversal route continually recalculated based on real-time assessment performance'}
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSimulateRemedyFallback}
-            leftIcon={<Zap className="h-4 w-4 text-warning" />}
-            className="self-start md:self-auto shadow-2xs font-semibold"
-          >
-            {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
-          </Button>
+          {!isSkillMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSimulateRemedyFallback}
+              leftIcon={<Zap className="h-4 w-4 text-warning" />}
+              className="self-start md:self-auto shadow-2xs font-semibold"
+            >
+              {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
+            </Button>
+          )}
         </div>
 
         {/* Big Container Body: Continuous Adaptive Timeline Track */}
@@ -191,7 +314,7 @@ export function AdaptivePathwayTimeline() {
             <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
 
             <div className="space-y-6">
-              {steps.map((step) => {
+              {effectiveSteps.map((step) => {
                 const isRecommended = step.status === 'recommended'
                 const isRemedy = step.status === 'remedy'
                 const isCompleted = step.status === 'completed'
@@ -305,6 +428,15 @@ export function AdaptivePathwayTimeline() {
                             </Badge>
                           ))}
                         </div>
+
+                        {!isLocked && (
+                          <Link to="/employee/modules/mod-cypher-mastery">
+                            <Button variant="outline" size="sm" className="text-xs h-7 gap-1">
+                              <span>Open Module Lessons</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>

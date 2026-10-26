@@ -50,7 +50,7 @@ class ResearchIntegrationTest {
     }
     @Test void postgresRetainsFrozenArtifactsRejectsOverlapAndRecoversInterruptedRun()throws Exception{
         try(var postgres=new PostgreSQLContainer<>("postgres:17.6-alpine")) {
-            postgres.start();Flyway.configure().dataSource(postgres.getJdbcUrl(),postgres.getUsername(),postgres.getPassword()).locations("classpath:db/migration").target("8").load().migrate();
+            postgres.start();Flyway.configure().dataSource(postgres.getJdbcUrl(),postgres.getUsername(),postgres.getPassword()).locations("classpath:db/migration").target("27").load().migrate();
             var jdbc=new JdbcTemplate(new DriverManagerDataSource(postgres.getJdbcUrl(),postgres.getUsername(),postgres.getPassword()));
             var store=new JdbcResearchStore(jdbc,new ObjectMapper().findAndRegisterModules());
             Graph graph=new OntologyGenerator().generate(ResearchDomainTest.source(),1000,42);

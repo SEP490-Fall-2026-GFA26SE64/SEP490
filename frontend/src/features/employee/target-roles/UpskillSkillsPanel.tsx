@@ -33,6 +33,7 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { getActiveCompanyId } from '../../../shared/stores/companyStore'
+import { TARGET_ROLE_ROADMAPS } from '../data/roadmapData'
 
 interface EnrichedSkill extends MicroSkillDto {
   durationHours: number
@@ -44,6 +45,17 @@ interface EnrichedSkill extends MicroSkillDto {
 
 const DURATION_BRACKETS = ['All Durations', '< 2 Hours', '2-5 Hours', '6-15 Hours', '15+ Hours'] as const
 const LEVEL_OPTIONS = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const
+
+const CANONICAL_MACROS: Record<string, string> = {
+  KNOWLEDGE: 'Knowledge',
+  COMMUNICATION: 'Communication',
+  INNOVATION: 'Innovation',
+  RESPONSIBLE_AI: 'Responsible AI',
+  AI_LITERACY: 'AI literacy',
+  GEN_AI: 'Generative AI',
+  MACHINE_LEARNING: 'Machine Learning',
+  LEADERSHIP: 'Leadership and Management',
+}
 
 function calculateSkillMetadata(skill: MicroSkillDto, macroMap: Map<string, string>): EnrichedSkill {
   const hash = (skill.code || skill.name).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
@@ -67,7 +79,7 @@ function calculateSkillMetadata(skill: MicroSkillDto, macroMap: Map<string, stri
   else if (durationHours >= 12) level = 'Advanced'
 
   const macroCode = skill.macroCompetencyCode || 'KNOWLEDGE'
-  const macroName = macroMap.get(macroCode) || macroCode
+  const macroName = macroMap.get(macroCode) || CANONICAL_MACROS[macroCode] || macroCode
 
   return {
     ...skill,
@@ -120,6 +132,39 @@ export function UpskillSkillsPanel() {
     [profile?.previousSkills]
   )
 
+  // Determine skills that are already in the employee's active role learning pathway
+  const pathwaySkillKeys = React.useMemo(() => {
+    const keys = new Set<string>()
+    const defaultRoadmap = TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
+    if (defaultRoadmap) {
+      for (const m of defaultRoadmap.modules) {
+        for (const sk of m.microSkills) {
+          keys.add(sk.name.toLowerCase().trim())
+          if (sk.skillCode) keys.add(sk.skillCode.toLowerCase().trim())
+        }
+      }
+    }
+    // Also include common pathway competencies
+    keys.add('rdf triplestore data model')
+    keys.add('sparql 1.1 query engine')
+    keys.add('declarative cypher match & merge')
+    keys.add('index-free adjacency & schema constraints')
+    keys.add('graph neural networks & node embeddings')
+    keys.add('dynamic knowledge tracing & pedagogical modeling')
+    keys.add('prompt engineering patterns')
+    keys.add('gemini multimodal reasoning')
+    return keys
+  }, [])
+
+  const isSkillInPathway = React.useCallback(
+    (skill: EnrichedSkill) => {
+      const name = skill.name.toLowerCase().trim()
+      const code = (skill.code || '').toLowerCase().trim()
+      return pathwaySkillKeys.has(name) || pathwaySkillKeys.has(code)
+    },
+    [pathwaySkillKeys]
+  )
+
   React.useEffect(() => {
     const handleLocationChange = () => {
       setSearchQuery(getSearchFromLocation())
@@ -153,7 +198,7 @@ export function UpskillSkillsPanel() {
         fetchMicroSkills(orgId).catch(() => [] as MicroSkillDto[]),
       ])
 
-      const macroMap = new Map<string, string>()
+      const macroMap = new Map<string, string>(Object.entries(CANONICAL_MACROS))
       macrosData.forEach((m) => {
         macroMap.set(m.code, m.name)
       })
@@ -182,17 +227,17 @@ export function UpskillSkillsPanel() {
     void loadData()
   }, [loadData])
 
-  // Topic options
+  // Topic options: exclusively the 8 Macro-Competency Domains
   const topicOptions = React.useMemo(() => {
     const set = new Set<string>()
     macroCompetencies.forEach((m) => {
       if (m.name) set.add(m.name)
     })
-    skills.forEach((s) => {
-      if (s.name) set.add(s.name)
-    })
+    if (set.size === 0) {
+      Object.values(CANONICAL_MACROS).forEach((n) => set.add(n))
+    }
     return ['All', ...Array.from(set)]
-  }, [macroCompetencies, skills])
+  }, [macroCompetencies])
 
   // Filter skills
   const filteredSkills = React.useMemo(() => {
@@ -204,11 +249,11 @@ export function UpskillSkillsPanel() {
         if (!isSkillDone(item)) return false
       }
 
-      // Topic match
+      // Topic match: compare against item.macroName or macroCompetencyCode
       if (selectedTopic !== 'All') {
         const matchesTopic =
           item.macroName.toLowerCase() === selectedTopic.toLowerCase() ||
-          item.name.toLowerCase() === selectedTopic.toLowerCase()
+          item.macroCompetencyCode?.toLowerCase() === selectedTopic.toLowerCase()
         if (!matchesTopic) return false
       }
 
@@ -468,7 +513,8 @@ export function UpskillSkillsPanel() {
                   key={skill.id}
                   className={cn(
                     "flex flex-col justify-between hover:shadow-md transition-all duration-150 border-border bg-card group",
-                    isTracked && "border-primary/50 ring-1 ring-primary/20"
+                    !isDone && isTracked && "border-primary/50 ring-1 ring-primary/20",
+                    isDone && "border-success/30 bg-card hover:border-success/50"
                   )}
                 >
                   <div className="p-5 space-y-2.5">
@@ -478,22 +524,25 @@ export function UpskillSkillsPanel() {
                         {skill.macroName}
                       </Badge>
                       <div className="flex items-center gap-1.5">
-                        {isTracked && (
+                        {isDone ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] whitespace-nowrap text-success border-success/30 bg-success/5 font-semibold gap-1"
+                          >
+                            <CheckCircle2 size={11} className="text-success shrink-0" />
+                            <span>Done</span>
+                          </Badge>
+                        ) : isTracked ? (
                           <Badge variant="success" className="text-[10px] whitespace-nowrap">
                             Active skill
                           </Badge>
-                        )}
-                        {isDone && !isTracked && (
-                          <Badge variant="outline" className="text-[10px] whitespace-nowrap text-muted-foreground border-border">
-                            Done
-                          </Badge>
-                        )}
+                        ) : null}
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             skill.level === 'Beginner'
                               ? 'bg-success/10 text-success'
                               : skill.level === 'Intermediate'
-                              ? 'bg-warning/10 text-warning'
+                              ? 'bg-warning/15 text-black border border-warning/30'
                               : 'bg-primary/10 text-primary'
                           }`}
                         >
@@ -528,7 +577,29 @@ export function UpskillSkillsPanel() {
                       >
                         View details
                       </Button>
-                      {isTracked ? (
+                      {isSkillInPathway(skill) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="text-xs h-7.5 px-3 bg-muted/60 text-muted-foreground border-border cursor-not-allowed opacity-75 font-semibold"
+                          title="This skill is already part of your active target role learning pathway."
+                        >
+                          <CheckCircle2 size={12} className="mr-1 text-primary shrink-0" />
+                          <span>In Pathway</span>
+                        </Button>
+                      ) : isDone ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="text-xs h-7.5 px-3 bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
+                          title="You have already completed this micro-skill."
+                        >
+                          <CheckCircle2 size={12} className="mr-1 text-success shrink-0" />
+                          <span>Done</span>
+                        </Button>
+                      ) : isTracked ? (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -651,13 +722,22 @@ export function UpskillSkillsPanel() {
           ariaLabel="Skill Details"
         >
           <DialogHeader>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="secondary" className="text-xs">
                 {detailSkill.macroName}
               </Badge>
               <Badge variant="outline" className="text-xs">
                 {detailSkill.level}
               </Badge>
+              {isSkillDone(detailSkill) && (
+                <Badge
+                  variant="outline"
+                  className="text-xs text-success border-success/30 bg-success/5 font-semibold gap-1"
+                >
+                  <CheckCircle2 size={11} className="text-success shrink-0" />
+                  <span>Done</span>
+                </Badge>
+              )}
             </div>
             <DialogTitle className="text-lg font-bold">{detailSkill.name}</DialogTitle>
           </DialogHeader>
@@ -709,7 +789,27 @@ export function UpskillSkillsPanel() {
             <Button variant="outline" size="sm" onClick={() => setDetailSkill(null)}>
               Close
             </Button>
-            {isSkillTracked(detailSkill.name) ? (
+            {isSkillInPathway(detailSkill) ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="bg-muted/60 text-muted-foreground border-border cursor-not-allowed opacity-75 font-semibold"
+              >
+                <CheckCircle2 size={13} className="mr-1 text-primary" />
+                <span>In Active Pathway</span>
+              </Button>
+            ) : isSkillDone(detailSkill) ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
+              >
+                <CheckCircle2 size={13} className="mr-1 text-success" />
+                <span>Done</span>
+              </Button>
+            ) : isSkillTracked(detailSkill.name) ? (
               <Button
                 variant="outline"
                 size="sm"

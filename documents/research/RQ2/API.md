@@ -29,7 +29,7 @@ Graph unchanged: nodes(label,complete properties),edges(type,fromId,toId,complet
 
 ## Storage and migration
 
-V8 research_run: id/status/created_by/created_at/payload, single active run partial index. V9 research_graph: run_id FK,node_count,seed bigint NOT NULL safe-range check,payload; PK(run_id,node_count,seed). Backfill seed from each existing payload before replacing PK. ResearchStore has a seed-qualified lookup; old lookup defaults to run.seed. All snapshots and full raw samples are retained, not silently deduplicated/deleted. PostgreSQL owns protocol/trials/timing, dedicated Neo4j owns only the current imported graph, replaced between seed/size combinations.
+V27 research_run: id/status/created_by/created_at/payload, single active run partial index. V28 research_graph: run_id FK,node_count,seed bigint NOT NULL safe-range check,payload; PK(run_id,node_count,seed). Backfill seed from each existing payload before replacing PK. ResearchStore has a seed-qualified lookup; old lookup defaults to run.seed. All snapshots and full raw samples are retained, not silently deduplicated/deleted. PostgreSQL owns protocol/trials/timing, dedicated Neo4j owns only the current imported graph, replaced between seed/size combinations.
 
 Legacy POST `{seed,sizes,iterations}` remains accepted with iterations3..100000/default1000 and warmup30. New UI creates v3 only. Historical raw/rules/dataset exports and stored counts are preserved; new CSV adds seed/round/outcomes for legacy too. Missing historical Median is not backfilled from summary data. See [rules](RULES.md).
 

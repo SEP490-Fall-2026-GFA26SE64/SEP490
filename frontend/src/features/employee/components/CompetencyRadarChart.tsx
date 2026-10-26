@@ -7,11 +7,17 @@ import {
   Target,
 } from 'lucide-react'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
-import { TARGET_ROLE_BENCHMARKS, type TargetRoleBenchmark } from '../data/employeeOverviewData'
+import {
+  getOverviewBenchmark,
+  type TargetRoleBenchmark,
+} from '../data/employeeOverviewData'
 
 interface CompetencyRadarChartProps {
   selectedRoleKey: string
-  onSelectRoleKey: (key: string) => void
+  onSelectRoleKey?: (key: string) => void
+  isSkillMode?: boolean
+  selectedSkillKey?: string
+  onSelectSkillKey?: (key: string) => void
 }
 
 interface HoveredPoint {
@@ -25,9 +31,10 @@ interface HoveredPoint {
 
 export function CompetencyRadarChart({
   selectedRoleKey,
-  onSelectRoleKey,
+  isSkillMode = false,
+  selectedSkillKey,
 }: CompetencyRadarChartProps) {
-  const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+  const [, setActiveCompany] = React.useState(getActiveCompany)
 
   React.useEffect(() => {
     const handleSync = () => setActiveCompany(getActiveCompany())
@@ -45,32 +52,12 @@ export function CompetencyRadarChart({
   const [hoveredAxisIndex, setHoveredAxisIndex] = React.useState<number | null>(null)
 
   const benchmark: TargetRoleBenchmark = React.useMemo(() => {
-    return TARGET_ROLE_BENCHMARKS[selectedRoleKey] || TARGET_ROLE_BENCHMARKS['ai-knowledge-architect']
-  }, [selectedRoleKey])
+    return getOverviewBenchmark(isSkillMode, selectedRoleKey, selectedSkillKey)
+  }, [isSkillMode, selectedRoleKey, selectedSkillKey])
 
   const dimensions = React.useMemo(() => {
-    if (activeCompany.id === 'comp-technova') {
-      return benchmark.dimensions
-    }
-
-    if (activeCompany.competencies && activeCompany.competencies.length >= 3) {
-      return activeCompany.competencies.slice(0, 6).map((c, i) => ({
-        axisName: c.name,
-        currentLevel: Math.min(90, 50 + ((i * 14) % 40)),
-        requiredLevel: 80,
-      }))
-    }
-
-    if (activeCompany.microSkills && activeCompany.microSkills.length >= 3) {
-      return activeCompany.microSkills.slice(0, 6).map((ms) => ({
-        axisName: ms.name,
-        currentLevel: ms.status === 'published' ? 85 : 55,
-        requiredLevel: 80,
-      }))
-    }
-
-    return []
-  }, [activeCompany, selectedRoleKey])
+    return benchmark.dimensions
+  }, [benchmark])
 
   if (dimensions.length < 3) {
     return (
@@ -86,13 +73,13 @@ export function CompetencyRadarChart({
 
   const totalAxes = dimensions.length
 
-  // Enhanced Radar geometry with ample label breathing room
-  // Width 540, Height 400, Center (270, 200), Radius 130
-  const width = 540
+  // Enhanced Radar geometry with ample label breathing room for 8 Competency Domains
+  // Width 560, Height 400, Center (280, 200), Radius 114
+  const width = 560
   const height = 400
   const centerX = width / 2
   const centerY = height / 2
-  const radius = 130
+  const radius = 114
   const rings = [0.25, 0.5, 0.75, 1.0]
 
   // Calculate coordinates for an axis at a given normalized distance (0 to 1)
@@ -129,61 +116,11 @@ export function CompetencyRadarChart({
 
   return (
     <div className="flex flex-col items-center w-full space-y-4">
-      {/* Target Role Comparator Pill Selector */}
-      <div className="w-full space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Target size={13} className="text-primary" /> Benchmark Alignment Track
-          </span>
-          <span className="font-mono text-primary font-bold">
-            {benchmark.readinessPercentage}% Fit
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-          {Object.values(TARGET_ROLE_BENCHMARKS).map((r) => {
-            const isSelected = r.roleId === selectedRoleKey
-            return (
-              <button
-                key={r.roleId}
-                type="button"
-                onClick={() => onSelectRoleKey(r.roleId)}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                  isSelected
-                    ? 'border-primary bg-primary/10 shadow-2xs ring-1 ring-primary/30'
-                    : 'border-border bg-card/60 hover:bg-muted/50 hover:border-border'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <span
-                    className={`text-xs font-bold truncate ${
-                      isSelected ? 'text-primary' : 'text-foreground'
-                    }`}
-                  >
-                    {r.roleTitle}
-                  </span>
-                  <span
-                    className={`font-mono text-[11px] font-bold shrink-0 ${
-                      isSelected ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {r.readinessPercentage}%
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground block truncate mt-0.5">
-                  {r.department}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
       {/* Main Visual Radar SVG Container */}
       <div className="relative w-full flex items-center justify-center p-1 bg-gradient-to-b from-muted/20 to-card/40 rounded-2xl border border-border/80">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full max-w-[500px] h-auto overflow-visible select-none drop-shadow-xs"
+          className="w-full max-w-[530px] h-auto overflow-visible select-none drop-shadow-xs"
           role="img"
           aria-label={`Competency spider radar chart comparing skills against ${benchmark.roleTitle}`}
         >
@@ -205,6 +142,11 @@ export function CompetencyRadarChart({
               })
               .join(' ')
 
+            // Position ring scale labels at -67.5 degrees (midway between index 0 (-90°) and index 1 (-45°))
+            const ringAngle = -Math.PI * 3 / 8
+            const ringLabelX = centerX + radius * ringValue * Math.cos(ringAngle)
+            const ringLabelY = centerY + radius * ringValue * Math.sin(ringAngle)
+
             return (
               <g key={ringValue}>
                 <polygon
@@ -214,13 +156,23 @@ export function CompetencyRadarChart({
                   strokeWidth={ringValue === 1.0 ? '1.5' : '1'}
                   strokeDasharray={ringValue === 1.0 ? '0' : '3,3'}
                 />
-                {/* Ring percentage label placed on vertical spoke */}
+                {/* Ring percentage label with subtle backdrop pill to prevent line clash */}
+                <rect
+                  x={ringLabelX - 11}
+                  y={ringLabelY - 6.5}
+                  width="22"
+                  height="12"
+                  rx="3"
+                  fill="hsl(var(--card))"
+                  fillOpacity="0.88"
+                />
                 <text
-                  x={centerX + 4}
-                  y={centerY - radius * ringValue + 3}
-                  fontSize="9.5"
+                  x={ringLabelX}
+                  y={ringLabelY + 2.5}
+                  textAnchor="middle"
+                  fontSize="8.5"
                   fill="hsl(var(--muted-foreground))"
-                  className="font-mono font-medium opacity-70 pointer-events-none select-none"
+                  className="font-mono font-medium select-none pointer-events-none"
                 >
                   {Math.round(ringValue * 100)}%
                 </text>
@@ -228,30 +180,86 @@ export function CompetencyRadarChart({
             )
           })}
 
-          {/* Radial Spokes and Outer Axis Labels with Shield Backdrops */}
+          {/* Radial Spokes and Outer Axis Labels */}
           {dimensions.map((dim, i) => {
             const outerCoord = getCoordinates(i, 1.0)
-            const labelCoord = getCoordinates(i, 1.22, radius)
             const isAxisHovered = hoveredAxisIndex === i || hoveredPoint?.axisName === dim.axisName
-
-            // Compute anchor based on horizontal alignment
-            let textAnchor: 'middle' | 'start' | 'end' = 'middle'
-            if (labelCoord.x > centerX + 20) textAnchor = 'start'
-            else if (labelCoord.x < centerX - 20) textAnchor = 'end'
-
-            // Compute vertical offset
-            let dy = '0.35em'
-            if (labelCoord.y < centerY - 40) dy = '0em'
-            else if (labelCoord.y > centerY + 40) dy = '0.7em'
-
             const isMastered = dim.currentLevel >= dim.requiredLevel
+
+            // Calculate precise non-overlapping positions for title and score
+            const angle = (Math.PI * 2 / totalAxes) * i - Math.PI / 2
+            const cosAngle = Math.cos(angle)
+            const sinAngle = Math.sin(angle)
+
+            let textAnchor: 'middle' | 'start' | 'end' = 'middle'
+            let titleX = centerX
+            let titleY = centerY
+            let scoreX = centerX
+            let scoreY = centerY
+
+            if (Math.abs(cosAngle) <= 0.25) {
+              // Vertical axis (pure top or pure bottom)
+              textAnchor = 'middle'
+              titleX = outerCoord.x
+              scoreX = outerCoord.x
+
+              if (sinAngle < 0) {
+                // Pure top (index 0): Score on top, Title underneath, clear of outer vertex
+                scoreY = outerCoord.y - 28
+                titleY = outerCoord.y - 13
+              } else {
+                // Pure bottom (index 4 in 8-axis): Title below vertex, Score below Title
+                titleY = outerCoord.y + 18
+                scoreY = outerCoord.y + 33
+              }
+            } else if (cosAngle > 0.25) {
+              // Right side (indices 1, 2, 3 in 8-axis): Left-align to flow outward away from chart
+              textAnchor = 'start'
+              const anchorX = outerCoord.x + 14
+              titleX = anchorX
+              scoreX = anchorX
+
+              if (sinAngle < -0.2) {
+                // Top-right (index 1): Score on top, Title below
+                scoreY = outerCoord.y - 10
+                titleY = outerCoord.y + 6
+              } else if (Math.abs(sinAngle) <= 0.2) {
+                // Pure right (index 2): Title slightly above center, Score below
+                titleY = outerCoord.y - 2
+                scoreY = outerCoord.y + 14
+              } else {
+                // Bottom-right (index 3): Title on top, Score below
+                titleY = outerCoord.y + 5
+                scoreY = outerCoord.y + 21
+              }
+            } else {
+              // Left side (indices 5, 6, 7 in 8-axis): Right-align to flow outward away from chart
+              textAnchor = 'end'
+              const anchorX = outerCoord.x - 14
+              titleX = anchorX
+              scoreX = anchorX
+
+              if (sinAngle < -0.2) {
+                // Top-left (index 7): Score on top, Title below
+                scoreY = outerCoord.y - 10
+                titleY = outerCoord.y + 6
+              } else if (Math.abs(sinAngle) <= 0.2) {
+                // Pure left (index 6): Title slightly above center, Score below
+                titleY = outerCoord.y - 2
+                scoreY = outerCoord.y + 14
+              } else {
+                // Bottom-left (index 5): Title on top, Score below
+                titleY = outerCoord.y + 5
+                scoreY = outerCoord.y + 21
+              }
+            }
 
             return (
               <g
                 key={dim.axisName}
                 onMouseEnter={() => setHoveredAxisIndex(i)}
                 onMouseLeave={() => setHoveredAxisIndex(null)}
-                className="cursor-pointer transition-opacity"
+                className="cursor-pointer"
               >
                 {/* Radial Line */}
                 <line
@@ -261,27 +269,24 @@ export function CompetencyRadarChart({
                   y2={outerCoord.y}
                   stroke={isAxisHovered ? 'hsl(var(--primary))' : 'hsl(var(--border))'}
                   strokeWidth={isAxisHovered ? '1.8' : '1.2'}
-                  className="transition-colors duration-150"
                 />
 
                 {/* Outer Axis Title Label */}
                 <text
-                  x={labelCoord.x}
-                  y={labelCoord.y}
+                  x={titleX}
+                  y={titleY}
                   textAnchor={textAnchor}
-                  dy={dy}
                   fontSize="11"
                   fontWeight={isAxisHovered ? '700' : '600'}
                   fill={isAxisHovered ? 'hsl(var(--primary))' : 'hsl(var(--foreground))'}
-                  className="transition-colors duration-150"
                 >
                   {dim.axisName}
                 </text>
 
-                {/* Micro Score Pill underneath the label */}
+                {/* Micro Score Pill */}
                 <text
-                  x={labelCoord.x}
-                  y={labelCoord.y + (dy === '0em' ? -13 : 14)}
+                  x={scoreX}
+                  y={scoreY}
                   textAnchor={textAnchor}
                   fontSize="9.5"
                   className="font-mono font-semibold"
@@ -295,7 +300,7 @@ export function CompetencyRadarChart({
 
           {/* LAYER 1: Target Role Benchmark Polygon */}
           {showTargetBenchmark && (
-            <g className="transition-all duration-300">
+            <g>
               <polygon
                 points={targetPolygonPoints}
                 fill="hsl(var(--secondary) / 0.35)"
@@ -315,7 +320,6 @@ export function CompetencyRadarChart({
                     fill="hsl(var(--card))"
                     stroke="hsl(var(--muted-foreground))"
                     strokeWidth="1.5"
-                    className="cursor-pointer"
                   />
                 )
               })}
@@ -324,54 +328,39 @@ export function CompetencyRadarChart({
 
           {/* LAYER 2: Current Learner Mastery Polygon */}
           {showCurrentMastery && (
-            <g className="transition-all duration-300">
+            <g>
               <polygon
                 points={currentPolygonPoints}
                 fill="hsl(var(--primary) / 0.24)"
                 stroke="hsl(var(--primary))"
                 strokeWidth="2.5"
-                className="filter drop-shadow-xs transition-all duration-300"
+                className="filter drop-shadow-xs"
               />
               {dimensions.map((dim, i) => {
                 const { x, y } = getCoordinates(i, dim.currentLevel / 100)
-                const isHovered =
-                  hoveredPoint?.axisName === dim.axisName || hoveredAxisIndex === i
 
                 return (
-                  <g key={`cur-${dim.axisName}`}>
-                    {/* Pulsing ring on hover */}
-                    {isHovered && (
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="10"
-                        fill="none"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="1.5"
-                        className="animate-ping opacity-60 pointer-events-none"
-                      />
-                    )}
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={isHovered ? '6.5' : '4.5'}
-                      fill="hsl(var(--primary))"
-                      stroke="hsl(var(--card))"
-                      strokeWidth="2"
-                      className="cursor-pointer transition-all duration-150"
-                      onMouseEnter={() =>
-                        setHoveredPoint({
-                          axisName: dim.axisName,
-                          currentLevel: dim.currentLevel,
-                          requiredLevel: dim.requiredLevel,
-                          x,
-                          y,
-                          percentage: Math.round((dim.currentLevel / dim.requiredLevel) * 100),
-                        })
-                      }
-                      onMouseLeave={() => setHoveredPoint(null)}
-                    />
-                  </g>
+                  <circle
+                    key={`cur-${dim.axisName}`}
+                    cx={x}
+                    cy={y}
+                    r="4.5"
+                    fill="hsl(var(--primary))"
+                    stroke="hsl(var(--card))"
+                    strokeWidth="2"
+                    className="cursor-pointer"
+                    onMouseEnter={() =>
+                      setHoveredPoint({
+                        axisName: dim.axisName,
+                        currentLevel: dim.currentLevel,
+                        requiredLevel: dim.requiredLevel,
+                        x,
+                        y,
+                        percentage: Math.round((dim.currentLevel / dim.requiredLevel) * 100),
+                      })
+                    }
+                    onMouseLeave={() => setHoveredPoint(null)}
+                  />
                 )
               })}
             </g>
@@ -383,7 +372,7 @@ export function CompetencyRadarChart({
               transform={`translate(${hoveredPoint.x}, ${
                 hoveredPoint.y < 100 ? hoveredPoint.y + 40 : hoveredPoint.y - 15
               })`}
-              className="pointer-events-none animate-in fade-in zoom-in-95 duration-100"
+              className="pointer-events-none"
             >
               <rect
                 x="-85"

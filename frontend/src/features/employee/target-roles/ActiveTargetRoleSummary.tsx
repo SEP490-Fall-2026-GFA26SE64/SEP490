@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/compon
 import { cn } from '../../../shared/lib/utils'
 import { useTargetRoleSelection } from './targetRoleSelectionQueries'
 
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
+
 const selectedAtFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -13,7 +15,20 @@ const selectedAtFormatter = new Intl.DateTimeFormat(undefined, {
 
 export function ActiveTargetRoleSummary() {
   const selection = useTargetRoleSelection()
+  const { profile } = useEmployeeLearningState()
   const [isExpanded, setIsExpanded] = React.useState(false)
+
+  const isRoleDone = React.useMemo(() => {
+    if (!selection.data) return false
+    const role = selection.data.roleSnapshot
+    const prevRoles = profile?.previousRoles || []
+    return prevRoles.some(
+      (pr) =>
+        pr.status === 'completed' &&
+        (pr.roleTitle.toLowerCase() === role.name.toLowerCase() ||
+         pr.roleKey.toLowerCase() === role.code.toLowerCase())
+    )
+  }, [selection.data, profile?.previousRoles])
 
   if (selection.isPending) {
     return (
@@ -52,7 +67,7 @@ export function ActiveTargetRoleSummary() {
     )
   }
 
-  if (!selection.data) {
+  if (!selection.data || isRoleDone) {
     return (
       <Card>
         <CardContent className="flex items-start gap-3 p-5">
@@ -60,7 +75,13 @@ export function ActiveTargetRoleSummary() {
           <div>
             <p className="text-sm font-semibold text-foreground">No active target role</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Choose an available role from the catalog below to establish your career target.
+              {isRoleDone ? (
+                <>
+                  You have completed <strong>{selection.data?.roleSnapshot.name}</strong>! Choose your next target role from the catalog below.
+                </>
+              ) : (
+                'Choose an available role from the catalog below to establish your career target.'
+              )}
             </p>
           </div>
         </CardContent>

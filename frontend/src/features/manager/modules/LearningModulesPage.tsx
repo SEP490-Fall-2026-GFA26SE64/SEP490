@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   Copy,
+  CornerDownRight,
   Edit3,
   ExternalLink,
   Eye,
@@ -23,6 +24,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
 import {
   Dialog,
   DialogDescription,
@@ -105,6 +107,105 @@ const MODULE_PRESETS: ImportPreset[] = [
   },
 ]
 
+function compareVersions(v1: string, v2: string): number {
+  const p1 = (v1 || '1.0').split('.').map((n) => parseInt(n, 10) || 0)
+  const p2 = (v2 || '1.0').split('.').map((n) => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+    const num1 = p1[i] ?? 0
+    const num2 = p2[i] ?? 0
+    if (num1 !== num2) return num1 - num2
+  }
+  return 0
+}
+
+function sortModulesWithDraftsBelowPublished(
+  list: LearningModuleModel[],
+  sortBy: 'latest' | 'title' = 'latest'
+): LearningModuleModel[] {
+  const groups = new Map<string, LearningModuleModel[]>()
+  for (const m of list) {
+    const key = m.stableId || m.code
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key)!.push(m)
+  }
+
+  const isPureDraftLineage = (groupModules: LearningModuleModel[]): boolean => {
+    return groupModules.every((m) => m.status !== 'published')
+  }
+
+  const getLineageBaseTime = (groupModules: LearningModuleModel[]): number => {
+    const published = groupModules.filter((m) => m.status === 'published')
+    if (published.length > 0) {
+      let baseTime = Infinity
+      for (const m of published) {
+        const t = m.updatedAt ? new Date(m.updatedAt).getTime() : 0
+        if (!isNaN(t) && t > 0 && t < baseTime) {
+          baseTime = t
+        }
+      }
+      return baseTime === Infinity ? 0 : baseTime
+    }
+
+    let latest = 0
+    for (const m of groupModules) {
+      const t = m.updatedAt ? new Date(m.updatedAt).getTime() : 0
+      if (!isNaN(t) && t > latest) {
+        latest = t
+      }
+    }
+    return latest
+  }
+
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    const modsA = groups.get(a)!
+    const modsB = groups.get(b)!
+    const modA = modsA[0]
+    const modB = modsB[0]
+
+    if (sortBy === 'latest') {
+      const isPureDraftA = isPureDraftLineage(modsA)
+      const isPureDraftB = isPureDraftLineage(modsB)
+
+      // Rule: Brand-new pure draft modules appear on top
+      if (isPureDraftA && !isPureDraftB) return -1
+      if (isPureDraftB && !isPureDraftA) return 1
+
+      const timeA = getLineageBaseTime(modsA)
+      const timeB = getLineageBaseTime(modsB)
+      if (timeB !== timeA) {
+        return timeB - timeA
+      }
+      return (modB?.id || '').localeCompare(modA?.id || '')
+    }
+
+    return (modA?.title || '').localeCompare(modB?.title || '')
+  })
+
+  const result: LearningModuleModel[] = []
+  for (const key of sortedKeys) {
+    const groupMods = groups.get(key)!
+    const published = groupMods
+      .filter((m) => m.status === 'published')
+      .sort((a, b) => compareVersions(b.version, a.version))
+
+    const newestPublished = published[0]
+    const olderPublished = published.slice(1).sort((a, b) => compareVersions(a.version, b.version))
+    const nonPublished = groupMods
+      .filter((m) => m.status !== 'published')
+      .sort((a, b) => compareVersions(a.version, b.version))
+
+    if (newestPublished) {
+      result.push(newestPublished, ...olderPublished, ...nonPublished)
+    } else {
+      result.push(...nonPublished)
+    }
+  }
+
+  return result
+}
+
 export function LearningModulesPage() {
   const { toast } = useToast()
 
@@ -152,21 +253,28 @@ export function LearningModulesPage() {
   const [viewingDetailsModule, setViewingDetailsModule] = React.useState<LearningModuleModel | null>(null)
   const [deletingDraftModule, setDeletingDraftModule] = React.useState<LearningModuleModel | null>(null)
 
-  const handleImportModules = (data: any) => {
-    const list = Array.isArray(data) ? data : data.modules || []
-    const normalized: LearningModuleModel[] = list.map((item: any, idx: number) => ({
-      id: item.id || `mod-${Date.now()}-${idx}`,
-      stableId: item.stableId || `mod-uuid-${Date.now()}-${idx}`,
-      code: (item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
-      title: (item.title || 'Untitled Module').trim(),
-      version: item.version || '1.0',
-      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
-      durationMinutes: Number(item.durationMinutes) || 45,
-      sampleContentUri: item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html',
-      teachesSkillIds: Array.isArray(item.teachesSkillIds) ? item.teachesSkillIds : [],
-      activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
-      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+  const handleImportModules = (data: unknown) => {
+    const list = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'modules' in data && Array.isArray((data as Record<string, unknown>).modules))
+      ? ((data as Record<string, unknown>).modules as unknown[])
+      : []
+    const normalized: LearningModuleModel[] = list.map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      return {
+        id: (item.id as string) || `mod-${Date.now()}-${idx}`,
+        stableId: (item.stableId as string) || `mod-uuid-${Date.now()}-${idx}`,
+        code: String(item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
+        title: String(item.title || 'Untitled Module').trim(),
+        version: String(item.version || '1.0'),
+        status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+        durationMinutes: Number(item.durationMinutes) || 45,
+        sampleContentUri: String(item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html'),
+        teachesSkillIds: Array.isArray(item.teachesSkillIds) ? (item.teachesSkillIds as string[]) : [],
+        activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
+        updatedAt: String(item.updatedAt || new Date().toISOString().slice(0, 10)),
+      }
+    })
     saveAndSetModules((prev) => [...normalized, ...prev])
   }
 
@@ -181,14 +289,33 @@ export function LearningModulesPage() {
   // Replacement selection for archive workflow
   const [replacementModuleId, setReplacementModuleId] = React.useState<string>('')
 
-  // Filtered modules
-  const filteredModules = modules.filter((m) => {
-    const matchesStatus = statusFilter === 'all' || m.status === statusFilter
-    const matchesSearch =
-      m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.code.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+  // Sorting & pagination states
+  const [sortBy, setSortBy] = React.useState<'latest' | 'title'>('latest')
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const pageSize = 10
+
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, statusFilter, sortBy])
+
+  // Filtered and sorted modules
+  const filteredModules = React.useMemo(() => {
+    const list = modules.filter((m) => {
+      const matchesStatus = statusFilter === 'all' || m.status === statusFilter
+      const matchesSearch =
+        m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.code.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesStatus && matchesSearch
+    })
+
+    return sortModulesWithDraftsBelowPublished(list, sortBy)
+  }, [modules, statusFilter, searchQuery, sortBy])
+
+  const totalPages = Math.max(1, Math.ceil(filteredModules.length / pageSize))
+  const paginatedModules = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredModules.slice(start, start + pageSize)
+  }, [filteredModules, currentPage, pageSize])
 
   // Aggregate stats
   const totalModules = modules.length
@@ -295,7 +422,9 @@ export function LearningModulesPage() {
     const curVer = parseFloat(mod.version) || 1.0
     const nextVer = (curVer + 0.1).toFixed(1)
 
-    const existingDraft = modules.find((m) => m.stableId === mod.stableId && m.status === 'draft')
+    const existingDraft = modules.find(
+      (m) => (m.stableId === mod.stableId || m.code === mod.code) && m.status === 'draft'
+    )
     if (existingDraft) {
       toast({
         title: 'Successor Draft Exists',
@@ -308,6 +437,7 @@ export function LearningModulesPage() {
     const successor: LearningModuleModel = {
       ...mod,
       id: `mod-${Date.now()}`,
+      stableId: mod.stableId || `mod-uuid-${mod.code}`,
       version: nextVer,
       status: 'draft',
       activePlanEnrollments: 0, // Reset for new draft
@@ -315,7 +445,7 @@ export function LearningModulesPage() {
       title: `${mod.title} (Draft Revision)`,
     }
 
-    saveAndSetModules([successor, ...modules])
+    saveAndSetModules((prev) => [...prev, successor])
     toast({
       title: 'Successor Draft Created',
       description: `Created v${nextVer} draft for ${mod.code}. Historical student attempts remain safely linked to v${mod.version}.`,
@@ -551,19 +681,31 @@ export function LearningModulesPage() {
                 <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft' | 'archived')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
-                    <option value="all">All Statuses</option>
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
+                    <option value="all">All Statuses ({totalModules})</option>
+                    <option value="published">Published ({publishedCount})</option>
+                    <option value="draft">Draft ({draftCount})</option>
                     <option value="archived">Archived</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1">
+                  <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'latest' | 'title')}
+                    className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                  >
+                    <option value="latest">Latest Created / Updated</option>
+                    <option value="title">Module Title (A–Z)</option>
                   </select>
                 </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {filteredModules.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-60" />
@@ -595,21 +737,45 @@ export function LearningModulesPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredModules.map((mod) => {
-                      const isDraft = mod.status === 'draft'
-                      const isPublished = mod.status === 'published'
+                      paginatedModules.map((mod) => {
+                        const isDraft = mod.status === 'draft'
+                        const isPublished = mod.status === 'published'
+                        const predecessorPublished = modules.find(
+                          (m) =>
+                            (m.stableId === mod.stableId || m.code === mod.code) &&
+                            m.status === 'published' &&
+                            m.id !== mod.id
+                        )
+                        const isSuccessor = !isPublished && Boolean(predecessorPublished)
 
-                      return (
-                        <tr key={mod.id} className="hover:bg-muted/20">
-                          <td className="py-3 px-3">
-                            <div className="font-mono font-bold text-foreground">{mod.code}</div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1">
-                                v{mod.version}
-                              </Badge>
-                              <span className="text-[10px] text-muted-foreground">{mod.updatedAt}</span>
-                            </div>
-                          </td>
+                        return (
+                          <tr
+                            key={mod.id}
+                            className={`transition-colors ${
+                              isSuccessor
+                                ? 'bg-muted/10 border-l-2 border-l-primary/60 hover:bg-muted/25'
+                                : 'hover:bg-muted/20'
+                            }`}
+                          >
+                            <td className="py-3 px-3">
+                              {isSuccessor ? (
+                                <div
+                                  className="flex items-center gap-1.5 pl-3"
+                                  title="Successor draft positioned below published version"
+                                >
+                                  <CornerDownRight className="h-3.5 w-3.5 text-primary shrink-0" />
+                                  <span className="font-mono font-bold text-foreground">{mod.code}</span>
+                                </div>
+                              ) : (
+                                <div className="font-mono font-bold text-foreground">{mod.code}</div>
+                              )}
+                              <div className={`flex items-center gap-1.5 mt-0.5 ${isSuccessor ? 'pl-8' : ''}`}>
+                                <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1">
+                                  v{mod.version}
+                                </Badge>
+                                <span className="text-[10px] text-muted-foreground">{mod.updatedAt}</span>
+                              </div>
+                            </td>
                           <td className="py-3 px-3 font-semibold text-foreground max-w-xs">{mod.title}</td>
                           <td className="py-3 px-3 text-center">
                             <span className="font-bold text-foreground inline-flex items-center gap-1">
@@ -690,6 +856,19 @@ export function LearningModulesPage() {
                                     <Edit3 className="h-4 w-4" />
                                   </Button>
                                   <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-success hover:bg-success/10"
+                                    onClick={() => {
+                                      setSelectedModule(mod)
+                                      setIsPublishModalOpen(true)
+                                    }}
+                                    title="Publish Module"
+                                    aria-label="Publish Module"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
                                     variant="destructive"
                                     size="sm"
                                     className="h-8 w-8 p-0"
@@ -731,6 +910,19 @@ export function LearningModulesPage() {
                     }))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            {filteredModules.length > 0 && (
+              <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+                <span>
+                  Showing {(currentPage - 1) * pageSize + 1}–
+                  {Math.min(currentPage * pageSize, filteredModules.length)} of {filteredModules.length} modules
+                </span>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             )}
           </CardContent>
