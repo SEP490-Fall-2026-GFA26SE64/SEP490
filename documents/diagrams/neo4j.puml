@@ -14,7 +14,7 @@ skinparam noteBackgroundColor #FFF7ED
 skinparam noteBorderColor #D97706
 skinparam defaultFontName Arial
 skinparam defaultFontSize 14
-title Ontology v0.8 — One LearningModule per MicroSkill
+title Ontology v0.9 — Many-to-many Module–Skill teaching
 class Occupation {
  code : String
  name : String
@@ -49,6 +49,7 @@ class MicroSkill {
 }
 class LearningModule {
  title : String
+ moduleType : String
  contentUri : String
  contentType : String
  contentVersion : String
@@ -58,7 +59,7 @@ TargetRole "1" --> "1..*" Level : HAS_LEVEL
 Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
 Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
 Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL
-LearningModule "1" -up-> "1" MicroSkill : TEACHES
+LearningModule "1..*" -up-> "1..*" MicroSkill : TEACHES
 MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
 note bottom of MicroSkill
 REQUIRES_SKILL: requiredScore [0,1], isMandatory.
@@ -75,7 +76,9 @@ Each Level has its own skill requirements and competencies.
 A Competency member must be required by its owning Level.
 end note
 note bottom of LearningModule
-Exactly one Module per Skill and one Skill per Module.
+A Module teaches one or more Skills.
+A Skill can have several teaching Modules.
+Providers are alternatives, not all mandatory.
 Select learning content through missing skills.
 Check content depth against the selected Level.
 Skill prerequisites determine learning readiness.

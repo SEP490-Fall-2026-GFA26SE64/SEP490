@@ -1,10 +1,10 @@
-# Ontology — framework, fields and data provenance (0.8.0)
+# Ontology — framework, fields and data provenance (0.9.0)
 
-Updated 14 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
+Updated 26 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
 
 ## Files and framework
 
-[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed.json](import/ontology_seed.json) describe the same catalog: **827 nodes and 4,536 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
+[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed.json](import/ontology_seed.json) describe the same catalog: **833 nodes and 4,638 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
 
 O*NET supplies Occupations, sample reported titles and occupation RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
 
@@ -15,11 +15,11 @@ flowchart LR
  L -->|HAS_COMPETENCY| C[Competency]
  C -->|HAS_SKILL| S[MicroSkill]
  L -->|REQUIRES_SKILL| S
- M[LearningModule] -->|TEACHES 1–1| S
+ M[LearningModule] -->|TEACHES N–N| S
  S -->|HAS_SKILL_PREREQUISITE| S
 ```
 
-Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. Each skill has exactly one Module and each Module teaches exactly one skill. There is no Course, Level–Module link or global module sequence.
+Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. A Module teaches one or more skills; a skill may have several teaching Modules. This release requires teaching coverage for every skill. There is no Course, Level–Module link or global module sequence.
 
 ## Counts
 
@@ -30,7 +30,7 @@ Each role owns three Levels; each Level owns competency groups and skill require
 | Level | 144 |
 | Competency | 472 |
 | MicroSkill | 79 |
-| LearningModule | 79 |
+| LearningModule | 85 |
 
 | Relationship | Records |
 |---|---:|
@@ -39,7 +39,7 @@ Each role owns three Levels; each Level owns competency groups and skill require
 | HAS_COMPETENCY | 472 |
 | HAS_SKILL | 1891 |
 | REQUIRES_SKILL | 1891 |
-| TEACHES | 79 |
+| TEACHES | 181 |
 | HAS_SKILL_PREREQUISITE | 11 |
 
 ## Occupation Interests / RIASEC
@@ -381,13 +381,13 @@ All edges below are internally synthesized LEARNING_READINESS proposals with NEE
 
 
 
-## Module consolidation and source provenance
+## Module mappings and source provenance
 
-The 85 earlier module definitions have been consolidated into 79 skill-specific modules with stable IDs `MOD-<skillId>`. [Consolidation manifest](sources/local_review/module_consolidation_v08.json) maps each new module to all earlier teaching providers. Current module content preserves relevant official resource links and extracts practice/evidence statements for its one skill; integrated topic examples are supporting context, not additional TEACHES relationships.
+The catalog restores 85 original source-linked module definitions and 181 teaching pairs from retained evidence. [Mapping manifest](sources/local_review/module_skill_mapping_v09.json) records the exact recovery method: invert skillId/sourceModuleIds in the earlier consolidation manifest and restore the referenced module definitions/content from the historical source package. No teaching pair has been inferred from a title or shared topic.
 
-Earlier content and removed Course records are retained under [historical catalog](sources/ontology_v07_history/retired_catalog.json), together with the original module/topic files. These are provenance, not active import records. The older Course audit and course-prerequisite evidence are historical only and must not drive current recommendations. No Course prerequisite has been automatically converted into a skill prerequisite.
+Of the 85 modules, 31 teach one skill, 12 teach two and 42 teach three. A skill may have several alternative or progressively deeper modules. These mappings are local teaching proposals, not mappings certified by ESCO/SFIA/O*NET; all remain NEEDS_EXPERT_REVIEW.
 
-One shared module may contain foundation and advanced practice, but its existence does not prove adequate content for every role/Level. Existing short reading scaffolds still require detailed lab authoring and review. Expert review must confirm role context, difficulty and evidence suitability before use; no approval has been fabricated.
+Earlier consolidation files, Course records and Course audits under sources/ are historical evidence only. Course and Course prerequisites are not restored. The short reading scaffolds still require detailed lab authoring and role/Level suitability review before official use.
 
 ## Graph field and import boundary
 
@@ -400,15 +400,17 @@ Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node b
 - TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
 - Sources/provenance, rubric definitions, assessment prompts, results and learner state stay outside Neo4j. The seed now contains only six node sections and relationships.
 
-ID uniqueness does not enforce 1–1 TEACHES. The import validator explicitly rejects missing, duplicate or multiple providers/targets, wrong endpoints, unknown types, retired fields, cycles and invalid thresholds. Future catalog write APIs must enforce the same invariants transactionally.
+ID uniqueness does not enforce teaching coverage. The import validator permits multiple providers and multiple taught skills, and rejects orphan modules/skills, duplicate teaching pairs, wrong endpoints, unknown types, retired fields, cycles and invalid thresholds. Future catalog write APIs must enforce the same invariants transactionally.
 
 ## Recommendation and adaptive pathway
 
-Resolve the learner's selected Level and REQUIRES_SKILL. Distinguish confirmed skill gaps from unassessed skills. For each confirmed gap, find its sole Module through incoming TEACHES; require published definitions/content and role/Level suitability. Unknown skills first require diagnosis or an explicit choice to learn them.
+Resolve the learner's selected Level and REQUIRES_SKILL. Distinguish confirmed gaps from unassessed skills. Find all approved teaching Modules for a gap through incoming TEACHES, then filter for role/Level depth, content availability and readiness. Unknown skills require diagnosis or an explicit decision to learn them.
 
-Expand HAS_SKILL_PREREQUISITE from dependent skill to foundation skill and check readiness using assessment-service evidence. Unmet readiness introduces the foundation Module or diagnosis before the dependent Module. Topologically order dependencies; already-satisfied prerequisites do not require repeated learning. Record the selected order in the learner pathway, not on the module definition.
+For each candidate compute matchedGaps = taughtSkills(module) intersect confirmedRequiredGaps. Empty intersections are not gap recommendations. Return matched skill IDs and content references as explanations. A Module can address several gaps; add it once per planned learning step with the selected skill activities. Multiple providers are alternatives: the presence of mappings does not require completing every provider. Ranking and selection weights remain a recommendation-service design decision.
 
-No suitable approved content or assessment mapping produces PATHWAY_UNRESOLVED/CATALOG_NOT_READY, never assumed readiness. Passing a Module does not automatically pass every Level requirement. A one-module-per-skill catalog permits remedial sections/practice in that Module, not an alternative Module for the same skill. Recalculation considers new assessment evidence; one incorrect answer alone does not require rewriting the pathway. Expert initial-pathway review remains applicable.
+Expand skill prerequisites from dependent to foundation and confirm readiness through external assessment evidence. Readiness gates the dependent skill activity, not automatically every skill in every teaching Module. When one Module teaches both foundation and dependent skills, its approved content order must allow foundation learning and a readiness check before the dependent activity. If this cannot be delivered, choose another foundation Module or report PATHWAY_UNRESOLVED. Do not derive an AND dependency on all teaching providers or blindly turn the skill DAG into module dependencies.
+
+Evidence updates the assessed skill(s) only. Module completion does not PASS all mapped skills or every Level requirement. New assessment evidence may justify selecting another Module, remedial practice or changing the remaining pathway; one wrong answer alone does not require recalculation. Initial pathways remain subject to Expert review. Publication, assessment mapping and feasible activity ordering are required; structural coverage alone is insufficient.
 
 ## TargetRole independence and expert review
 
@@ -463,6 +465,6 @@ A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A
 
 ## Release and runtime boundary
 
-Excel, JSON, import validation, schema and diagram now describe 0.8.0. Historic migrations V1–V3 remain immutable; the backend adds a forward schema migration to retire the Course constraint. Existing legacy role/skill APIs still use their earlier JobDomain/MacroCompetency contract and must not be pointed at this isolated catalog until their domain/API and cross-store references are converted. The legacy development seeder rejects occupation-based catalogs to prevent mixing snapshots. This release does not rewrite learner results or a running database.
+Excel, JSON, import validation, schema and diagram describe 0.9.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
 
 Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed.json supplies active graph data.
