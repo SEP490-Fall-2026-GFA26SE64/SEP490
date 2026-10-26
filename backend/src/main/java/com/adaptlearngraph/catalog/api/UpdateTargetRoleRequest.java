@@ -28,7 +28,7 @@ public record UpdateTargetRoleRequest(
 
         List<String> responsibilities,
 
-        @Pattern(regexp = "^(DRAFT|SENT|REJECTED|ACTIVE|PUBLISHED|RETIRED)?$", message = "Status must be valid")
+        @Pattern(regexp = "^(DRAFT|SENT|SUBMITTED|REJECTED|ACTIVE|PUBLISHED|RETIRED)?$", message = "Status must be valid")
         String status,
 
         String version,

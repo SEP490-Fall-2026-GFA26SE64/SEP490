@@ -46,6 +46,11 @@ import {
 import {
   type LearningModuleModel,
 } from '../data/ldManagerMockData'
+import {
+  getApprovedLearningContents,
+  subscribeToLearningContents,
+  type LearningContentPackage,
+} from '../../../shared/stores/learningContentStore'
 
 const MODULE_PRESETS: ImportPreset[] = [
   {
@@ -243,6 +248,17 @@ export function LearningModulesPage() {
   const activeComp = getActiveCompany()
   const companyMicroSkills = activeComp?.microSkills || []
 
+  // Approved Learning Content Packages from Content Studio
+  const [approvedPackages, setApprovedPackages] = React.useState<LearningContentPackage[]>(() =>
+    getApprovedLearningContents()
+  )
+
+  React.useEffect(() => {
+    return subscribeToLearningContents(() => {
+      setApprovedPackages(getApprovedLearningContents())
+    })
+  }, [])
+
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
   const [isTeachesModalOpen, setIsTeachesModalOpen] = React.useState(false)
@@ -269,21 +285,31 @@ export function LearningModulesPage() {
         version: String(item.version || '1.0'),
         status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
         durationMinutes: Number(item.durationMinutes) || 45,
-        sampleContentUri: String(item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html'),
+        sampleContentUri: String(item.sampleContentUri || 'content/modules/sample.md'),
         teachesSkillIds: Array.isArray(item.teachesSkillIds) ? (item.teachesSkillIds as string[]) : [],
         activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
         updatedAt: String(item.updatedAt || new Date().toISOString().slice(0, 10)),
+        moduleType: 'LESSON_AND_PRACTICE',
+        contentType: 'application/json',
+        contentVersion: '1.0',
+        reviewStatus: 'APPROVED',
       }
     })
     saveAndSetModules((prev) => [...normalized, ...prev])
   }
 
-  // Module form state
+  // Module form state matching Neo4j schema
   const [moduleForm, setModuleForm] = React.useState({
     code: '',
     title: '',
     durationMinutes: 45,
     sampleContentUri: '',
+    moduleType: 'LESSON_AND_PRACTICE' as 'LESSON_AND_PRACTICE' | 'RESOURCE_GUIDED_PRACTICE',
+    contentType: 'application/json',
+    contentVersion: '1.0',
+    reviewStatus: 'APPROVED' as 'NEEDS_EXPERT_REVIEW' | 'APPROVED' | 'REJECTED',
+    selectedContentPackageId: '',
+    teachesSkillId: '',
   })
 
   // Replacement selection for archive workflow
@@ -333,7 +359,13 @@ export function LearningModulesPage() {
       )}`,
       title: '',
       durationMinutes: 45,
-      sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/sample.html',
+      sampleContentUri: 'content/modules/sample.json',
+      moduleType: 'LESSON_AND_PRACTICE',
+      contentType: 'application/json',
+      contentVersion: '1.0',
+      reviewStatus: 'APPROVED',
+      selectedContentPackageId: '',
+      teachesSkillId: companyMicroSkills[0]?.id || '',
     })
     setSelectedModule(null)
     setIsCreateModalOpen(true)
@@ -380,6 +412,12 @@ export function LearningModulesPage() {
                 title: moduleForm.title.trim(),
                 durationMinutes: moduleForm.durationMinutes,
                 sampleContentUri: moduleForm.sampleContentUri.trim(),
+                moduleType: moduleForm.moduleType,
+                contentType: moduleForm.contentType,
+                contentVersion: moduleForm.contentVersion,
+                reviewStatus: moduleForm.reviewStatus,
+                learningContentId: moduleForm.selectedContentPackageId || m.learningContentId,
+                teachesSkillIds: moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : m.teachesSkillIds,
                 updatedAt: new Date().toISOString().slice(0, 10),
               }
             : m,
@@ -401,16 +439,21 @@ export function LearningModulesPage() {
         version: '1.0',
         status: 'draft',
         durationMinutes: moduleForm.durationMinutes,
-        sampleContentUri: moduleForm.sampleContentUri.trim(),
-        teachesSkillIds: [],
+        sampleContentUri: moduleForm.sampleContentUri.trim() || `content/modules/${moduleForm.code.trim().toUpperCase()}.json`,
+        teachesSkillIds: moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : [],
         activePlanEnrollments: 0,
         updatedAt: new Date().toISOString().slice(0, 10),
+        moduleType: moduleForm.moduleType,
+        contentType: moduleForm.contentType,
+        contentVersion: moduleForm.contentVersion,
+        reviewStatus: moduleForm.reviewStatus,
+        learningContentId: moduleForm.selectedContentPackageId || undefined,
       }
 
       saveAndSetModules([newMod, ...modules])
       toast({
         title: 'Draft Module Created',
-        description: `Draft metadata for ${newMod.code} saved. Add taught skills before publishing.`,
+        description: `Draft metadata for ${newMod.code} saved with Neo4j schema attributes.`,
         variant: 'success',
       })
     }
@@ -720,10 +763,10 @@ export function LearningModulesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                       <th className="py-2.5 px-3">Module Code &amp; Version</th>
-                      <th className="py-2.5 px-3">Title</th>
+                      <th className="py-2.5 px-3">Title &amp; Schema Type</th>
                       <th className="py-2.5 px-3 text-center">Duration</th>
-                      <th className="py-2.5 px-3">Sample Content Reference</th>
-                      <th className="py-2.5 px-3 text-center">Taught Skills</th>
+                      <th className="py-2.5 px-3">Content Reference</th>
+                      <th className="py-2.5 px-3 text-center">Taught Skills (1-1)</th>
                       <th className="py-2.5 px-3 text-center">Active Enrollments</th>
                       <th className="py-2.5 px-3">Status</th>
                       <th className="py-2.5 px-3 text-right">Actions</th>
@@ -732,7 +775,7 @@ export function LearningModulesPage() {
                   <tbody className="divide-y divide-border">
                     {filteredModules.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-10 text-muted-foreground text-xs">
+                        <td colSpan={8} className="text-center py-10 text-muted-foreground text-xs">
                           No learning modules registered yet for this company. Click "+ New Module" or import blueprint modules to begin.
                         </td>
                       </tr>
@@ -776,7 +819,23 @@ export function LearningModulesPage() {
                                 <span className="text-[10px] text-muted-foreground">{mod.updatedAt}</span>
                               </div>
                             </td>
-                          <td className="py-3 px-3 font-semibold text-foreground max-w-xs">{mod.title}</td>
+                          <td className="py-3 px-3 max-w-xs">
+                            <span className="font-semibold text-foreground block">{mod.title}</span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">
+                                {mod.moduleType || 'LESSON_AND_PRACTICE'}
+                              </Badge>
+                              {mod.reviewStatus === 'APPROVED' ? (
+                                <Badge variant="success" className="text-[10px] py-0 px-1">
+                                  APPROVED
+                                </Badge>
+                              ) : (
+                                <Badge variant="warning" className="text-[10px] py-0 px-1">
+                                  NEEDS REVIEW
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
                           <td className="py-3 px-3 text-center">
                             <span className="font-bold text-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3 text-primary" />
@@ -822,6 +881,22 @@ export function LearningModulesPage() {
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              <a
+                                href={`/employee/modules/${mod.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Preview Full Lessons in Reader View"
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                                  title="Preview Lessons"
+                                  aria-label="Preview Lessons"
+                                >
+                                  <BookOpen className="h-4 w-4 text-primary" />
+                                </Button>
+                              </a>
                               {!isDraft && (
                                 <Button
                                   variant="outline"
@@ -847,6 +922,12 @@ export function LearningModulesPage() {
                                         title: mod.title,
                                         durationMinutes: mod.durationMinutes,
                                         sampleContentUri: mod.sampleContentUri,
+                                        moduleType: mod.moduleType || 'LESSON_AND_PRACTICE',
+                                        contentType: mod.contentType || 'application/json',
+                                        contentVersion: mod.contentVersion || '1.0',
+                                        reviewStatus: mod.reviewStatus || 'APPROVED',
+                                        selectedContentPackageId: mod.learningContentId || '',
+                                        teachesSkillId: mod.teachesSkillIds[0] || '',
                                       })
                                       setIsCreateModalOpen(true)
                                     }}
@@ -987,23 +1068,147 @@ export function LearningModulesPage() {
               />
             </div>
 
-            <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Sample-Content URI Reference <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. https://learning.adaptlearn.internal/modules/gnn-201/lab.ipynb"
-                value={moduleForm.sampleContentUri}
-                onChange={(e) => setModuleForm({ ...moduleForm, sampleContentUri: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+            {/* 1. Approved Learning Content Package Selector */}
+            <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/30 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-foreground text-xs flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  Select Approved Learning Content Package
+                </label>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {approvedPackages.length} Approved Packages Available
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Bind an L&D Manager approved curriculum package from Content Studio with structured reading sections and video lectures.
+              </p>
+
+              <select
+                value={moduleForm.selectedContentPackageId}
+                onChange={(e) => {
+                  const pkgId = e.target.value
+                  const pkg = approvedPackages.find((p) => p.id === pkgId)
+                  if (!pkg) {
+                    setModuleForm({ ...moduleForm, selectedContentPackageId: '' })
+                    return
+                  }
+                  const matchedSkill = companyMicroSkills.find(
+                    (s) =>
+                      s.code.toLowerCase() === pkg.skillCode.toLowerCase() ||
+                      s.name.toLowerCase() === pkg.skillName.toLowerCase()
+                  )
+                  setModuleForm({
+                    ...moduleForm,
+                    selectedContentPackageId: pkg.id,
+                    code: moduleForm.code || pkg.code,
+                    title: moduleForm.title || pkg.title,
+                    durationMinutes: pkg.estimatedDuration || moduleForm.durationMinutes,
+                    sampleContentUri: `content/modules/${pkg.code}.json`,
+                    contentType: 'application/json',
+                    contentVersion: pkg.version || '1.0',
+                    reviewStatus: 'APPROVED',
+                    teachesSkillId: matchedSkill ? matchedSkill.id : (companyMicroSkills[0]?.id || ''),
+                  })
+                }}
+                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
+              >
+                <option value="">-- Choose Approved Content Package (Optional) --</option>
+                {approvedPackages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.id}>
+                    [{pkg.code}] {pkg.title} ({pkg.lessons.length} Lessons, {pkg.estimatedDuration}m) — {pkg.skillName}
+                  </option>
+                ))}
+              </select>
+
+              {moduleForm.selectedContentPackageId && (
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] font-semibold text-success flex items-center gap-1">
+                    <Check className="h-3.5 w-3.5" /> Approved by L&D Manager — Ready for delivery
+                  </span>
+                  <a
+                    href={`/employee/modules/${moduleForm.selectedContentPackageId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Preview Lessons
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Module Type (Neo4j Schema) <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={moduleForm.moduleType}
+                  onChange={(e) =>
+                    setModuleForm({
+                      ...moduleForm,
+                      moduleType: e.target.value as 'LESSON_AND_PRACTICE' | 'RESOURCE_GUIDED_PRACTICE',
+                    })
+                  }
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="LESSON_AND_PRACTICE">LESSON_AND_PRACTICE</option>
+                  <option value="RESOURCE_GUIDED_PRACTICE">RESOURCE_GUIDED_PRACTICE</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Review Status (Neo4j Schema) <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={moduleForm.reviewStatus}
+                  onChange={(e) =>
+                    setModuleForm({
+                      ...moduleForm,
+                      reviewStatus: e.target.value as 'NEEDS_EXPERT_REVIEW' | 'APPROVED',
+                    })
+                  }
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="APPROVED">APPROVED (Catalog Ready)</option>
+                  <option value="NEEDS_EXPERT_REVIEW">NEEDS_EXPERT_REVIEW</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Content URI (File/Reference) <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. content/modules/MOD-MS-CORE02.md"
+                  value={moduleForm.sampleContentUri}
+                  onChange={(e) => setModuleForm({ ...moduleForm, sampleContentUri: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Content Version (contentVersion) <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 1.0 or 2.0"
+                  value={moduleForm.contentVersion}
+                  onChange={(e) => setModuleForm({ ...moduleForm, contentVersion: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
             </div>
 
             <div className="p-2.5 rounded bg-muted/40 border border-border text-[11px] text-muted-foreground flex items-center gap-2">
               <Check className="h-4 w-4 text-primary shrink-0" />
               <span>
-                Module will be created in Draft status. At least one taught micro-skill is required before publication.
+                Conforms strictly to Ontology v0.8.0 with 1–1 TEACHES relationship and content URI references.
               </span>
             </div>
           </div>

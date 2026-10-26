@@ -7,7 +7,6 @@ import { LoginPage } from '../features/auth/LoginPage'
 import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
 import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
 import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
-import { CompetencyGapAnalysisPage } from '../features/employee/gap-analysis/CompetencyGapAnalysisPage'
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { EmployeeTargetRolesPage, EmployeeUpskillingPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
@@ -16,11 +15,13 @@ import { AdaptiveBaselineRoute } from '../features/manager/baseline-assessments/
 import { LegacyBaselineAssessmentRedirect } from '../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
+import { LearningContentAuthoringPage } from '../features/expert/content/LearningContentAuthoringPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
+import { ExpertPathwayDetailPage } from '../features/expert/pathway-review/ExpertPathwayDetailPage'
 import { OccupationsManagementPage } from '../features/manager/occupations/OccupationsManagementPage'
 import { ContentApprovalQueuePage } from '../features/manager/approvals/ContentApprovalQueuePage'
-import { LearningOutcomesPage } from '../features/manager/learning-outcomes/LearningOutcomesPage'
+import { Dashboard } from '../features/manager/learning-outcomes/Dashboard'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
 import { UserManagementPage } from '../features/manager/user-management/UserManagementPage'
@@ -79,7 +80,7 @@ export default function App() {
             <Route path="/employee/modules" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/employee/skills-catalog" element={<Navigate to="/employee/upskilling?tab=skills" replace />} />
             <Route path="/employee/skills" element={<Navigate to="/employee/upskilling?tab=skills" replace />} />
-            <Route path="/employee/gap-analysis" element={<CompetencyGapAnalysisPage />} />
+            <Route path="/employee/gap-analysis" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
             <Route path="/employee/baseline-assessment" element={<EmployeeBaselineRoute />} />
             <Route path="/employee/my-mastery" element={<MyMasteryPage />} />
@@ -98,7 +99,7 @@ export default function App() {
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/learner/modules/:moduleId" element={<LearningModuleReaderPage />} />
             <Route path="/learner/skills-catalog" element={<Navigate to="/employee/skills-catalog" replace />} />
-            <Route path="/learner/gap-analysis" element={<Navigate to="/employee/gap-analysis" replace />} />
+            <Route path="/learner/gap-analysis" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/assessment" element={<Navigate to="/employee/assessment" replace />} />
             <Route path="/learner/profile" element={<Navigate to="/profile" replace />} />
             <Route path="/assessment" element={<Navigate to="/employee/assessment" replace />} />
@@ -108,22 +109,25 @@ export default function App() {
             <Route path="/expert/target-roles" element={<ExpertAssignedRolesPage />} />
             <Route path="/expert/assigned-roles" element={<Navigate to="/expert/target-roles" replace />} />
             <Route path="/expert/pathway-review" element={<ExpertPathwayReviewPage />} />
+            <Route path="/expert/pathway-review/:pathwayId" element={<ExpertPathwayDetailPage />} />
             <Route path="/expert/guidance-review" element={<Navigate to="/expert/pathway-review" replace />} />
             <Route path="/expert/ontology" element={<CompetencyOntologyPage />} />
+            <Route path="/expert/learning-content" element={<LearningContentAuthoringPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />
 
             {/* 3. L&D Manager routes (Occupations, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
-            <Route path="/ld-manager" element={<Navigate to="/ld-manager/occupations" replace />} />
+            <Route path="/ld-manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/ld-manager/occupations" element={<OccupationsManagementPage />} />
             <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
+            <Route path="/ld-manager/dashboard" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />
             <Route path="/ld-manager/baseline-assessments/:occupationId/*" element={<AdaptiveBaselineRoute />} />
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
-            <Route path="/ld-manager/learning-outcomes" element={<LearningOutcomesPage />} />
+            <Route path="/ld-manager/learning-outcomes" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-config" element={<Navigate to="/ld-manager/baseline-assessments" replace />} />
             <Route path="/ld-manager/users" element={<UserManagementPage />} />
             <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
@@ -136,8 +140,8 @@ export default function App() {
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />
             <Route path="/manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
-            <Route path="/manager" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
-            <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/learning-outcomes" replace />} />
+            <Route path="/manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
+            <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />
             <Route path="/manager/users" element={<Navigate to="/ld-manager/users" replace />} />
             <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/team-matrix" replace />} />

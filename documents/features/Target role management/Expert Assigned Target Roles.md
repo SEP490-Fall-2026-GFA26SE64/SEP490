@@ -26,15 +26,15 @@ Dedicated workspace for Domain Experts to view target roles assigned to their sp
    - **Domain Expert**: Strictly **cannot edit** macro fields (Code, Title, Domain, Family, Track, Assigned Expert, Description). Experts are strictly restricted to authoring micro-skill taxonomy targets (proficiency thresholds) and review decisions (Approve/Publish or Reject).
 - **Draft Versioning & Display Order**:
   - Within each role lineage (grouped by `stableId` / role code), if multiple published versions exist, only the newest published version is shown as the primary row; older published versions are collapsed inside with a dropdown indicator. Previous versions cannot be used to create successor drafts (only the newest published version can create drafts). Any draft / sent / rejected successor version appears below its published version without any "under v1.0" badge.
-- **Status Lifecycle & Rejection Workflow**:
-  - `DRAFT`: Initial draft created by L&D Manager.
-  - `SENT`: Dispatched by L&D Manager to the assigned Domain Expert (`handleSendToExpert`), appearing in Manager workspace as "Sent" and in Expert workspace as "Draft" (not "Action Required").
-  - `REJECTED`: Domain Expert can reject the target role by providing a mandatory rejection reason/feedback. Status transitions to `REJECTED`, and the rejection reason is stored on the `TargetRole` node (`rejectionReason`) in Neo4j and displayed to the L&D Manager for adjustment and re-dispatch.
-  - `PUBLISHED`: Domain Expert publishes the role to the knowledge graph once &ge; 1 micro-skill target is configured.
-- **Micro-skill Authoring**:
-  - Minimum 1 micro-skill target required for graph publication readiness.
+- **Status Lifecycle & Bidirectional Approval Workflow (Aligned with Capstone Specification)**:
+  - `DRAFT`: Initial draft created by L&D Manager or opened for configuration by the assigned Domain Expert. The expert authors micro-skill taxonomy targets and required benchmark thresholds.
+  - `SUBMITTED`: Once at least 1 micro-skill threshold is configured, the Domain Expert submits the completed role configuration to the L&D Manager for confirmation. Status transitions to `SUBMITTED` in both Expert and Manager catalogs.
+  - `REJECTED`: The L&D Manager can return the submitted configuration back to the Domain Expert with actionable revision feedback notes. The expert views the rejection feedback, modifies the micro-skill targets, and re-submits to the manager. Alternatively, an assigned expert can reject an out-of-scope role assignment.
+  - `ACTIVE` (Displayed as `PUBLISHED`): The L&D Manager approves and publishes the submitted role configuration to the active enterprise knowledge graph, making it available for employee career pathway discovery.
+- **Micro-skill Authoring & Submission Readiness**:
+  - Minimum 1 micro-skill target required before submission to L&D Manager.
   - Required proficiency threshold bounded within 1% to 100% (stored as `targetMastery: Float [0, 1]` on `[:REQUIRES_SKILL]` in Neo4j).
-- **Publication Readiness**: Once the domain expert has completed micro-skill threshold mapping, the target role can be published into the active enterprise knowledge graph.
+- **Publication Authority**: Per Capstone functional specification, final publication authority belongs to the L&D Manager upon review of the Domain Expert's submitted competency configuration.
 
 ## Acceptance Baseline
 

@@ -204,15 +204,18 @@ export function GlobalSearchbar({ className }: { className?: string }) {
                           <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                             {role.name}
                           </div>
-                          {role.occupationName && (
-                            <div className="text-[11px] text-muted-foreground capitalize">
-                              {role.occupationName}
-                            </div>
-                          )}
+                          <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                            <span className="font-mono">{role.code}</span>
+                            {role.occupationName && <span>• {role.occupationName}</span>}
+                          </div>
                         </div>
-                        {role.catalogVersion && (
+                        {role.catalogVersion ? (
                           <Badge variant="outline" className="font-mono text-[10px] shrink-0 font-bold">
                             {role.catalogVersion}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="font-mono text-[10px] shrink-0 font-bold text-primary border-primary/30">
+                            J · M · S
                           </Badge>
                         )}
                       </button>

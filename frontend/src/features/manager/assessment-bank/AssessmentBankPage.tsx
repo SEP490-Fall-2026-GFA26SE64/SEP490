@@ -3,6 +3,8 @@ import {
   AlertTriangle,
   Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   Clock,
   CornerDownRight,
   Edit3,
@@ -366,13 +368,8 @@ export function AssessmentBankPage() {
 
   // Sorting & pagination states
   const [questionSortBy, setQuestionSortBy] = React.useState<'latest' | 'code'>('latest')
-  const [questionPage, setQuestionPage] = React.useState(1)
   const [blueprintPage, setBlueprintPage] = React.useState(1)
   const pageSize = 10
-
-  React.useEffect(() => {
-    setQuestionPage(1)
-  }, [questionSearch, questionSkillFilter, questionStatusFilter, questionSortBy])
 
   // Filtered & sorted Questions
   const filteredQuestions = React.useMemo(() => {
@@ -388,11 +385,127 @@ export function AssessmentBankPage() {
     return sortQuestionsWithDraftsBelowPublished(list, questionSortBy)
   }, [questions, questionSkillFilter, questionStatusFilter, questionSearch, questionSortBy])
 
-  const totalQuestionPages = Math.max(1, Math.ceil(filteredQuestions.length / pageSize))
-  const paginatedQuestions = React.useMemo(() => {
-    const start = (questionPage - 1) * pageSize
-    return filteredQuestions.slice(start, start + pageSize)
-  }, [filteredQuestions, questionPage, pageSize])
+  // Grouped questions by Assessed Micro-skill
+  const groupedSkills = React.useMemo(() => {
+    const isSearching = questionSearch.trim().length > 0
+    const isStatusFiltered = questionStatusFilter !== 'all'
+
+    // Map of skillId -> QuizQuestionModel[]
+    const skillMap = new Map<string, QuizQuestionModel[]>()
+
+    // Seed map if not searching/filtering status so experts can see all skills in their domain
+    if (!isSearching && !isStatusFiltered) {
+      if (questionSkillFilter !== 'all') {
+        skillMap.set(questionSkillFilter, [])
+      } else {
+        companyMicroSkills.forEach((ms) => {
+          skillMap.set(ms.id, [])
+        })
+      }
+    } else if (questionSkillFilter !== 'all') {
+      skillMap.set(questionSkillFilter, [])
+    }
+
+    // Place filtered questions into map
+    filteredQuestions.forEach((q) => {
+      const key = q.assessedSkillId || 'unassigned'
+      if (!skillMap.has(key)) {
+        skillMap.set(key, [])
+      }
+      skillMap.get(key)!.push(q)
+    })
+
+    const result: {
+      skillId: string
+      skillCode: string
+      skillName: string
+      macroCompetencyCode?: string
+      questions: QuizQuestionModel[]
+      publishedCount: number
+      draftCount: number
+      difficultyCounts: {
+        Foundation: number
+        Intermediate: number
+        Advanced: number
+      }
+    }[] = []
+
+    skillMap.forEach((qList, skillId) => {
+      if ((isSearching || isStatusFiltered) && qList.length === 0 && questionSkillFilter === 'all') {
+        return
+      }
+
+      const skill =
+        companyMicroSkills.find((s) => s.id === skillId || s.code === skillId) ||
+        INITIAL_MICRO_SKILLS.find((s) => s.id === skillId || s.code === skillId)
+
+      const publishedCount = qList.filter((q) => q.status === 'published').length
+      const draftCount = qList.filter((q) => q.status !== 'published').length
+      const difficultyCounts = {
+        Foundation: qList.filter((q) => q.difficulty === 'Foundation').length,
+        Intermediate: qList.filter((q) => q.difficulty === 'Intermediate').length,
+        Advanced: qList.filter((q) => q.difficulty === 'Advanced').length,
+      }
+
+      result.push({
+        skillId,
+        skillCode: skill?.code || (skillId === 'unassigned' ? 'UNASSIGNED' : skillId),
+        skillName:
+          skill?.name || (skillId === 'unassigned' ? 'Unassigned Micro-skill' : 'Custom / External Micro-skill'),
+        macroCompetencyCode: skill?.macroCompetencyCode,
+        questions: qList,
+        publishedCount,
+        draftCount,
+        difficultyCounts,
+      })
+    })
+
+    return result.sort((a, b) => {
+      if (a.questions.length > 0 && b.questions.length === 0) return -1
+      if (b.questions.length > 0 && a.questions.length === 0) return 1
+      return a.skillCode.localeCompare(b.skillCode)
+    })
+  }, [filteredQuestions, questionSkillFilter, questionStatusFilter, questionSearch, companyMicroSkills])
+
+  // Collapsible dropdown state for micro-skill question groups
+  const [collapsedSkillIds, setCollapsedSkillIds] = React.useState<Record<string, boolean>>({})
+
+  const isSkillExpanded = React.useCallback(
+    (skillId: string) => !collapsedSkillIds[skillId],
+    [collapsedSkillIds]
+  )
+
+  const toggleSkillExpanded = React.useCallback((skillId: string) => {
+    setCollapsedSkillIds((prev) => ({
+      ...prev,
+      [skillId]: !prev[skillId],
+    }))
+  }, [])
+
+  const expandAllSkills = React.useCallback(() => {
+    setCollapsedSkillIds({})
+  }, [])
+
+  const collapseAllSkills = React.useCallback(() => {
+    const next: Record<string, boolean> = {}
+    groupedSkills.forEach((g) => {
+      next[g.skillId] = true
+    })
+    setCollapsedSkillIds(next)
+  }, [groupedSkills])
+
+  const [skillGroupPage, setSkillGroupPage] = React.useState(1)
+  const skillGroupPageSize = 10
+  const totalSkillGroupPages = Math.max(1, Math.ceil(groupedSkills.length / skillGroupPageSize))
+  const paginatedSkillGroups = React.useMemo(() => {
+    const start = (skillGroupPage - 1) * skillGroupPageSize
+    return groupedSkills.slice(start, start + skillGroupPageSize)
+  }, [groupedSkills, skillGroupPage, skillGroupPageSize])
+
+  React.useEffect(() => {
+    setSkillGroupPage(1)
+  }, [questionSearch, questionSkillFilter, questionStatusFilter])
+
 
   const totalBlueprintPages = Math.max(1, Math.ceil(blueprints.length / pageSize))
   const paginatedBlueprints = React.useMemo(() => {
@@ -407,7 +520,8 @@ export function AssessmentBankPage() {
   // ------------------------------------------------------------------
   // Question Handlers
   // ------------------------------------------------------------------
-  const handleOpenCreateQuestion = () => {
+  const handleOpenCreateQuestion = (defaultSkillId?: string) => {
+    const targetSkillId = defaultSkillId || companyMicroSkills[0]?.id || ''
     setQuestionForm({
       code: `QUE-${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.floor(
         Math.random() * 80 + 10,
@@ -416,7 +530,7 @@ export function AssessmentBankPage() {
       options: ['', '', '', ''],
       correctAnswerIndex: 0,
       feedback: '',
-      assessedSkillId: companyMicroSkills[0]?.id || '',
+      assessedSkillId: targetSkillId,
       difficulty: 'Intermediate',
       provenance: 'Internal Curriculum Assessment Bank 2026',
     })
@@ -771,7 +885,7 @@ export function AssessmentBankPage() {
                   variant="primary"
                   size="sm"
                   leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={handleOpenCreateQuestion}
+                  onClick={() => handleOpenCreateQuestion()}
                   className="font-semibold shadow-2xs"
                 >
                   Create
@@ -839,7 +953,7 @@ export function AssessmentBankPage() {
             <TabsTrigger value="blueprints">Assessment Blueprints</TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: QUIZ QUESTIONS */}
+          {/* TAB 1: QUIZ QUESTIONS GROUPED BY ASSESSED MICRO-SKILL */}
           <TabsContent value="questions" className="space-y-4">
             <Card className="border-border shadow-xs bg-card">
               <CardHeader className="p-4 border-b border-border">
@@ -850,13 +964,13 @@ export function AssessmentBankPage() {
                       <span>Question Bank Directory</span>
                     </CardTitle>
                     <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                      Multiple-choice diagnostic items mapped 1-to-1 with micro-skills. Governs formative and summative testing.
+                      Diagnostic and module assessment questions classified by assessed micro-skill and difficulty. Click any skill to expand and manage its items.
                     </CardDescription>
                   </div>
 
-                  {/* Search & Filter Toolbar matching LearningModulesPage */}
+                  {/* Search, Filter & Accordion Toolbar */}
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <div className="relative w-56">
+                    <div className="relative w-52">
                       <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                       <input
                         type="text"
@@ -903,225 +1017,383 @@ export function AssessmentBankPage() {
                         onChange={(e) => setQuestionSortBy(e.target.value as 'latest' | 'code')}
                         className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                       >
-                        <option value="latest">Latest Created / Updated</option>
-                        <option value="code">Question Code (A–Z)</option>
+                        <option value="latest">Latest</option>
+                        <option value="code">Code A–Z</option>
                       </select>
+                    </div>
+
+                    {/* Accordion Expand / Collapse All Controls */}
+                    <div className="flex items-center gap-1 border border-border rounded-lg p-0.5 bg-background shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={expandAllSkills}
+                        className="px-2 py-1 text-[11px] font-medium rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        title="Expand all micro-skill question groups"
+                      >
+                        Expand All
+                      </button>
+                      <span className="text-border">|</span>
+                      <button
+                        type="button"
+                        onClick={collapseAllSkills}
+                        className="px-2 py-1 text-[11px] font-medium rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        title="Collapse all micro-skill question groups"
+                      >
+                        Collapse All
+                      </button>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
-                {filteredQuestions.length === 0 ? (
+
+              <CardContent className="p-4 space-y-3">
+                {groupedSkills.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-60" />
-                    <p className="text-sm font-semibold">No questions match filter criteria.</p>
+                    <p className="text-sm font-semibold">No questions or micro-skills match filter criteria.</p>
+                    <p className="text-xs mt-1">Try resetting the search bar or skill/status filters.</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                          <th className="py-2.5 px-3">Question Code &amp; Version</th>
-                          <th className="py-2.5 px-3">Prompt Stem &amp; Correct Answer</th>
-                          <th className="py-2.5 px-3">Assessed Micro-skill</th>
-                          <th className="py-2.5 px-3 text-center">Difficulty</th>
-                          <th className="py-2.5 px-3">Provenance Reference</th>
-                          <th className="py-2.5 px-3">Status</th>
-                          <th className="py-2.5 px-3 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {paginatedQuestions.map((q) => {
-                          const skill =
-                            companyMicroSkills.find((s) => s.id === q.assessedSkillId || s.code === q.assessedSkillId) ||
-                            INITIAL_MICRO_SKILLS.find((s) => s.id === q.assessedSkillId || s.code === q.assessedSkillId)
-                          const isDraft = q.status === 'draft'
-                          const isPublished = q.status === 'published'
-                          const predecessorPublished = questions.find(
-                            (item) =>
-                              (item.stableId === q.stableId || item.code === q.code) &&
-                              item.status === 'published' &&
-                              item.id !== q.id
-                          )
-                          const isSuccessor = !isPublished && Boolean(predecessorPublished)
+                  <div className="space-y-3">
+                    {paginatedSkillGroups.map((group) => {
+                      const expanded = isSkillExpanded(group.skillId)
 
-                          return (
-                            <tr
-                              key={q.id}
-                              className={`transition-colors ${
-                                isSuccessor
-                                  ? 'bg-muted/10 border-l-2 border-l-primary/60 hover:bg-muted/25'
-                                  : 'hover:bg-muted/20'
-                              }`}
-                            >
-                              <td className="py-3 px-3">
-                                {isSuccessor ? (
-                                  <div
-                                    className="flex items-center gap-1.5 pl-3"
-                                    title="Successor draft positioned below published version"
-                                  >
-                                    <CornerDownRight className="h-3.5 w-3.5 text-primary shrink-0" />
-                                    <span className="font-mono font-bold text-foreground">{q.code}</span>
-                                  </div>
+                      return (
+                        <div
+                          key={group.skillId}
+                          className="border border-border rounded-xl bg-card overflow-hidden shadow-2xs transition-all duration-150"
+                        >
+                          {/* Collapsible Micro-Skill Group Header */}
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => toggleSkillExpanded(group.skillId)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                toggleSkillExpanded(group.skillId)
+                              }
+                            }}
+                            className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-muted/30 select-none transition-colors border-b border-border/60"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <button
+                                type="button"
+                                aria-label={expanded ? 'Collapse micro-skill questions' : 'Expand micro-skill questions'}
+                                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggleSkillExpanded(group.skillId)
+                                }}
+                              >
+                                {expanded ? (
+                                  <ChevronDown className="h-4 w-4 text-primary" />
                                 ) : (
-                                  <div className="font-mono font-bold text-foreground">{q.code}</div>
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                                 )}
-                                <div className={`flex items-center gap-1.5 mt-0.5 ${isSuccessor ? 'pl-8' : ''}`}>
-                                  <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1">
-                                    v{q.version}
-                                  </Badge>
-                                  <span className="text-[10px] text-muted-foreground">{q.updatedAt || '01/02/2026'}</span>
-                                </div>
-                              </td>
-                              <td className="py-3 px-3 max-w-sm">
-                                <div className="font-medium text-foreground line-clamp-2">{q.prompt}</div>
-                                <div className="mt-1 text-[11px] text-success flex items-center gap-1 font-semibold">
-                                  <Check className="h-3 w-3 shrink-0" />
-                                  <span>Answer: {q.options[q.correctAnswerIndex]}</span>
-                                </div>
-                              </td>
-                              <td className="py-3 px-3 min-w-[220px] max-w-[280px]">
-                                <div className="flex items-start gap-2.5">
-                                  <div className="mt-0.5 p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
-                                    <Layers className="h-3.5 w-3.5" />
-                                  </div>
-                                  <div className="space-y-0.5 min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="font-mono font-bold text-xs text-foreground tracking-tight">
-                                        {skill?.code || q.assessedSkillId}
-                                      </span>
-                                      {skill?.macroCompetencyCode && (
-                                        <Badge
-                                          variant="secondary"
-                                          className="text-[9px] font-semibold uppercase tracking-wider py-0 px-1 bg-secondary text-primary border-primary/20"
-                                        >
-                                          {skill.macroCompetencyCode}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <p
-                                      className="text-xs text-muted-foreground font-medium truncate block"
-                                      title={skill?.name || q.assessedSkillId}
+                              </button>
+
+                              <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
+                                <Layers className="h-4 w-4" />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono font-bold text-xs text-foreground tracking-tight">
+                                    {group.skillCode}
+                                  </span>
+                                  {group.macroCompetencyCode && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-[9px] font-semibold uppercase tracking-wider py-0 px-1.5 bg-secondary text-primary border-primary/20"
                                     >
-                                      {skill?.name || 'Unmapped Micro-skill'}
-                                    </p>
-                                  </div>
+                                      {group.macroCompetencyCode}
+                                    </Badge>
+                                  )}
+                                  {group.questions.length === 0 && (
+                                    <Badge variant="warning" className="text-[9px] py-0 px-1.5">
+                                      Needs Questions
+                                    </Badge>
+                                  )}
                                 </div>
-                              </td>
-                              <td className="py-3 px-3 text-center">
-                                <Badge
-                                  variant={
-                                    q.difficulty === 'Foundation'
-                                      ? 'success'
-                                      : q.difficulty === 'Intermediate'
-                                      ? 'primary'
-                                      : 'destructive'
-                                  }
-                                  className="text-[10px]"
+                                <p
+                                  className="text-xs text-muted-foreground font-medium truncate mt-0.5"
+                                  title={group.skillName}
                                 >
-                                  {q.difficulty}
+                                  {group.skillName}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Badges, Difficulty Breakdown & Add Button */}
+                            <div className="flex items-center gap-2 self-end sm:self-center shrink-0 flex-wrap">
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <Badge variant="outline" className="font-semibold text-xs py-0.5 px-2">
+                                  {group.questions.length} {group.questions.length === 1 ? 'Question' : 'Questions'}
                                 </Badge>
-                              </td>
-                              <td className="py-3 px-3 text-muted-foreground font-mono text-[11px] max-w-xs truncate">
-                                {q.provenance}
-                              </td>
-                              <td className="py-3 px-3">
-                                <Badge variant={isPublished ? 'success' : 'warning'}>
-                                  {q.status.toUpperCase()}
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-3 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  {!isDraft && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => setViewingQuestionDetails(q)}
-                                      title="View Details"
-                                      aria-label="View Details"
-                                    >
-                                      <Eye className="h-4 w-4 text-primary" />
-                                    </Button>
+                                {group.publishedCount > 0 && (
+                                  <Badge variant="success" className="text-[10px] py-0.5 px-1.5">
+                                    {group.publishedCount} Pub
+                                  </Badge>
+                                )}
+                                {group.draftCount > 0 && (
+                                  <Badge variant="warning" className="text-[10px] py-0.5 px-1.5">
+                                    {group.draftCount} Draft
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {group.questions.length > 0 && (
+                                <div className="hidden md:flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted/60 rounded-md px-2 py-0.5">
+                                  {group.difficultyCounts.Foundation > 0 && (
+                                    <span className="text-success font-medium">
+                                      {group.difficultyCounts.Foundation} F
+                                    </span>
                                   )}
-                                  {isDraft ? (
-                                    <>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={() => {
-                                          setSelectedQuestion(q)
-                                          setQuestionForm({
-                                            code: q.code,
-                                            prompt: q.prompt,
-                                            options: [...q.options],
-                                            correctAnswerIndex: q.correctAnswerIndex,
-                                            feedback: q.feedback,
-                                            assessedSkillId: q.assessedSkillId,
-                                            difficulty: q.difficulty,
-                                            provenance: q.provenance,
-                                          })
-                                          setIsQuestionModalOpen(true)
-                                        }}
-                                        title="Edit Draft"
-                                        aria-label="Edit Draft"
-                                      >
-                                        <Edit3 className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 w-8 p-0 text-success hover:bg-success/10"
-                                        onClick={() => handlePublishQuestion(q)}
-                                        title="Publish Question"
-                                        aria-label="Publish Question"
-                                      >
-                                        <Check className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-                                        onClick={() => setDeletingDraftQuestion(q)}
-                                        title="Delete Draft"
-                                        aria-label="Delete Draft"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => handleCreateSuccessorQuestion(q)}
-                                      title="Create New Draft Version"
-                                      aria-label="Create New Draft Version"
-                                    >
-                                      <Plus className="h-4 w-4 text-primary" />
-                                    </Button>
+                                  {group.difficultyCounts.Intermediate > 0 && (
+                                    <span className="text-primary font-medium">
+                                      {group.difficultyCounts.Intermediate} I
+                                    </span>
+                                  )}
+                                  {group.difficultyCounts.Advanced > 0 && (
+                                    <span className="text-destructive font-medium">
+                                      {group.difficultyCounts.Advanced} A
+                                    </span>
                                   )}
                                 </div>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
+                              )}
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                leftIcon={<Plus className="h-3 w-3 text-primary" />}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenCreateQuestion(group.skillId)
+                                }}
+                                className="text-xs h-7 px-2 font-medium bg-background hover:bg-secondary/40 border-border"
+                              >
+                                Add Question
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Collapsible Dropdown Content */}
+                          {expanded && (
+                            <div className="bg-card">
+                              {group.questions.length === 0 ? (
+                                <div className="p-6 text-center bg-muted/5">
+                                  <FileQuestion className="h-7 w-7 mx-auto mb-1.5 text-muted-foreground opacity-40" />
+                                  <p className="text-xs font-semibold text-foreground">
+                                    No questions registered for {group.skillCode}
+                                  </p>
+                                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    Create diagnostic or formative quiz items to ensure valid assessment coverage.
+                                  </p>
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    className="mt-3 text-xs h-7 font-semibold"
+                                    leftIcon={<Plus className="h-3 w-3" />}
+                                    onClick={() => handleOpenCreateQuestion(group.skillId)}
+                                  >
+                                    Create First Question
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                      <tr className="border-b border-border bg-muted/20 text-muted-foreground uppercase text-[11px] font-semibold">
+                                        <th className="py-2.5 px-3">Question Code &amp; Version</th>
+                                        <th className="py-2.5 px-3">Prompt Stem &amp; Correct Answer</th>
+                                        <th className="py-2.5 px-3 text-center">Difficulty</th>
+                                        <th className="py-2.5 px-3">Provenance Reference</th>
+                                        <th className="py-2.5 px-3">Status</th>
+                                        <th className="py-2.5 px-3 text-right">Actions</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                      {group.questions.map((q) => {
+                                        const isDraft = q.status === 'draft'
+                                        const isPublished = q.status === 'published'
+                                        const predecessorPublished = questions.find(
+                                          (item) =>
+                                            (item.stableId === q.stableId || item.code === q.code) &&
+                                            item.status === 'published' &&
+                                            item.id !== q.id
+                                        )
+                                        const isSuccessor = !isPublished && Boolean(predecessorPublished)
+
+                                        return (
+                                          <tr
+                                            key={q.id}
+                                            className={`transition-colors ${
+                                              isSuccessor
+                                                ? 'bg-muted/10 border-l-2 border-l-primary/60 hover:bg-muted/25'
+                                                : 'hover:bg-muted/15'
+                                            }`}
+                                          >
+                                            <td className="py-2.5 px-3">
+                                              {isSuccessor ? (
+                                                <div
+                                                  className="flex items-center gap-1.5 pl-3"
+                                                  title="Successor draft positioned below published version"
+                                                >
+                                                  <CornerDownRight className="h-3.5 w-3.5 text-primary shrink-0" />
+                                                  <span className="font-mono font-bold text-foreground">{q.code}</span>
+                                                </div>
+                                              ) : (
+                                                <div className="font-mono font-bold text-foreground">{q.code}</div>
+                                              )}
+                                              <div
+                                                className={`flex items-center gap-1.5 mt-0.5 ${
+                                                  isSuccessor ? 'pl-8' : ''
+                                                }`}
+                                              >
+                                                <Badge
+                                                  variant="secondary"
+                                                  className="font-mono text-[10px] py-0 px-1"
+                                                >
+                                                  v{q.version}
+                                                </Badge>
+                                                <span className="text-[10px] text-muted-foreground">
+                                                  {q.updatedAt || '01/02/2026'}
+                                                </span>
+                                              </div>
+                                            </td>
+                                            <td className="py-2.5 px-3 max-w-sm">
+                                              <div className="font-medium text-foreground line-clamp-2">
+                                                {q.prompt}
+                                              </div>
+                                              <div className="mt-1 text-[11px] text-success flex items-center gap-1 font-semibold">
+                                                <Check className="h-3 w-3 shrink-0" />
+                                                <span>Answer: {q.options[q.correctAnswerIndex]}</span>
+                                              </div>
+                                            </td>
+                                            <td className="py-2.5 px-3 text-center">
+                                              <Badge
+                                                variant={
+                                                  q.difficulty === 'Foundation'
+                                                    ? 'success'
+                                                    : q.difficulty === 'Intermediate'
+                                                    ? 'primary'
+                                                    : 'destructive'
+                                                }
+                                                className="text-[10px]"
+                                              >
+                                                {q.difficulty}
+                                              </Badge>
+                                            </td>
+                                            <td className="py-2.5 px-3 text-muted-foreground font-mono text-[11px] max-w-xs truncate">
+                                              {q.provenance}
+                                            </td>
+                                            <td className="py-2.5 px-3">
+                                              <Badge variant={isPublished ? 'success' : 'warning'}>
+                                                {q.status.toUpperCase()}
+                                              </Badge>
+                                            </td>
+                                            <td className="py-2.5 px-3 text-right">
+                                              <div className="flex items-center justify-end gap-1.5">
+                                                {!isDraft && (
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0"
+                                                    onClick={() => setViewingQuestionDetails(q)}
+                                                    title="View Details"
+                                                    aria-label="View Details"
+                                                  >
+                                                    <Eye className="h-3.5 w-3.5 text-primary" />
+                                                  </Button>
+                                                )}
+                                                {isDraft ? (
+                                                  <>
+                                                    <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-7 w-7 p-0"
+                                                      onClick={() => {
+                                                        setSelectedQuestion(q)
+                                                        setQuestionForm({
+                                                          code: q.code,
+                                                          prompt: q.prompt,
+                                                          options: [...q.options],
+                                                          correctAnswerIndex: q.correctAnswerIndex,
+                                                          feedback: q.feedback,
+                                                          assessedSkillId: q.assessedSkillId,
+                                                          difficulty: q.difficulty,
+                                                          provenance: q.provenance,
+                                                        })
+                                                        setIsQuestionModalOpen(true)
+                                                      }}
+                                                      title="Edit Draft"
+                                                      aria-label="Edit Draft"
+                                                    >
+                                                      <Edit3 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-7 w-7 p-0 text-success hover:bg-success/10"
+                                                      onClick={() => handlePublishQuestion(q)}
+                                                      title="Publish Question"
+                                                      aria-label="Publish Question"
+                                                    >
+                                                      <Check className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                                                      onClick={() => setDeletingDraftQuestion(q)}
+                                                      title="Delete Draft"
+                                                      aria-label="Delete Draft"
+                                                    >
+                                                      <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                  </>
+                                                ) : (
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0"
+                                                    onClick={() => handleCreateSuccessorQuestion(q)}
+                                                    title="Create New Draft Version"
+                                                    aria-label="Create New Draft Version"
+                                                  >
+                                                    <Plus className="h-3.5 w-3.5 text-primary" />
+                                                  </Button>
+                                                )}
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
-                {filteredQuestions.length > 0 && (
-                  <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+
+                {groupedSkills.length > 0 && (
+                  <div className="p-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground mt-4">
                     <span>
-                      Showing {(questionPage - 1) * pageSize + 1}–
-                      {Math.min(questionPage * pageSize, filteredQuestions.length)} of {filteredQuestions.length} questions
+                      Showing {filteredQuestions.length} questions across {groupedSkills.length} assessed micro-skills
                     </span>
-                    <Pagination
-                      currentPage={questionPage}
-                      totalPages={totalQuestionPages}
-                      onPageChange={setQuestionPage}
-                    />
+                    {totalSkillGroupPages > 1 && (
+                      <Pagination
+                        currentPage={skillGroupPage}
+                        totalPages={totalSkillGroupPages}
+                        onPageChange={setSkillGroupPage}
+                      />
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -1533,7 +1805,7 @@ export function AssessmentBankPage() {
                       setBlueprintForm({
                         ...blueprintForm,
                         targetType: 'role',
-                        targetId: INITIAL_TARGET_ROLES[0]?.id || '',
+                        targetId: companyRoles[0]?.id || INITIAL_TARGET_ROLES[0]?.id || '',
                       })
                     }
                     className={`px-2.5 py-1 rounded text-xs font-semibold cursor-pointer ${
@@ -1550,7 +1822,7 @@ export function AssessmentBankPage() {
                       setBlueprintForm({
                         ...blueprintForm,
                         targetType: 'module',
-                        targetId: INITIAL_MODULES[0]?.id || '',
+                        targetId: companyModules[0]?.id || INITIAL_MODULES[0]?.id || '',
                       })
                     }
                     className={`px-2.5 py-1 rounded text-xs font-semibold cursor-pointer ${
@@ -1569,12 +1841,12 @@ export function AssessmentBankPage() {
                   className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   {blueprintForm.targetType === 'role'
-                    ? INITIAL_TARGET_ROLES.map((r) => (
+                    ? (companyRoles.length > 0 ? companyRoles : INITIAL_TARGET_ROLES).map((r) => (
                         <option key={r.id} value={r.id}>
                           {r.code} - {r.title} (v{r.version})
                         </option>
                       ))
-                    : INITIAL_MODULES.map((m) => (
+                    : (companyModules.length > 0 ? companyModules : INITIAL_MODULES).map((m) => (
                         <option key={m.id} value={m.id}>
                           {m.code} - {m.title}
                         </option>

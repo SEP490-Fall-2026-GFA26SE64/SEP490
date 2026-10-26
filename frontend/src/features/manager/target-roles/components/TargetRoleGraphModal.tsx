@@ -25,8 +25,9 @@ export interface RoleNodeData {
   category: 'TargetRole'
   code: string
   title: string
-  track: string
-  seniority: string
+  levels?: string
+  track?: string
+  seniority?: string
   status: string
 }
 
@@ -145,7 +146,7 @@ export function TargetRoleGraphModal({
     // 1. Role root node
     nodes.push({
       id: `role-${graphData.roleId}`,
-      label: `<b>${graphData.roleCode}</b>\n${graphData.roleName}\n<i>${graphData.track} • ${graphData.seniority}</i>`,
+      label: `<b>${graphData.roleCode}</b>\n${graphData.roleName}\n<i>Junior • Middle • Senior</i>`,
       shape: 'box',
       shapeProperties: { borderRadius: 8 },
       margin: { top: 12, right: 16, bottom: 12, left: 16 },
@@ -168,8 +169,7 @@ export function TargetRoleGraphModal({
         category: 'TargetRole',
         code: graphData.roleCode,
         title: graphData.roleName,
-        track: graphData.track,
-        seniority: graphData.seniority,
+        levels: 'Junior • Middle • Senior (J · M · S)',
         status: graphData.status,
       },
     })
@@ -364,12 +364,12 @@ export function TargetRoleGraphModal({
       <DialogHeader className="p-4 border-b border-border bg-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <DialogTitle className="flex items-center gap-2 text-lg">
+              <DialogTitle className="flex items-center gap-2 text-base font-bold">
                 <GitBranch className="h-5 w-5 text-primary" />
-                Target-Role Knowledge Graph: {graphData?.roleName || roleTitle || 'Role Subgraph'}
+                {graphData?.roleName || roleTitle || 'Role Subgraph'}
               </DialogTitle>
-              <DialogDescription className="text-xs">
-                Inspect required micro-skills, minimum proficiencies, and pedagogical prerequisite sequencing.
+              <DialogDescription className="text-xs text-muted-foreground">
+                Inspect required micro-skills, minimum proficiencies, and prerequisite sequencing.
               </DialogDescription>
             </div>
 
@@ -519,13 +519,13 @@ export function TargetRoleGraphModal({
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-card border border-border">
-                        <div>
-                          <span className="text-[10px] text-muted-foreground block">Track</span>
-                          <strong className="text-foreground">{selectedNode.track}</strong>
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-muted-foreground block">Calibration Levels</span>
+                          <strong className="text-foreground">{selectedNode.levels || 'Junior • Middle • Senior (J · M · S)'}</strong>
                         </div>
                         <div>
-                          <span className="text-[10px] text-muted-foreground block">Seniority</span>
-                          <strong className="text-foreground">{selectedNode.seniority}</strong>
+                          <span className="text-[10px] text-muted-foreground block">Attainment Rule</span>
+                          <span className="font-mono text-[10px] font-semibold text-primary">ALL_MANDATORY_SKILLS</span>
                         </div>
                         <div>
                           <span className="text-[10px] text-muted-foreground block">Status</span>

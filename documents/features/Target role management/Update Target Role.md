@@ -13,17 +13,22 @@ Conflicting actors, policies and acceptance below are superseded; old evidence i
 
 ## Description
 
-Update target-role metadata and Domain Expert assignment. Changes to micro-skill requirements remain exclusively the responsibility of assigned Domain Experts.
+Update target-role metadata, O*NET occupation, Ontology Local Profile, customizable Calibration Level thresholds (J, M, S), and Domain Expert assignment. Changes to micro-skill requirements remain exclusively the responsibility of assigned Domain Experts.
 
-**Input:** Organization target role ID and edited fields: Role Title (`name`), Job Domain (`domainCode`), Career Family (`familyCode`), Track (`track`), Seniority (`seniority`), Key Responsibilities (`responsibilities`), Assigned Domain Expert (`assignedExpertId`), and Profile Description (`description`).  
-**Outcome:** Updated role details in Neo4j.
+**Input:** Organization target role ID and edited fields: Role Title (`title`), O*NET Occupation (`occupationCode`), Ontology Local Profile (`familyCode`), Customizable Calibration Thresholds (`levelThresholds: { J, M, S }`), Key Responsibilities (`responsibilities`), Assigned Domain Expert (`assignedExpertId`), and Role Scope (`scope` / `description`).  
+**Outcome:** Updated role details in Neo4j and PostgreSQL.
 
 ## Confirmed Rules
 
-- **L&D Manager Scope**: L&D Managers can only edit the fields they govern (title, domain, family, track, seniority, responsibilities, assigned expert, description). They **cannot** add or edit micro-skill requirements (which is exclusively the Domain Expert's role).
-- **Track & Seniority Consistency**: If track is updated, seniority must match the valid spectrum (`P1`–`P5` for `PROFESSIONAL`, `M3`–`M4` for `MANAGEMENT`). Track-seniority mismatches are rejected with `400 Bad Request`.
+- **L&D Manager Scope**: L&D Managers can edit the role attributes they govern (title, occupation, local profile, calibration thresholds, responsibilities, assigned expert, scope). They **cannot** add or edit individual micro-skill nodes (which is exclusively the Domain Expert's role).
+- **Customizable Ontology Calibration Tiers (Levels J • M • S)**:
+  - Benchmark passing thresholds for Junior (Rank 1), Middle (Rank 2), and Senior (Rank 3) can be customized per target role to match organization or role-specific rigor (e.g. elevating Senior to 95% for mission-critical roles).
+- **O*NET Occupation & Local Profile Alignment (`ONTOLOGY.md`)**:
+  - Roles strictly align with O*NET occupations and ontology profiles defined in `ONTOLOGY.md` (e.g., `DEV`, `INFRA`, `DATAENG`, `QAENG`, `SECANALYSIS`). Outdated fields (`track`, `seniority`, `domainCode`) are deprecated from the UI while maintained as default fallbacks in REST payloads.
 - **Responsibilities Modification**: L&D Managers can add, reorder, or update the list of strings representing job responsibilities for the Job Description.
-- **Assigned Expert Isolation**: When an expert is assigned or changed, other experts lose visibility into this role. Only the assigned expert can view and configure the target role in their Expert Portal.
+- **Assigned Expert Isolation & Occupation Eligibility**:
+  - When an expert is assigned or changed, other experts lose visibility into this role. Only the assigned expert can view and configure the target role in their Expert Portal.
+  - The Assigned Domain Expert combobox dynamically filters to only list experts certified and assigned for the role's O*NET occupation (`15-1252.00`, `15-1243.00`, etc.). If the occupation is changed during editing, the form automatically re-evaluates the assigned expert against the new occupation's certified roster.
 - **Status Lifecycle Transitions**: Both L&D Managers and assigned Domain Experts can transition the status:
   - L&D Manager: transitions to `SENT` when dispatching to Domain Expert, or `ACTIVE` when publishing directly.
   - Domain Expert: transitions to `ACTIVE` (Published) or `REJECTED` for target roles assigned to their expert ID. Unassigned experts are rejected with `403 Forbidden`.

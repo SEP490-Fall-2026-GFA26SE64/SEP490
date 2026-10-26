@@ -20,6 +20,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { cn } from '../../../shared/lib/utils'
+import { getLearningContentById } from '../../../shared/stores/learningContentStore'
 
 export type LessonType = 'reading' | 'video'
 
@@ -327,10 +328,25 @@ const CodeSnippetBlock: React.FC<{ code: string; label?: string }> = ({ code, la
 
 export const LearningModuleReaderPage: React.FC = () => {
   const { moduleId } = useParams<{ moduleId?: string }>()
-  const moduleCode = moduleId ? moduleId.toUpperCase() : MODULE_DATA.code
+  const resolvedPkg = moduleId ? getLearningContentById(moduleId) : undefined
+  const currentModuleData: LearningModuleDetails = resolvedPkg
+    ? {
+        id: resolvedPkg.id,
+        code: resolvedPkg.code,
+        title: resolvedPkg.title,
+        skillName: resolvedPkg.skillName,
+        skillCode: resolvedPkg.skillCode,
+        description: resolvedPkg.description,
+        lessons: resolvedPkg.lessons.length > 0 ? resolvedPkg.lessons : MODULE_DATA.lessons,
+      }
+    : MODULE_DATA
+
+  const moduleCode = currentModuleData.code
 
   // Active lesson selection (default to lesson 1)
-  const [activeLessonId, setActiveLessonId] = useState<string>(MODULE_DATA.lessons[0].id)
+  const [activeLessonId, setActiveLessonId] = useState<string>(
+    currentModuleData.lessons[0]?.id || 'lesson-1'
+  )
 
   // Track completed lessons
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(() => {
@@ -343,8 +359,8 @@ export const LearningModuleReaderPage: React.FC = () => {
   const [isVideoMuted, setIsVideoMuted] = useState<boolean>(false)
 
   // Locate active lesson
-  const activeIndex = MODULE_DATA.lessons.findIndex((l) => l.id === activeLessonId)
-  const currentLesson = MODULE_DATA.lessons[activeIndex] || MODULE_DATA.lessons[0]
+  const activeIndex = currentModuleData.lessons.findIndex((l) => l.id === activeLessonId)
+  const currentLesson = currentModuleData.lessons[activeIndex] || currentModuleData.lessons[0]
 
   // Toggle completion of current lesson
   const toggleComplete = (id: string) => {
@@ -362,8 +378,8 @@ export const LearningModuleReaderPage: React.FC = () => {
   // Next item progression
   const handleGoToNextItem = () => {
     setCompletedLessonIds((prev) => new Set(prev).add(currentLesson.id))
-    if (activeIndex < MODULE_DATA.lessons.length - 1) {
-      const nextLesson = MODULE_DATA.lessons[activeIndex + 1]
+    if (activeIndex < currentModuleData.lessons.length - 1) {
+      const nextLesson = currentModuleData.lessons[activeIndex + 1]
       setActiveLessonId(nextLesson.id)
       setIsVideoPlaying(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -372,7 +388,7 @@ export const LearningModuleReaderPage: React.FC = () => {
 
   // Completion calculation
   const completedCount = completedLessonIds.size
-  const totalCount = MODULE_DATA.lessons.length
+  const totalCount = currentModuleData.lessons.length
   const completionPercentage = Math.round((completedCount / totalCount) * 100)
   const isCurrentCompleted = completedLessonIds.has(currentLesson.id)
   const isLastLesson = activeIndex === totalCount - 1
@@ -439,14 +455,14 @@ export const LearningModuleReaderPage: React.FC = () => {
             <div className="p-4 sm:p-5 border-b border-border bg-muted/20 space-y-1.5">
               <div className="flex items-center gap-2">
                 <Badge variant="primary" className="text-[10px] font-mono font-bold">
-                  {MODULE_DATA.code}
+                  {currentModuleData.code}
                 </Badge>
                 <span className="text-[11px] text-muted-foreground font-medium">
                   {totalCount} Lessons
                 </span>
               </div>
               <h3 className="font-bold text-sm text-foreground leading-snug">
-                {MODULE_DATA.title}
+                {currentModuleData.title}
               </h3>
               <p className="text-[11px] text-muted-foreground">
                 {completedCount} of {totalCount} completed ({completionPercentage}%)
@@ -455,7 +471,7 @@ export const LearningModuleReaderPage: React.FC = () => {
 
             {/* Direct List of Lessons (Single Module, Reading & Video only) */}
             <div className="flex-1 py-2 divide-y divide-border/60 overflow-y-auto">
-              {MODULE_DATA.lessons.map((lesson, idx) => {
+              {currentModuleData.lessons.map((lesson, idx) => {
                 const isSelected = lesson.id === activeLessonId
                 const isDone = completedLessonIds.has(lesson.id)
 

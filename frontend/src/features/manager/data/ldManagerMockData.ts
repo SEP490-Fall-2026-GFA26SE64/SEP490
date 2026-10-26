@@ -5,6 +5,12 @@ export interface SkillTargetConfig {
   threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
 }
 
+export interface RoleLevelThresholds {
+  J: number
+  M: number
+  S: number
+}
+
 export interface TargetRoleModel {
   id: string
   stableId: string
@@ -12,7 +18,7 @@ export interface TargetRoleModel {
   title: string
   department?: string
   domainCode?: string // 'ICT' | 'DATA' | 'AI'
-  familyCode?: string // 'JAVA_BACKEND' | 'DATA_AI' | ...
+  familyCode?: string // Local profile e.g. 'DEV' | 'DATAENG' | 'QAENG'
   track?: 'PROFESSIONAL' | 'MANAGEMENT'
   seniority?: string
   assignedExpertId?: string
@@ -20,13 +26,117 @@ export interface TargetRoleModel {
   description: string
   responsibilities?: string[]
   version: string
-  status: 'draft' | 'sent' | 'rejected' | 'published'
+  status: 'draft' | 'submitted' | 'sent' | 'rejected' | 'published'
   rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
   activeEnrollments: number
+  occupationCode?: string
+  occupationTitle?: string
+  scope?: string
+  levels?: ('Junior' | 'Middle' | 'Senior')[]
+  levelThresholds?: RoleLevelThresholds
   createdAt?: string
   updatedAt: string
+}
+
+export interface OnetOccupation {
+  code: string // e.g. '15-1252.00'
+  name: string // e.g. 'Software Developers'
+  description: string
+  jobZone: number // e.g. 4
+  profiles: string[] // e.g. ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH']
+  assignedExpertIds: string[]
+}
+
+export const ONET_OCCUPATIONS: OnetOccupation[] = [
+  {
+    code: '15-1252.00',
+    name: 'Software Developers',
+    description: 'Design, code, and test applications, systems software, and infrastructure pipelines.',
+    jobZone: 4,
+    profiles: ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH'],
+    assignedExpertIds: ['expert-chen', 'expert-vance'],
+  },
+  {
+    code: '15-1243.00',
+    name: 'Database Architects & Engineers',
+    description: 'Design database systems, analytical warehouses, governance policies, and data pipelines.',
+    jobZone: 4,
+    profiles: ['DATARCH', 'DATAENG', 'DATAGOV', 'DBANALYSIS', 'DBDEV', 'ENTERPRISE'],
+    assignedExpertIds: ['expert-vance', 'expert-nguyen'],
+  },
+  {
+    code: '15-1253.00',
+    name: 'Software Quality Assurance & Testing',
+    description: 'Design test automation suites, quality gates, and system verification protocols.',
+    jobZone: 4,
+    profiles: ['QAAUTO', 'QAA', 'QAENG'],
+    assignedExpertIds: ['expert-chen', 'expert-rivera'],
+  },
+  {
+    code: '15-1299.08',
+    name: 'Computer Systems Engineers & Architects',
+    description: 'Architect complex systems, cloud infrastructure networks, and enterprise solutions.',
+    jobZone: 4,
+    profiles: ['SYSARCH', 'INFRA', 'INTEGRATION', 'SYSANALYSIS', 'WEBARCH'],
+    assignedExpertIds: ['expert-rivera', 'expert-vance'],
+  },
+  {
+    code: '15-1212.00',
+    name: 'Information Security & Cybersecurity',
+    description: 'Engineer security perimeters, vulnerability analysis, access policies, and incident response.',
+    jobZone: 4,
+    profiles: ['SECOFFICER', 'SECANALYSIS', 'NETSEC'],
+    assignedExpertIds: ['expert-rivera', 'expert-chen'],
+  },
+]
+
+export interface OntologyLevel {
+  code: 'J' | 'M' | 'S'
+  name: 'Junior' | 'Middle' | 'Senior'
+  rank: 1 | 2 | 3
+  threshold: number // 0.60, 0.75, 0.90
+  context: string
+}
+
+export const ONTOLOGY_LEVELS: OntologyLevel[] = [
+  { code: 'J', name: 'Junior', rank: 1, threshold: 0.60, context: 'Guided bounded execution under task support' },
+  { code: 'M', name: 'Middle', rank: 2, threshold: 0.75, context: 'Independent defined-scope delivery and standard troubleshooting' },
+  { code: 'S', name: 'Senior', rank: 3, threshold: 0.90, context: 'Complex solution architecture, system review, and governance' },
+]
+
+export function resolveOccupationForRole(role: {
+  code?: string
+  title?: string
+  domainCode?: string
+  familyCode?: string
+  occupationCode?: string
+}): OnetOccupation {
+  if (role.occupationCode) {
+    const found = ONET_OCCUPATIONS.find((o) => o.code === role.occupationCode)
+    if (found) return found
+  }
+
+  const code = (role.code || '').toUpperCase()
+  const title = (role.title || '').toLowerCase()
+  const domain = (role.domainCode || '').toUpperCase()
+  const family = (role.familyCode || '').toUpperCase()
+
+  // Match by keyword in title, code, or family
+  if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
+    return ONET_OCCUPATIONS[4] // 15-1212.00
+  }
+  if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
+    return ONET_OCCUPATIONS[2] // 15-1253.00
+  }
+  if (title.includes('data') || title.includes('database') || title.includes('analytics') || domain === 'DATA' || code.includes('DATA') || family.includes('DATA')) {
+    return ONET_OCCUPATIONS[1] // 15-1243.00
+  }
+  if (title.includes('system') || title.includes('network') || title.includes('cloud') || title.includes('infrastructure') || (title.includes('architect') && !title.includes('software')) || code.includes('SYS') || code.includes('INFRA')) {
+    return ONET_OCCUPATIONS[3] // 15-1299.08
+  }
+  return ONET_OCCUPATIONS[0] // 15-1252.00 Software Developers
 }
 
 /**
@@ -151,9 +261,9 @@ export function sortTargetRolesWithDraftsBelowPublished(
         return timeB - timeA
       }
 
-      // Priority: Newly dispatched / sent roles
-      const hasSentA = rolesA.some((r) => r.status === 'sent')
-      const hasSentB = rolesB.some((r) => r.status === 'sent')
+      // Priority: Newly dispatched / submitted roles
+      const hasSentA = rolesA.some((r) => r.status === 'submitted' || r.status === 'sent')
+      const hasSentB = rolesB.some((r) => r.status === 'submitted' || r.status === 'sent')
       if (hasSentA && !hasSentB) return -1
       if (hasSentB && !hasSentA) return 1
 
@@ -214,6 +324,21 @@ export const ELIGIBLE_EXPERTS = [
   { id: 'expert-rivera', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
   { id: 'expert-nguyen', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
 ] as const
+
+export type EligibleExpert = typeof ELIGIBLE_EXPERTS[number]
+
+/**
+ * Returns domain experts who are specifically assigned and certified for a given O*NET occupation.
+ */
+export function getEligibleExpertsForOccupation(occupationCode?: string): EligibleExpert[] {
+  if (!occupationCode) return [...ELIGIBLE_EXPERTS]
+  const occ = ONET_OCCUPATIONS.find((o) => o.code === occupationCode)
+  if (!occ || !occ.assignedExpertIds || occ.assignedExpertIds.length === 0) {
+    return [...ELIGIBLE_EXPERTS]
+  }
+  const matched = ELIGIBLE_EXPERTS.filter((exp) => occ.assignedExpertIds.includes(exp.id))
+  return matched.length > 0 ? matched : [...ELIGIBLE_EXPERTS]
+}
 
 export interface CompetencyModel {
   id: string
@@ -276,6 +401,13 @@ export interface LearningModuleModel {
   activePlanEnrollments: number
   replacementModuleId?: string
   updatedAt: string
+  moduleType?: 'LESSON_AND_PRACTICE' | 'RESOURCE_GUIDED_PRACTICE'
+  contentType?: string
+  contentVersion?: string
+  reviewStatus?: 'NEEDS_EXPERT_REVIEW' | 'APPROVED' | 'REJECTED'
+  reviewedBy?: string | null
+  reviewedAt?: string | null
+  learningContentId?: string
 }
 
 export interface QuizQuestionModel {
@@ -318,6 +450,7 @@ export interface AssessmentBlueprintModel {
 
 export interface LearningOutcomeCohort {
   id: string
+  cohortSnapshotId?: string
   cohortName: string
   department: string
   targetRole: string
@@ -326,7 +459,7 @@ export interface LearningOutcomeCohort {
   completionRate: number
   gapClosureRate: number
   velocityTrend: string
-  status: 'Exceeding' | 'On Track' | 'Attention'
+  status: 'Exceeding' | 'On Track' | 'Behind Pace' | 'Attention'
 }
 
 export interface SkillAcquisitionMetric {
@@ -334,7 +467,7 @@ export interface SkillAcquisitionMetric {
   skillName: string
   masteryRate: number
   avgAttemptsToPass: number
-  difficultyTag: 'High Velocity' | 'Standard' | 'Bottleneck'
+  difficultyTag: 'Exceeding' | 'On Track' | 'Behind Pace'
 }
 
 // ----------------------------------------------------
@@ -727,6 +860,7 @@ export const INITIAL_PROVENANCE_LEDGER: ProvenanceRecord[] = [
 export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   {
     id: 'coh-01',
+    cohortSnapshotId: 'CS-2026-Q1-01',
     cohortName: 'Q1 AI Architecture Onboarding Cohort',
     department: 'Machine Learning & Cognitive Architecture',
     targetRole: 'AI Knowledge Architect',
@@ -739,6 +873,7 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   },
   {
     id: 'coh-02',
+    cohortSnapshotId: 'CS-2026-Q1-02',
     cohortName: 'Platform Data Engineers Up-skilling',
     department: 'Platform Engineering',
     targetRole: 'Senior MLOps & Graph Systems Engineer',
@@ -751,6 +886,7 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   },
   {
     id: 'coh-03',
+    cohortSnapshotId: 'CS-2026-Q1-03',
     cohortName: 'Enterprise Data Analysts Cross-Skilling',
     department: 'Data Analytics & BI',
     targetRole: 'AI Knowledge Architect',
@@ -759,14 +895,17 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
     completionRate: 58.0,
     gapClosureRate: 42.5,
     velocityTrend: '-3.1% vs Q4',
-    status: 'Attention',
+    status: 'Behind Pace',
   },
 ]
 
 export const SKILL_ACQUISITION_METRICS: SkillAcquisitionMetric[] = [
-  { skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL', masteryRate: 92, avgAttemptsToPass: 1.3, difficultyTag: 'High Velocity' },
-  { skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL', masteryRate: 84, avgAttemptsToPass: 1.8, difficultyTag: 'Standard' },
-  { skillCode: 'SKILL-EMB-03', skillName: 'Node2Vec Embeddings', masteryRate: 78, avgAttemptsToPass: 2.1, difficultyTag: 'Standard' },
-  { skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', masteryRate: 63, avgAttemptsToPass: 3.4, difficultyTag: 'Bottleneck' },
-  { skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search', masteryRate: 71, avgAttemptsToPass: 2.4, difficultyTag: 'Standard' },
+  { skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL', masteryRate: 92, avgAttemptsToPass: 1.3, difficultyTag: 'Exceeding' },
+  { skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL', masteryRate: 84, avgAttemptsToPass: 1.8, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-EMB-03', skillName: 'Node2Vec Embeddings', masteryRate: 78, avgAttemptsToPass: 2.1, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', masteryRate: 63, avgAttemptsToPass: 3.4, difficultyTag: 'Behind Pace' },
+  { skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search', masteryRate: 71, avgAttemptsToPass: 2.4, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-DKT-06', skillName: 'Dynamic Knowledge Tracing & Pedagogy', masteryRate: 59, avgAttemptsToPass: 3.6, difficultyTag: 'Behind Pace' },
+  { skillCode: 'SKILL-ATTN-07', skillName: 'Multi-Head Attention & Transformers', masteryRate: 88, avgAttemptsToPass: 1.4, difficultyTag: 'Exceeding' },
+  { skillCode: 'SKILL-PROMPT-08', skillName: 'Prompt Engineering & Context Injection', masteryRate: 82, avgAttemptsToPass: 1.9, difficultyTag: 'On Track' },
 ]

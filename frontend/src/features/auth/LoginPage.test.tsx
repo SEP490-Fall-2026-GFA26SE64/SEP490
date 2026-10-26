@@ -42,22 +42,22 @@ describe('LoginPage Guest Sign-Up Button', () => {
   it.each([['Employee', 'employee-a'], ['L&D Manager', 'ld'], ['Admin', 'admin']])('RB16 %s waits for server session before storage/navigation, failed session stays put', async (account, persona) => {
     let resolve!: (value: boolean) => void
     demo.establish.mockImplementation(() => new Promise<boolean>(done => { resolve = done }))
-    renderLoginPage(); fireEvent.click(screen.getByRole('button', { name: account, exact: true }))
+    renderLoginPage(); fireEvent.click(screen.getByRole('button', { name: account }))
     const write = vi.spyOn(Storage.prototype, 'setItem')
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(demo.establish).toHaveBeenCalledWith(persona); expect(write).not.toHaveBeenCalled()
     expect((screen.getByRole('button', { name: 'Signing in...' }) as HTMLButtonElement).disabled).toBe(true)
     await act(async () => resolve(false))
     expect(localStorage.getItem('auth_user')).toBeNull()
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign in', exact: true })).toBeTruthy())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy())
   })
   it('RB16 unknown demo account cannot select a persona or persist shell identity', () => {
     renderLoginPage(); fireEvent.change(screen.getByPlaceholderText('Enter your email'), { target: { value: 'employee-in-url@example.com' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(demo.establish).not.toHaveBeenCalled(); expect(localStorage.getItem('active_actor')).toBeNull()
   })
   it('RB16 flag-off does not call local demo session endpoint', async () => {
-    demo.enabled = false; renderLoginPage(); fireEvent.click(screen.getByRole('button', { name: 'Sign in', exact: true }))
+    demo.enabled = false; renderLoginPage(); fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     await waitFor(() => expect(localStorage.getItem('active_actor')).toBe('employee'))
     expect(demo.establish).not.toHaveBeenCalled()
   })

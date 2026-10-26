@@ -119,11 +119,11 @@ export function ActiveTargetRoleSummary() {
             </div>
             {!isExpanded && (
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                <span className="font-semibold text-primary">{roleSnapshot.code}</span>
+                <span className="font-semibold text-primary font-mono">{roleSnapshot.code}</span>
                 <span>•</span>
-                <span className="font-medium text-foreground">{roleSnapshot.track}</span>
+                <span className="font-medium text-foreground">Junior · Middle · Senior Tiers</span>
                 <span>•</span>
-                <span>Seniority: {roleSnapshot.seniority}</span>
+                <span>{roleSnapshot.requirementCount ?? 0} Micro-skills</span>
               </div>
             )}
           </div>
@@ -157,15 +157,15 @@ export function ActiveTargetRoleSummary() {
         <CardContent className="p-4 sm:p-5 space-y-3">
           <div className="grid gap-4 text-xs sm:grid-cols-3">
             <div>
-              <p className="text-muted-foreground">Track</p>
-              <p className="mt-1 font-semibold text-foreground">{roleSnapshot.track}</p>
+              <p className="text-muted-foreground font-semibold">Standard Calibration</p>
+              <p className="mt-1 font-semibold text-foreground">Junior · Middle · Senior</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Seniority</p>
-              <p className="mt-1 font-semibold text-foreground">{roleSnapshot.seniority}</p>
+              <p className="text-muted-foreground font-semibold">Curriculum Scope</p>
+              <p className="mt-1 font-semibold text-foreground">{roleSnapshot.requirementCount ?? 0} Micro-skills</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Selected</p>
+              <p className="text-muted-foreground font-semibold">Selected</p>
               <p className="mt-1 font-semibold text-foreground">
                 {selectedAtFormatter.format(new Date(selection.data.selectedAt))}
               </p>

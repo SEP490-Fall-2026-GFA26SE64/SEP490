@@ -31,6 +31,13 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import {
+  getStoredLearningContents,
+  approveContentPackage,
+  rejectContentPackage,
+  subscribeToLearningContents,
+  type LearningContentPackage,
+} from '../../../shared/stores/learningContentStore'
 
 export interface SubmissionItem {
   id: string
@@ -44,56 +51,21 @@ export interface SubmissionItem {
   microSkillsMapped: string[]
   itemDetails: string
   revisionNotes?: string
+  rawContentPkg?: LearningContentPackage
 }
 
 const INITIAL_SUBMISSIONS: SubmissionItem[] = [
-  {
-    id: 'sub-01',
-    code: 'MOD-004',
-    title: 'Graph Neural Networks & Relational Inductive Biases',
-    type: 'module',
-    occupation: 'Software Developers (15-1252.00)',
-    submittedBy: 'Dr. Sarah Chen',
-    submittedAt: '2026-10-13 16:30',
-    status: 'PENDING_REVIEW',
-    microSkillsMapped: ['MS-004 (Graph Neural Networks)', 'MS-007 (Relational Inductive Biases)'],
-    itemDetails: '18 Interactive exercises, 1 Capstone coding notebook.',
-  },
   {
     id: 'sub-02',
     code: 'ASMT-009',
     title: 'Dynamic Knowledge Tracing Assessment Blueprint',
     type: 'assessment',
-    occupation: 'Software Developers (15-1252.00)',
+    occupation: 'Software Developers',
     submittedBy: 'Chen Wei',
     submittedAt: '2026-10-13 14:15',
     status: 'PENDING_REVIEW',
     microSkillsMapped: ['MS-008 (DKT Modeling)', 'MS-002 (Knowledge State Tracking)'],
     itemDetails: '12 MCQ Questions, 3 Difficulty Tiers, 80% Mastery Threshold.',
-  },
-  {
-    id: 'sub-03',
-    code: 'MOD-005',
-    title: 'High-Concurrency Outbox Pattern in Spring Boot',
-    type: 'module',
-    occupation: 'Computer Systems Engineers/Architects (15-1299.08)',
-    submittedBy: 'Chen Wei',
-    submittedAt: '2026-10-12 11:20',
-    status: 'PENDING_REVIEW',
-    microSkillsMapped: ['MS-012 (Transactional Outbox)', 'MS-015 (Hexagonal Architecture)'],
-    itemDetails: '4 Lessons, 90 mins total duration, 1 integration test verification step.',
-  },
-  {
-    id: 'sub-04',
-    code: 'MOD-001',
-    title: 'Foundations of Knowledge Graphs & Cypher Querying',
-    type: 'module',
-    occupation: 'Database Architects (15-1243.00)',
-    submittedBy: 'Dr. Sarah Chen',
-    submittedAt: '2026-10-10 09:00',
-    status: 'APPROVED',
-    microSkillsMapped: ['MS-001 (Graph Theory Basics)', 'MS-003 (Cypher Fundamentals)'],
-    itemDetails: 'Instructional module approved for enterprise onboarding pathways.',
   },
 ]
 
@@ -101,7 +73,16 @@ export function ContentApprovalQueuePage() {
   const { toast } = useToast()
 
   const [activeTab, setActiveTab] = React.useState<'offerings' | 'baseline'>('offerings')
-  const [submissions, setSubmissions] = React.useState<SubmissionItem[]>(INITIAL_SUBMISSIONS)
+  const [storeContents, setStoreContents] = React.useState<LearningContentPackage[]>(() =>
+    getStoredLearningContents()
+  )
+
+  React.useEffect(() => {
+    return subscribeToLearningContents(() => {
+      setStoreContents(getStoredLearningContents())
+    })
+  }, [])
+
   const [searchQuery, setSearchQuery] = React.useState('')
   const [typeFilter, setTypeFilter] = React.useState<string>('ALL')
   const [statusFilter, setStatusFilter] = React.useState<string>('ALL')
@@ -117,6 +98,35 @@ export function ContentApprovalQueuePage() {
   const [baselineSelectionMode, setBaselineSelectionMode] = React.useState('ADAPTIVE_DIAGNOSTIC')
   const [isSavingBaseline, setIsSavingBaseline] = React.useState(false)
 
+  // Map store contents into submission items
+  const submissions: SubmissionItem[] = React.useMemo(() => {
+    const fromStore: SubmissionItem[] = storeContents.map((pkg) => {
+      let st: SubmissionItem['status'] = 'PENDING_REVIEW'
+      if (pkg.status === 'APPROVED') st = 'APPROVED'
+      else if (pkg.status === 'REVISION_REQUESTED') st = 'REVISION_REQUESTED'
+      else if (pkg.status === 'DRAFT') st = 'PENDING_REVIEW' // allow review if listed
+
+      return {
+        id: pkg.id,
+        code: pkg.code,
+        title: pkg.title,
+        type: 'module' as const,
+        occupation: pkg.occupation || 'Software Developers',
+        submittedBy: pkg.submittedBy || 'Domain Expert',
+        submittedAt: pkg.submittedAt
+          ? pkg.submittedAt.slice(0, 16).replace('T', ' ')
+          : pkg.updatedAt.slice(0, 10),
+        status: st,
+        microSkillsMapped: [`${pkg.skillCode} (${pkg.skillName})`],
+        itemDetails: `${pkg.lessons.length} lessons, ${pkg.estimatedDuration} mins total duration. Full interactive reading sections and video lectures.`,
+        revisionNotes: pkg.feedbackNotes,
+        rawContentPkg: pkg,
+      }
+    })
+
+    return [...fromStore, ...INITIAL_SUBMISSIONS]
+  }, [storeContents])
+
   // Filter submissions
   const filteredSubmissions = submissions.filter((item) => {
     const matchesSearch =
@@ -131,9 +141,8 @@ export function ContentApprovalQueuePage() {
 
   // Approve Offering
   const handleApprove = (item: SubmissionItem) => {
-    setSubmissions((prev) =>
-      prev.map((s) => (s.id === item.id ? { ...s, status: 'APPROVED' } : s))
-    )
+    approveContentPackage(item.id, 'Marcus Vance (L&D Manager)')
+    setStoreContents(getStoredLearningContents())
     toast({
       title: 'Learning Offering Approved',
       description: `${item.title} (${item.code}) is approved for organizational use in pathways and individual learning.`,
@@ -152,13 +161,12 @@ export function ContentApprovalQueuePage() {
   const handleSubmitRevision = () => {
     if (!selectedSubmission || !revisionFeedback.trim()) return
 
-    setSubmissions((prev) =>
-      prev.map((s) =>
-        s.id === selectedSubmission.id
-          ? { ...s, status: 'REVISION_REQUESTED', revisionNotes: revisionFeedback.trim() }
-          : s
-      )
+    rejectContentPackage(
+      selectedSubmission.id,
+      'Marcus Vance (L&D Manager)',
+      revisionFeedback.trim()
     )
+    setStoreContents(getStoredLearningContents())
 
     toast({
       title: 'Revision Feedback Returned',
@@ -197,13 +205,13 @@ export function ContentApprovalQueuePage() {
     switch (type) {
       case 'module':
         return (
-          <Badge variant="primary" className="text-[10px] font-semibold uppercase tracking-wider">
+          <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider">
             Module
           </Badge>
         )
       case 'assessment':
         return (
-          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider bg-secondary/40 text-primary border-primary/30">
+          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">
             Assessment
           </Badge>
         )
@@ -400,28 +408,31 @@ export function ContentApprovalQueuePage() {
                               {getTypeBadge(item.type)}
                             </td>
                             <td className="py-3 px-3">
-                              <div className="text-xs font-semibold text-foreground">{item.occupation}</div>
+                              <div className="text-xs font-semibold text-foreground">
+                                {item.occupation.replace(/\s*\(\d{2}-\d{4}\.\d{2}\)/g, '')}
+                              </div>
                               <div className="text-[11px] text-muted-foreground mt-0.5">By {item.submittedBy}</div>
                             </td>
                             <td className="py-3 px-3">
-                              {item.microSkillsMapped.length > 0 && (
+                              {item.microSkillsMapped.length > 0 ? (
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span
-                                    className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/70 text-foreground font-mono border border-primary/20 font-medium inline-flex items-center gap-1 shadow-2xs"
+                                    className="text-xs font-medium text-foreground"
                                     title={item.microSkillsMapped[0]}
                                   >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
                                     {item.microSkillsMapped[0]}
                                   </span>
                                   {item.microSkillsMapped.length > 1 && (
                                     <span
-                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/25 cursor-default shadow-2xs"
+                                      className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/20 cursor-default"
                                       title={`+${item.microSkillsMapped.length - 1} more: ${item.microSkillsMapped.slice(1).join(', ')}`}
                                     >
                                       +{item.microSkillsMapped.length - 1}
                                     </span>
                                   )}
                                 </div>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground italic">None</span>
                               )}
                             </td>
                             <td className="py-3 px-3">
@@ -557,12 +568,19 @@ export function ContentApprovalQueuePage() {
       {/* REVISION FEEDBACK DIALOG */}
       <Dialog open={isRevisionModalOpen} onOpenChange={setIsRevisionModalOpen} className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-warning" />
-            Request Revision for {selectedSubmission?.code}
-          </DialogTitle>
+          <div className="flex items-center justify-between pr-4">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              {selectedSubmission?.title || 'Request Revision'}
+            </DialogTitle>
+            {selectedSubmission && (
+              <Badge variant="warning">
+                REVISION
+              </Badge>
+            )}
+          </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Provide actionable curricular feedback for {selectedSubmission?.submittedBy}.
+            Provide actionable curricular feedback for {selectedSubmission?.submittedBy} ({selectedSubmission?.code}).
           </DialogDescription>
         </DialogHeader>
 
@@ -606,7 +624,7 @@ export function ContentApprovalQueuePage() {
               <div className="flex items-center justify-between gap-3 pr-6">
                 <DialogTitle className="text-base font-bold flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-primary" />
-                  View Details
+                  {viewingSubmission.title}
                 </DialogTitle>
                 <div className="flex items-center gap-1.5">
                   {getTypeBadge(viewingSubmission.type)}
@@ -614,7 +632,7 @@ export function ContentApprovalQueuePage() {
                 </div>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
-                <strong className="text-foreground">{viewingSubmission.title}</strong> • Code: {viewingSubmission.code}
+                Review curricular submission details, structural attributes, and pedagogical criteria.
               </DialogDescription>
             </DialogHeader>
 
@@ -633,7 +651,9 @@ export function ContentApprovalQueuePage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div className="p-2.5 rounded-lg border border-border bg-background">
                   <span className="text-[11px] text-muted-foreground block">Occupation</span>
-                  <strong className="text-foreground text-xs">{viewingSubmission.occupation}</strong>
+                  <strong className="text-foreground text-xs">
+                    {viewingSubmission.occupation.replace(/\s*\(\d{2}-\d{4}\.\d{2}\)/g, '')}
+                  </strong>
                 </div>
                 <div className="p-2.5 rounded-lg border border-border bg-background">
                   <span className="text-[11px] text-muted-foreground block">Submitted By</span>
@@ -670,6 +690,27 @@ export function ContentApprovalQueuePage() {
                   <p>{viewingSubmission.revisionNotes}</p>
                 </div>
               )}
+
+              {/* Interactive Lesson Preview CTA */}
+              {viewingSubmission.type === 'module' && (
+                <div className="pt-2">
+                  <a
+                    href={`/employee/modules/${viewingSubmission.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-center gap-2 font-semibold text-primary border-primary/30 hover:bg-secondary/50 text-xs py-2"
+                    >
+                      <BookOpen size={14} className="text-primary" />
+                      <span>Preview Full Interactive Lessons in Reader</span>
+                    </Button>
+                  </a>
+                </div>
+              )}
             </div>
 
             <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-border pt-3">
@@ -690,7 +731,7 @@ export function ContentApprovalQueuePage() {
                     leftIcon={<ThumbsDown size={14} />}
                     className="font-semibold shadow-2xs"
                   >
-                    Reject / Request Revision
+                    Reject
                   </Button>
                   <Button
                     variant="primary"
@@ -703,7 +744,7 @@ export function ContentApprovalQueuePage() {
                     leftIcon={<ThumbsUp size={14} />}
                     className="font-semibold shadow-2xs"
                   >
-                    Approve Offering
+                    Approve
                   </Button>
                 </div>
               )}

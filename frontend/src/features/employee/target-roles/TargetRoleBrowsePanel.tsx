@@ -418,11 +418,11 @@ export function TargetRoleBrowsePanel() {
                   )}
                 >
                   <div className="p-5 space-y-2.5">
-                    {/* Badges: Track & Seniority */}
+                    {/* Badges: Role Code and Status */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <Badge variant="secondary" className="text-[11px] font-semibold text-primary truncate max-w-[170px]">
-                          {role.track === 'PROFESSIONAL' ? 'Professional' : role.track === 'MANAGEMENT' ? 'Management' : role.track}
+                        <Badge variant="secondary" className="font-mono text-[11px] font-semibold text-primary truncate max-w-[170px]">
+                          {role.code}
                         </Badge>
                         {sortBy === 'recommendation' && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
@@ -445,18 +445,13 @@ export function TargetRoleBrowsePanel() {
                             Active role
                           </Badge>
                         ) : null}
-                        <span
-                          className={cn(
-                            "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                            role.seniority === 'P1' || role.seniority === 'P2'
-                              ? 'bg-success/10 text-success'
-                              : role.seniority === 'P3' || role.seniority === 'P4'
-                              ? 'bg-warning/10 text-warning'
-                              : 'bg-primary/10 text-primary'
-                          )}
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] font-mono font-bold text-muted-foreground border-border bg-muted/40"
+                          title="Junior · Middle · Senior tiers"
                         >
-                          {role.seniority}
-                        </span>
+                          J · M · S
+                        </Badge>
                       </div>
                     </div>
 
