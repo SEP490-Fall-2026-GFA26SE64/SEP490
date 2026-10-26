@@ -1,6 +1,6 @@
 # Ontology — framework, fields and data provenance (0.9.0)
 
-Updated 14 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
+Updated 26 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
 
 ## Files and framework
 
@@ -465,6 +465,6 @@ A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A
 
 ## Release and runtime boundary
 
-Excel, JSON, import validation, schema and diagram now describe 0.9.0. Historic migrations V1–V3 remain immutable; the backend adds a forward schema migration to retire the Course constraint. Existing legacy role/skill APIs still use their earlier JobDomain/MacroCompetency contract and must not be pointed at this isolated catalog until their domain/API and cross-store references are converted. The legacy development seeder rejects occupation-based catalogs to prevent mixing snapshots. This release does not rewrite learner results or a running database.
+Excel, JSON, import validation, schema and diagram describe 0.9.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
 
 Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed.json supplies active graph data.

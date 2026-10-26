@@ -42,3 +42,7 @@ REQ-034-F01: replace comma-separated Dataset seeds with the numeric Datasets per
 ## Merge compatibility — 2026-10-26
 
 The merged baseline branch numbers the unchanged Research SQL as V27/V28. Existing Research-only V8/V9 databases require explicit migration-history reconciliation before startup. The feature/API/protocol is unchanged. See [merge verification and manual checks](../../testing/system/REQ-001-002-034-merge-resolution.md).
+
+## Local startup recovery — 2026-10-26
+
+An old Research V8/V9 database cannot start the merged baseline/RQ2 branch directly. [Local setup](../../research/RQ2/LOCAL_SETUP.md) provides the compatible separate workspace and Admin login steps; [verified recovery](../../testing/system/REQ-034-admin-login-recovery.md) records tests and data preservation. No authentication,ontology or measurement contract changed.

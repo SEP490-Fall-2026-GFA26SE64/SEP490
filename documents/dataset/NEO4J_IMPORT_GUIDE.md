@@ -169,4 +169,8 @@ The grouped result includes a Module once with all matched gaps. Multiple rows f
 - Steps: inspect LearningModules and TEACHES sheets, run entity/relationship counts and both orphan queries, then run the candidate query with an actual Level and confirmed gap IDs.
 - Expected: 85 Modules, 79 Skills and 181 TEACHES pairs; 833 total nodes and 4,638 relationships; no orphan rows. Some Modules teach multiple skills and some skills have multiple providers. Course and retired assessment/profile fields are absent.
 
-Current automated evidence: local validation/dry-run and ten regression tests pass; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.
+Earlier dataset-only evidence: local validation/dry-run and ten regression tests passed; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.
+
+## Baseline compatibility
+
+The local Compose baseline seed uses the [v09 envelope](question-bank/15-1212.00/ONTOLOGY_V09.md). Original v08 source/envelope/calibration pins are archived rather than repinned; all135 question item identities/content remain unchanged. Existing populated v08 databases require an explicit reviewed cutover, not an automatic overwrite or volume reset. [Executed REQ-016 checks and manual procedures](../testing/system/REQ-016-many-to-many-teaching.md).

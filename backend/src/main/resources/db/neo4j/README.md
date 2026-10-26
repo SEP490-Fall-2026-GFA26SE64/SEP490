@@ -1,5 +1,4 @@
-# Neo4j ontology 0.9.0
-
+# Neo4j ontology 0.9.0 — many-to-many teaching
 
 User-authorized local cutover on 2026-10-22 replaced the backed-up Backend P3/Platform P4 fixture with the official documents/dataset/import/ontology_seed.json:827 nodes/4536 relationships. Six official node-ID uniqueness constraints are created by that package's importer. No SchemaMigration/JobDomain/MacroCompetency/Course seed is active.
 
@@ -13,6 +12,8 @@ The active ontology contract is defined in `documents/neo4j_schema.md` and `docu
 
 Historical V1–V3 graph scripts are preserved in test scope: their checksums may already be recorded in a database. V4 removes the Course ID constraint without deleting any data. Production startup does not run these historical graph migrations. Legacy JobDomain/MacroCompetency constraints remain for the existing legacy API; they do not define the current ontology.
 
-Use `documents/dataset/import/import_neo4j.py` for a validated import into an empty isolated graph. The importer does not overwrite an existing legacy/v0.7 database. It validates module/skill teaching coverage and duplicate pairs, prerequisites, fields and source-backed occupation values. A future write API must preserve these invariants in each transaction.
+Use `documents/dataset/import/import_neo4j.py` for a validated import into an empty isolated graph. The importer does not overwrite an existing legacy/v0.7 database. It validates module/skill coverage and unique teaching pairs, prerequisites, fields and source-backed occupation values. A future write API must preserve these invariants in each transaction.
 
 Legacy catalog APIs and cross-store role references still require a separate domain migration before operating on the new catalog. The development fixture rejects Occupation-based graphs. Do not run the legacy application against the isolated review dataset. Historical assessment evidence must remain attached to its original release; copying scores to the new module IDs is not a valid migration.
+
+2026-10-26: the checked-in source is now v0.9.0 (833 nodes/4638 relationships, 85 Modules, 79 skills, 181 TEACHES mappings). The 22 October cutover above is historical v0.8 evidence. Do not overlay existing data or alter historical learner pins; the importer accepts only empty or exactly identical graphs.

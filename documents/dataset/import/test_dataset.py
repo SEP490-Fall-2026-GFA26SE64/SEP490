@@ -29,6 +29,43 @@ class CatalogContractTest(unittest.TestCase):
         self.assertTrue(any(n>1 for n in Counter(e['fromId'] for e in edges).values()))
         self.assertTrue(any(n>1 for n in Counter(e['toId'] for e in edges).values()))
 
+    def test_teaching_pairs_match_retained_source_evidence(self):
+        manifest=json.loads((SEED.parent.parent/'sources/local_review/module_skill_mapping_v09.json').read_text())
+        expected={(p['moduleId'],p['skillId']) for p in manifest['teachingPairs']}
+        actual={(e['fromId'],e['toId']) for e in self.data['relationships'] if e['type']=='TEACHES'}
+        self.assertEqual(expected,actual)
+
+    def test_all_architecture_fields_are_present_and_populated(self):
+        common={'id','version','status','reviewStatus','reviewedBy','reviewedAt'}
+        fields={
+            'Occupations':{'code','name','jobZone',*('interest'+n for n in ['Realistic','Investigative','Artistic','Social','Enterprising','Conventional'])},
+            'TargetRoles':{'code','name','scope','occupationId'},
+            'Levels':{'code','name','rank','context','attainmentRule','targetRoleId'},
+            'Competencies':{'name','description','attainmentRule','levelId'},
+            'MicroSkills':{'name','definition'},
+            'LearningModules':{'title','moduleType','contentUri','contentType','contentVersion'},
+        }
+        for section,properties in fields.items():
+            for row in self.data[section]:
+                self.assertEqual(common|properties,set(row),row['id'])
+                for key,value in row.items():
+                    if key in {'reviewedBy','reviewedAt'}:
+                        self.assertIsNone(value)
+                    else:
+                        self.assertIsNotNone(value,(row['id'],key))
+                        if isinstance(value,str):self.assertTrue(value.strip(),(row['id'],key))
+        for edge in self.data['relationships']:
+            properties={'type','fromId','toId'}
+            if edge['type']=='REQUIRES_SKILL':properties|={'requiredScore','isMandatory'}
+            if edge['type']=='HAS_SKILL_PREREQUISITE':properties|={'requiredScore'}
+            self.assertEqual(common|properties,set(edge),edge['id'])
+
+    def test_nonmodule_catalog_business_data_is_preserved(self):
+        previous=json.loads((SEED.parent.parent/'question-bank/15-1212.00/historical/ontology_seed-v08.json').read_text())
+        for section in ['Occupations','TargetRoles','Levels','Competencies','MicroSkills']:
+            without_version=lambda rows:sorted(({k:v for k,v in r.items() if k!='version'} for r in rows),key=lambda r:r['id'])
+            self.assertEqual(without_version(previous[section]),without_version(self.data[section]))
+
     def test_module_without_skills_rejected(self):
         from collections import Counter
         def mutate(d):

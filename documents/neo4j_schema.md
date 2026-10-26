@@ -6,7 +6,7 @@ Catalog uses current string Role/Occupation IDs and separate Levels. PostgreSQL 
 
 ![Sơ đồ ontology0.9.0](diagrams/neo4j.svg)
 
-[PlantUML](diagrams/neo4j.puml) · [Nguồn dataset](dataset/ONTOLOGY.md) · [Import guide](dataset/NEO4J_IMPORT_GUIDE.md)
+[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
 
 ## 1. Cấu trúc tổng quát
 
@@ -14,7 +14,16 @@ Catalog uses current string Role/Occupation IDs and separate Levels. PostgreSQL 
 
 Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.9.0.
 
-The ontology diagram above shows the complete relationship set; its PlantUML source is linked beside the image.
+```mermaid
+flowchart LR
+ O[Occupation] -->|HAS_ROLE| R[TargetRole]
+ R -->|HAS_LEVEL| L[Level]
+ L -->|HAS_COMPETENCY| C[Competency]
+ C -->|HAS_SKILL| S[MicroSkill]
+ L -->|REQUIRES_SKILL| S
+ M[LearningModule] -->|TEACHES N–N| S
+ S -->|HAS_SKILL_PREREQUISITE| S
+```
 
 | Relationship | Hướng | Ý nghĩa |
 |---|---|---|
@@ -76,6 +85,7 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 | `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
 | `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
 | `scope` | String | Phạm vi công việc của role: làm gì, phụ trách phần nào. Đây là mô tả do nhóm tổng hợp theo nguồn và cần chuyên gia xác nhận. |
+
 
 `occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
 

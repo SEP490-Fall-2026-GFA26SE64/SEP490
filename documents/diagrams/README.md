@@ -41,4 +41,4 @@ java -jar path/to/plantuml-1.2025.10.jar -failfast2 -tsvg $sources.FullName
 
 The generator and PowerShell wrapper do not start containers, migrate, seed or reset data. Unknown/missing/duplicate groups and migration/source drift stop generation. A saved snapshot is dated evidence, not a fresh live verification. Rendering is local; no schema is uploaded to a third-party service. PostgreSQL source capture V23 and all prior artifacts remain recoverable in the synchronization backup; dated evidence is not relabeled.
 
-The ontology source/SVG/PNG use the 0.9.0 exports, with 181 TEACHES mappings between 85 Modules and 79 skills. The 23 October PostgreSQL rendering/metadata verification above remains dated evidence and does not verify the later ontology deployment.
+The ontology source/SVG/PNG now use the matching v0.9.0 exports with many-to-many TEACHES (2026-10-26). Dated V26 metadata/rendering verification above remains historical evidence, not a new live database verification.

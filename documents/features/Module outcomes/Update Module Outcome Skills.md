@@ -32,3 +32,7 @@ Modify an authorized module's outcome mappings, including adding, changing, or r
 ## Acceptance Baseline
 
 An outcome update does not silently reinterpret the skill evidence from a previous assessment attempt.
+
+## Confirmed teaching cardinality — 2026-10-26
+
+User approved many-to-many TEACHES. Inputs are one Module and a non-empty set of existing MicroSkill IDs; one skill may belong to several Modules. Preserve every architecture-defined node/edge field and review state; reject duplicate pairs, wrong endpoints and loss of required teaching coverage. Suitable providers are selected for gaps and role/Level context; do not require all alternatives or infer mastery from a Module completion. No learner evidence, historical pins or assessment item content is rewritten by this catalog change. Publication/authorization/version transition policy remains open. See [test evidence and manual checks](../../testing/system/REQ-016-many-to-many-teaching.md).

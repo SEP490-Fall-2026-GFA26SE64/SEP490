@@ -13,7 +13,7 @@ Adapt-Learn-Graph manages employee competencies and personalized learning within
 
 The System Overview controls current scope and responsibilities. Older requirements, clarification logs, registration material, and test results below are historical where they conflict. Architecture and schema documents remain the authority for existing technical fields; this update does not change code or databases.
 
-**Ontology 0.9.0:** Module–Skill teaching is many-to-many: one Module can teach several skills and one skill can have several teaching Modules. Course is absent from the current ontology. Recommendation selects suitable Modules for actual gaps; assessment success remains skill-specific.
+**Ontology 0.9.0 (2026-10-26):** Module–Skill teaching is many-to-many. Select suitable Modules for skill gaps; one Module can address several skills and a skill can have alternative Modules. Assessment evidence remains skill-specific; Course is absent.
 
 ## Actors and Boundaries
 
