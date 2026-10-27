@@ -169,42 +169,21 @@ The grouped result includes a Module once with all matched gaps. Multiple rows f
 - Steps: inspect LearningModules and TEACHES sheets, run entity/relationship counts and both orphan queries, then run the candidate query with an actual Level and confirmed gap IDs.
 - Expected: 85 Modules, 79 Skills and 181 TEACHES pairs; 833 total nodes and 4,638 relationships; no orphan rows. Some Modules teach multiple skills and some skills have multiple providers. Course and retired assessment/profile fields are absent.
 
-Current automated evidence: local validation/dry-run and 24 regression tests pass; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.
+Current automated evidence: local validation/dry-run and 25 regression tests pass; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.
 
 ## Baseline compatibility
 
 The local Compose baseline seed uses the [v09 envelope](question-bank/15-1212.00/ONTOLOGY_V09.md). Original v08 source/envelope/calibration pins are archived rather than repinned; all135 question item identities/content remain unchanged. Existing populated v08 databases require an explicit reviewed cutover, not an automatic overwrite or volume reset. [Executed REQ-016 checks and manual procedures](../testing/system/REQ-016-many-to-many-teaching.md).
 
-## OC and module metadata inspection (v0.10)
-
-The v0.10 review seed is import/ontology_seed-v010.json. import/ontology_seed.json is intentionally retained as the byte-pinned v0.9 Compose fixture. The isolated importer defaults to v0.10; no runtime cutover is performed.
-
-Run in the isolated review Browser:
-
-```cypher
-MATCH (m:LearningModule)-[t:TEACHES]->(s:MicroSkill)
-RETURN m.id, m.duration, m.price, s.id, t.outcomeCoverage AS OC
-ORDER BY m.id, OC DESC;
-```
-
-Expected: 181 mappings with finite independent OC in [0,1], 85 Modules with positive duration in minutes and positive price in VND. No sum-of-OC validation. OC now varies per Module–Skill pair; the same MS-DE06 has 0.2 in MODEL-01 and 0.5 in QUAL-01 (full Module IDs in the sample manifest). Values remain illustrative, not calibrated. Duration/price are differentiated estimates: 150–915 minutes and 150,000–1,560,000 VND, pending expert review; see [estimation method](MODULE_EFFORT_PRICE.md).
-
-```cypher
-MATCH (l:Level) WHERE l.context IS NOT NULL RETURN count(l) AS unexpectedContext;
-```
-
-Expected: 0. Check the Levels, LearningModules and TEACHES workbook sheets against the new JSON seed. Runtime APIs and the full Compose/Playwright journey remain v0.9 and are outside this design update.
-
-
-## Compare OC for the same skill across providers
-
-Run on the isolated v0.10 review graph:
+## Inspect instructionLevel (text)
 
 ```cypher
 MATCH (m:LearningModule)-[t:TEACHES]->(s:MicroSkill {id:'MS-DE06'})
-RETURN m.id AS moduleId, m.title AS moduleTitle,
-       s.id AS skillId, s.name AS skillName, t.outcomeCoverage AS OC
-ORDER BY OC, moduleId;
+RETURN m.id, m.title, s.id, s.name, t.instructionLevel,
+       m.duration, m.price
+ORDER BY m.id;
 ```
 
-Expected: MOD-DE-J-MODEL-01 has OC 0.2; MOD-DE-J-QUAL-01 has OC 0.5 for the same MS-DE06. Other providers retain their own per-pair OC. No skill-global OC is assigned. Inspect Outcome Coverage in Excel for the same comparison without a database. This isolated readback is a manual procedure, not an executed runtime migration.
+Expected: MOD-DE-J-MODEL-01 has FOUNDATIONAL; MOD-DE-J-QUAL-01 has INTERMEDIATE. The same skill retains independent values across providers. All 181 TEACHES records contain only one of the three exact text values (14/80/87 by FOUNDATIONAL/INTERMEDIATE/ADVANCED). No numeric coverage property remains in the v0.10 review graph payload.
+
+Workbook: inspect TEACHES column J and the Instruction Levels comparison sheet. Local importer rejects numbers, numeric strings, unknown enum values and missing instructionLevel. [Conversion rules and manual checklist](INSTRUCTION_LEVELS.md). Existing runtime graph is not modified by editing the dataset.

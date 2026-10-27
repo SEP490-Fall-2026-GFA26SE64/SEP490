@@ -1,3 +1,5 @@
+> Historical numeric-coverage evidence. Superseded for the current text field by [instructionLevel evidence](REQ-016-instruction-level.md). Earlier run results below retain their original numeric contract.
+
 # REQ-016-F01/F02 — OC persistence verification boundary
 
 Date: 2026-10-27. New v0.10 database round-trip/Testcontainers tests: **not run**. The request updates schema, diagrams and ontology review data; production/domain/API adapters and Compose remain pinned to v0.9. Docker access from the sandbox returned permission denied. No live database was changed and earlier v0.9 integration evidence is not v0.10 acceptance.

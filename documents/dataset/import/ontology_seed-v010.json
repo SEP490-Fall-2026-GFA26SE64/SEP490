@@ -63104,7 +63104,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-ARC02-MS-ARC02",
@@ -63116,7 +63116,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-ARC03-MS-ARC03",
@@ -63128,7 +63128,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-ARC04-MS-ARC04",
@@ -63140,7 +63140,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-ARC05-MS-ARC05",
@@ -63152,7 +63152,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.25
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-ARC06-MS-ARC06",
@@ -63164,7 +63164,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.45
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-CORE01-MS-CORE01",
@@ -63176,7 +63176,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-CORE02-MS-CORE02",
@@ -63188,7 +63188,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-CORE03-MS-CORE03",
@@ -63200,7 +63200,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-CORE04-MS-CORE04",
@@ -63212,7 +63212,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.45
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-MODEL-01-MS-DE01",
@@ -63224,7 +63224,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-MODEL-01-MS-DE01",
@@ -63236,7 +63236,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-MODEL-01-MS-DE01",
@@ -63248,7 +63248,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-PIPE-01-MS-DE02",
@@ -63260,7 +63260,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-PIPE-01-MS-DE02",
@@ -63272,7 +63272,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-PIPE-01-MS-DE02",
@@ -63284,7 +63284,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-MODEL-01-MS-DE03",
@@ -63296,7 +63296,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-MODEL-01-MS-DE03",
@@ -63308,7 +63308,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-MODEL-01-MS-DE03",
@@ -63320,7 +63320,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-PIPE-01-MS-DE04",
@@ -63332,7 +63332,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-PIPE-01-MS-DE04",
@@ -63344,7 +63344,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-PIPE-01-MS-DE04",
@@ -63356,7 +63356,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-QUAL-01-MS-DE05",
@@ -63368,7 +63368,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-QUAL-01-MS-DE05",
@@ -63380,7 +63380,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-QUAL-01-MS-DE05",
@@ -63392,7 +63392,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-MODEL-01-MS-DE06",
@@ -63404,7 +63404,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.2
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-QUAL-01-MS-DE06",
@@ -63416,7 +63416,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-MODEL-01-MS-DE06",
@@ -63428,7 +63428,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-QUAL-01-MS-DE06",
@@ -63440,7 +63440,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-MODEL-01-MS-DE06",
@@ -63452,7 +63452,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.55
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-QUAL-01-MS-DE06",
@@ -63464,7 +63464,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-QUAL-01-MS-DE07",
@@ -63476,7 +63476,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-QUAL-01-MS-DE07",
@@ -63488,7 +63488,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-QUAL-01-MS-DE07",
@@ -63500,7 +63500,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-PIPE-01-MS-DE08",
@@ -63512,7 +63512,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-PIPE-01-MS-DE08",
@@ -63524,7 +63524,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-PIPE-01-MS-DE08",
@@ -63536,7 +63536,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-QUAL-02-MS-DE09",
@@ -63548,7 +63548,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-QUAL-02-MS-DE09",
@@ -63560,7 +63560,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-QUAL-02-MS-DE09",
@@ -63572,7 +63572,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-PIPE-02-MS-DE10",
@@ -63584,7 +63584,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-PIPE-02-MS-DE10",
@@ -63596,7 +63596,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-PIPE-02-MS-DE10",
@@ -63608,7 +63608,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-PIPE-02-MS-DE11",
@@ -63620,7 +63620,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-PIPE-02-MS-DE11",
@@ -63632,7 +63632,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-PIPE-02-MS-DE11",
@@ -63644,7 +63644,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-PIPE-02-MS-DE12",
@@ -63656,7 +63656,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-PIPE-02-MS-DE12",
@@ -63668,7 +63668,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-PIPE-02-MS-DE12",
@@ -63680,7 +63680,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-MODEL-02-MS-DE13",
@@ -63692,7 +63692,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-MODEL-02-MS-DE13",
@@ -63704,7 +63704,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-MODEL-02-MS-DE13",
@@ -63716,7 +63716,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-QUAL-02-MS-DE14",
@@ -63728,7 +63728,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-QUAL-02-MS-DE14",
@@ -63740,7 +63740,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-QUAL-02-MS-DE14",
@@ -63752,7 +63752,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-QUAL-02-MS-DE15",
@@ -63764,7 +63764,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-QUAL-02-MS-DE15",
@@ -63776,7 +63776,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-QUAL-02-MS-DE15",
@@ -63788,7 +63788,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-DE-J-MODEL-02-MS-DE16",
@@ -63800,7 +63800,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-M-MODEL-02-MS-DE16",
@@ -63812,7 +63812,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-DE-S-MODEL-02-MS-DE16",
@@ -63824,7 +63824,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-UI-01-MS-FS01",
@@ -63836,7 +63836,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-UI-01-MS-FS01",
@@ -63848,7 +63848,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-UI-01-MS-FS01",
@@ -63860,7 +63860,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-UI-01-MS-FS02",
@@ -63872,7 +63872,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-UI-01-MS-FS02",
@@ -63884,7 +63884,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-UI-01-MS-FS02",
@@ -63896,7 +63896,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-SERVICE-01-MS-FS03",
@@ -63908,7 +63908,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-SERVICE-01-MS-FS03",
@@ -63920,7 +63920,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-SERVICE-01-MS-FS03",
@@ -63932,7 +63932,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-SERVICE-01-MS-FS04",
@@ -63944,7 +63944,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-SERVICE-01-MS-FS04",
@@ -63956,7 +63956,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-SERVICE-01-MS-FS04",
@@ -63968,7 +63968,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-SERVICE-01-MS-FS05",
@@ -63980,7 +63980,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-SERVICE-01-MS-FS05",
@@ -63992,7 +63992,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-SERVICE-01-MS-FS05",
@@ -64004,7 +64004,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-QUALITY-01-MS-FS06",
@@ -64016,7 +64016,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-QUALITY-01-MS-FS06",
@@ -64028,7 +64028,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-QUALITY-01-MS-FS06",
@@ -64040,7 +64040,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-QUALITY-01-MS-FS07",
@@ -64052,7 +64052,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-QUALITY-01-MS-FS07",
@@ -64064,7 +64064,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-QUALITY-01-MS-FS07",
@@ -64076,7 +64076,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-AUTO-01-MS-FS07",
@@ -64088,7 +64088,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-AUTO-01-MS-FS07",
@@ -64100,7 +64100,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-AUTO-01-MS-FS07",
@@ -64112,7 +64112,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-QUALITY-01-MS-FS08",
@@ -64124,7 +64124,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-QUALITY-01-MS-FS08",
@@ -64136,7 +64136,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-QUALITY-01-MS-FS08",
@@ -64148,7 +64148,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-UI-01-MS-FS09",
@@ -64160,7 +64160,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-UI-01-MS-FS09",
@@ -64172,7 +64172,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-UI-01-MS-FS09",
@@ -64184,7 +64184,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-UI-02-MS-FS10",
@@ -64196,7 +64196,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-UI-02-MS-FS10",
@@ -64208,7 +64208,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-UI-02-MS-FS10",
@@ -64220,7 +64220,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-UI-02-MS-FS11",
@@ -64232,7 +64232,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-UI-02-MS-FS11",
@@ -64244,7 +64244,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-UI-02-MS-FS11",
@@ -64256,7 +64256,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-SERVICE-02-MS-FS12",
@@ -64268,7 +64268,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-SERVICE-02-MS-FS12",
@@ -64280,7 +64280,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-SERVICE-02-MS-FS12",
@@ -64292,7 +64292,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-SERVICE-02-MS-FS13",
@@ -64304,7 +64304,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-SERVICE-02-MS-FS13",
@@ -64316,7 +64316,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-SERVICE-02-MS-FS13",
@@ -64328,7 +64328,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-SERVICE-02-MS-FS14",
@@ -64340,7 +64340,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-SERVICE-02-MS-FS14",
@@ -64352,7 +64352,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-SERVICE-02-MS-FS14",
@@ -64364,7 +64364,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-QUALITY-02-MS-FS15",
@@ -64376,7 +64376,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-QUALITY-02-MS-FS15",
@@ -64388,7 +64388,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-QUALITY-02-MS-FS15",
@@ -64400,7 +64400,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-J-QUALITY-02-MS-FS16",
@@ -64412,7 +64412,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-FS-M-QUALITY-02-MS-FS16",
@@ -64424,7 +64424,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-FS-S-QUALITY-02-MS-FS16",
@@ -64436,7 +64436,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-READ-GOV01-MS-GOV01",
@@ -64448,7 +64448,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.25
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-GOV02-MS-GOV02",
@@ -64460,7 +64460,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-GOV03-MS-GOV03",
@@ -64472,7 +64472,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF01-MS-INF01",
@@ -64484,7 +64484,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF02-MS-INF02",
@@ -64496,7 +64496,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF03-MS-INF03",
@@ -64508,7 +64508,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF04-MS-INF04",
@@ -64520,7 +64520,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.2
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF05-MS-INF05",
@@ -64532,7 +64532,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF06-MS-INF06",
@@ -64544,7 +64544,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.45
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF07-MS-INF07",
@@ -64556,7 +64556,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-INF08-MS-INF08",
@@ -64568,7 +64568,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-DESIGN-01-MS-QA01",
@@ -64580,7 +64580,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-DESIGN-01-MS-QA01",
@@ -64592,7 +64592,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-DESIGN-01-MS-QA01",
@@ -64604,7 +64604,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-DESIGN-01-MS-QA02",
@@ -64616,7 +64616,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-DESIGN-01-MS-QA02",
@@ -64628,7 +64628,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-DESIGN-01-MS-QA02",
@@ -64640,7 +64640,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-EXEC-01-MS-QA03",
@@ -64652,7 +64652,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-EXEC-01-MS-QA03",
@@ -64664,7 +64664,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-EXEC-01-MS-QA03",
@@ -64676,7 +64676,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-EXEC-01-MS-QA04",
@@ -64688,7 +64688,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-EXEC-01-MS-QA04",
@@ -64700,7 +64700,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-EXEC-01-MS-QA04",
@@ -64712,7 +64712,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-EXEC-01-MS-QA05",
@@ -64724,7 +64724,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-EXEC-01-MS-QA05",
@@ -64736,7 +64736,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-EXEC-01-MS-QA05",
@@ -64748,7 +64748,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-AUTO-01-MS-QA06",
@@ -64760,7 +64760,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-AUTO-01-MS-QA06",
@@ -64772,7 +64772,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-AUTO-01-MS-QA06",
@@ -64784,7 +64784,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-AUTO-01-MS-QA07",
@@ -64796,7 +64796,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-AUTO-01-MS-QA07",
@@ -64808,7 +64808,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-AUTO-01-MS-QA07",
@@ -64820,7 +64820,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-DESIGN-01-MS-QA08",
@@ -64832,7 +64832,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-DESIGN-01-MS-QA08",
@@ -64844,7 +64844,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-DESIGN-01-MS-QA08",
@@ -64856,7 +64856,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-DESIGN-02-MS-QA09",
@@ -64868,7 +64868,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-DESIGN-02-MS-QA09",
@@ -64880,7 +64880,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-DESIGN-02-MS-QA09",
@@ -64892,7 +64892,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-DESIGN-02-MS-QA10",
@@ -64904,7 +64904,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-DESIGN-02-MS-QA10",
@@ -64916,7 +64916,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-DESIGN-02-MS-QA10",
@@ -64928,7 +64928,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-DESIGN-02-MS-QA11",
@@ -64940,7 +64940,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-DESIGN-02-MS-QA11",
@@ -64952,7 +64952,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.75
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-DESIGN-02-MS-QA11",
@@ -64964,7 +64964,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-EXEC-02-MS-QA12",
@@ -64976,7 +64976,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-EXEC-02-MS-QA12",
@@ -64988,7 +64988,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-EXEC-02-MS-QA12",
@@ -65000,7 +65000,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-EXEC-02-MS-QA13",
@@ -65012,7 +65012,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-EXEC-02-MS-QA13",
@@ -65024,7 +65024,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-EXEC-02-MS-QA13",
@@ -65036,7 +65036,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-EXEC-02-MS-QA14",
@@ -65048,7 +65048,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.6
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-EXEC-02-MS-QA14",
@@ -65060,7 +65060,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-EXEC-02-MS-QA14",
@@ -65072,7 +65072,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.9
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-AUTO-02-MS-QA15",
@@ -65084,7 +65084,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-AUTO-02-MS-QA15",
@@ -65096,7 +65096,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.7
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-AUTO-02-MS-QA15",
@@ -65108,7 +65108,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.85
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-J-AUTO-02-MS-QA16",
@@ -65120,7 +65120,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-QA-M-AUTO-02-MS-QA16",
@@ -65132,7 +65132,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.65
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-QA-S-AUTO-02-MS-QA16",
@@ -65144,7 +65144,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.8
+      "instructionLevel": "ADVANCED"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC01-MS-SEC01",
@@ -65156,7 +65156,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC02-MS-SEC02",
@@ -65168,7 +65168,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC03-MS-SEC03",
@@ -65180,7 +65180,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC04-MS-SEC04",
@@ -65192,7 +65192,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.45
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC05-MS-SEC05",
@@ -65204,7 +65204,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC06-MS-SEC06",
@@ -65216,7 +65216,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.5
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC07-MS-SEC07",
@@ -65228,7 +65228,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.4
+      "instructionLevel": "INTERMEDIATE"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC08-MS-SEC08",
@@ -65240,7 +65240,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.3
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC09-MS-SEC09",
@@ -65252,7 +65252,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.25
+      "instructionLevel": "FOUNDATIONAL"
     },
     {
       "id": "REL-TEACHES-MOD-READ-SEC10-MS-SEC10",
@@ -65264,7 +65264,7 @@
       "reviewStatus": "NEEDS_EXPERT_REVIEW",
       "reviewedBy": null,
       "reviewedAt": null,
-      "outcomeCoverage": 0.35
+      "instructionLevel": "INTERMEDIATE"
     }
   ]
 }

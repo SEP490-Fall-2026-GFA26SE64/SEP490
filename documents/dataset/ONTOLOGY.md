@@ -21,15 +21,23 @@ flowchart LR
 
 Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. A Module teaches one or more skills; a skill may have several teaching Modules. This release requires teaching coverage for every skill. There is no Course, Level–Module link or global module sequence.
 
-## OC, module duration and price — 27 October 2026
+## Instruction level per Module–Skill — 2026-10-27
 
-Version 0.10 adds TEACHES.outcomeCoverage (OC): a required finite Float [0,1] describing teaching emphasis or skill depth/difficulty in that particular Module. Each pair is independent. Do not normalize or require a sum of one. Module A teaching A1 at 0.5, A2 at 0.6 and A3 at 0.7 has valid total 1.8; A3 is taught most strongly. OC is neither learner mastery nor a guaranteed proficiency gain. The scoring/assignment rules are deferred.
+TEACHES now stores required `instructionLevel` as a case-sensitive text enum: `FOUNDATIONAL`, `INTERMEDIATE`, or `ADVANCED`. It describes the depth of instruction for that particular Module–Skill pair, not a global skill property, learner mastery or guaranteed gain. Six node labels/seven relationship types and many-to-many teaching cardinality remain unchanged.
 
-LearningModule adds required duration (positive integer, minutes) and price (finite positive number, VND for this paid-module dataset). Level.context is removed from all 144 Levels. Assessment context remains external.
+| Stored instructionLevel | Legacy numeric band, after rounding |
+|---|---|
+| FOUNDATIONAL | 0.0–0.3 |
+| INTERMEDIATE | 0.4–0.6 |
+| ADVANCED | 0.7–0.9 |
 
-The 181 OC values are now explicit per-pair illustrative samples (0.2–0.9); OC scoring is not implemented. The same MS-DE06 skill has OC 0.2 in MOD-DE-J-MODEL-01 and 0.5 in MOD-DE-J-QUAL-01. See [per-pair sample manifest](sources/local_review/module_skill_oc_v010.json). All 85 Modules now have differentiated estimates: duration 150–915 minutes (31 distinct values), price 150,000–1,560,000 VND (54 distinct values). Estimates reflect mapped skill exercises, task depth and learning-package support, not observed completion times or vendor quotes. See [method and assumptions](MODULE_EFFORT_PRICE.md) and [per-module audit](sources/local_review/module_effort_price_v010.json). All remain NEEDS_EXPERT_REVIEW.
+User-approved conversion rounds the old number to one decimal using decimal ROUND_HALF_UP before classifying: 0.35 → 0.4 → INTERMEDIATE; 0.65 → 0.7 → ADVANCED. This is a one-time review-data conversion, not a content scoring rule. New graph records accept only the three exact text values; numeric strings, numbers, missing/blank/unknown values and retired property names are rejected. Numeric bands are explanatory metadata, not additional graph properties.
 
-Current review seed: import/ontology_seed-v010.json. The unchanged import/ontology_seed.json is the byte-pinned v0.9 runtime fixture used by Compose and historical baseline envelopes. This update changes design/review artifacts and the isolated import default; it does not migrate runtime APIs or databases or repin assessment history.
+All 181 TEACHES pairs are populated: 14 FOUNDATIONAL, 80 INTERMEDIATE and 87 ADVANCED. The same MS-DE06 skill is FOUNDATIONAL in MOD-DE-J-MODEL-01 and INTERMEDIATE in MOD-DE-J-QUAL-01; the values coexist independently. The current sample definitions remain NEEDS_EXPERT_REVIEW. No arithmetic sum, averaging, normalization or implicit numeric backend ranking applies to these categories.
+
+Workbook comparison view: **Instruction Levels**, with Module/Skill IDs, names and the text level linked to its TEACHES record. The original numeric source manifest is historical provenance outside Neo4j; the current conversion manifest records exact old-to-new values per pair. Duration/price, all other node/edge data and the pinned v0.9 runtime seed are unchanged. This design/review update does not deploy or migrate the running application. Future assignment of instruction levels to new content still requires expert authoring/review.
+
+[Conversion and provenance](INSTRUCTION_LEVELS.md). Module duration/price remain 150–915 minutes and 150,000–1,560,000 VND; see [estimation method](MODULE_EFFORT_PRICE.md).
 
 ## Counts
 
@@ -405,7 +413,7 @@ Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node b
 
 - REQUIRES_SKILL: requiredScore in [0,1], isMandatory.
 - HAS_SKILL_PREREQUISITE: requiredScore in [0,1], interpreted as foundation readiness.
-- TEACHES: outcomeCoverage (OC), independent Float [0,1] per Module–Skill pair; no sum-to-one constraint.
+- TEACHES: instructionLevel, required text enum FOUNDATIONAL / INTERMEDIATE / ADVANCED, independent per Module–Skill pair.
 - Other relationships: common metadata only.
 - expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
 - TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
@@ -479,19 +487,3 @@ A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A
 Excel, JSON, import validation, schema and diagram describe 0.10.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed still pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
 
 Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed-v010.json supplies active graph data.
-
-
-## Same skill, different Module OC — 2026-10-27
-
-OC is a property of the existing TEACHES relationship, keyed by the exact (moduleId, skillId) pair, not a shared property on MicroSkill or LearningModule. The schema remains six node labels and seven relationship types; the diagram's TEACHES property box is not an extra graph node.
-
-| Module | Skill | TEACHES.outcomeCoverage (OC) |
-|---|---|---:|
-| MOD-DE-J-MODEL-01 | MS-DE06 — Maintain metadata documentation | 0.2 |
-| MOD-DE-J-QUAL-01 | MS-DE06 — Maintain metadata documentation | 0.5 |
-
-Both rows coexist: the quality/operations package emphasizes that skill more strongly in this illustrative fixture. Neither value overwrites the other. Do not sum or normalize values, assume all providers of a skill have equal OC, or infer learner mastery. Actual OC assignment rules remain deferred. There are 181 explicit illustrative samples; their source manifest is outside Neo4j. Duration and price remain unchanged by this correction.
-
-Excel now includes a formula-linked **Outcome Coverage** comparison view with Module ID/title, Skill ID/name and each pair's OC, grouped by skill. The original TEACHES sheet remains the exact import records. The comparison view is not a new node or import section.
-
-Naming correction: OC now means **OutcomeCoverage**, stored as `TEACHES.outcomeCoverage`. Only the name changes; the 181 per-pair numeric values, duration/price, cardinalities and deferred scoring rules are preserved.

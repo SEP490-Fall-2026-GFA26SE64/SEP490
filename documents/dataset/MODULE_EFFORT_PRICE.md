@@ -6,7 +6,7 @@ Date: 2026-10-27. Applies to the v0.10 review workbook and `import/ontology_seed
 
 - `duration`: positive integer minutes of expected learner effort, including reading, practice, integration and reflection. It is not video runtime or a mastery guarantee.
 - `price`: positive VND price for the complete paid learning package. Public linked resources can be freely accessible; the estimate prices the packaged lesson/practice support, not access to those resources. No vendor quote, billing charge or observed market price is claimed.
-- Count a selected Module once even if it teaches several missing skills. Do not multiply its duration or price by the number of skills or normalize either by OC. The estimate does not implement backend selection, billing or an OC scoring rule.
+- Count a selected Module once even if it teaches several missing skills. Do not multiply its duration or price by the number of skills or derive either from instructionLevel. The estimate does not implement backend selection, billing or a rule assigning instruction levels.
 - These values provide differentiated sample inputs for comparison. They do not validate an optimization algorithm, prove suitability for a learner or establish an empirical cost-effectiveness ranking. Equal values are allowed when estimated effort/support is equivalent.
 
 ## Reproducible authoring assumptions
@@ -15,7 +15,7 @@ The [estimation utility](import/estimate_module_costs.py) assigns a base exercis
 
 For lesson/practice packages, Junior/Middle/Senior task effort factors are 1.00/1.35/1.75, reflecting guided implementation, independent work and complex review respectively. Add 30 minutes orientation, 30 minutes integration per additional skill, and 30 minutes reflection (45 for the validation/troubleshooting second module). Reading/practice packages use factor 1.00, 30 minutes orientation and 30 minutes reflection. Round total effort up to 15 minutes.
 
-Paid-package estimates use assumed hourly rates of 55,000/75,000/100,000 VND for Junior/Middle/Senior packages. Reading/practice support uses 50,000–75,000 VND/hour by subject. Add a subject exercise-package fee of 20,000–60,000 VND and round upward to 10,000 VND. Higher difficulty does not imply higher OC; no OC is consumed by this calculation.
+Paid-package estimates use assumed hourly rates of 55,000/75,000/100,000 VND for Junior/Middle/Senior packages. Reading/practice support uses 50,000–75,000 VND/hour by subject. Add a subject exercise-package fee of 20,000–60,000 VND and round upward to 10,000 VND. The calculation does not consume instructionLevel; the text categories are not numeric coefficients.
 
 `duration = ceil_to_15(orientation + sum(skill exercise effort) × task factor + integration + reflection)`
 
@@ -25,7 +25,7 @@ The [per-module manifest](sources/local_review/module_effort_price_v010.json) re
 
 ## Result and examples
 
-85 Modules have **31 distinct durations, 150–915 minutes**, and **54 distinct prices, 150,000–1,560,000 VND**. No price is zero. OC has separate illustrative values per Module–Skill pair; the scoring decision remains deferred.
+85 Modules have **31 distinct durations, 150–915 minutes**, and **54 distinct prices, 150,000–1,560,000 VND**. No price is zero. instructionLevel has separate text categories per Module–Skill pair; see INSTRUCTION_LEVELS.md.
 
 | Module | Skills | Duration | Price (VND) |
 |---|---:|---:|---:|

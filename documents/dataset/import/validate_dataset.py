@@ -2,6 +2,7 @@
 import json,math
 from collections import Counter,defaultdict
 from pathlib import Path
+from instruction_levels import INSTRUCTION_LEVELS
 LABELS={'Occupations':'Occupation','TargetRoles':'TargetRole','Levels':'Level','Competencies':'Competency','MicroSkills':'MicroSkill','LearningModules':'LearningModule'}
 COUNTS={'Occupations':5,'TargetRoles':48,'Levels':144,'Competencies':472,'MicroSkills':79,'LearningModules':85}
 TYPES={'HAS_ROLE':{('Occupation','TargetRole')},'HAS_LEVEL':{('TargetRole','Level')},'HAS_COMPETENCY':{('Level','Competency')},'HAS_SKILL':{('Competency','MicroSkill')},'REQUIRES_SKILL':{('Level','MicroSkill')},'TEACHES':{('LearningModule','MicroSkill')},'HAS_SKILL_PREREQUISITE':{('MicroSkill','MicroSkill')}}
@@ -33,16 +34,16 @@ def validate(file):
     for r in list(nodes.values())+edges:
         require(r['version']=='0.10.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
         require(r['reviewedBy'] is None and r['reviewedAt'] is None,'Unsubstantiated approval')
-        require(not {'learningOutcome','canonicalProfileKey','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
+        require(not {'learningOutcome','outcomeCoverage','canonicalProfileKey','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
     for r in list(nodes.values())+edges:
-        require('outcomeCoverage' not in r or r.get('type')=='TEACHES','outcomeCoverage belongs only on TEACHES')
+        require('instructionLevel' not in r or r.get('type')=='TEACHES','instructionLevel belongs only on TEACHES')
     for e in edges:
         t,a,b=e['type'],e['fromId'],e['toId'];require(a in nodes and b in nodes,'Missing endpoint')
         require((labels[a],labels[b]) in TYPES[t],'Wrong endpoint labels')
         sets[(t,a)].add(b);incoming[(t,b)].add(a)
         if t=='TEACHES':
-            v=e.get('outcomeCoverage')
-            require(type(v) in (int,float) and math.isfinite(v) and 0<=v<=1,'Invalid outcomeCoverage')
+            v=e.get('instructionLevel')
+            require(type(v) is str and v in INSTRUCTION_LEVELS,'Invalid instructionLevel')
         if t=='REQUIRES_SKILL':
             require(type(e['requiredScore']) in (int,float) and math.isfinite(e['requiredScore']) and 0<=e['requiredScore']<=1,'Invalid threshold')
             require(type(e['isMandatory']) is bool,'Invalid mandatory flag')

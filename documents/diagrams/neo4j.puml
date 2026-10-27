@@ -14,7 +14,7 @@ skinparam noteBackgroundColor #FFF7ED
 skinparam noteBorderColor #D97706
 skinparam defaultFontName Arial
 skinparam defaultFontSize 14
-title Ontology v0.10 — Module–Skill outcome coverage (OC)
+title Ontology v0.10 — Module–Skill instruction levels
 class Occupation {
  code : String
  name : String
@@ -63,12 +63,15 @@ Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL
 LearningModule "1..*" -up-> "1..*" MicroSkill : TEACHES
 note on link
 TEACHES relationship property:
-outcomeCoverage (OC) : Float [0,1]
-OC belongs to each Module-Skill pair, not the Skill node.
+instructionLevel : Enum/String
+FOUNDATIONAL | INTERMEDIATE | ADVANCED
+instructionLevel belongs to each Module-Skill pair.
 Same skill MS-DE06 (metadata documentation):
-MOD-DE-J-MODEL-01 -> MS-DE06: OC = 0.2
-MOD-DE-J-QUAL-01 -> MS-DE06: OC = 0.5
-Illustrative values; assignment rules deferred.
+MOD-DE-J-MODEL-01 -> MS-DE06: FOUNDATIONAL
+MOD-DE-J-QUAL-01 -> MS-DE06: INTERMEDIATE
+Legacy conversion: round HALF_UP to 1 decimal first.
+0.0–0.3 FOUNDATIONAL; 0.4–0.6 INTERMEDIATE; 0.7–0.9 ADVANCED.
+0.35 -> INTERMEDIATE; 0.65 -> ADVANCED.
 end note
 MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
 note bottom of MicroSkill
@@ -86,10 +89,10 @@ Each Level has its own skill requirements and competencies.
 A Competency member must be required by its owning Level.
 end note
 note bottom of LearningModule
-TEACHES.outcomeCoverage (OC): Float [0,1].
-Independent per Module-Skill; no sum-to-one rule.
-Higher OC = stronger teaching emphasis / skill depth.
-OC scoring rules are deferred; not learner mastery.
+TEACHES.instructionLevel stores text only.
+FOUNDATIONAL, INTERMEDIATE or ADVANCED.
+Independent per Module-Skill; not learner mastery.
+No numeric coverage property or normalization.
 A Module teaches one or more Skills.
 A Skill can have several teaching Modules.
 Providers are alternatives, not all mandatory.

@@ -171,17 +171,19 @@ A → B nghĩa là xác nhận skill nền tảng B trước khi học skill A. 
 
 Quan hệ này chỉ có `requiredScore` và metadata chung; mô tả readiness và tham chiếu bài đánh giá được quản lý ngoài Neo4j. Backend cần mapping assessment rõ ràng cho cặp skill phụ thuộc–skill nền tảng trước khi xác nhận readiness. Kết quả phải khớp learner, skill nền tảng, quan hệ tiên quyết và phiên bản task/rubric/catalog. Readiness `PASS` đáp ứng điều kiện; `FAIL` hoặc `NOT_ASSESSED` chưa đáp ứng. Không tự dùng kết quả đánh giá skill theo Level thay cho readiness vì rubric và nhiệm vụ khác nhau.
 
-Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL` chỉ có metadata chung. `TEACHES` có thêm `outcomeCoverage` (OC).
+Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL` chỉ có metadata chung. `TEACHES` có thêm `instructionLevel`.
 
-### 4.3. TEACHES — OutcomeCoverage (OC)
+### 4.3. TEACHES — instructionLevel
 
 | Field | Kiểu | Ý nghĩa |
 |---|---|---|
-| `outcomeCoverage` (OC) | Float [0,1], bắt buộc | Mức độ Module dạy mạnh hoặc độ sâu/độ khó của skill trong Module đó. Giá trị độc lập trên từng cặp Module–Skill. |
+| `instructionLevel` | Enum/String, bắt buộc | Độ sâu giảng dạy của skill trong Module cụ thể: `FOUNDATIONAL`, `INTERMEDIATE`, `ADVANCED`. |
 
-Không yêu cầu tổng OC của Module bằng 1 và không chuẩn hóa tổng. Ví dụ Module A có A1 = 0.5, A2 = 0.6, A3 = 0.7, tổng 1.8 hợp lệ; A3 có mức dạy mạnh nhất trong ví dụ. OC không phải điểm learner, mức tăng mastery hay ngưỡng PASS. Quy tắc xác định OC để sau; OC hiện mô tả mức nhấn mạnh/độ sâu, chưa tách thành hai chỉ số độc lập.
+Quy đổi dữ liệu số cũ: làm tròn một chữ số thập phân theo ROUND_HALF_UP, rồi phân loại 0.0–0.3 → FOUNDATIONAL; 0.4–0.6 → INTERMEDIATE; 0.7–0.9 → ADVANCED. Người dùng đã chốt 0.35 → INTERMEDIATE và 0.65 → ADVANCED. Graph chỉ lưu text, không lưu điểm số hoặc khoảng điểm kèm theo.
 
-Dataset v0.10 có 181 giá trị OC minh họa riêng cho từng cặp Module–Skill, từ 0.2 đến 0.9, chưa hiệu chuẩn. Ví dụ cùng skill MS-DE06 có OC = 0.2 trong MOD-DE-J-MODEL-01 và OC = 0.5 trong MOD-DE-J-QUAL-01. Duration và price đã được ước tính riêng cho 85 Module: 150–915 phút và 150.000–1.560.000 VND, theo khối lượng thực hành của skill, độ sâu nhiệm vụ và gói hỗ trợ học. Đây là ước tính dữ liệu mẫu, chưa phải thời gian đo thực tế hay giá của nhà cung cấp. Xem [phương pháp ước tính](dataset/MODULE_EFFORT_PRICE.md). Tất cả vẫn NEEDS_EXPERT_REVIEW. Bỏ hoàn toàn Level.context; ngữ cảnh bài đánh giá được quản lý ngoài graph.
+181 mapping gồm 14 FOUNDATIONAL, 80 INTERMEDIATE, 87 ADVANCED. Cùng MS-DE06 có FOUNDATIONAL trong MOD-DE-J-MODEL-01 và INTERMEDIATE trong MOD-DE-J-QUAL-01. Đây là thuộc tính riêng của từng cạnh TEACHES, không phải thuộc tính chung trên MicroSkill. Các mức không được cộng/chuẩn hóa và không tự chứng minh learner đạt skill. Chính sách gán mức cho nội dung mới vẫn cần chuyên gia duyệt.
+
+Giữ nguyên duration/price của 85 Module (150–915 phút và 150.000–1.560.000 VND), metadata và mọi quan hệ còn lại. Các ước tính vẫn NEEDS_EXPERT_REVIEW. Xem [hướng dẫn chuyển đổi](dataset/INSTRUCTION_LEVELS.md).
 
 ## 5. Dữ liệu đánh giá nằm ngoài Neo4j
 
@@ -255,25 +257,9 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 | HAS_COMPETENCY | Không có | 472 |
 | HAS_SKILL | Không có | 1.891 |
 | REQUIRES_SKILL | requiredScore, isMandatory | 1.891 |
-| TEACHES | outcomeCoverage (OC) | 181 |
+| TEACHES | instructionLevel | 181 |
 | HAS_SKILL_PREREQUISITE | requiredScore | 11 |
 
 Mỗi TargetRole được xử lý riêng theo Level và bộ requirement. Các role có cùng skill có thể tạo ra lộ trình giống nhau; không có cơ chế gom role bằng mã profile.
 
 Các field đã bỏ khỏi graph: `canonicalProfileKey`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.
-
-
-## Same skill, different Module OC — 2026-10-27
-
-OC is a property of the existing TEACHES relationship, keyed by the exact (moduleId, skillId) pair, not a shared property on MicroSkill or LearningModule. The schema remains six node labels and seven relationship types; the diagram's TEACHES property box is not an extra graph node.
-
-| Module | Skill | TEACHES.outcomeCoverage (OC) |
-|---|---|---:|
-| MOD-DE-J-MODEL-01 | MS-DE06 — Maintain metadata documentation | 0.2 |
-| MOD-DE-J-QUAL-01 | MS-DE06 — Maintain metadata documentation | 0.5 |
-
-Both rows coexist: the quality/operations package emphasizes that skill more strongly in this illustrative fixture. Neither value overwrites the other. Do not sum or normalize values, assume all providers of a skill have equal OC, or infer learner mastery. Actual OC assignment rules remain deferred. There are 181 explicit illustrative samples; their source manifest is outside Neo4j. Duration and price remain unchanged by this correction.
-
-Excel now includes a formula-linked **Outcome Coverage** comparison view with Module ID/title, Skill ID/name and each pair's OC, grouped by skill. The original TEACHES sheet remains the exact import records. The comparison view is not a new node or import section.
-
-Naming correction: OC now means **OutcomeCoverage**, stored as `TEACHES.outcomeCoverage`. Only the name changes; the 181 per-pair numeric values, duration/price, cardinalities and deferred scoring rules are preserved.
