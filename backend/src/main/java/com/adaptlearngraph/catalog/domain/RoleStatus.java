@@ -6,6 +6,7 @@ public enum RoleStatus {
     SUBMITTED,
     REJECTED,
     ACTIVE,
+    PUBLISHED,
     RETIRED;
 
     public static RoleStatus fromString(String status) {
@@ -13,9 +14,6 @@ public enum RoleStatus {
             return DRAFT;
         }
         String upper = status.trim().toUpperCase();
-        if ("PUBLISHED".equals(upper)) {
-            return ACTIVE;
-        }
         return RoleStatus.valueOf(upper);
     }
 }

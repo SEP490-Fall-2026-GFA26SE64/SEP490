@@ -35,7 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@ConditionalOnProperty(prefix = "catalog.legacy-api", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/organizations/{organizationId}/target-roles")
 public class OrganizationTargetRoleController {
 
@@ -60,9 +59,15 @@ public class OrganizationTargetRoleController {
             @RequestHeader(value = "X-User-Role", required = false, defaultValue = "LD_MANAGER") String userRole,
             @Valid @RequestBody CreateTargetRoleRequest request) {
 
-        if (!isAuthorizedManager(userRole)) {
+        if (!isAuthorizedManager(userRole) && !isDomainExpert(userRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers and Administrators can create target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and Domain Experts can create target roles"));
+        }
+
+        String effectiveCode = request.code();
+        if (effectiveCode == null || effectiveCode.isBlank()) {
+            String sanitized = request.name().replaceAll("[^A-Za-z0-9]", "_").toUpperCase();
+            effectiveCode = "ROLE-" + (sanitized.length() > 40 ? sanitized.substring(0, 40) : sanitized) + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         }
 
         RoleTrack track = request.track() != null && !request.track().isBlank()
@@ -90,7 +95,7 @@ public class OrganizationTargetRoleController {
 
         CreateTargetRoleCommand command = new CreateTargetRoleCommand(
                 organizationId,
-                request.code(),
+                effectiveCode,
                 request.name(),
                 request.domainCode(),
                 request.familyCode(),
@@ -101,7 +106,8 @@ public class OrganizationTargetRoleController {
                 request.responsibilities() != null ? request.responsibilities() : List.of(),
                 request.version() != null && !request.version().isBlank() ? request.version().trim() : "1.0",
                 status,
-                skillTargetsJson);
+                skillTargetsJson,
+                request.levels());
 
         TargetRole created = createTargetRoleUseCase.createTargetRole(command);
         TargetRoleResponse response = TargetRoleResponse.fromDomain(created);
@@ -164,14 +170,8 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can view target roles"));
         }
 
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(roleId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid ID", "message", "Target role ID must be a valid UUID"));
-        }
-
-        Optional<TargetRole> roleOpt = viewTargetRolesUseCase.getTargetRole(organizationId, new TargetRoleId(uuid));
+        TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
+        Optional<TargetRole> roleOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
         if (roleOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -204,15 +204,10 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can update target roles"));
         }
 
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(roleId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid ID", "message", "Target role ID must be a valid UUID"));
-        }
+        TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
 
         if (isExpert && !isManager) {
-            Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, new TargetRoleId(uuid));
+            Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
             if (existingOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
@@ -238,6 +233,10 @@ public class OrganizationTargetRoleController {
                 ? RoleStatus.fromString(request.status())
                 : null;
 
+        if (isExpert && !isManager && status == RoleStatus.REJECTED) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
+        }
+
         Seniority seniority = request.seniority() != null && !request.seniority().isBlank()
                 ? Seniority.fromString(request.seniority())
                 : null;
@@ -248,7 +247,7 @@ public class OrganizationTargetRoleController {
 
         UpdateTargetRoleCommand command = new UpdateTargetRoleCommand(
                 organizationId,
-                new TargetRoleId(uuid),
+                targetRoleId,
                 request.name(),
                 request.domainCode(),
                 request.familyCode(),
@@ -260,7 +259,8 @@ public class OrganizationTargetRoleController {
                 status,
                 request.version(),
                 skillTargetsJson,
-                request.rejectionReason());
+                request.rejectionReason(),
+                request.levels());
 
         return manageTargetRoleUseCase.updateTargetRole(command)
                 .map(updated -> ResponseEntity.ok(TargetRoleResponse.fromDomain(updated)))
@@ -278,14 +278,8 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "Only L&D Managers and Administrators can delete target roles"));
         }
 
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(roleId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid ID", "message", "Target role ID must be a valid UUID"));
-        }
-
-        boolean deleted = manageTargetRoleUseCase.deleteTargetRole(organizationId, new TargetRoleId(uuid));
+        TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
+        boolean deleted = manageTargetRoleUseCase.deleteTargetRole(organizationId, targetRoleId);
         if (deleted) {
             return ResponseEntity.noContent().build();
         }

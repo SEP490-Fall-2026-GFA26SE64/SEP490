@@ -365,8 +365,8 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("REQ-023-F05: PUT rejects target role with rejectionReason from Domain Expert")
-    void updateTargetRoleRejectionWithReason() throws Exception {
+    @DisplayName("REQ-023-F05: Domain Expert can no longer reject target roles; PUT with REJECTED returns 400 Bad Request")
+    void updateTargetRoleRejectionByExpertReturnsBadRequest() throws Exception {
         UUID roleId = UUID.randomUUID();
         TargetRole existingRole = new TargetRole(
                 new TargetRoleId(roleId),
@@ -382,27 +382,8 @@ class TargetRoleControllerTest {
                 Instant.now(),
                 Instant.now());
 
-        TargetRole rejectedRole = new TargetRole(
-                new TargetRoleId(roleId),
-                "org-1",
-                "ROLE_AI",
-                "AI Spec",
-                "AI",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
-                "expert-alpha",
-                "Desc",
-                RoleStatus.REJECTED,
-                "1.0",
-                "[]",
-                Instant.now(),
-                Instant.now(),
-                "Skill benchmark threshold too high for junior tier");
-
         when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(Optional.of(existingRole));
-        when(manageTargetRoleUseCase.updateTargetRole(any()))
-                .thenReturn(Optional.of(rejectedRole));
 
         com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
@@ -414,9 +395,8 @@ class TargetRoleControllerTest {
                         .header("X-User-Id", "expert-alpha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("REJECTED"))
-                .andExpect(jsonPath("$.rejectionReason").value("Skill benchmark threshold too high for junior tier"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Domain Experts can no longer reject target roles"));
     }
 
     @Test

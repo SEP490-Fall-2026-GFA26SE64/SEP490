@@ -94,6 +94,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.status = $status,
                     r.version = $version,
                     r.skillTargets = $skillTargets,
+                    r.levels = $levels,
                     r.createdAt = datetime($createdAt),
                     r.updatedAt = datetime($updatedAt),
                     r.rejectionReason = $rejectionReason
@@ -111,6 +112,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.status = $status,
                     r.version = $version,
                     r.skillTargets = $skillTargets,
+                    r.levels = $levels,
                     r.updatedAt = datetime($updatedAt),
                     r.rejectionReason = $rejectionReason
                 WITH r
@@ -139,12 +141,25 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         params.put("status", targetRole.getStatus().name());
         params.put("version", version);
         params.put("skillTargets", targetRole.getSkillTargets());
+        params.put("levels", targetRole.getLevels());
         params.put("createdAt", targetRole.getCreatedAt().toString());
         params.put("updatedAt", targetRole.getUpdatedAt().toString());
         params.put("rejectionReason", targetRole.getRejectionReason());
 
         try (var session = driver.session()) {
             session.run(cypher, params).consume();
+
+            // When publishing, override and supersede any previous version of this role
+            if (targetRole.getStatus() == RoleStatus.PUBLISHED || targetRole.getStatus() == RoleStatus.ACTIVE) {
+                String supersedeCypher = """
+                        MATCH (old:TargetRole)
+                        WHERE (old.organizationId = $organizationId OR old.organizationId IS NULL)
+                          AND old.id <> $id
+                          AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode))
+                        SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
+                        """;
+                session.run(supersedeCypher, params).consume();
+            }
 
             // Synchronize REQUIRES_SKILL graph edges
             syncSkillRelationships(session, roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
@@ -185,6 +200,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 skillData.put("skillCode", code);
                 skillData.put("skillName", Objects.toString(item.get("skillName"), code));
                 skillData.put("skillId", Objects.toString(item.get("skillId"), java.util.UUID.randomUUID().toString()));
+                String level = Objects.toString(item.get("level"), "");
+                skillData.put("level", level);
                 Number threshold = 70;
                 if (item.get("threshold") instanceof Number n) {
                     threshold = n;
@@ -215,6 +232,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     ON CREATE SET req.createdAt = datetime($updatedAt)
                     SET req.targetMastery = toFloat(item.threshold) / 100.0,
                         req.status = 'ACTIVE',
+                        req.level = item.level,
                         req.updatedAt = datetime($updatedAt)
                     """;
             session.run(mergeRelCypher, Map.of(
@@ -229,7 +247,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
         StringBuilder cypher = new StringBuilder("""
                 MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId
+                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                  AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
                 """);
         Map<String, Object> params = new HashMap<>();
         params.put("organizationId", organizationId);
@@ -261,9 +280,10 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                      skillId: s.id,
                      skillCode: s.code,
                      skillName: s.name,
-                     threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100))
+                     threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
+                     level: coalesce(req.level, '')
                  } END) AS graphSkills
-                 RETURN r, graphSkills ORDER BY r.name ASC
+                 RETURN r, graphSkills ORDER BY coalesce(r.updatedAt, r.createdAt) DESC, r.name ASC
                 """);
 
         try (var session = driver.session()) {
@@ -281,13 +301,16 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     public Optional<TargetRole> findById(String organizationId, TargetRoleId id) {
         String cypher = """
                 MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId AND r.id = $id
+                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                  AND (r.id = $id OR r.code = $id)
+                  AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
                 OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
                 WITH r, collect(CASE WHEN s IS NOT NULL THEN {
                     skillId: s.id,
                     skillCode: s.code,
                     skillName: s.name,
-                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100))
+                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
+                    level: coalesce(req.level, '')
                 } END) AS graphSkills
                 RETURN r, graphSkills
                 """;
@@ -310,7 +333,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     skillId: s.id,
                     skillCode: s.code,
                     skillName: s.name,
-                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100))
+                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
+                    level: coalesce(req.level, '')
                 } END) AS graphSkills
                 RETURN r, graphSkills
                 """;
@@ -350,23 +374,29 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     }
 
     private TargetRole mapNodeToTargetRole(Node node, List<Map<String, Object>> graphSkills) {
-        String idStr = node.get("id").asString();
-        String orgId = node.get("organizationId").asString();
+        String idStr = node.containsKey("id") && !node.get("id").isNull()
+                ? node.get("id").asString()
+                : (node.containsKey("code") && !node.get("code").isNull() ? node.get("code").asString() : java.util.UUID.randomUUID().toString());
+        String orgId = node.containsKey("organizationId") && !node.get("organizationId").isNull()
+                ? node.get("organizationId").asString()
+                : "comp-technova";
         String code = node.containsKey("baseCode") && !node.get("baseCode").isNull()
                 ? node.get("baseCode").asString()
-                : node.get("code").asString();
+                : (node.containsKey("code") && !node.get("code").isNull() ? node.get("code").asString() : idStr);
         // Strip synthetic unique suffix if present
         if (code.contains("#")) {
             code = code.substring(0, code.indexOf("#"));
         }
 
-        String name = node.get("name").asString();
+        String name = node.containsKey("name") && !node.get("name").isNull()
+                ? node.get("name").asString()
+                : (node.containsKey("title") && !node.get("title").isNull() ? node.get("title").asString() : code);
         String domainCode = node.containsKey("domainCode") && !node.get("domainCode").isNull()
                 ? node.get("domainCode").asString()
                 : "ICT";
         String familyCode = node.containsKey("familyCode") && !node.get("familyCode").isNull()
                 ? node.get("familyCode").asString()
-                : "JAVA_BACKEND";
+                : "SOFTWARE_ENGINEERING";
         String trackStr = node.containsKey("track") && !node.get("track").isNull()
                 ? node.get("track").asString()
                 : "PROFESSIONAL";
@@ -378,20 +408,35 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 : "";
         String desc = node.containsKey("description") && !node.get("description").isNull()
                 ? node.get("description").asString()
-                : "";
+                : (node.containsKey("scope") && !node.get("scope").isNull() ? node.get("scope").asString() : "");
         List<String> responsibilities = node.containsKey("responsibilities") && !node.get("responsibilities").isNull()
                 ? node.get("responsibilities").asList(org.neo4j.driver.Value::asString)
                 : List.of();
         String statusStr = node.containsKey("status") && !node.get("status").isNull()
                 ? node.get("status").asString()
-                : "DRAFT";
+                : "ACTIVE";
 
-        Instant createdAt = node.containsKey("createdAt") && !node.get("createdAt").isNull()
-                ? node.get("createdAt").asZonedDateTime().toInstant()
-                : Instant.now();
-        Instant updatedAt = node.containsKey("updatedAt") && !node.get("updatedAt").isNull()
-                ? node.get("updatedAt").asZonedDateTime().toInstant()
-                : Instant.now();
+        Instant baseline = Instant.parse("2026-01-01T00:00:00Z");
+        Instant createdAt = baseline;
+        if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
+            try {
+                createdAt = node.get("createdAt").asZonedDateTime().toInstant();
+            } catch (Exception e) {
+                try {
+                    createdAt = Instant.parse(node.get("createdAt").asString());
+                } catch (Exception ignored) {}
+            }
+        }
+        Instant updatedAt = createdAt;
+        if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
+            try {
+                updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
+            } catch (Exception e) {
+                try {
+                    updatedAt = Instant.parse(node.get("updatedAt").asString());
+                } catch (Exception ignored) {}
+            }
+        }
 
         String version = node.containsKey("version") && !node.get("version").isNull()
                 ? node.get("version").asString()
@@ -416,6 +461,10 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     : "[]";
         }
 
+        List<String> levels = node.containsKey("levels") && !node.get("levels").isNull()
+                ? node.get("levels").asList(org.neo4j.driver.Value::asString)
+                : List.of("Junior", "Middle", "Senior");
+
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
                 orgId,
@@ -433,7 +482,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 skillTargets,
                 createdAt,
                 updatedAt,
-                rejectionReason);
+                rejectionReason,
+                levels);
     }
 
     private List<Map<String, Object>> parseSkillTargetsJson(String json) {

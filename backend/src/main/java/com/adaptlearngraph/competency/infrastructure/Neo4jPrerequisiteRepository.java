@@ -24,10 +24,10 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     @Override
     public List<PrerequisiteEdge> findAll(String organizationId) {
         String cypher = """
-                MATCH (source:MicroSkill)-[rel:PREREQUISITE_OF]->(target:MicroSkill)
+                MATCH (source:MicroSkill)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target:MicroSkill)
                 WHERE (source.organizationId = $organizationId OR source.organizationId IS NULL)
                 RETURN source, target, rel
-                ORDER BY source.code ASC, target.code ASC
+                ORDER BY coalesce(source.code, source.id) ASC, coalesce(target.code, target.id) ASC
                 """;
         try (var session = driver.session()) {
             var result = session.run(cypher, Map.of("organizationId", organizationId));
@@ -46,9 +46,9 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 WHERE (role.id = $roleId OR role.code = $roleId)
                 MATCH (role)-[:REQUIRES_SKILL]->(source:MicroSkill)
                 MATCH (role)-[:REQUIRES_SKILL]->(target:MicroSkill)
-                MATCH (source)-[rel:PREREQUISITE_OF]->(target)
+                MATCH (source)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target)
                 RETURN source, target, rel
-                ORDER BY source.code ASC, target.code ASC
+                ORDER BY coalesce(source.code, source.id) ASC, coalesce(target.code, target.id) ASC
                 """;
         try (var session = driver.session()) {
             var result = session.run(cypher, Map.of("roleId", roleId));
@@ -66,7 +66,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 MATCH (source:MicroSkill), (target:MicroSkill)
                 WHERE (source.id = $fromSkillId OR source.code = $fromSkillId)
                   AND (target.id = $toSkillId OR target.code = $toSkillId)
-                MATCH p = (source)-[:PREREQUISITE_OF*1..25]->(target)
+                MATCH p = (source)-[:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF*1..25]->(target)
                 RETURN count(p) > 0 AS hasPath
                 """;
         try (var session = driver.session()) {
@@ -119,7 +119,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     @Override
     public void deletePrerequisite(String organizationId, String sourceSkillId, String targetSkillId) {
         String cypher = """
-                MATCH (source:MicroSkill)-[rel:PREREQUISITE_OF]->(target:MicroSkill)
+                MATCH (source:MicroSkill)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target:MicroSkill)
                 WHERE (source.id = $sourceSkillId OR source.code = $sourceSkillId)
                   AND (target.id = $targetSkillId OR target.code = $targetSkillId)
                 DELETE rel
@@ -135,26 +135,34 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
         Relationship rel = record.get("rel").asRelationship();
 
         String sourceId = source.containsKey("id") && !source.get("id").isNull() ? source.get("id").asString() : "";
-        String sourceCode = source.get("code").asString();
-        String sourceName = source.get("name").asString();
+        String sourceCode = source.containsKey("code") && !source.get("code").isNull() ? source.get("code").asString() : sourceId;
+        String sourceName = source.containsKey("name") && !source.get("name").isNull() ? source.get("name").asString() : sourceId;
 
         String targetId = target.containsKey("id") && !target.get("id").isNull() ? target.get("id").asString() : "";
-        String targetCode = target.get("code").asString();
-        String targetName = target.get("name").asString();
+        String targetCode = target.containsKey("code") && !target.get("code").isNull() ? target.get("code").asString() : targetId;
+        String targetName = target.containsKey("name") && !target.get("name").isNull() ? target.get("name").asString() : targetId;
 
-        double minMastery = rel.containsKey("minMastery") && !rel.get("minMastery").isNull()
-                ? rel.get("minMastery").asDouble()
-                : 0.60;
+        double minMastery = rel.containsKey("requiredScore") && !rel.get("requiredScore").isNull()
+                ? rel.get("requiredScore").asDouble()
+                : (rel.containsKey("minMastery") && !rel.get("minMastery").isNull()
+                        ? rel.get("minMastery").asDouble()
+                        : 0.60);
         String statusStr = rel.containsKey("status") && !rel.get("status").isNull()
                 ? rel.get("status").asString()
                 : "ACTIVE";
 
-        Instant createdAt = rel.containsKey("createdAt") && !rel.get("createdAt").isNull()
-                ? rel.get("createdAt").asZonedDateTime().toInstant()
-                : Instant.now();
-        Instant updatedAt = rel.containsKey("updatedAt") && !rel.get("updatedAt").isNull()
-                ? rel.get("updatedAt").asZonedDateTime().toInstant()
-                : Instant.now();
+        Instant createdAt = Instant.now();
+        if (rel.containsKey("createdAt") && !rel.get("createdAt").isNull()) {
+            try {
+                createdAt = rel.get("createdAt").asZonedDateTime().toInstant();
+            } catch (Exception ignored) {}
+        }
+        Instant updatedAt = Instant.now();
+        if (rel.containsKey("updatedAt") && !rel.get("updatedAt").isNull()) {
+            try {
+                updatedAt = rel.get("updatedAt").asZonedDateTime().toInstant();
+            } catch (Exception ignored) {}
+        }
 
         return new PrerequisiteEdge(
                 sourceId,

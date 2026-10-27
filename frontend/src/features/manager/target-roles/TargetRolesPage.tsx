@@ -12,11 +12,11 @@ import {
   Eye,
   FileCheck,
   History,
+  Layers,
   Network as NetworkIcon,
   Plus,
   Search,
   Send,
-  Sliders,
   Trash2,
   Upload,
   XCircle,
@@ -50,7 +50,6 @@ import {
 import {
   ELIGIBLE_EXPERTS,
   ONET_OCCUPATIONS,
-  ONTOLOGY_LEVELS,
   compareRoleVersions,
   formatDate,
   getEligibleExpertsForOccupation,
@@ -139,7 +138,9 @@ export function TargetRolesPage() {
             occupationCode: occ.code,
             occupationTitle: occ.name,
             scope: String(r.scope || r.description || occ.description),
-            levels: ['Junior', 'Middle', 'Senior'],
+            levels: Array.isArray(r.levels) && (r.levels as string[]).length > 0
+              ? (r.levels as string[])
+              : ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.levels || ['Junior', 'Middle', 'Senior']),
             levelThresholds: (r.levelThresholds as RoleLevelThresholds) || { J: 60, M: 75, S: 90 },
             domainCode: String(r.domainCode || 'ICT'),
             familyCode: String(r.familyCode || occ.profiles[0] || 'DEV'),
@@ -153,16 +154,32 @@ export function TargetRolesPage() {
             version: String(r.version || '1.0'),
             status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
             rejectionReason: String(r.rejectionReason || ''),
+            levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.levelCompetencies || {}),
             competencyIds: Array.isArray(r.competencyIds) && (r.competencyIds as string[]).length > 0
               ? (r.competencyIds as string[])
               : ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.competencyIds || []),
             skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
             activeEnrollments: 0,
-            createdAt: String(r.createdAt || r.updatedAt || new Date().toISOString()),
-            updatedAt: String(r.updatedAt || r.createdAt || new Date().toISOString()),
+            createdAt: r.createdAt ? String(r.createdAt) : (r.updatedAt ? String(r.updatedAt) : '2026-01-01T00:00:00Z'),
+            updatedAt: r.updatedAt ? String(r.updatedAt) : (r.createdAt ? String(r.createdAt) : '2026-01-01T00:00:00Z'),
           }
         })
-        setRoles(mapped)
+        setRoles((prevRoles) => {
+          return mapped.map((m) => {
+            const prev = prevRoles.find((p) => p.id === m.id || p.code === m.code)
+            const prevLevelComps = prev?.levelCompetencies && Object.keys(prev.levelCompetencies).length > 0
+              ? prev.levelCompetencies
+              : (m.levelCompetencies && Object.keys(m.levelCompetencies).length > 0 ? m.levelCompetencies : {})
+            const prevCompetencyIds = prev?.competencyIds && prev.competencyIds.length > 0
+              ? prev.competencyIds
+              : (m.competencyIds && m.competencyIds.length > 0 ? m.competencyIds : Array.from(new Set(Object.values(prevLevelComps).flat())))
+            return {
+              ...m,
+              levelCompetencies: prevLevelComps,
+              competencyIds: prevCompetencyIds,
+            }
+          })
+        })
       } else {
         setRoles([])
       }
@@ -219,6 +236,7 @@ export function TargetRolesPage() {
   const [viewingDetailsRole, setViewingDetailsRole] = React.useState<TargetRoleModel | null>(null)
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] = React.useState<TargetRoleModel | null>(null)
+  const [selectedDetailLevelTab, setSelectedDetailLevelTab] = React.useState<string>('ALL')
   const [compSearchQuery, setCompSearchQuery] = React.useState('')
 
   const handleImportRoles = (data: unknown) => {
@@ -257,13 +275,10 @@ export function TargetRolesPage() {
     domainCode: 'ICT' as 'ICT' | 'DATA' | 'AI',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
     seniority: 'P3',
-    levelThresholds: { J: 60, M: 75, S: 90 },
-    responsibilitiesText: '',
+    levelNames: ['Junior', 'Middle', 'Senior'],
     assignedExpertId: 'expert-chen',
     description: '',
-    competencyIds: [] as string[],
   })
-  const [createCompSearch, setCreateCompSearch] = React.useState('')
 
   // Form states for editing role (L&D Manager view/edit scope)
   const [editRoleForm, setEditRoleForm] = React.useState({
@@ -274,13 +289,10 @@ export function TargetRolesPage() {
     domainCode: 'ICT' as 'ICT' | 'DATA' | 'AI',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
     seniority: 'P3',
-    levelThresholds: { J: 60, M: 75, S: 90 },
-    responsibilitiesText: '',
+    levelNames: ['Junior', 'Middle', 'Senior'],
     assignedExpertId: '',
     description: '',
-    competencyIds: [] as string[],
   })
-  const [editCompSearch, setEditCompSearch] = React.useState('')
 
   // Dynamic expert options filtered to experts certified for the selected occupation
   const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
@@ -352,52 +364,6 @@ export function TargetRolesPage() {
   const feedbackRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'feedback').length
   const rejectedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'rejected').length
 
-  // Dispatch draft to Domain Expert for micro-skill configuration
-  const handleSendToExpert = async (role: TargetRoleModel) => {
-    const expert = ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
-    const expertName = role.assignedExpertName || expert?.name || 'Assigned Expert'
-
-    const updatedRole: TargetRoleModel = {
-      ...role,
-      status: 'sent',
-      updatedAt: new Date().toISOString(),
-    }
-
-    try {
-      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Role': 'LD_MANAGER',
-        },
-        body: JSON.stringify({
-          name: role.title,
-          domainCode: role.domainCode,
-          familyCode: role.familyCode,
-          track: role.track,
-          seniority: role.seniority,
-          responsibilities: role.responsibilities,
-          assignedExpertId: role.assignedExpertId,
-          description: role.description,
-          status: 'SENT',
-          version: role.version,
-          skillTargets: role.skillTargets,
-        }),
-      })
-      await fetchRoles()
-    } catch {
-      saveAndSetRoles((prev) => prev.map((r) => (r.id === role.id ? updatedRole : r)))
-    }
-
-    if (selectedRole?.id === role.id) {
-      setSelectedRole(updatedRole)
-    }
-    toast({
-      title: 'Target Role Sent to Expert',
-      description: `${role.title} (v${role.version}) has been dispatched to ${expertName} for micro-skill authoring and threshold configuration.`,
-      variant: 'success',
-    })
-  }
 
   // Handlers
   const handleOpenCreateRole = () => {
@@ -412,17 +378,14 @@ export function TargetRolesPage() {
       domainCode: 'ICT',
       track: 'PROFESSIONAL',
       seniority: 'P3',
-      levelThresholds: { J: 60, M: 75, S: 90 },
-      responsibilitiesText: '',
+      levelNames: ['Junior', 'Middle', 'Senior'],
       assignedExpertId: eligibleExperts[0]?.id || 'expert-chen',
       description: defaultOcc.description,
-      competencyIds: [],
     })
-    setCreateCompSearch('')
     setIsCreateRoleModalOpen(true)
   }
 
-  const handleCreateRoleSubmit = async () => {
+  const handleCreateRoleSubmit = async (targetStatus: 'draft' | 'sent' = 'draft') => {
     if (!roleForm.code.trim() || !roleForm.title.trim()) {
       toast({
         title: 'Validation Error',
@@ -442,14 +405,13 @@ export function TargetRolesPage() {
       return
     }
 
-    const orgId = activeComp?.id || 'default-org'
+    const orgId = activeComp?.id || 'comp-technova'
     let generatedId = `role-${Date.now()}`
-    const parsedResponsibilities = roleForm.responsibilitiesText
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean)
-
     const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === roleForm.occupationCode) || ONET_OCCUPATIONS[0]
+    const roleCode = roleForm.code.trim().toUpperCase()
+    const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
+    const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
+    const expertName = assignedExpert?.name || 'Assigned Expert'
 
     try {
       const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
@@ -459,16 +421,18 @@ export function TargetRolesPage() {
           'X-User-Role': 'LD_MANAGER',
         },
         body: JSON.stringify({
-          code: roleForm.code.trim().toUpperCase(),
+          code: roleCode,
           name: roleForm.title.trim(),
           domainCode: roleForm.domainCode,
           familyCode: roleForm.familyCode,
           track: roleForm.track,
           seniority: roleForm.seniority,
-          responsibilities: parsedResponsibilities,
+          responsibilities: [],
           assignedExpertId: roleForm.assignedExpertId,
           description: roleForm.scope || roleForm.description || selectedOcc.description,
-          competencyIds: roleForm.competencyIds,
+          competencyIds: [],
+          levels: roleForm.levelNames,
+          status: backendStatus,
         }),
       })
 
@@ -485,8 +449,10 @@ export function TargetRolesPage() {
         await fetchRoles()
         setIsCreateRoleModalOpen(false)
         toast({
-          title: 'Target Role Draft Created',
-          description: `Draft role ${roleForm.code.trim().toUpperCase()} - ${roleForm.title.trim()} initialized and saved to database.`,
+          title: targetStatus === 'sent' ? 'Target Role Created & Sent to Expert' : 'Target Role Draft Created',
+          description: targetStatus === 'sent'
+            ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName}.`
+            : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to database.`,
           variant: 'success',
         })
         return
@@ -495,30 +461,27 @@ export function TargetRolesPage() {
       // Backend unavailable fallback
     }
 
-    const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
-
     const newRole: TargetRoleModel = {
       id: generatedId,
       stableId: `role-uuid-${Date.now()}`,
-      code: roleForm.code.trim().toUpperCase(),
+      code: roleCode,
       title: roleForm.title.trim(),
       occupationCode: selectedOcc.code,
       occupationTitle: selectedOcc.name,
       scope: roleForm.scope || selectedOcc.description,
-      levels: ['Junior', 'Middle', 'Senior'],
-      levelThresholds: roleForm.levelThresholds,
+      levels: roleForm.levelNames,
       domainCode: roleForm.domainCode || 'ICT',
       familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
       track: roleForm.track || 'PROFESSIONAL',
       seniority: roleForm.seniority || 'P3',
-      responsibilities: parsedResponsibilities,
+      responsibilities: [],
       assignedExpertId: roleForm.assignedExpertId,
-      assignedExpertName: assignedExpert ? assignedExpert.name : '',
+      assignedExpertName: expertName,
       department: selectedOcc.name,
       description: roleForm.scope || roleForm.description || selectedOcc.description,
       version: '1.0',
-      status: 'draft',
-      competencyIds: roleForm.competencyIds || [],
+      status: targetStatus === 'sent' ? 'sent' : 'draft',
+      competencyIds: [],
       skillTargets: [],
       activeEnrollments: 0,
       createdAt: new Date().toISOString(),
@@ -528,83 +491,16 @@ export function TargetRolesPage() {
     saveAndSetRoles([newRole, ...roles])
     setIsCreateRoleModalOpen(false)
     toast({
-      title: 'Target Role Draft Created',
-      description: `Draft role ${newRole.code} - ${newRole.title} initialized. Assigned to ${newRole.assignedExpertName || 'Domain Expert'} for micro-skill linking.`,
+      title: targetStatus === 'sent' ? 'Target Role Created & Sent to Expert' : 'Target Role Draft Created',
+      description: targetStatus === 'sent'
+        ? `Role ${newRole.title} (${newRole.code}) created and dispatched to ${expertName}.`
+        : `Draft role ${newRole.code} - ${newRole.title} initialized.`,
       variant: 'success',
     })
   }
 
 
-  // Create Successor Draft (v+1)
-  const handleCreateSuccessorDraft = async (publishedRole: TargetRoleModel) => {
-    const currentVersionNum = parseFloat(publishedRole.version) || 1.0
-    const successorVersion = (currentVersionNum + 0.1).toFixed(1)
 
-    // Check if a draft or in-flight successor already exists for this role
-    const existingDraft = roles.find(
-      (r) =>
-        (r.stableId === publishedRole.stableId || r.code === publishedRole.code) &&
-        (r.status === 'draft' || r.status === 'submitted' || r.status === 'sent' || r.status === 'rejected'),
-    )
-    if (existingDraft) {
-      toast({
-        title: 'Successor Draft Exists',
-        description: `Successor version ${existingDraft.version} (${existingDraft.status.toUpperCase()}) is already open for ${publishedRole.title}. Please review or finalize the open version.`,
-        variant: 'warning',
-      })
-      return
-    }
-
-    try {
-      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Role': 'LD_MANAGER',
-        },
-        body: JSON.stringify({
-          code: publishedRole.code,
-          name: publishedRole.title,
-          domainCode: publishedRole.domainCode || 'ICT',
-          familyCode: publishedRole.familyCode || 'JAVA_BACKEND',
-          track: publishedRole.track || 'PROFESSIONAL',
-          seniority: publishedRole.seniority || (publishedRole.track === 'MANAGEMENT' ? 'M3' : 'P3'),
-          responsibilities: publishedRole.responsibilities || [],
-          assignedExpertId: publishedRole.assignedExpertId || '',
-          description: `Successor draft of ${publishedRole.title} (${publishedRole.version}). Historical learner assignments remain anchored to ${publishedRole.version}.`,
-          version: successorVersion,
-          status: 'DRAFT',
-          skillTargets: publishedRole.skillTargets || [],
-        }),
-      })
-
-      if (res.ok) {
-        await fetchRoles()
-        toast({
-          title: 'Successor Draft Initialized',
-          description: `Created ${publishedRole.title} (v${successorVersion} Draft). Saved to database.`,
-          variant: 'success',
-        })
-        return
-      } else {
-        const errorData = await res.json().catch(() => ({}))
-        toast({
-          title: 'Failed to Create Successor Draft',
-          description: errorData.message || errorData.error || 'Server rejected successor draft creation.',
-          variant: 'destructive',
-        })
-        return
-      }
-    } catch (e: unknown) {
-      const err = e instanceof Error ? e : new Error(String(e))
-      toast({
-        title: 'Network Error',
-        description: err.message || 'Could not communicate with server.',
-        variant: 'destructive',
-      })
-      return
-    }
-  }
 
   // Delete Target Role (Draft or Published)
   const handleDeleteRole = async (role: TargetRoleModel) => {
@@ -656,18 +552,15 @@ export function TargetRolesPage() {
       domainCode: (role.domainCode || 'ICT') as 'ICT' | 'DATA' | 'AI',
       track: (role.track || 'PROFESSIONAL') as 'PROFESSIONAL' | 'MANAGEMENT',
       seniority: role.seniority || 'P3',
-      levelThresholds: role.levelThresholds || { J: 60, M: 75, S: 90 },
-      responsibilitiesText: Array.isArray(role.responsibilities) ? role.responsibilities.join('\n') : '',
+      levelNames: role.levels && role.levels.length > 0 ? [...role.levels] : ['Junior', 'Middle', 'Senior'],
       assignedExpertId: effectiveExpertId,
       description: role.description || role.scope || occ.description,
-      competencyIds: role.competencyIds || [],
     })
-    setEditCompSearch('')
     setIsSkillTargetsModalOpen(true)
   }
 
   // Save updated role attributes (L&D Manager scope)
-  const handleSaveEditRole = async () => {
+  const handleSaveEditRole = async (targetStatus?: 'draft' | 'sent') => {
     if (!selectedRole) return
     if (!editRoleForm.title.trim()) {
       toast({
@@ -679,14 +572,14 @@ export function TargetRolesPage() {
     }
 
     const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
-    const parsedResponsibilities = editRoleForm.responsibilitiesText
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean)
-
+    const expertName = assignedExpert?.name || 'Assigned Expert'
     const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === editRoleForm.occupationCode) || ONET_OCCUPATIONS[0]
-
     const orgId = activeComp?.id || 'comp-technova'
+
+    const newStatus = targetStatus === 'sent'
+      ? 'SENT'
+      : (selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'submitted' ? 'SUBMITTED' : 'DRAFT')
+
     try {
       const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`, {
         method: 'PUT',
@@ -700,13 +593,13 @@ export function TargetRolesPage() {
           familyCode: editRoleForm.familyCode,
           track: editRoleForm.track,
           seniority: editRoleForm.seniority,
-          responsibilities: parsedResponsibilities,
+          responsibilities: [],
           assignedExpertId: editRoleForm.assignedExpertId,
           description: editRoleForm.scope || editRoleForm.description || selectedOcc.description,
-          status: selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'submitted' ? 'SUBMITTED' : 'DRAFT',
+          status: newStatus,
           version: selectedRole.version,
           skillTargets: selectedRole.skillTargets,
-          competencyIds: editRoleForm.competencyIds,
+          levels: editRoleForm.levelNames,
         }),
       })
       if (res.ok) {
@@ -722,18 +615,17 @@ export function TargetRolesPage() {
       occupationCode: selectedOcc.code,
       occupationTitle: selectedOcc.name,
       scope: editRoleForm.scope || editRoleForm.description || selectedOcc.description,
-      levels: selectedRole.levels || ['Junior', 'Middle', 'Senior'],
-      levelThresholds: editRoleForm.levelThresholds,
+      levels: editRoleForm.levelNames,
       domainCode: editRoleForm.domainCode || selectedRole.domainCode || 'ICT',
       familyCode: editRoleForm.familyCode || selectedRole.familyCode || selectedOcc.profiles[0] || 'DEV',
       track: editRoleForm.track || selectedRole.track || 'PROFESSIONAL',
       seniority: editRoleForm.seniority || selectedRole.seniority || 'P3',
-      responsibilities: parsedResponsibilities,
+      responsibilities: [],
       assignedExpertId: editRoleForm.assignedExpertId,
-      assignedExpertName: assignedExpert ? assignedExpert.name : '',
+      assignedExpertName: expertName,
       department: selectedOcc.name,
       description: editRoleForm.scope || editRoleForm.description || selectedOcc.description,
-      competencyIds: editRoleForm.competencyIds,
+      status: targetStatus === 'sent' ? 'sent' : selectedRole.status,
       updatedAt: new Date().toISOString(),
     }
 
@@ -741,8 +633,10 @@ export function TargetRolesPage() {
     setSelectedRole(updatedRole)
     setIsSkillTargetsModalOpen(false)
     toast({
-      title: 'Target Role Updated',
-      description: `Saved changes to ${updatedRole.code} - ${updatedRole.title}.`,
+      title: targetStatus === 'sent' ? 'Target Role Sent to Expert' : 'Target Role Updated',
+      description: targetStatus === 'sent'
+        ? `${updatedRole.title} (${updatedRole.code} v${updatedRole.version}) has been dispatched to ${expertName}.`
+        : `Saved changes to ${updatedRole.code} - ${updatedRole.title}.`,
       variant: 'success',
     })
   }
@@ -986,6 +880,8 @@ export function TargetRolesPage() {
       <div className="space-y-6 pb-16">
         {/* Actions Bar */}
         <PageHeader
+          title="Target Roles Catalog"
+          description="Define and manage organizational target roles, benchmark micro-skills, and competency profiles."
           actions={
             <div className="flex items-center gap-2">
               <Button
@@ -1121,7 +1017,7 @@ export function TargetRolesPage() {
                       <th className="py-2.5 px-3">Role Code</th>
                       <th className="py-2.5 px-3">Title &amp; Version</th>
                       <th className="py-2.5 px-3">Occupation</th>
-                      <th className="py-2.5 px-3 whitespace-nowrap">Proficiency Tiers (J • M • S)</th>
+                      <th className="py-2.5 px-3 text-center whitespace-nowrap">Levels</th>
                       <th className="py-2.5 px-3">Assigned Expert</th>
                       <th className="py-2.5 px-3 text-center">Competency</th>
                       <th className="py-2.5 px-3 text-center">Micro-skill</th>
@@ -1265,14 +1161,10 @@ export function TargetRolesPage() {
                               )
                             })()}
                           </td>
-                          <td className="py-3 px-3 whitespace-nowrap">
-                            <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                              <span>J ({role.levelThresholds?.J ?? 60}%)</span>
-                              <span className="text-muted-foreground">·</span>
-                              <span>M ({role.levelThresholds?.M ?? 75}%)</span>
-                              <span className="text-muted-foreground">·</span>
-                              <span>S ({role.levelThresholds?.S ?? 90}%)</span>
-                            </div>
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-semibold text-foreground text-xs font-mono">
+                              {(role.levels && role.levels.length > 0 ? role.levels : ['Junior', 'Middle', 'Senior']).length}
+                            </span>
                           </td>
                           <td className="py-3 px-3">
                             {role.assignedExpertName || expert ? (
@@ -1306,7 +1198,7 @@ export function TargetRolesPage() {
                               </Badge>
                             )}
                             {isSent && (
-                              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold dark:text-amber-400">
+                              <Badge className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]">
                                 SENT
                               </Badge>
                             )}
@@ -1320,7 +1212,7 @@ export function TargetRolesPage() {
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
-                              {/* View Details */}
+                              {/* View Details (Reviews submitted roles, inspects all fields per level) */}
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -1350,9 +1242,8 @@ export function TargetRolesPage() {
                                 <NetworkIcon className="h-4 w-4 text-primary" />
                               </Button>
 
-
-                              {/* Edit Role (Draft/Sent/Feedback) or Review Role (Submitted) */}
-                              {!isPublished && (
+                              {/* Edit Role (Draft/Feedback/Rejected) - Lock editing when Sent or Submitted or Published */}
+                              {!isPublished && !isSent && !isSubmitted && (
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -1362,48 +1253,21 @@ export function TargetRolesPage() {
                                     handleOpenEditRole(role)
                                   }}
                                   title={
-                                    isSubmitted
-                                      ? "Review Submitted Configuration"
-                                      : isFeedback
+                                    isFeedback
                                       ? "Edit & Address Expert Feedback"
-                                      : isSent
-                                      ? "Edit Sent Role Details"
                                       : "Edit Role Details"
                                   }
                                   aria-label={
-                                    isSubmitted
-                                      ? "Review Submitted Configuration"
-                                      : isFeedback
+                                    isFeedback
                                       ? "Edit & Address Expert Feedback"
-                                      : isSent
-                                      ? "Edit Sent Role Details"
                                       : "Edit Role Details"
                                   }
                                 >
-                                  {isSubmitted ? (
-                                    <FileCheck className="h-4 w-4 text-foreground" />
-                                  ) : isFeedback ? (
+                                  {isFeedback ? (
                                     <Edit3 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                   ) : (
                                     <Edit3 className="h-4 w-4" />
                                   )}
-                                </Button>
-                              )}
-
-                              {/* Create Successor Draft (Newest published version only) */}
-                              {isPublished && isNewestPublished && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleCreateSuccessorDraft(role)
-                                  }}
-                                  title="Create Successor Draft"
-                                  aria-label="Create Successor Draft"
-                                >
-                                  <Plus className="h-4 w-4" />
                                 </Button>
                               )}
 
@@ -1449,7 +1313,7 @@ export function TargetRolesPage() {
       </div>
 
       {/* 1. CREATE TARGET ROLE MODAL */}
-      <Dialog open={isCreateRoleModalOpen} onOpenChange={setIsCreateRoleModalOpen} className="max-w-2xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
+      <Dialog open={isCreateRoleModalOpen} onOpenChange={setIsCreateRoleModalOpen} className="max-w-3xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
         <DialogHeader className="shrink-0 mb-3">
           <div className="flex items-center justify-between pr-4">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
@@ -1555,115 +1419,64 @@ export function TargetRolesPage() {
             })()}
           </div>
 
-          {/* Card 3: Proficiency Benchmark Tiers */}
-          <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+          {/* Card 3: Role Seniority Levels */}
+          <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-foreground block">
-                  Proficiency Benchmark Tiers
+                  Role Seniority Levels
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  Benchmark passing thresholds for Junior, Middle, and Senior levels
+                  Define progressive levels for this role. Level codes are automatically generated.
                 </span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30">
-                Junior • Middle • Senior
-              </Badge>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setRoleForm((prev) => ({ ...prev, levelNames: [...prev.levelNames, `Level ${prev.levelNames.length + 1}`] }))}
+                className="h-7 text-xs font-semibold"
+                leftIcon={<Plus className="h-3.5 w-3.5 text-primary" />}
+              >
+                Add Level
+              </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-              <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground text-xs">Junior (J)</span>
-                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 1</Badge>
-                  </div>
-                  <div className="text-muted-foreground text-[10px] mt-0.5">Foundational execution &amp; guidance</div>
-                </div>
-                <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
-                  <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={10}
-                      max={100}
-                      step={5}
-                      value={roleForm.levelThresholds.J}
-                      onChange={(e) => {
-                        const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 60))
-                        setRoleForm({
-                          ...roleForm,
-                          levelThresholds: { ...roleForm.levelThresholds, J: val },
-                        })
+            <div className="space-y-2">
+              {roleForm.levelNames.map((name, idx) => (
+                <div key={idx} className="flex items-center gap-2 p-2 rounded-md bg-muted/20 border border-border">
+                  <Badge variant="secondary" className="font-mono text-xs px-2 shrink-0">
+                    Rank {idx + 1}
+                  </Badge>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => {
+                      const newNames = [...roleForm.levelNames]
+                      newNames[idx] = e.target.value
+                      setRoleForm({ ...roleForm, levelNames: newNames })
+                    }}
+                    placeholder={`e.g. ${idx === 0 ? 'Junior' : idx === 1 ? 'Middle' : idx === 2 ? 'Senior' : 'Lead'}`}
+                    className="flex-1 px-2.5 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                  {roleForm.levelNames.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const newNames = roleForm.levelNames.filter((_, i) => i !== idx)
+                        setRoleForm({ ...roleForm, levelNames: newNames })
                       }}
-                      className="w-14 px-1.5 py-0.5 rounded border border-border bg-background text-foreground font-bold font-mono text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                    />
-                    <span className="font-semibold text-muted-foreground text-xs">%</span>
-                  </div>
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      title="Remove Level"
+                      aria-label="Remove Level"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                 </div>
-              </div>
-
-              <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground text-xs">Middle (M)</span>
-                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 2</Badge>
-                  </div>
-                  <div className="text-muted-foreground text-[10px] mt-0.5">Independent delivery &amp; core systems</div>
-                </div>
-                <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
-                  <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={10}
-                      max={100}
-                      step={5}
-                      value={roleForm.levelThresholds.M}
-                      onChange={(e) => {
-                        const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 75))
-                        setRoleForm({
-                          ...roleForm,
-                          levelThresholds: { ...roleForm.levelThresholds, M: val },
-                        })
-                      }}
-                      className="w-14 px-1.5 py-0.5 rounded border border-border bg-background text-foreground font-bold font-mono text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                    />
-                    <span className="font-semibold text-muted-foreground text-xs">%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground text-xs">Senior (S)</span>
-                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 3</Badge>
-                  </div>
-                  <div className="text-muted-foreground text-[10px] mt-0.5">Technical leadership &amp; architecture</div>
-                </div>
-                <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
-                  <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={10}
-                      max={100}
-                      step={5}
-                      value={roleForm.levelThresholds.S}
-                      onChange={(e) => {
-                        const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 90))
-                        setRoleForm({
-                          ...roleForm,
-                          levelThresholds: { ...roleForm.levelThresholds, S: val },
-                        })
-                      }}
-                      className="w-14 px-1.5 py-0.5 rounded border border-border bg-background text-foreground font-bold font-mono text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                    />
-                    <span className="font-semibold text-muted-foreground text-xs">%</span>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -1693,153 +1506,43 @@ export function TargetRolesPage() {
             </div>
           </div>
 
-          {/* Card 5: Role Scope & Key Responsibilities */}
+          {/* Card 5: Role Scope & Summary */}
           <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Role Scope &amp; Key Responsibilities
+              Role Scope &amp; Summary
             </span>
             <div>
               <label className="text-[11px] font-semibold text-foreground block mb-1">
                 Role Scope &amp; Summary
               </label>
               <textarea
-                rows={2}
+                rows={3}
                 placeholder="Summarize the purpose, scope, and strategic objectives of this target role..."
                 value={roleForm.scope}
                 onChange={(e) => setRoleForm({ ...roleForm, scope: e.target.value, description: e.target.value })}
                 className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
               />
             </div>
-
-            <div>
-              <label className="text-[11px] font-semibold text-foreground block mb-1">
-                Key Responsibilities <span className="text-muted-foreground text-[10px] font-normal">(One responsibility per line)</span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Design and implement resilient backend microservices&#10;Optimize high-throughput data processing pipelines&#10;Mentor junior engineers on clean architecture"
-                value={roleForm.responsibilitiesText}
-                onChange={(e) => setRoleForm({ ...roleForm, responsibilitiesText: e.target.value })}
-                className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-sans shadow-2xs"
-              />
-              <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                Enter distinct job duties to be displayed on employee role roadmaps and career matrix.
-              </span>
-            </div>
-          </div>
-
-          {/* Card 6: Required Competencies */}
-          <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-primary" />
-                <span>Required Competencies</span>
-                <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
-                  {roleForm.competencyIds.length} linked
-                </Badge>
-              </label>
-              <span className="text-[10px] text-muted-foreground font-normal">
-                Select knowledge competencies required for employees targeting this role
-              </span>
-            </div>
-
-            {/* Quick Search */}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search competencies by code or name..."
-                value={createCompSearch}
-                onChange={(e) => setCreateCompSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
-              />
-            </div>
-
-            {/* Scrollable List */}
-            <div className="border border-border rounded-lg max-h-40 overflow-y-auto divide-y divide-border bg-background/50">
-              {companyCompetencies.length === 0 ? (
-                <div className="p-3 text-center text-muted-foreground text-xs">
-                  No competencies registered for this organization.
-                </div>
-              ) : (() => {
-                const filtered = companyCompetencies.filter(
-                  (comp) =>
-                    !createCompSearch.trim() ||
-                    comp.code.toLowerCase().includes(createCompSearch.toLowerCase()) ||
-                    comp.name.toLowerCase().includes(createCompSearch.toLowerCase()) ||
-                    (comp.description || '').toLowerCase().includes(createCompSearch.toLowerCase())
-                )
-                if (filtered.length === 0) {
-                  return (
-                    <div className="p-3 text-center text-muted-foreground text-xs">
-                      No competencies match &ldquo;{createCompSearch}&rdquo;.
-                    </div>
-                  )
-                }
-                return filtered.map((comp) => {
-                  const isLinked = roleForm.competencyIds.includes(comp.id)
-                  const isArchived = comp.status === 'archived'
-                  return (
-                    <div
-                      key={comp.id}
-                      onClick={() => {
-                        if (isArchived) return
-                        setRoleForm((prev) => ({
-                          ...prev,
-                          competencyIds: isLinked
-                            ? prev.competencyIds.filter((id) => id !== comp.id)
-                            : [...prev.competencyIds, comp.id],
-                        }))
-                      }}
-                      className={`p-2.5 flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
-                        isLinked
-                          ? 'bg-primary/5 hover:bg-primary/10'
-                          : isArchived
-                          ? 'opacity-50 cursor-not-allowed bg-muted/20'
-                          : 'hover:bg-muted/40'
-                      }`}
-                    >
-                      <div className="min-w-0 flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={isLinked}
-                          disabled={isArchived}
-                          onChange={() => {}}
-                          className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-mono font-bold text-xs text-foreground">{comp.code}</span>
-                            <span className="font-semibold text-xs text-foreground truncate">{comp.name}</span>
-                          </div>
-                          {comp.description && (
-                            <p className="text-[10px] text-muted-foreground truncate max-w-md mt-0.5">
-                              {comp.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-1.5">
-                        <Badge variant={isArchived ? 'outline' : isLinked ? 'success' : 'outline'} className="text-[10px] py-0 px-1.5">
-                          {isArchived ? 'Archived' : isLinked ? 'Linked' : 'Available'}
-                        </Badge>
-                      </div>
-                    </div>
-                  )
-                })
-              })()}
-            </div>
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3">
+        <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
           <Button variant="outline" size="sm" onClick={() => setIsCreateRoleModalOpen(false)}>
             Cancel
           </Button>
-          <Button variant="primary" size="sm" onClick={handleCreateRoleSubmit}>
-            Create Draft Role
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleCreateRoleSubmit('draft')}>
+              Save as Draft
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Send className="h-4 w-4" />}
+              onClick={() => handleCreateRoleSubmit('sent')}
+            >
+              Create &amp; Send to Expert
+            </Button>
+          </div>
         </DialogFooter>
       </Dialog>
 
@@ -2180,130 +1883,69 @@ export function TargetRolesPage() {
               })()}
             </div>
 
-            {/* Card 3: Proficiency Benchmark Tiers */}
-            <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+            {/* Card 3: Role Seniority Levels */}
+            <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-foreground block">
-                    Proficiency Benchmark Tiers
+                    Role Seniority Levels
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    Benchmark passing thresholds for Junior, Middle, and Senior levels
+                    Define progressive levels for this role. Level codes are automatically generated.
                   </span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30">
-                  Junior • Middle • Senior
-                </Badge>
+                {!isSubmittedRole && !isPublishedRole && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditRoleForm((prev) => ({ ...prev, levelNames: [...prev.levelNames, `Level ${prev.levelNames.length + 1}`] }))}
+                    className="h-7 text-xs font-semibold"
+                    leftIcon={<Plus className="h-3.5 w-3.5 text-primary" />}
+                  >
+                    Add Level
+                  </Button>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground text-xs">Junior (J)</span>
-                      <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 1</Badge>
-                    </div>
-                    <div className="text-muted-foreground text-[10px] mt-0.5">Foundational execution &amp; guidance</div>
-                  </div>
-                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
-                    <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        min={10}
-                        max={100}
-                        step={5}
-                        disabled={isSubmittedRole || isPublishedRole}
-                        value={editRoleForm.levelThresholds.J}
-                        onChange={(e) => {
-                          const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 60))
-                          setEditRoleForm({
-                            ...editRoleForm,
-                            levelThresholds: { ...editRoleForm.levelThresholds, J: val },
-                          })
+              <div className="space-y-2">
+                {editRoleForm.levelNames.map((name, idx) => (
+                  <div key={idx} className="flex items-center gap-2 p-2 rounded-md bg-muted/20 border border-border">
+                    <Badge variant="secondary" className="font-mono text-xs px-2 shrink-0">
+                      Rank {idx + 1}
+                    </Badge>
+                    <input
+                      type="text"
+                      disabled={isSubmittedRole || isPublishedRole}
+                      value={name}
+                      onChange={(e) => {
+                        const newNames = [...editRoleForm.levelNames]
+                        newNames[idx] = e.target.value
+                        setEditRoleForm({ ...editRoleForm, levelNames: newNames })
+                      }}
+                      placeholder={`e.g. ${idx === 0 ? 'Junior' : idx === 1 ? 'Middle' : idx === 2 ? 'Senior' : 'Lead'}`}
+                      className={`flex-1 px-2.5 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none ${
+                        isSubmittedRole || isPublishedRole ? 'bg-muted/50 cursor-not-allowed opacity-80' : ''
+                      }`}
+                    />
+                    {!isSubmittedRole && !isPublishedRole && editRoleForm.levelNames.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newNames = editRoleForm.levelNames.filter((_, i) => i !== idx)
+                          setEditRoleForm({ ...editRoleForm, levelNames: newNames })
                         }}
-                        className={`w-14 px-1.5 py-0.5 rounded border font-bold font-mono text-center text-xs ${
-                          isSubmittedRole || isPublishedRole
-                            ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
-                            : 'border-border bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none'
-                        }`}
-                      />
-                      <span className="font-semibold text-muted-foreground text-xs">%</span>
-                    </div>
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        title="Remove Level"
+                        aria-label="Remove Level"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
-                </div>
-
-                <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground text-xs">Middle (M)</span>
-                      <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 2</Badge>
-                    </div>
-                    <div className="text-muted-foreground text-[10px] mt-0.5">Independent delivery &amp; core systems</div>
-                  </div>
-                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
-                    <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        min={10}
-                        max={100}
-                        step={5}
-                        disabled={isSubmittedRole || isPublishedRole}
-                        value={editRoleForm.levelThresholds.M}
-                        onChange={(e) => {
-                          const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 75))
-                          setEditRoleForm({
-                            ...editRoleForm,
-                            levelThresholds: { ...editRoleForm.levelThresholds, M: val },
-                          })
-                        }}
-                        className={`w-14 px-1.5 py-0.5 rounded border font-bold font-mono text-center text-xs ${
-                          isSubmittedRole || isPublishedRole
-                            ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
-                            : 'border-border bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none'
-                        }`}
-                      />
-                      <span className="font-semibold text-muted-foreground text-xs">%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded-md bg-muted/30 border border-border/80 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground text-xs">Senior (S)</span>
-                      <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank 3</Badge>
-                    </div>
-                    <div className="text-muted-foreground text-[10px] mt-0.5">Technical leadership &amp; architecture</div>
-                  </div>
-                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border/60">
-                    <span className="text-[10px] font-semibold text-muted-foreground">Benchmark Target:</span>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        min={10}
-                        max={100}
-                        step={5}
-                        disabled={isSubmittedRole || isPublishedRole}
-                        value={editRoleForm.levelThresholds.S}
-                        onChange={(e) => {
-                          const val = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 90))
-                          setEditRoleForm({
-                            ...editRoleForm,
-                            levelThresholds: { ...editRoleForm.levelThresholds, S: val },
-                          })
-                        }}
-                        className={`w-14 px-1.5 py-0.5 rounded border font-bold font-mono text-center text-xs ${
-                          isSubmittedRole || isPublishedRole
-                            ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
-                            : 'border-border bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none'
-                        }`}
-                      />
-                      <span className="font-semibold text-muted-foreground text-xs">%</span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -2334,17 +1976,17 @@ export function TargetRolesPage() {
               </div>
             </div>
 
-            {/* Card 5: Role Scope & Key Responsibilities */}
+            {/* Card 5: Role Scope & Summary */}
             <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                Role Scope &amp; Key Responsibilities
+                Role Scope &amp; Summary
               </span>
               <div>
                 <label className="text-[11px] font-semibold text-foreground block mb-1">
                   Role Scope &amp; Summary
                 </label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   disabled={isSubmittedRole || isPublishedRole}
                   placeholder="Summarize the purpose, scope, and strategic objectives of this target role..."
                   value={editRoleForm.scope}
@@ -2356,169 +1998,41 @@ export function TargetRolesPage() {
                   }`}
                 />
               </div>
-
-              <div>
-                <label className="text-[11px] font-semibold text-foreground block mb-1">
-                  Key Responsibilities <span className="text-muted-foreground text-[10px] font-normal">(One responsibility per line)</span>
-                </label>
-                <textarea
-                  rows={3}
-                  disabled={isSubmittedRole || isPublishedRole}
-                  placeholder="Enter each responsibility on a new line..."
-                  value={editRoleForm.responsibilitiesText}
-                  onChange={(e) => setEditRoleForm({ ...editRoleForm, responsibilitiesText: e.target.value })}
-                  className={`w-full px-2.5 py-1.5 rounded-md border text-xs font-sans shadow-2xs ${
-                    isSubmittedRole || isPublishedRole
-                      ? 'bg-muted/50 border-border text-foreground cursor-not-allowed opacity-80'
-                      : 'bg-background border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary'
-                  }`}
-                />
-                <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                  Enter distinct job duties to be displayed on employee role roadmaps and career matrix.
-                </span>
-              </div>
             </div>
 
-              {/* Linked Competencies */}
-              <div className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                    <BookOpen className="h-3.5 w-3.5 text-primary" />
-                    <span>Required Competencies</span>
-                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-semibold">
-                      {editRoleForm.competencyIds.length} linked
-                    </Badge>
-                  </label>
-                  <span className="text-[10px] text-muted-foreground font-normal">
-                    {selectedRole.status === 'published'
-                      ? 'Published role (Competency links locked)'
-                      : 'Select knowledge competencies required for employees targeting this role'}
-                  </span>
-                </div>
-
-                {/* Quick Search */}
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search competencies by code or name..."
-                    value={editCompSearch}
-                    onChange={(e) => setEditCompSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
-                  />
-                </div>
-
-                {/* Scrollable List */}
-                <div className="border border-border rounded-lg max-h-40 overflow-y-auto divide-y divide-border bg-card">
-                  {companyCompetencies.length === 0 ? (
-                    <div className="p-3 text-center text-muted-foreground text-xs">
-                      No competencies registered for this organization.
-                    </div>
-                  ) : (() => {
-                    const filtered = companyCompetencies.filter(
-                      (comp) =>
-                        !editCompSearch.trim() ||
-                        comp.code.toLowerCase().includes(editCompSearch.toLowerCase()) ||
-                        comp.name.toLowerCase().includes(editCompSearch.toLowerCase()) ||
-                        (comp.description || '').toLowerCase().includes(editCompSearch.toLowerCase())
-                    )
-                    if (filtered.length === 0) {
-                      return (
-                        <div className="p-3 text-center text-muted-foreground text-xs">
-                          No competencies match &ldquo;{editCompSearch}&rdquo;.
-                        </div>
-                      )
-                    }
-                    const isLocked = isPublishedRole || isSubmittedRole
-                    return filtered.map((comp) => {
-                      const isLinked = editRoleForm.competencyIds.includes(comp.id)
-                      const isArchived = comp.status === 'archived'
-                      return (
-                        <div
-                          key={comp.id}
-                          onClick={() => {
-                            if (isArchived || isLocked) return
-                            setEditRoleForm((prev) => ({
-                              ...prev,
-                              competencyIds: isLinked
-                                ? prev.competencyIds.filter((id) => id !== comp.id)
-                                : [...prev.competencyIds, comp.id],
-                            }))
-                          }}
-                          className={`p-2.5 flex items-center justify-between gap-2.5 transition-colors ${
-                            isLocked || isArchived ? 'opacity-70 cursor-not-allowed bg-muted/20' : 'cursor-pointer'
-                          } ${isLinked ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/40'}`}
-                        >
-                          <div className="min-w-0 flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={isLinked}
-                              disabled={isArchived || isLocked}
-                              onChange={() => {}}
-                              className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer shrink-0"
-                            />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-mono font-bold text-xs text-foreground">{comp.code}</span>
-                                <span className="font-semibold text-xs text-foreground truncate">{comp.name}</span>
-                              </div>
-                              {comp.description && (
-                                <p className="text-[10px] text-muted-foreground truncate max-w-md mt-0.5">
-                                  {comp.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="shrink-0 flex items-center gap-1.5">
-                            <Badge variant={isArchived ? 'outline' : isLinked ? 'success' : 'outline'} className="text-[10px] py-0 px-1.5">
-                              {isArchived ? 'Archived' : isLinked ? (isLocked ? 'Linked (Locked)' : 'Linked') : 'Available'}
-                            </Badge>
-                          </div>
-                        </div>
-                      )
-                    })
-                  })()}
-                </div>
-              </div>
-
-              {/* Current assigned targets table (Read-only for L&D Manager) */}
+            {/* Current assigned targets table (Read-only for L&D Manager) */}
+            {selectedRole.skillTargets && selectedRole.skillTargets.length > 0 && (
               <div>
                 <div className="font-semibold text-foreground mb-2 flex items-center justify-between">
                   <span>Assigned Micro-Skills Matrix ({selectedRole.skillTargets.length})</span>
                   <span className="text-[11px] text-muted-foreground">Configured by Domain Expert</span>
                 </div>
 
-                {selectedRole.skillTargets.length === 0 ? (
-                  <div className="text-center py-6 text-muted-foreground border border-dashed rounded-lg bg-card/40 text-xs">
-                    No micro-skills linked yet. Awaiting competency mapping by the assigned Subject Matter Expert.
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto border rounded-lg border-border">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[10px] font-semibold">
-                          <th className="py-2 px-3">Skill Code &amp; Name</th>
-                          <th className="py-2 px-3 text-center">Required Threshold</th>
+                <div className="overflow-x-auto border rounded-lg border-border">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[10px] font-semibold">
+                        <th className="py-2 px-3">Skill Code &amp; Name</th>
+                        <th className="py-2 px-3 text-center">Required Threshold</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {selectedRole.skillTargets.map((st) => (
+                        <tr key={st.skillId} className="hover:bg-muted/10">
+                          <td className="py-2.5 px-3">
+                            <div className="font-mono font-bold text-foreground">{st.skillCode}</div>
+                            <div className="text-[11px] text-muted-foreground">{st.skillName}</div>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className="font-bold text-primary">{st.threshold}%</span>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {selectedRole.skillTargets.map((st) => (
-                          <tr key={st.skillId} className="hover:bg-muted/10">
-                            <td className="py-2.5 px-3">
-                              <div className="font-mono font-bold text-foreground">{st.skillCode}</div>
-                              <div className="text-[11px] text-muted-foreground">{st.skillName}</div>
-                            </td>
-                            <td className="py-2.5 px-3 text-center">
-                              <span className="font-bold text-primary">{st.threshold}%</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
+            )}
           </div>
 
           <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
@@ -2573,17 +2087,14 @@ export function TargetRolesPage() {
                   <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
                     Cancel
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleSaveEditRole}>
+                  <Button variant="outline" size="sm" onClick={() => handleSaveEditRole('draft')}>
                     Save Changes
                   </Button>
                   <Button
                     variant="primary"
                     size="sm"
                     leftIcon={<Send className="h-4 w-4" />}
-                    onClick={async () => {
-                      await handleSaveEditRole()
-                      handleSendToExpert({ ...selectedRole, ...editRoleForm, status: 'sent' })
-                    }}
+                    onClick={() => handleSaveEditRole('sent')}
                   >
                     {isSentRole || isFeedbackRole ? 'Save & Re-dispatch to Expert' : selectedRole.rejectionReason ? 'Save & Re-send to Expert' : 'Save & Send to Expert'}
                   </Button>
@@ -2728,7 +2239,7 @@ export function TargetRolesPage() {
         <Dialog
           open={Boolean(viewingDetailsRole)}
           onOpenChange={(open) => !open && setViewingDetailsRole(null)}
-          className="max-w-2xl max-h-[88vh] flex flex-col p-6 overflow-hidden"
+          className="max-w-3xl max-h-[90vh] flex flex-col p-6 overflow-hidden"
         >
           <DialogHeader className="shrink-0 mb-3">
             <div className="flex items-center justify-between pr-4">
@@ -2755,7 +2266,7 @@ export function TargetRolesPage() {
                         : viewEffStatus === 'submitted'
                         ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 text-xs'
                         : viewEffStatus === 'sent'
-                        ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold dark:text-amber-400 text-xs'
+                        ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
                         : 'font-bold text-xs'
                     }
                   >
@@ -2765,7 +2276,7 @@ export function TargetRolesPage() {
               })()}
             </div>
             <DialogDescription className="text-xs text-muted-foreground">
-              Comprehensive role specifications, competency requirements, and workforce alignment.
+              Comprehensive role specifications, level-by-level competency requirements, and workforce alignment.
             </DialogDescription>
           </DialogHeader>
 
@@ -2832,31 +2343,26 @@ export function TargetRolesPage() {
                     </div>
                   </div>
 
-                  {/* Proficiency Benchmark Levels */}
+                  {/* Role Seniority Levels */}
                   <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-foreground">
-                        Proficiency Benchmark Levels
+                        Role Seniority Levels
                       </span>
-                      <span className="text-[10px] text-muted-foreground">Standard Mastery Targets</span>
+                      <span className="text-[10px] text-muted-foreground font-semibold">
+                        {(viewingDetailsRole.levels?.length || 3)} Progressive Levels
+                      </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {ONTOLOGY_LEVELS.map((lvl) => {
-                        const targetThreshold = viewingDetailsRole.levelThresholds?.[lvl.code] ?? Math.round(lvl.threshold * 100)
-                        return (
-                          <div key={lvl.code} className="p-2 rounded-md bg-muted/30 border border-border/80">
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-foreground text-xs">{lvl.name} ({lvl.code})</span>
-                              <Badge variant="primary" className="text-[9px] py-0 px-1 font-mono">
-                                {targetThreshold}% Target
-                              </Badge>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
-                              {lvl.context}
-                            </p>
-                          </div>
-                        )
-                      })}
+                    <div className="flex flex-wrap gap-2">
+                      {(viewingDetailsRole.levels && viewingDetailsRole.levels.length > 0
+                        ? viewingDetailsRole.levels
+                        : ['Junior', 'Middle', 'Senior']
+                      ).map((lvlName, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5 p-2 rounded-md bg-muted/30 border border-border/80">
+                          <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">Rank {idx + 1}</Badge>
+                          <span className="font-bold text-foreground text-xs">{lvlName}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -2891,78 +2397,217 @@ export function TargetRolesPage() {
               </p>
             </div>
 
-            {/* Key Responsibilities */}
-            {viewingDetailsRole.responsibilities && viewingDetailsRole.responsibilities.length > 0 && (
-              <div className="p-3 rounded-lg border border-border bg-card space-y-1.5 text-xs">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Core Responsibilities ({viewingDetailsRole.responsibilities.length})
-                </span>
-                <ul className="list-disc list-inside space-y-1 text-foreground leading-relaxed">
-                  {viewingDetailsRole.responsibilities.map((resp, idx) => (
-                    <li key={idx} className="pl-1 text-xs">
-                      {resp}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* Level-Specific Competencies & Micro-skills Breakdown */}
+            {(() => {
+              const detailRoleLevels = viewingDetailsRole.levels && viewingDetailsRole.levels.length > 0
+                ? viewingDetailsRole.levels
+                : ['Junior', 'Middle', 'Senior']
 
-            {/* Linked Competencies */}
-            <div className="space-y-2 text-xs">
-              <span className="font-bold text-foreground flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-primary" />
-                Mapped Knowledge Competencies ({viewingDetailsRole.competencyIds.length})
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {viewingDetailsRole.competencyIds.map((cid) => {
-                  const comp = companyCompetencies.find((c) => c.id === cid)
-                  return (
-                    <span
-                      key={cid}
-                      className="px-2.5 py-1 rounded-md bg-secondary text-primary font-medium border border-primary/20"
-                    >
-                      {comp ? `${comp.code}: ${comp.name}` : cid}
+              return (
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <Layers className="h-4 w-4 text-primary" />
+                      Level Competencies &amp; Micro-skill Requirements
                     </span>
-                  )
-                })}
-              </div>
-            </div>
+                    <span className="text-[11px] text-muted-foreground font-medium">
+                      Select level to inspect isolated competencies &amp; skills
+                    </span>
+                  </div>
 
-            {/* Required Micro-Skill Targets Table */}
-            <div className="space-y-2 text-xs">
-              <span className="font-bold text-foreground flex items-center gap-1.5">
-                <Sliders className="h-3.5 w-3.5 text-primary" />
-                Target Micro-skills ({viewingDetailsRole.skillTargets.length})
-              </span>
-              <div className="max-h-48 overflow-y-auto rounded-lg border border-border">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
-                    <tr>
-                      <th className="py-2 px-3">Skill Code &amp; Name</th>
-                      <th className="py-2 px-3 text-center">Required Threshold</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {viewingDetailsRole.skillTargets.map((st) => {
-                      const skill = companyMicroSkills.find((s) => s.id === st.skillId || s.code === st.skillCode)
-                      const code = st.skillCode || skill?.code || 'SKILL'
-                      const name = st.skillName || skill?.name || ''
+                  {/* Level Tabs */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDetailLevelTab('ALL')}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
+                        selectedDetailLevelTab === 'ALL'
+                          ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                          : 'bg-card text-muted-foreground hover:bg-muted/30 border-border'
+                      }`}
+                    >
+                      All Levels Overview
+                    </button>
+                    {detailRoleLevels.map((lvl) => {
+                      const lvlComps = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                      const lvlSkills = viewingDetailsRole.skillTargets.filter((st) => (st.level || detailRoleLevels[0]) === lvl)
+                      const isSelected = selectedDetailLevelTab === lvl
+
                       return (
-                        <tr key={st.skillId || st.skillCode} className="hover:bg-muted/20">
-                          <td className="py-2 px-3">
-                            <span className="font-mono font-bold text-foreground mr-1">{code}</span>
-                            <span className="text-muted-foreground">{name}</span>
-                          </td>
-                          <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                            {st.threshold}%
-                          </td>
-                        </tr>
+                        <button
+                          key={lvl}
+                          type="button"
+                          onClick={() => setSelectedDetailLevelTab(lvl)}
+                          className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                              : 'bg-card text-foreground hover:bg-muted/30 border-border'
+                          }`}
+                        >
+                          <span>{lvl}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                            {lvlSkills.length} skills · {lvlComps.length} comps
+                          </span>
+                        </button>
                       )
                     })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  </div>
+
+                  {/* Content for All Levels or Selected Level */}
+                  {selectedDetailLevelTab === 'ALL' ? (
+                    <div className="space-y-3">
+                      {detailRoleLevels.map((lvl, lIdx) => {
+                        const lvlComps = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                        const lvlSkills = viewingDetailsRole.skillTargets.filter((st) => (st.level || detailRoleLevels[0]) === lvl)
+
+                        return (
+                          <div key={lvl} className="p-3.5 rounded-lg border border-border bg-card space-y-2.5">
+                            <div className="flex items-center justify-between pb-1.5 border-b border-border">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="font-mono text-[10px]">Rank {lIdx + 1}</Badge>
+                                <span className="font-bold text-foreground text-xs">{lvl} Level</span>
+                              </div>
+                              <span className="text-[11px] text-muted-foreground font-mono">
+                                {lvlSkills.length} skills configured · {lvlComps.length} competencies
+                              </span>
+                            </div>
+
+                            {/* Competencies for this Level */}
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                                Level Competencies ({lvlComps.length})
+                              </span>
+                              {lvlComps.length === 0 ? (
+                                <span className="text-[11px] text-muted-foreground italic">No competencies assigned to {lvl} level.</span>
+                              ) : (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {lvlComps.map((cid) => {
+                                    const comp = companyCompetencies.find((c) => c.id === cid || c.code === cid)
+                                    return (
+                                      <span
+                                        key={cid}
+                                        className="px-2 py-0.5 rounded bg-secondary text-primary font-medium text-[11px] border border-primary/20"
+                                      >
+                                        {comp ? `${comp.code}: ${comp.name}` : cid}
+                                      </span>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Micro-skills for this Level */}
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                                Required Micro-skills ({lvlSkills.length})
+                              </span>
+                              {lvlSkills.length === 0 ? (
+                                <span className="text-[11px] text-muted-foreground italic">No micro-skills configured for {lvl} level.</span>
+                              ) : (
+                                <div className="rounded border border-border overflow-hidden">
+                                  <table className="w-full text-left text-xs">
+                                    <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                                      <tr>
+                                        <th className="py-1.5 px-2.5">Skill Code &amp; Title</th>
+                                        <th className="py-1.5 px-2.5 text-center w-28">Threshold</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                      {lvlSkills.map((st) => {
+                                        const skill = companyMicroSkills.find((s) => s.id === st.skillId || s.code === st.skillCode)
+                                        return (
+                                          <tr key={st.skillId || st.skillCode} className="hover:bg-muted/20">
+                                            <td className="py-1.5 px-2.5">
+                                              <span className="font-mono font-bold text-primary mr-1">{st.skillCode || skill?.code}</span>
+                                              <span className="text-foreground">{st.skillName || skill?.name}</span>
+                                            </td>
+                                            <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
+                                              {st.threshold}%
+                                            </td>
+                                          </tr>
+                                        )
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+                      {/* Competencies for selected Level */}
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                          Assigned Competencies for {selectedDetailLevelTab}
+                        </span>
+                        {(() => {
+                          const lvlComps = (viewingDetailsRole.levelCompetencies?.[selectedDetailLevelTab] || (selectedDetailLevelTab === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                          if (lvlComps.length === 0) {
+                            return <div className="text-[11px] text-muted-foreground italic">No competencies assigned to {selectedDetailLevelTab}.</div>
+                          }
+                          return (
+                            <div className="flex flex-wrap gap-1.5">
+                              {lvlComps.map((cid) => {
+                                const comp = companyCompetencies.find((c) => c.id === cid || c.code === cid)
+                                return (
+                                  <span key={cid} className="px-2.5 py-1 rounded bg-secondary text-primary font-medium text-xs border border-primary/20">
+                                    {comp ? `${comp.code}: ${comp.name}` : cid}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )
+                        })()}
+                      </div>
+
+                      {/* Micro-skills Table for selected Level */}
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                          Target Micro-skills for {selectedDetailLevelTab}
+                        </span>
+                        {(() => {
+                          const lvlSkills = viewingDetailsRole.skillTargets.filter((st) => (st.level || detailRoleLevels[0]) === selectedDetailLevelTab)
+                          if (lvlSkills.length === 0) {
+                            return <div className="text-[11px] text-muted-foreground italic">No micro-skills configured for {selectedDetailLevelTab}.</div>
+                          }
+                          return (
+                            <div className="rounded-lg border border-border overflow-hidden">
+                              <table className="w-full text-left text-xs">
+                                <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                                  <tr>
+                                    <th className="py-2 px-3">Skill Code &amp; Title</th>
+                                    <th className="py-2 px-3 text-center w-32">Threshold</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                  {lvlSkills.map((st) => {
+                                    const skill = companyMicroSkills.find((s) => s.id === st.skillId || s.code === st.skillCode)
+                                    return (
+                                      <tr key={st.skillId || st.skillCode} className="hover:bg-muted/20">
+                                        <td className="py-2 px-3">
+                                          <span className="font-mono font-bold text-primary mr-1.5">{st.skillCode || skill?.code}</span>
+                                          <span className="text-foreground">{st.skillName || skill?.name}</span>
+                                        </td>
+                                        <td className="py-2 px-3 text-center font-mono font-bold text-primary">
+                                          {st.threshold}%
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
 
           </div>
 
@@ -3196,6 +2841,7 @@ export function TargetRolesPage() {
         roleId={graphRole?.id || null}
         organizationId={activeComp?.id || 'default-org'}
         roleTitle={graphRole?.title}
+        levels={graphRole?.levels}
       />
     </WorkspaceLayout>
   )

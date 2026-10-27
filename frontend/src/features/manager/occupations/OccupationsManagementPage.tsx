@@ -35,7 +35,12 @@ import {
 } from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
 import { ELIGIBLE_EXPERTS } from '../data/ldManagerMockData'
+import {
+  createOccupation,
+  updateOccupation,
+} from '../../../shared/api/occupationApi'
 
 export interface RiasecProfile {
   realistic: number
@@ -265,14 +270,139 @@ const OCCUPATION_PRESETS: ImportPreset[] = [
 ]
 
 const PAGE_SIZE = 8
+const OCCUPATIONS_STORAGE_PREFIX = 'adaptlearn_occupations_v2_'
+
+const getStoredOccupations = (organizationId: string): OccupationRecord[] | null => {
+  try {
+    const raw = localStorage.getItem(`${OCCUPATIONS_STORAGE_PREFIX}${organizationId}`)
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return null
+}
+
+const setStoredOccupations = (organizationId: string, data: OccupationRecord[]) => {
+  try {
+    localStorage.setItem(`${OCCUPATIONS_STORAGE_PREFIX}${organizationId}`, JSON.stringify(data))
+  } catch {}
+}
 
 export function OccupationsManagementPage() {
   const { toast } = useToast()
+  const activeCompany = getActiveCompany()
+  const orgId = activeCompany?.id || 'comp-technova'
 
-  const [occupations, setOccupations] = React.useState<OccupationRecord[]>(INITIAL_OCCUPATIONS)
+  const [occupations, setOccupations] = React.useState<OccupationRecord[]>(() => {
+    return getStoredOccupations(orgId) || INITIAL_OCCUPATIONS
+  })
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
   const [currentPage, setCurrentPage] = React.useState(1)
+
+  // Synchronized state and persistent storage updater
+  const setAndSaveOccupations = React.useCallback(
+    (updater: OccupationRecord[] | ((prev: OccupationRecord[]) => OccupationRecord[])) => {
+      setOccupations((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        setStoredOccupations(orgId, next)
+        return next
+      })
+    },
+    [orgId]
+  )
+
+  // Live database fetching from Neo4j merged with local state
+  const fetchLiveOccupations = React.useCallback(async () => {
+    try {
+      const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/occupations`)
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data) && data.length > 0) {
+          const currentStored = getStoredOccupations(orgId) || INITIAL_OCCUPATIONS
+          const storedByCode = new Map(currentStored.map((o) => [o.code, o]))
+
+          const mapped: OccupationRecord[] = data.map((item: {
+            id?: string
+            code?: string
+            name?: string
+            title?: string
+            jobZone?: number
+            description?: string
+            status?: string
+            assignedExperts?: Array<{ id: string; name?: string; email?: string; title?: string }>
+            microSkillCount?: number
+            moduleCount?: number
+            roles?: Array<{ skillCount?: number }>
+            interests?: RiasecProfile
+            createdAt?: string
+          }) => {
+            const code = item.code || item.id || ''
+            const localMatch = storedByCode.get(code)
+            const initialMatch = INITIAL_OCCUPATIONS.find((o) => o.code === code)
+
+            // Preserve assigned experts: local user edits > initial assignments > backend
+            const effectiveExperts =
+              localMatch && localMatch.assignedExperts && localMatch.assignedExperts.length > 0
+                ? localMatch.assignedExperts
+                : initialMatch && initialMatch.assignedExperts && initialMatch.assignedExperts.length > 0
+                ? initialMatch.assignedExperts
+                : (item.assignedExperts || []).map((e) => ({
+                    id: e.id,
+                    name: e.name || e.id,
+                    email: e.email || `${e.id}@technova.internal`,
+                    title: e.title || 'Domain Specialist',
+                  }))
+
+            return {
+              id: item.id || item.code || '',
+              code,
+              name: item.name || item.title || '',
+              jobZone: item.jobZone || 4,
+              description: item.description || localMatch?.description || initialMatch?.description || '',
+              status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
+              assignedExperts: effectiveExperts,
+              microSkillCount: item.microSkillCount || (item.roles ? item.roles.reduce((acc: number, r) => acc + (r.skillCount || 0), 0) : 0),
+              moduleCount: item.moduleCount || (item.roles ? item.roles.length * 3 : 0),
+              interests: item.interests || localMatch?.interests || initialMatch?.interests || {
+                realistic: 0.4,
+                investigative: 0.8,
+                artistic: 0.2,
+                social: 0.2,
+                enterprising: 0.3,
+                conventional: 0.7,
+              },
+              createdAt: item.createdAt || localMatch?.createdAt || new Date().toISOString().split('T')[0],
+            }
+          })
+
+          // Also keep any custom occupations created by the user that are not in the backend
+          const backendCodes = new Set(mapped.map((m) => m.code))
+          const customCreated = currentStored.filter((s) => !backendCodes.has(s.code))
+          const merged = [...customCreated, ...mapped]
+
+          setOccupations(merged)
+          setStoredOccupations(orgId, merged)
+          return
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch live occupations:', e)
+    }
+  }, [orgId])
+
+  React.useEffect(() => {
+    fetchLiveOccupations()
+  }, [fetchLiveOccupations])
+
+  // Synchronize state when active company scope changes
+  React.useEffect(() => {
+    const handleSync = () => {
+      fetchLiveOccupations()
+    }
+    window.addEventListener('active_company_changed', handleSync)
+    return () => {
+      window.removeEventListener('active_company_changed', handleSync)
+    }
+  }, [fetchLiveOccupations])
 
   // Import Modal
   const [isImportModalOpen, setIsImportModalOpen] = React.useState(false)
@@ -309,14 +439,21 @@ export function OccupationsManagementPage() {
 
   // Filtered List
   const filteredOccupations = React.useMemo(() => {
-    return occupations.filter((o) => {
-      const matchesSearch =
-        o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.description.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter
-      return matchesSearch && matchesStatus
-    })
+    return occupations
+      .filter((o) => {
+        const matchesSearch =
+          o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          o.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          o.description.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter
+        return matchesSearch && matchesStatus
+      })
+      .sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        if (timeA !== timeB) return timeB - timeA
+        return (b.id || '').localeCompare(a.id || '')
+      })
   }, [occupations, searchQuery, statusFilter])
 
   // Pagination
@@ -367,34 +504,58 @@ export function OccupationsManagementPage() {
   }
 
   // Save Occupation
-  const handleSaveOccupation = (e: React.FormEvent) => {
+  const handleSaveOccupation = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!occName.trim() || !occCode.trim()) return
 
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+
     if (editingOccupation) {
-      setOccupations((prev) =>
-        prev.map((o) =>
-          o.id === editingOccupation.id
-            ? {
-                ...o,
-                name: occName.trim(),
-                code: occCode.trim().toUpperCase(),
-                jobZone: occJobZone,
-                description: occDescription.trim(),
-                interests: occInterests,
-              }
-            : o
+      try {
+        await updateOccupation(orgId, editingOccupation.id, {
+          name: occName.trim(),
+          code: occCode.trim().toUpperCase(),
+          jobZone: occJobZone,
+          interestRealistic: occInterests.realistic,
+          interestInvestigative: occInterests.investigative,
+          interestArtistic: occInterests.artistic,
+          interestSocial: occInterests.social,
+          interestEnterprising: occInterests.enterprising,
+          interestConventional: occInterests.conventional,
+        })
+        setAndSaveOccupations((prev) =>
+          prev.map((o) =>
+            o.id === editingOccupation.id
+              ? {
+                  ...o,
+                  name: occName.trim(),
+                  code: occCode.trim().toUpperCase(),
+                  jobZone: occJobZone,
+                  description: occDescription.trim(),
+                  interests: occInterests,
+                }
+              : o
+          )
         )
-      )
-      toast({
-        title: 'Occupation Updated',
-        description: `Successfully modified ${occName}.`,
-        variant: 'success',
-      })
+        toast({
+          title: 'Occupation Updated',
+          description: `Successfully modified ${occName} in Neo4j.`,
+          variant: 'success',
+        })
+      } catch (err: unknown) {
+        toast({
+          title: 'Update Failed',
+          description: err instanceof Error ? err.message : 'Failed to update occupation on server.',
+          variant: 'destructive',
+        })
+        return
+      }
     } else {
+      const codeUpper = occCode.trim().toUpperCase()
       const newOcc: OccupationRecord = {
-        id: `occ-${Date.now()}`,
-        code: occCode.trim().toUpperCase(),
+        id: codeUpper,
+        code: codeUpper,
         name: occName.trim(),
         jobZone: occJobZone,
         description: occDescription.trim(),
@@ -403,29 +564,66 @@ export function OccupationsManagementPage() {
         microSkillCount: 0,
         moduleCount: 0,
         interests: occInterests,
-        createdAt: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString(),
       }
-      setOccupations((prev) => [newOcc, ...prev])
-      toast({
-        title: 'Occupation Created',
-        description: `Added ${newOcc.name} (${newOcc.code}) to catalog.`,
-        variant: 'success',
-      })
+      try {
+        await createOccupation(orgId, {
+          id: newOcc.id,
+          code: newOcc.code,
+          name: newOcc.name,
+          jobZone: newOcc.jobZone,
+          interestRealistic: occInterests.realistic,
+          interestInvestigative: occInterests.investigative,
+          interestArtistic: occInterests.artistic,
+          interestSocial: occInterests.social,
+          interestEnterprising: occInterests.enterprising,
+          interestConventional: occInterests.conventional,
+          status: 'ACTIVE',
+        })
+        setAndSaveOccupations((prev) => [newOcc, ...prev])
+        toast({
+          title: 'Occupation Created',
+          description: `Added ${newOcc.name} (${newOcc.code}) to Neo4j catalog.`,
+          variant: 'success',
+        })
+      } catch (err: unknown) {
+        toast({
+          title: 'Creation Failed',
+          description: err instanceof Error ? err.message : 'Failed to save occupation to Neo4j.',
+          variant: 'destructive',
+        })
+        return
+      }
     }
     setIsOccupationModalOpen(false)
   }
 
   // Toggle Occupation Active Status
-  const handleToggleStatus = (occ: OccupationRecord) => {
+  const handleToggleStatus = async (occ: OccupationRecord) => {
     const nextStatus = occ.status === 'active' ? 'inactive' : 'active'
-    setOccupations((prev) =>
-      prev.map((o) => (o.id === occ.id ? { ...o, status: nextStatus } : o))
-    )
-    toast({
-      title: nextStatus === 'active' ? 'Occupation Activated' : 'Occupation Deactivated',
-      description: `${occ.name} is now ${nextStatus.toUpperCase()}.`,
-      variant: 'info',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateOccupation(orgId, occ.id, {
+        code: occ.code,
+        name: occ.name,
+        status: nextStatus === 'active' ? 'ACTIVE' : 'INACTIVE',
+      })
+      setAndSaveOccupations((prev) =>
+        prev.map((o) => (o.id === occ.id ? { ...o, status: nextStatus } : o))
+      )
+      toast({
+        title: nextStatus === 'active' ? 'Occupation Activated' : 'Occupation Deactivated',
+        description: `${occ.name} is now ${nextStatus.toUpperCase()} in Neo4j.`,
+        variant: 'info',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Status Update Failed',
+        description: err instanceof Error ? err.message : 'Failed to update occupation status in Neo4j.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Open Assign Expert Modal
@@ -491,7 +689,7 @@ export function OccupationsManagementPage() {
   // Add single expert
   const handleAddSingleExpert = (expert: (typeof ELIGIBLE_EXPERTS)[number]) => {
     if (!selectedOccupationForAssign) return
-    setOccupations((prev) =>
+    setAndSaveOccupations((prev) =>
       prev.map((o) => {
         if (o.id !== selectedOccupationForAssign.id) return o
         if (o.assignedExperts.some((ae) => ae.id === expert.id)) return o
@@ -533,7 +731,7 @@ export function OccupationsManagementPage() {
       title: exp.title,
     }))
 
-    setOccupations((prev) =>
+    setAndSaveOccupations((prev) =>
       prev.map((o) => {
         if (o.id !== selectedOccupationForAssign.id) return o
         return {
@@ -553,7 +751,7 @@ export function OccupationsManagementPage() {
 
   // Remove Expert from Occupation
   const handleRemoveExpert = (occId: string, expertId: string, expertName: string) => {
-    setOccupations((prev) =>
+    setAndSaveOccupations((prev) =>
       prev.map((o) => {
         if (o.id !== occId) return o
         return {
@@ -618,7 +816,7 @@ export function OccupationsManagementPage() {
       return
     }
 
-    setOccupations((prev) => [...validOccupations, ...prev])
+    setAndSaveOccupations((prev) => [...validOccupations, ...prev])
     toast({
       title: 'Occupations Imported',
       description: `Successfully imported ${validOccupations.length} occupation(s) into catalog.`,

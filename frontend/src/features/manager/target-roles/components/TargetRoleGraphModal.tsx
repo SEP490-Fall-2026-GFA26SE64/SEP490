@@ -2,6 +2,7 @@ import { AlertCircle, Eye, GitBranch, Maximize2, Minimize2, Network as NetworkIc
 import * as React from 'react'
 import { Network, type Options, type Node, type Edge } from 'vis-network'
 import { fetchTargetRoleGraph, type TargetRoleGraphDto } from '../../../../shared/api/prerequisiteApi'
+import { fetchCompetencies, type CompetencyDto } from '../../../../shared/api/competencyApi'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
 import {
@@ -19,6 +20,7 @@ interface TargetRoleGraphModalProps {
   roleId: string | null
   organizationId: string
   roleTitle?: string
+  levels?: string[]
 }
 
 export interface RoleNodeData {
@@ -31,6 +33,23 @@ export interface RoleNodeData {
   status: string
 }
 
+export interface LevelNodeData {
+  category: 'Level'
+  code: string
+  title: string
+  status: string
+  rank?: number
+}
+
+export interface CompetencyNodeData {
+  category: 'Competency'
+  code: string
+  name: string
+  description?: string
+  status: string
+  memberSkillCount?: number
+}
+
 export interface SkillNodeData {
   category: 'MicroSkill'
   skillId: string
@@ -41,7 +60,7 @@ export interface SkillNodeData {
   status: string
 }
 
-export type GraphElementNodeData = RoleNodeData | SkillNodeData
+export type GraphElementNodeData = RoleNodeData | LevelNodeData | CompetencyNodeData | SkillNodeData
 
 interface GraphCustomNode extends Node {
   data?: GraphElementNodeData
@@ -53,11 +72,13 @@ export function TargetRoleGraphModal({
   roleId,
   organizationId,
   roleTitle,
+  levels: propLevels,
 }: TargetRoleGraphModalProps) {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [graphData, setGraphData] = React.useState<TargetRoleGraphDto | null>(null)
   const [selectedNode, setSelectedNode] = React.useState<GraphElementNodeData | null>(null)
+  const [allCompetencies, setAllCompetencies] = React.useState<CompetencyDto[]>([])
   const [layoutMode, setLayoutMode] = React.useState<'hierarchical' | 'organic'>('hierarchical')
   const [isFullscreen, setIsFullscreen] = React.useState(false)
 
@@ -70,13 +91,20 @@ export function TargetRoleGraphModal({
     setError(null)
     setSelectedNode(null)
     try {
-      const data = await fetchTargetRoleGraph(organizationId, roleId)
+      const [data, comps] = await Promise.all([
+        fetchTargetRoleGraph(organizationId, roleId),
+        fetchCompetencies(organizationId).catch(() => []),
+      ])
+      setAllCompetencies(comps || [])
       setGraphData({
         ...data,
         requiredSkills: Array.isArray(data.requiredSkills) ? data.requiredSkills : [],
         prerequisites: Array.isArray(data.prerequisites) ? data.prerequisites : [],
       })
     } catch {
+      const comps = await fetchCompetencies(organizationId).catch(() => [])
+      setAllCompetencies(comps || [])
+
       // Robust fallback for draft or local target roles not yet committed to Neo4j
       const activeCompany = getActiveCompany()
       const matchedRole = activeCompany?.targetRoles?.find((r) => r.id === roleId || r.code === roleId)
@@ -143,10 +171,10 @@ export function TargetRoleGraphModal({
     const reqSkills = Array.isArray(graphData.requiredSkills) ? graphData.requiredSkills : []
     const prereqs = Array.isArray(graphData.prerequisites) ? graphData.prerequisites : []
 
-    // 1. Role root node
+    // 1. Role root node (clean, containing only Role Code and Title)
     nodes.push({
       id: `role-${graphData.roleId}`,
-      label: `<b>${graphData.roleCode}</b>\n${graphData.roleName}\n<i>Junior • Middle • Senior</i>`,
+      label: `<b>${graphData.roleCode}</b>\n${graphData.roleName}`,
       shape: 'box',
       shapeProperties: { borderRadius: 8 },
       margin: { top: 12, right: 16, bottom: 12, left: 16 },
@@ -160,7 +188,7 @@ export function TargetRoleGraphModal({
       font: {
         multi: 'html',
         color: '#0F172A',
-        size: 12,
+        size: 13,
         face: 'IBM Plex Sans, sans-serif',
       },
       borderWidth: 2,
@@ -169,15 +197,154 @@ export function TargetRoleGraphModal({
         category: 'TargetRole',
         code: graphData.roleCode,
         title: graphData.roleName,
-        levels: 'Junior • Middle • Senior (J · M · S)',
+        track: graphData.track,
+        seniority: graphData.seniority,
         status: graphData.status,
       },
     })
 
-    // 2. Micro-skill nodes
-    reqSkills.forEach((skill) => {
+    // 2. Proficiency Level nodes connected to TargetRole
+    const activeComp = getActiveCompany()
+    const currentRole = activeComp?.targetRoles?.find((r) => r.id === roleId || r.code === roleId)
+    const effectiveLevels =
+      propLevels && propLevels.length > 0
+        ? propLevels
+        : currentRole?.levels && currentRole.levels.length > 0
+        ? currentRole.levels
+        : ['Junior', 'Middle', 'Senior']
+
+    const levelNodeIds: string[] = []
+    effectiveLevels.forEach((lvlName, idx) => {
+      const lvlId = `level-${graphData.roleId}-${idx + 1}`
+      levelNodeIds.push(lvlId)
+
+      nodes.push({
+        id: lvlId,
+        label: `<b>Rank ${idx + 1}</b>\n${lvlName}`,
+        shape: 'box',
+        shapeProperties: { borderRadius: 10 },
+        margin: { top: 8, right: 14, bottom: 8, left: 14 },
+        level: 1,
+        color: {
+          background: '#EEF2FF',
+          border: '#4F46E5',
+          highlight: { background: '#E0E7FF', border: '#4338CA' },
+          hover: { background: '#E0E7FF', border: '#4F46E5' },
+        },
+        font: {
+          multi: 'html',
+          color: '#1E1B4B',
+          size: 11,
+          face: 'IBM Plex Sans, sans-serif',
+        },
+        borderWidth: 1.5,
+        shadow: { enabled: true, color: 'rgba(0,0,0,0.05)', size: 4, x: 0, y: 2 },
+        data: {
+          category: 'Level',
+          code: `LEVEL-${idx + 1}`,
+          title: `${lvlName} (Rank ${idx + 1})`,
+          status: 'ACTIVE',
+          rank: idx + 1,
+        },
+      })
+
+      // Directed edge: (:TargetRole)-[:HAS_LEVEL]->(:Level)
+      edges.push({
+        id: `has-level-${graphData.roleId}-${idx + 1}`,
+        from: `role-${graphData.roleId}`,
+        to: lvlId,
+        label: 'HAS_LEVEL',
+        font: { size: 9, color: '#4F46E5', align: 'horizontal' },
+        color: { color: '#818CF8', highlight: '#4F46E5', hover: '#4338CA' },
+        arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+        dashes: false,
+        width: 1.5,
+      })
+    })
+
+    // 3. Competency nodes connected to Level nodes
+    const roleCompIds = new Set([
+      ...(currentRole?.competencyIds || []),
+      ...Object.values(currentRole?.levelCompetencies || {}).flat(),
+    ])
+
+    const relevantComps = allCompetencies.filter((c) => {
+      if (roleCompIds.has(c.id) || (c.code && roleCompIds.has(c.code))) return true
+      if (reqSkills.some((s) => s.macroCompetencyCode === c.code || s.macroCompetencyCode === c.id)) return true
+      if (c.skillIds && c.skillIds.some((sid) => reqSkills.some((s) => s.skillId === sid))) return true
+      return false
+    })
+
+    if (relevantComps.length === 0 && reqSkills.length > 0) {
+      relevantComps.push({
+        id: 'comp-core',
+        code: 'CORE-COMP',
+        name: `${graphData.roleName} Core Competency`,
+        description: `Core professional competencies required for ${graphData.roleName}.`,
+        status: 'ACTIVE',
+      })
+    }
+
+    const compNodeIds: string[] = []
+    relevantComps.forEach((comp, cIdx) => {
+      const compNodeId = `comp-${comp.id}`
+      compNodeIds.push(compNodeId)
+
+      nodes.push({
+        id: compNodeId,
+        label: `<b>${comp.code || comp.id}</b>\n${comp.name}`,
+        shape: 'box',
+        shapeProperties: { borderRadius: 10 },
+        margin: { top: 8, right: 14, bottom: 8, left: 14 },
+        level: 2,
+        color: {
+          background: '#FAF5FF',
+          border: '#9333EA',
+          highlight: { background: '#F3E8FF', border: '#7E22CE' },
+          hover: { background: '#F3E8FF', border: '#9333EA' },
+        },
+        font: {
+          multi: 'html',
+          color: '#581C87',
+          size: 11,
+          face: 'IBM Plex Sans, sans-serif',
+        },
+        borderWidth: 1.5,
+        shadow: { enabled: true, color: 'rgba(0,0,0,0.05)', size: 4, x: 0, y: 2 },
+        data: {
+          category: 'Competency',
+          code: comp.code || comp.id,
+          name: comp.name,
+          description: comp.description,
+          status: comp.status || 'ACTIVE',
+          memberSkillCount: reqSkills.filter(
+            (s) => s.macroCompetencyCode === comp.code || s.macroCompetencyCode === comp.id || comp.skillIds?.includes(s.skillId)
+          ).length,
+        },
+      })
+
+      // Directed edge: (:Level)-[:HAS_COMPETENCY]->(:Competency) (Ontology schema)
+      const parentLevelId = levelNodeIds.length > 0
+        ? levelNodeIds[cIdx % levelNodeIds.length]
+        : `role-${graphData.roleId}`
+
+      edges.push({
+        id: `has-comp-${parentLevelId}-${compNodeId}`,
+        from: parentLevelId,
+        to: compNodeId,
+        label: 'HAS_COMPETENCY',
+        font: { size: 8, color: '#9333EA', align: 'horizontal' },
+        color: { color: '#C084FC', highlight: '#9333EA', hover: '#7E22CE' },
+        arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+        dashes: false,
+        width: 1.5,
+      })
+    })
+
+    // 4. Micro-skill nodes connected to Competency nodes (or Level)
+    reqSkills.forEach((skill, sIdx) => {
       const hasIncomingPrereq = prereqs.some((p) => p.targetSkillId === skill.skillId)
-      const level = hasIncomingPrereq ? 2 : 1
+      const level = hasIncomingPrereq ? 4 : 3
 
       nodes.push({
         id: skill.skillId,
@@ -211,20 +378,45 @@ export function TargetRoleGraphModal({
         },
       })
 
-      // Link Role -> Skill
+      // Directed edge: (:Competency)-[:HAS_SKILL]->(:MicroSkill)
+      const matchedComp = relevantComps.find(
+        (c) => c.code === skill.macroCompetencyCode || c.id === skill.macroCompetencyCode || c.skillIds?.includes(skill.skillId)
+      ) || relevantComps[0]
+
+      const parentNodeId = matchedComp ? `comp-${matchedComp.id}` : (levelNodeIds[0] || `role-${graphData.roleId}`)
+
       edges.push({
-        id: `requires-${graphData.roleId}-${skill.skillId}`,
-        from: `role-${graphData.roleId}`,
+        id: `has-skill-${parentNodeId}-${skill.skillId}`,
+        from: parentNodeId,
         to: skill.skillId,
-        title: `Requires ${skill.skillCode} (${Math.round(skill.targetMastery * 100)}% target mastery)`,
-        color: { color: '#94A3B8', highlight: '#EA580C', hover: '#64748B' },
+        title: `Member skill of ${matchedComp?.name || 'Competency'} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
+        label: 'HAS_SKILL',
+        font: { size: 8, color: '#16A34A', align: 'horizontal' },
+        color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
         arrows: { to: { enabled: true, scaleFactor: 0.6 } },
         dashes: false,
         width: 1.5,
       })
+
+      // Directed edge: (:Level)-[:REQUIRES_SKILL {requiredScore}]->(:MicroSkill)
+      const owningLevelId = levelNodeIds.length > 0 ? levelNodeIds[sIdx % levelNodeIds.length] : undefined
+      if (owningLevelId) {
+        edges.push({
+          id: `requires-skill-${owningLevelId}-${skill.skillId}`,
+          from: owningLevelId,
+          to: skill.skillId,
+          title: `Level Requirement: REQUIRES_SKILL (Threshold: ${Math.round(skill.targetMastery * 100)}%)`,
+          label: 'REQUIRES_SKILL',
+          font: { size: 7, color: '#64748B', align: 'horizontal' },
+          color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
+          arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+          dashes: [4, 4],
+          width: 1,
+        })
+      }
     })
 
-    // 3. Prerequisite edges
+    // 5. Prerequisite edges: (:MicroSkill)-[:HAS_SKILL_PREREQUISITE]->(:MicroSkill)
     prereqs.forEach((p) => {
       const hasSrc = nodes.some((n) => n.id === p.sourceSkillId)
       const hasTgt = nodes.some((n) => n.id === p.targetSkillId)
@@ -233,10 +425,10 @@ export function TargetRoleGraphModal({
           id: `prereq-${p.sourceSkillId}-${p.targetSkillId}`,
           from: p.sourceSkillId,
           to: p.targetSkillId,
-          label: `≥ ${Math.round(p.minMastery * 100)}%`,
-          title: `Prerequisite: Requires ≥ ${Math.round(p.minMastery * 100)}% before learning`,
+          label: `HAS_SKILL_PREREQUISITE (≥ ${Math.round(p.minMastery * 100)}%)`,
+          title: `HAS_SKILL_PREREQUISITE: Requires ≥ ${Math.round(p.minMastery * 100)}% before learning`,
           font: {
-            size: 9,
+            size: 8,
             color: '#DC2626',
             background: '#FEF2F2',
             strokeWidth: 0,
@@ -481,6 +673,14 @@ export function TargetRoleGraphModal({
                 <span>Target Role</span>
               </div>
               <div className="flex items-center gap-1.5 font-medium text-foreground">
+                <span className="h-2.5 w-2.5 rounded-sm bg-indigo-500/20 border border-indigo-500 inline-block" />
+                <span>Proficiency Level</span>
+              </div>
+              <div className="flex items-center gap-1.5 font-medium text-foreground">
+                <span className="h-2.5 w-2.5 rounded-sm bg-purple-500/20 border border-purple-500 inline-block" />
+                <span>Competency</span>
+              </div>
+              <div className="flex items-center gap-1.5 font-medium text-foreground">
                 <span className="h-2.5 w-3 rounded-full bg-success/20 border border-success inline-block" />
                 <span>Required Skill</span>
               </div>
@@ -519,9 +719,13 @@ export function TargetRoleGraphModal({
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-card border border-border">
-                        <div className="col-span-2">
-                          <span className="text-[10px] text-muted-foreground block">Calibration Levels</span>
-                          <strong className="text-foreground">{selectedNode.levels || 'Junior • Middle • Senior (J · M · S)'}</strong>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Track</span>
+                          <strong className="text-foreground">{selectedNode.track || 'PROFESSIONAL'}</strong>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Seniority Band</span>
+                          <strong className="text-foreground">{selectedNode.seniority || 'P3'}</strong>
                         </div>
                         <div>
                           <span className="text-[10px] text-muted-foreground block">Attainment Rule</span>
@@ -533,9 +737,71 @@ export function TargetRoleGraphModal({
                             {selectedNode.status}
                           </Badge>
                         </div>
-                        <div>
+                        <div className="col-span-2">
                           <span className="text-[10px] text-muted-foreground block">Required Skills</span>
                           <strong className="text-foreground">{graphData?.requiredSkills?.length || 0}</strong>
+                        </div>
+                      </div>
+                    </>
+                  ) : selectedNode.category === 'Level' ? (
+                    <>
+                      <div>
+                        <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold text-sm block">
+                          {selectedNode.code}
+                        </span>
+                        <span className="font-semibold text-foreground text-sm block mt-0.5">
+                          {selectedNode.title}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-card border border-border">
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Level Rank</span>
+                          <strong className="text-foreground">Rank {selectedNode.rank || 1}</strong>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Status</span>
+                          <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
+                            ACTIVE
+                          </Badge>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-muted-foreground block">Level Description</span>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            Competency benchmark proficiency milestone for {selectedNode.title}.
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  ) : selectedNode.category === 'Competency' ? (
+                    <>
+                      <div>
+                        <span className="font-mono text-purple-600 dark:text-purple-400 font-bold text-sm block">
+                          {selectedNode.code}
+                        </span>
+                        <span className="font-semibold text-foreground text-sm block mt-0.5">
+                          {selectedNode.name}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-card border border-border">
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Category</span>
+                          <strong className="text-foreground">Competency Cluster</strong>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block">Status</span>
+                          <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-600 dark:text-purple-400">
+                            {selectedNode.status || 'ACTIVE'}
+                          </Badge>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-muted-foreground block">Description</span>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {selectedNode.description || 'Functional capability and knowledge cluster defined for this target role.'}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-muted-foreground block">Configured Skills</span>
+                          <strong className="text-foreground">{selectedNode.memberSkillCount || 0} skills linked</strong>
                         </div>
                       </div>
                     </>

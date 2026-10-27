@@ -45,7 +45,17 @@ import {
 } from '../../../shared/stores/companyStore'
 import {
   type LearningModuleModel,
+  type MicroSkillModel,
 } from '../data/ldManagerMockData'
+import {
+  fetchLearningModules,
+  createLearningModule,
+  updateLearningModule,
+  deleteLearningModule,
+} from '../../../shared/api/learningModuleApi'
+import {
+  fetchMicroSkills,
+} from '../../../shared/api/microSkillApi'
 import {
   getApprovedLearningContents,
   subscribeToLearningContents,
@@ -218,14 +228,72 @@ export function LearningModulesPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'published' | 'draft' | 'archived'>('all')
 
-  // Synchronize state when active company scope changes
+  const [companyMicroSkills, setCompanyMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills || [])
+
+  // Synchronize state when active company scope changes & fetch live from Neo4j
   React.useEffect(() => {
-    const handleSync = () => {
+    let isMounted = true
+    const handleSync = async () => {
       const active = getActiveCompany()
-      setModules(active?.modules ?? [])
+      const orgId = active?.id || 'comp-technova'
+
+      try {
+        const [liveModules, liveSkills] = await Promise.all([
+          fetchLearningModules(orgId).catch(() => []),
+          fetchMicroSkills(orgId).catch(() => []),
+        ])
+
+        if (!isMounted) return
+
+        if (liveSkills && liveSkills.length > 0) {
+          setCompanyMicroSkills(liveSkills.map((s) => ({
+            id: s.id,
+            code: s.code,
+            name: s.name,
+            description: s.description || '',
+            status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
+            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
+          })))
+        }
+
+        if (liveModules && liveModules.length > 0) {
+          const mapped: LearningModuleModel[] = liveModules.map((m) => ({
+            id: m.id,
+            stableId: m.code || m.id,
+            code: m.code || m.id,
+            title: m.title,
+            version: m.version || '0.9.0',
+            status: (m.status?.toUpperCase() === 'DRAFT'
+              ? 'draft'
+              : m.status?.toUpperCase() === 'ARCHIVED'
+              ? 'archived'
+              : 'published') as LearningModuleModel['status'],
+            durationMinutes: m.durationMinutes || 45,
+            sampleContentUri: m.contentUri || '',
+            teachesSkillIds: m.teachesSkillIds || [],
+            activePlanEnrollments: 0,
+            updatedAt: '2026-10-01',
+            moduleType: m.moduleType as LearningModuleModel['moduleType'],
+            contentType: m.contentType,
+            contentVersion: m.contentVersion,
+            reviewStatus: m.reviewStatus as LearningModuleModel['reviewStatus'],
+          }))
+          setModules(mapped)
+          return
+        }
+      } catch (err) {
+        // Fallback to active company modules
+      }
+
+      if (isMounted) {
+        setModules(active?.modules ?? [])
+      }
     }
+
+    handleSync()
     window.addEventListener('active_company_changed', handleSync)
     return () => {
+      isMounted = false
       window.removeEventListener('active_company_changed', handleSync)
     }
   }, [])
@@ -244,9 +312,6 @@ export function LearningModulesPage() {
     },
     []
   )
-
-  const activeComp = getActiveCompany()
-  const companyMicroSkills = activeComp?.microSkills || []
 
   // Approved Learning Content Packages from Content Studio
   const [approvedPackages, setApprovedPackages] = React.useState<LearningContentPackage[]>(() =>
@@ -283,7 +348,11 @@ export function LearningModulesPage() {
         code: String(item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
         title: String(item.title || 'Untitled Module').trim(),
         version: String(item.version || '1.0'),
-        status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
+        status: (item.status === 'draft'
+          ? 'draft'
+          : item.status === 'archived'
+          ? 'archived'
+          : 'published') as LearningModuleModel['status'],
         durationMinutes: Number(item.durationMinutes) || 45,
         sampleContentUri: String(item.sampleContentUri || 'content/modules/sample.md'),
         teachesSkillIds: Array.isArray(item.teachesSkillIds) ? (item.teachesSkillIds as string[]) : [],
@@ -371,29 +440,27 @@ export function LearningModulesPage() {
     setIsCreateModalOpen(true)
   }
 
-  const handleSaveModule = () => {
-    // 1. Title & Code validation
-    if (!moduleForm.code.trim() || !moduleForm.title.trim()) {
+  // Module creation / edit handler
+  const handleSaveModule = async () => {
+    if (!moduleForm.title.trim()) {
       toast({
         title: 'Validation Error',
-        description: 'Module Code and Title are required.',
+        description: 'Module title is strictly required.',
         variant: 'destructive',
       })
       return
     }
 
-    // 2. Positive duration validation
     if (moduleForm.durationMinutes <= 0) {
       toast({
         title: 'Invalid Duration',
-        description: 'Duration must be a positive integer greater than 0 minutes.',
+        description: 'Module duration must be greater than 0 minutes.',
         variant: 'destructive',
       })
       return
     }
 
-    // 3. Sample-content URI validation
-    if (!moduleForm.sampleContentUri.trim()) {
+    if (!moduleForm.sampleContentUri.trim() && !moduleForm.selectedContentPackageId) {
       toast({
         title: 'Missing Content Reference',
         description: 'A valid sample-content URI or document reference is required.',
@@ -402,28 +469,51 @@ export function LearningModulesPage() {
       return
     }
 
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+
     if (selectedModule) {
       // Direct edit for draft
-      saveAndSetModules((prev) =>
-        prev.map((m) =>
-          m.id === selectedModule.id
-            ? {
-                ...m,
-                title: moduleForm.title.trim(),
-                durationMinutes: moduleForm.durationMinutes,
-                sampleContentUri: moduleForm.sampleContentUri.trim(),
-                moduleType: moduleForm.moduleType,
-                contentType: moduleForm.contentType,
-                contentVersion: moduleForm.contentVersion,
-                reviewStatus: moduleForm.reviewStatus,
-                learningContentId: moduleForm.selectedContentPackageId || m.learningContentId,
-                teachesSkillIds: moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : m.teachesSkillIds,
-                updatedAt: new Date().toISOString().slice(0, 10),
-              }
-            : m,
-        ),
-      )
-      toast({ title: 'Module Updated', description: `Saved changes to draft ${selectedModule.code}.`, variant: 'success' })
+      try {
+        const teachesList = moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : selectedModule.teachesSkillIds
+        await updateLearningModule(orgId, selectedModule.id, {
+          title: moduleForm.title.trim(),
+          durationMinutes: moduleForm.durationMinutes,
+          contentUri: moduleForm.sampleContentUri.trim(),
+          moduleType: moduleForm.moduleType,
+          contentType: moduleForm.contentType,
+          contentVersion: moduleForm.contentVersion,
+          reviewStatus: moduleForm.reviewStatus,
+          teachesSkillIds: teachesList,
+        })
+        saveAndSetModules((prev) =>
+          prev.map((m) =>
+            m.id === selectedModule.id
+              ? {
+                  ...m,
+                  title: moduleForm.title.trim(),
+                  durationMinutes: moduleForm.durationMinutes,
+                  sampleContentUri: moduleForm.sampleContentUri.trim(),
+                  moduleType: moduleForm.moduleType,
+                  contentType: moduleForm.contentType,
+                  contentVersion: moduleForm.contentVersion,
+                  reviewStatus: moduleForm.reviewStatus,
+                  learningContentId: moduleForm.selectedContentPackageId || m.learningContentId,
+                  teachesSkillIds: teachesList,
+                  updatedAt: new Date().toISOString().slice(0, 10),
+                }
+              : m,
+          ),
+        )
+        toast({ title: 'Module Updated', description: `Saved changes to ${selectedModule.code} in Neo4j.`, variant: 'success' })
+      } catch (err: unknown) {
+        toast({
+          title: 'Update Failed',
+          description: err instanceof Error ? err.message : 'Failed to update module in database.',
+          variant: 'destructive',
+        })
+        return
+      }
     } else {
       // Check duplicate code
       if (modules.some((m) => m.code.toUpperCase() === moduleForm.code.trim().toUpperCase())) {
@@ -431,15 +521,16 @@ export function LearningModulesPage() {
         return
       }
 
+      const modCode = moduleForm.code.trim().toUpperCase()
       const newMod: LearningModuleModel = {
-        id: `mod-${Date.now()}`,
+        id: modCode,
         stableId: `mod-uuid-${Date.now()}`,
-        code: moduleForm.code.trim().toUpperCase(),
+        code: modCode,
         title: moduleForm.title.trim(),
         version: '1.0',
         status: 'draft',
         durationMinutes: moduleForm.durationMinutes,
-        sampleContentUri: moduleForm.sampleContentUri.trim() || `content/modules/${moduleForm.code.trim().toUpperCase()}.json`,
+        sampleContentUri: moduleForm.sampleContentUri.trim() || `content/modules/${modCode}.json`,
         teachesSkillIds: moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : [],
         activePlanEnrollments: 0,
         updatedAt: new Date().toISOString().slice(0, 10),
@@ -450,18 +541,41 @@ export function LearningModulesPage() {
         learningContentId: moduleForm.selectedContentPackageId || undefined,
       }
 
-      saveAndSetModules([newMod, ...modules])
-      toast({
-        title: 'Draft Module Created',
-        description: `Draft metadata for ${newMod.code} saved with Neo4j schema attributes.`,
-        variant: 'success',
-      })
+      try {
+        await createLearningModule(orgId, {
+          id: newMod.id,
+          code: newMod.code,
+          title: newMod.title,
+          version: newMod.version,
+          status: 'DRAFT',
+          durationMinutes: newMod.durationMinutes,
+          contentUri: newMod.sampleContentUri,
+          moduleType: newMod.moduleType,
+          contentType: newMod.contentType,
+          contentVersion: newMod.contentVersion,
+          reviewStatus: newMod.reviewStatus,
+          teachesSkillIds: newMod.teachesSkillIds,
+        })
+        saveAndSetModules([newMod, ...modules])
+        toast({
+          title: 'Draft Module Created',
+          description: `Draft metadata for ${newMod.code} saved successfully to Neo4j.`,
+          variant: 'success',
+        })
+      } catch (err: unknown) {
+        toast({
+          title: 'Creation Failed',
+          description: err instanceof Error ? err.message : 'Failed to save module to Neo4j database.',
+          variant: 'destructive',
+        })
+        return
+      }
     }
     setIsCreateModalOpen(false)
   }
 
   // Create Successor Draft (Protecting Learning History)
-  const handleCreateSuccessorDraft = (mod: LearningModuleModel) => {
+  const handleCreateSuccessorDraft = async (mod: LearningModuleModel) => {
     const curVer = parseFloat(mod.version) || 1.0
     const nextVer = (curVer + 0.1).toFixed(1)
 
@@ -477,9 +591,10 @@ export function LearningModulesPage() {
       return
     }
 
+    const successorId = `${mod.code}-V${nextVer.replace('.', '_')}`
     const successor: LearningModuleModel = {
       ...mod,
-      id: `mod-${Date.now()}`,
+      id: successorId,
       stableId: mod.stableId || `mod-uuid-${mod.code}`,
       version: nextVer,
       status: 'draft',
@@ -488,16 +603,40 @@ export function LearningModulesPage() {
       title: `${mod.title} (Draft Revision)`,
     }
 
-    saveAndSetModules((prev) => [...prev, successor])
-    toast({
-      title: 'Successor Draft Created',
-      description: `Created v${nextVer} draft for ${mod.code}. Historical student attempts remain safely linked to v${mod.version}.`,
-      variant: 'success',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await createLearningModule(orgId, {
+        id: successor.id,
+        code: successor.code,
+        title: successor.title,
+        version: successor.version,
+        status: 'DRAFT',
+        durationMinutes: successor.durationMinutes,
+        contentUri: successor.sampleContentUri,
+        moduleType: successor.moduleType,
+        contentType: successor.contentType,
+        contentVersion: successor.contentVersion,
+        reviewStatus: 'NEEDS_EXPERT_REVIEW',
+        teachesSkillIds: successor.teachesSkillIds,
+      })
+      saveAndSetModules((prev) => [...prev, successor])
+      toast({
+        title: 'Successor Draft Created',
+        description: `Created v${nextVer} draft for ${mod.code} in Neo4j. Historical student attempts remain safely linked to v${mod.version}.`,
+        variant: 'success',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to create successor draft in database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Delete Draft Module (initial or successor)
-  const handleDeleteDraftModule = (mod: LearningModuleModel) => {
+  const handleDeleteDraftModule = async (mod: LearningModuleModel) => {
     if (mod.status !== 'draft') {
       toast({
         title: 'Action Rejected',
@@ -507,16 +646,28 @@ export function LearningModulesPage() {
       return
     }
 
-    saveAndSetModules(modules.filter((m) => m.id !== mod.id))
-    toast({
-      title: 'Draft Module Deleted',
-      description: `Draft module ${mod.code} (v${mod.version}) was permanently deleted.`,
-      variant: 'default',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await deleteLearningModule(orgId, mod.id)
+      saveAndSetModules(modules.filter((m) => m.id !== mod.id))
+      toast({
+        title: 'Draft Module Deleted',
+        description: `Draft module ${mod.code} (v${mod.version}) was permanently deleted from Neo4j.`,
+        variant: 'default',
+      })
+      setDeletingDraftModule(null)
+    } catch (err: unknown) {
+      toast({
+        title: 'Delete Failed',
+        description: err instanceof Error ? err.message : 'Failed to delete module from database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Toggle TEACHES Skill Link
-  const handleToggleTeachesSkill = (mod: LearningModuleModel, skillId: string) => {
+  const handleToggleTeachesSkill = async (mod: LearningModuleModel, skillId: string) => {
     if (mod.status === 'published') {
       toast({
         title: 'Published Version Locked',
@@ -531,23 +682,36 @@ export function LearningModulesPage() {
       ? mod.teachesSkillIds.filter((id) => id !== skillId)
       : [...mod.teachesSkillIds, skillId]
 
-    saveAndSetModules((prev) =>
-      prev.map((m) => (m.id === mod.id ? { ...m, teachesSkillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : m)),
-    )
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateLearningModule(orgId, mod.id, {
+        teachesSkillIds: updatedSkills,
+      })
+      saveAndSetModules((prev) =>
+        prev.map((m) => (m.id === mod.id ? { ...m, teachesSkillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : m)),
+      )
 
-    if (selectedModule && selectedModule.id === mod.id) {
-      setSelectedModule({ ...selectedModule, teachesSkillIds: updatedSkills })
+      if (selectedModule && selectedModule.id === mod.id) {
+        setSelectedModule({ ...selectedModule, teachesSkillIds: updatedSkills })
+      }
+
+      toast({
+        title: isLinked ? 'TEACHES Link Removed' : 'TEACHES Link Added',
+        description: `${isLinked ? 'Detached' : 'Attached'} micro-skill link for ${mod.code} in Neo4j.`,
+        variant: 'info',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Update Failed',
+        description: err instanceof Error ? err.message : 'Failed to update taught skills in database.',
+        variant: 'destructive',
+      })
     }
-
-    toast({
-      title: isLinked ? 'TEACHES Link Removed' : 'TEACHES Link Added',
-      description: `${isLinked ? 'Detached' : 'Attached'} micro-skill link for ${mod.code}.`,
-      variant: 'info',
-    })
   }
 
   // Publish validation & execution
-  const handlePublishModule = (mod: LearningModuleModel) => {
+  const handlePublishModule = async (mod: LearningModuleModel) => {
     if (mod.teachesSkillIds.length === 0) {
       toast({
         title: 'Publication Blocked',
@@ -566,15 +730,29 @@ export function LearningModulesPage() {
       return
     }
 
-    saveAndSetModules((prev) =>
-      prev.map((m) => (m.id === mod.id ? { ...m, status: 'published', updatedAt: new Date().toISOString().slice(0, 10) } : m)),
-    )
-    setIsPublishModalOpen(false)
-    toast({
-      title: 'Learning Module Published',
-      description: `${mod.code} (${mod.title} v${mod.version}) is now published and available for pathway synthesis.`,
-      variant: 'success',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateLearningModule(orgId, mod.id, {
+        status: 'ACTIVE',
+        reviewStatus: 'APPROVED',
+      })
+      saveAndSetModules((prev) =>
+        prev.map((m) => (m.id === mod.id ? { ...m, status: 'published', reviewStatus: 'APPROVED', updatedAt: new Date().toISOString().slice(0, 10) } : m)),
+      )
+      setIsPublishModalOpen(false)
+      toast({
+        title: 'Learning Module Published',
+        description: `${mod.code} (${mod.title} v${mod.version}) is now published and saved in Neo4j.`,
+        variant: 'success',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Publish Failed',
+        description: err instanceof Error ? err.message : 'Failed to publish module in database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Archive workflow with replacement assignment
@@ -586,7 +764,7 @@ export function LearningModulesPage() {
     setIsArchiveModalOpen(true)
   }
 
-  const handleConfirmArchive = () => {
+  const handleConfirmArchive = async () => {
     if (!selectedModule) return
 
     // If active plan enrollments exist, require replacement
@@ -599,31 +777,44 @@ export function LearningModulesPage() {
       return
     }
 
-    saveAndSetModules((prev) =>
-      prev.map((m) =>
-        m.id === selectedModule.id
-          ? {
-              ...m,
-              status: 'archived',
-              replacementModuleId: replacementModuleId || undefined,
-              updatedAt: new Date().toISOString().slice(0, 10),
-            }
-          : m,
-      ),
-    )
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateLearningModule(orgId, selectedModule.id, {
+        status: 'ARCHIVED',
+      })
+      saveAndSetModules((prev) =>
+        prev.map((m) =>
+          m.id === selectedModule.id
+            ? {
+                ...m,
+                status: 'archived',
+                replacementModuleId: replacementModuleId || undefined,
+                updatedAt: new Date().toISOString().slice(0, 10),
+              }
+            : m,
+        ),
+      )
 
-    const replacement = modules.find((m) => m.id === replacementModuleId)
+      const replacement = modules.find((m) => m.id === replacementModuleId)
 
-    setIsArchiveModalOpen(false)
-    toast({
-      title: 'Module Archived',
-      description: `${selectedModule.code} excluded from future enrollments. ${
-        selectedModule.activePlanEnrollments > 0
-          ? `${selectedModule.activePlanEnrollments} active plans redirected to ${replacement?.code}.`
-          : 'Historical progress retained.'
-      }`,
-      variant: 'warning',
-    })
+      setIsArchiveModalOpen(false)
+      toast({
+        title: 'Module Archived',
+        description: `${selectedModule.code} excluded from future enrollments. ${
+          selectedModule.activePlanEnrollments > 0
+            ? `${selectedModule.activePlanEnrollments} active plans redirected to ${replacement?.code}.`
+            : 'Historical progress retained in Neo4j.'
+        }`,
+        variant: 'warning',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Archive Failed',
+        description: err instanceof Error ? err.message : 'Failed to archive module in database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (

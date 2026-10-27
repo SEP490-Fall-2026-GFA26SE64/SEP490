@@ -1,11 +1,6 @@
 import {
   INITIAL_BLUEPRINTS,
-  INITIAL_COMPETENCIES,
-  INITIAL_MICRO_SKILLS,
-  INITIAL_MODULES,
-  INITIAL_PREREQUISITES,
   INITIAL_QUESTIONS,
-  INITIAL_TARGET_ROLES,
   type AssessmentBlueprintModel,
   type CompetencyModel,
   type MicroSkillModel,
@@ -51,7 +46,7 @@ export interface CompanyRecord {
   domain?: string
 }
 
-const STORAGE_KEY_COMPANIES = 'adaptlearn_companies_v3'
+const STORAGE_KEY_COMPANIES = 'adaptlearn_companies_v4'
 const STORAGE_KEY_ACTIVE_COMPANY = 'adaptlearn_active_company_id'
 
 // Initial seeded enterprise company: TechNova
@@ -128,11 +123,11 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       avatar: 'ER',
     },
   ],
-  competencies: INITIAL_COMPETENCIES,
-  microSkills: INITIAL_MICRO_SKILLS,
-  prerequisites: INITIAL_PREREQUISITES,
-  modules: INITIAL_MODULES,
-  targetRoles: INITIAL_TARGET_ROLES,
+  competencies: [],
+  microSkills: [],
+  prerequisites: [],
+  modules: [],
+  targetRoles: [],
   questions: INITIAL_QUESTIONS,
   blueprints: INITIAL_BLUEPRINTS,
 }
@@ -178,11 +173,11 @@ const SEED_COMPANY_ACME: CompanyRecord = {
       avatar: 'ES',
     },
   ],
-  competencies: INITIAL_COMPETENCIES,
-  microSkills: INITIAL_MICRO_SKILLS,
-  prerequisites: INITIAL_PREREQUISITES.slice(0, 2),
-  modules: INITIAL_MODULES.slice(0, 2),
-  targetRoles: INITIAL_TARGET_ROLES.slice(0, 1),
+  competencies: [],
+  microSkills: [],
+  prerequisites: [],
+  modules: [],
+  targetRoles: [],
   questions: INITIAL_QUESTIONS.slice(0, 3),
   blueprints: INITIAL_BLUEPRINTS.slice(0, 1),
 }
@@ -225,14 +220,8 @@ export function loadCompanies(): CompanyRecord[] {
           return {
             ...comp,
             users,
-            microSkills:
-              Array.isArray(comp.microSkills) && comp.microSkills.length > 0
-                ? comp.microSkills
-                : INITIAL_MICRO_SKILLS,
-            competencies:
-              Array.isArray(comp.competencies) && comp.competencies.length > 0
-                ? comp.competencies
-                : INITIAL_COMPETENCIES,
+            microSkills: Array.isArray(comp.microSkills) ? comp.microSkills : [],
+            competencies: Array.isArray(comp.competencies) ? comp.competencies : [],
             blueprints: Array.isArray(comp.blueprints)
               ? comp.blueprints
               : comp.id === 'comp-technova'

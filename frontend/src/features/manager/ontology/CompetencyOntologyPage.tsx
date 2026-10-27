@@ -52,11 +52,16 @@ import {
 } from '../../../shared/stores/companyStore'
 import {
   fetchMicroSkills,
-  fetchMacroCompetencies,
   createMicroSkill,
   updateMicroSkill,
   deleteMicroSkill,
 } from '../../../shared/api/microSkillApi'
+import {
+  fetchCompetencies,
+  createCompetency,
+  updateCompetency,
+  deleteCompetency,
+} from '../../../shared/api/competencyApi'
 import {
   fetchPrerequisites,
   createPrerequisite,
@@ -204,6 +209,27 @@ export function CompetencyOntologyPage() {
     setSkillCurrentPage(1)
   }, [skillSearchQuery, skillMacroFilter, skillStatusFilter, skillSortBy])
 
+  // Search, filter, and pagination states for Tab: Competencies
+  const [competencySearchQuery, setCompetencySearchQuery] = React.useState('')
+  const [competencyStatusFilter, setCompetencyStatusFilter] = React.useState('all')
+  const [competencySortBy, setCompetencySortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
+  const [competencyCurrentPage, setCompetencyCurrentPage] = React.useState(1)
+  const [competencyPageSize] = React.useState(10)
+
+  // Competency CRUD Modals
+  const [isCompetencyModalOpen, setIsCompetencyModalOpen] = React.useState(false)
+  const [selectedCompetency, setSelectedCompetency] = React.useState<CompetencyModel | null>(null)
+  const [deletingCompetency, setDeletingCompetency] = React.useState<CompetencyModel | null>(null)
+  const [viewingCompetencyDetails, setViewingCompetencyDetails] = React.useState<CompetencyModel | null>(null)
+
+  const [competencyForm, setCompetencyForm] = React.useState({
+    code: '',
+    name: '',
+    description: '',
+    status: 'ACTIVE' as 'ACTIVE' | 'DRAFT',
+    skillIds: [] as string[],
+  })
+
   // Search, filter, and pagination states for Tab 2 (Prerequisites)
   const [prereqSearchQuery, setPrereqSearchQuery] = React.useState('')
   const [prereqTypeFilter, setPrereqTypeFilter] = React.useState('all')
@@ -222,9 +248,9 @@ export function CompetencyOntologyPage() {
       const orgId = active?.id || 'default-org'
 
       try {
-        const [liveSkills, liveMacros, livePrereqs] = await Promise.all([
+        const [liveSkills, liveComps, livePrereqs] = await Promise.all([
           fetchMicroSkills(orgId).catch(() => []),
-          fetchMacroCompetencies(orgId).catch(() => []),
+          fetchCompetencies(orgId).catch(() => []),
           fetchPrerequisites(orgId).catch(() => []),
         ])
 
@@ -237,26 +263,34 @@ export function CompetencyOntologyPage() {
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
             macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
-            createdAt: s.createdAt,
-            updatedAt: s.updatedAt,
+            createdAt: s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.createdAt || '2026-01-01T00:00:00.000Z',
+            updatedAt: s.updatedAt || new Date().toISOString(),
           }))
           setMicroSkills(resolvedSkills)
         } else {
           setMicroSkills(resolvedSkills)
         }
 
-        if (liveMacros && liveMacros.length > 0) {
-          const mappedComps: CompetencyModel[] = liveMacros.map((m) => ({
-            id: m.id,
-            code: m.code,
-            name: m.name,
-            description: m.description || '',
-            status: (m.status as CompetencyModel['status']) || 'ACTIVE',
-            skillIds: resolvedSkills.filter((s) => s.macroCompetencyCode === m.code).map((s) => s.id),
-            createdAt: m.createdAt,
-            updatedAt: m.updatedAt,
+        if (liveComps && liveComps.length > 0) {
+          const mappedComps: CompetencyModel[] = liveComps.map((c) => ({
+            id: c.id,
+            code: c.code || c.id,
+            name: c.name,
+            description: c.description || '',
+            status: (c.status as CompetencyModel['status']) || 'ACTIVE',
+            skillIds: c.skillIds || [],
+            levelCodes: c.levelCodes || [],
+            createdAt: (c as unknown as Record<string, unknown>).createdAt ? String((c as unknown as Record<string, unknown>).createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '2026-01-01T00:00:00.000Z',
+            updatedAt: (c as unknown as Record<string, unknown>).updatedAt ? String((c as unknown as Record<string, unknown>).updatedAt) : new Date().toISOString(),
           }))
-          setCompetencies(mappedComps)
+          const customComps = active?.competencies || []
+          const mergedComps = [...mappedComps]
+          for (const custom of customComps) {
+            if (!mergedComps.some((c) => c.id === custom.id || (custom.code && c.code === custom.code))) {
+              mergedComps.unshift(custom)
+            }
+          }
+          setCompetencies(mergedComps)
         } else {
           setCompetencies(active?.competencies ?? [])
         }
@@ -928,6 +962,9 @@ export function CompetencyOntologyPage() {
       .sort((a, b) => {
         if (skillSortBy === 'title') return a.name.localeCompare(b.name)
         if (skillSortBy === 'code') return a.code.localeCompare(b.code)
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        if (timeA !== timeB) return timeB - timeA
         return b.id.localeCompare(a.id)
       })
   }, [microSkills, skillSearchQuery, skillMacroFilter, skillSortBy])
@@ -959,6 +996,172 @@ export function CompetencyOntologyPage() {
     prereqCurrentPage * prereqPageSize
   )
 
+  // Computed filter & pagination for Tab: Competencies
+  const filteredCompetencies = React.useMemo(() => {
+    return competencies
+      .filter((c) => {
+        const q = competencySearchQuery.toLowerCase().trim()
+        const matchesSearch =
+          !q ||
+          c.name.toLowerCase().includes(q) ||
+          c.code.toLowerCase().includes(q) ||
+          (c.description && c.description.toLowerCase().includes(q))
+        const matchesStatus =
+          competencyStatusFilter === 'all' ||
+          (c.status || 'ACTIVE').toUpperCase() === competencyStatusFilter.toUpperCase()
+        return matchesSearch && matchesStatus
+      })
+      .sort((a, b) => {
+        if (competencySortBy === 'title') return a.name.localeCompare(b.name)
+        if (competencySortBy === 'code') return a.code.localeCompare(b.code)
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        if (timeA !== timeB) return timeB - timeA
+        return (b.id || '').localeCompare(a.id || '')
+      })
+  }, [competencies, competencySearchQuery, competencyStatusFilter, competencySortBy])
+
+  const competencyTotalPages = Math.max(1, Math.ceil(filteredCompetencies.length / competencyPageSize))
+  const paginatedCompetencies = React.useMemo(() => {
+    const start = (competencyCurrentPage - 1) * competencyPageSize
+    return filteredCompetencies.slice(start, start + competencyPageSize)
+  }, [filteredCompetencies, competencyCurrentPage, competencyPageSize])
+
+  const handleOpenCreateCompetency = () => {
+    setCompetencyForm({
+      code: `COMP-${Math.random().toString(36).substring(2, 6).toUpperCase()}-01`,
+      name: '',
+      description: '',
+      status: 'ACTIVE',
+      skillIds: [],
+    })
+    setSelectedCompetency(null)
+    setIsCompetencyModalOpen(true)
+  }
+
+  const handleOpenEditCompetency = (comp: CompetencyModel) => {
+    setSelectedCompetency(comp)
+    setCompetencyForm({
+      code: comp.code,
+      name: comp.name,
+      description: comp.description || '',
+      status: comp.status?.toUpperCase() === 'DRAFT' ? 'DRAFT' : 'ACTIVE',
+      skillIds: comp.skillIds || [],
+    })
+    setIsCompetencyModalOpen(true)
+  }
+
+  const handleSaveCompetency = async () => {
+    if (!competencyForm.name.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Competency name is strictly required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+
+    try {
+      if (selectedCompetency) {
+        const updated = await updateCompetency(orgId, selectedCompetency.id, {
+          name: competencyForm.name.trim(),
+          description: competencyForm.description.trim(),
+          status: competencyForm.status,
+          skillIds: competencyForm.skillIds,
+        })
+        const updatedComp: CompetencyModel = {
+          ...selectedCompetency,
+          name: updated.name,
+          description: updated.description || '',
+          status: (updated.status as CompetencyModel['status']) || 'ACTIVE',
+          skillIds: updated.skillIds || [],
+          updatedAt: new Date().toISOString(),
+        }
+        setCompetencies((prev) =>
+          prev.map((c) => (c.id === selectedCompetency.id ? updatedComp : c))
+        )
+        updateActiveCompany((c) => ({
+          ...c,
+          competencies: (c.competencies || []).map((item) =>
+            item.id === selectedCompetency.id ? updatedComp : item
+          ),
+        }))
+        toast({
+          title: 'Competency Updated',
+          description: `Saved changes to ${selectedCompetency.code}.`,
+          variant: 'success',
+        })
+      } else {
+        const created = await createCompetency(orgId, {
+          code: competencyForm.code.trim().toUpperCase(),
+          name: competencyForm.name.trim(),
+          description: competencyForm.description.trim(),
+          status: competencyForm.status,
+          skillIds: competencyForm.skillIds,
+        })
+        const newComp: CompetencyModel = {
+          id: created.id,
+          code: created.code || competencyForm.code.trim().toUpperCase(),
+          name: created.name,
+          description: created.description || '',
+          status: (created.status as CompetencyModel['status']) || 'ACTIVE',
+          skillIds: created.skillIds || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setCompetencies((prev) => [newComp, ...prev])
+        updateActiveCompany((c) => ({
+          ...c,
+          competencies: [newComp, ...(c.competencies || []).filter((item) => item.id !== newComp.id)],
+        }))
+        toast({
+          title: 'Competency Created',
+          description: `Registered ${newComp.code} successfully.`,
+          variant: 'success',
+        })
+      }
+      setIsCompetencyModalOpen(false)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save competency.'
+      toast({
+        title: 'Save Failed',
+        description: msg,
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDeleteCompetency = async (comp: CompetencyModel) => {
+    const active = getActiveCompany()
+    const orgId = active?.id || 'default-org'
+
+    try {
+      await deleteCompetency(orgId, comp.id)
+      setCompetencies((prev) => prev.filter((c) => c.id !== comp.id))
+      updateActiveCompany((c) => ({
+        ...c,
+        competencies: (c.competencies || []).filter((item) => item.id !== comp.id),
+      }))
+      toast({
+        title: 'Competency Deleted',
+        description: `Successfully removed ${comp.code}.`,
+        variant: 'success',
+      })
+      setDeletingCompetency(null)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Cannot delete competency while referenced.'
+      toast({
+        title: 'Delete Failed',
+        description: msg,
+        variant: 'destructive',
+      })
+      setDeletingCompetency(null)
+    }
+  }
+
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
@@ -981,6 +1184,17 @@ export function CompetencyOntologyPage() {
                   size="sm"
                   leftIcon={<Plus className="h-4 w-4" />}
                   onClick={handleOpenCreateSkill}
+                  className="font-semibold shadow-2xs"
+                >
+                  Create
+                </Button>
+              )}
+              {activeTab === 'competencies' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  onClick={handleOpenCreateCompetency}
                   className="font-semibold shadow-2xs"
                 >
                   Create
@@ -1014,20 +1228,20 @@ export function CompetencyOntologyPage() {
 
           <StatCard
             variant="gradient"
+            icon={<BookOpen className="h-4 w-4 text-success" />}
+            title="Competencies"
+            value={competencies.length.toString()}
+            valueClassName="text-success"
+            description="Role & level competency mappings"
+          />
+
+          <StatCard
+            variant="gradient"
             icon={<GitBranch className="h-4 w-4 text-warning" />}
             title="Skill Prerequisites"
             value={prerequisites.length.toString()}
             valueClassName="text-warning"
             description="Foundational learning sequences"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<BookOpen className="h-4 w-4 text-success" />}
-            title="Competencies"
-            value={competencies.length > 0 ? competencies.length.toString() : '472'}
-            valueClassName="text-success"
-            description="Role & level competency mappings"
           />
 
           <StatCard
@@ -1045,6 +1259,9 @@ export function CompetencyOntologyPage() {
           <TabsList className="inline-flex flex-wrap h-auto p-1 bg-muted/80 rounded-lg gap-1 border border-border">
             <TabsTrigger value="skills" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Micro-skills
+            </TabsTrigger>
+            <TabsTrigger value="competencies" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
+              Competencies ({competencies.length})
             </TabsTrigger>
             <TabsTrigger value="prerequisites" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Skill Prerequisites
@@ -1745,6 +1962,200 @@ export function CompetencyOntologyPage() {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* TAB: COMPETENCIES */}
+          <TabsContent value="competencies" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                  <div className="min-w-0 pr-2">
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                      <span>Domain Competencies Catalog</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Explore, define, and govern domain competencies and their member micro-skills across proficiency levels.
+                    </CardDescription>
+                  </div>
+
+                  {/* Search and Filter Controls */}
+                  <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                    <div className="relative w-44 sm:w-52 shrink-0">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search competencies..."
+                        value={competencySearchQuery}
+                        onChange={(e) => {
+                          setCompetencySearchQuery(e.target.value)
+                          setCompetencyCurrentPage(1)
+                        }}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
+                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
+                      <select
+                        value={competencyStatusFilter}
+                        onChange={(e) => {
+                          setCompetencyStatusFilter(e.target.value)
+                          setCompetencyCurrentPage(1)
+                        }}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                      >
+                        <option value="all">All ({competencies.length})</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="DRAFT">Draft</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
+                      <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
+                      <select
+                        value={competencySortBy}
+                        onChange={(e) => setCompetencySortBy(e.target.value as 'latest' | 'title' | 'code')}
+                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                      >
+                        <option value="latest">Latest</option>
+                        <option value="title">Name (A–Z)</option>
+                        <option value="code">Code (A–Z)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-0">
+                {filteredCompetencies.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
+                    <p className="text-sm font-semibold">No competencies match your search or filter.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => {
+                        setCompetencySearchQuery('')
+                        setCompetencyStatusFilter('all')
+                        setCompetencyCurrentPage(1)
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
+                            <th className="py-2.5 px-3">Competency Code</th>
+                            <th className="py-2.5 px-3">Title &amp; Scope</th>
+                            <th className="py-2.5 px-3">Seniority Levels</th>
+                            <th className="py-2.5 px-3 text-center">Member Micro-skills</th>
+                            <th className="py-2.5 px-3 text-center">Status</th>
+                            <th className="py-2.5 px-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {paginatedCompetencies.map((comp) => {
+                            const isDraft = comp.status?.toUpperCase() === 'DRAFT'
+                            return (
+                              <tr key={comp.id} className="hover:bg-muted/20">
+                                <td className="py-3 px-3 font-mono font-bold text-primary">
+                                  {comp.code}
+                                </td>
+                                <td className="py-3 px-3 max-w-sm">
+                                  <div className="font-semibold text-foreground text-xs">{comp.name}</div>
+                                  <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                                    {comp.description || 'Domain competency capability scope.'}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="flex items-center gap-1 flex-wrap">
+                                    {comp.levelCodes && comp.levelCodes.length > 0 ? (
+                                      comp.levelCodes.map((lvl) => (
+                                        <Badge key={lvl} variant="outline" className="text-[10px] font-mono py-0 px-1.5">
+                                          {lvl}
+                                        </Badge>
+                                      ))
+                                    ) : (
+                                      <span className="text-[11px] text-muted-foreground italic">General</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3 text-center">
+                                  <Badge
+                                    variant="secondary"
+                                    className="font-mono text-[10px] py-0 px-2 cursor-pointer hover:bg-secondary-hover"
+                                    onClick={() => setViewingCompetencyDetails(comp)}
+                                    title="Click to view member skills"
+                                  >
+                                    {comp.skillIds?.length || 0} skills
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-center">
+                                  <Badge variant={isDraft ? 'warning' : 'success'} className="font-mono text-[10px]">
+                                    {comp.status || 'ACTIVE'}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setViewingCompetencyDetails(comp)}
+                                      title="View Details"
+                                      aria-label="View Details"
+                                    >
+                                      <Eye className="h-4 w-4 text-primary" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => handleOpenEditCompetency(comp)}
+                                      title="Edit Competency"
+                                      aria-label="Edit Competency"
+                                    >
+                                      <Edit3 className="h-4 w-4 text-foreground" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setDeletingCompetency(comp)}
+                                      title="Delete Competency"
+                                      aria-label="Delete Competency"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {filteredCompetencies.length > 0 && (
+                      <Pagination
+                        currentPage={competencyCurrentPage}
+                        totalPages={competencyTotalPages}
+                        totalItems={filteredCompetencies.length}
+                        pageSize={competencyPageSize}
+                        onPageChange={setCompetencyCurrentPage}
+                        itemLabel="competencies"
+                      />
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -2583,6 +2994,261 @@ export function CompetencyOntologyPage() {
         onConfirm={() => {
           if (deletingSkill) {
             handleDeleteSkill(deletingSkill)
+          }
+        }}
+      />
+
+      {/* CREATE / EDIT COMPETENCY MODAL */}
+      <Dialog
+        open={isCompetencyModalOpen}
+        onOpenChange={setIsCompetencyModalOpen}
+        className="max-w-xl w-full p-6 sm:p-7 overflow-hidden"
+      >
+        <div className="space-y-5">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                  <span>{selectedCompetency ? 'Edit Competency' : 'Create New Competency'}</span>
+                  {selectedCompetency && (
+                    <Badge variant="outline" className="font-mono text-[10px] text-primary border-primary/30 bg-primary/5">
+                      {selectedCompetency.code}
+                    </Badge>
+                  )}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Define a domain competency and associate required member technical micro-skills.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 text-xs">
+            {/* Code & Status */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
+                  Competency Code <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. COMP-SEC-01"
+                  disabled={Boolean(selectedCompetency)}
+                  value={competencyForm.code}
+                  onChange={(e) => setCompetencyForm({ ...competencyForm, code: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary disabled:opacity-60 disabled:bg-muted/50 transition-all shadow-2xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
+                  Status
+                </label>
+                <select
+                  value={competencyForm.status}
+                  onChange={(e) => setCompetencyForm({ ...competencyForm, status: e.target.value as 'ACTIVE' | 'DRAFT' })}
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs font-medium cursor-pointer"
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="DRAFT">DRAFT</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Name */}
+            <div>
+              <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
+                Competency Name <span className="text-destructive">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Network Security Architecture & Perimeter Defense"
+                value={competencyForm.name}
+                onChange={(e) => setCompetencyForm({ ...competencyForm, name: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
+                Description &amp; Knowledge Scope
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Describe the domain competency scope, capabilities, and observable mastery..."
+                value={competencyForm.description}
+                onChange={(e) => setCompetencyForm({ ...competencyForm, description: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs leading-relaxed"
+              />
+            </div>
+
+            {/* Member Micro-skills Multi-selection */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="font-semibold text-foreground flex items-center gap-1">
+                  Member Micro-skills ({competencyForm.skillIds.length} selected)
+                </label>
+                <span className="text-[10.5px] text-muted-foreground">Select skills belonging to this competency</span>
+              </div>
+              <div className="max-h-40 overflow-y-auto border border-border rounded-lg p-2 bg-muted/20 space-y-1">
+                {microSkills.length === 0 ? (
+                  <p className="text-xs text-muted-foreground p-2">No micro-skills available in catalog.</p>
+                ) : (
+                  microSkills.map((s) => {
+                    const isChecked = competencyForm.skillIds.includes(s.id) || competencyForm.skillIds.includes(s.code)
+                    return (
+                      <label
+                        key={s.id}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/40 cursor-pointer text-xs transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setCompetencyForm({ ...competencyForm, skillIds: [...competencyForm.skillIds, s.id] })
+                            } else {
+                              setCompetencyForm({
+                                ...competencyForm,
+                                skillIds: competencyForm.skillIds.filter((id) => id !== s.id && id !== s.code),
+                              })
+                            }
+                          }}
+                          className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
+                        />
+                        <span className="font-mono text-primary font-bold">{s.code}</span>
+                        <span className="text-foreground truncate">{s.name}</span>
+                      </label>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setIsCompetencyModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!competencyForm.code.trim() || !competencyForm.name.trim()}
+              onClick={handleSaveCompetency}
+              className="gap-1.5 font-semibold shadow-2xs"
+            >
+              <Check size={14} />
+              <span>{selectedCompetency ? 'Save Changes' : 'Create Competency'}</span>
+            </Button>
+          </DialogFooter>
+        </div>
+      </Dialog>
+
+      {/* VIEW COMPETENCY DETAILS MODAL */}
+      <Dialog
+        open={Boolean(viewingCompetencyDetails)}
+        onOpenChange={(open) => !open && setViewingCompetencyDetails(null)}
+        className="max-w-xl max-h-[90vh] overflow-y-auto"
+      >
+        {viewingCompetencyDetails && (
+          <div className="space-y-4">
+            <DialogHeader>
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <DialogTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary shrink-0" />
+                  <span>{viewingCompetencyDetails.name}</span>
+                </DialogTitle>
+                <Badge variant={viewingCompetencyDetails.status?.toUpperCase() === 'DRAFT' ? 'warning' : 'success'} className="font-mono text-[10px]">
+                  {viewingCompetencyDetails.status || 'ACTIVE'}
+                </Badge>
+              </div>
+              <DialogDescription className="text-xs font-mono text-primary font-bold">
+                {viewingCompetencyDetails.code}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
+                <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-1">
+                  Scope &amp; Description
+                </span>
+                <p className="text-foreground leading-relaxed">
+                  {viewingCompetencyDetails.description || 'No description provided.'}
+                </p>
+              </div>
+
+              {viewingCompetencyDetails.levelCodes && viewingCompetencyDetails.levelCodes.length > 0 && (
+                <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
+                  <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-1.5">
+                    Associated Seniority Levels
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {viewingCompetencyDetails.levelCodes.map((lvl) => (
+                      <Badge key={lvl} variant="outline" className="text-xs font-mono">
+                        {lvl}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
+                <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-2">
+                  Member Micro-skills ({viewingCompetencyDetails.skillIds?.length || 0})
+                </span>
+                {(!viewingCompetencyDetails.skillIds || viewingCompetencyDetails.skillIds.length === 0) ? (
+                  <p className="text-muted-foreground italic">No micro-skills mapped yet.</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {viewingCompetencyDetails.skillIds.map((sId) => {
+                      const skill = microSkills.find((s) => s.id === sId || s.code === sId)
+                      return (
+                        <div key={sId} className="flex items-center gap-2 p-1.5 rounded bg-muted/40 border border-border/60">
+                          <span className="font-mono text-primary font-bold text-xs">{skill?.code || sId}</span>
+                          <span className="text-foreground text-xs truncate">{skill?.name || 'Micro-skill'}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const comp = viewingCompetencyDetails
+                  setViewingCompetencyDetails(null)
+                  handleOpenEditCompetency(comp)
+                }}
+              >
+                Edit Competency
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setViewingCompetencyDetails(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </Dialog>
+
+      <ConfirmationModal
+        open={Boolean(deletingCompetency)}
+        onOpenChange={(open) => !open && setDeletingCompetency(null)}
+        title={`Delete Competency ${deletingCompetency?.code}?`}
+        description={`Are you sure you want to delete ${deletingCompetency?.name}? This action will remove its associations with skills and levels.`}
+        confirmText="Delete Competency"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={() => {
+          if (deletingCompetency) {
+            handleDeleteCompetency(deletingCompetency)
           }
         }}
       />

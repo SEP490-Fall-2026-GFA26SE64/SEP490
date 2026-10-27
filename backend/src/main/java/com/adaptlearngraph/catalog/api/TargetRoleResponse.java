@@ -25,7 +25,8 @@ public record TargetRoleResponse(
         List<Map<String, Object>> skillTargets,
         Instant createdAt,
         Instant updatedAt,
-        String rejectionReason) {
+        String rejectionReason,
+        List<String> levels) {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -56,7 +57,8 @@ public record TargetRoleResponse(
                 skills,
                 role.getCreatedAt(),
                 role.getUpdatedAt(),
-                role.getRejectionReason());
+                role.getRejectionReason(),
+                role.getLevels() != null && !role.getLevels().isEmpty() ? role.getLevels() : List.of("Junior", "Middle", "Senior"));
     }
 }
 

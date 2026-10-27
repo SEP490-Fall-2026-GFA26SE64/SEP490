@@ -93,15 +93,17 @@ Level mô tả kỳ vọng năng lực và mức tự chủ trong một TargetRo
 
 | Field | Kiểu | Ý nghĩa |
 |---|---|---|
-| `code` | String | Mã cấp độ: `J`, `M`, `S`. Duy nhất trong phạm vi role sở hữu. |
-| `name` | String | Tên hiển thị: `Junior`, `Middle`, `Senior`. |
-| `rank` | Integer | Thứ bậc: Junior = 1, Middle = 2, Senior = 3. Dùng để sắp xếp; không phải điểm đánh giá. |
-| `context` | String | Ngữ cảnh thực hiện công việc và mức hỗ trợ/tự chủ được phép ở cấp độ này. Giúp assessor hiểu kỳ vọng khi chấm. |
-| `attainmentRule` | Enum/String | Hiện là `ALL_MANDATORY_SKILLS`: chỉ đạt Level khi tất cả skill bắt buộc của Level đều đạt. |
+| `code` | String | Mã cấp độ: ví dụ `J`, `M`, `S` hoặc mã cấp độ tự sinh. Duy nhất trong phạm vi role sở hữu. |
+| `name` | String | Tên hiển thị cấp độ (ví dụ `Junior`, `Middle`, `Senior` hoặc cấp độ tùy biến do tổ chức định nghĩa). |
+| `rank` | Integer | Thứ bậc: 1, 2, 3... Dùng để sắp xếp; không phải điểm đánh giá. |
+| `attainmentRule` | Enum/String | Mặc định là `ALL_MANDATORY_SKILLS`: chỉ đạt Level khi tất cả skill bắt buộc của Level đều đạt. |
 
-Skill thuộc Level và ngưỡng điểm được xác định qua `REQUIRES_SKILL`. Level không lưu điểm trung bình để bù cho một skill bắt buộc bị trượt. `targetRoleId` chỉ dùng nối Excel/JSON; sau import ownership nằm trên `HAS_LEVEL`.
+*Lưu ý kiến trúc:* Thuộc tính `context` và `mastery` đã được loại bỏ hoàn toàn khỏi schema Level (frontend và backend) để bám sát mô hình đồ thị tối giản. Skill thuộc Level và ngưỡng điểm được xác định qua `REQUIRES_SKILL`. Năng lực của Level được liên kết qua quan hệ `(Level)-[:HAS_COMPETENCY]->(Competency)`.
 
-Junior/Middle/Senior là các tier của nhóm, tham khảo SFIA và UK; không phải phép ánh xạ chính thức một-một sang cấp SFIA hoặc ngạch công việc UK.
+### 3.3.1. Quy tắc phân định trách nhiệm Target Role & Versioning
+1. **L&D Manager**: Khởi tạo khung chức danh mục tiêu (`TargetRole`) và danh sách các cấp độ thâm niên (`Level`), không map năng lực.
+2. **Domain Expert**: Chuyên gia phụ trách cấu hình danh sách Năng lực (`HAS_COMPETENCY`) và Micro-skills (`REQUIRES_SKILL`) cho chức danh/cấp độ. Chuyên gia không có quyền từ chối (reject) chức danh được giao mà phản hồi qua ghi chú revision.
+3. **Kế thừa phiên bản**: Đối với role đã xuất bản (`PUBLISHED`), Domain Expert là người khởi tạo bản thảo kế tiếp (`New Draft` v+0.1/v+1.0). Khi L&D Manager phê duyệt và xuất bản phiên bản mới, phiên bản cũ sẽ chuyển sang trạng thái `SUPERSEDED` và được ẩn khỏi danh mục vận hành thường ngày.
 
 ### 3.4. Competency — Năng lực thuộc Level
 
