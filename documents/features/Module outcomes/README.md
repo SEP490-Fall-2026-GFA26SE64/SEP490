@@ -1,6 +1,6 @@
 # Module Outcomes
 
-**Ontology 0.8.0:** LearningModule–MicroSkill uses exactly one-to-one TEACHES. Course is removed. Learning objectives and assessment evidence may be authored in content/assessment documentation; learningOutcome/expectedOutcome and rubric/readiness-assessment references are not graph properties. Both sides of the mapping must be checked when publishing or replacing a module. Historical many-skill mapping descriptions below are superseded.
+**Ontology 0.9.0 (approved 2026-10-26):** LearningModule–MicroSkill uses many-to-many TEACHES. Each Module teaches at least one skill; each catalog skill has at least one teaching Module; duplicate pairs are rejected. Course is removed. Learning objectives and assessment evidence may be authored in content/assessment documentation; learningOutcome/expectedOutcome and rubric/readiness-assessment references are not graph properties. Both sides of the mapping must be checked when publishing or replacing a module. Earlier one-to-one mapping rules are superseded. Module completion does not prove mastery of every linked skill.
 
 
 ## Current Scope Alignment

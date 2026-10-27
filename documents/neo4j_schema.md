@@ -1,18 +1,29 @@
-# Schema Neo4j — Ontology v0.8.0
+# Schema Neo4j — Ontology v0.9.0
 
-Catalog uses current string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection/profile/evidence/attempt/pathway state. [Role-first contract](features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md) defines consumers; [read-only verification](testing/system/REQ-001-002-final-synchronization-review.md) records observed metadata separately from this field contract.
+Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.9.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
-![Sơ đồ ontology0.8.0](diagrams/neo4j.svg)
+![Sơ đồ ontology0.9.0](diagrams/neo4j.svg)
 
 [PlantUML](diagrams/neo4j.puml) · [Nguồn dataset](dataset/ONTOLOGY.md) · [Import guide](dataset/NEO4J_IMPORT_GUIDE.md)
+
+Catalog uses stable string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection, profiles, assessment evidence and pathway state; Neo4j owns catalog only. Existing attempts retain their original catalog/model pins. The source v0.9 release does not prove an existing database has been upgraded.
 
 ## 1. Cấu trúc tổng quát
 
 **Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md).
 
-Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.8.0.
+Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.9.0.
 
-The ontology diagram above shows the complete relationship set; its PlantUML source is linked beside the image.
+```mermaid
+flowchart LR
+ O[Occupation] -->|HAS_ROLE| R[TargetRole]
+ R -->|HAS_LEVEL| L[Level]
+ L -->|HAS_COMPETENCY| C[Competency]
+ C -->|HAS_SKILL| S[MicroSkill]
+ L -->|REQUIRES_SKILL| S
+ M[LearningModule] -->|TEACHES N–N| S
+ S -->|HAS_SKILL_PREREQUISITE| S
+```
 
 | Relationship | Hướng | Ý nghĩa |
 |---|---|---|
@@ -21,7 +32,7 @@ The ontology diagram above shows the complete relationship set; its PlantUML sou
 | `HAS_COMPETENCY` | Level → Competency | Mỗi Level sở hữu các năng lực riêng; mỗi Competency thuộc đúng một Level. |
 | `HAS_SKILL` | Competency → MicroSkill | Năng lực được cấu thành từ các skill. Mỗi Competency hiện có ít nhất hai skill; một skill có thể thuộc nhiều năng lực. |
 | `REQUIRES_SKILL` | Level → MicroSkill | Xác định skill và yêu cầu đánh giá để đạt Level. Ngưỡng điểm nằm trên quan hệ này. |
-| `TEACHES` | LearningModule → MicroSkill | Quan hệ 1–1: mỗi Module dạy đúng một MicroSkill; mỗi MicroSkill được dạy bởi đúng một Module. |
+| `TEACHES` | LearningModule → MicroSkill | Quan hệ nhiều–nhiều: một Module dạy một hoặc nhiều MicroSkill; một MicroSkill có thể được dạy bởi nhiều Module. Dataset hiện yêu cầu mỗi skill có ít nhất một Module. |
 | `HAS_SKILL_PREREQUISITE` | MicroSkill → MicroSkill | A → B nghĩa là phải xác nhận readiness của skill B trước khi học skill A. |
 
 Bộ skill của các Level được xác định riêng, có thể giao nhau. MicroSkill dùng chung định nghĩa; yêu cầu thực hiện và ngưỡng điểm có thể khác theo từng Level.
@@ -33,7 +44,7 @@ Các field dưới đây được lưu trực tiếp thành property trên graph
 | Field | Kiểu | Ý nghĩa và cách dùng |
 |---|---|---|
 | `id` | String | ID ổn định của bản ghi. Dùng để nối và truy vấn; không dùng tên hiển thị làm khóa. Import kiểm tra ID không trùng trong từng tập bản ghi node/relationship. |
-| `version` | String | Phiên bản catalog. Phiên bản hiện tại là `0.8.0`. Giúp xác định bộ định nghĩa mà dữ liệu thuộc về; không đồng nghĩa với phiên bản rubric hay nội dung học. |
+| `version` | String | Phiên bản catalog. Phiên bản hiện tại là `0.9.0`. Giúp xác định bộ định nghĩa mà dữ liệu thuộc về; không đồng nghĩa với phiên bản rubric hay nội dung học. |
 | `status` | Enum/String | Trạng thái vòng đời: `DRAFT`, `ACTIVE`, `ARCHIVED`. Dataset hiện dùng `ACTIVE` cho các node và relationship. |
 | `reviewStatus` | Enum/String | Trạng thái chuyên gia duyệt: `NEEDS_EXPERT_REVIEW`, `APPROVED`, `REJECTED`. Dataset hiện đang chờ duyệt. |
 | `reviewedBy` | String hoặc null | Danh tính người thực sự phê duyệt/rà soát. Không tự điền người duyệt khi dữ liệu chưa được duyệt. |
@@ -116,7 +127,7 @@ Các kết quả này được lưu trong dữ liệu learner, không gắn thà
 
 ### 3.5. MicroSkill — Kỹ năng cụ thể
 
-MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm chứng, dùng lại giữa nhiều role và Level; mỗi skill có đúng một Module giảng dạy.
+MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm chứng, dùng lại giữa nhiều role và Level; mỗi skill có thể được dạy bởi nhiều Module.
 
 | Field | Kiểu | Ý nghĩa |
 |---|---|---|
@@ -133,9 +144,9 @@ LearningModule chứa tham chiếu nội dung bài học/thực hành. Module d�
 |---|---|---|
 | `title` | String | Tên Module hiển thị trong lộ trình học. |
 | `moduleType` | Enum/String | Loại nội dung. `LESSON_AND_PRACTICE`: bài học kèm thực hành; `RESOURCE_GUIDED_PRACTICE`: hướng dẫn đọc nguồn và thực hành mẫu. |
-| `contentUri` | String | Đường dẫn hoặc định danh nội dung thực tế. Seed hiện dùng đường dẫn tương đối tính từ thư mục chứa JSON seed, ví dụ `content/modules/MOD-MS-CORE02.md`. |
+| `contentUri` | String | Đường dẫn hoặc định danh nội dung thực tế. Seed hiện dùng đường dẫn tương đối tính từ thư mục chứa JSON seed, ví dụ `content/modules/MOD-READ-CORE02.md`. |
 | `contentType` | String | Định dạng nội dung; hiện là `text/markdown`, giúp ứng dụng chọn cách đọc/hiển thị. |
-| `contentVersion` | String | Phiên bản của nội dung được tham chiếu, ví dụ `2.0`. Cần khớp bản nội dung đã được duyệt và triển khai. |
+| `contentVersion` | String | Phiên bản của nội dung được tham chiếu, ví dụ `1.2`. Cần khớp bản nội dung đã được duyệt và triển khai. |
 
 `contentVersion` khác `version`: field chung `version` chỉ phiên bản catalog, còn `contentVersion` chỉ bản bài học. Nội dung bài học lưu ngoài Neo4j; database lưu tham chiếu. Thứ tự học nằm trong pathway của learner, dựa trên skill gap và prerequisite; không đặt thứ tự toàn cục trên Module.
 
@@ -195,20 +206,22 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 - Thiếu nội dung phù hợp cho một gap → `PATHWAY_UNRESOLVED`. Một cạnh `TEACHES` hoặc tài liệu tham khảo không tự chứng minh nội dung đủ sâu hay đã được duyệt.
 - Competency được suy ra từ skill; Level đạt khi đủ các skill bắt buộc. Module completion không tự thay thế kết quả đánh giá skill.
 
-### Ràng buộc TEACHES 1–1 và nội dung theo cấp độ
+### Ràng buộc TEACHES N–N và nội dung theo cấp độ
 
-- Mỗi MicroSkill có đúng một cạnh `TEACHES` đi vào từ LearningModule; mỗi LearningModule có đúng một cạnh `TEACHES` đi ra tới MicroSkill.
-- Bộ kiểm tra import và thao tác ghi catalog phải kiểm tra cả hai phía, kể cả node không có cạnh. Constraint duy nhất trên ID không tự đảm bảo cardinality này. Importer v0.8 đã kiểm tra cả hai phía; API ghi catalog trong tương lai cũng phải thực thi ràng buộc này.
+- Mỗi Module trong catalog hiện có ít nhất một cạnh `TEACHES` tới MicroSkill; mỗi MicroSkill có ít nhất một Module dạy. Không giới hạn mỗi phía ở một cạnh. Mỗi cặp Module–Skill chỉ có một mapping trong snapshot.
+- Bộ kiểm tra import và thao tác ghi catalog phải kiểm tra cả hai phía, kể cả node không có cạnh. Constraint duy nhất trên ID không tự đảm bảo cardinality này. Importer v0.9 đã kiểm tra cả hai phía; API ghi catalog trong tương lai cũng phải thực thi ràng buộc này.
 - Một Module dùng chung cho các Level yêu cầu cùng skill. Nội dung có thể chia thành phần nền tảng, thực hành và nâng cao trong cùng Module; nhiệm vụ và bằng chứng đánh giá được định nghĩa trong cấu hình assessment ngoài graph, gắn với skill và ngữ cảnh Level tương ứng.
 - Hoàn thành Module không đồng nghĩa đạt skill ở mọi Level. Nếu nội dung chưa đáp ứng ngữ cảnh/độ sâu của Level, trả về `PATHWAY_UNRESOLVED`, không suy ra đủ năng lực chỉ vì tồn tại cạnh `TEACHES`.
-- Khi learner chưa đạt skill, có thể học lại phần liên quan và thực hiện bài thực hành/đánh giá khác trong cùng Module; thiết kế này không có Module thay thế cho cùng skill.
+- Với mỗi skill gap, xét các Module thay thế theo nội dung, độ sâu, readiness và phê duyệt; không mặc định học tất cả Module dạy cùng skill. Một Module bù nhiều gap chỉ xuất hiện một lần trong cùng kế hoạch học, với danh sách skill cần học rõ ràng.
+- Đánh giá riêng từng skill có bằng chứng; hoàn thành Module không tự PASS mọi skill được gắn TEACHES.
+- Readiness áp dụng trước hoạt động học skill phụ thuộc. Nếu Module dạy cả nền tảng và skill phụ thuộc, phải có thứ tự nội dung phù hợp và xác nhận readiness giữa các phần; nếu không khả thi thì chọn Module nền tảng khác hoặc báo lộ trình chưa giải quyết được.
 - Bỏ Course đồng thời bỏ `HAS_COURSE`, `HAS_MODULE`, `HAS_COURSE_PREREQUISITE` và `sequence` thuộc Course. Không chuyển bằng chứng hoàn thành Course cũ thành bằng chứng đạt skill.
 
 ## 8. Nguồn dữ liệu và trạng thái hiện tại
 
 O*NET cung cấp Occupation, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
 
-[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **827 node, 4.536 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 79 LearningModule. Có 11 prerequisite skill; không còn Course. Schema/dataset định nghĩa ontology0.8.0. Trạng thái consumer và giới hạn tích hợp được ghi riêng trong [báo cáo đối chiếu](testing/system/REQ-001-002-final-synchronization-review.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+[JSON seed](dataset/import/ontology_seed.json) và [Excel review](dataset/ontology_dataset.xlsx) có **833 node, 4.638 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 85 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.9. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
 
 File nguồn, URI đối chiếu và minh chứng được giữ trong [ONTOLOGY.md](dataset/ONTOLOGY.md) và thư mục `dataset/sources/`, không đưa thành các property `sourceConceptUri`, `sourceLocator`, `sourceVerification` trên graph.
 
@@ -232,7 +245,7 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 | HAS_COMPETENCY | Không có | 472 |
 | HAS_SKILL | Không có | 1.891 |
 | REQUIRES_SKILL | requiredScore, isMandatory | 1.891 |
-| TEACHES | Không có | 79 |
+| TEACHES | Không có | 181 |
 | HAS_SKILL_PREREQUISITE | requiredScore | 11 |
 
 Mỗi TargetRole được xử lý riêng theo Level và bộ requirement. Các role có cùng skill có thể tạo ra lộ trình giống nhau; không có cơ chế gom role bằng mã profile.

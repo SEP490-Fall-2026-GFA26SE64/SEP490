@@ -79,8 +79,12 @@ export function TargetRoleDetailDialog({
           <DialogHeader>
             <div className="flex flex-wrap items-center gap-2">
               <DialogTitle>{detail.data.name}</DialogTitle>
-              <Badge variant="primary" className="text-[10px] font-bold">{detail.data.seniority}</Badge>
-              <Badge variant="outline" className="text-[10px]">{detail.data.track}</Badge>
+              <Badge variant="outline" className="text-[10px] font-mono font-semibold text-primary border-primary/30">
+                {detail.data.code}
+              </Badge>
+              <Badge variant="secondary" className="text-[10px] font-medium">
+                Junior · Middle · Senior Tiers
+              </Badge>
               {isCompleted ? (
                 <Badge
                   variant="outline"
@@ -94,7 +98,7 @@ export function TargetRoleDetailDialog({
               ) : null}
             </div>
             <DialogDescription>
-              {detail.data.code} · {detail.data.familyCode}
+              Target role profile in knowledge graph with multi-tier competency calibration.
             </DialogDescription>
           </DialogHeader>
 

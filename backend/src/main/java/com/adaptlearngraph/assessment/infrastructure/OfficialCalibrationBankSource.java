@@ -19,9 +19,10 @@ public final class OfficialCalibrationBankSource {
     public OfficialCalibrationBankSource(Path repositoryRoot) { root=repositoryRoot.toAbsolutePath().normalize(); }
     public Bank load() {
         try {
-            byte[] manifest=read("backend/src/main/resources/db/seed/question-bank-15-1212.00-v1.json",PIN.manifestHash());
-            byte[] scope=read("documents/dataset/question-bank/15-1212.00/catalog-scope.json",PIN.scopeHash());
-            read("documents/dataset/import/ontology_seed.json",PIN.ontologyHash());
+            byte[] manifest=read("documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json",PIN.manifestHash());
+            byte[] scope=read("documents/dataset/question-bank/15-1212.00/historical/catalog-scope-v08.json",PIN.scopeHash());
+            // Historical calibration remains bound to its original v0.8 catalog, never the current release.
+            read("documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json",PIN.ontologyHash());
             var parsed=OfficialQuestionBankManifest.parse(manifest,OfficialQuestionBankManifest.class);
             parsed.validate(OfficialQuestionBankManifest.parse(scope,OfficialQuestionBankCatalog.Scope.class));
             Calibration.require(parsed.questionBank().id().equals(PIN.bankId()) && parsed.manifestVersion().equals(PIN.manifestVersion())

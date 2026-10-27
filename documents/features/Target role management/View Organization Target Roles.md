@@ -24,6 +24,11 @@ Browse, filter, and inspect the organization's target-role catalog for L&D manag
 - **Tenant Scope & Isolation**: Strict isolation by `organizationId`. A manager cannot see or manage target roles from other organizations.
 - **Role Visibility**: L&D Managers can see their organization's `DRAFT`, `SENT`, `REJECTED`, and `PUBLISHED` roles to manage catalog configuration, whereas employee-facing browsing strictly filters out draft or baseline-unready roles.
 - **Display Ordering Rule**: In target role catalogs, any successor draft, sent, or rejected version is always ordered immediately below its previous published version within the same lineage (e.g., `v1.1 DRAFT/SENT` is positioned directly beneath `v1.0 PUBLISHED`).
+- **O*NET Occupation & Level Alignment (Neo4j Schema v0.8.0 / ONTOLOGY.md)**:
+  - Target roles display their aligned O*NET Occupation name (e.g. `Software Developers`, `Database Architects & Engineers`) without redundant technical badges.
+  - Target roles display their customized 3-tier calibration passing thresholds (`J (60%) · M (75%) · S (90%)`) in clean typography matching the content approval queue.
+  - Subtitle reflects the role's Ontology Local Profile (`DEV Profile · 3 Tiers`, `DATAENG Profile · 3 Tiers`).
+  - Outdated backend legacy fields (`track`, `seniority`, `domainCode`) are excluded from the user interface while seamlessly supported in REST persistence payloads.
 - **Snug Action Toolbar**: Action buttons in tables use icon-only triggers with accessible tooltips and clear visual hierarchy per UI-UX Pro Max standards.
 
 ## Acceptance Baseline

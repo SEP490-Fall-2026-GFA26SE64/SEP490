@@ -1,11 +1,11 @@
-"""Validate the source-backed 0.8.0 catalog without contacting Neo4j."""
+"""Validate the source-backed 0.9.0 catalog without contacting Neo4j."""
 import json,math
 from collections import Counter,defaultdict
 from pathlib import Path
 LABELS={'Occupations':'Occupation','TargetRoles':'TargetRole','Levels':'Level','Competencies':'Competency','MicroSkills':'MicroSkill','LearningModules':'LearningModule'}
-COUNTS={'Occupations':5,'TargetRoles':48,'Levels':144,'Competencies':472,'MicroSkills':79,'LearningModules':79}
+COUNTS={'Occupations':5,'TargetRoles':48,'Levels':144,'Competencies':472,'MicroSkills':79,'LearningModules':85}
 TYPES={'HAS_ROLE':{('Occupation','TargetRole')},'HAS_LEVEL':{('TargetRole','Level')},'HAS_COMPETENCY':{('Level','Competency')},'HAS_SKILL':{('Competency','MicroSkill')},'REQUIRES_SKILL':{('Level','MicroSkill')},'TEACHES':{('LearningModule','MicroSkill')},'HAS_SKILL_PREREQUISITE':{('MicroSkill','MicroSkill')}}
-EDGE_COUNTS={'REQUIRES_SKILL':1891,'HAS_SKILL':1891,'HAS_COMPETENCY':472,'TEACHES':79,'HAS_LEVEL':144,'HAS_ROLE':48,'HAS_SKILL_PREREQUISITE':11}
+EDGE_COUNTS={'REQUIRES_SKILL':1891,'HAS_SKILL':1891,'HAS_COMPETENCY':472,'TEACHES':181,'HAS_LEVEL':144,'HAS_ROLE':48,'HAS_SKILL_PREREQUISITE':11}
 
 def require(ok,message):
     if not ok:raise ValueError(message)
@@ -31,7 +31,7 @@ def validate(file):
     require(len({e['id'] for e in edges})==len(edges),'Duplicate edge ID')
     require(len({(e['type'],e['fromId'],e['toId']) for e in edges})==len(edges),'Duplicate edge pair')
     for r in list(nodes.values())+edges:
-        require(r['version']=='0.8.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
+        require(r['version']=='0.9.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
         require(r['reviewedBy'] is None and r['reviewedAt'] is None,'Unsubstantiated approval')
         require(not {'canonicalProfileKey','learningOutcome','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
     for e in edges:
@@ -64,11 +64,11 @@ def validate(file):
         require(c['attainmentRule']=='ALL_MEMBER_SKILLS_AT_OWNING_LEVEL','Wrong derivation rule')
         require(not {'targetRoleId','requiredScore','rubricId','evidenceType'} & c.keys(),'Independent competency assessment field')
     for m in data['LearningModules']:
-        require(len(sets['TEACHES',m['id']])==1,'Each module must teach exactly one skill')
+        require(len(sets['TEACHES',m['id']])>=1,'Each module must teach at least one skill')
         content=(base/m['contentUri']).resolve()
         require(content.is_relative_to(base.resolve()) and content.is_file(),'Missing or unsafe module content')
     for skill in data['MicroSkills']:
-        require(len(incoming['TEACHES',skill['id']])==1,'Each skill must have exactly one module')
+        require(len(incoming['TEACHES',skill['id']])>=1,'Each skill must have at least one module')
     g=defaultdict(set)
     for e in edges:
         if e['type']=='HAS_SKILL_PREREQUISITE':

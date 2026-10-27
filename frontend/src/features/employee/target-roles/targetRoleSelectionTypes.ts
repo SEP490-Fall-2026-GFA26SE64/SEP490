@@ -6,6 +6,7 @@ export interface TargetRoleSelectionSnapshot {
   name: string
   track: CareerTrack
   seniority: Seniority
+  requirementCount?: number
 }
 
 export interface TargetRoleSelection {

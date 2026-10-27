@@ -13,15 +13,21 @@ Conflicting actors, policies and acceptance below are superseded; old evidence i
 
 ## Description
 
-Create a target role in the organization catalog. The L&D Manager creates the target role structure (unique code, title, Job Domain, Career Family, Track, Assigned Domain Expert, and description); Domain Experts will link micro-skills and maintain competency thresholds (REQ-015).
+Create a target role in the organization catalog aligned with the knowledge graph ontology (`ONTOLOGY.md` / `neo4j_schema.md`). The L&D Manager establishes the target role definition (unique code, title, O*NET Occupation, Ontology Local Profile, customizable Calibration Level thresholds for Junior, Middle, Senior, Assigned Domain Expert, role scope, and key responsibilities); Domain Experts will link micro-skills and maintain competency thresholds (REQ-015).
 
-**Input:** Role name, unique code, `domainCode` (`ICT`, `DATA`, `AI`), `familyCode` (`JAVA_BACKEND`, `PYTHON_DATA`, `AI_ML`, `CLOUD_DEVOPS`, `FRONTEND_WEB`, `CYBERSECURITY`), `track` (`PROFESSIONAL` or `MANAGEMENT`), `seniority` (`P1`–`P5` for `PROFESSIONAL`, `M3`–`M4` for `MANAGEMENT`), `responsibilities` (list of key job duties for the Job Description), `assignedExpertId`, description, and organization context (`organizationId`).  
+**Input:** Role title, unique code, `occupationCode` (O*NET standard e.g. `15-1252.00`), `familyCode` (Ontology Local Profile e.g. `DEV`, `INFRA`, `DATAENG`, `QAENG`, `SECANALYSIS`), `levelThresholds` (customizable benchmark passing thresholds for `J: 60%`, `M: 75%`, `S: 90%`), `scope` (Role Scope & Operational Objectives), `responsibilities` (list of key job duties for the Job Description), `assignedExpertId` (filtered by occupation eligibility), and organization context (`organizationId`).  
 **Outcome:** An organization-owned target-role record in PostgreSQL/Neo4j with status `DRAFT`.
 
 ## Confirmed Related Rules
 
 - **Actor Role & Responsibilities**: L&D Manager (`LD_MANAGER`). The L&D Manager creates, views, edits, and deletes target role outlines. L&D Managers **cannot** add micro-skills (that is exclusively the Domain Expert's role).
-- **Track & Seniority Validation & Engine Behavior**:
+- **Customizable Ontology Calibration Tiers (Levels J • M • S)**:
+  - Each role is linked to 3 standardized ontology levels: `Junior (J)`, `Middle (M)`, and `Senior (S)`.
+  - Benchmark passing thresholds default to the proposed baseline (`J: 60%`, `M: 75%`, `S: 90%`) per `ONTOLOGY.md` (Level skill selection and score policy), but are **fully customizable** by the L&D Manager during creation and editing to accommodate specialized requirements (e.g., setting Junior to 65% or Senior to 95%).
+- **O*NET Occupation & Local Profile Alignment (`ONTOLOGY.md`)**:
+  - Each role belongs to one of the 5 standard O*NET occupations (`15-1252.00`, `15-1243.00`, `15-1253.00`, `15-1299.08`, `15-1212.00`).
+  - The Local Profile is dynamically populated based on the selected occupation's defined profiles in `ONTOLOGY.md` (e.g. `DEV`, `INTEGRATION`, `DEVOPS`, `INFRA`, `SWARCH`, `SYSARCH` for Software Developers).
+- **Legacy Backward Compatibility**: Under the hood, REST API payloads continue to provide fallback values for legacy relational fields (`domainCode`, `track: 'PROFESSIONAL'`, `seniority: 'P3'`) to maintain zero regression against older backend controllers.
   - `PROFESSIONAL`: Individual Contributor / Technical Specialist track focusing on deep hands-on code craftsmanship, system implementation, and architecture. Seniority levels strictly restricted to `P1`, `P2`, `P3`, `P4`, `P5`.
   - `MANAGEMENT`: People & Engineering Leadership track focusing on technical coordination, team coaching, project delivery, and organizational governance. Seniority levels strictly restricted to `M3`, `M4`.
   - Any mismatch between track and seniority (e.g. `MANAGEMENT` with `P3`, or `PROFESSIONAL` with `M3`) is rejected with `400 Bad Request`.
@@ -36,6 +42,7 @@ Create a target role in the organization catalog. The L&D Manager creates the ta
   - A newly created role with unfinished configuration or in `DRAFT`/`SENT`/`REJECTED` status remains hidden from employee browsing and unavailable for new selection.
 - **Domain Expert Assignment & Isolation**:
   - Each target role must be assigned to an eligible Domain Expert (`assignedExpertId`).
+  - **O*NET Occupation-Based Expert Eligibility**: The Assigned Domain Expert selection is dynamically filtered based on the role's selected O*NET occupation (`15-1252.00`, `15-1243.00`, etc.). Only domain experts certified and assigned to that specific occupation appear in the selection list. When switching occupations, the system validates whether the current expert is eligible; if not, it automatically reassigns to the first certified expert for that occupation.
   - Other Domain Experts **cannot** see the target role if they are not assigned to it (`X-User-Role: DOMAIN_EXPERT` queries automatically filter by `assignedExpertId`).
 - **Tenant Isolation**: Every target role is isolated by `organizationId`. A manager cannot view or modify target roles belonging to another organization.
 - **Creation Default & Lifecycle**: Newly created target roles default to `DRAFT`.

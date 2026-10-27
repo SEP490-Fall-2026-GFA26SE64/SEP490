@@ -33,7 +33,17 @@ import {
 } from '../data/roadmapData'
 import './InteractiveRoleRoadmap.css'
 
-export function InteractiveRoleRoadmap() {
+export interface InteractiveRoleRoadmapProps {
+  targetRole?: string
+  isSkillMode?: boolean
+  compact?: boolean
+}
+
+export function InteractiveRoleRoadmap({
+  targetRole: propTargetRole,
+  isSkillMode: propIsSkillMode,
+  compact = false,
+}: InteractiveRoleRoadmapProps = {}) {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
 
   React.useEffect(() => {
@@ -47,8 +57,9 @@ export function InteractiveRoleRoadmap() {
   }, [])
 
   const { profile } = useEmployeeLearningState()
-  const isSkillMode = profile.selectedViewType === 'skill'
-  const selectedRoleKey = normalizeRoleKey(profile.targetRole)
+  const isSkillMode = propIsSkillMode !== undefined ? propIsSkillMode : (profile.selectedViewType === 'skill')
+  const effectiveRole = propTargetRole || profile.targetRole
+  const selectedRoleKey = normalizeRoleKey(effectiveRole)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [selectedDetailSkill, setSelectedDetailSkill] = React.useState<MicroSkillNode | null>(null)
   const [selectedDetailModule, setSelectedDetailModule] = React.useState<LearningModuleNode | null>(null)
@@ -163,9 +174,9 @@ export function InteractiveRoleRoadmap() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={cn('space-y-6', compact && 'space-y-3.5')}>
       {/* Top Toolbar: Search, Legend & Progress Bar */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
+      <div className={cn('flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs', compact && 'p-3 gap-2.5')}>
         <div className="flex flex-wrap items-center gap-3">
           {/* Quick status counters */}
           <div className="flex items-center gap-3 text-xs">
@@ -180,7 +191,7 @@ export function InteractiveRoleRoadmap() {
 
         {/* Search */}
         <div className="flex items-center gap-3 w-full lg:w-auto justify-end">
-          <div className="relative w-48 sm:w-60">
+          <div className={cn('relative w-48 sm:w-60', compact && 'w-44 sm:w-52')}>
             <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
@@ -194,28 +205,28 @@ export function InteractiveRoleRoadmap() {
       </div>
 
       {/* Main Roadmap Canvas (Styled with strict system tokens) */}
-      <div className="roadmap-container">
+      <div className={cn('roadmap-container', compact && 'is-compact')}>
         <div className="roadmap-canvas">
           {/* =========================================================================
               ROOT NODE: TARGET ROLE
              ========================================================================= */}
-          <div className="roadmap-target-role-node group">
+          <div className={cn('roadmap-target-role-node group', compact && 'is-compact')}>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Sparkles size={18} className="text-primary animate-pulse" />
+              <Sparkles size={compact ? 15 : 18} className="text-primary animate-pulse" />
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-primary">
                 {isSkillMode ? 'Target Skill' : 'Target Role'}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            <h1 className={cn('font-black text-foreground tracking-tight', compact ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl')}>
               {roadmapData.name}
             </h1>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 font-medium">
+            <p className={cn('text-muted-foreground max-w-md mx-auto mt-1 font-medium', compact ? 'text-[11px]' : 'text-xs')}>
               {roadmapData.domain} • {roadmapData.jobLevel}
             </p>
           </div>
 
           {/* Vertical Connecting Spine descending from Target Role */}
-          <div className="w-[2px] h-12 bg-primary my-0" />
+          <div className={cn('w-[2px] bg-primary my-0', compact ? 'h-6' : 'h-12')} />
 
           {/* =========================================================================
               ROADMAP MODULES & FLANKING MICRO-SKILLS
@@ -242,9 +253,9 @@ export function InteractiveRoleRoadmap() {
               return (
                 <div key={module.id} className="w-full flex flex-col items-center relative">
                   {/* Row containing Left Micro-Skills, Center Module, Right Micro-Skills */}
-                  <div className="w-full flex items-center justify-center relative py-5">
+                  <div className={cn('w-full flex items-center justify-center relative', compact ? 'py-2.5' : 'py-5')}>
                     {/* LEFT MICRO-SKILLS FLANK */}
-                    <div className="flex-1 flex flex-col items-end gap-2.5 pr-8 max-w-[340px]">
+                    <div className={cn('flex-1 flex flex-col items-end gap-2.5 pr-8 max-w-[340px]', compact && 'gap-1.5 pr-6 max-w-[280px]')}>
                       {leftSkills.map((skill) => {
                         const isMatch =
                           !searchQuery ||
@@ -368,7 +379,7 @@ export function InteractiveRoleRoadmap() {
                     </div>
 
                     {/* RIGHT MICRO-SKILLS FLANK */}
-                    <div className="flex-1 flex flex-col items-start gap-2.5 pl-8 max-w-[340px]">
+                    <div className={cn('flex-1 flex flex-col items-start gap-2.5 pl-8 max-w-[340px]', compact && 'gap-1.5 max-w-[280px]')}>
                       {rightSkills.map((skill) => {
                         const isMatch =
                           !searchQuery ||
@@ -455,12 +466,15 @@ export function InteractiveRoleRoadmap() {
                   {/* Vertical Spine segment to next module */}
                   {!isLast && (
                     <div
-                      className={`w-[2px] h-12 my-0 ${module.status === 'completed'
-                        ? 'bg-success'
-                        : module.status === 'in_progress'
-                          ? 'bg-warning'
-                          : 'bg-border'
-                        }`}
+                      className={cn(
+                        'w-[2px] my-0',
+                        compact ? 'h-6' : 'h-12',
+                        module.status === 'completed'
+                          ? 'bg-success'
+                          : module.status === 'in_progress'
+                            ? 'bg-warning'
+                            : 'bg-border'
+                      )}
                     />
                   )}
                 </div>
@@ -469,9 +483,9 @@ export function InteractiveRoleRoadmap() {
           </div>
 
           {/* Roadmap Completion Target Checkpoint */}
-          <div className="w-[2px] h-10 bg-border" />
-          <div className="p-3.5 px-6 rounded-xl border border-success bg-success/10 text-foreground flex items-center gap-2 font-bold text-sm shadow-xs">
-            <CheckCircle2 size={18} className="text-success" />
+          <div className={cn('w-[2px] bg-border', compact ? 'h-5' : 'h-10')} />
+          <div className={cn('rounded-xl border border-success bg-success/10 text-foreground flex items-center gap-2 font-bold shadow-xs', compact ? 'p-2.5 px-4 text-xs' : 'p-3.5 px-6 text-sm')}>
+            <CheckCircle2 size={compact ? 16 : 18} className="text-success" />
             <span>Target Role Verified: Production Readiness Capstone</span>
           </div>
         </div>

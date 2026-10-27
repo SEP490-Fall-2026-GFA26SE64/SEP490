@@ -5,7 +5,7 @@
 **Status:** Scope draft; delivery and storage pending  
 **Source:** [System Overview](../../adapt_learn_graph_system_overview.md)
 
-Ontology 0.8.0 has no Course entity. Lesson/practice content is organized within a LearningModule. Each module teaches exactly one MicroSkill and each skill has one module. The directory name is retained for link compatibility. Dummy-only descriptions are no longer the product constraint. New or revised offerings use [L&D approval](../Learning%20offering%20approval/README.md).
+Ontology 0.9.0 has no Course entity. Lesson/practice content is organized within a LearningModule. A Module can teach several MicroSkills and a skill can have several teaching Modules; require coverage on both sides and reject duplicate pairs. The directory name is retained for link compatibility. Dummy-only descriptions are no longer the product constraint. New or revised offerings use [L&D approval](../Learning%20offering%20approval/README.md).
 
 | Function ID | Function | Input | Outcome |
 | --- | --- | --- | --- |

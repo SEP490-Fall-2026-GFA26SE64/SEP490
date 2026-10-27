@@ -116,6 +116,17 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       lastActive: '3 days ago',
       avatar: 'CB',
     },
+    {
+      id: 'USR-106',
+      name: 'Elena Rostova',
+      email: 'elena.rostova@adaptlearn.internal',
+      role: 'Employee',
+      department: 'Cognitive Architecture & AI',
+      status: 'active',
+      targetRole: 'AI Knowledge Architect',
+      lastActive: 'Just now',
+      avatar: 'ER',
+    },
   ],
   competencies: INITIAL_COMPETENCIES,
   microSkills: INITIAL_MICRO_SKILLS,
@@ -200,22 +211,35 @@ export function loadCompanies(): CompanyRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return (parsed as CompanyRecord[]).map((comp) => ({
-          ...comp,
-          microSkills:
-            Array.isArray(comp.microSkills) && comp.microSkills.length > 0
-              ? comp.microSkills
-              : INITIAL_MICRO_SKILLS,
-          competencies:
-            Array.isArray(comp.competencies) && comp.competencies.length > 0
-              ? comp.competencies
-              : INITIAL_COMPETENCIES,
-          blueprints: Array.isArray(comp.blueprints)
-            ? comp.blueprints
-            : comp.id === 'comp-technova'
-            ? INITIAL_BLUEPRINTS
-            : [],
-        }))
+        return (parsed as CompanyRecord[]).map((comp) => {
+          let users = comp.users || []
+          if (comp.id === 'comp-technova') {
+            const hasElena = users.some((u) => u.id === 'USR-106')
+            if (!hasElena) {
+              const elenaUser = SEED_COMPANY_TECHNOVA.users.find((u) => u.id === 'USR-106')
+              if (elenaUser) {
+                users = [...users, elenaUser]
+              }
+            }
+          }
+          return {
+            ...comp,
+            users,
+            microSkills:
+              Array.isArray(comp.microSkills) && comp.microSkills.length > 0
+                ? comp.microSkills
+                : INITIAL_MICRO_SKILLS,
+            competencies:
+              Array.isArray(comp.competencies) && comp.competencies.length > 0
+                ? comp.competencies
+                : INITIAL_COMPETENCIES,
+            blueprints: Array.isArray(comp.blueprints)
+              ? comp.blueprints
+              : comp.id === 'comp-technova'
+              ? INITIAL_BLUEPRINTS
+              : [],
+          }
+        })
       }
     }
   } catch (e) {

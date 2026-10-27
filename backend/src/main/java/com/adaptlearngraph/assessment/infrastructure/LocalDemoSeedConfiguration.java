@@ -22,15 +22,15 @@ public class LocalDemoSeedConfiguration {
             byte[] graph=Files.readAllBytes(Path.of("/seed/ontology_seed.json"));
             byte[] scope=Files.readAllBytes(Path.of("/seed/catalog-scope.json"));
             byte[] manifest;
-            try(var in=new org.springframework.core.io.ClassPathResource("db/seed/question-bank-15-1212.00-v1.json").getInputStream()){manifest=in.readAllBytes();}
-            require(sha256(graph).equals("0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125"),"Catalog seed drift");
-            require(sha256(scope).equals("c2454bde23764d061b6b25b54d434141715326d75eaa3201026618e7e4136231"),"Scope seed drift");
-            require(sha256(manifest).equals("52d065a031aa9adca51808c59a7682872b7436343f0c300db84cfe1beb2fe882"),"Bank seed drift");
+            try(var in=new org.springframework.core.io.ClassPathResource("db/seed/question-bank-15-1212.00-v1-ontology-v09.json").getInputStream()){manifest=in.readAllBytes();}
+            require(sha256(graph).equals("6bb30de3dea6afa5aa306246b74ae696c896338991949bb9f392fd79f51a9b02"),"Catalog seed drift");
+            require(sha256(scope).equals("454b5531a43dba70c29597d866cb29f5e614a02de5e6e596c379bb2712c667a6"),"Scope seed drift");
+            require(sha256(manifest).equals("ca4fb71cc4a167e9d37d7133d9fe62a0cf8e9400ca9a5faeb22b4264a51b0bb6"),"Bank seed drift");
             var json=new ObjectMapper(); var data=json.readTree(graph);
             var labels=Map.of("Occupations","Occupation","TargetRoles","TargetRole","Levels","Level",
                     "Competencies","Competency","MicroSkills","MicroSkill","LearningModules","LearningModule");
             try(var session=driver.session()) {
-                for(var label:labels.values()) session.run("CREATE CONSTRAINT ontology_v08_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
+                for(var label:labels.values()) session.run("CREATE CONSTRAINT ontology_v09_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
                 session.executeWrite(tx -> {
                     if(tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong()!=0) return false;
                     for(var entry:labels.entrySet()) {
@@ -55,8 +55,8 @@ public class LocalDemoSeedConfiguration {
                         }
                         tx.run("UNWIND $rows AS row MATCH (a {id:row.from}),(b {id:row.to}) CREATE (a)-[r:"+type+"]->(b) SET r=row.props",Map.of("rows",rows)).consume();
                     }
-                    require(tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong()==827,"Incomplete catalog nodes");
-                    require(tx.run("MATCH ()-[r]->() RETURN count(r) AS c").single().get("c").asLong()==4536,"Incomplete catalog edges");
+                    require(tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong()==833,"Incomplete catalog nodes");
+                    require(tx.run("MATCH ()-[r]->() RETURN count(r) AS c").single().get("c").asLong()==4638,"Incomplete catalog edges");
                     return true;
                 });
             }

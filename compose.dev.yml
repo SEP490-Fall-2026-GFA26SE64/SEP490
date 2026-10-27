@@ -75,7 +75,7 @@ services:
       ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
     volumes:
       - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
-      - ./documents/dataset/question-bank/15-1212.00/catalog-scope.json:/seed/catalog-scope.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -87,6 +87,7 @@ services:
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,local-baseline-demo
+      ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "true"
     depends_on:
       seed:
         condition: service_completed_successfully

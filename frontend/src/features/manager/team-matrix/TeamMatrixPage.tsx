@@ -1,9 +1,12 @@
 import {
-  AlertCircle,
   ArrowRight,
-  Award,
+  ArrowUpDown,
+  BookOpen,
   Check,
-  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
   Clock,
   Compass,
   DollarSign,
@@ -12,16 +15,14 @@ import {
   FileText,
   History,
   Layers,
-  Lock,
   Search,
+  SlidersHorizontal,
   Sparkles,
   Target,
   TrendingUp,
   UserCheck,
   Users,
   X,
-  XCircle,
-  Zap,
 } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -39,6 +40,8 @@ import {
   type TeamMemberGap,
 } from '../data/managerData'
 import { getActiveCompany, type CompanyRecord } from '../../../shared/stores/companyStore'
+import { InteractiveRoleRoadmap } from '../../employee/components/InteractiveRoleRoadmap'
+import { getOverviewSkills, type CompetencySkillProfile } from '../../employee/data/employeeOverviewData'
 import { Link } from 'react-router-dom'
 import './TeamMatrixPage.css'
 
@@ -66,6 +69,36 @@ export function TeamMatrixPage() {
   const [learnerModalTab, setLearnerModalTab] = React.useState<'overview' | 'pathway' | 'quiz'>('overview')
   const [reviewAttemptId, setReviewAttemptId] = React.useState<string | null>(null)
 
+  // Learner Modal Micro-Skill Proficiency State
+  const [learnerSkillSearch, setLearnerSkillSearch] = React.useState('')
+  const [learnerSkillCategory, setLearnerSkillCategory] = React.useState('all')
+  const [expandedLearnerSkills, setExpandedLearnerSkills] = React.useState<Record<string, boolean>>({})
+  const [learnerSkillPage, setLearnerSkillPage] = React.useState(1)
+
+  // Learner Modal Assessment History State
+  const [learnerHistorySearch, setLearnerHistorySearch] = React.useState('')
+  const [learnerHistoryFilter, setLearnerHistoryFilter] = React.useState<'all' | 'passed' | 'failed'>('all')
+  const [learnerHistorySort, setLearnerHistorySort] = React.useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest')
+
+  // Reset modal state when selecting learner
+  React.useEffect(() => {
+    if (selectedLearner) {
+      setLearnerSkillSearch('')
+      setLearnerSkillCategory('all')
+      setLearnerSkillPage(1)
+      setExpandedLearnerSkills({})
+      setLearnerHistorySearch('')
+      setLearnerHistoryFilter('all')
+      setLearnerHistorySort('newest')
+      setReviewAttemptId(null)
+    }
+  }, [selectedLearner])
+
+  // Reset pagination on search/category change
+  React.useEffect(() => {
+    setLearnerSkillPage(1)
+  }, [learnerSkillSearch, learnerSkillCategory])
+
   React.useEffect(() => {
     setCurrentPage(1)
   }, [statusFilter, searchQuery])
@@ -74,13 +107,17 @@ export function TeamMatrixPage() {
   const companyEmployees = (activeCompany.users || []).filter((u) => u.role === 'Employee')
 
   const companyMembers: TeamMemberGap[] = companyEmployees.map((emp, idx) => {
-    const telemetryKey = LEARNER_TELEMETRY[emp.id] ? emp.id : (idx === 0 ? 'emp-1' : idx === 1 ? 'emp-2' : 'emp-3')
+    const telemetryKey = LEARNER_TELEMETRY[emp.id] ? emp.id : (idx === 0 ? 'emp-1' : idx === 1 ? 'emp-2' : idx === 2 ? 'emp-3' : 'emp-4')
     const tel = LEARNER_TELEMETRY[telemetryKey]
     const readiness = tel?.pathwayProgress || (70 + ((idx * 13) % 25))
     const hours = tel ? 24.5 + idx * 8 : 14.0 + idx * 6
     const status: TeamMemberGap['status'] = readiness >= 85 ? 'ready' : readiness >= 50 ? 'on_track' : 'needs_attention'
     const primaryRole = emp.targetRole || activeCompany.targetRoles[0]?.title || 'Target Role Pending'
     const defaultGap = activeCompany.microSkills[idx % Math.max(1, activeCompany.microSkills.length)]?.name || 'Baseline Diagnostic Calibration'
+    const inProgStep = tel?.adaptivePathway?.find((s) => s.status === 'in_progress')
+    const currentModule = inProgStep
+      ? inProgStep.title
+      : tel?.adaptivePathway?.[0]?.title || defaultGap
 
     return {
       id: emp.id,
@@ -89,6 +126,7 @@ export function TeamMatrixPage() {
       targetRole: primaryRole,
       readinessScore: readiness,
       criticalGap: defaultGap,
+      currentModule,
       hoursSaved: hours,
       status,
     }
@@ -100,6 +138,7 @@ export function TeamMatrixPage() {
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.currentRole.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.targetRole.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.currentModule.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.criticalGap.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesFilter && matchesSearch
   })
@@ -189,7 +228,7 @@ export function TeamMatrixPage() {
                     <option value="all">All Statuses ({companyMembers.length})</option>
                     <option value="ready">Ready ({companyMembers.filter((m) => m.status === 'ready').length})</option>
                     <option value="on_track">On Track ({companyMembers.filter((m) => m.status === 'on_track').length})</option>
-                    <option value="needs_attention">Needs Support ({companyMembers.filter((m) => m.status === 'needs_attention').length})</option>
+                    <option value="needs_attention">Behind Pace ({companyMembers.filter((m) => m.status === 'needs_attention').length})</option>
                   </select>
                 </div>
               </div>
@@ -205,7 +244,7 @@ export function TeamMatrixPage() {
                     <th className="py-2.5 px-3">CURRENT ROLE</th>
                     <th className="py-2.5 px-3">TARGET ROLE</th>
                     <th className="py-2.5 px-3">READINESS SCORE</th>
-                    <th className="py-2.5 px-3">CRITICAL SKILL GAP</th>
+                    <th className="py-2.5 px-3">CURRENT MODULE</th>
                     <th className="py-2.5 px-3">STATUS</th>
                     <th className="py-2.5 px-3 text-right">ACTIONS</th>
                   </tr>
@@ -248,26 +287,18 @@ export function TeamMatrixPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-muted-foreground font-medium text-xs">
+                        <td className="py-3 px-3 text-foreground font-medium text-xs">
                           {member.currentRole}
                         </td>
                         <td className="py-3 px-3">
-                          <Badge variant="outline" className="font-semibold text-primary border-primary/30 bg-secondary/30 text-[11px]">
+                          <span className="text-xs font-medium text-foreground">
                             {member.targetRole}
-                          </Badge>
+                          </span>
                         </td>
                         <td className="py-3 px-3">
                           <div className="w-28 space-y-1">
                             <div className="flex justify-between text-xs font-mono font-bold">
-                              <span
-                                className={
-                                  member.readinessScore >= 80
-                                    ? 'text-success'
-                                    : member.readinessScore >= 50
-                                      ? 'text-warning'
-                                      : 'text-destructive'
-                                }
-                              >
+                              <span className="text-foreground">
                                 {member.readinessScore}%
                               </span>
                             </div>
@@ -284,8 +315,8 @@ export function TeamMatrixPage() {
                           </div>
                         </td>
                         <td className="py-3 px-3">
-                          <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-muted text-foreground border border-border">
-                            {member.criticalGap}
+                          <span className="text-xs font-medium text-foreground">
+                            {member.currentModule}
                           </span>
                         </td>
                         <td className="py-3 px-3">
@@ -303,7 +334,7 @@ export function TeamMatrixPage() {
                               ? 'Ready for Promotion'
                               : member.status === 'on_track'
                                 ? 'On Track'
-                                : 'Needs Support'}
+                                : 'Behind Pace'}
                           </Badge>
                         </td>
                         <td className="py-3 px-3 text-right">
@@ -345,54 +376,88 @@ export function TeamMatrixPage() {
         {/* VIEW LEARNER PROGRESS MODAL (Miro Flow: Team Matrix Screen -> View Learner Progress Modal) */}
         {selectedLearner && (() => {
           const telemetry = LEARNER_TELEMETRY[selectedLearner.id]
-          const pathway = telemetry?.adaptivePathway || []
-          const attempts = telemetry?.attempts || (telemetry?.assessmentQuiz ? [telemetry.assessmentQuiz] : [])
-          const completedSteps = pathway.filter((s) => s.status === 'completed').length
           const initials = selectedLearner.name
             .split(' ')
             .map((n) => n[0])
             .join('')
             .slice(0, 2)
 
-          // Dynamically assemble key evaluated skills for this learner
-          const assessedSkills: {
-            name: string
-            category: string
-            status: 'mastered' | 'in_progress' | 'gap'
-            score?: number
-          }[] = []
-
-          if (attempts.length > 0) {
-            attempts[0].questions.forEach((q) => {
-              if (!assessedSkills.some((s) => s.name === q.skillName)) {
-                assessedSkills.push({
-                  name: q.skillName,
-                  category: q.skillCode,
-                  status: q.isCorrect ? 'mastered' : 'gap',
-                  score: q.isCorrect ? 100 : 0,
-                })
-              }
+          // Derive micro-skills for this learner's target role using getOverviewSkills
+          const learnerSkills = getOverviewSkills(false, selectedLearner.targetRole)
+          const categorySet = new Set<string>()
+          learnerSkills.forEach((s) => categorySet.add(s.category))
+          const skillCategories = [{ key: 'all', label: 'All Domains', count: learnerSkills.length }]
+          categorySet.forEach((cat) => {
+            skillCategories.push({
+              key: cat,
+              label: cat,
+              count: learnerSkills.filter((s) => s.category === cat).length,
             })
+          })
+
+          const filteredLearnerSkills = learnerSkills.filter((skill) => {
+            const q = learnerSkillSearch.toLowerCase().trim()
+            const matchesSearch =
+              !q ||
+              skill.name.toLowerCase().includes(q) ||
+              (skill.skillCode && skill.skillCode.toLowerCase().includes(q)) ||
+              skill.category.toLowerCase().includes(q)
+            const matchesCategory =
+              learnerSkillCategory === 'all' || skill.category === learnerSkillCategory
+            return matchesSearch && matchesCategory
+          })
+
+          const SKILL_PAGE_SIZE = 5
+          const totalSkillPages = Math.max(1, Math.ceil(filteredLearnerSkills.length / SKILL_PAGE_SIZE))
+          const paginatedLearnerSkills = filteredLearnerSkills.slice(
+            (learnerSkillPage - 1) * SKILL_PAGE_SIZE,
+            learnerSkillPage * SKILL_PAGE_SIZE
+          )
+
+          const getSkillStatusBadge = (status: CompetencySkillProfile['status']) => {
+            switch (status) {
+              case 'mastered':
+                return <Badge variant="success">Mastered</Badge>
+              case 'in_progress':
+                return <Badge variant="warning">In Progress</Badge>
+              case 'critical_gap':
+                return <Badge variant="destructive">Critical Gap</Badge>
+            }
           }
 
-          pathway.forEach((step) => {
-            if (assessedSkills.length < 5 && step.skillsTaught.length > 0) {
-              const skill = step.skillsTaught[0]
-              if (!assessedSkills.some((s) => s.name === skill)) {
-                assessedSkills.push({
-                  name: skill,
-                  category: step.code,
-                  status:
-                    step.status === 'completed'
-                      ? 'mastered'
-                      : step.status === 'in_progress'
-                        ? 'in_progress'
-                        : 'in_progress',
-                  score: step.score,
-                })
+          // Attempts and Assessment History derivations
+          const rawLearnerAttempts =
+            telemetry?.attempts && telemetry.attempts.length > 0
+              ? telemetry.attempts
+              : telemetry?.assessmentQuiz
+                ? [telemetry.assessmentQuiz]
+                : LEARNER_TELEMETRY['emp-1']?.attempts || []
+
+          const highestScore = rawLearnerAttempts.length > 0 ? Math.max(...rawLearnerAttempts.map((a) => a.score)) : 0
+          const avgScore =
+            rawLearnerAttempts.length > 0
+              ? Math.round(rawLearnerAttempts.reduce((sum, a) => sum + a.score, 0) / rawLearnerAttempts.length)
+              : 0
+
+          const filteredLearnerAttempts = rawLearnerAttempts
+            .filter((a) => {
+              if (learnerHistorySearch.trim()) {
+                const q = learnerHistorySearch.toLowerCase().trim()
+                const matchesCode = a.blueprintCode.toLowerCase().includes(q)
+                const matchesTitle = a.blueprintTitle.toLowerCase().includes(q)
+                const matchesDate = a.completedDate.toLowerCase().includes(q)
+                if (!matchesCode && !matchesTitle && !matchesDate) return false
               }
-            }
-          })
+              const isPassed = a.score >= (a.passThreshold || 80)
+              if (learnerHistoryFilter === 'passed' && !isPassed) return false
+              if (learnerHistoryFilter === 'failed' && isPassed) return false
+              return true
+            })
+            .sort((a, b) => {
+              if (learnerHistorySort === 'highest') return b.score - a.score
+              if (learnerHistorySort === 'lowest') return a.score - b.score
+              return 0
+            })
 
           return (
             <Dialog
@@ -425,7 +490,7 @@ export function TeamMatrixPage() {
                           ? 'Ready for Promotion'
                           : selectedLearner.status === 'on_track'
                             ? 'On Track'
-                            : 'Needs Attention'}
+                            : 'Behind Pace'}
                       </Badge>
                     </div>
 
@@ -446,7 +511,7 @@ export function TeamMatrixPage() {
                     <span className="text-[10px] uppercase font-bold text-muted-foreground block tracking-wider">
                       Role Fit Match
                     </span>
-                    <span className="font-mono text-base font-black text-primary">
+                    <span className="font-mono text-base font-semibold text-muted-foreground">
                       {selectedLearner.readinessScore}%
                     </span>
                   </div>
@@ -469,10 +534,10 @@ export function TeamMatrixPage() {
                   setLearnerModalTab(val as 'overview' | 'pathway' | 'quiz')
                   setReviewAttemptId(null)
                 }}
-                className="w-full flex flex-col flex-1 min-h-0 bg-background"
+                className="w-full flex flex-col flex-1 min-h-0 bg-card"
               >
                 {/* Modern Segmented Navigation Tabs */}
-                <div className="px-5 sm:px-6 pt-3 pb-2.5 bg-background border-b border-border/70 shrink-0">
+                <div className="px-5 sm:px-6 pt-3 pb-2.5 bg-card border-b border-border/70 shrink-0">
                   <TabsList className="grid grid-cols-3 w-full bg-muted/60 p-1 rounded-xl h-auto">
                     <TabsTrigger
                       value="overview"
@@ -487,19 +552,16 @@ export function TeamMatrixPage() {
                     >
                       <Sparkles className="h-3.5 w-3.5 text-primary" />
                       <span>Adaptive Pathway</span>
-                      <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-mono font-bold">
-                        {completedSteps}/{pathway.length}
-                      </span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="quiz"
                       className="text-xs font-semibold py-2 flex items-center justify-center gap-1.5 cursor-pointer data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-2xs transition-all"
                     >
                       <History className="h-3.5 w-3.5 text-primary" />
-                      <span>Assessment Telemetry</span>
-                      {attempts.length > 0 && (
+                      <span>Assessment History</span>
+                      {rawLearnerAttempts.length > 0 && (
                         <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-mono font-bold">
-                          {attempts.length}
+                          {rawLearnerAttempts.length}
                         </span>
                       )}
                     </TabsTrigger>
@@ -516,7 +578,7 @@ export function TeamMatrixPage() {
                     {/* Visual Role Trajectory Flow */}
                     <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3">
                       {/* Current Baseline Card */}
-                      <div className="p-3.5 rounded-xl border border-border/80 bg-background/90 shadow-2xs space-y-1">
+                      <div className="p-3.5 rounded-xl border border-border/80 bg-card shadow-2xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                             <Layers className="h-3 w-3 text-muted-foreground" />
@@ -577,13 +639,10 @@ export function TeamMatrixPage() {
                             Aggregated across evaluated ontology skill prerequisites
                           </span>
                         </div>
-                        <div className="text-right flex items-baseline gap-1.5">
-                          <span className="font-mono text-2xl font-black text-primary">
-                            {selectedLearner.readinessScore}%
-                          </span>
-                          <span className="text-xs text-muted-foreground font-semibold">
-                            / 85% Benchmark
-                          </span>
+                        <div className="text-right flex items-baseline gap-1 font-mono text-xs text-muted-foreground font-semibold">
+                          <span>{selectedLearner.readinessScore}%</span>
+                          <span>/</span>
+                          <span>85% Benchmark</span>
                         </div>
                       </div>
 
@@ -601,382 +660,399 @@ export function TeamMatrixPage() {
                             style={{ width: `${Math.min(selectedLearner.readinessScore, 100)}%` }}
                           />
                         </div>
-                        {/* 85% Benchmark Line Marker */}
-                        <div
-                          className="absolute top-0 bottom-0 pointer-events-none flex flex-col items-center"
-                          style={{ left: '85%' }}
-                        >
-                          <div className="w-0.5 h-5 -mt-1 bg-foreground/60 rounded-full shadow-xs" />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[11px] pt-0.5">
-                        <span className="text-muted-foreground font-medium flex items-center gap-1">
-                          Target Benchmark: <strong>85% Minimum Required</strong>
-                        </span>
-                        <span
-                          className={`font-semibold flex items-center gap-1 ${
-                            selectedLearner.readinessScore >= 85 ? 'text-success' : 'text-primary'
-                          }`}
-                        >
-                          {selectedLearner.readinessScore >= 85 ? (
-                            <>
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              <span>Threshold Achieved (+{selectedLearner.readinessScore - 85}% buffer)</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertCircle className="h-3.5 w-3.5" />
-                              <span>{85 - selectedLearner.readinessScore}% deficit remaining to promotion readiness</span>
-                            </>
-                          )}
-                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* 3 High-Signal Telemetry Metric Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                    <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs hover:border-border/80 transition-all space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5 text-primary" />
-                          Time Efficiency
-                        </span>
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono text-primary font-bold">
-                          Skip Logic
-                        </Badge>
-                      </div>
-                      <div className="text-xl font-black font-mono text-foreground">
-                        {selectedLearner.hoursSaved} Hours Saved
-                      </div>
-                      <p className="text-[11px] text-muted-foreground leading-snug">
-                        Hours saved skipping known concepts via diagnostic test evaluation.
-                      </p>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs hover:border-border/80 transition-all space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-primary" />
-                          Curriculum Velocity
-                        </span>
-                        <span className="text-[11px] font-mono font-bold text-primary">
-                          {telemetry?.pathwayProgress || 0}% Complete
-                        </span>
-                      </div>
-                      <div className="text-xl font-black font-mono text-foreground">
-                        {completedSteps} of {pathway.length} Modules
-                      </div>
-                      <p className="text-[11px] text-muted-foreground leading-snug">
-                        Personalized adaptive modules completed towards target role.
-                      </p>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs hover:border-border/80 transition-all space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1.5">
-                          <Award className="h-3.5 w-3.5 text-primary" />
-                          Assessment Diagnostic
-                        </span>
-                        <Badge
-                          variant={attempts[0]?.passed ? 'success' : 'destructive'}
-                          className="text-[10px] px-1.5 py-0 font-bold"
-                        >
-                          {attempts[0]?.passed ? 'Passed' : 'Needs Review'}
-                        </Badge>
-                      </div>
-                      <div className="text-xl font-black font-mono text-foreground">
-                        {attempts[0]?.score ?? selectedLearner.readinessScore}% Accuracy
-                      </div>
-                      <p className="text-[11px] text-muted-foreground leading-snug">
-                        {attempts[0]?.passed
-                          ? 'Benchmark passed across evaluated blueprint skills.'
-                          : 'Foundational gaps identified for sequenced remediation.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Two-Column Diagnostic & Skill Matrix Section */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Left: Primary Blocking Competency Gap */}
-                    <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 shadow-2xs flex flex-col justify-between space-y-3">
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1 rounded-md bg-destructive/15 text-destructive">
-                              <AlertCircle className="h-4 w-4" />
-                            </div>
-                            <span className="text-xs font-bold text-destructive uppercase tracking-wide">
-                              Primary Progression Blocker
-                            </span>
-                          </div>
-                          <Badge variant="destructive" className="text-[10px] font-bold">
-                            High Priority
-                          </Badge>
-                        </div>
-
+                  {/* Micro-Skill Proficiency Section (Replacing old stat cards and blocker/ledger) */}
+                  <Card className="border border-border bg-card shadow-xs">
+                    <CardHeader className="pb-4 border-b border-border/80 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                          <h4 className="text-sm sm:text-base font-bold text-foreground">
-                            {selectedLearner.criticalGap}
-                          </h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                            This competency currently gates transition to <strong>{selectedLearner.targetRole}</strong>. Diagnostic telemetry identified a conceptual deficit during graph neural network evaluation.
-                          </p>
+                          <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            <span>Micro-Skill Proficiency</span>
+                          </CardTitle>
+                          <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                            Track micro-skill mastery levels and inspect the direct teaching module in {selectedLearner.name}&apos;s adaptive learning pathway.
+                          </CardDescription>
                         </div>
 
-                        <div className="p-3 rounded-lg bg-card/90 border border-destructive/20 text-xs space-y-1.5">
-                          <div className="flex items-center gap-1.5 font-bold text-foreground text-[11px]">
-                            <Zap className="h-3.5 w-3.5 text-primary" />
-                            <span>Active Remediation Intervention:</span>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            {pathway.find((p) => p.status === 'in_progress')?.title ? (
-                              <>Sequenced module <strong>{pathway.find((p) => p.status === 'in_progress')?.code}: {pathway.find((p) => p.status === 'in_progress')?.title}</strong> ({pathway.find((p) => p.status === 'in_progress')?.duration}) to close this gap.</>
-                            ) : (
-                              <>Sequenced fast-track assessment quiz or module review to resolve this ontology prerequisite.</>
-                            )}
-                          </p>
+                        {/* Search Bar */}
+                        <div className="relative w-full sm:w-64">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                          <input
+                            type="text"
+                            placeholder="Search micro-skills or categories..."
+                            value={learnerSkillSearch}
+                            onChange={(e) => setLearnerSkillSearch(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+                          />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 pt-1">
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="text-xs h-8 flex-1"
-                          onClick={() => setLearnerModalTab('pathway')}
-                          rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                        >
-                          View Remediation in Pathway
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-8"
-                          onClick={() => setLearnerModalTab('quiz')}
-                          leftIcon={<History className="h-3.5 w-3.5" />}
-                        >
-                          Review Quiz
-                        </Button>
+                      {/* Category Pills with Count badges */}
+                      <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                        {skillCategories.map((cat) => (
+                          <button
+                            key={cat.key}
+                            type="button"
+                            onClick={() => setLearnerSkillCategory(cat.key)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                              learnerSkillCategory === cat.key
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
+                                : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
+                            }`}
+                          >
+                            <span>{cat.label}</span>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                                learnerSkillCategory === cat.key
+                                  ? 'bg-primary-foreground/20 text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground'
+                              }`}
+                            >
+                              {cat.count}
+                            </span>
+                          </button>
+                        ))}
                       </div>
-                    </div>
+                    </CardHeader>
 
-                    {/* Right: Ontology Competency Ledger */}
-                    <div className="p-4 rounded-xl border border-border bg-card shadow-2xs flex flex-col justify-between space-y-3">
-                      <div>
-                        <div className="flex items-center justify-between pb-2 border-b border-border/60">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1 rounded-md bg-primary/10 text-primary">
-                              <Layers className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                                Ontology Competency Ledger
-                              </h4>
-                              <p className="text-[11px] text-muted-foreground">
-                                Evaluated against {selectedLearner.targetRole}
-                              </p>
-                            </div>
-                          </div>
-                          <Badge variant="secondary" className="text-[10px] font-mono text-primary font-bold">
-                            Competency Validated
-                          </Badge>
+                    <CardContent className="p-0 divide-y divide-border/60">
+                      {filteredLearnerSkills.length === 0 ? (
+                        <div className="p-8 text-center text-muted-foreground text-xs">
+                          No competency profiles match the active query or category filter.
                         </div>
+                      ) : (
+                        paginatedLearnerSkills.map((skill) => {
+                          const isExpanded = !!expandedLearnerSkills[skill.id]
+                          const moduleInfo =
+                            skill.teachingModule ||
+                            (skill.recommendedModule
+                              ? {
+                                  id: 'mod-ref',
+                                  moduleCode: skill.recommendedModule.split(':')[0]?.trim() || 'MOD-REF',
+                                  title: skill.recommendedModule.includes(':')
+                                    ? skill.recommendedModule.split(':')[1]?.trim()
+                                    : skill.recommendedModule,
+                                  description: 'Curriculum module aligned to this micro-skill in adaptive learning pathway.',
+                                  status: (skill.status === 'mastered' ? 'completed' : 'in_progress') as
+                                    | 'completed'
+                                    | 'in_progress',
+                                  order: 1,
+                                  estimatedDurationMinutes: 180,
+                                }
+                              : null)
 
-                        <div className="divide-y divide-border/40 mt-1">
-                          {assessedSkills.map((item, idx) => (
-                            <div key={idx} className="py-2 flex items-center justify-between gap-2 text-xs">
-                              <div className="flex items-center gap-2 min-w-0">
-                                {item.status === 'mastered' ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
-                                ) : item.status === 'in_progress' ? (
-                                  <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-                                ) : (
-                                  <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
-                                )}
-                                <span className="font-medium text-foreground truncate">{item.name}</span>
+                          return (
+                            <div key={skill.id} className="transition-colors hover:bg-muted/20">
+                              {/* Skill Row Header */}
+                              <div
+                                onClick={() =>
+                                  setExpandedLearnerSkills((prev) => ({
+                                    ...prev,
+                                    [skill.id]: !prev[skill.id],
+                                  }))
+                                }
+                                className="p-4 flex items-center justify-between gap-4 cursor-pointer select-none"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {skill.skillCode && (
+                                      <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                        {skill.skillCode}
+                                      </span>
+                                    )}
+                                    <span className="font-bold text-sm text-foreground">{skill.name}</span>
+                                    {getSkillStatusBadge(skill.status)}
+                                    <Badge variant="outline" className="text-[10px] text-muted-foreground font-mono">
+                                      {skill.category}
+                                    </Badge>
+                                  </div>
+
+                                  {/* Progress bar + percentages */}
+                                  <div className="mt-2.5 flex items-center gap-3">
+                                    <div className="relative flex-1 py-1">
+                                      <Progress
+                                        value={skill.estimatedMastery}
+                                        variant={skill.status === 'mastered' ? 'success' : 'warning'}
+                                        className="h-2 rounded-full"
+                                      />
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 font-mono text-xs shrink-0">
+                                      <span className="font-bold text-foreground">{skill.estimatedMastery}%</span>
+                                      <span className="text-muted-foreground">/</span>
+                                      <span className="text-muted-foreground font-semibold">
+                                        {skill.targetRoleRequirement}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {moduleInfo && (
+                                    <Badge variant="outline" className="text-xs font-mono hidden sm:inline-flex bg-muted/40 text-muted-foreground">
+                                      {moduleInfo.moduleCode}
+                                    </Badge>
+                                  )}
+                                  <div className="p-1 rounded text-muted-foreground hover:text-foreground">
+                                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <span className="font-mono text-[11px] text-muted-foreground hidden sm:inline">
-                                  {item.category}
-                                </span>
-                                <Badge
-                                  variant={
-                                    item.status === 'mastered'
-                                      ? 'success'
-                                      : item.status === 'in_progress'
-                                        ? 'primary'
-                                        : 'destructive'
-                                  }
-                                  className="text-[10px] py-0 px-1.5 font-semibold"
-                                >
-                                  {item.status === 'mastered'
-                                    ? `Mastered (${item.score || 90}%)`
-                                    : item.status === 'in_progress'
-                                      ? 'In Progress'
-                                      : 'Gap Flagged'}
-                                </Badge>
-                              </div>
+
+                              {/* Expandable Dropdown: Teaching Module Only */}
+                              {isExpanded && (
+                                <div className="px-4 pb-4 pt-1 bg-muted/20 border-t border-border/40">
+                                  {moduleInfo ? (
+                                    <div className="p-3.5 rounded-xl border border-border/80 bg-card/90 shadow-2xs space-y-2.5">
+                                      <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <div className="flex items-center gap-2.5">
+                                          <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+                                            <BookOpen size={16} />
+                                          </div>
+                                          <div>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <span className="text-xs font-bold font-mono text-primary">
+                                                {moduleInfo.moduleCode}:
+                                              </span>
+                                              <span className="text-xs font-bold text-foreground">
+                                                {moduleInfo.title}
+                                              </span>
+                                            </div>
+                                            <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                                              <span>Curriculum Module {moduleInfo.order || 1} of 5 in Pathway</span>
+                                              <span>&bull;</span>
+                                              <span className="flex items-center gap-1">
+                                                <Clock size={11} /> {moduleInfo.estimatedDurationMinutes || 180} mins
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <Badge
+                                          variant={moduleInfo.status === 'completed' ? 'success' : 'primary'}
+                                          className="text-xs"
+                                        >
+                                          {moduleInfo.status === 'completed' ? 'Completed' : 'Active Pathway'}
+                                        </Badge>
+                                      </div>
+
+                                      <p className="text-xs text-muted-foreground leading-relaxed pl-1">
+                                        {moduleInfo.description}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground italic">
+                                      No direct instructional module linked for this micro-skill.
+                                    </p>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          ))}
+                          )
+                        })
+                      )}
+                    </CardContent>
+
+                    {filteredLearnerSkills.length > SKILL_PAGE_SIZE && (
+                      <div className="px-4 py-3 border-t border-border/80 bg-muted/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                        <div className="text-muted-foreground text-xs font-medium order-2 sm:order-1">
+                          Showing{' '}
+                          <span className="font-semibold text-foreground">
+                            {(learnerSkillPage - 1) * SKILL_PAGE_SIZE + 1}–
+                            {Math.min(learnerSkillPage * SKILL_PAGE_SIZE, filteredLearnerSkills.length)}
+                          </span>{' '}
+                          of{' '}
+                          <span className="font-semibold text-foreground">
+                            {filteredLearnerSkills.length}
+                          </span>{' '}
+                          skills
+                        </div>
+
+                        <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={learnerSkillPage <= 1}
+                            onClick={() => setLearnerSkillPage((p) => Math.max(1, p - 1))}
+                            className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
+                          >
+                            <ChevronLeft className="h-3.5 w-3.5 mr-0.5" />
+                            Prev
+                          </Button>
+
+                          <div className="flex items-center gap-1 px-1">
+                            {Array.from({ length: totalSkillPages }, (_, i) => i + 1).map((page) => (
+                              <button
+                                key={page}
+                                type="button"
+                                onClick={() => setLearnerSkillPage(page)}
+                                className={`h-7 min-w-[28px] px-2 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                                  learnerSkillPage === page
+                                    ? 'bg-primary text-primary-foreground shadow-2xs'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            ))}
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={learnerSkillPage >= totalSkillPages}
+                            onClick={() => setLearnerSkillPage((p) => Math.min(totalSkillPages, p + 1))}
+                            className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
+                          >
+                            Next
+                            <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                          </Button>
                         </div>
                       </div>
-
-                      <div className="pt-2 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
-                        <span>Ontology prerequisites verified</span>
-                        <span className="font-semibold text-foreground">
-                          {assessedSkills.filter((s) => s.status === 'mastered').length} of {assessedSkills.length} Verified
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                    )}
+                  </Card>
                 </TabsContent>
 
-                {/* TAB 2: ADAPTIVE PATHWAY */}
+                {/* TAB 2: ADAPTIVE PATHWAY (SHOWS INTERACTIVE PATHWAY FROM EMPLOYEE PAGE) */}
                 <TabsContent
                   value="pathway"
                   className="space-y-4 animate-in fade-in-50 overflow-y-auto flex-1 min-h-0 px-5 sm:px-6 py-4"
                 >
-                  {/* Pathway Header Banner */}
-                  <div className="p-4 rounded-xl border border-border bg-gradient-to-r from-muted/30 via-card to-secondary/15 space-y-2 text-xs">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="font-mono text-[10px] text-primary font-bold">
-                            {telemetry?.targetRoleCode || 'TARGET-TRACK'}
-                          </Badge>
-                          <span className="font-bold text-foreground text-sm">
-                            {telemetry?.targetRoleTitle || selectedLearner.targetRole}
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-muted-foreground block mt-0.5">
-                          Sequenced modules addressing {selectedLearner.name}'s verified competency gaps and ontological prerequisites.
-                        </span>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-mono text-primary font-bold text-sm">
-                          {completedSteps} / {pathway.length} Modules Cleared ({telemetry?.pathwayProgress || 0}%)
-                        </span>
-                      </div>
-                    </div>
-                    <Progress value={telemetry?.pathwayProgress || 0} variant="primary" className="h-2" />
-                  </div>
-
-                  {/* Modules Sequence */}
-                  <div className="space-y-3">
-                    {pathway.map((step, idx) => {
-                      const isCompleted = step.status === 'completed'
-                      const isInProgress = step.status === 'in_progress'
-                      const isRecommended = step.status === 'recommended'
-
-                      return (
-                        <div
-                          key={step.id}
-                          className={`p-4 rounded-xl border text-xs transition-all relative ${
-                            isInProgress
-                              ? 'border-primary/50 bg-primary/5 shadow-xs ring-1 ring-primary/20'
-                              : isRecommended
-                                ? 'border-primary/30 bg-primary/3'
-                                : isCompleted
-                                  ? 'border-border bg-card'
-                                  : 'border-border/60 bg-muted/20 opacity-75'
-                          }`}
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <div className="flex items-start gap-3">
-                              {/* Step Index & Status Icon */}
-                              <div
-                                className={`mt-0.5 p-2 rounded-xl shrink-0 ${
-                                  isCompleted
-                                    ? 'bg-success/15 text-success'
-                                    : isInProgress
-                                      ? 'bg-primary/15 text-primary animate-pulse'
-                                      : isRecommended
-                                        ? 'bg-primary/15 text-primary'
-                                        : 'bg-muted text-muted-foreground'
-                                }`}
-                              >
-                                {isCompleted ? (
-                                  <CheckCircle2 className="h-4 w-4" />
-                                ) : isInProgress ? (
-                                  <Clock className="h-4 w-4" />
-                                ) : isRecommended ? (
-                                  <Sparkles className="h-4 w-4" />
-                                ) : (
-                                  <Lock className="h-4 w-4" />
-                                )}
-                              </div>
-
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted font-bold text-muted-foreground">
-                                    STEP 0{idx + 1}
-                                  </span>
-                                  <span className="font-mono font-bold text-xs text-primary">{step.code}</span>
-                                  <span className="font-bold text-sm text-foreground">{step.title}</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  {step.rationale}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                              <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                                <Clock className="h-3 w-3 text-muted-foreground" />
-                                {step.duration}
-                              </span>
-                              <Badge
-                                variant={
-                                  isCompleted
-                                    ? 'success'
-                                    : isInProgress || isRecommended
-                                      ? 'primary'
-                                      : 'outline'
-                                }
-                                className="text-[11px] font-semibold"
-                              >
-                                {isCompleted
-                                  ? `Mastered (${step.score}%)`
-                                  : isInProgress
-                                    ? 'Active Intervention'
-                                    : isRecommended
-                                      ? 'Recommended'
-                                      : `Locked (${step.prerequisite || 'Prereq'})`}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between gap-2 text-[11px]">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-muted-foreground font-semibold">Taught Competencies:</span>
-                              {step.skillsTaught.map((skill, sIdx) => (
-                                <span
-                                  key={sIdx}
-                                  className="px-2 py-0.5 rounded-md bg-secondary text-foreground border border-border text-[10px] font-medium"
-                                >
-                                  {skill}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                  <InteractiveRoleRoadmap targetRole={selectedLearner.targetRole} compact />
                 </TabsContent>
 
-                {/* TAB 3: ASSESSMENT QUIZ */}
+                {/* TAB 3: ASSESSMENT HISTORY (MATCHES ASSESSMENT HISTORY TAB FROM EMPLOYEE PAGE) */}
                 <TabsContent
                   value="quiz"
                   className="space-y-4 animate-in fade-in-50 overflow-y-auto flex-1 min-h-0 px-5 sm:px-6 py-4"
                 >
-                  {attempts.length > 0 ? (
-                    <div className="space-y-3.5">
-                      {attempts
-                        .filter((a) => !reviewAttemptId || a.id === reviewAttemptId)
-                        .map((attempt) => {
+                  {/* Attempts Stats Summary Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <StatCard
+                      title="Total Submissions"
+                      value={`${rawLearnerAttempts.length} Finished`}
+                      description="Stored in learner portfolio"
+                    />
+
+                    <StatCard
+                      title="Highest Score"
+                      value={`${highestScore}%`}
+                      valueClassName="text-success"
+                      description="Demonstrated mastery tier"
+                    />
+
+                    <StatCard
+                      title="Average Score"
+                      value={`${avgScore}%`}
+                      valueClassName="text-primary"
+                      description="Across all dynamic tests"
+                    />
+                  </div>
+
+                  {/* Search, Filter & Sort Toolbar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-card rounded-xl border border-border shadow-xs">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search module or quiz title..."
+                        value={learnerHistorySearch}
+                        onChange={(e) => setLearnerHistorySearch(e.target.value)}
+                        className="w-full pl-8 pr-8 py-1.5 text-xs bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/25 transition-colors"
+                      />
+                      {learnerHistorySearch && (
+                        <button
+                          type="button"
+                          onClick={() => setLearnerHistorySearch('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <div className="flex items-center gap-1.5 text-xs bg-background border border-border rounded-lg px-2.5 py-1">
+                        <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase">Status:</span>
+                        <select
+                          value={learnerHistoryFilter}
+                          onChange={(e) => setLearnerHistoryFilter(e.target.value as 'all' | 'passed' | 'failed')}
+                          className="bg-transparent text-foreground text-xs focus:outline-none cursor-pointer font-medium"
+                        >
+                          <option value="all">All Statuses</option>
+                          <option value="passed">Passed (≥ 80%)</option>
+                          <option value="failed">Failed (&lt; 80%)</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-xs bg-background border border-border rounded-lg px-2.5 py-1">
+                        <ArrowUpDown className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase">Sort:</span>
+                        <select
+                          value={learnerHistorySort}
+                          onChange={(e) =>
+                            setLearnerHistorySort(e.target.value as 'newest' | 'oldest' | 'highest' | 'lowest')
+                          }
+                          className="bg-transparent text-foreground text-xs focus:outline-none cursor-pointer font-medium"
+                        >
+                          <option value="newest">Newest First</option>
+                          <option value="oldest">Oldest First</option>
+                          <option value="highest">Highest Score</option>
+                          <option value="lowest">Lowest Score</option>
+                        </select>
+                      </div>
+
+                      {(learnerHistorySearch || learnerHistoryFilter !== 'all') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setLearnerHistorySearch('')
+                            setLearnerHistoryFilter('all')
+                          }}
+                          className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* List of Finished Attempts */}
+                  <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+                    <div className="p-4 sm:p-5 border-b border-border bg-muted/15 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <History className="h-4 w-4 text-primary shrink-0" />
+                          <h3 className="text-sm sm:text-base font-bold text-foreground tracking-tight">
+                            Historical Attempts Ledger
+                          </h3>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Archived attempt results, submission timestamps, and question telemetry for {selectedLearner.name}.
+                        </p>
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono bg-card px-2.5 py-1 rounded-lg border border-border shadow-2xs">
+                        Showing {filteredLearnerAttempts.length} of {rawLearnerAttempts.length} attempts
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-border">
+                      {filteredLearnerAttempts.length === 0 ? (
+                        <div className="p-8 text-center space-y-2">
+                          <History className="h-8 w-8 text-muted-foreground mx-auto opacity-40" />
+                          <div className="text-sm font-semibold text-foreground">No matching attempts found</div>
+                          <p className="text-xs text-muted-foreground">
+                            Try adjusting your search keyword or status filter.
+                          </p>
+                        </div>
+                      ) : (
+                        filteredLearnerAttempts.map((attempt) => {
                           const isReviewing = reviewAttemptId === attempt.id
                           const correctCount = attempt.questions.filter((q) => q.isCorrect).length
                           const totalQuestions = attempt.questions.length
@@ -984,81 +1060,67 @@ export function TeamMatrixPage() {
                           const accuracyPct = Math.round((correctCount / totalQuestions) * 100)
 
                           return (
-                            <div
-                              key={attempt.id}
-                              className="rounded-2xl border border-border bg-card shadow-2xs overflow-hidden"
-                            >
-                              {/* Attempt Header */}
-                              <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b bg-secondary/25 border-border">
-                                <div className="space-y-1.5">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <Badge
-                                      variant="outline"
-                                      className="font-mono text-xs font-bold text-primary border-primary/30"
-                                    >
+                            <div key={attempt.id} className="transition-colors">
+                              <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
+                                <div className="space-y-1.5 flex-1">
+                                  <div className="flex items-center gap-2.5 flex-wrap">
+                                    <Badge variant="outline" className="font-mono text-xs font-semibold text-primary">
                                       {attempt.blueprintCode}
                                     </Badge>
                                     <span className="font-bold text-sm text-foreground">
                                       {attempt.blueprintTitle}
                                     </span>
-                                    <Badge
-                                      variant={isPassed ? 'success' : 'destructive'}
-                                      className="text-xs font-bold"
-                                    >
-                                      {isPassed ? `✓ Passed — ${attempt.score}%` : `✗ Failed — ${attempt.score}%`}
+                                    <Badge variant={isPassed ? 'success' : 'destructive'}>
+                                      {isPassed ? `Passed (${attempt.score}%)` : `Failed (${attempt.score}%)`}
                                     </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="h-3.5 w-3.5 text-primary" />
-                                      {attempt.timeSpent}
+                                    <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
+                                      <Clock className="h-3 w-3 text-primary" /> {attempt.timeSpent}
                                     </span>
+                                  </div>
+
+                                  <div className="text-xs text-muted-foreground flex items-center gap-2.5 flex-wrap">
                                     <span>
                                       Completed: <strong className="text-foreground">{attempt.completedDate}</strong>
                                     </span>
-                                    <span className="font-semibold text-foreground">
-                                      <span className="text-success">{correctCount} correct</span> ·{' '}
-                                      <span className="text-destructive">
+                                    <span>&bull;</span>
+                                    <span>
+                                      Results: <strong className="text-foreground">{correctCount}</strong> / {totalQuestions} correct (
+                                      <span className={isPassed ? 'text-success font-semibold' : 'text-destructive font-semibold'}>
                                         {totalQuestions - correctCount} incorrect
                                       </span>
-                                    </span>
-                                    <span className="text-muted-foreground">
-                                      Pass benchmark: <strong className="text-foreground">{attempt.passThreshold}%</strong>
+                                      )
                                     </span>
                                   </div>
                                 </div>
-                                <Button
-                                  variant={isReviewing ? 'primary' : 'outline'}
-                                  size="sm"
-                                  className="text-xs h-8 shrink-0"
-                                  leftIcon={<FileText className="h-3.5 w-3.5" />}
-                                  onClick={() => setReviewAttemptId(isReviewing ? null : attempt.id)}
-                                >
-                                  {isReviewing ? 'Hide Questions' : 'Review Questions'}
-                                </Button>
-                              </div>
 
-                              {/* Score Summary Bar */}
-                              <div className="px-4 py-2 bg-muted/20 border-b border-border flex items-center gap-3">
-                                <div className="flex-1">
-                                  <Progress
-                                    value={accuracyPct}
-                                    variant="primary"
-                                    className="h-2"
-                                  />
+                                <div className="flex items-center gap-2 self-start sm:self-center">
+                                  <Button
+                                    variant={isReviewing ? 'primary' : 'outline'}
+                                    size="sm"
+                                    leftIcon={
+                                      <FileText
+                                        className={`h-4 w-4 ${isReviewing ? 'text-primary-foreground' : 'text-primary'}`}
+                                      />
+                                    }
+                                    onClick={() => setReviewAttemptId(isReviewing ? null : attempt.id)}
+                                  >
+                                    {isReviewing ? 'Hide Questions' : 'Review Questions'}
+                                  </Button>
                                 </div>
-                                <span className="text-xs font-bold font-mono shrink-0 text-primary">
-                                  {accuracyPct}% accuracy
-                                </span>
                               </div>
 
-                              {/* Expanded Review Panel */}
+                              {/* Question by question review if toggled */}
                               {isReviewing && (
-                                <div className="p-4 space-y-3.5 animate-in fade-in-50 bg-background/50">
-                                  <div className="flex items-center gap-2 pb-1">
-                                    <FileQuestion className="h-4 w-4 text-primary shrink-0" />
-                                    <span className="font-bold text-sm text-foreground">
-                                      Question-by-Question Evaluation
+                                <div className="p-4 space-y-3.5 bg-muted/20 border-t border-border">
+                                  <div className="flex items-center justify-between gap-2 pb-1">
+                                    <div className="flex items-center gap-2">
+                                      <FileQuestion className="h-4 w-4 text-primary shrink-0" />
+                                      <span className="font-bold text-sm text-foreground">
+                                        Question-by-Question Evaluation ({attempt.blueprintCode})
+                                      </span>
+                                    </div>
+                                    <span className="font-mono text-xs font-bold text-primary">
+                                      Score: {accuracyPct}% ({correctCount}/{totalQuestions})
                                     </span>
                                   </div>
 
@@ -1068,7 +1130,6 @@ export function TeamMatrixPage() {
                                         key={q.id}
                                         className="rounded-xl border border-border bg-card shadow-2xs overflow-hidden transition-all hover:border-primary/40"
                                       >
-                                        {/* Question Header Bar */}
                                         <div className="px-4 py-2.5 flex items-center justify-between gap-2 border-b border-border bg-secondary/35">
                                           <div className="flex items-center gap-2.5 flex-wrap">
                                             <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-primary text-primary-foreground shadow-2xs">
@@ -1101,57 +1162,44 @@ export function TeamMatrixPage() {
                                           </Badge>
                                         </div>
 
-                                        {/* Question Body */}
-                                        <div className="p-4 space-y-3">
-                                          {/* Prompt */}
-                                          <div className="p-3 rounded-lg bg-muted/20 border border-border">
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                                              Question Prompt
-                                            </p>
-                                            <p className="text-xs sm:text-sm font-medium text-foreground leading-relaxed">
-                                              {q.prompt}
-                                            </p>
-                                          </div>
+                                        <div className="p-4 space-y-3 text-xs">
+                                          <p className="font-medium text-foreground text-xs leading-relaxed">
+                                            {q.prompt}
+                                          </p>
 
-                                          {/* Answers */}
-                                          {q.isCorrect ? (
-                                            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-success/10 border border-success/30">
-                                              <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                                              <div className="space-y-0.5">
-                                                <p className="text-[10px] font-bold text-success uppercase tracking-wider">
-                                                  Learner's Correct Response
-                                                </p>
-                                                <p className="text-xs sm:text-sm font-semibold text-foreground">
-                                                  {q.userAnswer}
-                                                </p>
+                                          <div className="space-y-2 pt-1">
+                                            <div
+                                              className={`p-2.5 rounded-lg border text-xs flex items-center justify-between ${
+                                                q.isCorrect
+                                                  ? 'border-success/40 bg-success/10 text-success'
+                                                  : 'border-destructive/40 bg-destructive/10 text-destructive'
+                                              }`}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <span className="font-bold text-[11px] uppercase tracking-wider">
+                                                  Learner Response:
+                                                </span>
+                                                <span className="font-semibold">{q.userAnswer}</span>
                                               </div>
+                                              {q.isCorrect ? (
+                                                <Check className="h-4 w-4 shrink-0" />
+                                              ) : (
+                                                <X className="h-4 w-4 shrink-0" />
+                                              )}
                                             </div>
-                                          ) : (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-                                                <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                                                <div className="space-y-0.5">
-                                                  <p className="text-[10px] font-bold text-destructive uppercase tracking-wider">
-                                                    Submitted Answer
-                                                  </p>
-                                                  <p className="text-xs sm:text-sm font-semibold text-foreground line-through opacity-75">
-                                                    {q.userAnswer}
-                                                  </p>
+
+                                            {!q.isCorrect && (
+                                              <div className="p-2.5 rounded-lg border border-success/40 bg-success/10 text-success flex items-center justify-between text-xs">
+                                                <div className="flex items-center gap-2">
+                                                  <span className="font-bold text-[11px] uppercase tracking-wider">
+                                                    Correct Benchmark:
+                                                  </span>
+                                                  <span className="font-semibold">{q.correctAnswer}</span>
                                                 </div>
+                                                <Check className="h-4 w-4 shrink-0" />
                                               </div>
-                                              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-success/10 border border-success/30">
-                                                <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                                                <div className="space-y-0.5">
-                                                  <p className="text-[10px] font-bold text-success uppercase tracking-wider">
-                                                    Target Correct Answer
-                                                  </p>
-                                                  <p className="text-xs sm:text-sm font-semibold text-foreground">
-                                                    {q.correctAnswer}
-                                                  </p>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          )}
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
                                     ))}
@@ -1160,49 +1208,32 @@ export function TeamMatrixPage() {
                               )}
                             </div>
                           )
-                        })}
+                        })
+                      )}
                     </div>
-                  ) : (
-                    <div className="p-10 text-center border border-border rounded-2xl bg-card text-muted-foreground space-y-3">
-                      <History className="h-10 w-10 text-muted-foreground mx-auto opacity-30" />
-                      <p className="font-bold text-base text-foreground">No assessment attempts recorded</p>
-                      <p className="text-sm">
-                        This learner has not submitted any baseline diagnostic or module milestone assessments yet.
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </TabsContent>
               </Tabs>
 
               {/* Sleek Docked Footer */}
-              <div className="px-5 sm:px-6 py-3.5 border-t border-border bg-card shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 self-start sm:self-center">
-                  <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span>Calibrated via Competency Benchmark Engine</span>
-                  <span className="text-border">•</span>
-                  <span>Employee ID: <strong>{selectedLearner.id.toUpperCase()}</strong></span>
-                </div>
-
-                <div className="flex items-center gap-2 self-end sm:self-center">
-                  <Button variant="outline" size="sm" onClick={() => setSelectedLearner(null)}>
-                    Close
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      toast({
-                        title: 'Progress Report Downloaded',
-                        description: `Exported career progress dossier for ${selectedLearner.name}.`,
-                        variant: 'success',
-                      })
-                      setSelectedLearner(null)
-                    }}
-                    leftIcon={<Award className="h-3.5 w-3.5" />}
-                  >
-                    Export Learner Dossier
-                  </Button>
-                </div>
+              <div className="px-5 sm:px-6 py-3.5 border-t border-border bg-card shrink-0 flex items-center justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSelectedLearner(null)}>
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    toast({
+                      title: 'Progress Report Downloaded',
+                      description: `Exported career progress dossier for ${selectedLearner.name}.`,
+                      variant: 'success',
+                    })
+                    setSelectedLearner(null)
+                  }}
+                >
+                  Export Learner Dossier
+                </Button>
               </div>
             </Dialog>
           )

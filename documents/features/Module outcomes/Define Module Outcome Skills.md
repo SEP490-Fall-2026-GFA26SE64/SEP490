@@ -20,10 +20,14 @@ Define the micro-skills that an authorized module is intended to teach, allowing
 
 ## Open Decisions
 
-- Single versus multiple outcomes and expected proficiency gain per outcome.
+- Expected proficiency gain per skill remains open; multiple taught skills and multiple Module providers per skill are confirmed.
 - Required coverage by assessment questions.
 - Minimum outcome count and validation before a module becomes recommendable.
 
 ## Acceptance Baseline
 
 Intended outcomes are available to gap-based module selection but do not themselves prove employee mastery.
+
+## Confirmed teaching cardinality — 2026-10-26
+
+User approved many-to-many TEACHES. Inputs are one Module and a non-empty set of existing MicroSkill IDs; one skill may belong to several Modules. Preserve every architecture-defined node/edge field and review state; reject duplicate pairs, wrong endpoints and loss of required teaching coverage. Suitable providers are selected for gaps and role/Level context; do not require all alternatives or infer mastery from a Module completion. No learner evidence, historical pins or assessment item content is rewritten by this catalog change. Publication/authorization/version transition policy remains open. See [test evidence and manual checks](../../testing/system/REQ-016-many-to-many-teaching.md).

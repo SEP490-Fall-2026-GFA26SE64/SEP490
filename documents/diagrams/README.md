@@ -23,7 +23,7 @@ Current PostgreSQL17.6 inventory is **V1–V26,89 platform tables/729 columns**,
 | Development startup | [source](runtime-topology.puml) / [SVG](runtime-topology.svg) | Current observed migration → catalog/content initialization → API; V26 and actual engine versions |
 | Role-to-baseline | [source](role-baseline-flow.puml) / [SVG](role-baseline-flow.svg) | Current confirmed business flow; replaces inline Mermaid |
 | Adaptive ownership flow | [source](adaptive-baseline-data-flow.puml) / [SVG](adaptive-baseline-data-flow.svg) | Current conceptual store/processing flow; replaces inline Mermaid |
-| Ontology | [source](neo4j.puml) / [SVG](neo4j.svg) / [PNG](neo4j.png) | Current0.8.0 field/relationship drawing; labels spaced to avoid overlap |
+| Ontology | [source](neo4j.puml) / [SVG](neo4j.svg) / [PNG](neo4j.png) | Current0.9.0 field/relationship drawing; many-to-many Module–Skill teaching |
 | 20 October adaptive target | [source](postgresql-adaptive-baseline-target.puml) / [SVG](postgresql-adaptive-baseline-target.svg) | Intentionally superseded historical design; unchanged content, not V26 schema |
 
 All13 source/SVG pairs were rendered locally with the existing PlantUML1.2025.10/Smetana JAR. PNG companions for all13 were opened for visual review; no blank/error/clipped table was found. The32-table legacy/shared view is dense and requires zoom. All729 column labels/types/nullability/PK/FK markers are checked structurally against captured metadata; visual readability is not a database/business acceptance test. Ontology PNG matches its regenerated source/SVG. The schema document's duplicate inline ontology drawing now refers to this same canonical export. [Evidence, source hashes and limits](../testing/system/REQ-001-002-final-synchronization-review.md).
@@ -40,3 +40,4 @@ java -jar path/to/plantuml-1.2025.10.jar -failfast2 -tsvg $sources.FullName
 ```
 
 The generator and PowerShell wrapper do not start containers, migrate, seed or reset data. Unknown/missing/duplicate groups and migration/source drift stop generation. A saved snapshot is dated evidence, not a fresh live verification. Rendering is local; no schema is uploaded to a third-party service. PostgreSQL source capture V23 and all prior artifacts remain recoverable in the synchronization backup; dated evidence is not relabeled.
+The ontology source/SVG/PNG now use the matching v0.9.0 exports with many-to-many TEACHES (2026-10-26). Dated V26 metadata/rendering verification above remains historical evidence, not a new live database verification.

@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import {
   Activity,
   Award,
-  BarChart3,
   BookOpen,
   Briefcase,
   Building,
@@ -16,6 +15,7 @@ import {
   Compass,
   CreditCard,
   FileQuestion,
+  FileText,
   FolderTree,
   GitFork,
   GraduationCap,
@@ -173,11 +173,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <LayoutDashboard size={15} />,
       },
       {
-        label: t('nav.gapAnalysis'),
-        href: '/employee/gap-analysis',
-        icon: <Award size={15} />,
-      },
-      {
         label: t('nav.upskilling'),
         href: '/employee/upskilling',
         icon: <Target size={15} />,
@@ -221,6 +216,11 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         icon: <Network size={15} />,
       },
       {
+        label: t('nav.learningContent', 'Learning Content'),
+        href: '/expert/learning-content',
+        icon: <FileText size={15} />,
+      },
+      {
         label: t('nav.modules'),
         href: '/expert/modules',
         icon: <BookOpen size={15} />,
@@ -238,6 +238,16 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     ]
   } else if (isLdManager) {
     actorTabs = [
+      {
+        label: t('nav.learningOutcomes'),
+        href: '/ld-manager/dashboard',
+        icon: <LayoutDashboard size={15} />,
+      },
+      {
+        label: t('nav.teamMatrix'),
+        href: '/ld-manager/team-matrix',
+        icon: <Users size={15} />,
+      },
       {
         label: t('nav.occupations', 'Occupations'),
         href: '/ld-manager/occupations',
@@ -262,16 +272,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         label: t('nav.contentApprovals', 'Content Approvals'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
-      },
-      {
-        label: t('nav.teamMatrix'),
-        href: '/ld-manager/team-matrix',
-        icon: <Users size={15} />,
-      },
-      {
-        label: t('nav.learningOutcomes'),
-        href: '/ld-manager/learning-outcomes',
-        icon: <BarChart3 size={15} />,
       },
       {
         label: t('nav.serverStatus'),
@@ -407,9 +407,6 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
         path === '/learner/skills-catalog'
       )
     }
-    if (itemHref === '/employee/gap-analysis' || itemHref === '/learner/gap-analysis') {
-      return path === '/employee/gap-analysis' || path === '/learner/gap-analysis'
-    }
     if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
       return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
     }
@@ -428,8 +425,9 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     if (itemHref === '/expert/assessment-bank') {
       return path === '/expert/assessment-bank'
     }
-    if (itemHref === '/ld-manager/learning-outcomes') {
+    if (itemHref === '/ld-manager/dashboard' || itemHref === '/ld-manager/learning-outcomes') {
       return (
+        path === '/ld-manager/dashboard' ||
         path === '/ld-manager/learning-outcomes' ||
         path === '/ld-manager' ||
         path === '/manager/learning-outcomes' ||
@@ -531,7 +529,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     : isExpert
     ? '/expert/assigned-roles'
     : isLdManager
-    ? '/ld-manager/learning-outcomes'
+    ? '/ld-manager/dashboard'
     : '/admin/dashboard'
 
   return (
@@ -737,7 +735,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 3. L&D Manager */}
                         <Link
-                          to="/ld-manager/learning-outcomes"
+                          to="/ld-manager/dashboard"
                           onClick={event => switchPortal(event, 'ld')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager
