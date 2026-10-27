@@ -1,3 +1,5 @@
+> Historical v0.10 instructionLevel representation. Current v0.11 replaces it with [teachingFocus and difficultyLevel](TEACHING_FOCUS_DIFFICULTY.md). This document and its numeric migration rules are not the current import contract.
+
 ## Instruction level per Module–Skill — 2026-10-27
 
 TEACHES now stores required `instructionLevel` as a case-sensitive text enum: `FOUNDATIONAL`, `INTERMEDIATE`, or `ADVANCED`. It describes the depth of instruction for that particular Module–Skill pair, not a global skill property, learner mastery or guaranteed gain. Six node labels/seven relationship types and many-to-many teaching cardinality remain unchanged.

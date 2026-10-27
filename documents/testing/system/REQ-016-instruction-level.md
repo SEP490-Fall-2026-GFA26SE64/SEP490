@@ -1,3 +1,5 @@
+> Historical v0.10 instructionLevel evidence, superseded by [v0.11 teaching focus/difficulty](REQ-016-teaching-focus-difficulty.md). Previous results retain their dated scope.
+
 # REQ-016-F01/F02 — instructionLevel (system)
 
 Date: 2026-10-27.

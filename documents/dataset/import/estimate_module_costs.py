@@ -12,8 +12,8 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SEED = ROOT / 'ontology_seed-v010.json'
-MANIFEST = ROOT.parent / 'sources/local_review/module_effort_price_v010.json'
+SEED = ROOT / 'ontology_seed-v011.json'
+MANIFEST = ROOT.parent / 'sources/local_review/module_effort_price_v011.json'
 
 # Foundation study + a focused practice artifact for each catalog skill.
 # Order follows the existing skill IDs, not OC or skill importance.
@@ -43,6 +43,23 @@ def estimate(data):
             teaching[edge['fromId']].append(edge['toId'])
     result = []
     for module in data['LearningModules']:
+        if module['id'].startswith('MOD-FOCUS-'):
+            pairs=[e for e in data['relationships'] if e['type']=='TEACHES' and e['fromId']==module['id']]
+            primary=next(e for e in pairs if e['teachingFocus']=='PRIMARY')
+            family=''.join(c for c in primary['toId'][3:] if c.isalpha())
+            tier={'LOW':'J','MEDIUM':'M','HIGH':'S'}[primary['difficultyLevel']]
+            effort_minutes={e['toId']:SKILL_MINUTES[e['toId']] * {'PRIMARY':1,'SUPPORTING':0.4,'INCIDENTAL':0}[e['teachingFocus']] for e in pairs}
+            factor=TIER_FACTOR[tier];orientation=30;integration=30
+            reflection={'J':30,'M':45,'S':60}[tier]
+            duration=math.ceil((orientation+sum(effort_minutes.values())*factor+integration+reflection)/15)*15
+            rate=TIER_RATE[tier];fee=PACKAGE_FEE[family]
+            price=math.ceil((duration/60*rate+fee)/10000)*10000
+            result.append({'moduleId':module['id'],'title':module['title'],'skillIds':[e['toId'] for e in pairs],
+                           'tier':tier,'skillPracticeMinutes':effort_minutes,'tierEffortFactor':factor,
+                           'orientationMinutes':orientation,'integrationMinutes':integration,'reflectionMinutes':reflection,
+                           'assumedPackageRateVndPerHour':rate,'exercisePackageFeeVnd':fee,'duration':duration,'price':price,
+                           'contentUri':module['contentUri'],'contentSha256':hashlib.sha256((ROOT/module['contentUri']).read_bytes()).hexdigest()})
+            continue
         parts = module['id'].split('-')
         reading = module['moduleType'] == 'RESOURCE_GUIDED_PRACTICE'
         skills = teaching[module['id']]
@@ -71,7 +88,7 @@ def estimate(data):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--write',action='store_true',help='Apply review estimates to v0.10 JSON and manifest only')
+    parser.add_argument('--write',action='store_true',help='Apply review estimates to v0.11 JSON and manifest only')
     args=parser.parse_args()
     data=json.loads(SEED.read_text())
     rows=estimate(data)
@@ -81,7 +98,7 @@ def main():
             module.update({key:by_id[module['id']][key] for key in ('duration','price')})
         SEED.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n')
         manifest={
-            'catalogVersion':'0.10.0','estimateRevision':'effort-price-1',
+            'catalogVersion':'0.11.0','estimateRevision':'effort-price-2',
             'reviewStatus':'NEEDS_EXPERT_REVIEW','currency':'VND','durationUnit':'minutes',
             'basis':'Synthetic authoring estimates from mapped skills and existing lesson/practice tasks. Not observed times, vendor quotes, source access fees, or runtime pricing policy.',
             'durationMethod':'ceil15(orientation + sum(skillPracticeMinutes) * tierEffortFactor + integration + reflection)',

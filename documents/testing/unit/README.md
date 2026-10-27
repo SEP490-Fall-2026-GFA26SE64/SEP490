@@ -1,5 +1,7 @@
 # Unit Testing Directory & Standards
 
+2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
+
 **Latest, 2026-10-24 REQ-001/002/009:** [Unit/API/component evidence](REQ-001-002-009-20261024-execution.md) records74 BE/61 FE pass,0 fail/skipped. [Consolidated gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md) retains four synthetic-browser mobile failures, blocked integration, unexecuted system and numerical/performance limits: **Cluster 3/4 incomplete**. [23 October131P/0F](../system/REQ-001-002-cluster4-evidence.md) is dated history, not current acceptance.
 
 ## Current Scope Alignment
