@@ -1,10 +1,10 @@
-# Ontology — framework, fields and data provenance (0.9.0)
+# Ontology — framework, fields and data provenance (0.10.0)
 
-Updated 26 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
+Updated 27 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
 
 ## Files and framework
 
-[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed.json](import/ontology_seed.json) describe the same catalog: **833 nodes and 4,638 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
+[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed-v010.json](import/ontology_seed-v010.json) describe the same catalog: **833 nodes and 4,638 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
 
 O*NET supplies Occupations, sample reported titles and occupation RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
 
@@ -20,6 +20,16 @@ flowchart LR
 ```
 
 Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. A Module teaches one or more skills; a skill may have several teaching Modules. This release requires teaching coverage for every skill. There is no Course, Level–Module link or global module sequence.
+
+## OC, module duration and price — 27 October 2026
+
+Version 0.10 adds TEACHES.outcomeCoverage (OC): a required finite Float [0,1] describing teaching emphasis or skill depth/difficulty in that particular Module. Each pair is independent. Do not normalize or require a sum of one. Module A teaching A1 at 0.5, A2 at 0.6 and A3 at 0.7 has valid total 1.8; A3 is taught most strongly. OC is neither learner mastery nor a guaranteed proficiency gain. The scoring/assignment rules are deferred.
+
+LearningModule adds required duration (positive integer, minutes) and price (finite positive number, VND for this paid-module dataset). Level.context is removed from all 144 Levels. Assessment context remains external.
+
+The 181 OC values are now explicit per-pair illustrative samples (0.2–0.9); OC scoring is not implemented. The same MS-DE06 skill has OC 0.2 in MOD-DE-J-MODEL-01 and 0.5 in MOD-DE-J-QUAL-01. See [per-pair sample manifest](sources/local_review/module_skill_oc_v010.json). All 85 Modules now have differentiated estimates: duration 150–915 minutes (31 distinct values), price 150,000–1,560,000 VND (54 distinct values). Estimates reflect mapped skill exercises, task depth and learning-package support, not observed completion times or vendor quotes. See [method and assumptions](MODULE_EFFORT_PRICE.md) and [per-module audit](sources/local_review/module_effort_price_v010.json). All remain NEEDS_EXPERT_REVIEW.
+
+Current review seed: import/ontology_seed-v010.json. The unchanged import/ontology_seed.json is the byte-pinned v0.9 runtime fixture used by Compose and historical baseline envelopes. This update changes design/review artifacts and the isolated import default; it does not migrate runtime APIs or databases or repin assessment history.
 
 ## Counts
 
@@ -395,8 +405,9 @@ Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node b
 
 - REQUIRES_SKILL: requiredScore in [0,1], isMandatory.
 - HAS_SKILL_PREREQUISITE: requiredScore in [0,1], interpreted as foundation readiness.
+- TEACHES: outcomeCoverage (OC), independent Float [0,1] per Module–Skill pair; no sum-to-one constraint.
 - Other relationships: common metadata only.
-- learningOutcome, expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
+- expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
 - TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
 - Sources/provenance, rubric definitions, assessment prompts, results and learner state stay outside Neo4j. The seed now contains only six node sections and relationships.
 
@@ -465,6 +476,22 @@ A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A
 
 ## Release and runtime boundary
 
-Excel, JSON, import validation, schema and diagram describe 0.9.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
+Excel, JSON, import validation, schema and diagram describe 0.10.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed still pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
 
-Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed.json supplies active graph data.
+Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed-v010.json supplies active graph data.
+
+
+## Same skill, different Module OC — 2026-10-27
+
+OC is a property of the existing TEACHES relationship, keyed by the exact (moduleId, skillId) pair, not a shared property on MicroSkill or LearningModule. The schema remains six node labels and seven relationship types; the diagram's TEACHES property box is not an extra graph node.
+
+| Module | Skill | TEACHES.outcomeCoverage (OC) |
+|---|---|---:|
+| MOD-DE-J-MODEL-01 | MS-DE06 — Maintain metadata documentation | 0.2 |
+| MOD-DE-J-QUAL-01 | MS-DE06 — Maintain metadata documentation | 0.5 |
+
+Both rows coexist: the quality/operations package emphasizes that skill more strongly in this illustrative fixture. Neither value overwrites the other. Do not sum or normalize values, assume all providers of a skill have equal OC, or infer learner mastery. Actual OC assignment rules remain deferred. There are 181 explicit illustrative samples; their source manifest is outside Neo4j. Duration and price remain unchanged by this correction.
+
+Excel now includes a formula-linked **Outcome Coverage** comparison view with Module ID/title, Skill ID/name and each pair's OC, grouped by skill. The original TEACHES sheet remains the exact import records. The comparison view is not a new node or import section.
+
+Naming correction: OC now means **OutcomeCoverage**, stored as `TEACHES.outcomeCoverage`. Only the name changes; the 181 per-pair numeric values, duration/price, cardinalities and deferred scoring rules are preserved.

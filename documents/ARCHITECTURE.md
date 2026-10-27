@@ -66,9 +66,9 @@ No applied migration is edited. Old UUID selection/reference and fixed/module st
 
 ## Catalog and version boundaries
 
-![Ontology0.9.0](diagrams/neo4j.svg)
+![Ontology0.10.0](diagrams/neo4j.svg)
 
-[Neo4j schema](neo4j_schema.md) and [ontology source](dataset/ONTOLOGY.md) define ontology 0.9.0: six labels/seven relationship types, separate Levels and many-to-many LearningModule–MicroSkill teaching. The source-backed release has 833 nodes/4638 relationships, 85 Modules, 79 skills and 181 TEACHES mappings. Every Module teaches at least one skill and every skill has at least one provider; each Module–Skill pair is unique. Multiple providers are alternatives selected for actual skill gaps and role/Level suitability, not a requirement to study all providers. A Module used for several gaps appears once in the pathway, while mastery remains skill-specific. The earlier 2026-10-23 runtime capture observed Neo4j5.26.31, ontology0.8.0,827 nodes/4536 relationships and six ID uniqueness constraints; this is dated history, not proof of 0.9 deployment. Cardinality/ranges/prerequisite acyclicity/review/tenant visibility require application/import validation. These observations do not certify production publication.
+[Neo4j schema](neo4j_schema.md) and [ontology source](dataset/ONTOLOGY.md) define the v0.10.0 review ontology: six labels/seven relationship types, separate Levels and many-to-many LearningModule–MicroSkill teaching. The source-backed release has 833 nodes/4638 relationships, 85 Modules, 79 skills and 181 TEACHES mappings. Every Module teaches at least one skill and every skill has at least one provider; each Module–Skill pair is unique. Multiple providers are alternatives selected for actual skill gaps and role/Level suitability, not a requirement to study all providers. A Module used for several gaps appears once in the pathway, while mastery remains skill-specific. The earlier 2026-10-23 runtime capture observed Neo4j5.26.31, ontology0.8.0,827 nodes/4536 relationships and six ID uniqueness constraints; this is dated history, not proof of 0.9 deployment. Cardinality/ranges/prerequisite acyclicity/review/tenant visibility require application/import validation. These observations do not certify production publication.
 
 Ontology/catalog version, Flyway migration, Blueprint release/Draft revision and model/mapping/parameter-set pins are separate identities. New scoped effective selection affects future Blueprint versions only; resume/result/history always use original exact pins. Numerical validity cannot be inferred from a storage label or successful API response.
 
@@ -87,3 +87,25 @@ See [synchronization review](testing/system/REQ-001-002-final-synchronization-re
 ## Module–Skill cardinality alignment — 2026-10-26
 
 User-approved REQ-016-F01/F02 correction replaces the one-to-one TEACHES rule with many-to-many. Node/property inventories and store ownership are unchanged. All metadata, content pointers and relationship properties are preserved; null review fields retain their unreviewed meaning. The v0.8 question-bank envelope remains immutable historical provenance; the new local demo envelope pins v0.9 without changing any item content or identity. Existing graph/catalog versions, attempts, mastery and pathway history must not be silently overwritten, rescored or repinned. See [verification and upgrade limits](testing/system/REQ-016-many-to-many-teaching.md).
+
+## OC and module metadata design — 2026-10-27
+
+REQ-016-F01/F02: TEACHES adds required outcomeCoverage (OC), finite Float [0,1], independent per Module–MicroSkill pair, without a sum-to-one constraint. It represents teaching emphasis or skill depth/difficulty within that Module, not mastery or guaranteed gain. OC assignment rules remain deferred. LearningModule adds duration (required positive Integer, minutes) and price (required finite positive number, VND in this paid-module dataset). Level.context is removed. Existing metadata and six-node/seven-relationship ownership remain unchanged.
+
+The v0.10 review workbook, diagram and import/ontology_seed-v010.json use these fields. OC now has explicit illustrative values per teaching pair, including MS-DE06 at 0.2 in MOD-DE-J-MODEL-01 and 0.5 in MOD-DE-J-QUAL-01. Values are uncalibrated; assignment rules remain deferred. Module duration now ranges from 150 to 915 minutes and price from 150,000 to 1,560,000 VND, based on documented skill effort, task depth and paid learning-package assumptions, all NEEDS_EXPERT_REVIEW. See [estimation method](dataset/MODULE_EFFORT_PRICE.md). The byte-pinned import/ontology_seed.json and existing Compose/baseline v0.9 contracts remain unchanged. Runtime mapping/API support and migration to v0.10 are not implemented by this dataset/design change. No production deployment is claimed.
+
+
+## Same skill, different Module OC — 2026-10-27
+
+OC is a property of the existing TEACHES relationship, keyed by the exact (moduleId, skillId) pair, not a shared property on MicroSkill or LearningModule. The schema remains six node labels and seven relationship types; the diagram's TEACHES property box is not an extra graph node.
+
+| Module | Skill | TEACHES.outcomeCoverage (OC) |
+|---|---|---:|
+| MOD-DE-J-MODEL-01 | MS-DE06 — Maintain metadata documentation | 0.2 |
+| MOD-DE-J-QUAL-01 | MS-DE06 — Maintain metadata documentation | 0.5 |
+
+Both rows coexist: the quality/operations package emphasizes that skill more strongly in this illustrative fixture. Neither value overwrites the other. Do not sum or normalize values, assume all providers of a skill have equal OC, or infer learner mastery. Actual OC assignment rules remain deferred. There are 181 explicit illustrative samples; their source manifest is outside Neo4j. Duration and price remain unchanged by this correction.
+
+Excel now includes a formula-linked **Outcome Coverage** comparison view with Module ID/title, Skill ID/name and each pair's OC, grouped by skill. The original TEACHES sheet remains the exact import records. The comparison view is not a new node or import section.
+
+Naming correction: OC now means **OutcomeCoverage**, stored as `TEACHES.outcomeCoverage`. Only the name changes; the 181 per-pair numeric values, duration/price, cardinalities and deferred scoring rules are preserved.
