@@ -1,6 +1,28 @@
 import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
+  initialPathway: {
+    chooseLevel: 'Chọn cấp độ', levelRequired: 'Chọn cấp độ công việc bạn muốn hướng tới.',
+    title: 'Lộ trình học của tôi', reviewTitle: 'Duyệt lộ trình ban đầu', reviewDescription: 'Xem các kế hoạch được phân công và xác nhận nội dung nhân viên cần học.',
+    gaps: 'Xem khoảng cách kỹ năng', gapTitle: 'Nhu cầu học cho vị trí này', gapDescription: 'Đối chiếu kết quả đánh giá đầu vào đã lưu với yêu cầu của vị trí trước khi xác nhận kế hoạch học.',
+    skill: 'Kỹ năng', required: 'Yêu cầu', mastery: 'Năng lực từ đánh giá đầu vào', gap: 'Khoảng cách', unknown: 'Chưa xác định', mandatory: 'Bắt buộc', optional: 'Chỉ tham khảo',
+    confidence: 'Độ tin cậy', level: 'Cấp độ của vị trí', confirm: 'Xác nhận vị trí và tạo lộ trình', confirmNoGap: 'Xác nhận vị trí', cancel: 'Hủy', refresh: 'Tải lại', loading: 'Đang tải…',
+    retry: 'Thử lại', retryExact: 'Thử lại yêu cầu này', uncertain: 'Chưa xác định được kết quả. Thử lại đúng yêu cầu này để lấy kết quả đã lưu.',
+    baseline: 'Bạn cần đánh giá đầu vào cho nhóm nghề này. Chọn vị trí để tiếp tục làm bài đánh giá.', chooseBaseline: 'Tiếp tục đánh giá đầu vào',
+    unavailable: 'Hiện chưa xem được lộ trình. Vui lòng thử lại hoặc liên hệ bộ phận phụ trách đào tạo.', setup: 'Chưa thể chuẩn bị kế hoạch học này. Vui lòng liên hệ bộ phận phụ trách đào tạo.',
+    denied: 'Vui lòng dùng tài khoản có quyền xem nội dung này.', stale: 'Kế hoạch hoặc vị trí đã thay đổi. Tải lại để xem thông tin mới nhất.', empty: 'Bạn chưa xác nhận lộ trình học.',
+    roles: 'Xem các vị trí', approved: 'Đã duyệt', awaiting: 'Chờ duyệt', noAssignments: 'Không có lộ trình được phân công cần duyệt', search: 'Tìm vị trí hoặc cấp độ', searchModules: 'Tìm học phần hoặc kỹ năng',
+    previous: 'Trước', next: 'Tiếp', open: 'Xem kế hoạch', include: 'Thêm', exclude: 'Loại ra', included: 'Học phần trong lộ trình', alternatives: 'Học phần có thể bổ sung',
+    reason: 'Lý do (không bắt buộc)', check: 'Kiểm tra lại', approve: 'Xác nhận kế hoạch', approveTitle: 'Xác nhận kế hoạch học này?',
+    approveDescription: 'Xác nhận các học phần và thứ tự đang hiển thị. Nhân viên có thể học khi đã sẵn sàng về kỹ năng tiên quyết.',
+    back: 'Về danh sách duyệt', duration: 'phút', price: 'VNĐ', learn: 'Mở học phần', history: 'Lộ trình đã lưu trữ', prerequisites: 'Kỹ năng tiên quyết',
+    noModules: 'Bản nháp chưa có học phần. Hãy thêm học phần phù hợp để đáp ứng nhu cầu học.',
+    coverageIssue: 'Một số nhu cầu học chưa có học phần phù hợp.', prerequisiteIssue: 'Kỹ năng tiên quyết cần được học hoặc có bằng chứng sẵn sàng hợp lệ.',
+    cycleIssue: 'Chưa thể sắp xếp an toàn các quan hệ tiên quyết.', internalIssue: 'Học phần này cần trình tự học nội bộ đã được xác nhận.',
+    resourceIssue: 'Chưa thể hoàn thành kế hoạch trong giới hạn xử lý đã cấu hình.', validationIssue: 'Kế hoạch cần được xem lại trước khi xác nhận.',
+    noLearningHelp: 'Không cần học thêm kỹ năng bắt buộc theo bộ yêu cầu này. Đây không phải chứng nhận năng lực.', unknownHelp: 'Các kỹ năng chưa xác định chưa có bằng chứng đầu vào tương thích. Kỹ năng bắt buộc chưa xác định cần được học nền tảng.',
+    state: { PENDING: 'Đang chuẩn bị yêu cầu', GENERATING: 'Đang tạo lộ trình học', SUCCEEDED: 'Lộ trình đã sẵn sàng để duyệt', AWAITING_EXPERT_REVIEW: 'Lộ trình học đang chờ duyệt', APPROVED: 'Đã duyệt', UNRESOLVED: 'Cần xem lại nội dung học', BLOCKED: 'Lộ trình cần được xử lý', FAILED_RETRYABLE: 'Quá trình tạo lộ trình bị gián đoạn', STALE: 'Kế hoạch cần được cập nhật', ARCHIVED: 'Đã lưu trữ', NO_LEARNING_REQUIRED: 'Không cần học thêm kỹ năng bắt buộc', VALID: 'Sẵn sàng xác nhận', AVAILABLE: 'Có thể học', LOCKED: 'Chưa sẵn sàng về kỹ năng tiên quyết', UNAVAILABLE: 'Hiện chưa khả dụng', NONE: 'Chưa có bản đề xuất' },
+  },
   upskillingUi: {
     roles: 'Vị trí', skills: 'Kỹ năng', activeRole: 'Vị trí đang chọn',
     searchPlaceholder: 'Tìm vị trí theo tên hoặc nghề nghiệp…', clearFilters: 'Xóa bộ lọc',
@@ -97,6 +119,7 @@ export const vi: TranslationKeys = {
     },
     errors: { ASSESSMENT_IN_PROGRESS: 'Hãy hoàn thành bài assessment đang làm trước khi đổi vị trí.', STALE_SELECTION: 'Vị trí đã thay đổi. Hãy tải lại và xác nhận.',
       ROLE_NOT_AVAILABLE: 'Vị trí này không còn khả dụng.', PATHWAY_REQUIRES_OWNER: 'Lộ trình hiện có cần được kiểm tra trước khi đổi vị trí.',
+      LEVEL_NOT_AVAILABLE: 'Cấp độ này không còn khả dụng cho vị trí đã chọn. Hãy tải lại và chọn lại.', INVALID_LEVEL: 'Hãy chọn cấp độ hợp lệ.', LEVEL_REQUIRED: 'Hãy chọn cấp độ trước khi tiếp tục.', LEVEL_SELECTION_UNAVAILABLE: 'Hiện chưa chọn được cấp độ.',
       IDEMPOTENCY_CONFLICT: 'Yêu cầu trùng với yêu cầu trước nhưng khác nội dung. Hãy tải lại trước khi tiếp tục.', INVALID_REQUEST: 'Hãy kiểm tra vị trí đã chọn và thử lại.',
       FORBIDDEN: 'Cần danh tính Employee có quyền truy cập.', UNAUTHENTICATED: 'Hãy chọn persona Employee.', DEPENDENCY_UNAVAILABLE: 'Dịch vụ phụ thuộc chưa khả dụng. Vui lòng thử lại.',
       NETWORK_ERROR: 'Chưa xác định được kết quả. Hãy thử lại cùng yêu cầu.', INVALID_RESPONSE: 'Chưa xác minh được phản hồi. Hãy thử lại an toàn.' },

@@ -17,8 +17,13 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { AdaptivePathwayTimeline } from '../components/AdaptivePathwayTimeline'
 import { InteractiveRoleRoadmap } from '../components/InteractiveRoleRoadmap'
+import { InitialEmployeePathway } from './InitialEmployeePathway'
 
 export function AdaptivePathwayPage() {
+  const { profile } = useEmployeeLearningState()
+  return profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
+}
+function IndependentSkillPathwayPage() {
   const [activeTab, setActiveTab] = React.useState('roadmap')
   const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
   const { t } = useTranslation()

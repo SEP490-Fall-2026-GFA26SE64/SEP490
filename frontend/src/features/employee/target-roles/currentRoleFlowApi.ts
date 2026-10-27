@@ -1,7 +1,7 @@
-export interface CurrentSkill { id: string; code: string; name: string; requiredScore: number; mandatory: boolean }
+export interface CurrentSkill { id: string; code: string | null; name: string; requiredScore: number; mandatory: boolean }
 export interface CurrentLevel { id: string; code: string; name: string; rank: number; context: string; attainmentRule: string; skills: CurrentSkill[] }
 export interface CurrentRole { id: string; code: string; name: string; scope: string; occupationId: string; occupationName: string; catalogVersion: string; fingerprint: string; levels: CurrentLevel[] }
-export interface CurrentSelection { selectionId: string; role: CurrentRole; revision: number; selectedAt: string; available: boolean }
+export interface CurrentSelection { selectionId: string; role: CurrentRole; revision: number; selectedAt: string; available: boolean; levelId?: string | null }
 export interface RoleProgress { state: string; requiredCount: number; coveredCount: number; attemptId: string | null; baselineVersion: number | null }
 export interface RoleFlowView { selection: CurrentSelection | null; progress: RoleProgress }
 export class RoleFlowError extends Error {
@@ -19,11 +19,11 @@ function role(value: unknown): CurrentRole {
   const r = object(value)
   return { id: text(r.id), code: text(r.code), name: text(r.name), scope: text(r.scope), occupationId: text(r.occupationId), occupationName: text(r.occupationName), catalogVersion: text(r.catalogVersion), fingerprint: text(r.fingerprint),
     levels: array(r.levels, value => { const l = object(value); return { id: text(l.id), code: text(l.code), name: text(l.name), rank: num(l.rank), context: text(l.context), attainmentRule: text(l.attainmentRule),
-      skills: array(l.skills, value => { const s = object(value); return { id: text(s.id), code: text(s.code), name: text(s.name), requiredScore: num(s.requiredScore), mandatory: bool(s.mandatory) } }) } }) }
+      skills: array(l.skills, value => { const s = object(value); return { id: text(s.id), code: s.code === null || s.code === undefined ? null : text(s.code), name: text(s.name), requiredScore: num(s.requiredScore), mandatory: bool(s.mandatory) } }) } }) }
 }
 function selection(value: unknown): CurrentSelection {
   const s = object(value)
-  return { selectionId: text(s.selectionId), role: role(s.role), revision: num(s.revision), selectedAt: text(s.selectedAt), available: bool(s.available) }
+  return { selectionId: text(s.selectionId), role: role(s.role), revision: num(s.revision), selectedAt: text(s.selectedAt), available: bool(s.available), levelId: s.levelId === null || s.levelId === undefined ? null : text(s.levelId) }
 }
 async function request<T>(path: string, init: RequestInit, parse: (v: unknown) => T): Promise<T> {
   let response: Response
@@ -49,5 +49,5 @@ export const readMyMastery = (signal?: AbortSignal) => request('target-role-sele
       return { id: text(s.id), name: text(s.name), mastery, confidence }
     }) } satisfies MasteryProfile
 }))
-export const prepareRoleChoice = (id: string, expected: string | null): RoleChoiceCommand => ({ body: JSON.stringify({ roleId: id, expectedCurrentSelectionId: expected }), key: crypto.randomUUID() })
+export const prepareRoleChoice = (id: string, expected: string | null, levelId?: string): RoleChoiceCommand => ({ body: JSON.stringify({ roleId: id, ...(levelId ? { levelId } : {}), expectedCurrentSelectionId: expected }), key: crypto.randomUUID() })
 export const chooseCurrentRole = (command: RoleChoiceCommand) => request('target-role-selection', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: command.body }, selection)

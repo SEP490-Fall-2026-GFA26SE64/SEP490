@@ -17,6 +17,8 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { CurrentRoleCard } from './CurrentRoleCard'
 import { CurrentRoleSummary } from './CurrentRoleSummary'
+import { InitialRoleGapDialog } from './InitialRoleGapDialog'
+import { RoleLevelPicker } from './RoleLevelPicker'
 
 export function CurrentRolePanel() {
   const { t, language } = useTranslation(), tr = (key: string) => t(`roleFlow.${key}`)
@@ -24,7 +26,9 @@ export function CurrentRolePanel() {
   const roles = useQuery({ queryKey: ['currentRoleCatalog'], queryFn: ({ signal }) => currentRoles(signal), retry: false })
   const view = useQuery({ queryKey: ['currentRoleFlow'], queryFn: ({ signal }) => readRoleFlow(signal), retry: false })
   const [selected, setSelected] = useState<CurrentRole | null>(null)
+  const [levelId, setLevelId] = useState('')
   const [details, setDetails] = useState<CurrentRole | null>(null)
+  const [gapRole, setGapRole] = useState<CurrentRole | null>(null)
   const [command, setCommand] = useState<RoleChoiceCommand | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<RoleFlowError | null>(null)
   const [occupation, setOccupation] = useState(''), [sort, setSort] = useState('occupation'), [page, setPage] = useState(1)
@@ -39,13 +43,13 @@ export function CurrentRolePanel() {
   const blocked = busy || Boolean(command)
   const assessmentActive = view.data?.progress.state === 'RESUME'
   async function refresh() { await Promise.all([roles.refetch(), view.refetch()]) }
-  function choose(role: CurrentRole) {
+  function choose(role: CurrentRole, chosenLevel?: string) {
     if (lock.current || command || !view.data) return
-    setSelected(role); setError(null); committed.current = false
+    setSelected(role); setLevelId(chosenLevel ?? (view.data.selection?.role.id === role.id ? view.data.selection.levelId ?? '' : '')); setError(null); committed.current = false
   }
   async function confirm(prepared?: RoleChoiceCommand) {
-    if (lock.current || !selected || !view.data) return
-    const next = prepared ?? prepareRoleChoice(selected.id, view.data.selection?.selectionId ?? null)
+    if (lock.current || !selected || !view.data || !levelId) return
+    const next = prepared ?? prepareRoleChoice(selected.id, view.data.selection?.selectionId ?? null, levelId)
     lock.current = true; setBusy(true); setCommand(next); setError(null)
     try {
       if (!committed.current) { await chooseCurrentRole(next); committed.current = true }
@@ -59,6 +63,7 @@ export function CurrentRolePanel() {
     } finally { lock.current = false; setBusy(false) }
   }
   return <section aria-label={t('upskillingUi.roleCatalog')} className="min-w-0 space-y-5">
+    {gapRole && <InitialRoleGapDialog role={gapRole} onClose={() => setGapRole(null)} onBaseline={value => { setGapRole(null); choose(gapRole, value) }} />}
     {(roles.isPending || view.isPending) && <LoadingCard label={tr('loading')} />}
     {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr('requestError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
@@ -104,17 +109,18 @@ export function CurrentRolePanel() {
       const active = Boolean(view.data?.selection?.available && view.data.selection.role.id === role.id)
       return <CurrentRoleCard key={role.id} role={role} active={active}
         disabled={blocked || assessmentActive || !view.data || view.isError}
-        onDetails={() => setDetails(role)} onChoose={() => choose(role)} />
+        onDetails={() => setDetails(role)} onChoose={() => choose(role)} onGaps={() => setGapRole(role)} gapDisabled={blocked || !view.data || view.isError} />
     })}</div>
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
       labels={{ navigation: t('adaptiveBaseline.paging.navigation'), first: t('adaptiveBaseline.paging.first'), previous: t('adaptiveBaseline.paging.previous'), next: t('adaptiveBaseline.paging.next'), last: t('adaptiveBaseline.paging.last'), showing: t('adaptiveBaseline.paging.showing'), of: t('adaptiveBaseline.paging.of') }} /></Card>}
     <Dialog open={selected !== null} onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
       <DialogHeader><DialogTitle>{tr('confirmTitle')}</DialogTitle><DialogDescription>{tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}</DialogDescription></DialogHeader>
       <Text variant="body-sm" className="break-words font-semibold">{selected?.name}</Text>
+      {selected && <RoleLevelPicker levels={selected.levels} value={levelId} disabled={blocked} onChange={setLevelId} />}
       {error && <Text variant="body-sm" tone="destructive" className="text-destructive" role="alert">{tr(`errors.${error.code}`)}</Text>}
       {command && <Text variant="body-sm">{tr('retryNotice')}</Text>}
       <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setSelected(null)}>{tr('cancel')}</Button>
-        <Button disabled={busy} onClick={() => void confirm(command ?? undefined)}>{tr(command ? 'retry' : 'confirm')}</Button></DialogFooter>
+        <Button disabled={busy || !levelId} onClick={() => void confirm(command ?? undefined)}>{tr(command ? 'retry' : 'confirm')}</Button></DialogFooter>
     </Dialog>
     {error && !selected && <Text variant="body-sm" tone="destructive" className="text-destructive" role="alert">{tr(`errors.${error.code}`)}</Text>}
     <Dialog open={details !== null} onOpenChange={open => { if (!open) setDetails(null) }} ariaLabel={tr('details')} closeLabel={tr('cancel')} className="max-w-4xl">

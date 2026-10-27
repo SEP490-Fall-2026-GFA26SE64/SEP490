@@ -1,294 +1,43 @@
-import * as React from 'react'
-import {
-  CheckCircle2,
-  Compass,
-  Eye,
-  MinusCircle,
-  Search,
-  SlidersHorizontal,
-} from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+﻿import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import { readReviewQueue, PathwayError } from '../../../shared/api/initialPathway'
+import { useInitialPathwaySession } from '../../../shared/hooks/useInitialPathwaySession'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { InitialPathwayFeedback } from '../../../shared/components/InitialPathwayFeedback'
+import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Input } from '../../../shared/components/ui/Input'
+import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import {
-  getStoredPathways,
-  type InitialPathwayItem,
-} from './pathwayReviewStore'
-
-export {
-  AVAILABLE_CATALOG_MODULES,
-  type InitialPathwayItem,
-  type PathwayModuleItem,
-} from './pathwayReviewStore'
 
 export function ExpertPathwayReviewPage() {
-  const navigate = useNavigate()
-
-  const [pathwayList, setPathwayList] = React.useState<InitialPathwayItem[]>(() => getStoredPathways())
-
-  // Listen to store updates
-  React.useEffect(() => {
-    const handleSync = () => {
-      setPathwayList(getStoredPathways())
-    }
-    window.addEventListener('expert_pathway_list_updated', handleSync)
-    return () => window.removeEventListener('expert_pathway_list_updated', handleSync)
-  }, [])
-
-  // Filters & Pagination
-  const [search, setSearch] = React.useState('')
-  const [statusFilter, setStatusFilter] = React.useState<string>('all')
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const pageSize = 10
-
-  // Navigate to Dedicated Pathway Review Page
-  const handleOpenPathwayReview = (pathway: InitialPathwayItem) => {
-    navigate(`/expert/pathway-review/${pathway.id}`)
-  }
-
-  // Filter logic
-  const filteredPathways = React.useMemo(() => {
-    return pathwayList.filter((p) => {
-      const q = search.toLowerCase().trim()
-      const matchesSearch =
-        !q ||
-        p.employeeName.toLowerCase().includes(q) ||
-        p.targetRoleTitle.toLowerCase().includes(q) ||
-        p.targetRoleCode.toLowerCase().includes(q) ||
-        p.occupationTitle.toLowerCase().includes(q) ||
-        p.occupationCode.toLowerCase().includes(q) ||
-        p.modules.some((m) => m.title.toLowerCase().includes(q) || m.code.toLowerCase().includes(q))
-
-      const matchesStatus = statusFilter === 'all' || p.status === statusFilter
-      return matchesSearch && matchesStatus
-    })
-  }, [pathwayList, search, statusFilter])
-
-  const paginatedPathways = filteredPathways.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  )
-
-  // Reset pagination on search/filter changes
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [search, statusFilter])
-
-  // KPIs
-  const pendingCount = pathwayList.filter((p) => p.status === 'PENDING_EXPERT_CONFIRMATION').length
-  const approvedCount = pathwayList.filter((p) => p.status === 'APPROVED').length
-  const totalExcludedCount = pathwayList.reduce((acc, p) => acc + p.excludedModules.length, 0)
-
-  return (
-    <WorkspaceLayout>
-      <div className="space-y-6 pb-16">
-        {/* Aggregate KPI StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            variant="gradient"
-            icon={<Compass className="h-4 w-4 text-warning" />}
-            title="Awaiting Review"
-            value={`${pendingCount} To Review`}
-            valueClassName="text-warning"
-            description="Initial pathways awaiting expert confirmation"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<MinusCircle className="h-4 w-4 text-primary" />}
-            title="Excluded Modules"
-            value={`${totalExcludedCount} Excluded`}
-            valueClassName="text-primary"
-            description="Modules set aside across pathways"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<CheckCircle2 className="h-4 w-4 text-success" />}
-            title="Approved Pathways"
-            value={`${approvedCount} Active`}
-            valueClassName="text-success"
-            description="Employees actively learning"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<SlidersHorizontal className="h-4 w-4 text-muted-foreground" />}
-            title="Total In Queue"
-            value={`${pathwayList.length} Total`}
-            description="Assigned pathways across your domains"
-          />
-        </div>
-
-        {/* Pathway Catalog & Review Queue */}
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="min-w-0">
-                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                  <Compass className="h-4 w-4 text-primary shrink-0" />
-                  <span>Initial Learning Pathway Queue</span>
-                </CardTitle>
-                <CardDescription className="text-sm text-muted-foreground mt-1">
-                  Review adaptive learning pathways tailored for employees, adjust recommended modules with parallel include/exclude tables, and approve personalized study plans.
-                </CardDescription>
-              </div>
-
-              {/* Search & Filter Toolbar */}
-              <div className="flex items-center gap-2.5 shrink-0 flex-nowrap">
-                <div className="relative w-56 sm:w-64">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Search employee, occupation, role..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs transition-all"
-                  />
-                </div>
-
-                <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
-                  <span className="text-xs text-muted-foreground font-medium">Status:</span>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    aria-label="Filter by Status"
-                    className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                  >
-                    <option value="all">All Statuses ({pathwayList.length})</option>
-                    <option value="PENDING_EXPERT_CONFIRMATION">Awaiting Review ({pendingCount})</option>
-                    <option value="APPROVED">Approved ({approvedCount})</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                    <th className="py-2.5 px-3">Employee &amp; Occupation</th>
-                    <th className="py-2.5 px-3">Target Role</th>
-                    <th className="py-2.5 px-3 text-center">Active / Excluded Modules</th>
-                    <th className="py-2.5 px-3 text-center">Est. Duration</th>
-                    <th className="py-2.5 px-3">Generated Date</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {paginatedPathways.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="p-0">
-                        {pathwayList.length === 0 ? (
-                          <EmptyState
-                            bordered={false}
-                            icon={<CheckCircle2 className="h-6 w-6 text-success" />}
-                            title="All Pathways Processed"
-                            description="All learning pathways have been reviewed and approved. New pathways will appear here when team members enroll in target roles."
-                          />
-                        ) : (
-                          <EmptyState
-                            bordered={false}
-                            icon={<Compass className="h-6 w-6 text-muted-foreground" />}
-                            title="No Pathways Match Filters"
-                            description="No learning pathways match your current search query or filter selection."
-                            action={
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSearch('')
-                                  setStatusFilter('all')
-                                }}
-                              >
-                                Clear Active Filters
-                              </Button>
-                            }
-                          />
-                        )}
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedPathways.map((pathway) => {
-                      const totalHours = pathway.modules.reduce((acc, m) => acc + m.estimatedHours, 0)
-                      return (
-                        <tr key={pathway.id} className="hover:bg-muted/20 transition-colors">
-                          <td className="py-3 px-3">
-                            <div className="font-semibold text-foreground text-xs">{pathway.employeeName}</div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                              <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded border border-border">{pathway.occupationCode}</span>
-                              <span>{pathway.occupationTitle}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-3">
-                            <div className="font-semibold text-foreground text-xs">{pathway.targetRoleTitle}</div>
-                            <div className="font-mono text-[11px] text-muted-foreground mt-0.5">{pathway.targetRoleCode}</div>
-                          </td>
-                          <td className="py-3 px-3 text-center">
-                            <div className="font-semibold text-foreground text-xs">
-                              {pathway.modules.length} active
-                            </div>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">
-                              {pathway.excludedModules.length > 0 ? (
-                                <span className="text-destructive font-medium">({pathway.excludedModules.length} excluded)</span>
-                              ) : (
-                                <span>(0 excluded)</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-3 text-center font-mono font-semibold text-foreground text-xs">
-                            {totalHours} hrs
-                          </td>
-                          <td className="py-3 px-3 text-muted-foreground font-mono text-[11px]">
-                            {pathway.generatedAt}
-                          </td>
-                          <td className="py-3 px-3">
-                            {pathway.status === 'APPROVED' ? (
-                              <Badge variant="success">APPROVED</Badge>
-                            ) : (
-                              <Badge variant="warning">AWAITING REVIEW</Badge>
-                            )}
-                          </td>
-                          <td className="py-3 px-3 text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 gap-1 text-xs font-semibold"
-                              onClick={() => handleOpenPathwayReview(pathway)}
-                            >
-                              <Eye className="h-3.5 w-3.5 text-primary" />
-                              <span>{pathway.status === 'APPROVED' ? 'Inspect' : 'Review'}</span>
-                            </Button>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {filteredPathways.length > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(filteredPathways.length / pageSize) || 1}
-                totalItems={filteredPathways.length}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                itemLabel="pathways"
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </WorkspaceLayout>
-  )
+  const { t } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), session = useInitialPathwaySession()
+  const [offset, setOffset] = useState(0), [search, setSearch] = useState('')
+  const authorized = session.data?.role === 'DOMAIN_EXPERT'
+  const queue = useQuery({ queryKey: ['initialPathway', session.scope, 'reviewQueue', offset], queryFn: ({ signal }) => readReviewQueue(offset, signal), enabled: Boolean(session.scope && authorized), retry: false, gcTime: 0 })
+  const error = session.error ?? (!authorized && session.data ? new PathwayError('FORBIDDEN', 403) : queue.error)
+  const rows = (queue.data ?? []).filter(r => `${r.roleName} ${r.levelName}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+  return <WorkspaceLayout><div className="min-w-0 space-y-5 pb-8">
+    <PageHeader title={tr('reviewTitle')} description={tr('reviewDescription')} actions={<Button variant="outline" disabled={!authorized || queue.isFetching} onClick={() => void queue.refetch()}>{tr('refresh')}</Button>} />
+    {(session.isPending || authorized && queue.isPending) && <LoadingCard label={tr('loading')} />}
+    {error && <InitialPathwayFeedback error={error} onRetry={() => { void session.refetch(); if (authorized) void queue.refetch() }} busy={session.isFetching || queue.isFetching} />}
+    {!error && queue.data && <Card><CardContent className="space-y-4 p-4">
+      <Input aria-label={tr('search')} placeholder={tr('search')} value={search} onChange={event => setSearch(event.target.value)} />
+      {rows.length === 0 ? <EmptyState bordered={false} title={tr('noAssignments')} /> : <div className="overflow-x-auto"><table className="w-full text-left text-body-sm">
+        <thead className="bg-muted"><tr>{['skill', 'level', 'awaiting', 'open'].map(key => <th className="px-3 py-2" key={key} scope="col">{key === 'skill' ? t('roleFlow.roleName') : key === 'awaiting' ? t('upskillingUi.status') : tr(key)}</th>)}</tr></thead>
+        <tbody className="divide-y divide-border">{rows.map(row => <tr key={row.id}>
+          <th scope="row" className="max-w-80 break-words px-3 py-3 font-medium">{row.roleName}</th><td className="px-3 py-3">{row.levelName}</td>
+          <td className="px-3 py-3"><Badge variant={row.reviewStatus === 'APPROVED' ? 'success' : 'warning'}>{t('initialPathway.state.' + (row.validationStatus === 'VALID' ? row.reviewStatus : row.validationStatus))}</Badge></td>
+          <td className="px-3 py-3"><Link to={'/expert/pathway-review/' + encodeURIComponent(row.id)} className="font-semibold text-primary underline underline-offset-4">{tr('open')}</Link></td>
+        </tr>)}</tbody>
+      </table></div>}
+      <div className="flex items-center justify-between gap-3"><Button size="sm" variant="outline" disabled={offset === 0 || queue.isFetching} onClick={() => setOffset(value => Math.max(0, value - 20))}>{tr('previous')}</Button>
+        <Text variant="caption">{offset + (rows.length ? 1 : 0)}–{offset + rows.length}</Text><Button size="sm" variant="outline" disabled={queue.isFetching || queue.data.length < 20} onClick={() => setOffset(value => value + 20)}>{tr('next')}</Button></div>
+    </CardContent></Card>}
+  </div></WorkspaceLayout>
 }

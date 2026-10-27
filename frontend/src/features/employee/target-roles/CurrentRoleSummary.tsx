@@ -22,7 +22,7 @@ export function CurrentRoleSummary({ view }: { view: RoleFlowView }) {
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <Heading level={2} size="card">{t(selection ? selection.available ? 'upskillingUi.activeRole' : 'roleFlow.previousUnavailable' : 'employeeBaseline.title')}</Heading>
-            {selection && <Badge variant={selection.available ? 'success' : 'warning'} className="max-w-full whitespace-normal break-words">{selection.role.name}</Badge>}
+            {selection && <Badge variant={selection.available ? 'success' : 'warning'} className="max-w-full whitespace-normal break-words">{selection.role.name}{selection.levelId ? ` · ${selection.role.levels.find(level => level.id === selection.levelId)?.name ?? t('initialPathway.state.UNAVAILABLE')}` : ''}</Badge>}
           </div>
           {selection && <Text variant="caption">{selection.role.occupationName}</Text>}
         </div>

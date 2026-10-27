@@ -719,7 +719,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 2. Expert */}
                         <Link
                           to="/expert/assigned-roles"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, 'expert')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isExpert
                               ? 'bg-secondary text-primary font-semibold'

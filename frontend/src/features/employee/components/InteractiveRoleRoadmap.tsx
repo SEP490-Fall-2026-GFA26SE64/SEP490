@@ -1,4 +1,6 @@
 import * as React from 'react'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { InitialPathwayModules } from './InitialPathwayModules'
 import {
   ArrowRight,
   Award,
@@ -34,12 +36,16 @@ import {
 import './InteractiveRoleRoadmap.css'
 
 export interface InteractiveRoleRoadmapProps {
+  pathway?: PathwayView
   targetRole?: string
   isSkillMode?: boolean
   compact?: boolean
 }
 
-export function InteractiveRoleRoadmap({
+export function InteractiveRoleRoadmap(props: InteractiveRoleRoadmapProps = {}) {
+  return props.pathway ? <InitialPathwayModules pathway={props.pathway} roadmap /> : <LegacyInteractiveRoleRoadmap {...props} />
+}
+function LegacyInteractiveRoleRoadmap({
   targetRole: propTargetRole,
   isSkillMode: propIsSkillMode,
   compact = false,

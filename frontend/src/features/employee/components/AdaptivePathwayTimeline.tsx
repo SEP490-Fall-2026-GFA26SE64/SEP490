@@ -1,5 +1,7 @@
 import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { InitialPathwayModules } from './InitialPathwayModules'
 import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -157,7 +159,10 @@ const SKILL_PATHWAY: PathwayStep[] = [
   },
 ]
 
-export function AdaptivePathwayTimeline() {
+export function AdaptivePathwayTimeline({ pathway }: { pathway?: PathwayView } = {}) {
+  return pathway ? <InitialPathwayModules pathway={pathway} /> : <LegacyAdaptivePathwayTimeline />
+}
+function LegacyAdaptivePathwayTimeline() {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
   const { profile } = useEmployeeLearningState()
   const isSkillMode = profile.selectedViewType === 'skill'
