@@ -10,6 +10,14 @@ Employee selects a desired Role, then receives the next step for its Occupation 
 
 Dependency errors are retryable unavailable states, never missing mastery or absent configuration. Target Roles is a separate Employee page. English uses Role; Vietnamese uses Vị trí / Vị trí làm việc mong muốn. There is no independent Occupation-exploration entry in this flow.
 
+## Initial gap/confirmation extension — 2026-10-27
+
+Latest user decision: Employee explicitly selects catalog TargetRole + Level. Three Levels represent three effective targets. The server validates Level membership and reads requiredScore for the exact Level–Skill; no highest-Level/name inference. This supersedes the earlier no-separate-Level assumption; [shared amendment](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#12-confirmed-amendment--employee-selects-role--level) records pair identity, compatibility and history rules.
+
+After a valid baseline profile exists, [F02 gap preview](../Competency%20profiling%20and%20gap%20analysis/Calculate%20Target-Role%20Gaps.md) reads current permitted Role requirements without changing selection/history. Explicit Employee confirmation then revalidates input and records initial generation intent using the selection owner's guards; [shared planned contract](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). Bare GET and baseline admission do not create a pathway.
+
+Preserve original initialized profile/attempt pins and required skill set. A newly applicable catalog skill missing from that original profile is UNKNOWN in the gap projection, needs foundational learning and does not reopen baseline. Missing expected original evidence/corruption/dependency error is unavailable, never UNKNOWN. Do not alter coverage/allowance semantics of existing baseline admission to require retake for added catalog skills.
+
 ## Actor, inputs and protected output
 
 Authentication supplies an active Employee and trusted organization. L&D manages authorized Occupation configurations. Every query/command rechecks actor permission and tenant scope; UI routes never grant authorization.
@@ -25,7 +33,7 @@ Client cannot set actor/tenant, ownership, coverage, mastery, status, correctnes
 
 ## Sources, processing and storage
 
-1. Read authorized catalog relationships: Occupation → HAS_ROLE → TargetRole → HAS_LEVEL → Level → REQUIRES_SKILL → MicroSkill. Current catalog IDs are stable strings; Level is separate requirement context, not a legacy seniority field or extra selection prerequisite. Publication and visibility remain required catalog responsibilities.
+1. Read authorized catalog relationships: Occupation → HAS_ROLE → TargetRole → HAS_LEVEL → Level → REQUIRES_SKILL → MicroSkill. Current IDs are stable strings. New UI selection requires an explicit member Level; old role-only baseline snapshots/calls remain readable and never infer a historical Level. Publication and visibility remain catalog responsibilities. Baseline still covers the whole Occupation and preserves its original allowance/pins.
 2. Recheck the selected Role and its unique owning Occupation. Under learner serialization, check exact receipt replay, expected selection and assessment activity. End the old selection and write snapshot/revision/receipt/audit/outbox atomically. Selection does not wait for baseline configuration and does not start an attempt.
 3. After selection commits, read authoritative Employee mastery in PostgreSQL through the profile boundary. For a learner without a bound profile, resolve the deduplicated full Occupation skill union. Existing initialized profiles retain their original required skill set and applicable baseline version; newer catalog/version requirements are not imposed retroactively.
 4. Coverage requires valid mastery for every applicable skill. Low or zero valid mastery counts as present; missing/UNKNOWN/null or invalidated evidence does not. An empty/malformed skill union is unavailable, never vacuous success. A terminal attempt alone does not certify an initialized profile.

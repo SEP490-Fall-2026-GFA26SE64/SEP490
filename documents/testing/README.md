@@ -6,6 +6,8 @@
 
 Current REQ-002 slice2–3 compile/manual observations: [dedicated evidence and procedures](system/REQ-002-F01-F02-occupation-admission-management.md). Revised executable acceptance remains Planned/Not run; no tests were created or executed.
 
+**2026-10-27 initial gap/pathway Cluster1:** [acceptance-to-test plan](REQ-041-042-initial-pathway-test-plan.md) maps G01–G12/P01–P14/R01–R12/E01–E08 for preview/confirmation, query-rank-select-sort, Expert include/exclude/approval and own prerequisite-locked Employee view. All proposed executable files/commands are **Planned/Not run**. No current runtime or historical baseline certification is inferred.
+
 ## Current Scope Alignment
 
 **Scope baseline:** [System Overview](../adapt_learn_graph_system_overview.md); aligned 2026-10-20. Test actors are System Administrator, L&D Manager, Expert and Employee within one organization. Existing test IDs, fixtures, actor codes, dated results and manual procedures remain evidence of their recorded contract, not revised acceptance certification.

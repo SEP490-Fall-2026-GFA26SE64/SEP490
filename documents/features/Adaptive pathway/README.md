@@ -2,8 +2,9 @@
 
 ## Current Scope Alignment
 
-**Source:** [System Overview](../../adapt_learn_graph_system_overview.md); REQ-004. **Actor:** Employee. **Status:** Detail draft.
-Employee follows system-selected modules only after the Expert reviews and confirms the initial pathway. Employee cannot manually add/remove/reorder pathway modules. Later adaptation responds to new evidence and changed learning needs; approval of later revisions remains open.
+REQ-004. Employee. Own generating/review/no-gap/error status; after exact Expert confirmation, read ordered unique Modules with protected prerequisite locks. No Employee edits or frontend-only unlock. Preserve archived history and existing baseline/Blueprint compatibility.
+
+Current Function contract: [View Adaptive Pathway](View%20Adaptive%20Pathway.md). [Shared full-flow design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) and [acceptance plan](../../testing/REQ-041-042-initial-pathway-test-plan.md) govern the 2026-10-27 initial flow. All new executable evidence Planned/Not run; historical/mock implementation labels below do not certify this flow.
 
 ## Historical Specification
 Use the alignment above where older details conflict.

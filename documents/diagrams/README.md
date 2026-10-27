@@ -1,5 +1,9 @@
 # Architecture diagrams
 
+## Planned initial gap/pathway — 2026-10-27
+
+[Mermaid flow/sequence/state/logical-data source and rendered Markdown view](gap-pathway-initial-flow.md) accompanies the [Cluster1 design](../features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). It is **Planned**, not DB inventory, deployed topology or runtime evidence. It does not replace the verified V26 metadata images or member-owned Neo4j diagram. A supporting Mermaid viewer is required to render the inline diagrams.
+
 ## Verified inventory — 2026-10-23
 
 Current PostgreSQL17.6 inventory is **V1–V26,89 platform tables/729 columns**, captured in a repeatable-read READ ONLY transaction. All26 Flyway source checksums match successful applied history. There are628 constraints/189 FKs (176 parent-child table pairs),213 indexes,99 user triggers and39 functions. [Metadata catalog](postgresql-schema-catalog.json) and [all FK definitions](postgresql-foreign-keys.md) retain exact fields/defaults/checks/indexes/triggers/functions. Public Flyway metadata is outside the89 platform tables.

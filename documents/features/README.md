@@ -5,6 +5,8 @@
 **Current source:** [System Overview](../adapt_learn_graph_system_overview.md), with requirement mapping in [Product Overview](../PRODUCT_OVERVIEW.md).
 **Aligned:** 2026-10-20. This catalog supersedes the historical SaaS index and interview queue below.
 
+**2026-10-27 initial gap/pathway:** [shared design](Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) aligns REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. Product rules confirmed, implementation Planned, new executable evidence Not run. Member-owned instructionLevel0.10 review source is not deployed/publication evidence. No Cluster2 implementation plan in this document set.
+
 ## Current Reading Rules
 
 - The four actors are System Administrator, L&D Manager, Expert, and Employee. Services and algorithms are automated performers.

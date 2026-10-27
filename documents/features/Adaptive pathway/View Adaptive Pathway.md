@@ -1,46 +1,47 @@
 # View Adaptive Pathway
 
+**Function:** REQ-004-F01. **Actor:** Employee. **Status:** Cluster2 read/access-policy/API UI source implemented; live readiness/content-start integration and runtime acceptance incomplete.
+
 ## Current Scope Alignment
-Employee follows the initial pathway only after Expert review and confirmation; pathway modules remain system-selected, with authorized Expert overrides. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
-## Historical Specification
-Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+Employee sees own generation/review outcome, then the Expert-confirmed ordered initial pathway with prerequisite lock reasons. No include/exclude/reorder capability. [Shared flow/API/data design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). Module learning/assessment execution is a dependency, not implemented by this read Function.
 
-**Function ID:** REQ-004-F01  
-**Actor:** Employee  
-**Status:** Pending clarification  
-**Feature:** [Adaptive Pathway](README.md)
+## Actor, client/server fields and protected output
 
-## Description
+Trusted active Employee/org only. Read current selection/request and own approved revision, or an authorized own archived path ID. Never accept arbitrary learner/org/approval/progress/readiness from client. Output safe Role-Level/sequence/Module details and server-computed states/reasons. No answer keys/theta/SE/foreign learner or unapproved candidate graph.
 
-Display the employee's generated module sequence and module statuses. The employee cannot add, exclude, reorder, or choose pathway modules.
+| Condition | Visible behavior |
+| --- | --- |
+| No confirmed request | Prompt Role review/confirmation; never generate on GET |
+| PENDING | Request durably accepted, preparation pending; no duplicate confirmation needed or learning actions |
+| GENERATING | “Your pathway is being prepared” / “Đang tạo lộ trình học”; no learning actions |
+| AWAITING_EXPERT_REVIEW | “Your pathway is awaiting review” / “Lộ trình học đang chờ duyệt”; no learning access |
+| UNRESOLVED/BLOCKED | Explain content/configuration issue safely; no complete valid-path claim |
+| FAILED_RETRYABLE/STALE | Reconcile/refresh appropriate state; no silent new Role or fake empty result |
+| NO_LEARNING_REQUIRED | No additional mandatory learning for this snapshot; no fabricated certification/completion |
+| APPROVED current | Ordered Modules and explicit available/locked/unavailable/completed projection from trusted owner sources |
+| Archived | Read-only recorded sequence/history; no resume or new assessment actions |
 
-**Input:** Employee's target role and current pathway.  
-**Outcome:** A read-only pathway view with access to the relevant module details and assessments.
+## Ordered reads and no-state-change guarantee
 
-## Confirmed Related Rule
+1. Authenticate/authorize own scope before request/path existence reads.
+2. Resolve current selection and request/approved revision through ports; do not infer readiness from a terminal baseline attempt alone or localStorage.
+3. Verify approved exact revision/hash pointer and allowed visibility. Read frozen sequence/content refs plus actual current availability/readiness for applicable gates.
+4. Compute lock reasons server-side. A Module with unmet prerequisites stays locked even if ordinal is next. Independent modules need not be sequentially locked merely because another Module precedes them. Final unlock requires defined version-matched readiness PASS, not completion/list position alone.
+5. Return projection; reads do not confirm proposal, advance progress, write mastery or dispatch generation. Applicable Module/content/start APIs must independently enforce the same gate and actor/tenant checks; hiding a button is not security.
 
-- From [Choose Target Role](../Target%20role%20selection/Choose%20Target%20Role.md) (REQ-001-F02), 2026-09-26: Changing the target role archives the previous pathway as read-only history, preserving its recorded sequence and progress. The archived pathway cannot be resumed, including after returning to that role.
-- Only the selected role may have an active pathway. Archived pathways do not permit edits or new assessment attempts; archiving does not remove mastery evidence available for the agreed role-change baseline rules.
-- Current adaptive-baseline dependency: Blueprint replacement, disablement or stale catalog fingerprint governs new baseline starts only. It does not erase completed mastery or independently pause/archive an existing pathway; module and module-assessment authorization still applies.
+Dependency failure→explicit unavailable/retry, not empty/no-path/UNKNOWN or newly unlocked access. A locked content direct request remains denied. Current revoke/unpublish restriction cannot be bypassed using frozen display metadata.
 
-## Open Decisions
+Request polling and pathway reads use the shared generation/review/validation projection; after approval the current display is APPROVED rather than the generation worker's earlier awaiting-review outcome. Each response uses a coherent revision/hash pointer. Live readiness/availability can restrict an approved Module without mutating its frozen hash or fabricating progress. Historical command receipts are outcomes to reconcile, not current access tokens. Archived own-ID read is a separate proposed route in shared design section5.
 
-- List, graph, or both; progress indicators and module status vocabulary.
-- Whether expert review blocks visibility or assessment access.
-- Sequential unlocking versus access to every assigned module; empty, generating, and stale pathway states.
-- Navigation to archived pathway history and the historical details displayed.
-- The continuation decision does not settle requirement-version handling, generation, or recalculation when role configuration changes; those remain governed by the corresponding functions. Module availability and assessment eligibility details still require clarification.
+## History and compatibility
 
-## Acceptance Baseline
+Role change archives old pathway and retains recorded sequence/progress. Returning to that Role does not reactivate archived path. Blueprint replacement/deactivation alone governs baseline admission, not deletion of mastery or automatic archival of an otherwise active approved pathway. A Module/content/access change may independently restrict access; post-approval catalog-driven recalculation/re-review belongs to REQ-043/lifecycle policy and is not silently implemented here.
 
-The displayed sequence matches the employee's current authorized pathway and does not offer employee editing controls.
+Existing Employee Role timeline/roadmap now consumes C2 API projections with the same typography/tokens/components/EN–VI; independent skill/assessment consumers remain separate. A storage projection/policy hook is not direct-access evidence. Existing Module assessments/pass criteria remain their owner's contracts; no new tracing or proficiency formula. [Actual C2 integration limits](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27).
 
-- An archived pathway is distinguishable from the active pathway and remains read-only, with no resume or start-assessment action. Returning to its target role does not reactivate it.
-- Given an active pathway with otherwise accessible modules and eligible assessments, a later Blueprint availability/catalog change does not hide the pathway or remove recorded progress. An independently unavailable module or assessment remains restricted, and an archived pathway remains non-resumable.
+## Acceptance-to-test mapping
 
-## Decision Log
+E01–E08 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md): own read/isolation and no-state-change, lifecycle/no-gap/error states, sequence/shared provider dedup, exact approval gate, prerequisite/independent Module locks and direct API denial, archived no-resume, Blueprint-history preservation, dependency/revocation behavior. All new executable evidence Planned/Not run.
 
-| Date | Question | Confirmed answer |
-| --- | --- | --- |
-| 2026-10-20 | Does an adaptive Blueprint change invalidate an existing pathway? | No. It controls new baseline starts and does not erase completed mastery or independently pause/archive a pathway. |
+Confirmed: own approved/locked view | Source implemented: API/policy/UI | Open: live readiness/content-start integration, runtime acceptance and later recalculation policy.

@@ -1,44 +1,40 @@
 # Review Initial Adaptive Pathway
 
+**Function:** REQ-019-F01. **Actor:** assigned Expert. **Status:** Cluster2 source/API UI implemented; authoritative assignment/revocation and owner-policy integration/runtime evidence incomplete.
+
 ## Current Scope Alignment
-Expert reviews the first Employee/role pathway and its evidence, includes/excludes modules through REQ-020, and confirms it before Employee starts. Initial review is mandatory, not an unresolved advisory choice. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md); reviewer allocation/re-review/reasons remain open.
 
-## Specification
+Inspect the system-generated initial Employee/Role-Level proposal, use REQ-020-F01/F02 include/exclude, and confirm its exact current valid revision before Employee learning. [Shared API/state/data design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). Mandatory confirmation is confirmed, not advisory.
 
-**Function ID:** REQ-019-F01  
-**Actor:** Domain Expert  
-**Status:** Implemented  
-**Feature:** [Initial Pathway Review](README.md)
+Existing /expert/pathway-review and /expert/pathway-review/:pathwayId are the visual integration baseline. Extend current design/components. Historical drag-and-drop/AI regeneration/exclusions-across-regeneration UI promises do not authorize those additional runtime commands in this initial full-flow slice.
 
-## Description
+## Actor, read projection and trigger
 
-Review an authorized employee's initial pathway generated from their assigned occupation and chosen target role (selected directly or guided by baseline and optional RIASEC assessment). The expert inspects the curriculum evidence, includes/excludes learning modules (REQ-020-F01), requests algorithmic regeneration with feedback, or approves the pathway for the employee to begin learning.
+Trusted active Expert/org plus current assignment to applicable Role/discipline/Employee review scope; missing authoritative assignment denies, not organization-wide access. Queue filters authorization before paging/counts. Client may supply queue filters/opaque proposal ID; confirmation supplies expected revision/hash and command key. Actor/learner/tenant/approval state/Module sequence/mastery are server-owned.
 
-**Input:** Employee baseline assessment result, assigned occupation, target role, and generated initial adaptive pathway.  
-**Outcome:** Expert inspection, module inclusion/exclusion customization via dual parallel tables with drag-and-drop, pathway regeneration with persistent exclusions and locked progress state, and final pathway approval.
+Authorized Expert receives frozen Role+Level, safe gap/UNKNOWN evidence, source versions, ordered unique Module/content refs/instructionLevel/matched targets/reasons/duration/price, included/excluded overrides, dependencies/readiness and unresolved diagnostics. Protected answer keys/theta/SE/other tenant records excluded. Employee only gets safe own status until confirmation.
 
-## Confirmed Workflow Rules
+## Ordered reads and writes
 
-- **Review Queue**: All generated pathways (regardless of whether role was selected directly or via optional RIASEC guidance) are routed to `/expert/pathway-review`.
-- **Dedicated Audit Workspace Page**: Clicking "Review" or "Inspect" opens a dedicated, full-screen review route `/expert/pathway-review/:pathwayId` providing ample room for comprehensive review and drag-and-drop manipulation.
-- **Parallel Interactive Module Tables (Pathway vs. Excluded)**:
-  - *Pathway Learning Modules*: Left column containing active study plan steps (Step 1..N) with duration, domain badges, reordering controls, and direct "Exclude" triggers.
-  - *Excluded Modules*: Right column containing excluded modules retained for this employee profile, with direct "Include" triggers and dedicated drop zones.
-  - *Bi-Directional Drag-and-Drop*: Modules can be dragged between the active pathway and excluded list, or dragged within lists for reordering.
-- **Persistent Exclusions Across Regeneration**:
-  - Modules placed in the Excluded list are stored as explicit exclusion constraints for subsequent pathway regenerations.
-  - When the expert triggers pathway regeneration, the AI replanner strictly omits all excluded modules.
-  - After regeneration completes, the Excluded list **still retains the previously excluded modules**, allowing the expert to reconsider, drag them back, or maintain the exclusions.
-- **Regeneration Lock & Visual Feedback**:
-  - When "Regenerate Pathway" is triggered, the button displays a spinning `RefreshCw` icon (`animate-spin`) and updates text to "Regenerating Pathway...".
-  - During regeneration, all editing interactions (dragging, exclude/include buttons, addition from catalog, deletion, reordering, approval) are strictly disabled to prevent race conditions.
-  - A prominent progress alert explains the background replanning activity.
-- **Actions**:
-  - *Include / Exclude Modules*: Expert drags or clicks buttons to move modules between active and excluded lists.
-  - *Add Existing Catalog Module*: Expert can search the catalog and drag-and-drop modules directly into either the Pathway Learning Modules table or Excluded Modules table (or use the quick addition buttons). Modules can also be dragged from tables back into the catalog.
-  - *Regenerate Pathway*: Expert provides optional guidance notes for the system to generate an updated draft respecting exclusions.
-  - *Approve for Learning*: Expert approval transitions pathway to `APPROVED` and unlocks the learning pathway for the employee in `/employee/pathway`.
+1. Authorize assignment, then read current request/proposal. Queue cannot imply all generated work has a reviewable proposal: GENERATING, UNRESOLVED and NO_LEARNING_REQUIRED are distinct.
+2. Inspect gap origins and planned coverage/prerequisites; include/exclude via their own versioned commands. Display validation errors and lock reasons in product language; no localStorage authority.
+3. On confirmation, reauthorize and resolve an exact retained key/body receipt first; only a new command locks/CAS-checks expected current revision/hash. Older revision or selection/source drift on a new command→409, not approval of refreshed unseen content. Replay of a prior success does not grant access or approve a newer revision; reconcile current GET afterward.
+4. Re-read/revalidate publication/content availability, complete mandatory plan coverage, dependency/internal ordering and readiness gate definitions. Pending future readiness can keep future modules locked; missing mapping/cycle/unresolved coverage cannot be approved.
+5. If valid/current, atomically save confirmation actor/assignment/version/hash/timestamp and approval lifecycle pointer/receipt/audit/outbox. Idempotent replay returns same approval; any subsequent changed content needs a new exact confirmation.
+6. Employee learning authorization reads this exact approved revision and actual readiness; audit/outbox delivery alone does not unlock. Dependency failure/transaction failure leaves no partial approval.
 
-## Acceptance Baseline
+No-gap is a separate recorded outcome, never manufactured learning completion/Level certification. Exact no-gap acknowledgement UX remains Proposed design. Draft edit reason optional; mandatory reason policy not silently introduced.
 
-An expert can inspect, reorder, exclude, and regenerate the curriculum for a permitted employee's initial pathway using side-by-side interactive tables on a dedicated page with modification locking during regeneration.
+No-gap needs no proposal approval; acknowledgement is optional Proposed UX without an authorized new command here. Request reads expose separate generation/review/validation state and show APPROVED after exact confirmation. Readiness gate definitions/content versions belong to the approved hash; current PASS/FAIL and availability remain live access projections. Assignment revocation denies new commands/replays; retroactive effect on a historical approval remains an Open owner policy, with current required validity checks failing closed.
+
+## Failures, history and alignment
+
+Unauthorized401/403/safe404; invalid/unresolved content422; revision/hash/key/input drift409; outage503 with rollback and exact retry. Concurrent include/exclude/confirm uses one CAS winner. Role change archives prior path read-only under existing owner contract; stale reviewed proposal is not overwritten by automatic generation. Later approved-path recalculation/re-review policy remains outside initial scope.
+
+Routed queue/detail now consume typed API state instead of localStorage. Source includes assigned authorization, read-only validation, immutable edits/receipts and exact confirmation; owner assignment/revocation and catalog/readiness remain unavailable by default. [C2 checks/limitations](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27) do not certify the integrated flow. V4 administrator approval naming remains legacy storage, never System Administrator authority.
+
+## Acceptance-to-test mapping
+
+R01–R12 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md): assigned queue/detail isolation, correct input/explanation, safe edit/validation, exact-current confirmation, protected data, stale/race/replay/outage atomicity, no preapproval learning and no-gap outcome. Planned/Not run.
+
+Confirmed: mandatory Expert gate | Source implemented: durable commands/read/API UI | Proposed: no-gap acknowledgement UX | Open: authoritative assignment/revocation and runtime integration/acceptance.

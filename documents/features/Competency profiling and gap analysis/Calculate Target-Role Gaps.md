@@ -1,29 +1,46 @@
 # Calculate Target-Role Gaps
 
+**Function:** REQ-041-F02. **Performer:** System for an authenticated Employee. **Status:** Cluster2 source implemented; Role-Level/publication/compatibility integration and runtime acceptance incomplete. Business rules confirmed27/10/2026.
+
 ## Current Scope Alignment
-System compares the current mapped mastery with selected-role requirements. For adaptive baseline initialization, downstream mastery is the pinned conservative value `logistic(theta - k × SE)`, so gap is `max(0, targetMastery - mastery)`. A below-minimum invalidated attempt emits no mastery and therefore cannot trigger gap/pathway calculation; the Employee must use the permitted replacement baseline. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
-## Historical Specification
-Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+Explain learning needs for the Employee's explicitly selected Role + Level. Three Levels of one Role are three effective targets; requiredScore is taken from that exact Level–Skill edge. Preview never selects/archives/generates or changes mastery. [Current amendment and shared design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#12-confirmed-amendment--employee-selects-role--level) govern the revised selection contract. REQ-042-F01 remains a dependency.
 
-**Function ID:** REQ-041-F02  
-**Actor:** Automated system  
-**Status:** Pending clarification  
-**Feature:** [Competency Profiling and Gap Analysis](README.md)
+Example: SQL required0.75/conservative mastery0.60→gap0.15; Modeling required0.70/mastery0.80→0; new required Quality without compatible evidence→UNKNOWN/null numeric gap, foundational learning need. No values are production seed truth.
 
-## Description
+## Actor, trusted input and output
 
-Compare the employee's competency evidence with selected target-role requirements to identify remaining skill gaps and relevant prerequisite deficits.
+Trusted active Employee/organization authorizes before reads. Client supplies roleId + levelId, never arbitrary learner/org, requiredScore, mastery, confidence or source versions. Server verifies membership/visibility/publication, reads exact decimal Level requirements and immutable baseline evidence. The internal effective-choice ID is server-derived from the pair; no separate enterprise mapping or guessed Level is required.
 
-**Input:** Competency state, required proficiency, and prerequisite relationships.  
-**Outcome:** Skill-level gaps usable by generation, explanation, and recalculation evaluation.
+Output is own Role/Level refs, gapInputHash/source versions, expected current selection ID/revision separately, mandatory/optional skill requirements, known conservative mastery/confidence or UNKNOWN reason, numeric gap or null, and aggregate LEARNING_REQUIRED/NO_LEARNING_REQUIRED. No answer keys, theta/SE, another Employee's evidence or assessor-only material. Preview is read-only; confirmed snapshot persistence belongs to the confirmation transaction. The hash identifies calculation sources, not the future selection ID; the resulting selection is bound by planningInputHash after confirmation as shared design section5.1 proposes.
 
-## Open Decisions
+## Ordered reads and rules
 
-- Gap formula, aggregation weights, and confidence/unknown-evidence handling.
-- Prerequisite propagation and technical versus soft-skill treatment.
-- Thresholds for material gaps and behavior when role requirements change.
+1. Authorize Employee/catalog visibility; validate the selected Level belongs to exactly one selected Role/Occupation. Nonmember/foreign/ambiguous/unpublished or invalid mandatory requirements deny; no highest-Level inference.
+2. Read applicable initialized profile/baseline origin and compatibility facts. No valid profile→baseline prerequisite under existing rules. Old completed baseline is neither rescored nor reopened for catalog additions.
+3. Verify snapshot completeness/version consistency and evidence semantics. A skill genuinely absent or incompatible is UNKNOWN; missing expected original evidence due to integrity/read failure is unavailable, not UNKNOWN.
+4. For known skill use stored conservative mastery logistic(theta-k×SE), original mapping/model; gap=max(0,requiredScore-mastery). Compare normalized decimals, round display only. Equality→0. Confidence is explanatory; no additional LOW gate/penalty.
+5. Mandatory skills independently determine needs, with no average or cross-skill compensation. Optional rows are reference-only. UNKNOWN mandatory skill needs foundational instruction, without fabricated mastery0 or numeric gap.
+6. Aggregate: all mandatory skills known/gap0→NO_LEARNING_REQUIRED; any positive gap or mandatory UNKNOWN→LEARNING_REQUIRED; no mandatory requirements→invalid configuration. These are planning estimates, not Level certification/readiness PASS.
+7. Return preview/source hash with no learner writes. At confirmation re-read/revalidate versions; snapshot exact calculation atomically with durable request under planned orchestration. Same frozen input/policy reuses a result; stale results cannot feed F01.
 
-## Acceptance Baseline
+Prerequisite is catalog dependency metadata for F01; it does not add skills to the Role's mandatory attainment set. F02 never converts skill mastery into prerequisite readiness PASS. Profile after learning, BKT and REQ-043 are outside scope.
 
-Each reported gap references a role requirement and the applicable employee evidence; unknown evidence is not silently treated as proven mastery.
+## Authorization, failure and recovery
+
+Cross-actor/tenant reads deny safely. Missing baseline is distinct from a corrupt profile, missing publication and graph outage. Empty malformed requirements never imply success. Dependency errors→unavailable/retry without partial calculation or persisted success. Stale source→conflict/refresh; no silent requirement update in a historical snapshot. Exact replay and concurrent confirmation use server input identity, not client-supplied mastery.
+
+Current source profile stores the original skill set/attempt pins; current gap UNKNOWN projections do not mutate it. New Neo4j instructionLevel is not needed for arithmetic and cannot alter mastery. No-state-change preview includes audit-free learner state: operational request logging is not learning history mutation.
+
+## Acceptance-to-test mapping
+
+| Rule | Required observable outcome |
+| --- | --- |
+| G01–G03 | Own explicit Role-Level binding; foreign/ambiguous/unpublished deny; preview no selection/pathway mutation |
+| G04–G07 | Formula/equality/confidence; no mandatory compensation; optional reference-only; UNKNOWN/null vs data failure |
+| G08–G10 | New skill without baseline retake; no-gap/empty mandatory; original history/allowance retained |
+| G11–G12 | Separate gap/selection/planning identity, coherent source reads, stale/concurrent/exact receipt replay and dependency failure without partial success |
+
+[Test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md). Executable acceptance remains Planned/Not run. Gap domain, scoped original-profile reader, no-write endpoint and explicit-confirm UI exist in C2 source; default owner adapters deny missing binding/publication/compatibility. [Actual checks/limits](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27) distinguish compilation from runtime proof.
+
+Confirmed: business rules | Source implemented: gap/profile/API UI | Open: published Role-Level/compatibility integration and runtime acceptance | Rejected: mastery rewrite or baseline reset.
