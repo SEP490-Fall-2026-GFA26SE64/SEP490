@@ -1,5 +1,7 @@
 # Integration Testing Directory & Standards
 
+2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
+
 **Latest, 2026-10-24 REQ-001/002/009:** [Integration execution/blocker](REQ-001-002-009-20261024-execution.md): three selected real-adapter suites **Blocked**,0 business passes; raw2 setup errors/6 existing assumption skips because Docker Linux engine was unavailable. [Current gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md): Cluster 3/4 incomplete. [23 October integration/131P aggregate](../system/REQ-001-002-cluster4-evidence.md) is historical; no current integration pass is carried forward.
 
 ## Current Scope Alignment

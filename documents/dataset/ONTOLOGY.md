@@ -1,10 +1,10 @@
-# Ontology — framework, fields and data provenance (0.10.0)
+# Ontology — framework, fields and data provenance (0.11.0)
 
-Updated 27 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
+Updated 28 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
 
 ## Files and framework
 
-[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed-v010.json](import/ontology_seed-v010.json) describe the same catalog: **833 nodes and 4,638 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
+[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed-v011.json](import/ontology_seed-v011.json) describe the same catalog: **994 nodes and 5,121 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
 
 O*NET supplies Occupations, sample reported titles and occupation RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
 
@@ -21,23 +21,42 @@ flowchart LR
 
 Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. A Module teaches one or more skills; a skill may have several teaching Modules. This release requires teaching coverage for every skill. There is no Course, Level–Module link or global module sequence.
 
-## Instruction level per Module–Skill — 2026-10-27
+## Teaching focus and difficulty — 2026-10-28
 
-TEACHES now stores required `instructionLevel` as a case-sensitive text enum: `FOUNDATIONAL`, `INTERMEDIATE`, or `ADVANCED`. It describes the depth of instruction for that particular Module–Skill pair, not a global skill property, learner mastery or guaranteed gain. Six node labels/seven relationship types and many-to-many teaching cardinality remain unchanged.
+The v0.11 review catalog replaces instructionLevel with **two independent required text properties on each TEACHES relationship**:
 
-| Stored instructionLevel | Legacy numeric band, after rounding |
-|---|---|
-| FOUNDATIONAL | 0.0–0.3 |
-| INTERMEDIATE | 0.4–0.6 |
-| ADVANCED | 0.7–0.9 |
+| Property | Allowed values | Meaning |
+|---|---|---|
+| teachingFocus | PRIMARY / SUPPORTING / INCIDENTAL | Main instructional objective, supporting practice, or provided context only. |
+| difficultyLevel | LOW / MEDIUM / HIGH | Difficulty of the tasks for that particular skill in the Module. |
 
-User-approved conversion rounds the old number to one decimal using decimal ROUND_HALF_UP before classifying: 0.35 → 0.4 → INTERMEDIATE; 0.65 → 0.7 → ADVANCED. This is a one-time review-data conversion, not a content scoring rule. New graph records accept only the three exact text values; numeric strings, numbers, missing/blank/unknown values and retired property names are rejected. Numeric bands are explanatory metadata, not additional graph properties.
+PRIMARY identifies the objective the package is designed to teach directly. SUPPORTING has an explicit supporting exercise; it does not automatically replace a PRIMARY treatment. INCIDENTAL is exposure/context, with no instructional objective or mastery credit and must not be treated as closing a skill gap. Display labels may be Primary/Supporting/Incidental; JSON and graph use the uppercase enums above.
 
-All 181 TEACHES pairs are populated: 14 FOUNDATIONAL, 80 INTERMEDIATE and 87 ADVANCED. The same MS-DE06 skill is FOUNDATIONAL in MOD-DE-J-MODEL-01 and INTERMEDIATE in MOD-DE-J-QUAL-01; the values coexist independently. The current sample definitions remain NEEDS_EXPERT_REVIEW. No arithmetic sum, averaging, normalization or implicit numeric backend ranking applies to these categories.
+Both properties belong to the exact Module–Skill pair, not globally to a Module or MicroSkill. A Module may contain PRIMARY + HIGH for one skill, SUPPORTING + MEDIUM for another and INCIDENTAL + LOW for a third. Changing teachingFocus does not determine difficulty. Difficulty is not calculated from a numeric gap, requiredScore, legacy coverage, or a selected role title. No scoring/ranking engine is implemented by this catalog change.
 
-Workbook comparison view: **Instruction Levels**, with Module/Skill IDs, names and the text level linked to its TEACHES record. The original numeric source manifest is historical provenance outside Neo4j; the current conversion manifest records exact old-to-new values per pair. Duration/price, all other node/edge data and the pinned v0.9 runtime seed are unchanged. This design/review update does not deploy or migrate the running application. Future assignment of instruction levels to new content still requires expert authoring/review.
+The current review package has **994 nodes and 5,121 relationships**, including **246 LearningModules and 664 TEACHES pairs**. It retains all 85 existing modules and 181 teaching pairs, and adds **161 locally authored focused practice packages**, each with a primary objective, a supporting exercise and incidental context. Every one of the 79 skills now has a PRIMARY option at LOW, MEDIUM and HIGH. This is a review-dataset completeness criterion, not a universal graph cardinality rule requiring every future catalog to have three providers.
 
-[Conversion and provenance](INSTRUCTION_LEVELS.md). Module duration/price remain 150–915 minutes and 150,000–1,560,000 VND; see [estimation method](MODULE_EFFORT_PRICE.md).
+| Teaching focus | Pairs |
+|---|---:|
+| PRIMARY | 246 |
+| SUPPORTING | 257 |
+| INCIDENTAL | 161 |
+
+Difficulty counts across all roles: LOW 372, MEDIUM 178, HIGH 114. For example, MOD-FOCUS-CORE01-HIGH teaches MS-CORE01 as PRIMARY/HIGH, MS-CORE02 as SUPPORTING/MEDIUM and MS-CORE03 as INCIDENTAL/LOW. MOD-READ-CORE01 remains a PRIMARY/LOW option for MS-CORE01, while MOD-FOCUS-CORE01-MEDIUM provides PRIMARY/MEDIUM.
+
+All 85 original module IDs and original duration/price estimates are retained. Exactly one leading skill is PRIMARY; remaining practice is SUPPORTING. Nine formerly co-primary packages now have clearer titles, revised content references and version 1.3, with narrowed supporting tasks rather than unchanged co-primary work. Original content files are preserved for historical pins. Existing task modes (guided, independent, complex review) inform the authoring choices, not learner scores. These decisions remain NEEDS_EXPERT_REVIEW.
+
+The 161 new packages include distinct guided/independent/complex tasks, supporting work, contextual material, evidence checks and assessment boundaries. They are **lesson/lab scaffolds pending expert authoring, sandbox assets and approval**, not complete production courses or official O*NET/ESCO mappings. The supplied contextual skill is not a newly asserted prerequisite. Prices/durations are review estimates, not vendor quotes or measured learning gains.
+
+Six node labels, seven relationship types and store ownership remain unchanged. Keep existing skill prerequisites; module completion does not establish mastery. A selected Module is counted once for duration/price even when it addresses several gaps. The original instructionLevel/coverage representations and v0.9 runtime seed remain historical; no current runtime graph, API or learner history is migrated.
+
+## Independent role-Level requirements
+
+Each TargetRole owns distinct Level nodes. Each Level has its own REQUIRES_SKILL set and requiredScore values; sets may overlap or differ and are not constrained to be nested. Module selection occurs through missing skills; no direct Level–Module edge is added.
+
+Application Developer currently has 11 required skills at Junior, 14 at Middle and 14 at Senior. MS-CORE01 thresholds are 0.60 / 0.75 / 0.90. MS-FS08, MS-FS15 and MS-FS16 occur at Middle/Senior but not Junior in this role. Those requirements and all non-teaching relationships are preserved. A Senior target does not make every recommended module HIGH; readiness and compatible evidence still govern suitability.
+
+[Current files, provenance and manual checks](TEACHING_FOCUS_DIFFICULTY.md).
 
 ## Counts
 
@@ -48,7 +67,7 @@ Workbook comparison view: **Instruction Levels**, with Module/Skill IDs, names a
 | Level | 144 |
 | Competency | 472 |
 | MicroSkill | 79 |
-| LearningModule | 85 |
+| LearningModule | 246 |
 
 | Relationship | Records |
 |---|---:|
@@ -57,7 +76,7 @@ Workbook comparison view: **Instruction Levels**, with Module/Skill IDs, names a
 | HAS_COMPETENCY | 472 |
 | HAS_SKILL | 1891 |
 | REQUIRES_SKILL | 1891 |
-| TEACHES | 181 |
+| TEACHES | 664 |
 | HAS_SKILL_PREREQUISITE | 11 |
 
 ## Occupation Interests / RIASEC
@@ -413,7 +432,7 @@ Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node b
 
 - REQUIRES_SKILL: requiredScore in [0,1], isMandatory.
 - HAS_SKILL_PREREQUISITE: requiredScore in [0,1], interpreted as foundation readiness.
-- TEACHES: instructionLevel, required text enum FOUNDATIONAL / INTERMEDIATE / ADVANCED, independent per Module–Skill pair.
+- TEACHES: teachingFocus (PRIMARY/SUPPORTING/INCIDENTAL) and difficultyLevel (LOW/MEDIUM/HIGH), both required and independent per Module–Skill pair. instructionLevel is retired.
 - Other relationships: common metadata only.
 - expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
 - TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
@@ -484,6 +503,29 @@ A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A
 
 ## Release and runtime boundary
 
-Excel, JSON, import validation, schema and diagram describe 0.10.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed still pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
+Excel, JSON, import validation, schema and diagram describe 0.11.0. The original 85-module/181-pair recovery description is historical provenance; current expansion and its local authoring basis are documented above. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed still pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
 
-Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed-v010.json supplies active graph data.
+Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed-v011.json supplies active graph data.
+
+
+## Exactly one PRIMARY per Module — confirmed 2026-10-28
+
+Every Module must have **exactly one** TEACHES relationship with teachingFocus=PRIMARY. Zero or two-or-more primary links are invalid, including replacements that leave a module without its primary skill. A MicroSkill may still be PRIMARY in many different Modules at the same or different difficulties. SUPPORTING and INCIDENTAL links remain optional; they do not count as additional primary objectives.
+
+All 246 current Modules satisfy the rule; 664 teaching pairs remain populated (246 PRIMARY, 257 SUPPORTING, 161 INCIDENTAL). Every skill retains PRIMARY LOW/MEDIUM/HIGH choices. Nine alternative packages (DE01, FS03 and FS07 at each difficulty, IDs ending -ALT) provide same-primary/same-difficulty options with different supporting skills and verification tasks. These are locally authored scaffolds pending review, not vendor courses or validated learning gains.
+
+The nine formerly co-primary MODEL/SERVICE/AUTO packages now have one main objective, smaller supporting work and content version 1.3 in new -single-primary.md files. Existing IDs, difficulty values, prerequisite/Level requirements and all original price/duration values are preserved. The revised titles/content pointers are audited in revisedExistingModules in the authoring manifest; historical original files and v0.10/v0.9 seeds remain unchanged.
+
+The isolated import validator enforces the count and tests reject both zero and multiple PRIMARY links. Neo4j uniqueness constraints alone cannot enforce this relationship aggregate; future catalog write APIs must apply it transactionally. No runtime API/database upgrade is claimed.
+
+Manual check: open Teaching Map or Module Checks in the workbook. Every module must have Primary count=1 and structural result OK. Compare MOD-DE-J-MODEL-01 with MOD-FOCUS-DE01-LOW-ALT: both teach MS-DE01 as PRIMARY/LOW, but use different supporting skills/tasks. Skill Options must retain nonzero counts for all three difficulties. On an optional isolated review graph at http://localhost:7479/browser/, run:
+
+```cypher
+MATCH (m:LearningModule)
+OPTIONAL MATCH (m)-[t:TEACHES {teachingFocus:'PRIMARY'}]->(:MicroSkill)
+WITH m, count(t) AS primaryCount
+WHERE primaryCount <> 1
+RETURN m.id, primaryCount;
+```
+
+Expected: no rows. This is a manual procedure; no live runtime database is changed.
