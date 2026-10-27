@@ -34,7 +34,10 @@ Follow [current unit criteria](README.md#current-scope-alignment). Revalidate L&
 | **F04-U01** | REQ-023-F04 AC01 | Existing target role (both `DRAFT` and `ACTIVE`) | Call `deleteTargetRole` | Successfully deletes role from repository; returns false when role not found | [TargetRoleServiceTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/application/TargetRoleServiceTest.java) | **PASS** |
 | **F04-A01** | REQ-023-F04 AC02 | Mock service; `LD_MANAGER` caller | `DELETE /api/v1/organizations/{orgId}/target-roles/{roleId}` | `204 No Content` on successful deletion; `404 Not Found` when nonexistent | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
 | **F05-A01** | REQ-023-F05 AC01 | `X-User-Role: DOMAIN_EXPERT`, `X-User-Id: expert-chen` | `GET /api/v1/organizations/{orgId}/target-roles` | Automatically injects `assignedExpertId = expert-chen` filter; hides other experts' roles | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/api/TargetRoleControllerTest.java) | **PASS** |
-| **F05-A02** | REQ-023-F05 AC04 | `X-User-Role: DOMAIN_EXPERT`, `X-User-Id: expert-alpha`, payload with `status = REJECTED` and `rejectionReason` | `PUT /api/v1/organizations/{orgId}/target-roles/{roleId}` | Transitions status to `REJECTED`, persists `rejectionReason`, returns 200 OK | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/TargetRoleControllerTest.java) | **PASS** |
+| **F05-A02** | REQ-023-F05 AC04 | `X-User-Role: DOMAIN_EXPERT`, `X-User-Id: expert-alpha`, payload with `status = REJECTED` on non-rejected role | `PUT /api/v1/organizations/{orgId}/target-roles/{roleId}` | Rejects expert assignment rejection with `400 Bad Request` ("Domain Experts can no longer reject target roles") | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/TargetRoleControllerTest.java) | **PASS** |
+| **F05-A03** | REQ-023-F05 AC05 | `X-User-Role: DOMAIN_EXPERT`, role already in `REJECTED` status | `PUT /api/v1/organizations/{orgId}/target-roles/{roleId}` with updated `skillTargets` and `status = REJECTED` | Successfully saves draft revisions and persists micro-skills without 400 Bad Request | [TargetRoleControllerTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/TargetRoleControllerTest.java) | **PASS** |
+| **F05-U01** | REQ-023-F05 Rule | Competency detached from level in authoring modal | Call `handleRemoveCompetency(compId, level)` | Automatically removes all micro-skills belonging to detached competency from that level unless covered by remaining competency | [ExpertAssignedRolesPage.tsx](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/src/features/expert/target-roles/ExpertAssignedRolesPage.tsx) | **PASS** |
+| **F05-U02** | REQ-023-F05 Rule | Published target role with customized levels, competencies, and micro-skills | Click `+ New Draft` (`handleDraftNewVersion`) | Clones predecessor's exact levels, level-competency mappings, and micro-skill targets into new draft (e.g. `v1.1 DRAFT`) | [ExpertAssignedRolesPage.tsx](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/src/features/expert/target-roles/ExpertAssignedRolesPage.tsx) | **PASS** |
 
 ---
 
@@ -42,5 +45,7 @@ Follow [current unit criteria](README.md#current-scope-alignment). Revalidate L&
 
 ```powershell
 backend\mvnw.cmd "-Dtest=TargetRoleDomainTest,TargetRoleServiceTest,TargetRoleControllerTest" test
-# Result: PASS — 29 tests, 0 failures, 0 errors, 0 skips
+# Result: PASS — 30 tests, 0 failures, 0 errors, 0 skips
+npm run build
+# Result: PASS — tsc -b && vite build (0 errors)
 ```

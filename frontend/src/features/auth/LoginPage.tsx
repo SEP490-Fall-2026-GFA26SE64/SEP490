@@ -26,9 +26,9 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     role: 'Expert',
     actorKey: 'expert',
-    email: 'chen.wei@adaptlearn.internal',
-    label: 'Chen Wei (Expert)',
-    targetRoute: '/expert/ontology',
+    email: 'expert-chen@adaptlearn.internal',
+    label: 'Dr. Sarah Chen (Expert)',
+    targetRoute: '/expert/target-roles',
   },
   {
     role: 'L&D Manager',
@@ -76,9 +76,18 @@ export function LoginPage() {
       return
     }
     const normalizedEmail = email.toLowerCase().trim()
+    const isExpertEmail =
+      normalizedEmail.includes('expert') ||
+      normalizedEmail.includes('chen') ||
+      normalizedEmail.includes('vance') ||
+      normalizedEmail.includes('rivera') ||
+      normalizedEmail.includes('nguyen') ||
+      normalizedEmail.includes('wei')
     const matched = demo.enabled
-      ? DEMO_ACCOUNTS.find(account => account.email.toLowerCase() === normalizedEmail)
+      ? (DEMO_ACCOUNTS.find(account => account.email.toLowerCase() === normalizedEmail)
+         || (isExpertEmail ? DEMO_ACCOUNTS.find(account => account.actorKey === 'expert') : undefined))
       : DEMO_ACCOUNTS.find(account => account.email.toLowerCase() === normalizedEmail || normalizedEmail.startsWith(account.actorKey) || normalizedEmail.includes(account.actorKey))
+        ?? (isExpertEmail ? DEMO_ACCOUNTS.find(account => account.actorKey === 'expert') : undefined)
         ?? (normalizedEmail.includes('alex') ? DEMO_ACCOUNTS[0] : undefined)
     if (demo.enabled && !matched) {
       toast({ title: t('common.error', 'Error'), description: t('roleFlow.demoAccountRequired'), variant: 'destructive' })
@@ -98,6 +107,15 @@ export function LoginPage() {
       const target = matched?.targetRoute ?? '/employee/overview'
       localStorage.setItem('auth_user', email)
       localStorage.setItem('active_actor', matched?.actorKey ?? 'employee')
+
+      if (matched?.actorKey === 'expert') {
+        const expertId = normalizedEmail.includes('vance') ? 'expert-vance'
+          : normalizedEmail.includes('rivera') ? 'expert-rivera'
+          : normalizedEmail.includes('nguyen') ? 'expert-nguyen'
+          : 'expert-chen'
+        localStorage.setItem('expert_active_id', expertId)
+      }
+
       toast({ title: 'Sign In Successful', description: 'Welcome back! Redirecting to workspace...', variant: 'success' })
       // Reload after an identity switch so cached personal queries cannot cross demo accounts.
       if (demo.enabled) window.location.assign(target)

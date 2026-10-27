@@ -34,6 +34,12 @@ Dedicated workspace for Domain Experts to view target roles assigned to their sp
 - **Micro-skill Authoring & Submission Readiness**:
   - Minimum 1 micro-skill target required before submission to L&D Manager.
   - Required proficiency threshold bounded within 1% to 100% (stored as `targetMastery: Float [0, 1]` on `[:REQUIRES_SKILL]` in Neo4j).
+- **Cascading Competency & Micro-skill Removal**:
+  - When an expert removes/detaches a macro-competency from a specific level (or all selected levels), any micro-skills assigned to that level that belong to the removed competency are automatically pruned and removed from that level.
+  - If a micro-skill also belongs to another remaining competency on that level, it is preserved.
+- **Successor Draft Configuration Inheritance**:
+  - When a domain expert creates a new draft version from a published target role (`+ New Draft`), the newly created draft version (e.g. `v1.1 DRAFT`) inherits 100% of the published role's configuration (`levels`, `levelCompetencies`, `competencyIds`, `skillTargets`, track, seniority, responsibilities).
+  - The expert can immediately modify, refine, or add micro-skills and competencies starting from the predecessor's baseline without losing custom levels or having to re-configure from scratch.
 - **Publication Authority**: Per Capstone functional specification, final publication authority belongs to the L&D Manager upon review of the Domain Expert's submitted competency configuration.
 
 ## Acceptance Baseline

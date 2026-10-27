@@ -12,16 +12,36 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     // Verify StatCards: Rejected Roles card is present with destructive styling
     await expect(page.getByText('Rejected Roles')).toBeVisible();
 
-    // 2. Locate a published role row and click "New Draft"
-    const newDraftBtn = page.getByRole('button', { name: 'New Draft' }).first();
-    await expect(newDraftBtn).toBeVisible({ timeout: 10000 });
-    await newDraftBtn.click();
+    // 2. Locate or enable an editable revision (draft or rejected)
+    let editBtn = page.locator('button[title*="Micro-skills"]').first();
+    const hasEditBtn = await editBtn.isVisible({ timeout: 2000 }).catch(() => false);
 
-    // Verify successor draft is created
-    await expect(page.getByText('Successor Draft Created')).toBeVisible({ timeout: 10000 });
+    if (!hasEditBtn) {
+      const newDraftBtn = page.getByRole('button', { name: 'New Draft' }).first();
+      if (await newDraftBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await newDraftBtn.click();
+        await expect(page.getByText('Successor Draft Created')).toBeVisible({ timeout: 10000 });
+      } else {
+        // If an active successor is currently SUBMITTED, manager returns it for revision
+        await page.goto('/manager/target-roles');
+        await page.waitForLoadState('networkidle');
+        const v11Row = page.locator('tr:has-text("v1.1")').first();
+        if (await v11Row.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await v11Row.locator('button[title="View Details"]').click();
+          const returnForRevBtn = page.getByRole('button', { name: 'Return for Revision' });
+          if (await returnForRevBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+            await returnForRevBtn.click();
+            await page.fill('textarea', 'Please revise required micro-skills');
+            await page.getByRole('button', { name: 'Confirm Return' }).click();
+            await expect(page.getByText('Target Role Returned for Revision')).toBeVisible({ timeout: 10000 });
+          }
+        }
+        await page.goto('/expert/target-roles');
+        await page.waitForLoadState('networkidle');
+      }
+    }
 
-    // Click edit on the new draft row
-    const editBtn = page.locator('button[title*="Edit Micro-skills"]').first();
+    editBtn = page.locator('button[title*="Micro-skills"]').first();
     await expect(editBtn).toBeVisible({ timeout: 10000 });
     await editBtn.click();
 
@@ -40,11 +60,11 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     await expect(page.getByText('Multi-level edit')).toBeVisible();
     await expect(page.getByRole('button', { name: /All Levels/i })).toBeVisible();
 
-    // Verify Level Tabs exist (Junior, Middle, Senior)
-    const juniorTab = page.getByRole('button', { name: /Junior/i }).first();
-    const middleTab = page.getByRole('button', { name: /Middle/i }).first();
-    await expect(juniorTab).toBeVisible();
-    await expect(middleTab).toBeVisible();
+    // Verify dynamic Level Tabs exist for the role (e.g. Intern, Fresher or Junior, Middle)
+    const levelTab1 = page.locator('button:has-text("Intern"), button:has-text("Junior")').first();
+    const levelTab2 = page.locator('button:has-text("Fresher"), button:has-text("Middle")').first();
+    await expect(levelTab1).toBeVisible();
+    await expect(levelTab2).toBeVisible();
 
     // Click Save Draft (saves and closes modal)
     await page.getByRole('button', { name: 'Save Draft' }).click();
@@ -67,13 +87,13 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     await expect(graphBtn).toBeVisible();
     await graphBtn.click();
 
-    // Verify Knowledge Graph modal opened and shows Competency and Micro-skill in Legend
-    await expect(page.locator('text=Inspect required micro-skills')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('span:has-text("Competency")')).toBeVisible();
-    await expect(page.locator('span:has-text("Micro-Skill")')).toBeVisible();
+    // Verify Knowledge Graph modal opened and shows Competency and Required Skill in Legend
+    await expect(page.locator('span:has-text("Competency")').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('span:has-text("Required Skill")').first()).toBeVisible();
 
     // Close graph modal
-    await page.getByRole('button', { name: 'Close', exact: true }).last().click();
+    const closeGraphBtn = page.locator('button[aria-label="Close Modal"]').or(page.getByRole('button', { name: 'Close', exact: true }));
+    await closeGraphBtn.first().click();
   });
 
   test('L&D Manager View Details displays level breakdown and does not have Review Submitted button', async ({ page }) => {

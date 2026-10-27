@@ -39,9 +39,10 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
-                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                RETURN s, req, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
-                ORDER BY s.code ASC
+                OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
+                WITH s, req, collect(coalesce(c.id, c.code)) AS compCodes
+                RETURN s, req, CASE WHEN size(compCodes) > 0 THEN head(compCodes) ELSE 'KNOWLEDGE' END AS macroCode
+                ORDER BY coalesce(s.code, s.id) ASC
                 """;
 
         String prereqCypher = """
@@ -52,7 +53,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 MATCH (r)-[:REQUIRES_SKILL]->(s2:MicroSkill)
                 MATCH (s1)-[rel:PREREQUISITE_OF]->(s2)
                 RETURN s1, s2, rel
-                ORDER BY s1.code ASC, s2.code ASC
+                ORDER BY coalesce(s1.code, s1.id) ASC, coalesce(s2.code, s2.id) ASC
                 """;
 
         try (var session = driver.session()) {
@@ -84,23 +85,30 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 String macroCode = record.get("macroCode").asString();
 
                 String sId = skillNode.containsKey("id") && !skillNode.get("id").isNull() ? skillNode.get("id").asString() : "";
-                String sCode = skillNode.get("code").asString();
-                String sName = skillNode.get("name").asString();
+                String sCode = skillNode.containsKey("code") && !skillNode.get("code").isNull() ? skillNode.get("code").asString() : sId;
+                String sName = skillNode.containsKey("name") && !skillNode.get("name").isNull() ? skillNode.get("name").asString() : sCode;
                 double targetMastery = reqRel.containsKey("targetMastery") && !reqRel.get("targetMastery").isNull()
                         ? reqRel.get("targetMastery").asDouble()
                         : 0.70;
                 String reqStatus = reqRel.containsKey("status") && !reqRel.get("status").isNull()
                         ? reqRel.get("status").asString()
                         : "ACTIVE";
+                String skillLevel = reqRel.containsKey("level") && !reqRel.get("level").isNull()
+                        ? reqRel.get("level").asString()
+                        : null;
 
-                skillIds.add(sId);
+                String dedupeKey = (sId.isBlank() ? sCode : sId) + ":" + (skillLevel != null ? skillLevel : "");
+                if (!skillIds.add(dedupeKey)) {
+                    continue;
+                }
                 requiredSkills.add(new RoleGraphSkill(
                         sId,
                         sCode,
                         sName,
                         macroCode,
                         targetMastery,
-                        SkillStatus.fromString(reqStatus)));
+                        SkillStatus.fromString(reqStatus),
+                        skillLevel));
             }
 
             var prereqResult = session.run(prereqCypher, Map.of("organizationId", organizationId, "roleId", roleId));

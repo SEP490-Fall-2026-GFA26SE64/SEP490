@@ -70,13 +70,13 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
     },
     {
       id: 'USR-102',
-      name: 'Chen Wei',
-      email: 'chen.wei@adaptlearn.internal',
+      name: 'Dr. Sarah Chen',
+      email: 'expert-chen@adaptlearn.internal',
       role: 'Expert',
       department: 'Cognitive Architecture & AI',
       status: 'active',
       lastActive: '10 mins ago',
-      avatar: 'CW',
+      avatar: 'SC',
     },
     {
       id: 'USR-103',

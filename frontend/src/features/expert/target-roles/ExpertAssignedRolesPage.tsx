@@ -84,12 +84,12 @@ export function ExpertAssignedRolesPage() {
       ])
 
       if (skillsList && skillsList.length > 0) {
-        const mapped: MicroSkillModel[] = skillsList.map((s) => ({
+        const mapped: MicroSkillModel[] = skillsList.map((s): MicroSkillModel => ({
           id: s.id,
           code: s.code,
           name: s.name,
           description: s.description || '',
-          status: 'ACTIVE',
+          status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
           macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
           createdAt: s.createdAt,
           updatedAt: s.updatedAt,
@@ -124,6 +124,7 @@ export function ExpertAssignedRolesPage() {
 
   const fetchAssignedRoles = React.useCallback(async () => {
     try {
+      const currentCompany = getActiveCompany()
       const res = await fetch(
         `/api/v1/organizations/${orgId}/target-roles?assignedExpertId=${encodeURIComponent(selectedExpertId)}`,
         {
@@ -135,60 +136,83 @@ export function ExpertAssignedRolesPage() {
       )
       if (res.ok) {
         const data = await res.json()
-        const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => ({
-          id: String(r.id || ''),
-          stableId: String(r.code || ''),
-          code: String(r.code || ''),
-          title: String(r.name || ''),
-          domainCode: String(r.domainCode || ''),
-          familyCode: String(r.familyCode || ''),
-          track: r.track as TargetRoleModel['track'],
-          seniority: String(r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3')),
-          assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
-          assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
-          department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || String(r.domainCode || 'Information Technology'),
-          description: String(r.description || ''),
-          responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
-          version: String(r.version || '1.0'),
-          status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
-          rejectionReason: String(r.rejectionReason || ''),
-          levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || ((activeCompany?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.levelCompetencies || {}),
-          competencyIds: Array.isArray(r.competencyIds) && (r.competencyIds as string[]).length > 0
+        const mapped: TargetRoleModel[] = (data as Record<string, unknown>[]).map((r) => {
+          const storeRole = (currentCompany?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || (tr.code === String(r.code || '') && tr.version === String(r.version || '1.0')))
+          const effectiveLevelComps = (r.levelCompetencies as Record<string, string[]>) || storeRole?.levelCompetencies || {}
+          const rawCompetencyIds = Array.isArray(r.competencyIds) && (r.competencyIds as string[]).length > 0
             ? (r.competencyIds as string[])
-            : ((activeCompany?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.competencyIds || []),
-          skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
-          levels: Array.isArray(r.levels) && (r.levels as string[]).length > 0
-            ? (r.levels as string[])
-            : ((activeCompany?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || tr.code === String(r.code || ''))?.levels || ['Junior', 'Middle', 'Senior']),
-          activeEnrollments: 0,
-          createdAt: r.createdAt ? String(r.createdAt) : (r.updatedAt ? String(r.updatedAt) : '2026-01-01T00:00:00Z'),
-          updatedAt: r.updatedAt ? String(r.updatedAt) : (r.createdAt ? String(r.createdAt) : '2026-01-01T00:00:00Z'),
-        }))
+            : (storeRole?.competencyIds && storeRole.competencyIds.length > 0
+                ? storeRole.competencyIds
+                : Array.from(new Set(Object.values(effectiveLevelComps).flat())))
+          return {
+            id: String(r.id || ''),
+            stableId: String(r.code || ''),
+            code: String(r.code || ''),
+            title: String(r.name || ''),
+            domainCode: String(r.domainCode || ''),
+            familyCode: String(r.familyCode || ''),
+            track: r.track as TargetRoleModel['track'],
+            seniority: String(r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3')),
+            assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
+            assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
+            department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || String(r.domainCode || 'Information Technology'),
+            description: String(r.description || ''),
+            responsibilities: Array.isArray(r.responsibilities) ? (r.responsibilities as string[]) : [],
+            version: String(r.version || '1.0'),
+            status: (String(r.status || '').toLowerCase() === 'active' ? 'published' : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+            rejectionReason: String(r.rejectionReason || ''),
+            levelCompetencies: effectiveLevelComps,
+            competencyIds: rawCompetencyIds,
+            skillTargets: Array.isArray(r.skillTargets) ? (r.skillTargets as TargetRoleModel['skillTargets']) : [],
+            levels: Array.isArray(r.levels) && (r.levels as string[]).length > 0
+              ? (r.levels as string[])
+              : (storeRole?.levels || ['Junior', 'Middle', 'Senior']),
+            activeEnrollments: 0,
+            createdAt: r.createdAt ? String(r.createdAt) : (r.updatedAt ? String(r.updatedAt) : '2026-01-01T00:00:00Z'),
+            updatedAt: r.updatedAt ? String(r.updatedAt) : (r.createdAt ? String(r.createdAt) : '2026-01-01T00:00:00Z'),
+          }
+        })
         setRoles((prevRoles) => {
           return mapped.map((m) => {
-            const prev = prevRoles.find((p) => p.id === m.id || p.code === m.code)
-            const storeRole = (activeCompany?.targetRoles || []).find((tr) => tr.id === m.id || tr.code === m.code)
-            const prevLevelComps = (prev?.levelCompetencies && Object.keys(prev.levelCompetencies).length > 0)
-              ? prev.levelCompetencies
-              : (m.levelCompetencies && Object.keys(m.levelCompetencies).length > 0)
+            const prev = prevRoles.find((p) => p.id === m.id || (p.code === m.code && p.version === m.version))
+            const storeRole = (currentCompany?.targetRoles || []).find((tr) => tr.id === m.id || (tr.code === m.code && tr.version === m.version))
+            const prevLevelComps = (m.levelCompetencies && Object.keys(m.levelCompetencies).length > 0)
               ? m.levelCompetencies
+              : (prev?.levelCompetencies && Object.keys(prev.levelCompetencies).length > 0)
+              ? prev.levelCompetencies
               : storeRole?.levelCompetencies || {}
-            const prevCompetencyIds = (prev?.competencyIds && prev.competencyIds.length > 0)
+            const prevCompetencyIds = (m.competencyIds && m.competencyIds.length > 0)
+              ? m.competencyIds
+              : (prev?.competencyIds && prev.competencyIds.length > 0)
               ? prev.competencyIds
-              : (m.competencyIds && m.competencyIds.length > 0 ? m.competencyIds : (storeRole?.competencyIds || Array.from(new Set(Object.values(prevLevelComps).flat()))))
+              : (storeRole?.competencyIds && storeRole.competencyIds.length > 0
+                  ? storeRole.competencyIds
+                  : Array.from(new Set(Object.values(prevLevelComps).flat())))
+            const effectiveSkills = (m.skillTargets && m.skillTargets.length > 0)
+              ? m.skillTargets
+              : (prev?.skillTargets && prev.skillTargets.length > 0)
+              ? prev.skillTargets
+              : storeRole?.skillTargets || []
+            const effectiveLevels = (m.levels && m.levels.length > 0)
+              ? m.levels
+              : (prev?.levels && prev.levels.length > 0)
+              ? prev.levels
+              : storeRole?.levels || ['Junior', 'Middle', 'Senior']
             return {
               ...m,
+              levels: effectiveLevels,
+              skillTargets: effectiveSkills,
               levelCompetencies: prevLevelComps,
               competencyIds: prevCompetencyIds,
             }
           })
         })
       } else {
-        const fallbackRoles = activeCompany?.targetRoles || []
+        const fallbackRoles = currentCompany?.targetRoles || []
         setRoles(fallbackRoles)
       }
     } catch {
-      const fallbackRoles = activeCompany?.targetRoles || []
+      const fallbackRoles = getActiveCompany()?.targetRoles || []
       setRoles(fallbackRoles)
     } finally {
       setIsLoading(false)
@@ -328,10 +352,31 @@ export function ExpertAssignedRolesPage() {
 
   // Successor draft handler for Published roles (Domain Expert creates subsequent drafts)
   const handleDraftNewVersion = async (role: TargetRoleModel) => {
+    // Only 1 active draft revision allowed per target role lineage at a time
+    const hasActiveSuccessor = assignedRoles.some(
+      (r) =>
+        (r.stableId === role.stableId || r.code === role.code) &&
+        r.status !== 'published' &&
+        r.id !== role.id
+    )
+    if (hasActiveSuccessor) {
+      toast({
+        title: 'Active Draft Exists',
+        description: `An active draft revision already exists for ${role.title}. You can only create one draft at a time. Once published, you can create the next draft.`,
+        variant: 'warning',
+      })
+      return
+    }
+
     const versionParts = (role.version || '1.0').split('.')
     const major = parseInt(versionParts[0] || '1', 10)
     const minor = parseInt(versionParts[1] || '0', 10)
     const nextVersion = `${major}.${minor + 1}`
+
+    const inheritedLevels = role.levels && role.levels.length > 0 ? [...role.levels] : ['Junior', 'Middle', 'Senior']
+    const inheritedLevelCompetencies = role.levelCompetencies ? JSON.parse(JSON.stringify(role.levelCompetencies)) : {}
+    const inheritedCompetencyIds = role.competencyIds ? [...role.competencyIds] : []
+    const inheritedSkillTargets = role.skillTargets ? JSON.parse(JSON.stringify(role.skillTargets)) : []
 
     const successorPayload = {
       code: role.code,
@@ -340,12 +385,13 @@ export function ExpertAssignedRolesPage() {
       familyCode: role.familyCode,
       track: role.track,
       seniority: role.seniority,
-      responsibilities: role.responsibilities,
+      responsibilities: role.responsibilities || [],
       assignedExpertId: selectedExpertId,
       description: role.description,
       version: nextVersion,
       status: 'DRAFT',
-      skillTargets: role.skillTargets || [],
+      levels: inheritedLevels,
+      skillTargets: inheritedSkillTargets,
     }
 
     const lineageKey = (role.stableId && role.stableId.trim()) || role.code.trim() || role.id
@@ -362,10 +408,38 @@ export function ExpertAssignedRolesPage() {
         body: JSON.stringify(successorPayload),
       })
       if (res.ok) {
+        const createdRoleData = await res.json().catch(() => null)
+        const newRoleId = createdRoleData?.id ? String(createdRoleData.id) : `${role.code}-v${nextVersion}`
+
+        const newDraftRole: TargetRoleModel = {
+          ...role,
+          id: newRoleId,
+          version: nextVersion,
+          status: 'draft',
+          levels: inheritedLevels,
+          levelCompetencies: inheritedLevelCompetencies,
+          competencyIds: inheritedCompetencyIds,
+          skillTargets: inheritedSkillTargets,
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        }
+
+        updateActiveCompany((c) => {
+          const existing = c.targetRoles || []
+          const filtered = existing.filter((r) => r.id !== newRoleId && !(r.code === role.code && r.version === nextVersion))
+          return {
+            ...c,
+            targetRoles: [newDraftRole, ...filtered],
+          }
+        })
+
+        // Instantly update local state with inherited competencies so count is never 0
+        setRoles((prev) => [newDraftRole, ...prev.filter((r) => r.id !== newRoleId && !(r.code === role.code && r.version === nextVersion))])
+
         await fetchAssignedRoles()
         toast({
           title: 'Successor Draft Created',
-          description: `Draft v${nextVersion} created below ${role.title}. Click the edit icon to configure competencies and micro-skills.`,
+          description: `Draft v${nextVersion} created with all configurations from v${role.version}. Click the edit icon to configure competencies and micro-skills.`,
           variant: 'success',
         })
         return
@@ -379,13 +453,17 @@ export function ExpertAssignedRolesPage() {
       id: `${role.code}-v${nextVersion}-${Date.now()}`,
       version: nextVersion,
       status: 'draft',
+      levels: inheritedLevels,
+      levelCompetencies: inheritedLevelCompetencies,
+      competencyIds: inheritedCompetencyIds,
+      skillTargets: inheritedSkillTargets,
       updatedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     }
     saveAndSetRoles((prev) => [createdFallback, ...prev])
     toast({
       title: 'Successor Draft Created',
-      description: `Draft v${nextVersion} created below ${role.title}. Click the edit icon to configure competencies and micro-skills.`,
+      description: `Draft v${nextVersion} created with all configurations from v${role.version}. Click the edit icon to configure competencies and micro-skills.`,
       variant: 'success',
     })
   }
@@ -555,7 +633,18 @@ export function ExpertAssignedRolesPage() {
     setNewCompetencyId('')
   }
 
-  // Remove competency from targeted level or all selected levels
+  // Helper to determine if a skill belongs to a competency
+  const doesSkillBelongToCompetency = React.useCallback(
+    (skill: { id: string; code?: string; macroCompetencyCode?: string }, comp: CompetencyDto) => {
+      if (comp.skillIds && comp.skillIds.includes(skill.id)) return true
+      if (comp.memberSkills && comp.memberSkills.some((ms) => ms.id === skill.id || (skill.code && ms.code === skill.code))) return true
+      if (skill.macroCompetencyCode && (skill.macroCompetencyCode === comp.code || skill.macroCompetencyCode === comp.id)) return true
+      return false
+    },
+    []
+  )
+
+  // Remove competency from targeted level or all selected levels, cascading to its micro-skills
   const handleRemoveCompetency = (compId: string, targetLevel?: string) => {
     if (!authoringRole) return
     const updatedLevelCompetencies = { ...(authoringRole.levelCompetencies || {}) }
@@ -568,10 +657,41 @@ export function ExpertAssignedRolesPage() {
 
     const allUnionComps = Array.from(new Set(Object.values(updatedLevelCompetencies).flat()))
 
+    // Find the competency being removed
+    const targetCompObj = realCompetencies.find((c) => c.id === compId || c.code === compId)
+
+    // Cascade: remove micro-skills belonging to the removed competency from touched levels
+    // unless covered by another remaining competency on that level
+    const updatedSkillTargets = authoringRole.skillTargets.filter((st) => {
+      const stLevel = st.level || currentRoleLevels[0]
+      if (!levelsToTouch.includes(stLevel)) {
+        return true
+      }
+
+      const skillObj = companyMicroSkills.find((s) => s.id === st.skillId || (st.skillCode && s.code === st.skillCode))
+      const belongsToRemovedComp = targetCompObj && skillObj
+        ? doesSkillBelongToCompetency(skillObj, targetCompObj)
+        : false
+
+      if (!belongsToRemovedComp) {
+        return true
+      }
+
+      // Check if any REMAINING competency on stLevel also covers this skill
+      const remainingCompIdsOnLevel = updatedLevelCompetencies[stLevel] || []
+      const remainingCompObjs = realCompetencies.filter((c) =>
+        remainingCompIdsOnLevel.includes(c.id) || (c.code && remainingCompIdsOnLevel.includes(c.code))
+      )
+
+      const isCoveredByOtherComp = skillObj && remainingCompObjs.some((rc) => doesSkillBelongToCompetency(skillObj, rc))
+      return isCoveredByOtherComp
+    })
+
     const updatedRole: TargetRoleModel = {
       ...authoringRole,
       levelCompetencies: updatedLevelCompetencies,
       competencyIds: allUnionComps,
+      skillTargets: updatedSkillTargets,
       updatedAt: new Date().toISOString(),
     }
 
@@ -592,12 +712,34 @@ export function ExpertAssignedRolesPage() {
         : []
     })
 
+    // Auto-heal: Ensure all levels that have skillTargets also have the corresponding competencies in initialLevelComps
+    if (cloned.skillTargets && cloned.skillTargets.length > 0) {
+      cloned.skillTargets.forEach((st) => {
+        const lvl = st.level || initLevel
+        if (!initialLevelComps[lvl]) {
+          initialLevelComps[lvl] = []
+        }
+        const skillObj = companyMicroSkills.find((s) => s.id === st.skillId || (st.skillCode && s.code === st.skillCode))
+        if (skillObj) {
+          const comp = realCompetencies.find((c) =>
+            (c.skillIds && c.skillIds.includes(skillObj.id)) ||
+            (c.memberSkills && c.memberSkills.some((ms) => ms.id === skillObj.id || ms.code === skillObj.code)) ||
+            (skillObj.macroCompetencyCode && (skillObj.macroCompetencyCode === c.code || skillObj.macroCompetencyCode === c.id))
+          )
+          if (comp && !initialLevelComps[lvl].includes(comp.id)) {
+            initialLevelComps[lvl].push(comp.id)
+          }
+        }
+      })
+    }
+
     // If completely unassigned, seed only the first level with legacy competencyIds
     const totalAssignedComps = Object.values(initialLevelComps).reduce((sum, arr) => sum + arr.length, 0)
     if (totalAssignedComps === 0 && cloned.competencyIds && cloned.competencyIds.length > 0) {
       initialLevelComps[initLevel] = [...cloned.competencyIds]
     }
     cloned.levelCompetencies = initialLevelComps
+    cloned.competencyIds = Array.from(new Set(Object.values(initialLevelComps).flat()))
 
     setAuthoringRole(cloned)
     setSelectedAuthoringLevels([initLevel])
@@ -619,7 +761,9 @@ export function ExpertAssignedRolesPage() {
     const newTargets: SkillTargetConfig[] = []
     selectedAuthoringLevels.forEach((lvl) => {
       const alreadyExists = authoringRole.skillTargets.some(
-        (st) => st.skillId === newSkillId && (st.level || currentRoleLevels[0]) === lvl
+        (st) =>
+          (st.skillId === newSkillId || (st.skillCode && st.skillCode === skillObj.code)) &&
+          (st.level || currentRoleLevels[0]) === lvl
       )
       if (!alreadyExists) {
         newTargets.push({
@@ -662,7 +806,9 @@ export function ExpertAssignedRolesPage() {
     const updatedRole: TargetRoleModel = {
       ...authoringRole,
       skillTargets: authoringRole.skillTargets.filter(
-        (st) => !(st.skillId === skillId && levelsToTouch.includes(st.level || currentRoleLevels[0]))
+        (st) =>
+          !((st.skillId === skillId || (st.skillCode && st.skillCode === skillId)) &&
+            levelsToTouch.includes(st.level || currentRoleLevels[0]))
       ),
       updatedAt: new Date().toISOString(),
     }
@@ -684,7 +830,7 @@ export function ExpertAssignedRolesPage() {
 
     try {
       saveAndSetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
-      await fetch(`/api/v1/organizations/${orgId}/target-roles/${authoringRole.id}`, {
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${authoringRole.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -706,8 +852,14 @@ export function ExpertAssignedRolesPage() {
           levels: updatedRole.levels,
           levelCompetencies: updatedRole.levelCompetencies,
           competencyIds: updatedRole.competencyIds,
+          rejectionReason: updatedRole.rejectionReason,
         }),
       })
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to save draft configuration')
+      }
 
       await fetchAssignedRoles()
       toast({
@@ -810,6 +962,7 @@ export function ExpertAssignedRolesPage() {
                   const newId = e.target.value
                   setSelectedExpertId(newId)
                   localStorage.setItem('expert_active_id', newId)
+                  window.dispatchEvent(new CustomEvent('user_profile_updated'))
                 }}
                 className="text-xs font-semibold bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
               >
@@ -1011,6 +1164,14 @@ export function ExpertAssignedRolesPage() {
                         )
                         const isSuccessor = !isPublished && Boolean(predecessorPublished)
 
+                        // Check if this published role lineage already has an active revision draft/submission
+                        const hasActiveSuccessor = assignedRoles.some(
+                          (r) =>
+                            (r.stableId === role.stableId || r.code === role.code) &&
+                            r.status !== 'published' &&
+                            r.id !== role.id
+                        )
+
                         return (
                           <tr
                             key={role.id}
@@ -1168,7 +1329,7 @@ export function ExpertAssignedRolesPage() {
                                 </Button>
 
                                 {/* Create Successor Draft (Domain Expert creates later drafts) */}
-                                {isPublished && (
+                                {isPublished && isNewestPublished && !hasActiveSuccessor && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -2204,6 +2365,9 @@ export function ExpertAssignedRolesPage() {
         roleId={graphRole?.id || null}
         organizationId={orgId}
         roleTitle={graphRole?.title}
+        role={graphRole}
+        skillTargets={graphRole?.skillTargets}
+        levels={graphRole?.levels}
       />
     </WorkspaceLayout>
   )

@@ -401,6 +401,43 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("REQ-023-F05: Domain Expert can update micro-skills and save draft for an already REJECTED target role")
+    void updateTargetRoleWhenAlreadyRejectedAllowsExpertSave() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole existingRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.REJECTED,
+                Instant.now(),
+                Instant.now());
+
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(existingRole));
+        when(manageTargetRoleUseCase.updateTargetRole(any()))
+                .thenReturn(Optional.of(existingRole));
+
+        com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
+                        "AI Spec", "AI", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "REJECTED", "1.0", List.of(java.util.Map.of("skillCode", "SKILL_01", "threshold", 80)), "Proposal Rejected: fresher missing skill");
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .header("X-User-Id", "expert-alpha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("REQ-023-F01: POST returns 201 with seniority and responsibilities included")
     void createTargetRoleWithSeniorityAndResponsibilitiesReturns201() throws Exception {
         UUID roleId = UUID.randomUUID();

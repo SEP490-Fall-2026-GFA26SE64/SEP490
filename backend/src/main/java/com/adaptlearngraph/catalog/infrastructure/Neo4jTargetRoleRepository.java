@@ -155,7 +155,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                         MATCH (old:TargetRole)
                         WHERE (old.organizationId = $organizationId OR old.organizationId IS NULL)
                           AND old.id <> $id
-                          AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode))
+                          AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
                         SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
                         """;
                 session.run(supersedeCypher, params).consume();
@@ -211,28 +211,24 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             }
         }
 
-        // 1. Delete removed REQUIRES_SKILL edges
+        // 1. Delete existing REQUIRES_SKILL edges for this role to prevent stale or duplicate edges
         String deleteOldRelCypher = """
-                MATCH (r:TargetRole {id: $roleId})
-                OPTIONAL MATCH (r)-[oldRel:REQUIRES_SKILL]->(s:MicroSkill)
-                WHERE NOT (s.code IN $activeCodes)
+                MATCH (r:TargetRole {id: $roleId})-[oldRel:REQUIRES_SKILL]->()
                 DELETE oldRel
                 """;
-        session.run(deleteOldRelCypher, Map.of("roleId", roleId, "activeCodes", activeCodes)).consume();
+        session.run(deleteOldRelCypher, Map.of("roleId", roleId)).consume();
 
-        // 2. Merge current REQUIRES_SKILL edges
+        // 2. Merge current REQUIRES_SKILL edges distinguishing per-level assignments
         if (!processedSkills.isEmpty()) {
             String mergeRelCypher = """
                     UNWIND $skills AS item
                     MATCH (r:TargetRole {id: $roleId})
-                    MERGE (s:MicroSkill {code: item.skillCode})
-                    ON CREATE SET s.id = item.skillId, s.name = item.skillName, s.status = 'ACTIVE',
-                        s.createdAt = datetime($updatedAt), s.updatedAt = datetime($updatedAt)
-                    MERGE (r)-[req:REQUIRES_SKILL]->(s)
+                    MATCH (s:MicroSkill)
+                    WHERE s.id = item.skillId OR s.code = item.skillCode OR s.id = item.skillCode
+                    MERGE (r)-[req:REQUIRES_SKILL {level: item.level}]->(s)
                     ON CREATE SET req.createdAt = datetime($updatedAt)
                     SET req.targetMastery = toFloat(item.threshold) / 100.0,
                         req.status = 'ACTIVE',
-                        req.level = item.level,
                         req.updatedAt = datetime($updatedAt)
                     """;
             session.run(mergeRelCypher, Map.of(
@@ -446,19 +442,21 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 ? node.get("rejectionReason").asString()
                 : null;
 
-        String skillTargets;
-        if (graphSkills != null && !graphSkills.isEmpty()) {
-            try {
-                skillTargets = objectMapper.writeValueAsString(graphSkills);
-            } catch (Exception e) {
-                skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
-                        ? node.get("skillTargets").asString()
-                        : "[]";
+        String skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
+                ? node.get("skillTargets").asString().trim()
+                : "";
+
+        // Only fall back to graphSkills if node.skillTargets property is empty or missing
+        if (skillTargets.isBlank() || skillTargets.equals("[]")) {
+            if (graphSkills != null && !graphSkills.isEmpty()) {
+                try {
+                    skillTargets = objectMapper.writeValueAsString(graphSkills);
+                } catch (Exception ignored) {
+                    skillTargets = "[]";
+                }
+            } else {
+                skillTargets = "[]";
             }
-        } else {
-            skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
-                    ? node.get("skillTargets").asString()
-                    : "[]";
         }
 
         List<String> levels = node.containsKey("levels") && !node.get("levels").isNull()

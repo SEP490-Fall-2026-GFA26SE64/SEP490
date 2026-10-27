@@ -206,12 +206,13 @@ public class OrganizationTargetRoleController {
 
         TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
 
+        Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
+        TargetRole existingRole = existingOpt.orElse(null);
+
         if (isExpert && !isManager) {
-            Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
-            if (existingOpt.isEmpty()) {
+            if (existingRole == null) {
                 return ResponseEntity.notFound().build();
             }
-            TargetRole existingRole = existingOpt.get();
             if (userId != null && !userId.isBlank() && !userId.trim().equalsIgnoreCase(existingRole.getAssignedExpertId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this target role"));
@@ -233,7 +234,7 @@ public class OrganizationTargetRoleController {
                 ? RoleStatus.fromString(request.status())
                 : null;
 
-        if (isExpert && !isManager && status == RoleStatus.REJECTED) {
+        if (isExpert && !isManager && existingRole != null && existingRole.getStatus() != RoleStatus.REJECTED && status == RoleStatus.REJECTED) {
             return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
         }
 

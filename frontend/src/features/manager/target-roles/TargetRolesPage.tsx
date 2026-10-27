@@ -315,9 +315,24 @@ export function TargetRolesPage() {
     setCurrentPage(1)
   }, [searchQuery, statusFilter, sortBy])
 
+  // Base list of roles visible to L&D Manager: hide unsubmitted expert successor drafts until submitted
+  const managerVisibleRoles = React.useMemo(() => {
+    return roles.filter((r) => {
+      const isUnsubmittedSuccessorDraft =
+        r.status === 'draft' &&
+        roles.some(
+          (p) =>
+            (p.code === r.code || (p.stableId && p.stableId === r.stableId)) &&
+            p.status === 'published' &&
+            p.id !== r.id
+        )
+      return !isUnsubmittedSuccessorDraft
+    })
+  }, [roles])
+
   // Filtered and sorted roles: Drafts always immediately below their previous published version
   const filteredRoles = React.useMemo(() => {
-    const sorted = sortTargetRolesWithDraftsBelowPublished(roles, sortBy)
+    const sorted = sortTargetRolesWithDraftsBelowPublished(managerVisibleRoles, sortBy)
     return sorted.filter((r) => {
       const effStatus = getManagerEffectiveStatus(r)
       const matchesStatus =
@@ -332,13 +347,13 @@ export function TargetRolesPage() {
         (r.assignedExpertName && r.assignedExpertName.toLowerCase().includes(searchQuery.toLowerCase()))
       return matchesStatus && matchesSearch
     })
-  }, [roles, statusFilter, searchQuery, sortBy])
+  }, [managerVisibleRoles, statusFilter, searchQuery, sortBy])
 
   // Visible roles considering collapsed/expanded lineages
   const visibleRoles = React.useMemo(() => {
     return filteredRoles.filter((role) => {
       const isPublished = role.status === 'published'
-      const publishedInLineage = roles
+      const publishedInLineage = managerVisibleRoles
         .filter((r) => (r.stableId === role.stableId || r.code === role.code) && r.status === 'published')
         .sort((a, b) => compareRoleVersions(b.version, a.version))
       const newestPublished = publishedInLineage[0]
@@ -347,7 +362,7 @@ export function TargetRolesPage() {
       const isLineageExpanded = Boolean(expandedLineages[lineageKey])
       return !(isOlderPublished && !isLineageExpanded)
     })
-  }, [filteredRoles, roles, expandedLineages])
+  }, [filteredRoles, managerVisibleRoles, expandedLineages])
 
   const totalPages = Math.max(1, Math.ceil(visibleRoles.length / pageSize))
   const paginatedRoles = React.useMemo(() => {
@@ -355,14 +370,14 @@ export function TargetRolesPage() {
     return visibleRoles.slice(start, start + pageSize)
   }, [visibleRoles, currentPage, pageSize])
 
-  // Aggregate stats
-  const totalRoles = roles.length
-  const publishedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'published').length
-  const draftRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'draft').length
-  const sentRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'sent').length
-  const submittedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'submitted').length
-  const feedbackRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'feedback').length
-  const rejectedRoles = roles.filter((r) => getManagerEffectiveStatus(r) === 'rejected').length
+  // Aggregate stats (based on managerVisibleRoles so unsubmitted expert drafts don't skew counts)
+  const totalRoles = managerVisibleRoles.length
+  const publishedRoles = managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'published').length
+  const draftRoles = managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'draft').length
+  const sentRoles = managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'sent').length
+  const submittedRoles = managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'submitted').length
+  const feedbackRoles = managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'feedback').length
+  const rejectedRoles = managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'rejected').length
 
 
   // Handlers
@@ -578,7 +593,7 @@ export function TargetRolesPage() {
 
     const newStatus = targetStatus === 'sent'
       ? 'SENT'
-      : (selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'submitted' ? 'SUBMITTED' : 'DRAFT')
+      : (selectedRole.status === 'published' ? 'ACTIVE' : selectedRole.status === 'sent' ? 'SENT' : selectedRole.status === 'submitted' ? 'SUBMITTED' : selectedRole.status === 'rejected' ? 'REJECTED' : 'DRAFT')
 
     try {
       const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`, {
@@ -670,6 +685,7 @@ export function TargetRolesPage() {
           version: role.version,
           skillTargets: role.skillTargets,
           competencyIds: role.competencyIds,
+          levels: role.levels,
         }),
       })
       if (res.ok) {
@@ -881,7 +897,7 @@ export function TargetRolesPage() {
         {/* Actions Bar */}
         <PageHeader
           title="Target Roles Catalog"
-          description="Define and manage organizational target roles, benchmark micro-skills, and competency profiles."
+          description="Define target job roles, customize required skills, and establish benchmark proficiency targets for your workforce."
           actions={
             <div className="flex items-center gap-2">
               <Button
@@ -2842,6 +2858,8 @@ export function TargetRolesPage() {
         organizationId={activeComp?.id || 'default-org'}
         roleTitle={graphRole?.title}
         levels={graphRole?.levels}
+        role={graphRole}
+        skillTargets={graphRole?.skillTargets}
       />
     </WorkspaceLayout>
   )

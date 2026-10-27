@@ -18,6 +18,7 @@ export interface TargetRoleGraphSkillDto {
   macroCompetencyCode?: string
   targetMastery: number
   status: string
+  level?: string
 }
 
 export interface TargetRoleGraphDto {

@@ -15,6 +15,29 @@ export interface UserProfileData {
   details: { label: string; value: string }[]
 }
 
+export const EXPERT_DIRECTORY: Record<string, { name: string; email: string; roleTitle: string }> = {
+  'expert-chen': {
+    name: 'Dr. Sarah Chen',
+    email: 'expert-chen@adaptlearn.internal',
+    roleTitle: 'Senior AI & Knowledge Architect',
+  },
+  'expert-vance': {
+    name: 'Marcus Vance',
+    email: 'expert-vance@adaptlearn.internal',
+    roleTitle: 'Principal Graph Database Architect',
+  },
+  'expert-rivera': {
+    name: 'Alex Rivera',
+    email: 'expert-rivera@adaptlearn.internal',
+    roleTitle: 'Staff Cloud Infrastructure Engineer',
+  },
+  'expert-nguyen': {
+    name: 'Linh Nguyen',
+    email: 'expert-nguyen@adaptlearn.internal',
+    roleTitle: 'Lead Data Systems Specialist',
+  },
+}
+
 const DEFAULT_PROFILES: Record<
   string,
   {
@@ -43,9 +66,9 @@ const DEFAULT_PROFILES: Record<
     ],
   },
   expert: {
-    name: 'Chen Wei',
-    email: 'chen.wei@adaptlearn.internal',
-    roleTitle: 'Expert',
+    name: 'Dr. Sarah Chen',
+    email: 'expert-chen@adaptlearn.internal',
+    roleTitle: 'Senior AI & Knowledge Architect',
     portal: 'Expert Authoring Portal',
     department: 'Cognitive Architecture & Curricula',
     scope: 'Macro Competencies, Micro-skills & Question Bank',
@@ -111,6 +134,34 @@ export function getUserProfile(actor: ActorRole): UserProfileData {
   const effectiveKey = actor === 'learner' ? 'employee' : actor
   const defaults = DEFAULT_PROFILES[effectiveKey] || DEFAULT_PROFILES.employee
   const company = getActiveCompany()
+
+  if (effectiveKey === 'expert') {
+    const activeExpertId = localStorage.getItem('expert_active_id') || 'expert-chen'
+    const expertInfo = EXPERT_DIRECTORY[activeExpertId] || EXPERT_DIRECTORY['expert-chen']
+    const customName =
+      localStorage.getItem(`user_name_${effectiveKey}`) ||
+      expertInfo.name
+    const customEmail =
+      localStorage.getItem(`user_email_${effectiveKey}`) ||
+      expertInfo.email
+    const initials = computeInitials(customName)
+
+    return {
+      actor,
+      name: customName,
+      email: customEmail,
+      roleTitle: expertInfo.roleTitle,
+      initials,
+      portal: defaults.portal,
+      department: defaults.department,
+      scope: defaults.scope,
+      status: defaults.status,
+      details: [
+        { label: 'Organization', value: company.name },
+        ...defaults.details,
+      ],
+    }
+  }
 
   // 1. Resolve Display Name
   const customName =
