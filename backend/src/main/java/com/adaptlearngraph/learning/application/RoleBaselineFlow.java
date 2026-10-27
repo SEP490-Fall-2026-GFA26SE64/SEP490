@@ -11,7 +11,9 @@ public final class RoleBaselineFlow {
                         String attainmentRule, List<Skill> skills) {}
     public record Role(String id, String code, String name, String scope, String occupationId,
                        String occupationName, String catalogVersion, String fingerprint, List<Level> levels) {}
-    public record Selection(UUID selectionId, Role role, long revision, Instant selectedAt, boolean available) {}
+    public record Selection(UUID selectionId, Role role, long revision, Instant selectedAt, boolean available,String levelId) {
+        public Selection(UUID id,Role role,long revision,Instant selectedAt,boolean available){this(id,role,revision,selectedAt,available,null);}
+    }
     public record Progress(String state, int requiredCount, int coveredCount, UUID attemptId,
                            Integer baselineVersion) {}
     public record View(Selection selection, Progress progress) {}
@@ -27,6 +29,10 @@ public final class RoleBaselineFlow {
         Optional<Selection> replay(Actor actor, String key, String hash);
         boolean assessmentActive(Actor actor);
         Selection select(Actor actor, Role role, String key, String hash);
+        default Selection select(Actor actor,Role role,String levelId,String key,String hash) {
+            if(levelId!=null)throw new Failure(503,"LEVEL_SELECTION_UNAVAILABLE");
+            return select(actor,role,key,hash);
+        }
     }
     public interface Baseline {
         List<MasteryProfile> mastery(Actor actor);
@@ -54,19 +60,24 @@ public final class RoleBaselineFlow {
         var old=selected.get();
         var roles=catalog.roles(actor.organizationId());
         var current=roles.stream().filter(r -> r.id().equals(old.role().id())).findFirst();
-        if (current.isEmpty()) return new View(new Selection(old.selectionId(),old.role(),old.revision(),old.selectedAt(),false),
+        if (current.isEmpty() || old.levelId()!=null && current.get().levels().stream().noneMatch(l->l.id().equals(old.levelId()))) return new View(new Selection(old.selectionId(),old.role(),old.revision(),old.selectedAt(),false,old.levelId()),
                 new Progress("ROLE_UNAVAILABLE",0,0,null,null));
         var role=current.get();
         var required=roles.stream().filter(r->r.occupationId().equals(role.occupationId())).flatMap(r->r.levels().stream())
                 .flatMap(l->l.skills().stream()).map(Skill::id).collect(java.util.stream.Collectors.toSet());
         if(required.isEmpty()) throw new Failure(503,"DEPENDENCY_UNAVAILABLE");
-        return new View(new Selection(old.selectionId(),role,old.revision(),old.selectedAt(),true),baseline.progress(actor,role,required));
+        return new View(new Selection(old.selectionId(),role,old.revision(),old.selectedAt(),true,old.levelId()),baseline.progress(actor,role,required));
     }
     public Selection choose(String roleId, UUID expected, String key) {
+        return choose(roleId,null,expected,key);
+    }
+    public Selection choose(String roleId,String levelId,UUID expected,String key) {
         var actor=identity.requireEmployee();
         if (roleId==null || roleId.isBlank() || roleId.length()>200 || key==null || key.isBlank()
                 || key.length()>200 || !key.equals(key.strip())) throw new Failure(400,"INVALID_REQUEST");
-        String hash=hash(roleId+"\n"+Objects.toString(expected,"NONE"));
+        if(levelId!=null && (levelId.isBlank() || levelId.length()>200))throw new Failure(400,"INVALID_LEVEL");
+        String hash=levelId==null?hash(roleId+"\n"+Objects.toString(expected,"NONE")):
+                hash("ROLE-LEVEL-V1:"+roleId.length()+":"+roleId+":"+levelId.length()+":"+levelId+":"+Objects.toString(expected,"NONE"));
         return store.transaction(actor, () -> {
             var refreshed=identity.requireEmployee();
             if (!actor.equals(refreshed)) throw new Failure(403,"FORBIDDEN");
@@ -75,10 +86,12 @@ public final class RoleBaselineFlow {
             if (!Objects.equals(current.map(Selection::selectionId).orElse(null),expected)) throw new Failure(409,"STALE_SELECTION");
             var role=catalog.roles(actor.organizationId()).stream().filter(r -> r.id().equals(roleId)).findFirst()
                     .orElseThrow(() -> new Failure(404,"ROLE_NOT_AVAILABLE"));
-            if (current.filter(s -> s.role().id().equals(roleId)).isEmpty() && store.assessmentActive(actor))
+            String selectedLevel=levelId==null?current.filter(s->s.role().id().equals(roleId)).map(Selection::levelId).orElse(null):levelId;
+            if(selectedLevel!=null && role.levels().stream().noneMatch(l->l.id().equals(selectedLevel)))throw new Failure(404,"LEVEL_NOT_AVAILABLE");
+            if (current.filter(s -> s.role().id().equals(roleId) && Objects.equals(s.levelId(),selectedLevel)).isEmpty() && store.assessmentActive(actor))
                 throw new Failure(409,"ASSESSMENT_IN_PROGRESS");
             if(!catalog.roles(actor.organizationId()).contains(role)) throw new Failure(503,"DEPENDENCY_UNAVAILABLE");
-            return store.select(actor,role,key,hash);
+            return selectedLevel==null?store.select(actor,role,key,hash):store.select(actor,role,selectedLevel,key,hash);
         });
     }
     public static String hash(String value) {

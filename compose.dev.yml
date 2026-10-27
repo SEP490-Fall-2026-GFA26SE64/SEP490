@@ -38,11 +38,14 @@ services:
     image: neo4j:5.26-community
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-local-only-neo4j}
+      # Seal after initial import: CATALOG_READ_ONLY=true docker compose up -d neo4j.
+      NEO4J_server_databases_default__to__read__only: ${CATALOG_READ_ONLY:-false}
     ports:
       - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
       - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
     volumes:
-      - neo4j_data:/data
+      # The pre-cutover neo4j_data volume remains intact; never down -v to upgrade.
+      - neo4j_catalog_v010_data:/data
     healthcheck:
       test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
       interval: 10s
@@ -74,7 +77,7 @@ services:
       SPRING_MAIN_WEB_APPLICATION_TYPE: none
       ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
     volumes:
-      - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-v010.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
     depends_on:
       migrate:
@@ -88,6 +91,15 @@ services:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,local-baseline-demo
       ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "true"
+      PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: ${PATHWAY_LOCAL_AUTH_BYPASS_ENABLED:-false}
+      PATHWAY_LOCAL_AUTH_BYPASS_EXPERT_ACCOUNT_ID: ${PATHWAY_LOCAL_AUTH_BYPASS_EXPERT_ACCOUNT_ID:-}
+      PATHWAY_INITIAL_ENABLED: ${PATHWAY_INITIAL_ENABLED:-false}
+      PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: ${PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED:-false}
+      PATHWAY_INITIAL_CATALOG_MAX_REQUIREMENT_ROWS: "1891"
+    volumes:
+      - ./documents/dataset/import/ontology_seed-v010.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
     depends_on:
       seed:
         condition: service_completed_successfully
@@ -122,3 +134,4 @@ services:
 volumes:
   postgres_data:
   neo4j_data:
+  neo4j_catalog_v010_data:
