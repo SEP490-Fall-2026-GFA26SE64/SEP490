@@ -1,4 +1,4 @@
-"""Validate the source-backed 0.9.0 catalog without contacting Neo4j."""
+"""Validate the source-backed 0.10.0 catalog without contacting Neo4j."""
 import json,math
 from collections import Counter,defaultdict
 from pathlib import Path
@@ -31,13 +31,18 @@ def validate(file):
     require(len({e['id'] for e in edges})==len(edges),'Duplicate edge ID')
     require(len({(e['type'],e['fromId'],e['toId']) for e in edges})==len(edges),'Duplicate edge pair')
     for r in list(nodes.values())+edges:
-        require(r['version']=='0.9.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
+        require(r['version']=='0.10.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
         require(r['reviewedBy'] is None and r['reviewedAt'] is None,'Unsubstantiated approval')
-        require(not {'canonicalProfileKey','learningOutcome','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
+        require(not {'learningOutcome','canonicalProfileKey','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
+    for r in list(nodes.values())+edges:
+        require('outcomeCoverage' not in r or r.get('type')=='TEACHES','outcomeCoverage belongs only on TEACHES')
     for e in edges:
         t,a,b=e['type'],e['fromId'],e['toId'];require(a in nodes and b in nodes,'Missing endpoint')
         require((labels[a],labels[b]) in TYPES[t],'Wrong endpoint labels')
         sets[(t,a)].add(b);incoming[(t,b)].add(a)
+        if t=='TEACHES':
+            v=e.get('outcomeCoverage')
+            require(type(v) in (int,float) and math.isfinite(v) and 0<=v<=1,'Invalid outcomeCoverage')
         if t=='REQUIRES_SKILL':
             require(type(e['requiredScore']) in (int,float) and math.isfinite(e['requiredScore']) and 0<=e['requiredScore']<=1,'Invalid threshold')
             require(type(e['isMandatory']) is bool,'Invalid mandatory flag')
@@ -53,6 +58,7 @@ def validate(file):
         lv=[nodes[x] for x in sets['HAS_LEVEL',r['id']]]
         require(len(lv)==3 and {(l['code'],l['rank']) for l in lv}=={('J',1),('M',2),('S',3)},'Wrong local Level inventory')
     for l in data['Levels']:
+        require('context' not in l,'Retired Level context')
         require(incoming['HAS_LEVEL',l['id']]=={l['targetRoleId']},'Level parent mismatch')
         require(sets['REQUIRES_SKILL',l['id']] and sets['HAS_COMPETENCY',l['id']],'Incomplete Level')
         union=set().union(*(sets['HAS_SKILL',x] for x in sets['HAS_COMPETENCY',l['id']]))
@@ -64,6 +70,9 @@ def validate(file):
         require(c['attainmentRule']=='ALL_MEMBER_SKILLS_AT_OWNING_LEVEL','Wrong derivation rule')
         require(not {'targetRoleId','requiredScore','rubricId','evidenceType'} & c.keys(),'Independent competency assessment field')
     for m in data['LearningModules']:
+        require(type(m.get('duration')) is int and m['duration']>0,'Invalid duration')
+        v=m.get('price')
+        require(type(v) in (int,float) and math.isfinite(v) and v>0,'Invalid price')
         require(len(sets['TEACHES',m['id']])>=1,'Each module must teach at least one skill')
         content=(base/m['contentUri']).resolve()
         require(content.is_relative_to(base.resolve()) and content.is_file(),'Missing or unsafe module content')
@@ -89,5 +98,5 @@ def validate(file):
 
 if __name__=='__main__':
     import argparse
-    p=argparse.ArgumentParser();p.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed.json');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v010.json');a=p.parse_args()
     _,report=validate(a.file);print(json.dumps(report,indent=2))
