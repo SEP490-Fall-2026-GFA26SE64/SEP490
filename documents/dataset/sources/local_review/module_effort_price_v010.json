@@ -1,0 +1,1991 @@
+{
+  "catalogVersion": "0.10.0",
+  "estimateRevision": "effort-price-1",
+  "reviewStatus": "NEEDS_EXPERT_REVIEW",
+  "currency": "VND",
+  "durationUnit": "minutes",
+  "basis": "Synthetic authoring estimates from mapped skills and existing lesson/practice tasks. Not observed times, vendor quotes, source access fees, or runtime pricing policy.",
+  "durationMethod": "ceil15(orientation + sum(skillPracticeMinutes) * tierEffortFactor + integration + reflection)",
+  "priceMethod": "ceil10000(duration / 60 * assumedPackageRateVndPerHour + exercisePackageFeeVnd)",
+  "scope": "Paid learning package estimate includes lesson/practice support; free linked official references are not being priced. No OC weighting, billing, or runtime selection rule.",
+  "rounding": "Duration rounds up to 15 minutes; price rounds up to 10000 VND.",
+  "modules": [
+    {
+      "moduleId": "MOD-DE-J-MODEL-01",
+      "title": "Junior Data modelling and storage - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-DE01",
+        "MS-DE03",
+        "MS-DE06"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-DE01": 120,
+        "MS-DE03": 150,
+        "MS-DE06": 60
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 450,
+      "price": 480000,
+      "contentUri": "content/modules/MOD-DE-J-MODEL-01.md",
+      "contentSha256": "31d7911dbb37be4d1863fc59f653987219d211825f7608749ad20c25538864b3"
+    },
+    {
+      "moduleId": "MOD-DE-J-MODEL-02",
+      "title": "Junior Data modelling and storage - Module 2: Guided validation",
+      "skillIds": [
+        "MS-DE13",
+        "MS-DE16"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-DE13": 150,
+        "MS-DE16": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 375,
+      "price": 410000,
+      "contentUri": "content/modules/MOD-DE-J-MODEL-02.md",
+      "contentSha256": "ff70b3d8e5277ada6389684ee5568b3a3decd9f7f70f457f39ff8659b9dda866"
+    },
+    {
+      "moduleId": "MOD-DE-J-PIPE-01",
+      "title": "Junior Data pipeline implementation and integration - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-DE02",
+        "MS-DE04",
+        "MS-DE08"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-DE02": 150,
+        "MS-DE04": 120,
+        "MS-DE08": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 510,
+      "price": 530000,
+      "contentUri": "content/modules/MOD-DE-J-PIPE-01.md",
+      "contentSha256": "ea2a4f5e0df6a60c2431f7fb8fd49d9c3eb28a03aed5668645bda08bd65d73ef"
+    },
+    {
+      "moduleId": "MOD-DE-J-PIPE-02",
+      "title": "Junior Data pipeline implementation and integration - Module 2: Guided validation",
+      "skillIds": [
+        "MS-DE10",
+        "MS-DE11",
+        "MS-DE12"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-DE10": 120,
+        "MS-DE11": 90,
+        "MS-DE12": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 465,
+      "price": 490000,
+      "contentUri": "content/modules/MOD-DE-J-PIPE-02.md",
+      "contentSha256": "468a4432055423097373a03727bd6064fd3d322420012ba22ace3d644b4cff52"
+    },
+    {
+      "moduleId": "MOD-DE-J-QUAL-01",
+      "title": "Junior Data quality and operations - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-DE05",
+        "MS-DE06",
+        "MS-DE07"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-DE05": 90,
+        "MS-DE06": 60,
+        "MS-DE07": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 360,
+      "price": 390000,
+      "contentUri": "content/modules/MOD-DE-J-QUAL-01.md",
+      "contentSha256": "a59846707c7d3430d51837e16dc5f9d9953eaa995140cf40a0175234d25bbf67"
+    },
+    {
+      "moduleId": "MOD-DE-J-QUAL-02",
+      "title": "Junior Data quality and operations - Module 2: Guided validation",
+      "skillIds": [
+        "MS-DE09",
+        "MS-DE14",
+        "MS-DE15"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-DE09": 90,
+        "MS-DE14": 120,
+        "MS-DE15": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 435,
+      "price": 460000,
+      "contentUri": "content/modules/MOD-DE-J-QUAL-02.md",
+      "contentSha256": "c9958770e8560e83b0962baf06f5ec7c50693fcf581790070e3e7b0a3f5310f4"
+    },
+    {
+      "moduleId": "MOD-DE-M-MODEL-01",
+      "title": "Middle Data modelling and storage - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-DE01",
+        "MS-DE03",
+        "MS-DE06"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-DE01": 120,
+        "MS-DE03": 150,
+        "MS-DE06": 60
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 570,
+      "price": 780000,
+      "contentUri": "content/modules/MOD-DE-M-MODEL-01.md",
+      "contentSha256": "f91dfcd50fc476b354758ef96f4a532f4ebaca35e7fe464491649cd06a27c8e4"
+    },
+    {
+      "moduleId": "MOD-DE-M-MODEL-02",
+      "title": "Middle Data modelling and storage - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-DE13",
+        "MS-DE16"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-DE13": 150,
+        "MS-DE16": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 480,
+      "price": 660000,
+      "contentUri": "content/modules/MOD-DE-M-MODEL-02.md",
+      "contentSha256": "89c108c14747539cd5cdac29031ad34eaf84b1e65677f3d4aedd697103b1cca2"
+    },
+    {
+      "moduleId": "MOD-DE-M-PIPE-01",
+      "title": "Middle Data pipeline implementation and integration - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-DE02",
+        "MS-DE04",
+        "MS-DE08"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-DE02": 150,
+        "MS-DE04": 120,
+        "MS-DE08": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 660,
+      "price": 890000,
+      "contentUri": "content/modules/MOD-DE-M-PIPE-01.md",
+      "contentSha256": "b008e86ff2c1615f4d91bd26b4d462e015a35d86a37681828eb4cd714ce1ba58"
+    },
+    {
+      "moduleId": "MOD-DE-M-PIPE-02",
+      "title": "Middle Data pipeline implementation and integration - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-DE10",
+        "MS-DE11",
+        "MS-DE12"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-DE10": 120,
+        "MS-DE11": 90,
+        "MS-DE12": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 585,
+      "price": 800000,
+      "contentUri": "content/modules/MOD-DE-M-PIPE-02.md",
+      "contentSha256": "c870ed0713b8e59f854541e7a6bc8df8a8354e46367d148318399cb58996479e"
+    },
+    {
+      "moduleId": "MOD-DE-M-QUAL-01",
+      "title": "Middle Data quality and operations - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-DE05",
+        "MS-DE06",
+        "MS-DE07"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-DE05": 90,
+        "MS-DE06": 60,
+        "MS-DE07": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 450,
+      "price": 630000,
+      "contentUri": "content/modules/MOD-DE-M-QUAL-01.md",
+      "contentSha256": "b253f676561f337410b3b13f0d816a466ea5303f84ef0e1ccc20818619a7b510"
+    },
+    {
+      "moduleId": "MOD-DE-M-QUAL-02",
+      "title": "Middle Data quality and operations - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-DE09",
+        "MS-DE14",
+        "MS-DE15"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-DE09": 90,
+        "MS-DE14": 120,
+        "MS-DE15": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 540,
+      "price": 740000,
+      "contentUri": "content/modules/MOD-DE-M-QUAL-02.md",
+      "contentSha256": "e8af5b559716687d2de8bc2d99874e5f5e2316633d90873637cb45438e73609f"
+    },
+    {
+      "moduleId": "MOD-DE-S-MODEL-01",
+      "title": "Senior Data modelling and storage - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-DE01",
+        "MS-DE03",
+        "MS-DE06"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-DE01": 120,
+        "MS-DE03": 150,
+        "MS-DE06": 60
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 705,
+      "price": 1240000,
+      "contentUri": "content/modules/MOD-DE-S-MODEL-01.md",
+      "contentSha256": "bb0d0d407ae45ec04095bd79f61260150e911d7ef9fa9827fe09a3d894a6e57c"
+    },
+    {
+      "moduleId": "MOD-DE-S-MODEL-02",
+      "title": "Senior Data modelling and storage - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-DE13",
+        "MS-DE16"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-DE13": 150,
+        "MS-DE16": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 585,
+      "price": 1040000,
+      "contentUri": "content/modules/MOD-DE-S-MODEL-02.md",
+      "contentSha256": "6b9808d0015568c0f840a2ace21c6e7bd5c188cf7318ccdba2cf724e3f980d07"
+    },
+    {
+      "moduleId": "MOD-DE-S-PIPE-01",
+      "title": "Senior Data pipeline implementation and integration - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-DE02",
+        "MS-DE04",
+        "MS-DE08"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-DE02": 150,
+        "MS-DE04": 120,
+        "MS-DE08": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 810,
+      "price": 1410000,
+      "contentUri": "content/modules/MOD-DE-S-PIPE-01.md",
+      "contentSha256": "1e445d21f4ba6629f54de888d373d8c7287b731d11d3321f0c89a9d23f3c4c8b"
+    },
+    {
+      "moduleId": "MOD-DE-S-PIPE-02",
+      "title": "Senior Data pipeline implementation and integration - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-DE10",
+        "MS-DE11",
+        "MS-DE12"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-DE10": 120,
+        "MS-DE11": 90,
+        "MS-DE12": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 720,
+      "price": 1260000,
+      "contentUri": "content/modules/MOD-DE-S-PIPE-02.md",
+      "contentSha256": "01e31d6961330917507ee23a3c3123bc52df77037c0efef7889e0f86809feaba"
+    },
+    {
+      "moduleId": "MOD-DE-S-QUAL-01",
+      "title": "Senior Data quality and operations - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-DE05",
+        "MS-DE06",
+        "MS-DE07"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-DE05": 90,
+        "MS-DE06": 60,
+        "MS-DE07": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 540,
+      "price": 960000,
+      "contentUri": "content/modules/MOD-DE-S-QUAL-01.md",
+      "contentSha256": "850f05257b9c10c74c2124388b00c6cb2ca455ea3e2fcc752f06145426dca043"
+    },
+    {
+      "moduleId": "MOD-DE-S-QUAL-02",
+      "title": "Senior Data quality and operations - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-DE09",
+        "MS-DE14",
+        "MS-DE15"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-DE09": 90,
+        "MS-DE14": 120,
+        "MS-DE15": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 60000,
+      "duration": 660,
+      "price": 1160000,
+      "contentUri": "content/modules/MOD-DE-S-QUAL-02.md",
+      "contentSha256": "cfe339a262a8f29bfaffc22e715e82c2f9fb78e487aee1d713d7785f968b6fda"
+    },
+    {
+      "moduleId": "MOD-FS-J-UI-01",
+      "title": "Junior Web interface development - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-FS01",
+        "MS-FS02",
+        "MS-FS09"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS01": 90,
+        "MS-FS02": 120,
+        "MS-FS09": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 420,
+      "price": 430000,
+      "contentUri": "content/modules/MOD-FS-J-UI-01.md",
+      "contentSha256": "ddb6ba109f39397c56d475c22aef0fbcea9a76458389c90e945a0607426691e4"
+    },
+    {
+      "moduleId": "MOD-FS-J-UI-02",
+      "title": "Junior Web interface development - Module 2: Guided validation",
+      "skillIds": [
+        "MS-FS10",
+        "MS-FS11"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS10": 90,
+        "MS-FS11": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 315,
+      "price": 340000,
+      "contentUri": "content/modules/MOD-FS-J-UI-02.md",
+      "contentSha256": "cbfd5df907b18ac9dfaa8e35459551d7741fdb62416bf8eb77217ec363d5d6cb"
+    },
+    {
+      "moduleId": "MOD-FS-J-SERVICE-01",
+      "title": "Junior Application services and data - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-FS03",
+        "MS-FS04",
+        "MS-FS05"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS03": 150,
+        "MS-FS04": 150,
+        "MS-FS05": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 540,
+      "price": 540000,
+      "contentUri": "content/modules/MOD-FS-J-SERVICE-01.md",
+      "contentSha256": "a1613d09ce7a727fc617a298e3cb3c68f5cdec71456453bdc65e7fa2115041df"
+    },
+    {
+      "moduleId": "MOD-FS-J-SERVICE-02",
+      "title": "Junior Application services and data - Module 2: Guided validation",
+      "skillIds": [
+        "MS-FS12",
+        "MS-FS13",
+        "MS-FS14"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS12": 120,
+        "MS-FS13": 150,
+        "MS-FS14": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 525,
+      "price": 530000,
+      "contentUri": "content/modules/MOD-FS-J-SERVICE-02.md",
+      "contentSha256": "8988b3b8c320b5096033e1015175efc2375557e42a57889d4120b8f7e30b9250"
+    },
+    {
+      "moduleId": "MOD-FS-J-QUALITY-01",
+      "title": "Junior Software quality and delivery - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-FS06",
+        "MS-FS07",
+        "MS-FS08"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS06": 90,
+        "MS-FS07": 150,
+        "MS-FS08": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 480,
+      "price": 490000,
+      "contentUri": "content/modules/MOD-FS-J-QUALITY-01.md",
+      "contentSha256": "5bc8c64d8a69dbdbd58da41303d10ece9da733ffdc5214b83be811c3d9dfde02"
+    },
+    {
+      "moduleId": "MOD-FS-J-QUALITY-02",
+      "title": "Junior Software quality and delivery - Module 2: Guided validation",
+      "skillIds": [
+        "MS-FS15",
+        "MS-FS16"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS15": 120,
+        "MS-FS16": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 315,
+      "price": 340000,
+      "contentUri": "content/modules/MOD-FS-J-QUALITY-02.md",
+      "contentSha256": "14d484eb5c110343b42baf45a5c038bf26458ef0246930eee25e2632df5bcf31"
+    },
+    {
+      "moduleId": "MOD-FS-M-UI-01",
+      "title": "Middle Web interface development - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-FS01",
+        "MS-FS02",
+        "MS-FS09"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS01": 90,
+        "MS-FS02": 120,
+        "MS-FS09": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 525,
+      "price": 710000,
+      "contentUri": "content/modules/MOD-FS-M-UI-01.md",
+      "contentSha256": "a592fddfed58bba9b7b8d423686b3b4ba76983479813ec2c76173a723893717c"
+    },
+    {
+      "moduleId": "MOD-FS-M-UI-02",
+      "title": "Middle Web interface development - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-FS10",
+        "MS-FS11"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS10": 90,
+        "MS-FS11": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 390,
+      "price": 540000,
+      "contentUri": "content/modules/MOD-FS-M-UI-02.md",
+      "contentSha256": "68662dfb8d605b3fa5aeac3b8a55170e6b457b44663b469c4f42321584d12e3c"
+    },
+    {
+      "moduleId": "MOD-FS-M-SERVICE-01",
+      "title": "Middle Application services and data - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-FS03",
+        "MS-FS04",
+        "MS-FS05"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS03": 150,
+        "MS-FS04": 150,
+        "MS-FS05": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 690,
+      "price": 910000,
+      "contentUri": "content/modules/MOD-FS-M-SERVICE-01.md",
+      "contentSha256": "b7e0d69e85e01abe6c39aa1aab505002f5e464380c41e4d21c449e38fde90e36"
+    },
+    {
+      "moduleId": "MOD-FS-M-SERVICE-02",
+      "title": "Middle Application services and data - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-FS12",
+        "MS-FS13",
+        "MS-FS14"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS12": 120,
+        "MS-FS13": 150,
+        "MS-FS14": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 675,
+      "price": 890000,
+      "contentUri": "content/modules/MOD-FS-M-SERVICE-02.md",
+      "contentSha256": "1edbeb40e0ae319f6d11b46a79c0a12d8d3a5617765f803460fece5afaab2761"
+    },
+    {
+      "moduleId": "MOD-FS-M-QUALITY-01",
+      "title": "Middle Software quality and delivery - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-FS06",
+        "MS-FS07",
+        "MS-FS08"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS06": 90,
+        "MS-FS07": 150,
+        "MS-FS08": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 615,
+      "price": 820000,
+      "contentUri": "content/modules/MOD-FS-M-QUALITY-01.md",
+      "contentSha256": "f556faaea92ea4e28fd76c74be3f3503838bccedb63151ca9dc44d165d5bf8e2"
+    },
+    {
+      "moduleId": "MOD-FS-M-QUALITY-02",
+      "title": "Middle Software quality and delivery - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-FS15",
+        "MS-FS16"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS15": 120,
+        "MS-FS16": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 390,
+      "price": 540000,
+      "contentUri": "content/modules/MOD-FS-M-QUALITY-02.md",
+      "contentSha256": "022a820141005f15c23c66ec22c38ff98ffbc34afb82c9ee95336033ad8d6b53"
+    },
+    {
+      "moduleId": "MOD-FS-S-UI-01",
+      "title": "Senior Web interface development - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-FS01",
+        "MS-FS02",
+        "MS-FS09"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS01": 90,
+        "MS-FS02": 120,
+        "MS-FS09": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 645,
+      "price": 1120000,
+      "contentUri": "content/modules/MOD-FS-S-UI-01.md",
+      "contentSha256": "f569d5daf010a0fce91e192e285ed3bf64b60848d90af5175b2f98fb3177297a"
+    },
+    {
+      "moduleId": "MOD-FS-S-UI-02",
+      "title": "Senior Web interface development - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-FS10",
+        "MS-FS11"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS10": 90,
+        "MS-FS11": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 480,
+      "price": 850000,
+      "contentUri": "content/modules/MOD-FS-S-UI-02.md",
+      "contentSha256": "89843e9c88e2f37a7a6890992c23d8fa829b389bb3f34be1b3edab47df623aa0"
+    },
+    {
+      "moduleId": "MOD-FS-S-SERVICE-01",
+      "title": "Senior Application services and data - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-FS03",
+        "MS-FS04",
+        "MS-FS05"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS03": 150,
+        "MS-FS04": 150,
+        "MS-FS05": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 855,
+      "price": 1470000,
+      "contentUri": "content/modules/MOD-FS-S-SERVICE-01.md",
+      "contentSha256": "c0d047412952acdf69027a53a0d8d78cd971844e68f4ed7cad1858ef4c0ccb8e"
+    },
+    {
+      "moduleId": "MOD-FS-S-SERVICE-02",
+      "title": "Senior Application services and data - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-FS12",
+        "MS-FS13",
+        "MS-FS14"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS12": 120,
+        "MS-FS13": 150,
+        "MS-FS14": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 825,
+      "price": 1420000,
+      "contentUri": "content/modules/MOD-FS-S-SERVICE-02.md",
+      "contentSha256": "c5ee1af7a4c61fa8b525badc93c8f3b3cf9f7263b9740d635269a21c66796641"
+    },
+    {
+      "moduleId": "MOD-FS-S-QUALITY-01",
+      "title": "Senior Software quality and delivery - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-FS06",
+        "MS-FS07",
+        "MS-FS08"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS06": 90,
+        "MS-FS07": 150,
+        "MS-FS08": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 750,
+      "price": 1300000,
+      "contentUri": "content/modules/MOD-FS-S-QUALITY-01.md",
+      "contentSha256": "91215914ab638f1384c302e9a0ab88aea354e9f74c673ae29ccf89dd42fc72a0"
+    },
+    {
+      "moduleId": "MOD-FS-S-QUALITY-02",
+      "title": "Senior Software quality and delivery - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-FS15",
+        "MS-FS16"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS15": 120,
+        "MS-FS16": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 45000,
+      "duration": 480,
+      "price": 850000,
+      "contentUri": "content/modules/MOD-FS-S-QUALITY-02.md",
+      "contentSha256": "d33159c57b11fb3a869b1cab8ab3503debea9b21c6f83517d898e3497a122762"
+    },
+    {
+      "moduleId": "MOD-QA-J-DESIGN-01",
+      "title": "Junior Test design and planning - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-QA01",
+        "MS-QA02",
+        "MS-QA08"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-QA01": 120,
+        "MS-QA02": 90,
+        "MS-QA08": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 450,
+      "price": 450000,
+      "contentUri": "content/modules/MOD-QA-J-DESIGN-01.md",
+      "contentSha256": "49a557d509b92fbdee97e0e45315f23058c9d0ee1542e894bc4568428bced69f"
+    },
+    {
+      "moduleId": "MOD-QA-J-DESIGN-02",
+      "title": "Junior Test design and planning - Module 2: Guided validation",
+      "skillIds": [
+        "MS-QA09",
+        "MS-QA10",
+        "MS-QA11"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-QA09": 90,
+        "MS-QA10": 120,
+        "MS-QA11": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 435,
+      "price": 440000,
+      "contentUri": "content/modules/MOD-QA-J-DESIGN-02.md",
+      "contentSha256": "48bcdbcbd2676062fb2f7ecb589f64504d09c8189e5aaaf7d299dd04ff4eeba9"
+    },
+    {
+      "moduleId": "MOD-QA-J-EXEC-01",
+      "title": "Junior Test execution and defect evidence - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-QA03",
+        "MS-QA04",
+        "MS-QA05"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-QA03": 90,
+        "MS-QA04": 60,
+        "MS-QA05": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 360,
+      "price": 370000,
+      "contentUri": "content/modules/MOD-QA-J-EXEC-01.md",
+      "contentSha256": "a7171c70729529cf1b07ac9b12d89551998f335780daa0f68cbd455da8a9357b"
+    },
+    {
+      "moduleId": "MOD-QA-J-EXEC-02",
+      "title": "Junior Test execution and defect evidence - Module 2: Guided validation",
+      "skillIds": [
+        "MS-QA12",
+        "MS-QA13",
+        "MS-QA14"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-QA12": 120,
+        "MS-QA13": 90,
+        "MS-QA14": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 435,
+      "price": 440000,
+      "contentUri": "content/modules/MOD-QA-J-EXEC-02.md",
+      "contentSha256": "ba2e79f83f7102b1354dd500b2330d42b45525dc1c8b952e6394db40d5fdca1e"
+    },
+    {
+      "moduleId": "MOD-QA-J-AUTO-01",
+      "title": "Junior Test automation and integration - Module 1: Guided implementation",
+      "skillIds": [
+        "MS-FS07",
+        "MS-QA06",
+        "MS-QA07"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-FS07": 150,
+        "MS-QA06": 150,
+        "MS-QA07": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 570,
+      "price": 560000,
+      "contentUri": "content/modules/MOD-QA-J-AUTO-01.md",
+      "contentSha256": "e62e0afdf73f4b5dac683ad1b41b3d6da8d3038d1ae7bde40889631bcccb563d"
+    },
+    {
+      "moduleId": "MOD-QA-J-AUTO-02",
+      "title": "Junior Test automation and integration - Module 2: Guided validation",
+      "skillIds": [
+        "MS-QA15",
+        "MS-QA16"
+      ],
+      "tier": "J",
+      "skillPracticeMinutes": {
+        "MS-QA15": 150,
+        "MS-QA16": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 375,
+      "price": 380000,
+      "contentUri": "content/modules/MOD-QA-J-AUTO-02.md",
+      "contentSha256": "eb4af5c1cc11427bef5397ab2ba6247ef4f74ea307f7886389f72bbf7bec0911"
+    },
+    {
+      "moduleId": "MOD-QA-M-DESIGN-01",
+      "title": "Middle Test design and planning - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-QA01",
+        "MS-QA02",
+        "MS-QA08"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-QA01": 120,
+        "MS-QA02": 90,
+        "MS-QA08": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 570,
+      "price": 750000,
+      "contentUri": "content/modules/MOD-QA-M-DESIGN-01.md",
+      "contentSha256": "33bda35305d890681aa26cb5a51ea92ec831581fa287d7afe028c615dd151971"
+    },
+    {
+      "moduleId": "MOD-QA-M-DESIGN-02",
+      "title": "Middle Test design and planning - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-QA09",
+        "MS-QA10",
+        "MS-QA11"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-QA09": 90,
+        "MS-QA10": 120,
+        "MS-QA11": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 540,
+      "price": 710000,
+      "contentUri": "content/modules/MOD-QA-M-DESIGN-02.md",
+      "contentSha256": "dd2e5489a23999add24e90e283eb9f676c1e828b0cc462764537780a6a5a4585"
+    },
+    {
+      "moduleId": "MOD-QA-M-EXEC-01",
+      "title": "Middle Test execution and defect evidence - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-QA03",
+        "MS-QA04",
+        "MS-QA05"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-QA03": 90,
+        "MS-QA04": 60,
+        "MS-QA05": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 450,
+      "price": 600000,
+      "contentUri": "content/modules/MOD-QA-M-EXEC-01.md",
+      "contentSha256": "ea07e443ae37b5d621e0816cf22319287285d2d8ae315f916dccb2697ea6954c"
+    },
+    {
+      "moduleId": "MOD-QA-M-EXEC-02",
+      "title": "Middle Test execution and defect evidence - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-QA12",
+        "MS-QA13",
+        "MS-QA14"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-QA12": 120,
+        "MS-QA13": 90,
+        "MS-QA14": 90
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 540,
+      "price": 710000,
+      "contentUri": "content/modules/MOD-QA-M-EXEC-02.md",
+      "contentSha256": "39c2535fa673140d6f3c925634cfdd6792fe0260ee02ad9646081d769e1424f1"
+    },
+    {
+      "moduleId": "MOD-QA-M-AUTO-01",
+      "title": "Middle Test automation and integration - Module 1: Independent implementation",
+      "skillIds": [
+        "MS-FS07",
+        "MS-QA06",
+        "MS-QA07"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-FS07": 150,
+        "MS-QA06": 150,
+        "MS-QA07": 150
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 735,
+      "price": 960000,
+      "contentUri": "content/modules/MOD-QA-M-AUTO-01.md",
+      "contentSha256": "6d6506882c5fffddcd4531578be2dd8310a96f83b2874ba73843d912efb83557"
+    },
+    {
+      "moduleId": "MOD-QA-M-AUTO-02",
+      "title": "Middle Test automation and integration - Module 2: Independent troubleshooting",
+      "skillIds": [
+        "MS-QA15",
+        "MS-QA16"
+      ],
+      "tier": "M",
+      "skillPracticeMinutes": {
+        "MS-QA15": 150,
+        "MS-QA16": 120
+      },
+      "tierEffortFactor": 1.35,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 480,
+      "price": 640000,
+      "contentUri": "content/modules/MOD-QA-M-AUTO-02.md",
+      "contentSha256": "542dd0f4a19f6d52130863cd96e447118423851edf17cb37c32fceea4a4b7018"
+    },
+    {
+      "moduleId": "MOD-QA-S-DESIGN-01",
+      "title": "Senior Test design and planning - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-QA01",
+        "MS-QA02",
+        "MS-QA08"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-QA01": 120,
+        "MS-QA02": 90,
+        "MS-QA08": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 705,
+      "price": 1210000,
+      "contentUri": "content/modules/MOD-QA-S-DESIGN-01.md",
+      "contentSha256": "99ab8011dd46a12d1ce9a38a772bc96eec5373d47febdbb370c860af4b322a2c"
+    },
+    {
+      "moduleId": "MOD-QA-S-DESIGN-02",
+      "title": "Senior Test design and planning - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-QA09",
+        "MS-QA10",
+        "MS-QA11"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-QA09": 90,
+        "MS-QA10": 120,
+        "MS-QA11": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 660,
+      "price": 1140000,
+      "contentUri": "content/modules/MOD-QA-S-DESIGN-02.md",
+      "contentSha256": "2861180885b337755715803e28f903b89fc70abf2475baa91e384ca78f25a384"
+    },
+    {
+      "moduleId": "MOD-QA-S-EXEC-01",
+      "title": "Senior Test execution and defect evidence - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-QA03",
+        "MS-QA04",
+        "MS-QA05"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-QA03": 90,
+        "MS-QA04": 60,
+        "MS-QA05": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 540,
+      "price": 940000,
+      "contentUri": "content/modules/MOD-QA-S-EXEC-01.md",
+      "contentSha256": "c832788581f3ed9eb8568d0aad86b0465a8c92aa2f9b246c31fbcf26700557a5"
+    },
+    {
+      "moduleId": "MOD-QA-S-EXEC-02",
+      "title": "Senior Test execution and defect evidence - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-QA12",
+        "MS-QA13",
+        "MS-QA14"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-QA12": 120,
+        "MS-QA13": 90,
+        "MS-QA14": 90
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 660,
+      "price": 1140000,
+      "contentUri": "content/modules/MOD-QA-S-EXEC-02.md",
+      "contentSha256": "446fcbdd8f5d6b285da2ea35cb043908a72fb67c012a1b6a93bf1ed748ca4ad9"
+    },
+    {
+      "moduleId": "MOD-QA-S-AUTO-01",
+      "title": "Senior Test automation and integration - Module 1: Design review and trade-offs",
+      "skillIds": [
+        "MS-FS07",
+        "MS-QA06",
+        "MS-QA07"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-FS07": 150,
+        "MS-QA06": 150,
+        "MS-QA07": 150
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 60,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 915,
+      "price": 1560000,
+      "contentUri": "content/modules/MOD-QA-S-AUTO-01.md",
+      "contentSha256": "2b25e165c6eb9fff7d65ca64831760df200a1a326f68742dfbddec1e97da4ea3"
+    },
+    {
+      "moduleId": "MOD-QA-S-AUTO-02",
+      "title": "Senior Test automation and integration - Module 2: Complex validation and improvement",
+      "skillIds": [
+        "MS-QA15",
+        "MS-QA16"
+      ],
+      "tier": "S",
+      "skillPracticeMinutes": {
+        "MS-QA15": 150,
+        "MS-QA16": 120
+      },
+      "tierEffortFactor": 1.75,
+      "orientationMinutes": 30,
+      "integrationMinutes": 30,
+      "reflectionMinutes": 45,
+      "assumedPackageRateVndPerHour": 100000,
+      "exercisePackageFeeVnd": 35000,
+      "duration": 585,
+      "price": 1010000,
+      "contentUri": "content/modules/MOD-QA-S-AUTO-02.md",
+      "contentSha256": "866ba27204d3e2e103945c15bdf00523ef927b676fb7c2397114aed950ddd9f3"
+    },
+    {
+      "moduleId": "MOD-READ-ARC01",
+      "title": "Model solution components and boundaries — guided reading and practice",
+      "skillIds": [
+        "MS-ARC01"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-ARC01": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-ARC01.md",
+      "contentSha256": "a32b6cd4221adabe9389ddb6b86fc9abd50b3ac7abe6e636ee3c0410192a7d36"
+    },
+    {
+      "moduleId": "MOD-READ-ARC02",
+      "title": "Compare architecture alternatives — guided reading and practice",
+      "skillIds": [
+        "MS-ARC02"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-ARC02": 180
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 240,
+      "price": 350000,
+      "contentUri": "content/modules/MOD-READ-ARC02.md",
+      "contentSha256": "60cd4a50c6e072649b31f1556fee84aa8c821e7b971a1b47fcaf45ffe93c0358"
+    },
+    {
+      "moduleId": "MOD-READ-ARC03",
+      "title": "Specify integration contracts — guided reading and practice",
+      "skillIds": [
+        "MS-ARC03"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-ARC03": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-ARC03.md",
+      "contentSha256": "2f4dcdf15300807a0592be8d73193287a69627968663ed65833c3f53f4b29b46"
+    },
+    {
+      "moduleId": "MOD-READ-ARC04",
+      "title": "Specify measurable service quality targets — guided reading and practice",
+      "skillIds": [
+        "MS-ARC04"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-ARC04": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 180,
+      "price": 280000,
+      "contentUri": "content/modules/MOD-READ-ARC04.md",
+      "contentSha256": "4db33f6c527ae8fe3922ddcae2ed92550746401a0173526276dc14c29c846a11"
+    },
+    {
+      "moduleId": "MOD-READ-ARC05",
+      "title": "Document and explain architecture decisions — guided reading and practice",
+      "skillIds": [
+        "MS-ARC05"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-ARC05": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 150,
+      "price": 240000,
+      "contentUri": "content/modules/MOD-READ-ARC05.md",
+      "contentSha256": "6fda578dc27f6cb073182b4a853ccde43ba51f4451b58b57381487d05c79db2f"
+    },
+    {
+      "moduleId": "MOD-READ-ARC06",
+      "title": "Assess architecture change impact — guided reading and practice",
+      "skillIds": [
+        "MS-ARC06"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-ARC06": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-ARC06.md",
+      "contentSha256": "a6d3febd5fe034b9b5ada5bf8eed7ea828bd5fb850aa747a0378691fd19b18a4"
+    },
+    {
+      "moduleId": "MOD-READ-CORE01",
+      "title": "Implement programs and scripts — guided reading and practice",
+      "skillIds": [
+        "MS-CORE01"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-CORE01": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 50000,
+      "exercisePackageFeeVnd": 20000,
+      "duration": 180,
+      "price": 170000,
+      "contentUri": "content/modules/MOD-READ-CORE01.md",
+      "contentSha256": "a38ce06cbee5ddc6f8b8b7325e6ba2f2f201b1c26cf687f68c796f864ba51cb9"
+    },
+    {
+      "moduleId": "MOD-READ-CORE02",
+      "title": "Manage source changes with version control — guided reading and practice",
+      "skillIds": [
+        "MS-CORE02"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-CORE02": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 50000,
+      "exercisePackageFeeVnd": 20000,
+      "duration": 150,
+      "price": 150000,
+      "contentUri": "content/modules/MOD-READ-CORE02.md",
+      "contentSha256": "4aab9b42b37e22b994f560c529737b7e3a7490aedb9a9bf43d082a624501918c"
+    },
+    {
+      "moduleId": "MOD-READ-CORE03",
+      "title": "Translate requirements into verifiable changes — guided reading and practice",
+      "skillIds": [
+        "MS-CORE03"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-CORE03": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 50000,
+      "exercisePackageFeeVnd": 20000,
+      "duration": 180,
+      "price": 170000,
+      "contentUri": "content/modules/MOD-READ-CORE03.md",
+      "contentSha256": "59402f8674eb8f4bc80d4e262405ea3dfd085ef24966a0bfa40ce58385f97ab0"
+    },
+    {
+      "moduleId": "MOD-READ-CORE04",
+      "title": "Deploy a controlled software release — guided reading and practice",
+      "skillIds": [
+        "MS-CORE04"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-CORE04": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 50000,
+      "exercisePackageFeeVnd": 20000,
+      "duration": 210,
+      "price": 200000,
+      "contentUri": "content/modules/MOD-READ-CORE04.md",
+      "contentSha256": "c69677ae9c1dd59166836595f8b8fe97dd983b6a6db2762ee81e5a630dd16baa"
+    },
+    {
+      "moduleId": "MOD-READ-GOV01",
+      "title": "Define data ownership responsibilities — guided reading and practice",
+      "skillIds": [
+        "MS-GOV01"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-GOV01": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 25000,
+      "duration": 150,
+      "price": 170000,
+      "contentUri": "content/modules/MOD-READ-GOV01.md",
+      "contentSha256": "8f9dbf52735a6bd57d324a2dafcfb5902a347c808618d686251045589ad830f2"
+    },
+    {
+      "moduleId": "MOD-READ-GOV02",
+      "title": "Document data governance rules — guided reading and practice",
+      "skillIds": [
+        "MS-GOV02"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-GOV02": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 25000,
+      "duration": 180,
+      "price": 190000,
+      "contentUri": "content/modules/MOD-READ-GOV02.md",
+      "contentSha256": "b877a95dcc5bc7eba923920a1b407c28f2a578e0389d691d9dedba34f3895511"
+    },
+    {
+      "moduleId": "MOD-READ-GOV03",
+      "title": "Check data lifecycle compliance — guided reading and practice",
+      "skillIds": [
+        "MS-GOV03"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-GOV03": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 55000,
+      "exercisePackageFeeVnd": 25000,
+      "duration": 210,
+      "price": 220000,
+      "contentUri": "content/modules/MOD-READ-GOV03.md",
+      "contentSha256": "50361812da8745b104237e87a11c66e59ce7a817f2e7179a9254d1729757ace1"
+    },
+    {
+      "moduleId": "MOD-READ-INF01",
+      "title": "Configure and verify network connectivity — guided reading and practice",
+      "skillIds": [
+        "MS-INF01"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF01": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 180,
+      "price": 240000,
+      "contentUri": "content/modules/MOD-READ-INF01.md",
+      "contentSha256": "7438a48557fb9e39e791b0c15d879d8824ebc42b9b3176b36d0a9b334fc7dfcc"
+    },
+    {
+      "moduleId": "MOD-READ-INF02",
+      "title": "Provision infrastructure resources — guided reading and practice",
+      "skillIds": [
+        "MS-INF02"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF02": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 210,
+      "price": 270000,
+      "contentUri": "content/modules/MOD-READ-INF02.md",
+      "contentSha256": "c5f3d3917f499ef96074b3b2a9df88bd38ac06854441557864877cf9ed4d08d8"
+    },
+    {
+      "moduleId": "MOD-READ-INF03",
+      "title": "Automate infrastructure procedures — guided reading and practice",
+      "skillIds": [
+        "MS-INF03"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF03": 180
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 240,
+      "price": 300000,
+      "contentUri": "content/modules/MOD-READ-INF03.md",
+      "contentSha256": "68441bb18d870a93fcd53cbe5a8641e0d9e5d9d1a12661b5981e52bf143099c3"
+    },
+    {
+      "moduleId": "MOD-READ-INF04",
+      "title": "Maintain configuration records — guided reading and practice",
+      "skillIds": [
+        "MS-INF04"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF04": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 150,
+      "price": 210000,
+      "contentUri": "content/modules/MOD-READ-INF04.md",
+      "contentSha256": "d0c83645db3187532303f668740475482162646ac0ae537904e5cf03bc0b2e69"
+    },
+    {
+      "moduleId": "MOD-READ-INF05",
+      "title": "Monitor service health — guided reading and practice",
+      "skillIds": [
+        "MS-INF05"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF05": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 180,
+      "price": 240000,
+      "contentUri": "content/modules/MOD-READ-INF05.md",
+      "contentSha256": "e744547e15e1ed361863352d47dd1587e0306b45dd210074002e489f29627392"
+    },
+    {
+      "moduleId": "MOD-READ-INF06",
+      "title": "Investigate infrastructure faults — guided reading and practice",
+      "skillIds": [
+        "MS-INF06"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF06": 180
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 240,
+      "price": 300000,
+      "contentUri": "content/modules/MOD-READ-INF06.md",
+      "contentSha256": "931f45235b1562b2cebf016b687f83a6cb87ec7507d8468822a32e96771b4dd6"
+    },
+    {
+      "moduleId": "MOD-READ-INF07",
+      "title": "Verify backup and recovery procedures — guided reading and practice",
+      "skillIds": [
+        "MS-INF07"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF07": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 210,
+      "price": 270000,
+      "contentUri": "content/modules/MOD-READ-INF07.md",
+      "contentSha256": "f1ebbafb4fe14911543677a7d958b25263075219c209e3fe545ac24f6ff6ca63"
+    },
+    {
+      "moduleId": "MOD-READ-INF08",
+      "title": "Apply infrastructure hardening and updates — guided reading and practice",
+      "skillIds": [
+        "MS-INF08"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-INF08": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 65000,
+      "exercisePackageFeeVnd": 40000,
+      "duration": 210,
+      "price": 270000,
+      "contentUri": "content/modules/MOD-READ-INF08.md",
+      "contentSha256": "7f6d0d2310b72a3b3500544676b651b494d3ca1156ca858f00d4cadd00dfe38c"
+    },
+    {
+      "moduleId": "MOD-READ-SEC01",
+      "title": "Analyse information security risks — guided reading and practice",
+      "skillIds": [
+        "MS-SEC01"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC01": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-SEC01.md",
+      "contentSha256": "8ebd8c8e27d142d8a8e8c8d60d1722b850aa48c31fa58cd0082a89fa791a26ce"
+    },
+    {
+      "moduleId": "MOD-READ-SEC02",
+      "title": "Select and verify security controls — guided reading and practice",
+      "skillIds": [
+        "MS-SEC02"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC02": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-SEC02.md",
+      "contentSha256": "8c44b74bbab907223d8f8b1fa3faebd2d98338e2e5dfb1aa64afe0d1726b3bb1"
+    },
+    {
+      "moduleId": "MOD-READ-SEC03",
+      "title": "Configure identity and access controls — guided reading and practice",
+      "skillIds": [
+        "MS-SEC03"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC03": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-SEC03.md",
+      "contentSha256": "779be02079b57cf71e2ac11d97802c78aa5fe7e37b448111d5c43cf0d2368df8"
+    },
+    {
+      "moduleId": "MOD-READ-SEC04",
+      "title": "Investigate security alerts — guided reading and practice",
+      "skillIds": [
+        "MS-SEC04"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC04": 180
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 240,
+      "price": 350000,
+      "contentUri": "content/modules/MOD-READ-SEC04.md",
+      "contentSha256": "2625debc7db92141906969518d758e86f53fd95eabd082088a1e0739f92b5e05"
+    },
+    {
+      "moduleId": "MOD-READ-SEC05",
+      "title": "Execute a security incident response procedure — guided reading and practice",
+      "skillIds": [
+        "MS-SEC05"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC05": 180
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 240,
+      "price": 350000,
+      "contentUri": "content/modules/MOD-READ-SEC05.md",
+      "contentSha256": "00fb52f7e49579611cf5f96cbaae4b6c2d2203264cb7e36d32b4d9607be25f77"
+    },
+    {
+      "moduleId": "MOD-READ-SEC06",
+      "title": "Assess technical vulnerabilities — guided reading and practice",
+      "skillIds": [
+        "MS-SEC06"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC06": 180
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 240,
+      "price": 350000,
+      "contentUri": "content/modules/MOD-READ-SEC06.md",
+      "contentSha256": "527fd6d125b9331ea5ed951b451d7ea1dc755440411c28712acb95f8195b2775"
+    },
+    {
+      "moduleId": "MOD-READ-SEC07",
+      "title": "Verify vulnerability remediation — guided reading and practice",
+      "skillIds": [
+        "MS-SEC07"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC07": 150
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 210,
+      "price": 320000,
+      "contentUri": "content/modules/MOD-READ-SEC07.md",
+      "contentSha256": "3171d745c78ef03138f63c022b7f38e0d9888746c2dae32afab24f44e7848570"
+    },
+    {
+      "moduleId": "MOD-READ-SEC08",
+      "title": "Document security control assurance — guided reading and practice",
+      "skillIds": [
+        "MS-SEC08"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC08": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 180,
+      "price": 280000,
+      "contentUri": "content/modules/MOD-READ-SEC08.md",
+      "contentSha256": "618dd7b27caac33e092bb4e9d274428c738b4f330e8649d0ba24e64773136735"
+    },
+    {
+      "moduleId": "MOD-READ-SEC09",
+      "title": "Communicate security recommendations — guided reading and practice",
+      "skillIds": [
+        "MS-SEC09"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC09": 90
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 150,
+      "price": 240000,
+      "contentUri": "content/modules/MOD-READ-SEC09.md",
+      "contentSha256": "5cba9e07cc3b221f5d1c94b52013cad00fced4415c4a6ecc64a741b4e7dcee97"
+    },
+    {
+      "moduleId": "MOD-READ-SEC10",
+      "title": "Maintain security policy procedures — guided reading and practice",
+      "skillIds": [
+        "MS-SEC10"
+      ],
+      "tier": null,
+      "skillPracticeMinutes": {
+        "MS-SEC10": 120
+      },
+      "tierEffortFactor": 1.0,
+      "orientationMinutes": 30,
+      "integrationMinutes": 0,
+      "reflectionMinutes": 30,
+      "assumedPackageRateVndPerHour": 75000,
+      "exercisePackageFeeVnd": 50000,
+      "duration": 180,
+      "price": 280000,
+      "contentUri": "content/modules/MOD-READ-SEC10.md",
+      "contentSha256": "4c0cf3e17f383b71c6377c59bf0d7b817eb310eb08b5d79de70d228a703cd8f0"
+    }
+  ]
+}

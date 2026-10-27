@@ -14,7 +14,7 @@ skinparam noteBackgroundColor #FFF7ED
 skinparam noteBorderColor #D97706
 skinparam defaultFontName Arial
 skinparam defaultFontSize 14
-title Ontology v0.9 — Many-to-many Module–Skill teaching
+title Ontology v0.10 — Module–Skill instruction levels
 class Occupation {
  code : String
  name : String
@@ -35,7 +35,6 @@ class Level {
  code : String
  name : String
  rank : Integer
- context : String
  attainmentRule = ALL_MANDATORY_SKILLS
 }
 class Competency {
@@ -53,6 +52,8 @@ class LearningModule {
  contentUri : String
  contentType : String
  contentVersion : String
+ duration : Integer (minutes > 0)
+ price : Float (VND > 0)
 }
 Occupation "1" --> "1..*" TargetRole : HAS_ROLE
 TargetRole "1" --> "1..*" Level : HAS_LEVEL
@@ -60,6 +61,18 @@ Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
 Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
 Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL
 LearningModule "1..*" -up-> "1..*" MicroSkill : TEACHES
+note on link
+TEACHES relationship property:
+instructionLevel : Enum/String
+FOUNDATIONAL | INTERMEDIATE | ADVANCED
+instructionLevel belongs to each Module-Skill pair.
+Same skill MS-DE06 (metadata documentation):
+MOD-DE-J-MODEL-01 -> MS-DE06: FOUNDATIONAL
+MOD-DE-J-QUAL-01 -> MS-DE06: INTERMEDIATE
+Legacy conversion: round HALF_UP to 1 decimal first.
+0.0–0.3 FOUNDATIONAL; 0.4–0.6 INTERMEDIATE; 0.7–0.9 ADVANCED.
+0.35 -> INTERMEDIATE; 0.65 -> ADVANCED.
+end note
 MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
 note bottom of MicroSkill
 REQUIRES_SKILL: requiredScore [0,1], isMandatory.
@@ -76,6 +89,10 @@ Each Level has its own skill requirements and competencies.
 A Competency member must be required by its owning Level.
 end note
 note bottom of LearningModule
+TEACHES.instructionLevel stores text only.
+FOUNDATIONAL, INTERMEDIATE or ADVANCED.
+Independent per Module-Skill; not learner mastery.
+No numeric coverage property or normalization.
 A Module teaches one or more Skills.
 A Skill can have several teaching Modules.
 Providers are alternatives, not all mandatory.

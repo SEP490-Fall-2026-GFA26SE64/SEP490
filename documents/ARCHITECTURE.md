@@ -66,9 +66,9 @@ No applied migration is edited. Old UUID selection/reference and fixed/module st
 
 ## Catalog and version boundaries
 
-![Ontology0.9.0](diagrams/neo4j.svg)
+![Ontology0.10.0](diagrams/neo4j.svg)
 
-[Neo4j schema](neo4j_schema.md) and [ontology source](dataset/ONTOLOGY.md) define ontology 0.9.0: six labels/seven relationship types, separate Levels and many-to-many LearningModule–MicroSkill teaching. The source-backed release has 833 nodes/4638 relationships, 85 Modules, 79 skills and 181 TEACHES mappings. Every Module teaches at least one skill and every skill has at least one provider; each Module–Skill pair is unique. Multiple providers are alternatives selected for actual skill gaps and role/Level suitability, not a requirement to study all providers. A Module used for several gaps appears once in the pathway, while mastery remains skill-specific. The earlier 2026-10-23 runtime capture observed Neo4j5.26.31, ontology0.8.0,827 nodes/4536 relationships and six ID uniqueness constraints; this is dated history, not proof of 0.9 deployment. Cardinality/ranges/prerequisite acyclicity/review/tenant visibility require application/import validation. These observations do not certify production publication.
+[Neo4j schema](neo4j_schema.md) and [ontology source](dataset/ONTOLOGY.md) define the v0.10.0 review ontology: six labels/seven relationship types, separate Levels and many-to-many LearningModule–MicroSkill teaching. The source-backed release has 833 nodes/4638 relationships, 85 Modules, 79 skills and 181 TEACHES mappings. Every Module teaches at least one skill and every skill has at least one provider; each Module–Skill pair is unique. Multiple providers are alternatives selected for actual skill gaps and role/Level suitability, not a requirement to study all providers. A Module used for several gaps appears once in the pathway, while mastery remains skill-specific. The earlier 2026-10-23 runtime capture observed Neo4j5.26.31, ontology0.8.0,827 nodes/4536 relationships and six ID uniqueness constraints; this is dated history, not proof of 0.9 deployment. Cardinality/ranges/prerequisite acyclicity/review/tenant visibility require application/import validation. These observations do not certify production publication.
 
 Ontology/catalog version, Flyway migration, Blueprint release/Draft revision and model/mapping/parameter-set pins are separate identities. New scoped effective selection affects future Blueprint versions only; resume/result/history always use original exact pins. Numerical validity cannot be inferred from a storage label or successful API response.
 
@@ -87,3 +87,21 @@ See [synchronization review](testing/system/REQ-001-002-final-synchronization-re
 ## Module–Skill cardinality alignment — 2026-10-26
 
 User-approved REQ-016-F01/F02 correction replaces the one-to-one TEACHES rule with many-to-many. Node/property inventories and store ownership are unchanged. All metadata, content pointers and relationship properties are preserved; null review fields retain their unreviewed meaning. The v0.8 question-bank envelope remains immutable historical provenance; the new local demo envelope pins v0.9 without changing any item content or identity. Existing graph/catalog versions, attempts, mastery and pathway history must not be silently overwritten, rescored or repinned. See [verification and upgrade limits](testing/system/REQ-016-many-to-many-teaching.md).
+
+## Instruction level per Module–Skill — 2026-10-27
+
+TEACHES now stores required `instructionLevel` as a case-sensitive text enum: `FOUNDATIONAL`, `INTERMEDIATE`, or `ADVANCED`. It describes the depth of instruction for that particular Module–Skill pair, not a global skill property, learner mastery or guaranteed gain. Six node labels/seven relationship types and many-to-many teaching cardinality remain unchanged.
+
+| Stored instructionLevel | Legacy numeric band, after rounding |
+|---|---|
+| FOUNDATIONAL | 0.0–0.3 |
+| INTERMEDIATE | 0.4–0.6 |
+| ADVANCED | 0.7–0.9 |
+
+User-approved conversion rounds the old number to one decimal using decimal ROUND_HALF_UP before classifying: 0.35 → 0.4 → INTERMEDIATE; 0.65 → 0.7 → ADVANCED. This is a one-time review-data conversion, not a content scoring rule. New graph records accept only the three exact text values; numeric strings, numbers, missing/blank/unknown values and retired property names are rejected. Numeric bands are explanatory metadata, not additional graph properties.
+
+All 181 TEACHES pairs are populated: 14 FOUNDATIONAL, 80 INTERMEDIATE and 87 ADVANCED. The same MS-DE06 skill is FOUNDATIONAL in MOD-DE-J-MODEL-01 and INTERMEDIATE in MOD-DE-J-QUAL-01; the values coexist independently. The current sample definitions remain NEEDS_EXPERT_REVIEW. No arithmetic sum, averaging, normalization or implicit numeric backend ranking applies to these categories.
+
+Workbook comparison view: **Instruction Levels**, with Module/Skill IDs, names and the text level linked to its TEACHES record. The original numeric source manifest is historical provenance outside Neo4j; the current conversion manifest records exact old-to-new values per pair. Duration/price, all other node/edge data and the pinned v0.9 runtime seed are unchanged. This design/review update does not deploy or migrate the running application. Future assignment of instruction levels to new content still requires expert authoring/review.
+
+Current references: [field schema](neo4j_schema.md), [conversion and provenance](dataset/INSTRUCTION_LEVELS.md), [unit evidence](testing/unit/REQ-016-instruction-level.md).

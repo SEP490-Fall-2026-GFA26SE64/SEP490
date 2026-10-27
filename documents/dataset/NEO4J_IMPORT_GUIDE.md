@@ -1,4 +1,4 @@
-# Import ontology 0.9.0 into Neo4j
+# Import ontology 0.10.0 into Neo4j
 
 The current seed has **833 nodes and 4,638 relationships**. It contains occupation RIASEC, Level-owned competencies, 85 Modules, 79 Skills, 181 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. Earlier snapshots are incompatible; use an empty isolated graph rather than overlaying releases.
 
@@ -27,29 +27,29 @@ In zsh:
 ```bash
 read -s 'ONTOLOGY_NEO4J_PASSWORD?Password for ontology review: '
 export ONTOLOGY_NEO4J_PASSWORD
-docker run -d --name ontology-v09-neo4j \
+docker run -d --name ontology-v010-neo4j \
   -p 127.0.0.1:7479:7474 \
   -p 127.0.0.1:7692:7687 \
   -e NEO4J_AUTH="neo4j/${ONTOLOGY_NEO4J_PASSWORD}" \
-  -v ontology_v09_neo4j_data:/data \
+  -v ontology_v010_neo4j_data:/data \
   neo4j:5.26-community
 ```
 
 Use an eight-character-or-longer password. In bash use `read -s -p 'Password: ' ONTOLOGY_NEO4J_PASSWORD`. If ports/container names are taken, choose free ones. Existing Browser/database on port 7475 is unaffected by these instructions.
 
-Open [Neo4j Browser](http://localhost:7479/browser/), connect to `bolt://localhost:7692`, user `neo4j`. Existing instance: `docker start ontology-v09-neo4j`.
+Open [Neo4j Browser](http://localhost:7479/browser/), connect to `bolt://localhost:7692`, user `neo4j`. Existing instance: `docker start ontology-v010-neo4j`.
 
 ## 3. Import the JSON seed
 
 ```bash
-python3 -m venv /tmp/ontology-v09-import-venv
-/tmp/ontology-v09-import-venv/bin/python -m pip install 'neo4j>=5.26,<6'
+python3 -m venv /tmp/ontology-v010-import-venv
+/tmp/ontology-v010-import-venv/bin/python -m pip install 'neo4j>=5.26,<6'
 export ONTOLOGY_NEO4J_URI='bolt://localhost:7692'
-/tmp/ontology-v09-import-venv/bin/python documents/dataset/import/import_neo4j.py
+/tmp/ontology-v010-import-venv/bin/python documents/dataset/import/import_neo4j.py
 unset ONTOLOGY_NEO4J_PASSWORD
 ```
 
-If running from this dataset folder, use `python3 import/import_neo4j.py --dry-run`; the seed defaults to `import/ontology_seed.json`. To specify it explicitly use `--file import/ontology_seed.json`. Keep the sibling `sources/` folder and `import/content/` together with the scripts.
+If running from this dataset folder, use `python3 import/import_neo4j.py --dry-run`; the seed defaults to `import/ontology_seed-v010.json`. To specify it explicitly use `--file import/ontology_seed-v010.json`. Keep the sibling `sources/` folder and `import/content/` together with the scripts.
 
 The importer supports an empty graph or an exact repeat of this snapshot. It refuses any different graph, including one with changed reviewer decisions. It creates six node-ID uniqueness constraints and imports all records in one managed data transaction; DDL commits separately. Stop other writers during review import. No deletion, overwrite migration, concurrent production ingestion or backend adapter migration is performed.
 
@@ -145,7 +145,7 @@ The last query must return 0.
 
 ## Excel and seed synchronization
 
-[ontology_dataset.xlsx](ontology_dataset.xlsx) is the review workbook. [import/ontology_seed.json](import/ontology_seed.json) is the executable import seed. Both files have been regenerated for 0.9.0 and checked for record equality. The importer reads JSON; it does not read Excel or automatically apply human review inputs. If you edit workbook records, regenerate the seed and rerun validation before importing. Assessment policies/rubrics/readiness tasks remain outside the seed and Neo4j; learner results are stored separately.
+[ontology_dataset.xlsx](ontology_dataset.xlsx) is the review workbook. [import/ontology_seed-v010.json](import/ontology_seed-v010.json) is the executable import seed. Both files have been regenerated for 0.10.0 and checked for record equality. The importer reads JSON; it does not read Excel or automatically apply human review inputs. If you edit workbook records, regenerate the seed and rerun validation before importing. Assessment policies/rubrics/readiness tasks remain outside the seed and Neo4j; learner results are stored separately.
 
 ## Inspect many-to-many candidates
 
@@ -169,8 +169,21 @@ The grouped result includes a Module once with all matched gaps. Multiple rows f
 - Steps: inspect LearningModules and TEACHES sheets, run entity/relationship counts and both orphan queries, then run the candidate query with an actual Level and confirmed gap IDs.
 - Expected: 85 Modules, 79 Skills and 181 TEACHES pairs; 833 total nodes and 4,638 relationships; no orphan rows. Some Modules teach multiple skills and some skills have multiple providers. Course and retired assessment/profile fields are absent.
 
-Current automated evidence: local validation/dry-run and ten regression tests pass; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.
+Current automated evidence: local validation/dry-run and 25 regression tests pass; workbook entity/relationship rows are checked against JSON. These results do not certify the legacy application, content suitability, expert approval or a running database migration. This run covers data/validation only; runtime Testcontainers/Compose suites were not rerun, and legacy API compatibility remains unverified.
 
 ## Baseline compatibility
 
 The local Compose baseline seed uses the [v09 envelope](question-bank/15-1212.00/ONTOLOGY_V09.md). Original v08 source/envelope/calibration pins are archived rather than repinned; all135 question item identities/content remain unchanged. Existing populated v08 databases require an explicit reviewed cutover, not an automatic overwrite or volume reset. [Executed REQ-016 checks and manual procedures](../testing/system/REQ-016-many-to-many-teaching.md).
+
+## Inspect instructionLevel (text)
+
+```cypher
+MATCH (m:LearningModule)-[t:TEACHES]->(s:MicroSkill {id:'MS-DE06'})
+RETURN m.id, m.title, s.id, s.name, t.instructionLevel,
+       m.duration, m.price
+ORDER BY m.id;
+```
+
+Expected: MOD-DE-J-MODEL-01 has FOUNDATIONAL; MOD-DE-J-QUAL-01 has INTERMEDIATE. The same skill retains independent values across providers. All 181 TEACHES records contain only one of the three exact text values (14/80/87 by FOUNDATIONAL/INTERMEDIATE/ADVANCED). No numeric coverage property remains in the v0.10 review graph payload.
+
+Workbook: inspect TEACHES column J and the Instruction Levels comparison sheet. Local importer rejects numbers, numeric strings, unknown enum values and missing instructionLevel. [Conversion rules and manual checklist](INSTRUCTION_LEVELS.md). Existing runtime graph is not modified by editing the dataset.

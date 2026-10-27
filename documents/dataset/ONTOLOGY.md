@@ -1,10 +1,10 @@
-# Ontology — framework, fields and data provenance (0.9.0)
+# Ontology — framework, fields and data provenance (0.10.0)
 
-Updated 26 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
+Updated 27 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
 
 ## Files and framework
 
-[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed.json](import/ontology_seed.json) describe the same catalog: **833 nodes and 4,638 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
+[ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed-v010.json](import/ontology_seed-v010.json) describe the same catalog: **833 nodes and 4,638 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
 
 O*NET supplies Occupations, sample reported titles and occupation RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
 
@@ -20,6 +20,24 @@ flowchart LR
 ```
 
 Each role owns three Levels; each Level owns competency groups and skill requirements. Competency is derived from all member skills passing at the owning Level, with no independent score. A Module teaches one or more skills; a skill may have several teaching Modules. This release requires teaching coverage for every skill. There is no Course, Level–Module link or global module sequence.
+
+## Instruction level per Module–Skill — 2026-10-27
+
+TEACHES now stores required `instructionLevel` as a case-sensitive text enum: `FOUNDATIONAL`, `INTERMEDIATE`, or `ADVANCED`. It describes the depth of instruction for that particular Module–Skill pair, not a global skill property, learner mastery or guaranteed gain. Six node labels/seven relationship types and many-to-many teaching cardinality remain unchanged.
+
+| Stored instructionLevel | Legacy numeric band, after rounding |
+|---|---|
+| FOUNDATIONAL | 0.0–0.3 |
+| INTERMEDIATE | 0.4–0.6 |
+| ADVANCED | 0.7–0.9 |
+
+User-approved conversion rounds the old number to one decimal using decimal ROUND_HALF_UP before classifying: 0.35 → 0.4 → INTERMEDIATE; 0.65 → 0.7 → ADVANCED. This is a one-time review-data conversion, not a content scoring rule. New graph records accept only the three exact text values; numeric strings, numbers, missing/blank/unknown values and retired property names are rejected. Numeric bands are explanatory metadata, not additional graph properties.
+
+All 181 TEACHES pairs are populated: 14 FOUNDATIONAL, 80 INTERMEDIATE and 87 ADVANCED. The same MS-DE06 skill is FOUNDATIONAL in MOD-DE-J-MODEL-01 and INTERMEDIATE in MOD-DE-J-QUAL-01; the values coexist independently. The current sample definitions remain NEEDS_EXPERT_REVIEW. No arithmetic sum, averaging, normalization or implicit numeric backend ranking applies to these categories.
+
+Workbook comparison view: **Instruction Levels**, with Module/Skill IDs, names and the text level linked to its TEACHES record. The original numeric source manifest is historical provenance outside Neo4j; the current conversion manifest records exact old-to-new values per pair. Duration/price, all other node/edge data and the pinned v0.9 runtime seed are unchanged. This design/review update does not deploy or migrate the running application. Future assignment of instruction levels to new content still requires expert authoring/review.
+
+[Conversion and provenance](INSTRUCTION_LEVELS.md). Module duration/price remain 150–915 minutes and 150,000–1,560,000 VND; see [estimation method](MODULE_EFFORT_PRICE.md).
 
 ## Counts
 
@@ -395,8 +413,9 @@ Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node b
 
 - REQUIRES_SKILL: requiredScore in [0,1], isMandatory.
 - HAS_SKILL_PREREQUISITE: requiredScore in [0,1], interpreted as foundation readiness.
+- TEACHES: instructionLevel, required text enum FOUNDATIONAL / INTERMEDIATE / ADVANCED, independent per Module–Skill pair.
 - Other relationships: common metadata only.
-- learningOutcome, expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
+- expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
 - TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
 - Sources/provenance, rubric definitions, assessment prompts, results and learner state stay outside Neo4j. The seed now contains only six node sections and relationships.
 
@@ -465,6 +484,6 @@ A HAS_SKILL_PREREQUISITE B requires readiness for foundation B before learning A
 
 ## Release and runtime boundary
 
-Excel, JSON, import validation, schema and diagram describe 0.9.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
+Excel, JSON, import validation, schema and diagram describe 0.10.0. Historical graph scripts/migrator are retained only in test scope; production migration does not run them, and legacy development seeders are removed. Legacy role/skill CRUD remains opt-in and must not operate on this catalog until the owning contracts are converted. The local Compose seed still pins the v0.9 catalog and its new baseline import envelope; it does not overwrite a non-empty v0.8 graph. Existing calibration and assessment history retain their original byte-pinned source records. See the current [architecture](../ARCHITECTURE.md) and [REQ-016 verification/upgrade limits](../testing/system/REQ-016-many-to-many-teaching.md).
 
-Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed.json supplies active graph data.
+Keep import/, sources/ and the two Markdown files with the workbook. Historical source evidence is retained for traceability; only import/ontology_seed-v010.json supplies active graph data.
