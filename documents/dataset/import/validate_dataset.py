@@ -1,12 +1,12 @@
-"""Validate the source-backed 0.10.0 catalog without contacting Neo4j."""
+"""Validate the locally authored v0.11 review catalog without contacting Neo4j."""
 import json,math
 from collections import Counter,defaultdict
 from pathlib import Path
-from instruction_levels import INSTRUCTION_LEVELS
+from teaching_contract import TEACHING_FOCI, DIFFICULTY_LEVELS
 LABELS={'Occupations':'Occupation','TargetRoles':'TargetRole','Levels':'Level','Competencies':'Competency','MicroSkills':'MicroSkill','LearningModules':'LearningModule'}
-COUNTS={'Occupations':5,'TargetRoles':48,'Levels':144,'Competencies':472,'MicroSkills':79,'LearningModules':85}
+COUNTS={'Occupations':5,'TargetRoles':48,'Levels':144,'Competencies':472,'MicroSkills':79,'LearningModules':246}
 TYPES={'HAS_ROLE':{('Occupation','TargetRole')},'HAS_LEVEL':{('TargetRole','Level')},'HAS_COMPETENCY':{('Level','Competency')},'HAS_SKILL':{('Competency','MicroSkill')},'REQUIRES_SKILL':{('Level','MicroSkill')},'TEACHES':{('LearningModule','MicroSkill')},'HAS_SKILL_PREREQUISITE':{('MicroSkill','MicroSkill')}}
-EDGE_COUNTS={'REQUIRES_SKILL':1891,'HAS_SKILL':1891,'HAS_COMPETENCY':472,'TEACHES':181,'HAS_LEVEL':144,'HAS_ROLE':48,'HAS_SKILL_PREREQUISITE':11}
+EDGE_COUNTS={'REQUIRES_SKILL':1891,'HAS_SKILL':1891,'HAS_COMPETENCY':472,'TEACHES':664,'HAS_LEVEL':144,'HAS_ROLE':48,'HAS_SKILL_PREREQUISITE':11}
 
 def require(ok,message):
     if not ok:raise ValueError(message)
@@ -32,18 +32,19 @@ def validate(file):
     require(len({e['id'] for e in edges})==len(edges),'Duplicate edge ID')
     require(len({(e['type'],e['fromId'],e['toId']) for e in edges})==len(edges),'Duplicate edge pair')
     for r in list(nodes.values())+edges:
-        require(r['version']=='0.10.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
+        require(r['version']=='0.11.0' and r['status']=='ACTIVE' and r['reviewStatus']=='NEEDS_EXPERT_REVIEW','Unexpected release/review state')
         require(r['reviewedBy'] is None and r['reviewedAt'] is None,'Unsubstantiated approval')
-        require(not {'learningOutcome','outcomeCoverage','canonicalProfileKey','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
+        require(not {'instructionLevel','learningOutcome','outcomeCoverage','canonicalProfileKey','expectedOutcome','rubricId','rubricVersion','readinessOutcome','readinessAssessmentId','readinessAssessmentVersion','sourceConceptUri','sourceLocator','sourceVerification'} & r.keys(),'Retired or source fields leaked into graph')
     for r in list(nodes.values())+edges:
-        require('instructionLevel' not in r or r.get('type')=='TEACHES','instructionLevel belongs only on TEACHES')
+        require(not {'teachingFocus','difficultyLevel'} & r.keys() or r.get('type')=='TEACHES','Teaching properties belong only on TEACHES')
     for e in edges:
         t,a,b=e['type'],e['fromId'],e['toId'];require(a in nodes and b in nodes,'Missing endpoint')
         require((labels[a],labels[b]) in TYPES[t],'Wrong endpoint labels')
         sets[(t,a)].add(b);incoming[(t,b)].add(a)
         if t=='TEACHES':
-            v=e.get('instructionLevel')
-            require(type(v) is str and v in INSTRUCTION_LEVELS,'Invalid instructionLevel')
+            focus=e.get('teachingFocus');difficulty=e.get('difficultyLevel')
+            require(type(focus) is str and focus in TEACHING_FOCI,'Invalid teachingFocus')
+            require(type(difficulty) is str and difficulty in DIFFICULTY_LEVELS,'Invalid difficultyLevel')
         if t=='REQUIRES_SKILL':
             require(type(e['requiredScore']) in (int,float) and math.isfinite(e['requiredScore']) and 0<=e['requiredScore']<=1,'Invalid threshold')
             require(type(e['isMandatory']) is bool,'Invalid mandatory flag')
@@ -75,10 +76,12 @@ def validate(file):
         v=m.get('price')
         require(type(v) in (int,float) and math.isfinite(v) and v>0,'Invalid price')
         require(len(sets['TEACHES',m['id']])>=1,'Each module must teach at least one skill')
+        require(sum(e['type']=='TEACHES' and e['fromId']==m['id'] and e['teachingFocus']=='PRIMARY' for e in edges)==1,'Each module must have exactly one PRIMARY skill')
         content=(base/m['contentUri']).resolve()
         require(content.is_relative_to(base.resolve()) and content.is_file(),'Missing or unsafe module content')
     for skill in data['MicroSkills']:
         require(len(incoming['TEACHES',skill['id']])>=1,'Each skill must have at least one module')
+        require(any(e['type']=='TEACHES' and e['toId']==skill['id'] and e['teachingFocus']=='PRIMARY' for e in edges),'Each skill must have a PRIMARY provider')
     g=defaultdict(set)
     for e in edges:
         if e['type']=='HAS_SKILL_PREREQUISITE':
@@ -99,5 +102,5 @@ def validate(file):
 
 if __name__=='__main__':
     import argparse
-    p=argparse.ArgumentParser();p.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v010.json');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v011.json');a=p.parse_args()
     _,report=validate(a.file);print(json.dumps(report,indent=2))

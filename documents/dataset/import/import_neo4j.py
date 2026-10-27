@@ -1,10 +1,10 @@
-"""Import catalog 0.10.0 into an empty or identical isolated Neo4j graph."""
+"""Import catalog 0.11.0 into an empty or identical isolated Neo4j graph."""
 import argparse,getpass,json,os
 from pathlib import Path
 from collections import defaultdict
 from validate_dataset import validate,require,LABELS,TYPES
 parser=argparse.ArgumentParser()
-parser.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v010.json')
+parser.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v011.json')
 parser.add_argument('--dry-run',action='store_true')
 args=parser.parse_args()
 data,report=validate(args.file)
@@ -48,7 +48,7 @@ def import_graph(tx):
                      f"MATCH (b:{end} {{id: row.toId}}) CREATE (a)-[r:{kind}]->(b) SET r = row.props")
             tx.run(query, rows=rows).consume()
     require(snapshot(tx) == (nodes, edges), "Graph differs from input; transaction rolled back")
-    return "Imported and verified: 833 nodes and 4638 relationships."
+    return "Imported and verified: 994 nodes and 5121 relationships."
 
 with GraphDatabase.driver(uri, auth=(user, password)) as driver:
     driver.verify_connectivity()
@@ -56,6 +56,6 @@ with GraphDatabase.driver(uri, auth=(user, password)) as driver:
         session.execute_read(preflight)
         # Schema statements commit separately from the data transaction.
         for label in LABELS.values():
-            session.run(f"CREATE CONSTRAINT ontology_v010_{label.lower()}_id IF NOT EXISTS "
+            session.run(f"CREATE CONSTRAINT ontology_v011_{label.lower()}_id IF NOT EXISTS "
                         f"FOR (n:{label}) REQUIRE n.id IS UNIQUE").consume()
         print(session.execute_write(import_graph))

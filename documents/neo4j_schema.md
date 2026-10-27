@@ -1,6 +1,6 @@
-# Schema Neo4j — Ontology v0.10.0
+# Schema Neo4j — Ontology v0.11.0
 
-Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.10.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
+Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.11.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ![Sơ đồ ontology0.9.0](diagrams/neo4j.svg)
 
@@ -12,7 +12,7 @@ Catalog uses stable string Role/Occupation IDs and separate Levels. PostgreSQL o
 
 **Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md).
 
-Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.10.0.
+Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.11.0.
 
 ```mermaid
 flowchart LR
@@ -44,7 +44,7 @@ Các field dưới đây được lưu trực tiếp thành property trên graph
 | Field | Kiểu | Ý nghĩa và cách dùng |
 |---|---|---|
 | `id` | String | ID ổn định của bản ghi. Dùng để nối và truy vấn; không dùng tên hiển thị làm khóa. Import kiểm tra ID không trùng trong từng tập bản ghi node/relationship. |
-| `version` | String | Phiên bản catalog. Phiên bản hiện tại là `0.10.0`. Giúp xác định bộ định nghĩa mà dữ liệu thuộc về; không đồng nghĩa với phiên bản rubric hay nội dung học. |
+| `version` | String | Phiên bản catalog. Phiên bản hiện tại là `0.11.0`. Giúp xác định bộ định nghĩa mà dữ liệu thuộc về; không đồng nghĩa với phiên bản rubric hay nội dung học. |
 | `status` | Enum/String | Trạng thái vòng đời: `DRAFT`, `ACTIVE`, `ARCHIVED`. Dataset hiện dùng `ACTIVE` cho các node và relationship. |
 | `reviewStatus` | Enum/String | Trạng thái chuyên gia duyệt: `NEEDS_EXPERT_REVIEW`, `APPROVED`, `REJECTED`. Dataset hiện đang chờ duyệt. |
 | `reviewedBy` | String hoặc null | Danh tính người thực sự phê duyệt/rà soát. Không tự điền người duyệt khi dữ liệu chưa được duyệt. |
@@ -99,7 +99,7 @@ Level mô tả kỳ vọng năng lực và mức tự chủ trong một TargetRo
 | `rank` | Integer | Thứ bậc: Junior = 1, Middle = 2, Senior = 3. Dùng để sắp xếp; không phải điểm đánh giá. |
 | `attainmentRule` | Enum/String | Hiện là `ALL_MANDATORY_SKILLS`: chỉ đạt Level khi tất cả skill bắt buộc của Level đều đạt. |
 
-Skill thuộc Level và ngưỡng điểm được xác định qua `REQUIRES_SKILL`. Level không lưu điểm trung bình để bù cho một skill bắt buộc bị trượt. `targetRoleId` chỉ dùng nối Excel/JSON; sau import ownership nằm trên `HAS_LEVEL`.
+Mỗi Level có tập skill riêng qua `REQUIRES_SKILL`; các Level cùng role có thể yêu cầu các skill khác nhau, không bắt buộc lồng nhau. Ngưỡng điểm cũng nằm trên từng cạnh này. Level không lưu điểm trung bình để bù cho một skill bắt buộc bị trượt. `targetRoleId` chỉ dùng nối Excel/JSON; sau import ownership nằm trên `HAS_LEVEL`.
 
 Junior/Middle/Senior là các tier của nhóm, tham khảo SFIA và UK; không phải phép ánh xạ chính thức một-một sang cấp SFIA hoặc ngạch công việc UK.
 
@@ -172,19 +172,18 @@ A → B nghĩa là xác nhận skill nền tảng B trước khi học skill A. 
 
 Quan hệ này chỉ có `requiredScore` và metadata chung; mô tả readiness và tham chiếu bài đánh giá được quản lý ngoài Neo4j. Backend cần mapping assessment rõ ràng cho cặp skill phụ thuộc–skill nền tảng trước khi xác nhận readiness. Kết quả phải khớp learner, skill nền tảng, quan hệ tiên quyết và phiên bản task/rubric/catalog. Readiness `PASS` đáp ứng điều kiện; `FAIL` hoặc `NOT_ASSESSED` chưa đáp ứng. Không tự dùng kết quả đánh giá skill theo Level thay cho readiness vì rubric và nhiệm vụ khác nhau.
 
-Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL` chỉ có metadata chung. `TEACHES` có thêm `instructionLevel`.
+Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL` chỉ có metadata chung. `TEACHES` có hai field `teachingFocus` và `difficultyLevel`.
 
-### 4.3. TEACHES — instructionLevel
+### 4.3. TEACHES — teachingFocus và difficultyLevel
 
 | Field | Kiểu | Ý nghĩa |
 |---|---|---|
-| `instructionLevel` | Enum/String, bắt buộc | Độ sâu giảng dạy của skill trong Module cụ thể: `FOUNDATIONAL`, `INTERMEDIATE`, `ADVANCED`. |
+| `teachingFocus` | Enum/String, bắt buộc | `PRIMARY`: mục tiêu dạy chính; `SUPPORTING`: thực hành hỗ trợ; `INCIDENTAL`: chỉ xuất hiện trong ngữ cảnh, không tính là đã bù gap. |
+| `difficultyLevel` | Enum/String, bắt buộc | `LOW`, `MEDIUM`, `HIGH`: độ khó nhiệm vụ của skill trong Module cụ thể. |
 
-Quy đổi dữ liệu số cũ: làm tròn một chữ số thập phân theo ROUND_HALF_UP, rồi phân loại 0.0–0.3 → FOUNDATIONAL; 0.4–0.6 → INTERMEDIATE; 0.7–0.9 → ADVANCED. Người dùng đã chốt 0.35 → INTERMEDIATE và 0.65 → ADVANCED. Graph chỉ lưu text, không lưu điểm số hoặc khoảng điểm kèm theo.
+Hai field độc lập trên từng cặp Module–Skill. Ví dụ MOD-FOCUS-CORE01-HIGH có MS-CORE01 = PRIMARY/HIGH, MS-CORE02 = SUPPORTING/MEDIUM và MS-CORE03 = INCIDENTAL/LOW. Không còn instructionLevel hay điểm coverage trên graph v0.11. Không suy độ khó từ gap, requiredScore hoặc tên Senior; không dùng INCIDENTAL thay thế bằng chứng học/đạt skill.
 
-181 mapping gồm 14 FOUNDATIONAL, 80 INTERMEDIATE, 87 ADVANCED. Cùng MS-DE06 có FOUNDATIONAL trong MOD-DE-J-MODEL-01 và INTERMEDIATE trong MOD-DE-J-QUAL-01. Đây là thuộc tính riêng của từng cạnh TEACHES, không phải thuộc tính chung trên MicroSkill. Các mức không được cộng/chuẩn hóa và không tự chứng minh learner đạt skill. Chính sách gán mức cho nội dung mới vẫn cần chuyên gia duyệt.
-
-Giữ nguyên duration/price của 85 Module (150–915 phút và 150.000–1.560.000 VND), metadata và mọi quan hệ còn lại. Các ước tính vẫn NEEDS_EXPERT_REVIEW. Xem [hướng dẫn chuyển đổi](dataset/INSTRUCTION_LEVELS.md).
+Catalog review giữ 85 Module cũ, thêm 161 gói thực hành tập trung, tổng 246 Module/664 mapping. Mỗi skill có lựa chọn PRIMARY ở LOW/MEDIUM/HIGH trong dataset này. Nội dung mới là scaffold chờ tác giả/chuyên gia hoàn thiện, chưa phải khóa học được duyệt. Chi tiết và quy trình kiểm tra: [Teaching focus và difficulty](dataset/TEACHING_FOCUS_DIFFICULTY.md).
 
 ## 5. Dữ liệu đánh giá nằm ngoài Neo4j
 
@@ -222,7 +221,7 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 ### Ràng buộc TEACHES N–N và nội dung theo cấp độ
 
 - Mỗi Module trong catalog hiện có ít nhất một cạnh `TEACHES` tới MicroSkill; mỗi MicroSkill có ít nhất một Module dạy. Không giới hạn mỗi phía ở một cạnh. Mỗi cặp Module–Skill chỉ có một mapping trong snapshot.
-- Bộ kiểm tra import và thao tác ghi catalog phải kiểm tra cả hai phía, kể cả node không có cạnh. Constraint duy nhất trên ID không tự đảm bảo cardinality này. Importer v0.10 đã kiểm tra cả hai phía; API ghi catalog trong tương lai cũng phải thực thi ràng buộc này.
+- Bộ kiểm tra import và thao tác ghi catalog phải kiểm tra cả hai phía, kể cả node không có cạnh. Constraint duy nhất trên ID không tự đảm bảo cardinality này. Importer v0.11 đã kiểm tra cả hai phía; API ghi catalog trong tương lai cũng phải thực thi ràng buộc này.
 - Một Module dùng chung cho các Level yêu cầu cùng skill. Nội dung có thể chia thành phần nền tảng, thực hành và nâng cao trong cùng Module; nhiệm vụ và bằng chứng đánh giá được định nghĩa trong cấu hình assessment ngoài graph, gắn với skill và ngữ cảnh Level tương ứng.
 - Hoàn thành Module không đồng nghĩa đạt skill ở mọi Level. Nếu nội dung chưa đáp ứng ngữ cảnh/độ sâu của Level, trả về `PATHWAY_UNRESOLVED`, không suy ra đủ năng lực chỉ vì tồn tại cạnh `TEACHES`.
 - Với mỗi skill gap, xét các Module thay thế theo nội dung, độ sâu, readiness và phê duyệt; không mặc định học tất cả Module dạy cùng skill. Một Module bù nhiều gap chỉ xuất hiện một lần trong cùng kế hoạch học, với danh sách skill cần học rõ ràng.
@@ -234,7 +233,7 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 O*NET cung cấp Occupation, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
 
-[JSON seed](dataset/import/ontology_seed-v010.json) và [Excel review](dataset/ontology_dataset.xlsx) có **833 node, 4.638 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 85 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.10. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+[JSON seed](dataset/import/ontology_seed-v011.json) và [Excel review](dataset/ontology_dataset.xlsx) có **994 node, 5.121 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 246 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.11. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
 
 File nguồn, URI đối chiếu và minh chứng được giữ trong [ONTOLOGY.md](dataset/ONTOLOGY.md) và thư mục `dataset/sources/`, không đưa thành các property `sourceConceptUri`, `sourceLocator`, `sourceVerification` trên graph.
 
@@ -258,9 +257,32 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 | HAS_COMPETENCY | Không có | 472 |
 | HAS_SKILL | Không có | 1.891 |
 | REQUIRES_SKILL | requiredScore, isMandatory | 1.891 |
-| TEACHES | instructionLevel | 181 |
+| TEACHES | teachingFocus, difficultyLevel | 664 |
 | HAS_SKILL_PREREQUISITE | requiredScore | 11 |
 
 Mỗi TargetRole được xử lý riêng theo Level và bộ requirement. Các role có cùng skill có thể tạo ra lộ trình giống nhau; không có cơ chế gom role bằng mã profile.
 
-Các field đã bỏ khỏi graph: `canonicalProfileKey`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.
+Các field đã bỏ khỏi graph: `instructionLevel`, `outcomeCoverage`, `learningOutcome`, `canonicalProfileKey`, `expectedOutcome`, `rubricId`, `rubricVersion`, `readinessOutcome`, `readinessAssessmentId`, `readinessAssessmentVersion`. Không có node Course, quan hệ Course hoặc cạnh trực tiếp Level–LearningModule trong schema này.
+
+
+## Exactly one PRIMARY per Module — confirmed 2026-10-28
+
+Every Module must have **exactly one** TEACHES relationship with teachingFocus=PRIMARY. Zero or two-or-more primary links are invalid, including replacements that leave a module without its primary skill. A MicroSkill may still be PRIMARY in many different Modules at the same or different difficulties. SUPPORTING and INCIDENTAL links remain optional; they do not count as additional primary objectives.
+
+All 246 current Modules satisfy the rule; 664 teaching pairs remain populated (246 PRIMARY, 257 SUPPORTING, 161 INCIDENTAL). Every skill retains PRIMARY LOW/MEDIUM/HIGH choices. Nine alternative packages (DE01, FS03 and FS07 at each difficulty, IDs ending -ALT) provide same-primary/same-difficulty options with different supporting skills and verification tasks. These are locally authored scaffolds pending review, not vendor courses or validated learning gains.
+
+The nine formerly co-primary MODEL/SERVICE/AUTO packages now have one main objective, smaller supporting work and content version 1.3 in new -single-primary.md files. Existing IDs, difficulty values, prerequisite/Level requirements and all original price/duration values are preserved. The revised titles/content pointers are audited in revisedExistingModules in the authoring manifest; historical original files and v0.10/v0.9 seeds remain unchanged.
+
+The isolated import validator enforces the count and tests reject both zero and multiple PRIMARY links. Neo4j uniqueness constraints alone cannot enforce this relationship aggregate; future catalog write APIs must apply it transactionally. No runtime API/database upgrade is claimed.
+
+Manual check: open Teaching Map or Module Checks in the workbook. Every module must have Primary count=1 and structural result OK. Compare MOD-DE-J-MODEL-01 with MOD-FOCUS-DE01-LOW-ALT: both teach MS-DE01 as PRIMARY/LOW, but use different supporting skills/tasks. Skill Options must retain nonzero counts for all three difficulties. On an optional isolated review graph at http://localhost:7479/browser/, run:
+
+```cypher
+MATCH (m:LearningModule)
+OPTIONAL MATCH (m)-[t:TEACHES {teachingFocus:'PRIMARY'}]->(:MicroSkill)
+WITH m, count(t) AS primaryCount
+WHERE primaryCount <> 1
+RETURN m.id, primaryCount;
+```
+
+Expected: no rows. This is a manual procedure; no live runtime database is changed.
