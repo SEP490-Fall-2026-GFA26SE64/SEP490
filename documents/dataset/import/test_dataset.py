@@ -56,7 +56,7 @@ class CatalogContractTest(unittest.TestCase):
                         if isinstance(value,str):self.assertTrue(value.strip(),(row['id'],key))
         for edge in self.data['relationships']:
             properties={'type','fromId','toId'}
-            if edge['type']=='TEACHES':properties|={'outcomeCoverage'}
+            if edge['type']=='TEACHES':properties|={'instructionLevel'}
             if edge['type']=='REQUIRES_SKILL':properties|={'requiredScore','isMandatory'}
             if edge['type']=='HAS_SKILL_PREREQUISITE':properties|={'requiredScore'}
             self.assertEqual(common|properties,set(edge),edge['id'])
@@ -94,7 +94,7 @@ class CatalogContractTest(unittest.TestCase):
         self.check_invalid(mutate,'Duplicate edge pair')
 
     def test_retired_field_rejected(self):
-        self.check_invalid(lambda d:d['LearningModules'][0].update(outcomeCoverage='retired'),'belongs only on TEACHES')
+        self.check_invalid(lambda d:d['LearningModules'][0].update(instructionLevel='retired'),'belongs only on TEACHES')
 
     def test_retired_profile_key_rejected(self):
         self.check_invalid(lambda d:d['TargetRoles'][0].update(canonicalProfileKey='PROFILE-DEV'),'fields leaked')
@@ -113,31 +113,31 @@ class CatalogContractTest(unittest.TestCase):
             next(e for e in d['relationships'] if e['type']=='HAS_SKILL_PREREQUISITE')['requiredScore']=True
         self.check_invalid(mutate,'Invalid readiness threshold')
 
-    def test_oc_is_independent_and_preserved_in_graph_payload(self):
+    def test_instruction_level_is_independent_and_preserved_in_graph_payload(self):
         data=copy.deepcopy(self.data)
         from collections import Counter
         counts=Counter(e['fromId'] for e in data['relationships'] if e['type']=='TEACHES')
         module=next(m for m,n in counts.items() if n==3)
         selected=[e for e in data['relationships'] if e['type']=='TEACHES' and e['fromId']==module]
-        for edge,value in zip(selected,[0.5,0.6,0.7]):edge['outcomeCoverage']=value
+        for edge,value in zip(selected,['FOUNDATIONAL','INTERMEDIATE','ADVANCED']):edge['instructionLevel']=value
         original=Path.read_text
         def read(path,*args,**kwargs):
             return json.dumps(data) if path==SEED else original(path,*args,**kwargs)
         with patch.object(Path,'read_text',read):validated,_=validate(SEED)
         nodes,edges,_=build_payload(validated)
-        self.assertAlmostEqual(sum(edges[e['id']][3]['outcomeCoverage'] for e in selected),1.8)
+        self.assertEqual([edges[e['id']][3]['instructionLevel'] for e in selected],['FOUNDATIONAL','INTERMEDIATE','ADVANCED'])
         for row in data['LearningModules']:
             self.assertEqual(nodes[row['id']][1]['duration'],row['duration'])
             self.assertEqual(nodes[row['id']][1]['price'],row['price'])
         for row in data['Levels']:self.assertNotIn('context',nodes[row['id']][1])
 
-    def test_invalid_oc_values_rejected(self):
-        for value in [None,True,'0.5',-0.1,1.1,float('nan'),float('inf')]:
+    def test_invalid_instruction_levels_rejected(self):
+        for value in [None,True,0.5,'0.5','', 'foundational','FOUNDATION','EXPERT',[],{},float('nan'),float('inf')]:
             with self.subTest(value=value):
-                self.check_invalid(lambda d:next(e for e in d['relationships'] if e['type']=='TEACHES').update(outcomeCoverage=value),'Invalid outcomeCoverage')
+                self.check_invalid(lambda d:next(e for e in d['relationships'] if e['type']=='TEACHES').update(instructionLevel=value),'Invalid instructionLevel')
 
-    def test_missing_oc_rejected(self):
-        self.check_invalid(lambda d:next(e for e in d['relationships'] if e['type']=='TEACHES').pop('outcomeCoverage'),'Invalid outcomeCoverage')
+    def test_missing_instruction_level_rejected(self):
+        self.check_invalid(lambda d:next(e for e in d['relationships'] if e['type']=='TEACHES').pop('instructionLevel'),'Invalid instructionLevel')
 
     def test_invalid_duration_values_rejected(self):
         for value in [None,True,0,-1,1.5,'60',float('inf')]:
@@ -177,27 +177,38 @@ class CatalogContractTest(unittest.TestCase):
                 self.assertLess(junior[field],middle[field])
                 self.assertLess(middle[field],senior[field])
 
-    def test_same_skill_has_independent_oc_in_different_modules(self):
+    def test_same_skill_has_independent_instruction_levels_in_different_modules(self):
         _,edges,_=build_payload(self.data)
-        values={a:props['outcomeCoverage'] for kind,a,b,props in edges.values()
+        values={a:props['instructionLevel'] for kind,a,b,props in edges.values()
                 if kind=='TEACHES' and b=='MS-DE06'}
-        self.assertEqual(values['MOD-DE-J-MODEL-01'],0.2)
-        self.assertEqual(values['MOD-DE-J-QUAL-01'],0.5)
+        self.assertEqual(values['MOD-DE-J-MODEL-01'],'FOUNDATIONAL')
+        self.assertEqual(values['MOD-DE-J-QUAL-01'],'INTERMEDIATE')
         self.assertGreater(len(set(values.values())),1)
 
     def test_old_oc_property_name_rejected(self):
-        def mutate(data):
-            edge=next(e for e in data['relationships'] if e['type']=='TEACHES')
-            edge['learningOutcome']=edge.pop('outcomeCoverage')
-        self.check_invalid(mutate,'fields leaked')
+        for old_name in ['learningOutcome','outcomeCoverage']:
+            def mutate(data):
+                edge=next(e for e in data['relationships'] if e['type']=='TEACHES')
+                edge[old_name]=edge.pop('instructionLevel')
+            with self.subTest(old_name=old_name):self.check_invalid(mutate,'fields leaked')
 
-    def test_every_oc_sample_matches_its_exact_pair(self):
-        manifest=json.loads((SEED.parent.parent/'sources/local_review/module_skill_oc_v010.json').read_text())
-        expected={(r['relationshipId'],r['moduleId'],r['skillId']):r['outcomeCoverage']
-                  for r in manifest['teachingOutcomes']}
-        actual={(e['id'],e['fromId'],e['toId']):e['outcomeCoverage']
+    def test_every_instruction_level_sample_matches_its_exact_pair(self):
+        manifest=json.loads((SEED.parent.parent/'sources/local_review/module_instruction_levels_v010.json').read_text())
+        expected={(r['relationshipId'],r['moduleId'],r['skillId']):r['instructionLevel']
+                  for r in manifest['teachingInstructionLevels']}
+        actual={(e['id'],e['fromId'],e['toId']):e['instructionLevel']
                 for e in self.data['relationships'] if e['type']=='TEACHES'}
         self.assertEqual(len(expected),181)
         self.assertEqual(expected,actual)
+
+    def test_legacy_conversion_rounds_half_up_before_classification(self):
+        from instruction_levels import convert_legacy_coverage
+        cases={0.0:'FOUNDATIONAL',0.25:'FOUNDATIONAL',0.3:'FOUNDATIONAL',
+               0.35:'INTERMEDIATE',0.4:'INTERMEDIATE',0.5:'INTERMEDIATE',0.6:'INTERMEDIATE',
+               0.65:'ADVANCED',0.7:'ADVANCED',0.85:'ADVANCED',0.9:'ADVANCED'}
+        for value,expected in cases.items():
+            with self.subTest(value=value):self.assertEqual(convert_legacy_coverage(value),expected)
+        for value in [True,None,'0.5',-0.1,0.91,1,float('nan'),float('inf')]:
+            with self.subTest(invalid=value),self.assertRaises(ValueError):convert_legacy_coverage(value)
 
 if __name__=='__main__':unittest.main()

@@ -1,3 +1,5 @@
+> Historical numeric-coverage evidence. Superseded for the current text field by [instructionLevel evidence](REQ-016-instruction-level.md). Earlier run results below retain their original numeric contract.
+
 # REQ-016-F01/F02 — OC diagram and dataset manual checks
 
 Date: 2026-10-27. Local data/schema checks: passed (24 unit tests, importer dry-run, all 13 graph worksheets equal JSON). Diagram PlantUML/SVG/PNG regenerated locally with PlantUML 1.2025.10 and Java headless mode. The PNG and workbook previews for Levels, LearningModules and TEACHES were visually inspected: new fields visible, Level context absent, OC note states independent values/no sum-to-one rule.

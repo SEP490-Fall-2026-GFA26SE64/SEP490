@@ -1,3 +1,5 @@
+> Historical numeric-coverage evidence. Superseded for the current text field by [instructionLevel evidence](REQ-016-instruction-level.md). Earlier run results below retain their original numeric contract.
+
 # REQ-016-F01/F02 — OC and module metadata
 
 Date: 2026-10-27. Scope: v0.10 design/review dataset and isolated importer, no runtime API implementation.

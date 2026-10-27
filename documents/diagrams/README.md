@@ -44,3 +44,5 @@ The generator and PowerShell wrapper do not start containers, migrate, seed or r
 Historical 2026-10-26 export: ontology source/SVG/PNG used matching v0.9.0 exports with many-to-many TEACHES. The current v0.10 export supersedes that drawing. Dated V26 metadata/rendering verification above remains historical evidence, not a new live database verification.
 
 2026-10-27: ontology v0.10 source/SVG/PNG adds TEACHES.outcomeCoverage (OC), LearningModule.duration/price and removes Level.context. Runtime remains pinned to v0.9.
+
+2026-10-27 follow-up: current Neo4j drawing uses TEACHES.instructionLevel as a text enum (FOUNDATIONAL/INTERMEDIATE/ADVANCED), replacing numeric coverage. Legacy mapping rounds HALF_UP to one decimal before classification; see [conversion details](../dataset/INSTRUCTION_LEVELS.md).
