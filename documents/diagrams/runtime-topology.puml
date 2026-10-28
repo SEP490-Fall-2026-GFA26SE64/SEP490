@@ -3,29 +3,37 @@
 left to right direction
 skinparam componentStyle rectangle
 skinparam shadowing false
-title Observed development startup topology / 2026-10-23
+
 actor Browser
-component "React/Vite\n:8088" as Web
-component "Java21 / Spring Boot3.5 API\n:18080" as API
-component "PostgreSQL migration\nthen exit" as Migrate
-component "Catalog/content initialization\nthen exit" as Seed
-database "PostgreSQL17.6\nV1-V26 / 89 tables\n:15432" as PG
-database "Neo4j5.26.31\nontology0.8.0\n:7474 / :7687" as Graph
+component "React/Vite (dev)\nCaddy (production)" as Web
+component "Spring Boot API" as API
+component "Workspace baseline\ntrusted session + tenant resource bindings" as Baseline
+component "Verification / activation / payment mail\n(leased PostgreSQL jobs)" as MailWorker
+component "Shared branded HTML + text template" as MailTemplate
+component "Payment create / reconcile / apply\n(leased PostgreSQL jobs)" as PaymentWorker
+cloud "payOS merchant API" as PayOS
+cloud "SMTP\nGmail / isolated Mailpit" as SMTP
+component "Spring Boot migrate profile" as Migrate
+database "PostgreSQL" as PG
+database "Neo4j" as Graph
+
 Browser --> Web
-Web --> API : /api proxy
-Migrate --> PG : Flyway
-Migrate ..> Seed : success required
-Seed --> Graph : initialize empty catalog only
-Seed --> PG : insert missing bank content
-Seed ..> API : success required
-API --> PG : transactional learner/assessment state
-API --> Graph : catalog reads
-note bottom of Seed
-No Blueprint, selection, attempt
-or learner completion is generated.
-end note
-note bottom of API
-Development observation is not
-production integration certification.
-end note
+Web --> API : /api
+API --> PG
+API --> MailWorker : scheduled transactional delivery
+MailWorker --> MailTemplate : escaped content + authorized recipient
+API --> PaymentWorker : durable order / verified observation
+PaymentWorker --> PG : snapshots, application, period, workspace
+PaymentWorker --> PG : atomic payment-confirmed outbox event
+PaymentWorker --> PayOS : signed create / trusted status
+PayOS --> API : signed webhook (not browser redirects)
+API --> PG : membership + request-time entitlement
+API --> Baseline : L&D configuration / own Employee attempts
+Baseline --> PG : pinned questions / transactions / results
+Baseline --> Graph : authorized reviewed catalog
+MailWorker --> PG : outbox, lease, delivery state
+MailWorker --> SMTP : bounded SMTP retries
+API --> Graph
+Migrate --> PG : Flyway V1-V32
+note bottom of Graph : Migration does not reseed or overwrite graph data.
 @enduml

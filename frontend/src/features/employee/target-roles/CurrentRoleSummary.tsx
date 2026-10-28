@@ -14,6 +14,9 @@ export function CurrentRoleSummary({ view }: { view: RoleFlowView }) {
   const [expanded, setExpanded] = useState(false)
   const id = useId()
   const selection = view.selection
+  if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
+    return <Card className="p-5"><Text role="status">{t('roleFlow.legacySelection')}</Text></Card>
+  }
   if (!selection && view.progress.state !== 'RESUME') return null
   return <Card className="min-w-0 overflow-hidden">
     <div className="flex items-center justify-between gap-3 px-5 py-4">

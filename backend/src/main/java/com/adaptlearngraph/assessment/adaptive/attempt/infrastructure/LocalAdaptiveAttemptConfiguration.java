@@ -24,7 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /** TMP-REQ002-08. Explicit isolated local/demo identity and four default-off gates; never production auth. */
 @Configuration(proxyBeanMethods = false)
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled", "attempts.enabled"}, havingValue = "true")
 public class LocalAdaptiveAttemptConfiguration {

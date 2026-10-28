@@ -2,6 +2,18 @@
 
 This document provides system-wide design rules, color tokens, typography scales, and component placement guidelines for developers and AI code generation.
 
+## Onboarding and Billing Surfaces
+
+Guest onboarding uses one `GuestLayout` frame for organization, account, email, security, plan, payment and workspace stages. Keep the same brand, footer, gutters and responsive progress treatment across those stages; do not switch payment pages to the standalone platform-administration shell.
+
+Registration forms show separate organization/account steps, inline errors and a linked error summary. Keep Back navigation lossless within the unsubmitted form, preserve optional nulls and never persist passwords/proofs in browser storage. Administrator Users and Subscription retain `WorkspaceLayout`, `PageHeader`, `StatCard` and existing real identity/authorization behavior. Billing is separate from user management.
+
+Payment screens show the purchased snapshot and verified server state. A successful redirect is not proof of payment or workspace readiness. Use the same receipt component in Guest and Administrator contexts, keeping unknown amounts/timestamps explicitly unavailable. Use `text-[length:var(--text-card)]` for the card typography token when necessary: `text-card` is also a surface-color utility and is not a safe font-size alias.
+
+Transactional email HTML is rendered by the backend's shared mail template with inline styles and a plaintext alternative. It follows the same brand palette without relying on web CSS variables being supported by email clients.
+
+Member activation and workspace sign-in reuse `WorkspaceAuthLayout`: the same brand header, language switcher, two responsive illustrations, central card, rounded controls and footer. `/activate` remains canonical; `/active` is an alias that preserves the activation fragment. No organization-onboarding progress is shown. Role choice belongs to the Administrator's single-selection form, not activation. Authenticated role layouts use trusted identity; browser demo navigation does not change authority. Email branding embeds the supplied system icon/wordmark through a MIME CID image so recipients do not need a remote asset request.
+
 ## 1. Color Palette System (Refined Orange with Cool Slate Neutrals)
 
 The team has selected a **Refined Brand Orange** paired with an **eye-friendly Cool Slate Canvas** and a **distinct Vivid Yellow** for pending/in-progress states:

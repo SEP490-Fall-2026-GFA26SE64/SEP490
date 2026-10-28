@@ -36,7 +36,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /** TMP-REQ002-02/03/07. All callers share one explicit server-configured local actor; never production authentication. */
 @Configuration(proxyBeanMethods = false)
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled"}, havingValue = "true")
 public class LocalAdaptiveBlueprintApiConfiguration {
