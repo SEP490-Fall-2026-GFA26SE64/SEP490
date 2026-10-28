@@ -51,7 +51,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[:REQUIRES_SKILL]->(s1:MicroSkill)
                 MATCH (r)-[:REQUIRES_SKILL]->(s2:MicroSkill)
-                MATCH (s1)-[rel:PREREQUISITE_OF]->(s2)
+                MATCH (s1)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(s2)
                 RETURN s1, s2, rel
                 ORDER BY coalesce(s1.code, s1.id) ASC, coalesce(s2.code, s2.id) ASC
                 """;
@@ -120,16 +120,16 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 Relationship rel = record.get("rel").asRelationship();
 
                 String s1Id = s1.containsKey("id") && !s1.get("id").isNull() ? s1.get("id").asString() : "";
-                String s1Code = s1.get("code").asString();
-                String s1Name = s1.get("name").asString();
+                String s1Code = s1.containsKey("code") && !s1.get("code").isNull() ? s1.get("code").asString() : s1Id;
+                String s1Name = s1.containsKey("name") && !s1.get("name").isNull() ? s1.get("name").asString() : s1Code;
 
                 String s2Id = s2.containsKey("id") && !s2.get("id").isNull() ? s2.get("id").asString() : "";
-                String s2Code = s2.get("code").asString();
-                String s2Name = s2.get("name").asString();
+                String s2Code = s2.containsKey("code") && !s2.get("code").isNull() ? s2.get("code").asString() : s2Id;
+                String s2Name = s2.containsKey("name") && !s2.get("name").isNull() ? s2.get("name").asString() : s2Code;
 
-                double minMastery = rel.containsKey("minMastery") && !rel.get("minMastery").isNull()
+                double minMastery = rel.containsKey("requiredScore") && !rel.get("requiredScore").isNull() ? rel.get("requiredScore").asDouble() : (rel.containsKey("minMastery") && !rel.get("minMastery").isNull()
                         ? rel.get("minMastery").asDouble()
-                        : 0.60;
+                        : 0.75);
                 String relStatus = rel.containsKey("status") && !rel.get("status").isNull()
                         ? rel.get("status").asString()
                         : "ACTIVE";

@@ -89,14 +89,18 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 MATCH (source:MicroSkill), (target:MicroSkill)
                 WHERE (source.id = $sourceSkillId OR source.code = $sourceSkillId)
                   AND (target.id = $targetSkillId OR target.code = $targetSkillId)
-                MERGE (source)-[rel:PREREQUISITE_OF]->(target)
+                MERGE (source)-[rel:HAS_SKILL_PREREQUISITE]->(target)
                 ON CREATE SET
+                    rel.requiredScore = $minMastery,
                     rel.minMastery = $minMastery,
+                    rel.version = '0.10.0',
                     rel.status = $status,
                     rel.createdAt = datetime(),
                     rel.updatedAt = datetime()
                 ON MATCH SET
+                    rel.requiredScore = $minMastery,
                     rel.minMastery = $minMastery,
+                    rel.version = '0.10.0',
                     rel.status = $status,
                     rel.updatedAt = datetime()
                 RETURN source, target, rel
@@ -151,17 +155,25 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 ? rel.get("status").asString()
                 : "ACTIVE";
 
-        Instant createdAt = Instant.now();
+        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
         if (rel.containsKey("createdAt") && !rel.get("createdAt").isNull()) {
             try {
                 createdAt = rel.get("createdAt").asZonedDateTime().toInstant();
-            } catch (Exception ignored) {}
+            } catch (Exception e1) {
+                try {
+                    createdAt = Instant.parse(rel.get("createdAt").asString());
+                } catch (Exception ignored) {}
+            }
         }
-        Instant updatedAt = Instant.now();
+        Instant updatedAt = createdAt;
         if (rel.containsKey("updatedAt") && !rel.get("updatedAt").isNull()) {
             try {
                 updatedAt = rel.get("updatedAt").asZonedDateTime().toInstant();
-            } catch (Exception ignored) {}
+            } catch (Exception e1) {
+                try {
+                    updatedAt = Instant.parse(rel.get("updatedAt").asString());
+                } catch (Exception ignored) {}
+            }
         }
 
         return new PrerequisiteEdge(

@@ -52,6 +52,7 @@ import {
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
 import { fetchCompetencies, type CompetencyDto } from '../../../shared/api/competencyApi'
+import { fetchPrerequisites, type PrerequisiteEdgeDto } from '../../../shared/api/prerequisiteApi'
 import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
 
 export type ExpertRoleStatus = 'published' | 'submitted' | 'sent' | 'approved' | 'draft' | 'feedback' | 'rejected'
@@ -75,13 +76,16 @@ export function ExpertAssignedRolesPage() {
   const orgId = activeCompany?.id || 'comp-technova'
   const [realMicroSkills, setRealMicroSkills] = React.useState<MicroSkillModel[]>([])
   const [realCompetencies, setRealCompetencies] = React.useState<CompetencyDto[]>([])
+  const [realPrerequisites, setRealPrerequisites] = React.useState<PrerequisiteEdgeDto[]>([])
 
   const fetchSkills = React.useCallback(async () => {
     try {
-      const [skillsList, compsList] = await Promise.all([
+      const [skillsList, compsList, prereqsList] = await Promise.all([
         fetchMicroSkills(orgId).catch(() => []),
         fetchCompetencies(orgId).catch(() => []),
+        fetchPrerequisites(orgId).catch(() => []),
       ])
+      if (prereqsList) setRealPrerequisites(prereqsList)
 
       if (skillsList && skillsList.length > 0) {
         const mapped: MicroSkillModel[] = skillsList.map((s): MicroSkillModel => ({
@@ -554,6 +558,10 @@ export function ExpertAssignedRolesPage() {
     return codes
   }, [commonCompObjects])
 
+  // Two-step confirmation state for unassigned prerequisites
+  const [isAwaitingPrereqConfirmation, setIsAwaitingPrereqConfirmation] = React.useState(false)
+  const prereqConfirmTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Cascading: Expert can only select micro-skills that belong to competencies common to all selected levels
   const availableSkills = React.useMemo(() => {
     if (!authoringRole || commonCompetencyIds.length === 0 || selectedAuthoringLevels.length === 0) return []
@@ -574,6 +582,43 @@ export function ExpertAssignedRolesPage() {
       return !alreadyAssignedToAllSelected
     })
   }, [authoringRole, companyMicroSkills, commonCompetencyIds, selectedAuthoringLevels, currentRoleLevels, commonSkillIdSet, commonCompCodes])
+
+  // Missing prerequisites across configured levels in authoring role
+  const authoringRoleMissingPrereqs = React.useMemo(() => {
+    if (!authoringRole || !authoringRole.skillTargets || authoringRole.skillTargets.length === 0) return []
+
+    const missingList: Array<{ skillCode: string; prereqCode: string; level: string }> = []
+
+    authoringRole.skillTargets.forEach((st) => {
+      const stLevel = st.level || currentRoleLevels[0]
+      const missing = realPrerequisites.filter((p) => {
+        const matchesSource = p.sourceSkillId === st.skillId || p.sourceSkillCode === st.skillCode
+        if (!matchesSource) return false
+        const targetPresent = authoringRole.skillTargets.some(
+          (other) =>
+            (other.skillId === p.targetSkillId || other.skillCode === p.targetSkillCode) &&
+            (other.level === st.level || !other.level || !st.level)
+        )
+        return !targetPresent
+      })
+
+      missing.forEach((m) => {
+        missingList.push({
+          skillCode: st.skillCode,
+          prereqCode: m.targetSkillCode || m.targetSkillId,
+          level: stLevel,
+        })
+      })
+    })
+
+    return missingList
+  }, [authoringRole, realPrerequisites, currentRoleLevels])
+
+  // Reset confirmation state when authoring role or its skills change
+  React.useEffect(() => {
+    if (prereqConfirmTimerRef.current) clearTimeout(prereqConfirmTimerRef.current)
+    setIsAwaitingPrereqConfirmation(false)
+  }, [authoringRole?.id, authoringRole?.skillTargets.length])
 
   React.useEffect(() => {
     if (availableSkills.length > 0) {
@@ -945,6 +990,40 @@ export function ExpertAssignedRolesPage() {
       description: `${updatedRole.title} (${updatedRole.code} v${updatedRole.version}) has been submitted to the L&D Manager for approval and publication.`,
       variant: 'success',
     })
+  }
+
+  // Two-step submission initiation (checks unassigned prerequisites and prompts in-place)
+  const handleInitiateSubmitToManager = () => {
+    if (!authoringRole) return
+    if (authoringRole.skillTargets.length === 0) {
+      toast({
+        title: 'Micro-skills Required',
+        description: 'You must configure at least one micro-skill target before submitting to the L&D Manager.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Step 1: If unassigned prerequisites exist and not yet in confirmation state, morph the button
+    if (authoringRoleMissingPrereqs.length > 0 && !isAwaitingPrereqConfirmation) {
+      setIsAwaitingPrereqConfirmation(true)
+      if (prereqConfirmTimerRef.current) clearTimeout(prereqConfirmTimerRef.current)
+      prereqConfirmTimerRef.current = setTimeout(() => {
+        setIsAwaitingPrereqConfirmation(false)
+      }, 6000)
+
+      toast({
+        title: 'Unassigned Prerequisites Detected',
+        description: `${authoringRoleMissingPrereqs.length} prerequisite skill(s) are missing from this role level. Click the button again within 6 seconds to confirm and submit anyway.`,
+        variant: 'default',
+      })
+      return
+    }
+
+    // Step 2: Second click or no missing prereqs -> execute submission
+    if (prereqConfirmTimerRef.current) clearTimeout(prereqConfirmTimerRef.current)
+    setIsAwaitingPrereqConfirmation(false)
+    handleSubmitConfigurationToManager(authoringRole)
   }
 
   return (
@@ -1878,6 +1957,22 @@ export function ExpertAssignedRolesPage() {
                         <tbody className="divide-y divide-border">
                           {filteredTargets.map((st) => {
                             const stLevel = st.level || currentRoleLevels[0]
+                            const prereqOf = realPrerequisites.filter(
+                              (p) =>
+                                (p.targetSkillId === st.skillId || p.targetSkillCode === st.skillCode) &&
+                                displayedSkillTargets.some((other) => other.skillId === p.sourceSkillId || other.skillCode === p.sourceSkillCode)
+                            )
+                            const requiresSkill = realPrerequisites.filter(
+                              (p) =>
+                                (p.sourceSkillId === st.skillId || p.sourceSkillCode === st.skillCode) &&
+                                displayedSkillTargets.some((other) => other.skillId === p.targetSkillId || other.skillCode === p.targetSkillCode)
+                            )
+                            const missingPrereqs = realPrerequisites.filter(
+                              (p) =>
+                                (p.sourceSkillId === st.skillId || p.sourceSkillCode === st.skillCode) &&
+                                !displayedSkillTargets.some((other) => other.skillId === p.targetSkillId || other.skillCode === p.targetSkillCode)
+                            )
+
                             return (
                               <tr key={`${st.skillId}-${stLevel}`} className="hover:bg-muted/20">
                                 <td className="py-2.5 px-3">
@@ -1886,8 +1981,25 @@ export function ExpertAssignedRolesPage() {
                                   </Badge>
                                 </td>
                                 <td className="py-2.5 px-3">
-                                  <span className="font-mono font-bold text-foreground mr-1.5">{st.skillCode}</span>
-                                  <span className="text-muted-foreground">{st.skillName}</span>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="font-mono font-bold text-foreground mr-1.5">{st.skillCode}</span>
+                                    <span className="text-muted-foreground">{st.skillName}</span>
+                                    {prereqOf.length > 0 && (
+                                      <Badge variant="outline" className="text-[9.5px] font-mono text-primary border-primary/30 bg-primary/5">
+                                        Prereq for {prereqOf.map((p) => p.sourceSkillCode || p.sourceSkillId).join(', ')}
+                                      </Badge>
+                                    )}
+                                    {requiresSkill.length > 0 && (
+                                      <Badge variant="outline" className="text-[9.5px] font-mono text-amber-600 border-amber-500/30 bg-amber-500/5">
+                                        Requires {requiresSkill.map((p) => p.targetSkillCode || p.targetSkillId).join(', ')}
+                                      </Badge>
+                                    )}
+                                    {missingPrereqs.length > 0 && (
+                                      <Badge variant="outline" className="text-[9.5px] font-mono text-destructive border-destructive/30 bg-destructive/5" title="Prerequisite skill not yet added to this level">
+                                        Missing prereq: {missingPrereqs.map((p) => p.targetSkillCode || p.targetSkillId).join(', ')}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="py-2.5 px-3 text-center font-mono font-bold text-primary">
                                   {st.threshold}%
@@ -1922,6 +2034,8 @@ export function ExpertAssignedRolesPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
+                  if (prereqConfirmTimerRef.current) clearTimeout(prereqConfirmTimerRef.current)
+                  setIsAwaitingPrereqConfirmation(false)
                   setIsAuthoringModalOpen(false)
                   setAuthoringRole(null)
                 }}
@@ -1934,21 +2048,38 @@ export function ExpertAssignedRolesPage() {
                     variant="outline"
                     size="sm"
                     disabled={isSavingDraft}
-                    onClick={handleSaveAuthoringDraft}
+                    onClick={() => {
+                      if (prereqConfirmTimerRef.current) clearTimeout(prereqConfirmTimerRef.current)
+                      setIsAwaitingPrereqConfirmation(false)
+                      handleSaveAuthoringDraft()
+                    }}
                     className="font-semibold"
                   >
                     {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    disabled={authoringRole.skillTargets.length === 0 || isSavingDraft}
-                    onClick={() => handleSubmitConfigurationToManager(authoringRole)}
-                    className="font-semibold shadow-2xs"
-                    leftIcon={<Send className="h-4 w-4" />}
-                  >
-                    {isAuthoringFeedback || isAuthoringRejected ? 'Re-submit to L&D Manager' : 'Submit to L&D Manager'}
-                  </Button>
+                  {isAwaitingPrereqConfirmation ? (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleInitiateSubmitToManager}
+                      className="font-semibold shadow-md bg-amber-600 hover:bg-amber-700 text-white border-amber-600 animate-pulse transition-all duration-200"
+                      leftIcon={<AlertTriangle className="h-4 w-4" />}
+                      title="Click again within 6 seconds to confirm submission with unassigned prerequisites"
+                    >
+                      Confirm Submit ({authoringRoleMissingPrereqs.length} Missing Prereq{authoringRoleMissingPrereqs.length > 1 ? 's' : ''})
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      disabled={authoringRole.skillTargets.length === 0 || isSavingDraft}
+                      onClick={handleInitiateSubmitToManager}
+                      className="font-semibold shadow-2xs"
+                      leftIcon={<Send className="h-4 w-4" />}
+                    >
+                      {isAuthoringFeedback || isAuthoringRejected ? 'Re-submit to L&D Manager' : 'Submit to L&D Manager'}
+                    </Button>
+                  )}
                 </div>
               )}
             </DialogFooter>

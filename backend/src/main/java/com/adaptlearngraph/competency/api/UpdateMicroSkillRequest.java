@@ -12,7 +12,6 @@ public record UpdateMicroSkillRequest(
         @Size(max = 1000, message = "description cannot exceed 1000 characters")
         String description,
 
-        @NotBlank(message = "macroCompetencyCode cannot be blank")
         String macroCompetencyCode,
 
         SkillStatus status) {}
