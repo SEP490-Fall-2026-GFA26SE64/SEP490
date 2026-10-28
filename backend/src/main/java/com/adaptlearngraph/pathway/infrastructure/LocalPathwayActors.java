@@ -17,7 +17,7 @@ public final class LocalPathwayActors implements Actors {
         String selected;
         try { selected=identity.selected(); } catch (IllegalArgumentException invalid) { throw new Failure(401,"UNAUTHENTICATED"); }
         Role role=switch (selected) {
-            case "employee-a", "employee-b", "employee-c" -> Role.EMPLOYEE;
+            case "employee-a" -> Role.EMPLOYEE;
             case "expert" -> Role.DOMAIN_EXPERT;
             default -> throw new Failure(403,"FORBIDDEN");
         };

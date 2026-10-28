@@ -13,7 +13,8 @@ import java.util.function.Supplier;
 public final class InitialPathwayReview {
     public record Expected(Long expectedRevision,String expectedContentHash) {}
     public record Edit(String moduleId,Long expectedRevision,String expectedContentHash,String reason) {}
-    public record Summary(UUID id,long revision,String contentHash,Review reviewStatus,Validation validationStatus,String roleName,String levelName) {}
+    public record Summary(UUID id,long revision,String contentHash,Review reviewStatus,Validation validationStatus,String roleName,String levelName,
+                          UUID learnerId,String learnerLabel) {}
     public record Detail(Summary summary,RoleGap.Result gaps,Revision revision,List<Offer> candidates) {}
     public record Checked(Validation validationStatus,List<String> diagnostics,String revisionContentHash,List<String> warnings,Quality quality,Search search) {}
     private final Actors actors;private final ReviewAssignments assignments;private final InitialPathwayStore store;
@@ -34,7 +35,8 @@ public final class InitialPathwayReview {
     private Request request(Scope s,UUID id) { return store.request(s,id).orElseThrow(()->new Failure(404,"PATHWAY_NOT_FOUND")); }
     private Summary summary(Request r) {
         if(r.revision()==null)throw new Failure(409,"PROPOSAL_NOT_AVAILABLE");
-        var b=r.frozen().input().binding();return new Summary(r.id(),r.revision(),r.contentHash(),r.review(),r.validation(),b.roleName(),b.levelName());
+        var b=r.frozen().input().binding();return new Summary(r.id(),r.revision(),r.contentHash(),r.review(),r.validation(),b.roleName(),b.levelName(),
+                r.scope().learnerId(),store.learnerLabel(r.scope()).orElse(null));
     }
     public List<Summary> queue(int offset,int limit) {
         var a=expert();if(offset<0 || limit<1 || limit>100)throw new Failure(400,"INVALID_PAGING");

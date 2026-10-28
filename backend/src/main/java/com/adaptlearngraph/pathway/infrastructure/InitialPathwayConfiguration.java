@@ -26,6 +26,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name={"pathway.initial.enabled","pathway.local-auth-bypass.enabled","assessment.baseline.local-demo.enabled"},havingValue="true")
 public class InitialPathwayConfiguration {
+    @Bean @ConditionalOnProperty(name={"pathway.initial.local-assignment.enabled","pathway.initial.local-assignment.provision-expert-enabled"},havingValue="true")
+    LocalExpertProvisioning initialExpertFixture(DataSource source,Environment env) {
+        return new LocalExpertProvisioning(source,UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id")));
+    }
     @Bean Actors initialActors(LocalDemoIdentity identity,DataSource source) { return new LocalPathwayActors(identity,new NamedParameterJdbcTemplate(source)); }
     @Bean Codec initialCodec(ObjectMapper mapper) {
         return new InitialRevisionCodec(mapper);
@@ -76,7 +80,21 @@ public class InitialPathwayConfiguration {
     }
     @Bean @ConditionalOnMissingBean(Graphs.class) Graphs initialCatalogGraph(Neo4jInitialGraph.PublishedSessions sessions){return new Neo4jInitialGraph(sessions,sessions instanceof LocalReviewSessions);}
     @Bean @ConditionalOnMissingBean(SuitabilityPolicy.class) SuitabilityPolicy initialSuitability(){return new MasterySuitabilityPolicy();}
-    @Bean @ConditionalOnMissingBean(ReadinessDefinitions.class) ReadinessDefinitions unavailableInitialReadinessDefinitions(){
+    private LocalSeedPlanning localPlanning(ObjectMapper json,Profiles profiles,Semantics semantics,Environment env) {
+        if(!LocalSeedPlanning.VERSION.equals(env.getProperty("pathway.initial.readiness.version")))
+            throw new IllegalStateException("Local planning requires its exact policy version");
+        try{return new LocalSeedPlanning(json,java.nio.file.Files.readAllBytes(java.nio.file.Path.of(
+                env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),profiles,semantics);}
+        catch(java.io.IOException invalid){throw new IllegalStateException("Local planning source unavailable",invalid);}
+    }
+    @Bean @ConditionalOnMissingBean(ReadinessDefinitions.class) ReadinessDefinitions initialReadinessDefinitions(ObjectMapper json,Profiles profiles,Semantics semantics,Environment env){
+        if(env.getProperty("pathway.initial.local-planning.enabled",Boolean.class,false)) {
+            var policy=localPlanning(json,profiles,semantics,env);
+            return new ReadinessDefinitions() {
+                public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.recommendation.domain.InitialPlanning.Edge e){return policy.prerequisite(s,b,e);}
+                public Optional<com.adaptlearngraph.recommendation.domain.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.recommendation.domain.InitialPlanning.Edge e){return policy.gate(s,b,p,e);}
+            };
+        }
         return new ReadinessDefinitions(){
             public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.recommendation.domain.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
             public Optional<com.adaptlearngraph.recommendation.domain.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.recommendation.domain.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
@@ -97,7 +115,10 @@ public class InitialPathwayConfiguration {
             public void requireApprovalValid(Scope s,UUID id,long revision,String hash){throw missing("APPROVAL_VALIDITY_NOT_CONFIGURED");}
         };
     }
-    @Bean @ConditionalOnMissingBean(Availability.class) Availability unavailableInitialContent(){return (s,m,v)->{throw missing("CONTENT_AVAILABILITY_NOT_CONFIGURED");};}
+    @Bean @ConditionalOnMissingBean(Availability.class) Availability initialContent(ObjectMapper json,Profiles profiles,Semantics semantics,Environment env){
+        if(env.getProperty("pathway.initial.local-planning.enabled",Boolean.class,false))return localPlanning(json,profiles,semantics,env)::available;
+        return (s,m,v)->{throw missing("CONTENT_AVAILABILITY_NOT_CONFIGURED");};
+    }
     @Bean @ConditionalOnMissingBean(LiveReadiness.class) LiveReadiness unavailableInitialReadiness(){return (s,g)->{throw missing("LIVE_READINESS_NOT_CONFIGURED");};}
     @Bean @ConditionalOnMissingBean(ContentAccess.class) ContentAccess unavailableInitialEntry(){return (s,m,v,g)->{throw missing("CONTENT_ACCESS_NOT_CONFIGURED");};}
     static Failure missing(String code){return new Failure(503,code,false);}

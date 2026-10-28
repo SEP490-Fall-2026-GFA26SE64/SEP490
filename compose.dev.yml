@@ -36,16 +36,19 @@ services:
 
   neo4j:
     image: neo4j:5.26-community
+    entrypoint: ["tini", "-g", "--", "/bin/bash", "/catalog-bootstrap/start-catalog.sh"]
+    stop_grace_period: 120s
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-local-only-neo4j}
-      # Seal after initial import: CATALOG_READ_ONLY=true docker compose up -d neo4j.
-      NEO4J_server_databases_default__to__read__only: ${CATALOG_READ_ONLY:-false}
+      # Bootstrap imports writable once, then gracefully restarts sealed read-only.
     ports:
       - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
       - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
     volumes:
       # The pre-cutover neo4j_data volume remains intact; never down -v to upgrade.
       - neo4j_catalog_v011_data:/data
+      - catalog_v011_bootstrap:/catalog-state
+      - ./docker/dev/start-catalog.sh:/catalog-bootstrap/start-catalog.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
       interval: 10s
@@ -71,6 +74,7 @@ services:
   seed:
     image: adapt-learn-graph-backend:dev
     build: *backend-build
+    entrypoint: ["/bin/sh", "-ec", "java -jar /app/app.jar; touch /catalog-state/imported-v011"]
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,local-demo-seed
@@ -79,8 +83,22 @@ services:
     volumes:
       - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
+      - catalog_v011_bootstrap:/catalog-state
     depends_on:
       migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  catalog-ready:
+    image: neo4j:5.26-community
+    entrypoint: ["/bin/bash", "/catalog-bootstrap/wait-catalog.sh"]
+    environment:
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
+    volumes:
+      - catalog_v011_bootstrap:/catalog-state:ro
+      - ./docker/dev/wait-catalog.sh:/catalog-bootstrap/wait-catalog.sh:ro
+    depends_on:
+      seed:
         condition: service_completed_successfully
     restart: "no"
 
@@ -91,35 +109,37 @@ services:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,local-baseline-demo
       ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "true"
-      PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: ${PATHWAY_LOCAL_AUTH_BYPASS_ENABLED:-false}
-      PATHWAY_LOCAL_AUTH_BYPASS_EXPERT_ACCOUNT_ID: ${PATHWAY_LOCAL_AUTH_BYPASS_EXPERT_ACCOUNT_ID:-}
-      PATHWAY_INITIAL_ENABLED: ${PATHWAY_INITIAL_ENABLED:-false}
-      PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: ${PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED:-false}
+      PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: ${PATHWAY_LOCAL_AUTH_BYPASS_ENABLED:-true}
+      PATHWAY_LOCAL_AUTH_BYPASS_EXPERT_ACCOUNT_ID: ${PATHWAY_LOCAL_AUTH_BYPASS_EXPERT_ACCOUNT_ID:-f0fe3f90-3b39-31ee-b748-9533d1ef22b2}
+      PATHWAY_INITIAL_ENABLED: ${PATHWAY_INITIAL_ENABLED:-true}
+      PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: ${PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED:-true}
       PATHWAY_INITIAL_CATALOG_MAX_REQUIREMENT_ROWS: "1891"
-      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED:-false}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED:-true}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_PROVISION_EXPERT_ENABLED: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_PROVISION_EXPERT_ENABLED:-true}
       PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS:-}
-      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS:-}
-      PATHWAY_INITIAL_READINESS_VERSION: ${PATHWAY_INITIAL_READINESS_VERSION:-}
-      PATHWAY_INITIAL_SEARCH_VERSION: ${PATHWAY_INITIAL_SEARCH_VERSION:-}
-      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES:-}
-      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES:-}
-      PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS: ${PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS:-}
-      PATHWAY_INITIAL_SEARCH_BATCH_SIZE: ${PATHWAY_INITIAL_SEARCH_BATCH_SIZE:-}
-      PATHWAY_INITIAL_SEARCH_MAX_STATES: ${PATHWAY_INITIAL_SEARCH_MAX_STATES:-}
-      PATHWAY_INITIAL_WORKER_ENABLED: ${PATHWAY_INITIAL_WORKER_ENABLED:-false}
-      PATHWAY_INITIAL_WORKER_VERSION: ${PATHWAY_INITIAL_WORKER_VERSION:-}
-      PATHWAY_INITIAL_WORKER_LEASE_MS: ${PATHWAY_INITIAL_WORKER_LEASE_MS:-}
-      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: ${PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS:-}
-      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS:-}
-      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS:-}
-      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: ${PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS:-}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS:-5000}
+      PATHWAY_INITIAL_LOCAL_PLANNING_ENABLED: ${PATHWAY_INITIAL_LOCAL_PLANNING_ENABLED:-true}
+      PATHWAY_INITIAL_READINESS_VERSION: ${PATHWAY_INITIAL_READINESS_VERSION:-local-baseline-prerequisite-v1}
+      PATHWAY_INITIAL_SEARCH_VERSION: ${PATHWAY_INITIAL_SEARCH_VERSION:-compose-v011-bounded-v1}
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES:-128}
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES:-256}
+      PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS: ${PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS:-2048}
+      PATHWAY_INITIAL_SEARCH_BATCH_SIZE: ${PATHWAY_INITIAL_SEARCH_BATCH_SIZE:-32}
+      PATHWAY_INITIAL_SEARCH_MAX_STATES: ${PATHWAY_INITIAL_SEARCH_MAX_STATES:-250000}
+      PATHWAY_INITIAL_WORKER_ENABLED: ${PATHWAY_INITIAL_WORKER_ENABLED:-true}
+      PATHWAY_INITIAL_WORKER_VERSION: ${PATHWAY_INITIAL_WORKER_VERSION:-compose-worker-v1}
+      PATHWAY_INITIAL_WORKER_LEASE_MS: ${PATHWAY_INITIAL_WORKER_LEASE_MS:-300000}
+      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: ${PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS:-3}
+      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS:-2000}
+      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS:-30000}
+      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: ${PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS:-2000}
     volumes:
       - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/import/ontology_seed-v010.json:/seed/baseline-history-v010.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
     depends_on:
-      seed:
+      catalog-ready:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${API_PORT:-18080}:8080"
@@ -136,6 +156,8 @@ services:
       target: dev
     environment:
       API_PROXY_TARGET: http://api:8080
+      # Docker Desktop Windows bind mounts can miss filesystem change events.
+      DEV_WATCH_POLLING: "true"
       VITE_LOCAL_BASELINE_DEMO_ENABLED: "true"
       # Visibility gates only; these grant no backend identity, publication or model readiness.
       VITE_ADAPTIVE_BASELINE_ENABLED: ${VITE_ADAPTIVE_BASELINE_ENABLED:-true}
@@ -154,3 +176,4 @@ volumes:
   neo4j_data:
   neo4j_catalog_v010_data:
   neo4j_catalog_v011_data:
+  catalog_v011_bootstrap:

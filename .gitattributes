@@ -6,3 +6,9 @@ documents/dataset/question-bank/15-1212.00/release-manifest-v09.json text eol=lf
 backend/src/main/resources/db/seed/question-bank-15-1212.00-v1-ontology-v09.json text eol=lf
 # Original Windows byte snapshots retain the exact hashes used by historical calibration.
 documents/dataset/question-bank/15-1212.00/historical/*.json -text
+# These releases were byte-pinned from CRLF snapshots; preserve the exact hashes
+# on Linux/macOS too, rather than repinning immutable history.
+documents/dataset/import/ontology_seed-v010.json text eol=crlf
+documents/dataset/import/ontology_seed-v011.json text eol=crlf
+# Bootstrap executes inside Linux containers, including on Windows hosts.
+docker/dev/*.sh text eol=lf

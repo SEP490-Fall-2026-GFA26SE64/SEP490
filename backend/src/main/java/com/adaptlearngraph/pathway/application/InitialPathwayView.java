@@ -6,6 +6,7 @@ import com.adaptlearngraph.pathway.domain.InitialPathwayState;
 import com.adaptlearngraph.pathway.domain.InitialPathwayState.*;
 import com.adaptlearngraph.recommendation.domain.InitialPlanning.Module;
 import com.adaptlearngraph.recommendation.domain.InitialPlanning.*;
+import com.adaptlearngraph.recommendation.domain.RoleGap;
 import java.util.*;
 
 /** Employee DTOs never serialize frozen worker input or unapproved module/candidate details. */
@@ -18,7 +19,13 @@ public final class InitialPathwayView {
                                 java.math.BigDecimal priceVnd,List<Target> targets) {}
     public record ModuleView(ModuleSummary module,String accessState,String reasonCode,String entry) {}
     public record DependencyView(String moduleId,String providerModuleId,String dependentSkillId,String prerequisiteSkillId,boolean internal) {}
-    public record View(Status status,List<ModuleView> modules,List<DependencyView> dependencies,boolean archived) {}
+    public record Context(String roleId,String levelId,String occupationId) {}
+    public record View(Status status,List<ModuleView> modules,List<DependencyView> dependencies,boolean archived,
+                       Context context,RoleGap.Result baseline) {
+        public View(Status status,List<ModuleView> modules,List<DependencyView> dependencies,boolean archived) {
+            this(status,modules,dependencies,archived,null,null);
+        }
+    }
     private final Actors actors;private final InitialPathwayStore store;private final Coordination coordination;private final InitialPathwayAccess access;
     public InitialPathwayView(Actors actors,InitialPathwayStore store,Coordination coordination,InitialPathwayAccess access) {
         this.actors=actors;this.store=store;this.coordination=coordination;this.access=access;
@@ -55,7 +62,9 @@ public final class InitialPathwayView {
             throw new Failure(409,"STALE_PATHWAY_VIEW");
         var dependencies=revision.plan().dependencies().stream().map(d->new DependencyView(d.moduleId(),d.providerModuleId(),d.dependentSkillId(),
                 d.prerequisiteSkillId(),d.moduleId().equals(d.providerModuleId()))).toList();
-        return new View(status(request),List.copyOf(modules),dependencies,archived);
+        var binding=request.frozen().input().binding();
+        return new View(status(request),List.copyOf(modules),dependencies,archived,
+                new Context(binding.roleId(),binding.levelId(),binding.occupationId()),request.frozen().input().preview().result());
     }
     private Status status(Request r) {
         var binding=r.frozen().input().binding();return new Status(r.id(),r.generation(),r.review(),r.validation(),

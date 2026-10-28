@@ -31,6 +31,10 @@ public final class JdbcInitialPathways implements InitialPathwayStore {
     }
     @Override public List<Request> assigned(UUID org,Set<UUID> ids,int offset,int limit) { return requests.assigned(org,ids,offset,limit); }
     @Override public Optional<Scope> assignedScope(UUID org,UUID id) { return requests.assignedScope(org,id); }
+    @Override public Optional<String> learnerLabel(Scope scope) {
+        return jdbc.query("SELECT identifier FROM platform.account WHERE organization_id=:org AND account_id=:learner",
+                InitialJdbc.key(scope),(rs,n)->rs.getString("identifier")).stream().findFirst();
+    }
     @Override public Optional<Claim> claim(Duration lease,int maxAttempts,String workerVersion) { return worker.claim(lease,maxAttempts,workerVersion); }
     @Override public boolean finish(Claim claim,Generation status,String reason,Plan plan,Duration retryAfter) { return worker.finish(claim,status,reason,plan,retryAfter); }
     @Override public void saveRevision(Scope scope,Revision previous,Revision next,Actor expert,Assignment assignment,String action,String moduleId,String reason) {

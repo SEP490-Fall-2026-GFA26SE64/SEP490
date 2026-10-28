@@ -27,6 +27,8 @@ public interface InitialPathwayStore {
     boolean approved(Scope scope,UUID requestId,long revision,String hash);
     List<Request> assigned(UUID organizationId,Set<UUID> ids,int offset,int limit);
     Optional<Scope> assignedScope(UUID organizationId,UUID requestId);
+    /** Safe display context only; caller must authorize the assignment before reading. */
+    default Optional<String> learnerLabel(Scope scope) { return Optional.empty(); }
     Optional<Claim> claim(Duration lease,int maxAttempts,String workerVersion);
     /** Caller holds learner coordination. Token must still own an unexpired lease at the write. */
     boolean finish(Claim claim,Generation status,String reason,Plan plan,Duration retryAfter);
