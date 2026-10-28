@@ -11,3 +11,12 @@ export function pathwayDiagnostic(value: string, t: (key: string) => string) {
   const key = code.includes('PROVIDER') || code === 'UNMATCHED_MODULE' ? 'coverageIssue' : code.includes('CYCLE') ? 'cycleIssue' : code.includes('INTERNAL') ? 'internalIssue' : code.includes('PREREQUISITE') || code.includes('READINESS') ? 'prerequisiteIssue' : code.includes('LIMIT') ? 'resourceIssue' : 'validationIssue'
   return t('initialPathway.' + key)
 }
+
+export function pathwayAttention(reason: string | null, t: (key: string) => string): string {
+  const [code, transition] = (reason ?? '').split(':'), [preferred, offered] = (transition ?? '').split('->')
+  const note = t('initialPathway.' + (code === 'SUPPORTING_COVERAGE_FALLBACK' ? 'supportingFallbackNote' : 'difficultyFallbackNote'))
+  if (preferred !== offered && ['LOW', 'MEDIUM', 'HIGH'].includes(preferred ?? '') && ['LOW', 'MEDIUM', 'HIGH'].includes(offered ?? '')) {
+    return `${note} ${t('initialPathway.preferredDifficulty')}: ${t('initialPathway.difficulty.' + preferred)}; ${t('initialPathway.chosenDifficulty')}: ${t('initialPathway.difficulty.' + offered)}.`
+  }
+  return note
+}

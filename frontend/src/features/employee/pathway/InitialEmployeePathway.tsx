@@ -35,7 +35,7 @@ function Pathway({ scope }: { scope: string }) {
       {!status ? <EmptyState title={tr('empty')} action={<Link to="/employee/upskilling?tab=roles" className="font-semibold text-primary underline">{tr('roles')}</Link>} /> : <Card><CardContent className="space-y-3 p-4" role="status">
         <Badge variant={status.displayState === 'APPROVED' ? 'success' : 'warning'}>{tr('state.' + status.displayState)}</Badge>
         {status.displayState === 'NO_LEARNING_REQUIRED' && <Text>{tr('noLearningHelp')}</Text>}
-        {['BLOCKED', 'UNRESOLVED', 'STALE'].includes(status.displayState) && <Text>{tr(status.displayState === 'STALE' ? 'stale' : 'setup')}</Text>}
+        {['BLOCKED', 'UNRESOLVED', 'STALE'].includes(status.displayState) && <Text>{tr(status.reasonCode === 'SEARCH_LIMIT' ? 'searchLimitNote' : status.displayState === 'STALE' ? 'stale' : 'setup')}</Text>}
       </CardContent></Card>}
       {data.modules.length > 0 && <Tabs value={tab} onValueChange={setTab}>
         <TabsList><TabsTrigger value="roadmap">{t('pathway.interactiveRoadmap')}</TabsTrigger><TabsTrigger value="timeline">{t('pathway.adaptiveTimeline')}</TabsTrigger></TabsList>

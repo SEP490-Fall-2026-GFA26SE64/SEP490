@@ -2,6 +2,12 @@ import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
   initialPathway: {
+    expertAttention: 'Cần Expert xem xét', supportingFallbackNote: 'Dùng nội dung hỗ trợ vì chưa có học phần chính khả dụng cho nhu cầu này.', difficultyFallbackNote: 'Đang dùng độ khó thay thế; nội dung cần Expert xem xét.',
+    searchLimitNote: 'Chưa xác định được phương án tốt nhất trong giới hạn xử lý. Chưa có đề xuất để duyệt.',
+    preferredDifficulty: 'Độ khó ưu tiên', chosenDifficulty: 'Độ khó được chọn', coversNeed: 'Đáp ứng nhu cầu học này', historicalTeaching: 'Được ghi nhận theo định nghĩa giảng dạy trước đây',
+    totalDuration: 'Tổng thời lượng', totalPrice: 'Tổng chi phí', moduleCount: 'Số học phần',
+    focus: { PRIMARY: 'Nội dung chính', SUPPORTING: 'Thực hành hỗ trợ', INCIDENTAL: 'Chỉ làm ngữ cảnh' },
+    difficulty: { LOW: 'Thấp', MEDIUM: 'Trung bình', HIGH: 'Cao' },
     chooseLevel: 'Chọn cấp độ', levelRequired: 'Chọn cấp độ công việc bạn muốn hướng tới.',
     title: 'Lộ trình học của tôi', reviewTitle: 'Duyệt lộ trình ban đầu', reviewDescription: 'Xem các kế hoạch được phân công và xác nhận nội dung nhân viên cần học.',
     gaps: 'Xem khoảng cách kỹ năng', gapTitle: 'Nhu cầu học cho vị trí này', gapDescription: 'Đối chiếu kết quả đánh giá đầu vào đã lưu với yêu cầu của vị trí trước khi xác nhận kế hoạch học.',

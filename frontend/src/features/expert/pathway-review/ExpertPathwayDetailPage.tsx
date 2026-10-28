@@ -17,6 +17,7 @@ import { Input } from '../../../shared/components/ui/Input'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { InitialTeachingDetails } from '../../../shared/components/InitialTeachingDetails'
 
 export function ExpertPathwayDetailPage() {
   const session = useInitialPathwaySession(), { pathwayId = '' } = useParams<{ pathwayId: string }>(), { t } = useTranslation()
@@ -46,12 +47,17 @@ function Review({ scope, id }: { scope: string; id: string }) {
   async function validate() {
     if (lock.current) return
     lock.current = true; setBusy(true); setError(null)
-    try { const result = await checkReview(id); setChecked(result.validationStatus); setDiagnostics(result.diagnostics) }
+    try { const result = await checkReview(id); setChecked(result.revisionContentHash === d?.summary.contentHash ? result.validationStatus : 'STALE'); setDiagnostics(result.diagnostics) }
     catch (cause) { setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')) }
     finally { lock.current = false; setBusy(false) }
   }
-  const alternatives = [...new Map((d?.candidates ?? []).filter(c => !d?.revision.selectedModules.includes(c.moduleId)).map(c => [c.moduleId, c])).values()]
-    .filter(c => `${c.title} ${c.skillId}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+  const candidateIds = [...new Set((d?.candidates ?? []).map(c => c.moduleId))]
+  const alternatives = candidateIds.filter(moduleId => !d?.revision.selectedModules.includes(moduleId)).map(moduleId => {
+    const pairs = d!.candidates.filter(c => c.moduleId === moduleId)
+    return { ...pairs[0]!, pairs }
+  }).filter(c => c.pairs.some(pair => pair.preferredDifficulty !== null && pair.teachingFocus !== 'INCIDENTAL'))
+    .filter(c => `${c.title} ${c.pairs.map(pair => pair.skillId).join(' ')}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+  const skillNames = new Map(d?.gaps.skills.map(skill => [skill.skillId, skill.name]) ?? []), totals = d?.revision.plan.quality
   const issues = diagnostics ?? d?.revision.plan.diagnostics ?? []
   return <div className="min-w-0 space-y-5 pb-8">
     <PageHeader title={tr('reviewTitle')} description={d ? `${d.summary.roleName} · ${d.summary.levelName}` : tr('reviewDescription')} actions={<Link to="/expert/pathway-review" className="font-semibold text-primary underline">{tr('back')}</Link>} />
@@ -65,6 +71,7 @@ function Review({ scope, id }: { scope: string; id: string }) {
         <Button disabled={blocked || !editable || (checked ?? d.summary.validationStatus) !== 'VALID'} onClick={() => setApproval(prepareReviewCommand(id, d, 'confirmation'))}>{tr('approve')}</Button></div>
       {issues.length > 0 && <Card><CardContent className="space-y-2 p-4" role="status">{[...new Set(issues.map(issue => pathwayDiagnostic(issue, t)))].map(message => <Text key={message}>{message}</Text>)}</CardContent></Card>}
       <InitialGapTable result={d.gaps} />
+      {totals && <Card><CardContent className="flex flex-wrap gap-4 p-4"><Text>{tr('totalDuration')}: {totals.durationMinutes.toLocaleString(language)} {tr('duration')}</Text><Text>{tr('totalPrice')}: {totals.priceVnd.toLocaleString(language)} {tr('price')}</Text><Text>{tr('moduleCount')}: {totals.moduleCount}</Text></CardContent></Card>}
       <label className="block space-y-2"><Text as="span" variant="body-sm">{tr('reason')}</Text><Input value={reason} maxLength={2000} disabled={blocked} onChange={e => setReason(e.target.value)} /></label>
       <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <Card><CardContent className="space-y-4 p-5"><Heading level={2} size="section">{tr('included')}</Heading>
@@ -73,13 +80,13 @@ function Review({ scope, id }: { scope: string; id: string }) {
             const m = d.revision.plan.modules.find(m => m.id === moduleId), candidate = d.candidates.find(c => c.moduleId === moduleId)
             return <li key={moduleId} className="space-y-2 py-4"><div className="flex items-start justify-between gap-3"><Heading level={3} size="card">{m ? `${m.ordinal}. ` : ''}{m?.title ?? candidate?.title ?? tr('state.UNAVAILABLE')}</Heading>
               <Button size="sm" variant="outline" disabled={blocked || !editable} onClick={() => void submit(prepareReviewCommand(id, d, 'exclusions', moduleId, reason))}>{tr('exclude')}</Button></div>
-              {m && <><Text variant="caption">{m.durationMinutes.toLocaleString(language)} {tr('duration')} · {m.priceVnd.toLocaleString(language)} {tr('price')}</Text><Text variant="body-sm">{m.targets.map(s => d.gaps.skills.find(g => g.skillId === s.skillId)?.name ?? s.skillId).join(', ')}</Text></>}
+              {m && <><Text variant="caption">{m.durationMinutes.toLocaleString(language)} {tr('duration')} · {m.priceVnd.toLocaleString(language)} {tr('price')}</Text><InitialTeachingDetails targets={m.targets} skillNames={skillNames} /></>}
             </li>
           })}</ol>
         </CardContent></Card>
         <Card><CardContent className="space-y-4 p-5"><Heading level={2} size="section">{tr('alternatives')}</Heading><Input value={search} placeholder={tr('searchModules')} aria-label={tr('searchModules')} disabled={blocked} onChange={e => setSearch(e.target.value)} />
           <ul className="divide-y divide-border">{alternatives.map(c => <li key={c.moduleId} className="space-y-2 py-4"><div className="flex items-start justify-between gap-3"><Heading level={3} size="card">{c.title}</Heading>
-            <Button size="sm" variant="secondary" disabled={blocked || !editable} onClick={() => void submit(prepareReviewCommand(id, d, 'inclusions', c.moduleId, reason))}>{tr('include')}</Button></div><Text variant="caption">{c.durationMinutes.toLocaleString(language)} {tr('duration')} · {c.priceVnd.toLocaleString(language)} {tr('price')}</Text></li>)}</ul>
+            <Button size="sm" variant="secondary" disabled={blocked || !editable} onClick={() => void submit(prepareReviewCommand(id, d, 'inclusions', c.moduleId, reason))}>{tr('include')}</Button></div><Text variant="caption">{c.durationMinutes.toLocaleString(language)} {tr('duration')} · {c.priceVnd.toLocaleString(language)} {tr('price')}</Text><InitialTeachingDetails targets={c.pairs} skillNames={skillNames} /></li>)}</ul>
         </CardContent></Card>
       </div>
     </>}

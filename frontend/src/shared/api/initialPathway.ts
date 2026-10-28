@@ -43,9 +43,24 @@ export interface PathwayStatus { requestId: string; generationStatus: string; re
 function status(v: unknown): PathwayStatus {
   const s = obj(v); return { requestId: str(s.requestId), generationStatus: str(s.generationStatus), reviewStatus: str(s.reviewStatus), validationStatus: nullable(s.validationStatus, str), displayState: str(s.displayState), reasonCode: nullable(s.reasonCode, str), revision: nullable(s.revision, num), revisionContentHash: nullable(s.revisionContentHash, str), roleName: str(s.roleName), levelName: str(s.levelName) }
 }
-export interface PathwayModule { id: string; title: string; contentVersion: string; ordinal: number; durationMinutes: number; priceVnd: number; targets: { skillId: string; instructionLevel: string }[] }
+export type TeachingFocus = 'PRIMARY' | 'SUPPORTING' | 'INCIDENTAL'
+export type DifficultyLevel = 'LOW' | 'MEDIUM' | 'HIGH'
+export interface TeachingTarget { skillId: string; instructionLevel: string | null; teachingFocus: TeachingFocus | null; difficultyLevel: DifficultyLevel | null; coverageRole: 'COVERAGE' | 'ANCILLARY' | null; expertAttention: boolean; attentionReason: string | null }
+function teaching(v: unknown): TeachingTarget {
+  const s = obj(v), legacy = s.instructionLevel == null ? null : str(s.instructionLevel)
+  if (legacy !== null) {
+    if (!['FOUNDATIONAL', 'INTERMEDIATE', 'ADVANCED'].includes(legacy) || s.teachingFocus != null || s.difficultyLevel != null) throw Error()
+    return { skillId: str(s.skillId), instructionLevel: legacy, teachingFocus: null, difficultyLevel: null, coverageRole: null, expertAttention: false, attentionReason: null }
+  }
+  const focus = str(s.teachingFocus), difficulty = str(s.difficultyLevel), coverage = str(s.coverageRole)
+  if (!['PRIMARY', 'SUPPORTING', 'INCIDENTAL'].includes(focus) || !['LOW', 'MEDIUM', 'HIGH'].includes(difficulty) || !['COVERAGE', 'ANCILLARY'].includes(coverage)) throw Error()
+  const attention = bool(s.expertAttention), reason = nullable(s.attentionReason, str)
+  if (attention && !reason?.trim() || coverage === 'COVERAGE' && focus === 'INCIDENTAL') throw Error()
+  return { skillId: str(s.skillId), instructionLevel: null, teachingFocus: focus as TeachingFocus, difficultyLevel: difficulty as DifficultyLevel, coverageRole: coverage as 'COVERAGE' | 'ANCILLARY', expertAttention: attention, attentionReason: reason }
+}
+export interface PathwayModule { id: string; title: string; contentVersion: string; ordinal: number; durationMinutes: number; priceVnd: number; targets: TeachingTarget[] }
 function module(v: unknown): PathwayModule {
-  const m = obj(v); return { id: str(m.id), title: str(m.title), contentVersion: str(m.contentVersion), ordinal: num(m.ordinal), durationMinutes: num(m.durationMinutes), priceVnd: num(m.priceVnd), targets: list(m.targets, v => { const t = obj(v); return { skillId: str(t.skillId), instructionLevel: str(t.instructionLevel) } }) }
+  const m = obj(v); return { id: str(m.id), title: str(m.title), contentVersion: str(m.contentVersion), ordinal: num(m.ordinal), durationMinutes: num(m.durationMinutes), priceVnd: num(m.priceVnd), targets: list(m.targets, teaching) }
 }
 export interface PathwayView { status: PathwayStatus | null; archived: boolean; modules: { module: PathwayModule; accessState: string; reasonCode: string | null; entry: string | null }[]; dependencies: { moduleId: string; providerModuleId: string | null; dependentSkillId: string; prerequisiteSkillId: string; internal: boolean }[] }
 function view(v: unknown): PathwayView {
@@ -58,14 +73,19 @@ export interface ReviewSummary { id: string; revision: number; contentHash: stri
 function summary(v: unknown): ReviewSummary {
   const s = obj(v); return { id: str(s.id), revision: num(s.revision), contentHash: str(s.contentHash), reviewStatus: str(s.reviewStatus), validationStatus: str(s.validationStatus), roleName: str(s.roleName), levelName: str(s.levelName) }
 }
-export interface Candidate { moduleId: string; title: string; skillId: string; instructionLevel: string; durationMinutes: number; priceVnd: number; reason: string }
-export interface ReviewDetail { summary: ReviewSummary; gaps: GapResult; revision: { revision: number; contentHash: string; selectedModules: string[]; plan: { modules: PathwayModule[]; diagnostics: string[]; dependencies: { moduleId: string; dependentSkillId: string; prerequisiteSkillId: string; providerModuleId: string | null; internalGateId: string | null }[] } }; candidates: Candidate[] }
+export interface Candidate extends TeachingTarget { moduleId: string; title: string; durationMinutes: number; priceVnd: number; reason: string; preferredDifficulty: DifficultyLevel | null; preference: number }
+export interface PathwayQuality { supportingFallbacks: number; secondFallbacks: number; firstFallbacks: number; durationMinutes: number; priceVnd: number; supportingBeneficiaries: string[]; moduleCount: number }
+function quality(v: unknown): PathwayQuality | null {
+  if (v == null) return null
+  const q = obj(v); return { supportingFallbacks: num(q.supportingFallbacks), secondFallbacks: num(q.secondFallbacks), firstFallbacks: num(q.firstFallbacks), durationMinutes: num(q.durationMinutes), priceVnd: num(q.priceVnd), supportingBeneficiaries: list(q.supportingBeneficiaries, str), moduleCount: num(q.moduleCount) }
+}
+export interface ReviewDetail { summary: ReviewSummary; gaps: GapResult; revision: { revision: number; contentHash: string; selectedModules: string[]; plan: { modules: PathwayModule[]; diagnostics: string[]; warnings: string[]; quality: PathwayQuality | null; dependencies: { moduleId: string; dependentSkillId: string; prerequisiteSkillId: string; providerModuleId: string | null; internalGateId: string | null }[] } }; candidates: Candidate[] }
 export const readReviewQueue = (offset: number, signal?: AbortSignal) => request(`expert/initial-pathways?offset=${offset}&limit=20`, v => list(v, summary), { signal })
 export const readReviewDetail = (id: string, signal?: AbortSignal) => request('expert/initial-pathways/' + encodeURIComponent(id), v => {
   const d = obj(v), r = obj(d.revision), p = obj(r.plan)
-  return { summary: summary(d.summary), gaps: gapResult(d.gaps), revision: { revision: num(r.revision), contentHash: str(r.contentHash), selectedModules: list(r.selectedModules, str), plan: { modules: list(p.modules, module), diagnostics: list(p.diagnostics, str), dependencies: list(p.dependencies, v => { const g = obj(v); return { moduleId: str(g.moduleId), dependentSkillId: str(g.dependentSkillId), prerequisiteSkillId: str(g.prerequisiteSkillId), providerModuleId: nullable(g.providerModuleId, str), internalGateId: nullable(g.internalGateId, str) } }) } }, candidates: list(d.candidates, v => { const c = obj(v); return { moduleId: str(c.moduleId), title: str(c.title), skillId: str(c.skillId), instructionLevel: str(c.instructionLevel), durationMinutes: num(c.durationMinutes), priceVnd: num(c.priceVnd), reason: str(c.reason) } }) } satisfies ReviewDetail
+  return { summary: summary(d.summary), gaps: gapResult(d.gaps), revision: { revision: num(r.revision), contentHash: str(r.contentHash), selectedModules: list(r.selectedModules, str), plan: { modules: list(p.modules, module), diagnostics: list(p.diagnostics, str), warnings: list(p.warnings ?? [], str), quality: quality(p.quality), dependencies: list(p.dependencies, v => { const g = obj(v); return { moduleId: str(g.moduleId), dependentSkillId: str(g.dependentSkillId), prerequisiteSkillId: str(g.prerequisiteSkillId), providerModuleId: nullable(g.providerModuleId, str), internalGateId: nullable(g.internalGateId, str) } }) } }, candidates: list(d.candidates, v => { const c = obj(v), preferred = c.preferredDifficulty == null ? null : str(c.preferredDifficulty); if (preferred !== null && !['LOW', 'MEDIUM', 'HIGH'].includes(preferred)) throw Error(); return { ...teaching(c), moduleId: str(c.moduleId), title: str(c.title), durationMinutes: num(c.durationMinutes), priceVnd: num(c.priceVnd), reason: str(c.reason), preferredDifficulty: preferred as DifficultyLevel | null, preference: num(c.preference) } }) } satisfies ReviewDetail
 }, { signal })
-export const checkReview = (id: string) => request('expert/initial-pathways/' + encodeURIComponent(id) + '/validation', v => { const r = obj(v); return { validationStatus: str(r.validationStatus), diagnostics: list(r.diagnostics, str) } })
+export const checkReview = (id: string) => request('expert/initial-pathways/' + encodeURIComponent(id) + '/validation', v => { const r = obj(v); return { validationStatus: str(r.validationStatus), diagnostics: list(r.diagnostics, str), revisionContentHash: str(r.revisionContentHash), warnings: list(r.warnings ?? [], str) } })
 export function prepareReviewCommand(id: string, detail: ReviewDetail, action: 'inclusions' | 'exclusions' | 'confirmation', moduleId?: string, reason?: string): PendingPathwayCommand {
   const expected = { expectedRevision: detail.summary.revision, expectedContentHash: detail.summary.contentHash }
   return { path: `expert/initial-pathways/${encodeURIComponent(id)}/${action}`, key: crypto.randomUUID(), body: JSON.stringify(action === 'confirmation' ? expected : { ...expected, moduleId, reason: reason || null }) }

@@ -1,5 +1,11 @@
 export const en = {
   initialPathway: {
+    expertAttention: 'Needs Expert review', supportingFallbackNote: 'Supporting practice is used because no usable primary provider was found.', difficultyFallbackNote: 'An alternative difficulty is used and needs Expert review.',
+    searchLimitNote: 'The best plan could not be confirmed within the processing limit. No proposal has been published.',
+    preferredDifficulty: 'Preferred difficulty', chosenDifficulty: 'Selected difficulty', coversNeed: 'Covers this learning need', historicalTeaching: 'Recorded under the earlier teaching contract',
+    totalDuration: 'Total duration', totalPrice: 'Total price', moduleCount: 'Modules',
+    focus: { PRIMARY: 'Primary learning', SUPPORTING: 'Supporting practice', INCIDENTAL: 'Context only' },
+    difficulty: { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High' },
     chooseLevel: 'Choose a level', levelRequired: 'Choose the level you want to work towards.',
     title: 'My learning pathway', reviewTitle: 'Initial pathway review', reviewDescription: 'Review assigned plans and confirm the modules employees should study.',
     gaps: 'Review skill gaps', gapTitle: 'Learning needs for this Role', gapDescription: 'Review your saved baseline against this Role before confirming your plan.',
