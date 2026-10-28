@@ -1,5 +1,7 @@
 # Baseline → initial pathway view — pre-transfer static reconciliation
 
+Later laptop work2026-10-28 supersedes this historical next-machine gate and missing-local-planner-input status: user approved shared design18 and C2 main dev Compose implementation/FE review. See [actual Compose build/API journey and UI limitation](REQ-002-041-042-compose-manual.md). Production owner and C3 limits remain. No historical native observation below is converted into a Compose result.
+
 Date:2026-10-28, Asia/Bangkok. Scope: REQ-002/009 baseline/mastery dependency, REQ-041-F02 gap, REQ-001-F02 confirmation handoff, REQ-042-F01 generation, REQ-020-F01/F02 include/exclude, REQ-019-F01 exact approval, REQ-004-F01 Employee view. This is a document/source review, not an executable-test run or a new runtime observation.
 
 ## Confirmed boundary and next authority

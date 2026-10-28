@@ -1,5 +1,6 @@
 # Initial gap-to-pathway flow and data design
 
+
 Updated2026-10-28. **C1 contract confirmed; C2 source/build update recorded in section15, runtime/owner acceptance incomplete.** Sections1–8/14 define scope. Sections9–13 retain dated0.10 observations; section14 supersedes their old field/policy/environment statements. Source/build is not deployment or executable acceptance.
 
 **Current user amendment:** section12 supersedes earlier statements that a business Role is pre-bound and Employee cannot select Level. Employee explicitly selects TargetRole + Level; three Levels are three effective targets. Other safety/approval/readiness invariants remain in force.
@@ -417,3 +418,25 @@ Planning-required ReadinessDefinitions/prerequisite evidence/gate mappings and m
 Next-machine session first reads/reconciles and reports understanding, transferred state, gaps and plan, then waits for user OK. After OK prepare a **manual Compose walkthrough document** and bounded manual/API/UI verification; no executable tests are authorized by that step. Only after the agreed manual journey is accepted, request separate Cluster3 executable-test authority. No automatic C3/C4/C5, commit/push or Git rewrite. This handoff cleanup changes documentation only and preserves source/migrations/runtime data/history.
 
 Confirmed: own approved pathway view endpoint and next-session report/OK gate | Open: planner inputs/fresh Compose/manual evidence | Deferred: learning execution and executable tests | Rejected: fake PASS/approval/version, default compose-up as full-flow proof, automatic cluster transition.
+
+## 18. Confirmed reproducible Compose demo amendment — 2026-10-28
+
+The user approved this document amendment and subsequent C2 implementation together. Goal: anyone using the repository's main `compose.dev.yml` can prepare a genuine full-Occupation baseline, obtain persisted mastery, confirm an exact Role+Level, review/edit/approve as Expert and see the same Employee's approved pathway. Learning execution remains outside scope. Existing acceptance G/P/R/E and history/tenant/replay/CAS rules remain; executable tests require separate C3 authority.
+
+### Trusted local planning inputs
+
+Separate default-off `pathway.initial.local-planning.enabled`, existing local-baseline-demo/initial/auth gates and `!prod` activate TMP-REQ001-10. Fixed server LOCAL-DEMO organization only. Exact checked-in v0.11 seed/hash defines eligible ACTIVE Module IDs and exact content versions. This is a local availability exception for planning, not production content publication or a protected learning entry.
+
+Version `local-baseline-prerequisite-v1` defines a planning-only prerequisite decision: read original PostgreSQL profile through Profiles, resolve exact semantic compatibility through Semantics, compare that skill's unchanged mastery to the exact seed prerequisite edge requiredScore. Known mastery >= threshold satisfies that edge for planning. Lower mastery or missing compatible evidence creates a prerequisite learning need with original mastery or null plus its UNKNOWN reason. Pin profile/evidence identity, threshold and policy version. Never write PASS, modify mastery, rescore, repin or infer completion.
+
+Each applicable external gate has a deterministic definition tied to seed/module/skill edge and this policy version. No internal gate is invented: a Module cannot simultaneously supply an unmet prerequisite and its dependent coverage; the shared validator must choose separate Modules or report unresolved. Missing/mismatched source, tenant, policy or profile integrity denies. Missing compatible skill is UNKNOWN; unavailable/corrupt evidence is an error. ContentAccess and LiveReadiness stay unavailable; approved summaries remain visible with no learning entry.
+
+### Dev lifecycle and verification
+
+Compose explicitly opts into these local substitutes with fixed server Expert identity and an additive active same-tenant DOMAIN_EXPERT fixture. It orchestrates migrate, exact graph/bank seed, await indexes and graceful read-only sealing before API/worker/web. Restart is idempotent and preserves data. Explicit deletion of this project's verified dev volumes is user-authorized; no startup reset and no deletion of unrelated volumes. Bank items remain DRAFT until actual LD author/review/activation; attempts, profiles, requests and approvals are never seeded.
+
+FE review covers server-session/tenant caches, Role+member Level and no-write preview, explicit confirm/retry states, fixed-set Expert editing/exact approval, own approved locked cards, protected-data exclusion, empty/error/loading/mutation states, shared components/tokens and natural EN/VI. Actual tokens/AGENTS use 28px page and 15.5px body; DESIGN_SYSTEM.md's older 26/14 figures are stale and must be aligned without changing live tokens.
+
+Acceptance extensions: G13/P10/P19/P20 cover exact compatibility, threshold equality/UNKNOWN, unavailable/version/tenant failures and deterministic gate definitions; P07/R03/R14 cover no invented internal gate and fixed-set repair; E01/E03/E09 cover safe approved read-only display. Planned C3 cases remain Not run. C2 build and bounded manual evidence goes in `documents/testing/system/REQ-002-041-042-compose-manual.md`.
+
+Confirmed: reproducible main dev Compose, gated planning policy and FE rule review | Open: runtime/manual verification and production owner replacements | Rejected: fabricated learner evidence/PASS/approval, automatic resets, executable tests or automatic cluster transitions.

@@ -45,3 +45,7 @@ Current source profile stores original skills/attempt pins; UNKNOWN projections 
 [Test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md). Executable acceptance remains Planned/Not run. Gap domain, scoped original-profile reader, no-write endpoint and explicit-confirm UI exist in C2 source; default owner adapters deny missing binding/publication/compatibility. [Actual checks/limits](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27) distinguish compilation from runtime proof.
 
 Confirmed: unchanged gap rules/compatibility preservation | Source updated/built2026-10-28: local0.11 compatibility retaining v08/v010 | Open: actual profile/hash round-trip, production publication/semantic adapters and runtime evidence | Rejected: mastery rewrite/reset or tests without C3.
+
+## Confirmed local Compose amendment ? 2026-10-28
+
+[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.

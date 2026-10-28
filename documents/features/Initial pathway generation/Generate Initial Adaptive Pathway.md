@@ -43,3 +43,7 @@ Base5b17c77 had instructionLevel/0.10/first-feasible behavior; current uncommitt
 P01–P20 in the [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md) cover trigger/no-gap, batched closure/full pair metadata, exact bands/focus/fallback/whole-path objective, prerequisite/dedup/order, proof/limits, legacy format/hash, runtime versions and replay/stale/fencing/atomicity. All executable evidence Planned/Not run. Today's source/build milestone excludes deferred manual/UI acceptance on the DB-capable machine; safe503 is not integration success.
 
 Confirmed: goal/0.11 policy/objective/search/invariants | Source implemented/built: C2 adaptation/V28 source/format2 | Open: owner readiness/content/production integration, configured runtime and executable proof | Rejected: partial/first-valid success, fake mastery/automatic learning or tests without C3.
+
+## Confirmed local Compose amendment ? 2026-10-28
+
+[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.

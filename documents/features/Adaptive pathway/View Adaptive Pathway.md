@@ -1,5 +1,15 @@
 # View Adaptive Pathway
 
+## Confirmed Employee visual restoration — 2026-10-28
+
+User approved restoring the reference screenshots on the existing Employee roadmap/timeline files, replacing the generic InitialPathwayModules card-grid/list bypass. Show a compact Role/Level/status and view toolbar, baseline-target count/search, a top Role node with approved Modules down the center and their actual teaching skills on both sides, connecting lines, and the existing timeline track composition. Keep Module order/dependencies from the approved projection. Scope the responsive styles to this trusted path; preserve independent-skill consumers and existing shared primitives/tokens/EN-VI. Module/skill activation opens a read-only detail dialog; safe content links remain conditional on live AVAILABLE entry/current non-archived status.
+
+Extend the own approved/own approved-archived GET only with safe context (frozen roleId/levelId/occupationId) and the existing frozen RoleGap.Result: names/requirements/mastery/confidence/UNKNOWN from the exact prepared input. Do not serialize full profile/input/worker candidates or change approval hashes. Non-approved/empty responses expose neither these learning details nor Modules. Reads retain own authorization and final revision/hash check and perform no writes or migrations. Baseline snapshot is historical planning evidence, not live learning progress; the denominator is mandatory Role skills, deduplicated, and a met target requires known mastery >= its exact requiredScore. Optional/out-of-Role targets do not alter that count. An out-of-Role target absent from the retained role snapshot displays its ID and unavailable evidence rather than guessed mastery/threshold/name.
+
+Source design contains mocked Success/In Progress/70%-exam/certification states, simulation commands and a Target Role Verified footer. Those behaviors are not restored. Approved means Expert confirmed the plan; AVAILABLE/LOCKED/UNAVAILABLE/ARCHIVED come from trusted access projection and never prove completion. Explain unavailable learning content separately from plan generation, with a concise common notice and details on demand. No extra page header. Only the trusted current Role is shown; Skill navigation uses the existing skill-selection route, not fabricated pathway history. Empty/pending/stale/error/archive behavior stays explicit and safe.
+
+Acceptance E01–E09 extends to source layout restoration, search/highlight, accurate frozen baseline counts/UNKNOWN and absent targets, safe no-write projection and dialogs, responsive EN/VI, correct access messages and retained archived/no-entry guards. Planned executable evidence remains C3 Not run; C2 build/manual observations are recorded separately. Confirmed.
+
 **Function:** REQ-004-F01. **Actor:** Employee. **Status:** C2 projection/API UI0.11 format/notes source updated/built2026-10-28; positive approved-view evidence pending. Current user milestone ends at pathway display; learning-content/start execution is deferred to its owner.
 
 ## Current Scope Alignment
@@ -47,3 +57,7 @@ Employee timeline/roadmap now uses typed legacy/new pair parsing and shared teac
 E01–E09 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md): own/no-write scope, lifecycle/error states, unique amounts/order/0.11 notes, exact approval, independent/prerequisite/internal locks and actual direct-access denial, legacy archive/no-resume, history/revocation/failure. All executable evidence Planned/Not run. C2 source/build completion is a separate milestone from the user-deferred evening manual/UI verification on another machine; do not call runtime accepted before its evidence.
 
 Confirmed: own approved/locked view and safe pair/attention explanations | Source implemented/built: C2 adaptation | Open: live readiness/content-start, runtime/UI evidence and later recalculation | Rejected: UI-only security, fake unlock/PASS or tests without C3.
+
+## Confirmed local Compose amendment ? 2026-10-28
+
+[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.

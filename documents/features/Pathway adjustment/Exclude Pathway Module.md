@@ -1,5 +1,7 @@
 # Exclude Pathway Module
 
+Confirmed UX2026-10-28: Included→Excluded drop is an alternate gesture for this same exact-revision command, alongside the existing keyboard/mobile Exclude button. Excluded remains visible from persisted override history/reason after GET/refresh; current selected IDs cannot appear in both panels. Catalog→Excluded preemptive bans and deleting history are outside scope. Missing coverage remains editable UNRESOLVED and cannot approve. No client-owned order/approval/state. See REQ-019's confirmed UX restoration and the C2 manual receipt; executable cases stay C3-only.
+
 **Function:** REQ-020-F02. **Actor:** authorized Expert. **Status:**0.11 C2 policy/format/local-scope source updated/built2026-10-28; runtime evidence pending.
 
 ## Current Scope Alignment
@@ -25,3 +27,7 @@ Only approved current exact complete revision can open learning through REQ-019-
 R03–R14 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md) cover provider/prerequisite/benefit removal, warnings, fixed-set validity/repair, approval denial, local assignment/tenant gates, no-op/replay/CAS and failure isolation. P19 covers exact historical format/hash reads without old enum conversion. All Planned/Not run; current API source/build history is not transaction/0.11 acceptance evidence.
 
 Confirmed: exclusion/fixed-set revalidation/warnings/no fake mastery | Source implemented/built:0.11 adaptation | Open: owner integration/runtime evidence; later recalculation/progress overrides dependency-only | Rejected: auto-readd, fabricated Primary absence or approval/tests without authority.
+
+## Confirmed local Compose amendment ? 2026-10-28
+
+[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.

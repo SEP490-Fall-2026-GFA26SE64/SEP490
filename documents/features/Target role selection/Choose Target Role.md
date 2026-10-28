@@ -1,5 +1,13 @@
 # Choose Target Role
 
+## Confirmed Employee UI refinement — 2026-10-28
+
+User approved five screenshot-based changes plus alignment with FE AGENTS/live tokens: always-visible accessible Level options (no dropdown), a larger viewport-bounded selection/gap/detail dialog, original portal menu with one fixed demo Employee, removal of catalog scope text/selection timestamp from the Active Role summary, and an always-visible summary with a standard Review skill gap button instead of a collapse arrow. That button opens the exact selected Role+member Level preview; legacy unbound Level still requires an explicit choice. Level changes remain preview-only until the existing confirmation command. No selection/profile/history/hash change from opening or resizing UI.
+
+Selected/highlight/hover/focus uses primary/secondary brand semantics; success/warning/destructive remain outcome semantics. Popup content may grow to the available viewport and remains scrollable by pointer/touch/keyboard with hidden scrollbars; header/footer/close remain reachable, no nested Level popup. Keep shared Dialog/body/component and current typography/font. Single local Employee is existing server alias employee-a; remove B/C shortcuts and stop offering/provisioning them as new demo personas, retaining persisted historical accounts/results until a separately requested dev-volume reset. Expert/L&D/admin session switching and trusted tenant/grants remain. Expert drag/drop changes and volume deletion are outside this refinement.
+
+Acceptance mapping: RB03–RB05/RB09/RB11–RB13/RB16–RB17 and G01–G03/G11/G12; plan keyboard Level selection, exact selected-pair popup defaults, no-write opening/preview, command/retry/disabled handling, one-Employee server persona allowlist, responsive overflow/hidden-scroll access, EN/VI and semantic highlights. C2 build/type/lint and bounded manual reads only; executable cases require separate C3 approval. Confirmed | Open: actual browser observations | Rejected: client authority, automatic learner reset, auto-selecting a missing Level or unsaved target changes.
+
 **Function:** REQ-001-F02. **Actor:** Employee.
 
 ## Goal and context
@@ -56,3 +64,7 @@ Pending UI commands block double submission and retain exact retry identity. Bro
 RB03–RB05/RB09/RB11–RB13/RB16–RB17 in the [acceptance plan](../../testing/REQ-001-002-role-baseline-flow-test-plan.md) cover replay/no-op, revision, tenant/actor boundaries, transactional rollback, races, blocked changes and no-write reads. Identity, catalog publication/references, activity and pathway lifecycle are owner dependencies; [implementation alignment](../../testing/system/REQ-001-002-final-synchronization-review.md) records their actual state without changing this contract.
 
 Confirmed | Open: cross-owner production integration.
+
+## Confirmed local Compose amendment ? 2026-10-28
+
+[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.

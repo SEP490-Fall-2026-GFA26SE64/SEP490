@@ -1,5 +1,7 @@
 # Include Pathway Module
 
+Confirmed UX2026-10-28: Catalog→Included and Excluded→Included drops are alternate gestures for this same command. Keyboard/mobile Include/Restore buttons remain. Only currently eligible candidates from the scoped server response can be included; last persisted overrides determine excluded membership. Ignore external/same-list/stale drag and lock during pending/approved states. Reconcile exact server revision/hash/order; no position field, reorder, localStorage mutation, fabricated success or automatic approval. See REQ-019's confirmed UX restoration; C2 build/manual evidence is separate from planned C3 cases.
+
 **Function:** REQ-020-F01. **Actor:** authorized Expert. **Status:**0.11 C2 source/API UI/format/local-scope adaptation built2026-10-28; runtime evidence pending.
 
 ## Current Scope Alignment
@@ -28,3 +30,7 @@ For a previously accepted exact command, return its retained receipt after reaut
 R03–R06/R09–R14 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md): authorized Expert/local gates, no-op, pair/benefit/warnings, fixed-set validation, unresolved approval denial, stale/race/outage rollback/history/no unlock. Planned/Not run. [Source/build receipt](../../testing/system/REQ-041-042-v011-source-build.md) does not prove runtime behavior.
 
 Confirmed: authorized intent/fixed-set revalidation/warnings | Source implemented/built:0.11 adaptation | Open: owner content/readiness/production assignment and runtime evidence | Rejected: implicit replacement, fake mastery/approval or tests without C3.
+
+## Confirmed local Compose amendment ? 2026-10-28
+
+[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.
