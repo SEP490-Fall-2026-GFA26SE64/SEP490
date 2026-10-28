@@ -6,7 +6,7 @@ import {
   Lock,
   RefreshCw,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
@@ -21,7 +21,8 @@ import { InitialEmployeePathway } from './InitialEmployeePathway'
 
 export function AdaptivePathwayPage() {
   const { profile } = useEmployeeLearningState()
-  return profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
+  const [params] = useSearchParams()
+  return params.get('view') !== 'role' && profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
 }
 function IndependentSkillPathwayPage() {
   const [activeTab, setActiveTab] = React.useState('roadmap')

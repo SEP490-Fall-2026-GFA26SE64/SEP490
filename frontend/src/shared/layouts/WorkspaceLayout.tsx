@@ -718,7 +718,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 2. Expert */}
                         <Link
-                          to="/expert/assigned-roles"
+                          to={demo.enabled ? '/expert/pathway-review' : '/expert/assigned-roles'}
                           onClick={event => switchPortal(event, 'expert')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isExpert
@@ -727,7 +727,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                           }`}
                         >
                           <span className="flex items-center gap-1.5">
-                            <Sparkles size={13} className="text-success" />
+                            <Sparkles size={13} className="text-primary" />
                             <span>{t('roles.expert')}</span>
                           </span>
                           {isExpert && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
@@ -735,7 +735,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                         {/* 3. L&D Manager */}
                         <Link
-                          to="/ld-manager/dashboard"
+                          to={demo.enabled ? '/ld-manager/baseline-assessments' : '/ld-manager/dashboard'}
                           onClick={event => switchPortal(event, 'ld')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager

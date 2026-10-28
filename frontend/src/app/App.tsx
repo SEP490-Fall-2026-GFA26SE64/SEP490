@@ -54,7 +54,7 @@ export default function App() {
           <BrowserRouter>
           <Routes>
             {/* Auth routes */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to={import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true' ? '/ld-manager/baseline-assessments' : '/login'} replace />} />
             <Route path="/home" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<LoginPage />} />
 

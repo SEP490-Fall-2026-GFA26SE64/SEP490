@@ -13,11 +13,11 @@ export function CurrentRoleCard({ role, active, disabled, onDetails, onChoose, o
 }) {
   const { t } = useTranslation()
   const skills = new Set(role.levels.flatMap(level => level.skills.map(skill => skill.id))).size
-  return <Card className={`flex min-w-0 flex-col transition-all duration-150 hover:shadow-md ${active ? 'border-primary/50 ring-1 ring-primary/20' : ''}`}>
+  return <Card className={`flex min-w-0 flex-col transition-all duration-150 hover:shadow-md ${active ? 'border-primary ring-1 ring-primary/15' : 'hover:border-primary/40'}`}>
     <CardContent className="flex-1 space-y-3 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Badge variant="secondary" className="max-w-full whitespace-normal break-words">{role.occupationName}</Badge>
-        {active && <Badge variant="success">{t('roleFlow.selected')}</Badge>}
+        {active && <Badge variant="secondary" className="border-primary/20 text-primary">{t('roleFlow.selected')}</Badge>}
       </div>
       <Heading level={3} size="card" className="break-words">{role.name}</Heading>
       <Text variant="body-sm" className="line-clamp-3 whitespace-pre-wrap break-words">{role.scope}</Text>
@@ -28,7 +28,7 @@ export function CurrentRoleCard({ role, active, disabled, onDetails, onChoose, o
         <span className="inline-flex items-center gap-1.5"><Layers size={14} aria-hidden="true" />{role.levels.length} {t('upskillingUi.levels')}</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {onGaps && <Button size="sm" variant="outline" disabled={gapDisabled} onClick={onGaps}>{t('initialPathway.gaps')}</Button>}
+        {onGaps && <Button size="sm" variant="primary" disabled={gapDisabled} onClick={onGaps}>{t('initialPathway.gaps')}</Button>}
         <Button size="sm" variant="outline" aria-label={t('roleFlow.details')} onClick={onDetails}>{t('upskillingUi.showDetails')}</Button>
         <Button size="sm" variant="secondary" disabled={disabled} onClick={onChoose}>{t(active ? 'initialPathway.chooseLevel' : 'roleFlow.choose')}</Button>
       </div>

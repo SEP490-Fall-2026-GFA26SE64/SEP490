@@ -10,6 +10,9 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
+::selection { background: hsl(var(--primary) / 0.2); color: hsl(var(--foreground)); }
+.scrollbar-hidden { scrollbar-width: none; }
+.scrollbar-hidden::-webkit-scrollbar { display: none; }
 a { color: inherit; text-decoration: none; }
 :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
 input:focus, input:focus-visible, button:focus-visible, select:focus-visible { outline: none; }

@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom'
 import { RefreshCw, Search, Target } from 'lucide-react'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
-import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Dialog, DialogBody, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Pagination } from '../../../shared/components/ui/Pagination'
@@ -63,11 +63,11 @@ export function CurrentRolePanel() {
     } finally { lock.current = false; setBusy(false) }
   }
   return <section aria-label={t('upskillingUi.roleCatalog')} className="min-w-0 space-y-5">
-    {gapRole && <InitialRoleGapDialog role={gapRole} onClose={() => setGapRole(null)} onBaseline={value => { setGapRole(null); choose(gapRole, value) }} />}
+    {gapRole && <InitialRoleGapDialog role={gapRole} initialLevelId={view.data?.selection?.role.id === gapRole.id ? view.data.selection.levelId : null} onClose={() => setGapRole(null)} onBaseline={value => { setGapRole(null); choose(gapRole, value) }} />}
     {(roles.isPending || view.isPending) && <LoadingCard label={tr('loading')} />}
     {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr('requestError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
-    {view.data && !view.isError && <CurrentRoleSummary view={view.data} />}
+    {view.data && !view.isError && <CurrentRoleSummary view={view.data} disabled={blocked} onReviewGaps={() => { if (view.data?.selection?.available) setGapRole(view.data.selection.role) }} />}
     {assessmentActive && <Text variant="body-sm" role="status">{tr('errors.ASSESSMENT_IN_PROGRESS')}</Text>}
     <Card><CardContent className="flex flex-col gap-3 p-3 lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">
@@ -113,27 +113,29 @@ export function CurrentRolePanel() {
     })}</div>
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
       labels={{ navigation: t('adaptiveBaseline.paging.navigation'), first: t('adaptiveBaseline.paging.first'), previous: t('adaptiveBaseline.paging.previous'), next: t('adaptiveBaseline.paging.next'), last: t('adaptiveBaseline.paging.last'), showing: t('adaptiveBaseline.paging.showing'), of: t('adaptiveBaseline.paging.of') }} /></Card>}
-    <Dialog open={selected !== null} onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
-      <DialogHeader><DialogTitle>{tr('confirmTitle')}</DialogTitle><DialogDescription>{tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}</DialogDescription></DialogHeader>
+    <Dialog open={selected !== null} size="wide" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
+      <DialogHeader><DialogTitle className="text-section">{tr('confirmTitle')}</DialogTitle><DialogDescription className="text-body-sm">{tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}</DialogDescription></DialogHeader>
+      <DialogBody className="space-y-4">
       <Text variant="body-sm" className="break-words font-semibold">{selected?.name}</Text>
       {selected && <RoleLevelPicker levels={selected.levels} value={levelId} disabled={blocked} onChange={setLevelId} />}
       {error && <Text variant="body-sm" tone="destructive" className="text-destructive" role="alert">{tr(`errors.${error.code}`)}</Text>}
       {command && <Text variant="body-sm">{tr('retryNotice')}</Text>}
+      </DialogBody>
       <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setSelected(null)}>{tr('cancel')}</Button>
         <Button disabled={busy || !levelId} onClick={() => void confirm(command ?? undefined)}>{tr(command ? 'retry' : 'confirm')}</Button></DialogFooter>
     </Dialog>
     {error && !selected && <Text variant="body-sm" tone="destructive" className="text-destructive" role="alert">{tr(`errors.${error.code}`)}</Text>}
-    <Dialog open={details !== null} onOpenChange={open => { if (!open) setDetails(null) }} ariaLabel={tr('details')} closeLabel={tr('cancel')} className="max-w-4xl">
-      <DialogHeader><DialogTitle>{details?.name}</DialogTitle><DialogDescription>{details?.scope}</DialogDescription></DialogHeader>
-      <div tabIndex={0} className="min-h-0 space-y-3 overflow-y-auto overscroll-contain">
-        {details?.levels.map(level => <section key={level.id} className="space-y-3 rounded-lg border border-primary/20 bg-secondary/20 p-4">
+    <Dialog open={details !== null} size="wide" onOpenChange={open => { if (!open) setDetails(null) }} ariaLabel={tr('details')} closeLabel={tr('cancel')}>
+      <DialogHeader><DialogTitle className="text-section">{details?.name}</DialogTitle><DialogDescription className="text-body-sm">{tr('details')}</DialogDescription></DialogHeader>
+      <DialogBody className="space-y-4">
+        {details?.levels.map(level => <section key={level.id} className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
           <Heading level={3} size="subsection">{level.name}</Heading><Text variant="body-sm" tone="foreground">{level.context}</Text>
           <ul className="divide-y divide-border">{level.skills.map(skill => <li key={skill.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-body-sm">
             <span className="min-w-0 flex-1 basis-48 break-words font-medium">{skill.name}{skill.mandatory ? ` · ${tr('mandatory')}` : ''}</span>
-            <span className="rounded-md border border-primary/20 bg-card px-2.5 py-1 text-caption font-semibold text-secondary-foreground">{tr('requiredScore')}: {Math.round(skill.requiredScore * 100)}%</span>
+            <span className="rounded-md border border-border bg-card px-2.5 py-1 text-caption font-semibold text-foreground">{tr('requiredScore')}: {Math.round(skill.requiredScore * 100)}%</span>
           </li>)}</ul>
         </section>)}
-      </div>
+      </DialogBody>
     </Dialog>
   </section>
 }

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-const demoPersonas = ['ld', 'employee-a', 'employee-b', 'employee-c', 'admin', 'expert'] as const
+const demoPersonas = ['ld', 'employee-a', 'admin', 'expert'] as const
 export type LocalDemoPersona = typeof demoPersonas[number]
 export function useLocalDemoSession() {
   const enabled = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true'
