@@ -1,0 +1,163 @@
+import { expect, test } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { activationLink, confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text, SUBSCRIPTION_INBOX } from './subscriptionHelpers'
+
+test.setTimeout(150000)
+test.beforeEach(async ({ page, baseURL }) => {
+  if (baseURL !== 'http://127.0.0.1:8093') throw new Error('Use only the isolated identity-test environment.')
+  await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
+})
+
+test('Seeded Platform Admin uses password only, real platform APIs and no organization authority', async ({ page }, testInfo) => {
+  const observed = observe(page)
+  const seeded = await page.request.post('/api/v1/__subscription-test/platform-seed')
+  expect(seeded.ok()).toBeTruthy()
+  const account = record(await seeded.json())
+  await page.goto('/login')
+  await page.getByLabel('Email', { exact: true }).fill(text(account.email))
+  await page.getByLabel('Password', { exact: true }).fill('incorrect-fixture-password')
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page.getByRole('alert')).toBeVisible()
+  await page.getByLabel('Password', { exact: true }).fill(text(account.password))
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page.getByText('Authentication complete.', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Authenticator code')).toHaveCount(0)
+  const identity = record(await (await page.request.get('/api/v1/workspace-auth/current')).json())
+  expect(identity.roles).toEqual(['PLATFORM_ADMINISTRATOR'])
+  expect(identity.mfaVerified).toBe(false)
+  expect(identity.organizationId).toBeNull()
+  await page.getByRole('button', { name: 'Continue to workspace' }).click()
+  await expect(page).toHaveURL(/\/platform-admin\/subscriptions$/)
+  expect((await page.request.get('/api/v1/platform/subscription-plans')).status()).toBe(200)
+  expect((await page.request.get('/api/v1/platform/workspaces')).status()).toBe(200)
+  expect((await page.request.get('/api/v1/subscription/access')).status()).toBe(403)
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('platform-password-only.png'), fullPage: true })
+  expect(observed.errors).toEqual([])
+  expect(observed.network).toEqual([])
+})
+
+for (const [role, label, destination] of [
+  ['DOMAIN_EXPERT', 'Expert', '/expert/target-roles'],
+  ['LD_MANAGER', 'L&D Manager', '/ld-manager/occupations'],
+  ['EMPLOYEE', 'Employee', '/employee/overview'],
+] as const) {
+  test(`${label} invitation activates one role and enters its existing layout without MFA`, async ({ page, browser }, testInfo) => {
+    await registrationSession(page, await fixture(page.request))
+    const order = await purchase(page)
+    await confirmPayment(page, order)
+    await page.getByRole('button', { name: 'Enter workspace', exact: true }).click({ timeout: 30000 })
+    await expect(page).toHaveURL(/\/admin\/subscription$/)
+    const owner = record(await (await page.request.get('/api/v1/workspace-auth/current')).json())
+    const organization = text(owner.organizationId)
+    const base = `/api/v1/organizations/${organization}/subscription`
+    expect((await page.request.post(`/api/v1/__subscription-test/references/${organization}`)).ok()).toBeTruthy()
+    const rejected = await mutate(page.request, `${base}/activations`, {
+      fullName: 'Rejected multi-role', email: `multi-${crypto.randomUUID()}@example.test`,
+      roles: ['LD_MANAGER', 'DOMAIN_EXPERT'], departmentId: null, occupationReferenceId: null,
+    })
+    expect(rejected.status()).toBe(400)
+    await page.goto('/admin/users')
+    await page.getByRole('button', { name: 'Create User', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Create User', exact: true })
+    const email = `role-${crypto.randomUUID()}@example.test`
+    await dialog.getByLabel('Full name', { exact: true }).fill(`Invited ${label}`)
+    await dialog.getByLabel('Email', { exact: true }).fill(email)
+    await dialog.getByRole('radio', { name: label, exact: true }).check()
+    await expect(dialog.getByRole('radio', { checked: true })).toHaveCount(1)
+    if (role === 'EMPLOYEE') {
+      await dialog.getByLabel('Department', { exact: true }).selectOption({ label: 'Test Department' })
+      await dialog.getByLabel('Occupation', { exact: true }).selectOption({ label: 'Test Occupation' })
+    }
+    await dialog.getByRole('button', { name: 'Send activation link', exact: true }).click()
+    await expect(dialog).toHaveCount(0)
+    const link = await activationLink(page.request, email)
+    const recipient = await browser.newContext({ baseURL: 'http://127.0.0.1:8093' })
+    const member = await recipient.newPage()
+    await member.addInitScript(() => localStorage.setItem('app_language', 'en'))
+    const observed = observe(member)
+    const activationUrl = new URL(link)
+    if (role === 'DOMAIN_EXPERT') activationUrl.pathname = '/active'
+    await member.goto(activationUrl.toString())
+    expect(new URL(member.url()).hash).toBe(new URL(link).hash)
+    await expect(member.getByRole('link', { name: 'Adapt-Learn-Graph', exact: true })).toBeVisible()
+    await expect(member.getByRole('contentinfo')).toBeVisible()
+    await expect(member.getByRole('navigation', { name: 'Onboarding progress' })).toHaveCount(0)
+    await member.getByRole('button', { name: 'Activate account', exact: true }).click()
+    await expect(member.getByRole('alert')).toBeVisible()
+    const password = 'isolated-role-activation-password'
+    await member.getByLabel('Password', { exact: true }).fill(password)
+    await member.getByLabel('Confirm password', { exact: true }).fill(password)
+    await member.screenshot({ path: testInfo.outputPath('activation-desktop.png'), fullPage: true, mask: [member.locator('input[type=password]')] })
+    await member.getByRole('button', { name: 'Activate account', exact: true }).click()
+    await expect(member.getByText('Account activated.', { exact: true })).toBeVisible()
+    await member.getByRole('link', { name: 'Sign in', exact: true }).click()
+    await member.getByLabel('Email', { exact: true }).fill(email)
+    await member.getByLabel('Password', { exact: true }).fill(password)
+    await member.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await expect(member.getByText('Authentication complete.', { exact: true })).toBeVisible()
+    await expect(member.getByLabel('Authenticator code')).toHaveCount(0)
+    await member.getByRole('button', { name: 'Continue to workspace' }).click()
+    await expect(member).toHaveURL(new RegExp(`${destination}$`))
+    const actual = record(await (await member.request.get('/api/v1/workspace-auth/current')).json())
+    expect(actual.roles).toEqual([role])
+    expect(actual.mfaVerified).toBe(false)
+    await member.getByRole('button', { name: 'User actions menu' }).click()
+    await expect(member.getByText(email, { exact: true })).toBeVisible()
+    await member.getByRole('button', { name: 'User actions menu' }).click()
+    await member.reload()
+    await expect(member.locator('.workspace-sidebar')).toBeVisible()
+    await member.screenshot({ path: testInfo.outputPath('assigned-role-desktop.png'), fullPage: true })
+    await member.setViewportSize({ width: 390, height: 844 })
+    await member.screenshot({ path: testInfo.outputPath('assigned-role-mobile.png'), fullPage: true })
+    const members: unknown = await (await page.request.get(`${base}/members`)).json()
+    if (!Array.isArray(members)) throw new Error('Invalid member response')
+    expect(members.map(record).find(value => value.email === email)?.roles).toEqual([role])
+    expect((await member.request.get(`${base}`)).status()).toBe(403)
+    expect((await member.request.get('/api/v1/platform/subscription-plans')).status()).toBe(403)
+    const token = new URL(link).hash.slice('#token='.length)
+    expect((await mutate(member.request, '/api/v1/workspace-auth/activate', { token, password })).status()).toBe(400)
+    await member.goto('/admin/users')
+    await expect(member.getByRole('alert')).toContainText('cannot enter')
+    await member.setViewportSize({ width: 390, height: 844 })
+    await member.goto('/activate')
+    await member.getByRole('button', { name: 'VI', exact: true }).click()
+    await expect(member.getByRole('heading', { name: 'Kích hoạt tài khoản', exact: true })).toBeVisible()
+    await expect(member.getByRole('alert')).toContainText('Mở liên kết')
+    expect(await member.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy()
+    await member.screenshot({ path: testInfo.outputPath('activation-mobile-vi.png'), fullPage: true })
+    expect(observed.errors).toEqual([])
+    expect(observed.network).toEqual([])
+    await recipient.close()
+  })
+}
+
+test('Captured transactional email has the supplied CID logo and readable mobile branding', async ({ page }, testInfo) => {
+  await registrationSession(page, await fixture(page.request))
+  await confirmPayment(page, await purchase(page))
+  await expect(page.getByRole('button', { name: 'Enter workspace' })).toBeVisible({ timeout: 30000 })
+  let mail: Record<string, unknown> | undefined
+  await expect.poll(async () => {
+    const result = record(await (await page.request.get(`${SUBSCRIPTION_INBOX}/api/v1/messages?limit=100`)).json())
+    if (!Array.isArray(result.messages)) throw new Error('Invalid SMTP list')
+    const message = result.messages.map(record).find(value => value.Subject === 'Payment received - Adapt-Learn-Graph')
+    if (!message) return false
+    mail = record(await (await page.request.get(`${SUBSCRIPTION_INBOX}/api/v1/message/${text(message.ID)}`)).json())
+    const raw = await page.request.get(`${SUBSCRIPTION_INBOX}/api/v1/message/${text(message.ID)}/raw`)
+    expect(raw.ok()).toBeTruthy()
+    expect(await raw.text()).toContain('Content-ID: <alg-brand-logo>')
+    return true
+  }, { timeout: 30000 }).toBe(true)
+  if (!mail) throw new Error('Missing captured mail')
+  expect(text(mail.HTML)).toContain('cid:alg-brand-logo')
+  const logo = readFileSync(resolve('..', 'backend', 'src', 'main', 'resources', 'mail', 'brand-logo.png')).toString('base64')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.setContent(text(mail.HTML).replace('cid:alg-brand-logo', `data:image/png;base64,${logo}`))
+  const image = page.getByRole('img', { name: 'Adapt-Learn-Graph', exact: true })
+  await expect(image).toBeVisible()
+  expect(await image.evaluate(element => element instanceof HTMLImageElement && element.naturalWidth > 0)).toBeTruthy()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy()
+  await page.screenshot({ path: testInfo.outputPath('mail-logo-mobile.png'), fullPage: true })
+})

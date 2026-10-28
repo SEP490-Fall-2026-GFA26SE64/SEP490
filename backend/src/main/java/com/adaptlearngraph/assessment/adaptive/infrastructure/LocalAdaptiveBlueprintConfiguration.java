@@ -17,7 +17,7 @@ import org.springframework.jdbc.support.JdbcTransactionManager;
 
 /** Both gates default off. Even local+prod explicitly excludes this provisional runtime wiring. */
 @Configuration(proxyBeanMethods = false)
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.persistence", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(JdbcAdaptiveBlueprintEligibilityAdapter.Properties.class)
 public class LocalAdaptiveBlueprintConfiguration {

@@ -1,4 +1,10 @@
 export const viPhrases: Record<string, string> = {
+  'Expand sidebar': 'Mở thanh điều hướng',
+  'Collapse sidebar': 'Thu gọn thanh điều hướng',
+  'User actions menu': 'Menu tài khoản',
+  'Notifications unavailable': 'Chưa có thông báo',
+  'Sign out failed': 'Đăng xuất thất bại',
+  'Sign out is unavailable. Refresh and retry.': 'Không thể đăng xuất. Tải lại và thử lại.',
   // ==========================================
   // NAVIGATION & PORTALS
   // ==========================================

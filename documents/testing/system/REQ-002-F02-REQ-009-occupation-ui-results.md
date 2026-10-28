@@ -15,7 +15,7 @@ Date: 2026-10-22, Asia/Bangkok. The user accepted slices2–3 and authorized4–
 
 Dedicated not-run records: [REQ-009 unit](../unit/REQ-009-F01-F02-adaptive-result-history.md) and [REQ-009 integration](../integration/REQ-009-F01-F02-adaptive-result-history.md).
 
-Canonical field/API rules: [lifecycle/client/result contract](../../features/Baseline%20knowledge%20assessment/Occupation%20Baseline%20Lifecycle%20and%20Transition.md#client-and-protected-read-contract). This source checkpoint supersedes the previous slices2–3 frontend incompatibility warning; earlier evidence remains historical.
+Canonical field/API rules: [lifecycle/client/result contract](../../technical/baseline/Occupation%20Baseline%20Lifecycle%20and%20Transition.md#client-and-protected-read-contract). This source checkpoint supersedes the previous slices2–3 frontend incompatibility warning; earlier evidence remains historical.
 
 ## Isolated environment and preservation
 

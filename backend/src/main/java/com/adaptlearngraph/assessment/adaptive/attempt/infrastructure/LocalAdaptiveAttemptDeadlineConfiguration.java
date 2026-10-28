@@ -13,7 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /** TMP-REQ002-08: one isolated local/demo worker; no global scheduling switch or production bean. */
 @Configuration(proxyBeanMethods = false)
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled", "attempts.enabled", "attempts.finalization.enabled", "attempts.deadline-worker.enabled"}, havingValue = "true")
 public class LocalAdaptiveAttemptDeadlineConfiguration {

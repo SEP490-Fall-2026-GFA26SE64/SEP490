@@ -27,7 +27,7 @@ Compacted CURRENT, active assessment task, decision ledger, temporary registry, 
 
 ## Preserved bypasses and source alignment
 
-All TMP-REQ002-01..12 IDs and TMP-REQ001-01..06 remain registered, including retired implementations. Current [demo contract](../../features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md) and workspace `.project/temporary/REQ-002-003-009.md` retain gate, consumers, owner/replacement, protected history, rollback and future verification.
+All TMP-REQ002-01..12 IDs and TMP-REQ001-01..06 remain registered, including retired implementations. Current [demo contract](../../technical/baseline/Local%20Demo%20Flow.md) and workspace `.project/temporary/REQ-002-003-009.md` retain gate, consumers, owner/replacement, protected history, rollback and future verification.
 
 | Reviewed source/contract | Current alignment or explicit gap |
 | --- | --- |

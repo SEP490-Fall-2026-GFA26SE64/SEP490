@@ -5,7 +5,7 @@ Follow [current unit criteria](README.md#current-scope-alignment). Historical `A
 
 ## Historical Test Plan and Evidence
 
-**Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Target%20role%20selection/View%20Target%20Roles.md)  
+**Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Role%20catalog/README.md#req-001-f01)<br>
 **Level:** Unit (Domain Invariants, Application Services, Controller Contracts & Frontend Components)  
 **Status:** PASSED (2026-09-30)
 

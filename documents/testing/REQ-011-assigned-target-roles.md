@@ -8,7 +8,7 @@ Follow [current test criteria](README.md#current-scope-alignment). Retained runs
 **Status:** Unit, Controller/Security, Neo4j Testcontainers Integration, and System API tests passed; manual browser verification checklist verified.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-011-assigned-target-roles.md) | [Integration Test](integration/REQ-011-assigned-target-roles.md) | [System Test](system/REQ-011-assigned-target-roles.md)  
 **Feature contracts:**
-- [REQ-011-F01 View Assigned Target Roles](../features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)
+- [REQ-011-F01 View Assigned Target Roles](../features/Role%20catalog/README.md#req-011-f01)
 
 Under [ARCHITECTURE.md](../ARCHITECTURE.md) and [neo4j_schema.md](../neo4j_schema.md), target roles and their expert assignments (`assignedExpertId`) are stored in **Neo4j 5.26 Community** via `Neo4jTargetRoleRepository`. Workspace access control strictly filters catalog queries by `assignedExpertId = X-User-Id` when the caller's role is `DOMAIN_EXPERT`.
 

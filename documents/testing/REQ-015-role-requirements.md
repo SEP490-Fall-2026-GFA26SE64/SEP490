@@ -8,9 +8,9 @@ Follow [current test criteria](README.md#current-scope-alignment). Revalidate as
 **Status:** Domain, Application, Neo4j Testcontainers Integration, and System API tests passed; interactive authoring modal verified.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-015-role-requirements.md) | [Integration Test](integration/REQ-015-role-requirements.md) | [System Test](system/REQ-015-role-requirements.md)  
 **Feature contracts:**
-- [REQ-015-F01 Link Micro-Skill to Target Role](../features/Role%20requirements/Link%20Micro-Skill%20to%20Target%20Role.md)
-- [REQ-015-F02 Unlink Micro-Skill from Target Role](../features/Role%20requirements/Unlink%20Micro-Skill%20from%20Target%20Role.md)
-- [REQ-015-F03 Set Required Proficiency](../features/Role%20requirements/Set%20Required%20Proficiency.md)
+- [REQ-015-F01 Link Micro-Skill to Target Role](../features/Role%20catalog/README.md#req-015-f01)
+- [REQ-015-F02 Unlink Micro-Skill from Target Role](../features/Role%20catalog/README.md#req-015-f02)
+- [REQ-015-F03 Set Required Proficiency](../features/Role%20catalog/README.md#req-015-f03)
 
 Under [ARCHITECTURE.md](../ARCHITECTURE.md) and [neo4j_schema.md](../neo4j_schema.md), role requirements are represented exclusively as directed graph edges `(:TargetRole)-[:REQUIRES_SKILL {targetMastery: Float}]->(:MicroSkill)`. Weight and mandatory flags have been removed per Neo4j Schema V5; every linked edge represents a benchmark threshold. Proficiency thresholds in the UI range from `1%` to `100%`, normalized and stored in Neo4j as `targetMastery: Float` in the range `[0.01, 1.0]`.
 

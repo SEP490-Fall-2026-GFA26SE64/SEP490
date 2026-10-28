@@ -6,10 +6,10 @@ Follow [current system criteria](README.md#current-scope-alignment). Revalidate 
 ## Historical Test Plan and Evidence
 
 **Feature Contract:**
-- [REQ-012-F01 Create Micro-Skill](../../features/Micro-skill%20management/Create%20Micro-Skill.md)
-- [REQ-012-F02 View Micro-Skills](../../features/Micro-skill%20management/View%20Micro-Skills.md)
-- [REQ-012-F03 Update Micro-Skill](../../features/Micro-skill%20management/Update%20Micro-Skill.md)
-- [REQ-012-F04 Delete Micro-Skill](../../features/Micro-skill%20management/Delete%20Micro-Skill.md)
+- [REQ-012-F01 Create Micro-Skill](../../features/Learning%20catalog/README.md#req-012-f01)
+- [REQ-012-F02 View Micro-Skills](../../features/Learning%20catalog/README.md#req-012-f02)
+- [REQ-012-F03 Update Micro-Skill](../../features/Learning%20catalog/README.md#req-012-f03)
+- [REQ-012-F04 Delete Micro-Skill](../../features/README.md#removed-scope)
 
 **Level:** System (Docker Compose Stack, API Gateway & Graph Catalog Integration)  
 **Status:** PASSED (2026-10-01)

@@ -10,7 +10,15 @@ import org.neo4j.driver.Driver;
 /** Local-only current-schema catalog. Reuses full union validation; never invents legacy track/seniority. */
 public final class CurrentRoleCatalog implements Catalog {
     private final Driver driver; private final ObjectMapper mapper; private final UUID organization;
-    public CurrentRoleCatalog(Driver driver,ObjectMapper mapper,UUID organization) { this.driver=driver;this.mapper=mapper;this.organization=organization; }
+    private final Set<String> allowedOccupations;
+    private final boolean demoReview;
+    public CurrentRoleCatalog(Driver driver,ObjectMapper mapper,UUID organization) {
+        this(driver,mapper,organization,null,true);
+    }
+    public CurrentRoleCatalog(Driver driver,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview) {
+        this.driver=driver;this.mapper=mapper;this.organization=organization;
+        this.allowedOccupations=allowedOccupations==null?null:Set.copyOf(allowedOccupations);this.demoReview=demoReview;
+    }
     @Override public List<Role> roles(UUID org) {
         if(!organization.equals(org)) throw new Failure(403,"FORBIDDEN");
         try(var session=driver.session()) {
@@ -28,8 +36,9 @@ public final class CurrentRoleCatalog implements Catalog {
                         ORDER BY o.name,r.name,l.rank
                         """,Map.of("org",org.toString())).list();
                 Set<String> ids=new HashSet<>(); rows.forEach(r->ids.add(r.get("o").get("id").asString()));
+                if(allowedOccupations!=null) ids.retainAll(allowedOccupations);
                 if(ids.isEmpty()) return List.<Role>of();
-                var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(driver,mapper,org,ids,true);
+                var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(driver,mapper,org,ids,demoReview);
                 var validated=new HashMap<String,com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBaselineCatalogPort.CatalogSnapshot>();
                 for(String id:ids) adapter.findAvailable(new Scope(org,id)).ifPresent(s->validated.put(id,s));
                 var result=new LinkedHashMap<String,Role>();

@@ -1,3 +1,5 @@
+import { workspaceFetch as fetch } from './workspaceFetch'
+
 export interface PrerequisiteEdgeDto {
   sourceSkillId: string
   sourceSkillCode?: string

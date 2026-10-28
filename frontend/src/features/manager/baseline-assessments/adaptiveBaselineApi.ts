@@ -123,7 +123,7 @@ async function request<T>(occupation: string, suffix: string, init: RequestInit,
 
 async function http<T>(url: string, init: RequestInit, read: (value: unknown) => T): Promise<T> {
   let response: Response
-  try { response = await fetch(url, { ...init, credentials: 'same-origin', cache: 'no-store' }) }
+  try { response = await workspaceFetch(url, init) }
   catch (cause) {
     if (init.signal?.aborted) throw cause
     throw new AdaptiveBaselineApiError(0, 'NETWORK_ERROR')
@@ -241,3 +241,4 @@ function listRow(value: unknown): AdaptiveListRow {
   if ((row.type === 'DRAFT') !== (row.workingRevisionId !== null) || (row.type === 'VERSION') !== (row.version !== null)) throw new Error('Invalid row identity')
   return row
 }
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'

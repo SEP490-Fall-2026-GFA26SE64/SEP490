@@ -50,6 +50,8 @@ export function AdaptiveBaselineDirectory() {
         onChange={value => state.changeQuery({ direction: value as AdaptiveListQuery['direction'], page: 0 })} /></div>
     </CardContent></Card>
     {state.error && <AdaptiveErrorNotice error={state.error} />}
+    {!state.busy && state.result?.rows.length === 0 && !state.query.search && !state.query.status &&
+      <Text role="status" variant="body-sm">{t('baselineIntegration.readiness')}</Text>}
     {state.pending && <Card><CardContent className="space-y-3 pt-5"><Text role="status">{tr('pending')}</Text><Button disabled={state.busy} variant="outline" onClick={() => void state.retry()}>{tr('retry')}</Button></CardContent></Card>}
     {state.notice && <Text role="status" tone="success">{tr('success.disable')}</Text>}
     {state.busy ? <AdaptiveLoading /> : state.result && <>

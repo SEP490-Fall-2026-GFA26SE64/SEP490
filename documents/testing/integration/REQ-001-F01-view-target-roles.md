@@ -5,7 +5,7 @@ Follow [current integration criteria](README.md#current-scope-alignment). Record
 
 ## Historical Test Plan and Evidence
 
-**Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Target%20role%20selection/View%20Target%20Roles.md)  
+**Feature Contract:** [REQ-001-F01 View Target Roles](../../features/Role%20catalog/README.md#req-001-f01)<br>
 **Level:** Integration (Neo4j Testcontainers Catalog Adapter)  
 **Status:** PASSED (2026-09-30)
 

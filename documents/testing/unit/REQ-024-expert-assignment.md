@@ -6,8 +6,8 @@ Follow [current unit criteria](README.md#current-scope-alignment). Revalidate L&
 ## Historical Test Plan and Evidence
 
 **Feature Contracts:**
-- [REQ-024-F01 Assign Target Role to Expert](../../features/Expert%20assignment/Assign%20Target%20Role%20to%20Expert.md)
-- [REQ-024-F02 Reassign Target Role Expert](../../features/Expert%20assignment/Reassign%20Target%20Role%20Expert.md)
+- [REQ-024-F01 Assign Target Role to Expert](../../features/Role%20catalog/README.md#req-024-f01)
+- [REQ-024-F02 Reassign Target Role Expert](../../features/Role%20catalog/README.md#req-024-f02)
 
 **Level:** Unit (Domain Invariants, Application Services & Controller RBAC Contracts)  
 **Status:** PASSED (2026-10-01)

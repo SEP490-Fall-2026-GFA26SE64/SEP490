@@ -23,8 +23,6 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
             JOIN platform.account employee
               ON employee.account_id=attempt.learner_id AND employee.organization_id=attempt.organization_id
              AND employee.active
-            JOIN platform.account_role auth_role
-              ON auth_role.account_id=employee.account_id AND auth_role.role_code='EMPLOYEE'
             JOIN platform.baseline_adaptive_blueprint_version version
               ON version.blueprint_id=attempt.blueprint_id AND version.version=attempt.blueprint_version
              AND version.organization_id=attempt.organization_id AND version.occupation_id=attempt.occupation_id
@@ -48,14 +46,27 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
                   AND (attempt.scope_policy='FULL_OCCUPATION_V2' OR attempt.target_role_id IS NULL OR snapshot.role_id=attempt.target_role_id)
             ) skill_name ON skill.micro_skill_id IS NOT NULL
             WHERE attempt.organization_id=:org AND attempt.learner_id=:learner
+              AND ((:workspaceIdentity AND EXISTS(
+                SELECT 1 FROM platform.organization_membership membership
+                JOIN platform.organization_membership_role role USING(membership_id)
+                WHERE membership.account_id=employee.account_id AND membership.organization_id=:org
+                  AND membership.active AND role.role_code='EMPLOYEE'))
+                OR (NOT :workspaceIdentity AND EXISTS(
+                SELECT 1 FROM platform.account_role role
+                WHERE role.account_id=employee.account_id AND role.role_code='EMPLOYEE')))
               AND attempt.state<>'IN_PROGRESS'
             """;
     private final NamedParameterJdbcTemplate jdbc;
     private final AdaptiveAttemptContextPort context;
+    private final boolean workspaceIdentity;
 
     public JdbcAdaptiveAttemptResultQuery(NamedParameterJdbcTemplate jdbc, AdaptiveAttemptContextPort context) {
+        this(jdbc, context, false);
+    }
+    public JdbcAdaptiveAttemptResultQuery(NamedParameterJdbcTemplate jdbc, AdaptiveAttemptContextPort context, boolean workspaceIdentity) {
         this.jdbc = Objects.requireNonNull(jdbc);
         this.context = Objects.requireNonNull(context);
+        this.workspaceIdentity = workspaceIdentity;
     }
 
     @Override public List<Result> history() {
@@ -79,7 +90,7 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
 
     private List<Result> read(MapSqlParameterSource parameters, String suffix) {
         var rows = new LinkedHashMap<UUID, MutableResult>();
-        jdbc.query(QUERY + suffix, parameters, result -> {
+        jdbc.query(QUERY + suffix, parameters.addValue("workspaceIdentity", workspaceIdentity), result -> {
             UUID id = result.getObject("attempt_id", UUID.class);
             var view = rows.get(id);
             if (view == null) {

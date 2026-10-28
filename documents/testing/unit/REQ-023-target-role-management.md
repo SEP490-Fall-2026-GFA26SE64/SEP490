@@ -6,11 +6,11 @@ Follow [current unit criteria](README.md#current-scope-alignment). Revalidate L&
 ## Historical Test Plan and Evidence
 
 **Feature Contracts:**
-- [REQ-023-F01 Create Target Role](../../features/Target%20role%20management/Create%20Target%20Role.md)
-- [REQ-023-F02 View Organization Target Roles](../../features/Target%20role%20management/View%20Organization%20Target%20Roles.md)
-- [REQ-023-F03 Update Target Role](../../features/Target%20role%20management/Update%20Target%20Role.md)
-- [REQ-023-F04 Delete Target Role](../../features/Target%20role%20management/Delete%20Target%20Role.md)
-- [REQ-023-F05 Expert Assigned Roles & Isolation](../../features/Target%20role%20management/Expert%20Assigned%20Target%20Roles.md)
+- [REQ-023-F01 Create Target Role](../../features/Role%20catalog/README.md#req-023-f01)
+- [REQ-023-F02 View Organization Target Roles](../../features/Role%20catalog/README.md#req-023-f02)
+- [REQ-023-F03 Update Target Role](../../features/Role%20catalog/README.md#req-023-f03)
+- [REQ-023-F04 Delete Target Role](../../features/README.md#removed-scope)
+- [REQ-023-F05 Expert Assigned Roles & Isolation](../../features/README.md#removed-scope)
 
 **Level:** Unit (Domain Invariants, Application Services, Controller Contracts & Security RBAC)  
 **Status:** PASSED (2026-10-01)

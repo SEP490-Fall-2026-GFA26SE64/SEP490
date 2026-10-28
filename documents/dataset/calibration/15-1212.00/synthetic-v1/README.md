@@ -1,6 +1,6 @@
 # Explicit SYNTHETIC calibration demonstration — 2026-10-22
 
-**Offline fitted artifact only. No PostgreSQL model/run/parameter set/learner/attempt was created; no promotion.** The user explicitly permitted isolated synthetic responses to demonstrate the flow, with operational promotion ineligible. The user delegated numerical/design selection to the agent. [Selected contract](../../../../features/Baseline%20knowledge%20assessment/Calibrate%20and%20Promote%20IRT%20Parameters.md) · [actual evidence](../../../../testing/system/REQ-002-official-question-bank-session2.md).
+**Offline fitted artifact only. No PostgreSQL model/run/parameter set/learner/attempt was created; no promotion.** The user explicitly permitted isolated synthetic responses to demonstrate the flow, with operational promotion ineligible. The user delegated numerical/design selection to the agent. [Selected contract](../../../../technical/baseline/Calibrate%20and%20Promote%20IRT%20Parameters.md) · [actual evidence](../../../../testing/system/REQ-002-official-question-bank-session2.md).
 
 The official content release remains unchanged at [question-bank/15-1212.00](../../../question-bank/15-1212.00/README.md). This directory is separate from that pinned release. Generating a/b/theta are assumptions; fitted a/b are estimates from synthetic responses. Neither is an empirical property of the official questions or a real learner. c=.25 is fixed in both generation and estimation; zero c recovery error is imposed, not learned.
 
