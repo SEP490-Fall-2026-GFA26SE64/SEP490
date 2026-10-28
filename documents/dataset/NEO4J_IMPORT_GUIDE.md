@@ -1,6 +1,6 @@
 # Import ontology 0.11.0 into Neo4j
 
-The current seed has **994 nodes and 5,121 relationships**. It contains occupation RIASEC, Level-owned competencies, 246 Modules, 79 Skills, 664 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. Earlier snapshots are incompatible; use an empty isolated graph rather than overlaying releases.
+The current seed has **994 nodes and 5,121 relationships**. It contains occupation RIASEC, Level-owned competencies, 246 Modules, 79 Skills, 664 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. The standard importer accepts an empty/identical isolated graph. The explicitly authorized existing-local v09 upgrade uses the separately guarded procedure below; it is not an unrestricted release overlay.
 
 ## 1. Validate the local package
 
@@ -215,3 +215,22 @@ RETURN m.id, primaryCount;
 ```
 
 Expected: no rows. This is a manual procedure; no live runtime database is changed.
+
+## Authorized upgrade of an existing local v09 catalog
+
+Executed on user request, 2026-10-28: [exact target, backups, counts and preservation receipt](NEO4J_V011_LOCAL_UPGRADE.md). The normal `import_neo4j.py` refusal of a different graph is unchanged. `upgrade_neo4j_v011.py` supports only a checked v09/v11 catalog plus known PostgreSQL-owned Module extras. It refuses unknown edits, reviewer drift, ownership collisions, a non-loopback/mismatched Docker target, and apply while the API writer is running. It takes a graph/schema snapshot and PostgreSQL dump, validates the dump, verifies all platform-table fingerprints and checks exact Neo4j readback within one transaction.
+
+For the documented existing local project, use a new backup directory each time:
+
+```bash
+python3 documents/dataset/import/upgrade_neo4j_v011.py \
+  --neo4j-container module-authoring-test-neo4j-1 \
+  --postgres-container module-authoring-test-postgres-1 \
+  --api-container module-authoring-test-api-1 \
+  --neo4j-http-url http://127.0.0.1:27474 \
+  --backup-dir local/ontology-v011/plan-new-run
+```
+
+Without `--apply`, this reads databases and saves only the plan. For an explicitly authorized application, stop the named API container first, rerun with a fresh backup directory and `--apply`, then start that API container after verified success. On failure, preserve recovery files and inspect the rollback/readback before restarting writes. Do not reset volumes or replace historical bank/learner pins. The restored local bootstrap verifies an already complete frozen bank without reseeding it; first-time bank creation against a newer catalog still requires an approved compatible bank manifest.
+
+Executed results: exact v11 catalog 994 nodes/5121 relationships, 246 Modules/664 TEACHES, plus 13 authored Modules/13 TEACHES retained; total 1007 nodes/5134 relationships. All 94 PostgreSQL platform-table fingerprints are unchanged after bootstrap/API restart. A follow-up plan requests zero writes.

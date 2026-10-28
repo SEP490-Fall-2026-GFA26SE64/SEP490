@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-const demoPersonas = ['ld', 'employee-a', 'employee-b', 'employee-c', 'admin'] as const
+const demoPersonas = ['ld', 'employee-a', 'employee-b', 'employee-c', 'admin', 'expert-chen', 'expert-vance', 'expert-rivera', 'expert-nguyen'] as const
 export function useLocalDemoSession() {
   const enabled = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true'
   const switching = useRef(false)
@@ -18,5 +18,10 @@ export function useLocalDemoSession() {
     window.location.assign(destination)
     return true
   }
-  return { enabled, establish, choose }
+  async function signOut(): Promise<boolean> {
+    if (!enabled) return true
+    try { return (await fetch('/api/v1/local-baseline-demo/session', { method: 'DELETE', credentials: 'same-origin' })).ok }
+    catch { return false }
+  }
+  return { enabled, establish, choose, signOut }
 }

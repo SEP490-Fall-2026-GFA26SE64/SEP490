@@ -10,7 +10,7 @@ public final class LocalDemoIdentity {
     public static final UUID ORG = UUID.fromString("00000000-0000-0000-0000-000000000001");
     public static final UUID BANK = UUID.fromString("2f79de6b-dc62-51a1-982d-0be9d6f588dc");
     public static final String OCC = "OCC-15-1212.00";
-    public static final Set<String> PERSONAS = Set.of("ld", "employee-a", "employee-b", "employee-c", "admin");
+    public static final Set<String> PERSONAS = Set.of("ld", "employee-a", "employee-b", "employee-c", "admin", "expert-chen", "expert-vance", "expert-rivera", "expert-nguyen");
     public static UUID id(String key) { return UUID.nameUUIDFromBytes(("LOCAL_BASELINE_DEMO:"+key).getBytes(StandardCharsets.UTF_8)); }
     public String selected() {
         if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
@@ -23,5 +23,5 @@ public final class LocalDemoIdentity {
         return "ld";
     }
     public UUID actor() { return id(selected()); }
-    public String role() { return switch(selected()) { case "ld" -> "LD_MANAGER"; case "admin" -> "ADMINISTRATOR"; default -> "EMPLOYEE"; }; }
+    public String role() { return switch(selected()) { case "ld" -> "LD_MANAGER"; case "admin" -> "ADMINISTRATOR"; case "expert-chen", "expert-vance", "expert-rivera", "expert-nguyen" -> "DOMAIN_EXPERT"; default -> "EMPLOYEE"; }; }
 }

@@ -66,6 +66,30 @@ No applied migration is edited. Old UUID selection/reference and fixed/module st
 
 ## Catalog and version boundaries
 
+### REQ-013 local authoring persistence — V27
+
+The local `/api/v1/module-management` workflow implements reviewed Module authoring. This does not migrate legacy catalog/learning_activity references or provide a production identity adapter. The main login’s existing local workspace cookie is reused, requiring an explicit cookie and active PostgreSQL account; account organization and roles are resolved server-side, without a Module-specific login or Basic accounts; Occupation grants and Module membership are explicit PostgreSQL records. A grant in any owning Occupation permits reading/editing a shared Module; membership creation requires all declared scopes, and ordinary edits cannot change membership.
+
+| Table | Columns and ownership |
+|---|---|
+| `module_authoring` | `organization_id`, `module_id`, `document` JSONB; unique module_id. Document contains id, organizationId, occupationIds, immutable createdBy/createdAt, lockVersion, everReleased, archived, releasedRevision, revisions and history. |
+| `module_authoring_content` | `organization_id`, `content_id`, `document` JSONB. Immutable content record: id, title, markdown, contentType, contentVersion, occupationIds, createdBy, createdAt. No backend URL fetch. |
+| `module_occupation_grant` | `organization_id`, `expert_id`, `occupation_id`, `active`; primary key is the three identities. |
+| `module_grant_audit` | `event_id`, `organization_id`, `expert_id`, `occupation_id`, `active`, `changed_by`, `changed_at`; records every grant/revoke command with trusted actor/time. |
+| `module_learning_pin` | `organization_id`, `learner_id`, `module_id`, `revision`, `started_at`; unique learner+Module within organization; FK to authoring aggregate. Existing pins survive archive. |
+
+Revision fields are number, state, payload, editedBy, editedAt, decidedBy, decidedAt, feedback. Payload includes the complete 13-field Module contract, teachings with all eight relationship fields plus skill endpoint/name, and exact content snapshot. History event fields are sequence, revision, action, actorId, occurredAt, detail. Each edit adds a new payload revision; review transitions act on an unchanged submitted payload, and lifecycle events retain prior decisions. Changes include field names in audit; prior payloads allow comparison. Reviewer fields are not editor fields; catalog version is not authoring revision.
+
+Commands serialize with an organization advisory transaction lock and Module row lock; expectedVersion prevents stale writes. A submitted package is not editable. Approval commits PUBLISH_PENDING before attempting the Neo4j transaction, then records RELEASED and the published revision only after graph success. ARCHIVE_PENDING works similarly. These durable states are a manually dispatched outbox equivalent: the L&D Retry action reapplies an idempotent projection; no scheduled dispatcher is claimed. A failed graph projection leaves the pending state for retry and does not advance the released revision. Graph and PostgreSQL are not a distributed transaction; learning admission uses PostgreSQL's released receipt, not a graph status alone.
+
+Neo4j projection validates skill endpoints and coverage, preserves stable retained TEACHES IDs, and maps all current schema properties. Draft/revision/audit/Occupation membership do not add graph properties. Archive projection preserves the pinned payload in PostgreSQL; restore creates a draft and requires approval. Pin APIs serve new authoring packages only; integrating reviewed pathways and all historical learner activities remains required before treating them as the complete product learning boundary. Legacy Module write endpoints return 410 rather than bypassing review; legacy read compatibility remains distinct from this authoring API.
+
+### REQ-013 requirement decisions — 2026-10-28
+
+[Learning Module Management](features/Learning%20module%20management/README.md#user-decisions--2026-10-28) now requires system-generated IDs, duplicate titles allowed, complete Module/TEACHES data before save, and joint L&D approval of Module/content/mapping selected from Content Studio. Experts may edit other authors' Modules within assigned scope; edits require approval before release and a visible editor/change history. Approved changes create revisions; ongoing learners retain their original package pins, and new starts use the newly released revision. Only unreferenced drafts may be physically deleted; approved Modules require L&D approval of Expert archive requests. Restoration returns to draft for reapproval.
+
+The subsequent follow-up confirmed Occupation grants, shared editing with any owning Occupation grant, creator/editor history, Markdown-embedded HTTPS video and continued pinned learning after archive. The local V27 implementation is described above; it is not a claim of production identity integration or legacy data migration. Catalog version/review metadata are not authoring revision/audit records. No new graph node/property/edge or implicit authorization from legacy TargetRole assignments is introduced.
+
 ![Ontology0.11.0](diagrams/neo4j.svg)
 
 [Neo4j schema](neo4j_schema.md) and [ontology source](dataset/ONTOLOGY.md) define the v0.11.0 review ontology: six labels/seven relationship types, separate Levels and many-to-many LearningModule–MicroSkill teaching. The current review catalog has 994 nodes/5121 relationships, 246 Modules, 79 skills and 664 TEACHES mappings. It preserves the source-linked modules and adds explicitly local authored practice scaffolds pending review. Every Module teaches at least one skill and every skill has at least one provider; each Module–Skill pair is unique. Multiple providers are alternatives selected for actual skill gaps and role/Level suitability, not a requirement to study all providers. A Module used for several gaps appears once in the pathway, while mastery remains skill-specific. The earlier 2026-10-23 runtime capture observed Neo4j5.26.31, ontology0.8.0,827 nodes/4536 relationships and six ID uniqueness constraints; this is dated history, not proof of 0.9 deployment. Cardinality/ranges/prerequisite acyclicity/review/tenant visibility require application/import validation. These observations do not certify production publication.
@@ -147,3 +171,23 @@ RETURN m.id, primaryCount;
 ```
 
 Expected: no rows. This is a manual procedure; no live runtime database is changed.
+
+## Neo4j catalog list — user-requested correction (2026-10-28)
+
+REQ-013-F02 `/module-list` reads current catalog LearningModule/TEACHES from Neo4j and joins authorized PostgreSQL authoring documents by ID; authorized unprojected drafts are included once. Shared ontology browsing is explicitly available to Expert/L&D, without authoring grants; private authored IDs remain organization/scope protected. Filters precede pagination. Catalog data wins for graph-backed rows, and revisions/audit remain PostgreSQL-owned. Missing legacy fields are exposed as absent, never generated. No schema or historical data migration occurs. [Detailed read contract](features/Learning%20module%20management/View%20Learning%20Modules.md#neo4j-catalog-list--user-requested-correction-2026-10-28).
+
+## Authorized local v0.11 runtime upgrade — 2026-10-28
+
+The user-requested live catalog upgrade is now executed for the application on port 28088. The exact v11 catalog contains 994 nodes/5121 relationships (246 Modules/664 TEACHES); 13 separately authored Modules and their 13 mappings are preserved, making the full graph 1007 nodes/5134 relationships. All Module duration/price and TEACHES focus/difficulty values are populated; no new schema properties or artificial review/audit records were introduced. PostgreSQL still owns the unchanged authoring/history/learner/item pins; all 94 platform-table fingerprints match the backup after restart. The existing-bank bootstrap now verifies an exact frozen bank read-only, so a new current graph does not trigger a historical bank reseed. [Upgrade and recovery receipt](dataset/NEO4J_V011_LOCAL_UPGRADE.md). This supersedes earlier observations of the running v09 catalog, not their historical test results.
+
+### L&D module review navigation — REQ-053 (2026-10-28)
+
+Content Approval stays at `/ld-manager/approvals`; Modules and Learning content resolve to `/ld-manager/modules` and `/ld-manager/learning-content`. All retain the L&D shell and Content Approval sidebar selection. Details/history open without switching actor. Submitted authoring revisions expose manager review actions; graph-only catalog entries remain read-only and are not automatically submitted. This routing correction changes no schema, storage responsibilities, seed data or API authorization.
+
+### REQ-013 per-module catalog intake — V28
+
+PostgreSQL `platform.module_catalog_intake`: `module_id text PRIMARY KEY` (global identity claim), `organization_id text NOT NULL`, `document jsonb NOT NULL`. JSON Intake: `moduleId`, `organizationId`, nonempty unique `occupationIds`, `assignedBy`, ISO `assignedAt`, full `source: CatalogModule`, nullable `acceptedBy`/`acceptedAt` until acceptance, and nonempty `history: Event[]` recording assignment changes. CatalogItem adds nullable scoped Intake; Document adds nullable Intake for provenance; native-created documents remain compatible without it.
+
+Imported Document/Content `createdBy` is null (unknown original creator); `createdAt` records local intake-record creation. Assignment and acceptance actors/times are separate mandatory provenance. Source carries every Module and TEACHES property plus endpoints; snapshots never substitute catalog version for authoring revision. Existing V27 JSONB stores revisions/content. The immutable source Markdown is bundled from `documents/dataset/import/content/modules/*.md` under classpath `catalog-import`; only allowlisted single-file paths can be read, no network retrieval. Missing/unsafe/incomplete sources fail closed with no partial intake writes.
+
+Per-org SQL transaction lock plus global module advisory lock and V28 primary key serialize intake. Authoring membership grants enforce any-owning-occupation access; only L&D assigns. No ontology attributes are added. First publication checks original graph snapshot (or exact already-projected package on retry) under Neo4j node lock; imported drafts cannot be hard-deleted. Existing pin/archive/publication responsibilities remain. [Function contract](features/Learning%20module%20management/Receive%20Imported%20Module.md).

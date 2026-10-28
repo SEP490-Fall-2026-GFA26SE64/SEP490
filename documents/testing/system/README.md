@@ -1,5 +1,9 @@
 # System testing
 
+REQ-013/016 user-authorized v0.11 local import: [dedicated evidence and preservation checks](REQ-013-016-v011-import.md).
+
+REQ-013 local Module authoring: [Compose/Playwright evidence and manual checklist](REQ-013-module-management.md), separate from legacy workflow acceptance.
+
 2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
 
 **Latest, 2026-10-24 REQ-001/002/009:** [Cluster 4 evidence/gate audit](REQ-001-002-009-cluster4-20261024-evidence.md) reconciles the [original Cluster 3 receipt](REQ-001-002-009-cluster3-20261024-execution.md): 168 pass/4 fail across BE, FE and synthetic browser fixtures. **0 current real-stack system passes; nine journeys Not run (`--list` only)**. Integration/numerical/performance remain blocked; Cluster 3/4 incomplete. [23 October131P/0F](REQ-001-002-cluster4-evidence.md) retains its dated source/fixture, with no pass carry-forward.
@@ -78,3 +82,7 @@ When writing system tests for a new requirement (`REQ-nnn`):
 2. **Define User Journeys**: Specify multi-tier workflows connecting user actions (in UI/API) to persistent state changes across PostgreSQL and Neo4j.
 3. **Manual Browser Checklist**: If the requirement includes UI components, provide or link to a structured step-by-step manual browser testing checklist (`documents/testing/system/<REQ-ID>-manual-browser-check.md`).
 4. **Link to this index**: Add the requirement to the table above.
+
+- [REQ-053 — L&D module navigation](REQ-053-ld-module-navigation.md)
+
+- [REQ-013/053 — Per-module catalog intake](REQ-013-module-intake.md)

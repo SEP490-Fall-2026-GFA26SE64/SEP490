@@ -39,7 +39,7 @@ describe('LoginPage Guest Sign-Up Button', () => {
 
     expect(screen.getByText("Don't have an account?")).toBeTruthy()
   })
-  it.each([['Employee', 'employee-a'], ['L&D Manager', 'ld'], ['Admin', 'admin']])('RB16 %s waits for server session before storage/navigation, failed session stays put', async (account, persona) => {
+  it.each([['Employee', 'employee-a'], ['L&D Manager', 'ld'], ['Admin', 'admin'], ['Expert', 'expert-chen']])('RB16 %s waits for server session before storage/navigation, failed session stays put', async (account, persona) => {
     let resolve!: (value: boolean) => void
     demo.establish.mockImplementation(() => new Promise<boolean>(done => { resolve = done }))
     renderLoginPage(); fireEvent.click(screen.getByRole('button', { name: account }))

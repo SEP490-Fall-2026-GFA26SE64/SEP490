@@ -1,34 +1,45 @@
 # Create Learning Module
 
+**Function ID:** REQ-013-F01
+**Actor:** Expert trong discipline được phân công
+**Status:** Implemented local workflow; verification tracked in dedicated REQ-013 evidence
+**Feature:** [Learning Module Management](README.md)
+
 ## Current Scope Alignment
-Expert creates a module in an assigned discipline and submits it to L&D for approval before organizational use; no dummy-only restriction. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
 
-## Historical Specification
-Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
-
-**Function ID:** REQ-013-F01  
-**Actor:** Domain Expert  
-**Status:** Implemented  
-**Feature:** [Learning Module Management](README.md)  
-**Schema Compliance:** Neo4j Ontology v0.8.0 (`LearningModule` node, 1–1 `TEACHES` relationship to `MicroSkill`)
+Áp dụng đầy đủ [field contract và quy tắc hiện tại](README.md#current-field-contract--ontology-v0110), [ARCHITECTURE](../../ARCHITECTURE.md) và [Neo4j schema](../../neo4j_schema.md). Đặc tả này không xác nhận API/giao diện runtime đã được nâng cấp.
 
 ## Description
 
-Domain Experts author structured learning content packages in the **Learning Content Studio** (`/expert/learning-content`) with reading sections, code snippets, and video lectures. The content package is submitted to the **L&D Manager Approval Queue** (`/ld-manager/approvals`). Once approved, the Expert binds the approved learning content into a `LearningModule` (`/expert/modules`) with strict schema properties:
-- `moduleType`: `LESSON_AND_PRACTICE` | `RESOURCE_GUIDED_PRACTICE`
-- `contentUri`: File/package reference (e.g., `content/modules/MOD-CYP-101.json`)
-- `contentType`: `application/json` | `text/markdown`
-- `contentVersion`: e.g., `1.0`, `2.0`
-- `reviewStatus`: `NEEDS_EXPERT_REVIEW` | `APPROVED` | `REJECTED`
-- `teachesSkillId`: Exactly one micro-skill via 1–1 `TEACHES` relationship.
+Tạo Module trong phạm vi Expert được phép và chuẩn bị nộp L&D duyệt. Không có giới hạn dummy hoặc mapping 1–1.
 
-Learners and reviewers can test-drive the full interactive course in the employee reader view at `/employee/modules/:moduleId`.
+**Input:** Thông tin Module: `title`, `moduleType`, `contentUri`, `contentType`, `contentVersion`, `duration`, `price`; metadata `id`, `version`, `status`, `reviewStatus`, `reviewedBy`, `reviewedAt` được quản lý theo contract. Nếu tạo mapping trong cùng luồng, nhận tập MicroSkill tham chiếu và đầy đủ metadata TEACHES, `teachingFocus`, `difficultyLevel` theo REQ-016.
+
+**Outcome:** Module và các mapping được lưu đầy đủ, trong đúng scope; không tự cấp quyền truy cập Employee chỉ vì đã tạo thành công.
 
 ## Acceptance Baseline
 
-1. A module strictly maps 1-to-1 with a taught `MicroSkill` via `TEACHES`.
-2. Learning content must be submitted to and approved by an L&D Manager before organizational release.
-3. Modules store valid schema properties and can be previewed in the interactive lesson reader.
+1. Validate toàn bộ field theo contract; không tự bù dữ liệu thiếu bằng contentUri rỗng, thời lượng/giá giả hoặc người duyệt giả.
+2. Module hợp lệ có đúng một PRIMARY; mapping nhiều–nhiều không trùng và không mất metadata.
+3. Không lưu nội dung bài học trực tiếp trong Neo4j; contentUri/contentType/contentVersion xác định nội dung tương ứng.
+4. Không tự đánh dấu APPROVED hoặc publication khi chưa có thao tác duyệt được phép.
+
+## Confirmed Decisions — 2026-10-28
+
+- Hệ thống tự sinh ID; cho phép trùng title, phân biệt bằng ID.
+- Chỉ lưu Module khi đầy đủ field bắt buộc và mapping có đúng một PRIMARY. Không hỗ trợ lưu draft thiếu content/mapping; review metadata chưa phát sinh được null đúng schema.
+- Expert chọn nội dung từ Content Studio. Module, phiên bản nội dung và mapping được nộp chung cho L&D duyệt.
+- Nội dung là Markdown với video HTTPS trực tiếp nhúng qua `[video](https://host/lesson.mp4)`; contentType của gói vẫn là text/markdown.
+- Expert được L&D phân công theo Occupation; tạo Module/content chỉ trong các Occupation được cấp quyền. Membership PostgreSQL và quy tắc sửa chung được mô tả tại [quyết định chung](README.md#occupation-scope-and-revision-boundaries).
+
+## Implementation choices and remaining integration
+
+- Runtime local: title tối đa 240; Module ID `MOD-<UUID>`; lưu đầy đủ ở DRAFT/NEEDS_EXPERT_REVIEW; reviewer/time null trước review. Server ghi người tạo và thời điểm tạo từ identity đã xác thực.
+- Identity/assignment production, media ngoài HTTPS trực tiếp và migration Module legacy cần integration riêng; xem README.
+
+## Dataset notes and prior decisions
+
+Các ghi chú sau không xác nhận runtime đã được migrate.
 
 ## Duration and paid-module estimate correction — 2026-10-27
 
@@ -70,3 +81,7 @@ Each TargetRole owns distinct Level nodes. Each Level has its own REQUIRES_SKILL
 Application Developer currently has 11 required skills at Junior, 14 at Middle and 14 at Senior. MS-CORE01 thresholds are 0.60 / 0.75 / 0.90. MS-FS08, MS-FS15 and MS-FS16 occur at Middle/Senior but not Junior in this role. Those requirements and all non-teaching relationships are preserved. A Senior target does not make every recommended module HIGH; readiness and compatible evidence still govern suitability.
 
 [Current dataset, authoring limits and manual procedures](../../dataset/TEACHING_FOCUS_DIFFICULTY.md).
+
+### Imported module intake — 2026-10-28
+
+[Explicit per-module intake](Receive%20Imported%20Module.md) adds a separate entry point: L&D assigns responsible Occupations; an assigned Expert receives the existing ID and bundled Markdown into a draft. `createdBy` remains null for unknown original authorship; assignment/acceptance identities and times are recorded separately. Only submitted drafts can be reviewed; first approval updates the existing graph identity. Imported drafts cannot be hard-deleted. Native creation retains generated ID/actual creator behavior. Source snapshots and edit/decision history remain separate.

@@ -1,5 +1,9 @@
 # Unit Testing Directory & Standards
 
+REQ-013/016 user-authorized v0.11 local import: [dedicated evidence and preservation checks](REQ-013-016-v011-import.md).
+
+REQ-013/016 local Module authoring: [dedicated unit/component evidence](REQ-013-module-management.md), separate from review-dataset and legacy runtime acceptance.
+
 2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
 
 **Latest, 2026-10-24 REQ-001/002/009:** [Unit/API/component evidence](REQ-001-002-009-20261024-execution.md) records74 BE/61 FE pass,0 fail/skipped. [Consolidated gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md) retains four synthetic-browser mobile failures, blocked integration, unexecuted system and numerical/performance limits: **Cluster 3/4 incomplete**. [23 October131P/0F](../system/REQ-001-002-cluster4-evidence.md) is dated history, not current acceptance.
@@ -72,3 +76,7 @@ When implementing or updating a requirement (`REQ-nnn`):
 2. **Include Acceptance Criteria**: Pin every test method to an AC from the corresponding `documents/features/<Feature>/<Function>.md`.
 3. **Assert Architectural Completeness**: Explicitly verify all architecturally defined fields (e.g., track, seniority, responsibilities, version, assignedExpertId).
 4. **Link to this index**: Add the requirement to the table above.
+
+- [REQ-053 — L&D module navigation](REQ-053-ld-module-navigation.md)
+
+- [REQ-013/053 — Per-module catalog intake](REQ-013-module-intake.md)

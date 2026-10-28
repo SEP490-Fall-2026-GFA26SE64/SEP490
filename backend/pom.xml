@@ -92,6 +92,10 @@
   </dependencies>
   <build>
     <finalName>adapt-learn-graph</finalName>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <resource><directory>../documents/dataset/import</directory><targetPath>catalog-import</targetPath><includes><include>content/modules/*.md</include></includes></resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

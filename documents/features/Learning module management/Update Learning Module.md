@@ -1,32 +1,46 @@
 # Update Learning Module
 
-## Current Scope Alignment
-Expert updates/organizes an assigned-discipline module and submits revisions for L&D approval; version effects on learning remain open. Follow the [current feature contract](README.md#current-scope-alignment) and [System Overview](../../adapt_learn_graph_system_overview.md).
-
-## Historical Specification
-Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
-
-**Function ID:** REQ-013-F03  
-**Actor:** Domain Expert  
-**Status:** Pending clarification  
+**Function ID:** REQ-013-F03
+**Actor:** Expert trong discipline được phân công
+**Status:** Implemented local workflow; verification tracked in dedicated REQ-013 evidence
 **Feature:** [Learning Module Management](README.md)
+
+## Current Scope Alignment
+
+Áp dụng đầy đủ [field contract và quy tắc hiện tại](README.md#current-field-contract--ontology-v0110), [ARCHITECTURE](../../ARCHITECTURE.md) và [Neo4j schema](../../neo4j_schema.md). Đặc tả này không xác nhận API/giao diện runtime đã được nâng cấp.
 
 ## Description
 
-Update an authorized dummy module's descriptive information while preserving references from pathways and assessment history.
+Cập nhật Module trong scope được phép; bảo toàn tham chiếu nội dung, mapping và lịch sử learner theo chính sách phiên bản được thống nhất.
 
-**Input:** Existing module and changed attributes.  
-**Outcome:** Updated module metadata under the agreed version policy.
-
-## Open Decisions
-
-- Editable fields and whether active modules require a new version.
-- Handling modules with assessments already in progress.
-- Concurrent edits and when changes become visible to employees.
+**Input:** ID Module hiện có, thay đổi field nghiệp vụ trong contract và ngữ cảnh authorization; thông tin kiểm soát revision khi đã chốt thiết kế. Thay mapping phối hợp REQ-016.
+**Outcome:** Thay đổi hợp lệ được lưu hoặc tạo revision theo chính sách được chốt; không làm mất bản lịch sử đang được tham chiếu.
 
 ## Acceptance Baseline
 
-Updating metadata does not erase prior assessment evidence or silently grant employees module-selection control.
+1. Giữ nguyên ID ổn định; không coi version catalog là bộ đếm revision hoặc tự tăng contentVersion khi chỉ sửa giá/title.
+2. Validate title/moduleType/contentUri/contentType/contentVersion/duration/price theo contract; field không đổi phải được bảo toàn.
+3. Khi đổi mapping, giữ metadata của mapping không đổi, validate đầy đủ mapping mới và đúng một PRIMARY; không xóa trắng TEACHES để tạo lại không có thuộc tính.
+4. Không để Expert tự giả mạo review metadata hoặc tự duyệt thông qua request sửa.
+5. Không sửa kết quả, rubric/catalog/content pins hoặc pathway history đã lưu; publication của revision cần chính sách rõ ràng.
+
+## Confirmed Decisions — 2026-10-28
+
+- Expert có grant ở ít nhất một Occupation sở hữu Module được sửa Module, bao gồm Module của Expert khác. Không được đổi membership qua request sửa.
+- Chỉnh sửa phải được L&D duyệt trước khi phát hành. Với Module đã duyệt, tạo revision của gói Module/content/mapping; bản đang phát hành giữ nguyên cho tới khi revision mới được duyệt và phát hành.
+- Learner đang học tiếp tục bản đã bắt đầu; lượt học mới dùng bản phát hành mới. Bảo toàn content, mapping và historical pins tương ứng.
+- Có lịch sử ai sửa, khi nào, revision nào và thay đổi gì. Danh tính lấy từ actor đã xác thực; không cho client giả mạo và không dùng reviewedBy làm người sửa.
+- PostgreSQL V27 giữ createdBy/createdAt của Module, editedBy/editedAt/payload của từng revision và lịch sử action. Không thêm revision/audit vào property graph.
+
+## Implementation choices and remaining integration
+
+- Implementation local cho sửa DRAFT/RETURNED/RELEASED; mỗi lần sửa tạo revision mới; không cho sửa SUBMITTED hoặc pending publication/archive. Content mới có reference bất biến riêng; contentVersion không dùng làm catalog version.
+- Request sửa mang expectedVersion; stale trả 409, không ghi đè. UI giữ form và cho so sánh revision mới trước khi chọn giữ nội dung mình sửa hoặc tải lại form.
+- Lý do sửa chưa bắt buộc; lịch sử lưu field thay đổi. Production identity và learner activity bridge còn cần tích hợp.
+
+## Dataset notes and prior decisions
+
+Các ghi chú sau không xác nhận runtime đã được migrate.
 
 ## Duration and paid-module estimate correction — 2026-10-27
 
@@ -68,3 +82,7 @@ Each TargetRole owns distinct Level nodes. Each Level has its own REQUIRES_SKILL
 Application Developer currently has 11 required skills at Junior, 14 at Middle and 14 at Senior. MS-CORE01 thresholds are 0.60 / 0.75 / 0.90. MS-FS08, MS-FS15 and MS-FS16 occur at Middle/Senior but not Junior in this role. Those requirements and all non-teaching relationships are preserved. A Senior target does not make every recommended module HIGH; readiness and compatible evidence still govern suitability.
 
 [Current dataset, authoring limits and manual procedures](../../dataset/TEACHING_FOCUS_DIFFICULTY.md).
+
+### Imported module intake — 2026-10-28
+
+[Explicit per-module intake](Receive%20Imported%20Module.md) adds a separate entry point: L&D assigns responsible Occupations; an assigned Expert receives the existing ID and bundled Markdown into a draft. `createdBy` remains null for unknown original authorship; assignment/acceptance identities and times are recorded separately. Only submitted drafts can be reviewed; first approval updates the existing graph identity. Imported drafts cannot be hard-deleted. Native creation retains generated ID/actual creator behavior. Source snapshots and edit/decision history remain separate.

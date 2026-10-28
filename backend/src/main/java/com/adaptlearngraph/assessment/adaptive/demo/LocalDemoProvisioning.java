@@ -41,7 +41,7 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
         var expected=new HashMap<UUID,String>(); fitted.path("items").forEach(i->expected.put(UUID.fromString(i.path("pin").path("itemVersionId").asText()),i.path("pin").path("contentHash").asText()));
         if (pins.size()!=135 || expected.size()!=135 || pins.stream().anyMatch(i->!i.getValue().equals(expected.get(i.getKey())))) throw new IllegalStateException("Official bank pins drift");
         for (String persona:LocalDemoIdentity.PERSONAS) {
-            String role=persona.equals("ld")?"LD_MANAGER":persona.equals("admin")?"ADMINISTRATOR":"EMPLOYEE";
+            String role=persona.equals("ld")?"LD_MANAGER":persona.equals("admin")?"ADMINISTRATOR":persona.startsWith("expert-")?"DOMAIN_EXPERT":"EMPLOYEE";
             var a=new MapSqlParameterSource("id",LocalDemoIdentity.id(persona)).addValue("org",LocalDemoIdentity.ORG).addValue("name", "local-baseline-demo-"+persona).addValue("role",role);
             jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES(:id,:org,:name,:name,'DEMO_NO_PASSWORD_LOGIN') ON CONFLICT(account_id) DO NOTHING",a);
             if (!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.account WHERE account_id=:id AND organization_id=:org AND identifier=:name AND active AND password_hash='DEMO_NO_PASSWORD_LOGIN')",a,Boolean.class))) throw new IllegalStateException("Demo actor identity drift");

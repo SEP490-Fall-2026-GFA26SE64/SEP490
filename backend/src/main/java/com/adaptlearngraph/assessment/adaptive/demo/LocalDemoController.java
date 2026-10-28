@@ -18,6 +18,11 @@ public class LocalDemoController {
     @GetMapping("/api/v1/local-baseline-demo/session")
     ResponseEntity<?> session() { return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(Map.of("persona",identity.selected(),"personas",LocalDemoIdentity.PERSONAS.stream().sorted().toList(),"origin","SYNTHETIC","occupationId",LocalDemoIdentity.OCC,"organizationId",LocalDemoIdentity.ORG)); }
     public record Switch(String persona) {}
+    @DeleteMapping("/api/v1/local-baseline-demo/session")
+    ResponseEntity<?> signOut() {
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, ResponseCookie.from("baseline_demo_persona", "")
+                .httpOnly(true).sameSite("Strict").path("/api").maxAge(0).build().toString()).build();
+    }
     @PostMapping("/api/v1/local-baseline-demo/session")
     ResponseEntity<?> change(@RequestBody Switch input) {
         if (input.persona()==null || !LocalDemoIdentity.PERSONAS.contains(input.persona())) return ResponseEntity.badRequest().build();

@@ -1,6 +1,6 @@
 # Ontology — framework, fields and data provenance (0.11.0)
 
-Updated 28 October 2026. English catalog; all definitions remain NEEDS_EXPERT_REVIEW. No live database has been changed.
+Updated 28 October 2026. English catalog; all catalog definitions remain NEEDS_EXPERT_REVIEW. The user-authorized local application upgrade to v0.11.0 is recorded in [the execution receipt](NEO4J_V011_LOCAL_UPGRADE.md); historical authored modules and PostgreSQL pins were preserved.
 
 ## Files and framework
 

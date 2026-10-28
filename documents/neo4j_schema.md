@@ -54,6 +54,8 @@ Neo4j không lưu property có giá trị null; bộ import bỏ các field null
 
 ## 3. Giải thích field trong từng node
 
+**REQ-013 clarification — 2026-10-28:** Module ID do hệ thống sinh, title được phép trùng; chỉ lưu khi đủ field bắt buộc và đúng một PRIMARY. Quyết định sửa chung trong scope, duyệt lại, revision, audit người sửa, archive/restore được ghi tại [feature contract](features/Learning%20module%20management/README.md#user-decisions--2026-10-28) và [architecture](ARCHITECTURE.md#req-013-requirement-decisions--2026-10-28). Các yêu cầu này không bổ sung property vào ontology v0.11.0: version catalog không phải revision; reviewedBy/reviewedAt không phải người/thời điểm chỉnh sửa. Follow-up đã chốt scope Occupation và video nhúng trong Markdown; membership/content được lưu ở PostgreSQL V27, không tự thêm occupationId hoặc video field lên LearningModule.
+
 ### 3.1. Occupation — Nghề nghiệp
 
 Occupation là nghề theo O*NET, ví dụ `Software Developers`, mã `15-1252.00`. Nó là điểm neo để truy nguyên các reported job title và hồ sơ sở thích nghề nghiệp.
@@ -135,6 +137,8 @@ MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm
 Node không lưu `actualScore` hoặc `requiredScore`. `requiredScore` nằm trên `REQUIRES_SKILL` để đánh giá đạt Level và trên `HAS_SKILL_PREREQUISITE` để kiểm tra sẵn sàng học; `actualScore` thuộc kết quả đánh giá của từng learner. Như vậy một skill có thể yêu cầu mức thực hiện khác nhau ở Junior và Senior.
 
 ### 3.6. LearningModule — Đơn vị nội dung học
+
+**REQ-013 runtime local:** Gói được duyệt từ authoring V27 được project vào node với đầy đủ metadata và bảy field nghiệp vụ dưới đây; TEACHES có đủ metadata và teachingFocus/difficultyLevel. Draft, revision, nội dung Markdown/video, membership Occupation, người tạo/người sửa và learner pins nằm trong PostgreSQL, không bổ sung property graph. Các field reviewedBy/reviewedAt chỉ là review, không phải audit chỉnh sửa. Không tự migrate catalog/learner legacy. Chi tiết tại [architecture V27](ARCHITECTURE.md#req-013-local-authoring-persistence--v27).
 
 LearningModule chứa tham chiếu nội dung bài học/thực hành. Module dạy skill qua `TEACHES` và được chọn trực tiếp vào pathway dựa trên skill gap.
 
@@ -285,3 +289,23 @@ RETURN m.id, primaryCount;
 ```
 
 Expected: no rows. This is a manual procedure; no live runtime database is changed.
+
+## Shared login correction — 2026-10-28
+
+REQ-013 uses the existing main login session for Module, Content Studio, approval and learning requests. No additional Module login or Basic test accounts are used. The local bridge resolves active account ID, organization and persisted roles on the server; missing session returns 401 with a link back to the main login. Expert assignment choices come from active organization accounts. Creator/editor/reviewer IDs are account IDs. Main logout clears the shared cookie. No graph fields or entity schemas change; this does not convert the existing local demo login into production authentication or migrate historical test-account records.
+
+## Neo4j catalog list — user-requested correction (2026-10-28)
+
+The Module listing now reads all 13 LearningModule properties and all 8 TEACHES properties as stored, including nullable historical metadata. It does not read mock durationMinutes, add organizationId or authoring/audit properties to the ontology, or fabricate missing values. The current runtime graph may still be an older imported snapshot; the listing does not replace it with the checked-in dataset. Authorized authoring drafts/history are joined separately from PostgreSQL. [Read/access contract](features/Learning%20module%20management/View%20Learning%20Modules.md#neo4j-catalog-list--user-requested-correction-2026-10-28).
+
+## Runtime imported v0.11.0 — 2026-10-28
+
+The authorized application graph on HTTP 27474/Bolt 27687 now contains the exact 994-node/5121-relationship v11 catalog plus 13 preserved authored Modules/13 TEACHES, for totals of 1007 nodes/5134 relationships. All 259 Modules have positive duration/price; all 677 TEACHES have allowed focus/difficulty and every Module has exactly one PRIMARY. Catalog reviewer/time remain absent for unreviewed definitions. Property and endpoint readback matches the v11 seed exactly; existing PostgreSQL histories and authored graph properties are unchanged. The earlier missing-duration/price observations describe the pre-upgrade graph. [Backup, exact counts and verification](dataset/NEO4J_V011_LOCAL_UPGRADE.md).
+
+### L&D module review navigation — REQ-053 (2026-10-28)
+
+Content Approval stays at `/ld-manager/approvals`; Modules and Learning content resolve to `/ld-manager/modules` and `/ld-manager/learning-content`. All retain the L&D shell and Content Approval sidebar selection. Details/history open without switching actor. Submitted authoring revisions expose manager review actions; graph-only catalog entries remain read-only and are not automatically submitted. This routing correction changes no schema, storage responsibilities, seed data or API authorization.
+
+### Explicit module intake — 2026-10-28
+
+L&D assignment and Expert acceptance are PostgreSQL V28/V27 workflow records; no creator, receiver, Occupation membership or authoring revision property is added to Neo4j. Intake preserves the exact 13-property LearningModule / 8-property TEACHES source plus endpoints in PostgreSQL. Draft/submit leave graph unchanged. Approved publication reuses Module and mapping IDs for retained skills, applies existing review metadata, and checks original graph source before replacing the first imported release. The UI distinguishes graph review metadata from workflow submission. [Contract](features/Learning%20module%20management/Receive%20Imported%20Module.md).

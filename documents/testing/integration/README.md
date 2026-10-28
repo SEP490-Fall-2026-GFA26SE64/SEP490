@@ -1,5 +1,9 @@
 # Integration Testing Directory & Standards
 
+REQ-013/016 user-authorized v0.11 local import: [dedicated evidence and preservation checks](REQ-013-016-v011-import.md).
+
+REQ-013/016 local Module authoring: [dedicated PostgreSQL/Neo4j integration evidence](REQ-013-module-management.md), separate from review-dataset and legacy runtime acceptance.
+
 2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
 
 **Latest, 2026-10-24 REQ-001/002/009:** [Integration execution/blocker](REQ-001-002-009-20261024-execution.md): three selected real-adapter suites **Blocked**,0 business passes; raw2 setup errors/6 existing assumption skips because Docker Linux engine was unavailable. [Current gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md): Cluster 3/4 incomplete. [23 October integration/131P aggregate](../system/REQ-001-002-cluster4-evidence.md) is historical; no current integration pass is carried forward.
@@ -68,3 +72,7 @@ When writing integration tests for a new requirement (`REQ-nnn`):
 2. **Specify Container Fixtures**: Define the exact Testcontainers image (e.g. `neo4j:5.26-community`), seed nodes, and tenant isolation scope (`org-alpha` vs `org-beta`).
 3. **Verify Database Persistence**: Assert that every architecturally defined field is accurately persisted and reconstructed upon reading back.
 4. **Link to this index**: Add the requirement to the table above.
+
+- [REQ-053 — L&D module navigation](REQ-053-ld-module-navigation.md)
+
+- [REQ-013/053 — Per-module catalog intake](REQ-013-module-intake.md)

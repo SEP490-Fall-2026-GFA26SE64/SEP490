@@ -97,9 +97,13 @@ export function LoginPage() {
     setIsLoading(true)
     try {
       // Preset demo accounts select only server-allowlisted personas; this is not production login.
+      const expertId = normalizedEmail.includes('vance') ? 'expert-vance'
+        : normalizedEmail.includes('rivera') ? 'expert-rivera'
+        : normalizedEmail.includes('nguyen') ? 'expert-nguyen' : 'expert-chen'
       const persona = matched?.actorKey === 'employee' ? 'employee-a'
         : matched?.actorKey === 'ld-manager' ? 'ld'
-          : matched?.actorKey === 'admin' ? 'admin' : null
+          : matched?.actorKey === 'admin' ? 'admin'
+            : matched?.actorKey === 'expert' ? expertId : null
       if (demo.enabled && persona && !await demo.establish(persona)) {
         toast({ title: t('common.error', 'Error'), description: t('roleFlow.sessionFailed'), variant: 'destructive' })
         return
@@ -109,10 +113,6 @@ export function LoginPage() {
       localStorage.setItem('active_actor', matched?.actorKey ?? 'employee')
 
       if (matched?.actorKey === 'expert') {
-        const expertId = normalizedEmail.includes('vance') ? 'expert-vance'
-          : normalizedEmail.includes('rivera') ? 'expert-rivera'
-          : normalizedEmail.includes('nguyen') ? 'expert-nguyen'
-          : 'expert-chen'
         localStorage.setItem('expert_active_id', expertId)
       }
 

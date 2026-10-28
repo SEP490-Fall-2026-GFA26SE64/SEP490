@@ -27,3 +27,10 @@ it.each([401, 403, 503, 0])('RB16 session failure %s returns false and releases 
   const { result } = renderHook(useLocalDemoSession)
   expect(await result.current.establish('employee-a')).toBe(false); expect(await result.current.establish('employee-a')).toBe(true)
 })
+it('clears the shared server session on sign out', async () => {
+  vi.stubEnv('VITE_LOCAL_BASELINE_DEMO_ENABLED', 'true')
+  const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher)
+  const { result } = renderHook(useLocalDemoSession)
+  expect(await result.current.signOut()).toBe(true)
+  expect(fetcher).toHaveBeenCalledWith('/api/v1/local-baseline-demo/session', { method: 'DELETE', credentials: 'same-origin' })
+})

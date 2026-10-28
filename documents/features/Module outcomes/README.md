@@ -1,5 +1,7 @@
 # Module Outcomes
 
+**Local REQ-013 integration — 2026-10-28:** The new Module editor/API saves complete many-to-many mapping snapshots, exactly one PRIMARY, per-pair teachingFocus/difficultyLevel and all six metadata fields. Duplicate pairs/invalid endpoints are rejected; retained pairs preserve their relationship ID, and released changes require a new reviewed Module revision. Catalog version is separate from revision history. Legacy graph mappings are not silently migrated. [Workflow scope](../Learning%20module%20management/README.md), [real-store evidence](../../testing/integration/REQ-013-module-management.md).
+
 **Ontology 0.9.0 (approved 2026-10-26):** LearningModule–MicroSkill uses many-to-many TEACHES. Each Module teaches at least one skill; each catalog skill has at least one teaching Module; duplicate pairs are rejected. Course is removed. Learning objectives and assessment evidence may be authored in content/assessment documentation; expectedOutcome and rubric/readiness-assessment references are not graph properties; the v0.11 correction below adds teachingFocus and difficultyLevel to TEACHES. Both sides of the mapping must be checked when publishing or replacing a module. Earlier one-to-one mapping rules are superseded. Module completion does not prove mastery of every linked skill.
 
 

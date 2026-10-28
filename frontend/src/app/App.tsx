@@ -37,7 +37,7 @@ import { PlatformActivityMonitoringPage } from '../features/platform-admin/Platf
 import { DepartmentsManagementPage } from '../features/administration/departments/DepartmentsManagementPage'
 import { OrganizationSettingsPage } from '../features/administration/settings/OrganizationSettingsPage'
 import { OrganizationSubscriptionPage } from '../features/administration/subscription/OrganizationSubscriptionPage'
-import { LearningModuleReaderPage } from '../features/employee/modules/LearningModuleReaderPage'
+import { ModuleManagementWorkspace } from '../features/expert/modules/ModuleManagementWorkspace'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
@@ -76,7 +76,7 @@ export default function App() {
             <Route path="/employee/riasec" element={<Navigate to="/employee/assessment?tab=baseline" replace />} />
             <Route path="/employee/guidance" element={<Navigate to="/employee/upskilling?tab=roles" replace />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
-            <Route path="/employee/modules/:moduleId" element={<LearningModuleReaderPage />} />
+            <Route path="/employee/modules/:moduleId" element={<ModuleManagementWorkspace mode="learning" />} />
             <Route path="/employee/modules" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/employee/skills-catalog" element={<Navigate to="/employee/upskilling?tab=skills" replace />} />
             <Route path="/employee/skills" element={<Navigate to="/employee/upskilling?tab=skills" replace />} />
@@ -97,7 +97,7 @@ export default function App() {
             <Route path="/learner/target-roles" element={<Navigate to="/employee/target-roles" replace />} />
             <Route path="/learner/riasec" element={<Navigate to="/employee/riasec" replace />} />
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
-            <Route path="/learner/modules/:moduleId" element={<LearningModuleReaderPage />} />
+            <Route path="/learner/modules/:moduleId" element={<ModuleManagementWorkspace mode="learning" />} />
             <Route path="/learner/skills-catalog" element={<Navigate to="/employee/skills-catalog" replace />} />
             <Route path="/learner/gap-analysis" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/assessment" element={<Navigate to="/employee/assessment" replace />} />
@@ -122,6 +122,8 @@ export default function App() {
             <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
+            <Route path="/ld-manager/modules" element={<ModuleManagementWorkspace />} />
+            <Route path="/ld-manager/learning-content" element={<ModuleManagementWorkspace mode="content" />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
             <Route path="/ld-manager/dashboard" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />

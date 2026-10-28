@@ -438,7 +438,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
       return path === '/ld-manager/occupations' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
-      return path === '/ld-manager/approvals'
+      return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
     }
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
@@ -719,7 +719,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
                         {/* 2. Expert */}
                         <Link
                           to="/expert/assigned-roles"
-                          onClick={() => setIsUserMenuOpen(false)}
+                          onClick={event => switchPortal(event, localStorage.getItem('expert_active_id') ?? 'expert-chen')}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isExpert
                               ? 'bg-secondary text-primary font-semibold'
@@ -799,7 +799,14 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
 
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
+                        if (!await demo.signOut()) {
+                          toast({ title: t('common.error', 'Error'), description: t('employeeBaseline.requestError'), variant: 'destructive' })
+                          return
+                        }
+                        localStorage.removeItem('auth_user')
+                        localStorage.removeItem('active_actor')
+                        localStorage.removeItem('expert_active_id')
                         setIsUserMenuOpen(false)
                         toast({
                           title: 'Signed Out',

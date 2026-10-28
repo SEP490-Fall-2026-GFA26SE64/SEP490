@@ -30,7 +30,7 @@
 | REQ-010 | [Recalculation visibility](Recalculation%20visibility/README.md) | Employee | New-evidence adaptation |
 | REQ-011 | [Assigned target roles](Assigned%20target%20roles/README.md) | Expert | L&D assignment; revalidate access |
 | REQ-012 | [Micro-skill management](Micro-skill%20management/README.md) | Expert | Assigned-discipline scope |
-| REQ-013 | [Learning module management](Learning%20module%20management/README.md) | Expert | Author/organize/submit for approval |
+| REQ-013 | [Learning module management](Learning%20module%20management/README.md) | Expert; L&D assigns imported modules | Author/receive imported catalog modules/edit/submit for approval |
 | REQ-014 | [Question management](Question%20management/README.md) | Expert | Module assessment configuration |
 | REQ-015 | [Role requirements](Role%20requirements/README.md) | Expert | Competencies/skills/proficiency/importance |
 | REQ-016 | [Module outcomes](Module%20outcomes/README.md) | Expert | Assigned-discipline mappings |

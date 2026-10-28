@@ -194,7 +194,7 @@ Each requirement ID identifies a function for later SRS and test traceability. C
 | --- | --- | --- |
 | REQ-011 | Assigned target roles | View target roles assigned by the Organization Administrator and access their authorized management workspace. |
 | REQ-012 | Micro-skill management | Create, view, update, and delete micro-skills within the expert's authorized scope. |
-| REQ-013 | Learning module management | Create, view, update, and delete dummy learning modules and their descriptive information. |
+| REQ-013 | Learning module management | Author, view and revise learning modules; explicitly receive imported catalog modules through L&D Occupation assignment and Expert acceptance, then submit for review. Preserve source and actor history; restrict deletion and use controlled archival. |
 | REQ-014 | Question management | Create, view, update, and delete assessment questions and their scoring information. |
 | REQ-015 | Role requirements | Link or unlink micro-skills to assigned target roles and maintain the required proficiency information used by gap analysis. |
 | REQ-016 | Module outcomes | Define and update the micro-skills that a learning module is intended to develop. |
@@ -285,7 +285,7 @@ Each requirement ID identifies a function for later SRS and test traceability. C
 | Target role | An organization-defined Software Engineering development goal, created by the Organization Administrator and maintained in detail by an assigned Domain Expert. |
 | Competency | A broader capability used to organize micro-skills and present competency profiles. A separate competency CRUD workflow has not been requested. |
 | Micro-skill | A granular skill linked to target-role requirements, prerequisite skills, module outcomes, and assessment questions. |
-| Learning module | A dummy learning item with defined outcome skills and associated assessment; selected by the system or included through expert review. |
+| Learning module | A versioned learning package with content, skills taught and review history. Imported catalog entries enter authoring through explicit L&D assignment and Expert acceptance; only approved publication updates the catalog. |
 | Assessment question | An item whose skill mapping allows question-level results to contribute to gap analysis. Soft-skill item format and scoring are still open. |
 | Employee competency state | The current evidence-based representation of an employee's skills, used to calculate gaps against a target role. |
 | Adaptive pathway | A personalized sequence of modules addressing identified gaps, with explanations and potential expert adjustments. |
