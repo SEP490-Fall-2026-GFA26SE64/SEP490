@@ -49,7 +49,8 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                     s.definition = $description,
                     s.macroCompetencyCode = $macroCompetencyCode,
                     s.status = $status,
-                    s.version = '0.9.0',
+                    s.version = '0.10.0',
+                    s.reviewStatus = 'APPROVED',
                     s.createdAt = datetime($createdAt),
                     s.updatedAt = datetime($updatedAt)
                 ON MATCH SET
@@ -239,17 +240,25 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 ? node.get("status").asString()
                 : "ACTIVE";
 
-        Instant createdAt = Instant.now();
+        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
         if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
             try {
                 createdAt = node.get("createdAt").asZonedDateTime().toInstant();
-            } catch (Exception ignored) {}
+            } catch (Exception e1) {
+                try {
+                    createdAt = Instant.parse(node.get("createdAt").asString());
+                } catch (Exception ignored) {}
+            }
         }
-        Instant updatedAt = Instant.now();
+        Instant updatedAt = createdAt;
         if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
             try {
                 updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
-            } catch (Exception ignored) {}
+            } catch (Exception e1) {
+                try {
+                    updatedAt = Instant.parse(node.get("updatedAt").asString());
+                } catch (Exception ignored) {}
+            }
         }
 
         return new MicroSkill(

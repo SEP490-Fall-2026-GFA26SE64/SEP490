@@ -30,6 +30,8 @@ export interface CreateMicroSkillPayload {
 export interface UpdateMicroSkillPayload {
   name: string
   description?: string
+  macroCompetencyCode?: string
+  status?: string
 }
 
 export async function fetchMicroSkills(organizationId: string, q?: string): Promise<MicroSkillDto[]> {
@@ -57,6 +59,7 @@ export async function createMicroSkill(
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      'X-User-Role': 'DOMAIN_EXPERT',
     },
     body: JSON.stringify(payload),
   })
@@ -80,6 +83,7 @@ export async function updateMicroSkill(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        'X-User-Role': 'DOMAIN_EXPERT',
       },
       body: JSON.stringify(payload),
     }
@@ -97,6 +101,9 @@ export async function deleteMicroSkill(organizationId: string, skillId: string):
     `/api/v1/organizations/${encodeURIComponent(organizationId)}/micro-skills/${encodeURIComponent(skillId)}`,
     {
       method: 'DELETE',
+      headers: {
+        'X-User-Role': 'DOMAIN_EXPERT',
+      },
     }
   )
   if (!res.ok) {

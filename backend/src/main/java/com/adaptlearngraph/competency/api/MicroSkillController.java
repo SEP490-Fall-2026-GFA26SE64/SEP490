@@ -114,12 +114,16 @@ public class MicroSkillController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can update micro-skills"));
         }
 
+        String macroCode = request.macroCompetencyCode() != null && !request.macroCompetencyCode().isBlank()
+                ? request.macroCompetencyCode().trim().toUpperCase()
+                : "KNOWLEDGE";
+
         UpdateMicroSkillCommand command = new UpdateMicroSkillCommand(
                 organizationId,
                 id,
                 request.name(),
                 request.description(),
-                request.macroCompetencyCode(),
+                macroCode,
                 request.status() != null ? request.status() : SkillStatus.ACTIVE);
 
         MicroSkill updated = updateMicroSkillUseCase.updateMicroSkill(command);
