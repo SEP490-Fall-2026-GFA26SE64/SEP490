@@ -1,6 +1,6 @@
 # Include Pathway Module
 
-**Function:** REQ-020-F01. **Actor:** assigned Expert. **Status:** Cluster2 command/revision/API UI source implemented; owner integration/runtime acceptance incomplete.
+**Function:** REQ-020-F01. **Actor:** authorized Expert. **Status:**0.11 C2 source/API UI/format/local-scope adaptation built2026-10-28; runtime evidence pending.
 
 ## Current Scope Alignment
 
@@ -8,16 +8,16 @@ Include an eligible Module in an initial pathway draft without granting learning
 
 ## Actor, fields and ordered flow
 
-Trusted server actor/org and current reviewer assignment are required. Client sends proposal ID, moduleId, expected revision/hash, optional reason and command key. Server owns scope, eligibility, target matching/instructionLevel, ordinal/lock, status and new revision. Neither arbitrary learner/org nor client-supplied mastery/order is accepted.
+Trusted server actor/org and current reviewer assignment are required; only the confirmed separately gated local assignment adapter may substitute assignment in demo, as [shared section14.5](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#145-local-assignment-substitute-and-mandatory-owner-ports) defines. Client sends proposal ID, moduleId, expected revision/hash, optional reason and key. Server owns eligibility, teachingFocus/difficultyLevel, coverage/benefit assignments, warnings, order/status and new revision. Arbitrary learner/org/mastery/order is rejected.
 
 1. Authorize assignment before resource/receipt read; load own-scope current initial draft. Reauthorize replay; exact key/body replays, key reuse conflicts.
 2. Lock/CAS expected revision/hash. Stale/approved/archived proposal cannot be silently edited. If already included, return no-op after revision checks.
 3. Read current Module/content/publication/suitability and related needs/dependencies through ports. Only eligible permitted content can be included; catalog downtime is not permission.
-4. Construct proposed new Module set, retain explicit Expert inclusion/reason and selection source. Dedup one Module, keep actual per-skill targets.
-5. Run coverage/prerequisite/internal-gate/order/freshness validation and recompute order server-side. Valid or explicitly UNRESOLVED editable draft can be saved; dependency failure rolls back.
+4. Construct the fixed new Module set; retain inclusion/reason/source, dedup Module costs and keep per-skill focus/difficulty/coverage/ancillary metadata. SUPPORTING does not replace an available Primary provider; INCIDENTAL cannot close a need. Include a suitable alternative before explicitly excluding the old provider if desired; no silent replacement.
+5. Validate fixed-set coverage/prerequisite/internal-gate/order/freshness with the shared versioned policy. Retain separate Expert-attention fallback notes/UNKNOWN reasons and quality/totals. Do not optimize away selected Modules to restore the generation optimum. A complete feasible warning-bearing draft is VALID; missing coverage/gates remains editable UNRESOLVED; search uncertainty cannot be VALID. Dependency outage rolls back.
 6. Atomically save immutable next revision/override/receipt/audit/outbox and current pointer CAS. Return resulting revision/hash/validation and reasons, not approved status. No mastery/baseline/learning access change.
 
-Proposed fields/routes/storage are in shared design; physical DB changes not executed. Compulsory justification/reorder/AI regeneration are not assumed. Cannot include content from another tenant or inaccessible release to fix a gap.
+Command routes remain unchanged; format2 codec/storage/DTO source now exists under shared section15, with V28 source unapplied. Original format1 identity computation/reader is retained without relabeling or immutable-row updates; actual round-trip is untested. Compulsory justification/reorder/AI regeneration is not assumed; foreign/inaccessible content cannot fix a gap.
 
 For a previously accepted exact command, return its retained receipt after reauthorization before checking the now-old expected revision. New commands still require the current revision, including include-existing no-ops. A generation failure without a proposal is not an editable draft. Readiness results remain live; revision hash freezes gate definitions and actual content/targets/overrides as shared design section5.1 specifies.
 
@@ -25,6 +25,6 @@ For a previously accepted exact command, return its retained receipt after reaut
 
 401/403 or safe404 for forbidden scope;400/422 invalid input/eligibility;409 revision/key conflict;503 dependency outage. Unknown commit→same key/body replay. Concurrent include/exclude/confirm produces one winner; no lost updates. Do not erase previous excluded record; new override explicitly supersedes it in this initial review. Later recalculation preservation remains REQ-043 dependency.
 
-R03–R06/R09–R12 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md): assigned Expert only, duplicate/no-op, suitability/dedup/order, unresolved draft cannot approve, stale/race/outage rollback, history/receipt and no learning unlock. Planned/Not run. Routed inclusion now uses API state; [C2 limits](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27) retain absent assignment/policy integration and unexecuted transactions.
+R03–R06/R09–R14 in [test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md): authorized Expert/local gates, no-op, pair/benefit/warnings, fixed-set validation, unresolved approval denial, stale/race/outage rollback/history/no unlock. Planned/Not run. [Source/build receipt](../../testing/system/REQ-041-042-v011-source-build.md) does not prove runtime behavior.
 
-Confirmed: authorized intent/revalidation | Source implemented: API/storage/UI | Open: reviewer/content owner integration and runtime acceptance.
+Confirmed: authorized intent/fixed-set revalidation/warnings | Source implemented/built:0.11 adaptation | Open: owner content/readiness/production assignment and runtime evidence | Rejected: implicit replacement, fake mastery/approval or tests without C3.

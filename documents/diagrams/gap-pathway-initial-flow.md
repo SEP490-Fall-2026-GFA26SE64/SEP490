@@ -1,6 +1,6 @@
 # Planned initial gap/pathway flow, states and data
 
-2026-10-27. **Cluster1 design, not deployed runtime/schema.** Mermaid source is rendered by Markdown viewers supporting Mermaid; no live DB metadata image is replaced. [Canonical design](../features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md).
+Updated2026-10-28. **Confirmed design; scoped C2 source/build exists, not deployed/runtime-verified schema.** Mermaid requires a supporting viewer; no live DB image/rendering/runtime success claimed. [Canonical policy/design](../features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#14-confirmed-catalog011-policy-and-implementation-contract--2026-10-28) and [source/build receipt](../testing/system/REQ-041-042-v011-source-build.md).
 
 ## Product and algorithm flow
 
@@ -10,16 +10,17 @@ flowchart TD
     G --> C["Explicit confirmation: revalidate input + selection guards"]
     C --> T["PostgreSQL: request / frozen input / receipt / outbox"]
     T --> W["GENERATING: batch related Neo4j subgraph"]
-    W --> F["Eligibility + suitability + readiness mapping"]
-    F --> R["Rank providers per skill: suitable instructionLevel → duration → price"]
-    R --> S["Whole-path selection: shared coverage / dedup / alternatives"]
+    W --> F["Eligibility + per-pair focus / difficulty + real readiness definitions"]
+    F --> R["Need first; own mastery chooses LOW / MEDIUM / HIGH; UNKNOWN stays null"]
+    R --> S["Whole-path objective: fallback quality, unique minutes / price, Supporting benefit, count, IDs"]
     S --> D["Selected module dependency graph + internal gates"]
     D --> O["Topological order + full validation"]
-    O -->|valid current| P["AWAITING_EXPERT_REVIEW: immutable proposal revision"]
+    O -->|valid current and optimum proved| P["AWAITING_EXPERT_REVIEW: immutable proposal + separate warnings"]
+    S -->|budget exhausted before proof| B["SEARCH_LIMIT / NOT_PROVEN: no published valid proposal"]
     O -->|missing / cycle / infeasible| U["UNRESOLVED: diagnostic reasons, no learning"]
     T -->|confirmed snapshot: all mandatory known / gap 0| N["NO_LEARNING_REQUIRED: no fabricated completion"]
-    P --> X["Assigned Expert: inspect / include / exclude"]
-    X --> V["Revalidate coverage / eligibility / prerequisites / order"]
+    P --> X["Authorized Expert: assignment owner or explicitly scoped local substitute"]
+    X --> V["Include / exclude: validate fixed module set, warnings, prerequisites and order"]
     V -->|unresolved draft| X
     V -->|valid current exact revision| A["Expert confirmation: approval binds revision + hash"]
     A --> L["Employee: approved ordered pathway"]
@@ -46,10 +47,14 @@ sequenceDiagram
     API-->>Employee: Durable request ID / PENDING or GENERATING (or retained replay)
     Worker->>PG: Claim frozen request / replay check
     Worker->>Graph: Batch relevant skills / prerequisites / providers
-    Worker->>Worker: Filter / rank / select / topo / validate
-    Worker->>PG: Current claim token + CAS fresh input + proposal / audit / outbox
+    Worker->>Worker: Exact bands / focus coverage / dedup objective search / topo / validate
+    alt Optimality proved and current valid
+        Worker->>PG: Current claim token + fresh input CAS + proposal / audit / outbox
+    else Search exhausted before proof
+        Worker->>PG: Run SEARCH_LIMIT / NOT_PROVEN; no valid current proposal
+    end
     Expert->>API: Assigned proposal read / include or exclude
-    API->>API: Coverage / dependency revalidation
+    API->>API: Fixed-set coverage / warnings / dependencies; no automatic module replacement
     API->>PG: New immutable draft revision + override / receipt
     Expert->>API: Confirm expected revision + hash + key
     API->>PG: Exact approval / review pointer / receipt transaction if current valid
@@ -69,9 +74,10 @@ stateDiagram-v2
     [*] --> PENDING: explicit confirmed intent
     PENDING --> GENERATING: worker claim
     PENDING --> STALE: selection drift
-    GENERATING --> AWAITING_EXPERT_REVIEW: current valid proposal durable
+    GENERATING --> AWAITING_EXPERT_REVIEW: current valid proven-best proposal durable
     GENERATING --> NO_LEARNING_REQUIRED: no mandatory need
     GENERATING --> UNRESOLVED: missing content / cycle
+    GENERATING --> UNRESOLVED: SEARCH_LIMIT / optimality NOT_PROVEN
     GENERATING --> BLOCKED: missing owner policy
     GENERATING --> FAILED_RETRYABLE: transient outage
     FAILED_RETRYABLE --> GENERATING: exact idempotent retry
@@ -89,7 +95,7 @@ APPROVED does not mean every module unlocked. Each applicable backend access sti
 
 This is the visible lifecycle, not a single persisted enum. Canonical design section5.2 separately proposes generationStatus/reviewStatus/validationStatus: generation SUCCEEDED plus valid draft displays AWAITING_EXPERT_REVIEW; an excluded invalid draft still awaits review but displays UNRESOLVED; exact approval displays APPROVED. Initial generation UNRESOLVED/BLOCKED without a proposal has no include/exclude target. Optional no-gap acknowledgement and stale reviewed-draft refresh commands remain undefined/Proposed, not automatic transitions.
 
-## Logical data relationship — Proposed, not DDL
+## Logical data relationship — planned format2 extension, not DDL
 
 ```mermaid
 flowchart LR
@@ -98,7 +104,8 @@ flowchart LR
     CAT["Catalog / policy / compatibility / readiness versions"] --> GS
     GS --> RUN["Planned initial request / run"]
     RUN --> REV["Planned immutable pathway revisions"]
-    REV --> MOD["Unique modules + per-skill targets + dependency gates"]
+    REV --> MOD["Unique modules + immutable teaching_v2 pairs / coverage / warnings + dependency gates"]
+    REV --> LEG["Retain format1 reader / old hashes / old target rows"]
     REV --> OV["Expert include/exclude override history"]
     REV --> AP["Exact revision/hash confirmation"]
     CMD["Scoped operation + key/body hash receipt"] --> RUN
@@ -109,4 +116,4 @@ flowchart LR
     REV --> AO["Atomic audit / outbox, deduplicated delivery"]
 ```
 
-PostgreSQL migration head is V26; V4/V25 name table origins in that current schema. No fake legacy profile/progress UUID, no rank1..5 truncation, no modification of Neo4j schema or current learner history.
+Source includes V27 and new unapplied V28/format2; external DB head is unverified. Retain format1 hashes/receipts/approvals; no immutable-history backfill, fake UUID, rank1..5 cap or Neo4j schema edit. Source/build and later manual/UI on the DB-capable machine are separate milestones; no Docker requirement or executable-test authority follows from this diagram.

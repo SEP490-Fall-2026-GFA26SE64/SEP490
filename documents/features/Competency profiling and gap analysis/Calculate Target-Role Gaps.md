@@ -30,7 +30,7 @@ Prerequisite is catalog dependency metadata for F01; it does not add skills to t
 
 Cross-actor/tenant reads deny safely. Missing baseline is distinct from a corrupt profile, missing publication and graph outage. Empty malformed requirements never imply success. Dependency errors→unavailable/retry without partial calculation or persisted success. Stale source→conflict/refresh; no silent requirement update in a historical snapshot. Exact replay and concurrent confirmation use server input identity, not client-supplied mastery.
 
-Current source profile stores the original skill set/attempt pins; current gap UNKNOWN projections do not mutate it. New Neo4j instructionLevel is not needed for arithmetic and cannot alter mastery. No-state-change preview includes audit-free learner state: operational request logging is not learning history mutation.
+Current source profile stores original skills/attempt pins; UNKNOWN projections do not mutate it. Catalog0.11 focus/difficulty does not enter gap arithmetic or change mastery. Preserve exact local v08/v010 eligibility-fingerprint support when adding reviewed v011 compatibility; equal skill IDs alone are insufficient and an unsupported origin fails safely. No-state-change preview includes audit-free learner state; operational logging is not learning history mutation.
 
 ## Acceptance-to-test mapping
 
@@ -40,7 +40,8 @@ Current source profile stores the original skill set/attempt pins; current gap U
 | G04–G07 | Formula/equality/confidence; no mandatory compensation; optional reference-only; UNKNOWN/null vs data failure |
 | G08–G10 | New skill without baseline retake; no-gap/empty mandatory; original history/allowance retained |
 | G11–G12 | Separate gap/selection/planning identity, coherent source reads, stale/concurrent/exact receipt replay and dependency failure without partial success |
+| G13 | Recognized historical v08/v010 profile reused against reviewed v011 only with unchanged skill semantics; exact mastery/pins retained, unsupported source denied, no reset/retake/rescore/repin |
 
 [Test plan](../../testing/REQ-041-042-initial-pathway-test-plan.md). Executable acceptance remains Planned/Not run. Gap domain, scoped original-profile reader, no-write endpoint and explicit-confirm UI exist in C2 source; default owner adapters deny missing binding/publication/compatibility. [Actual checks/limits](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27) distinguish compilation from runtime proof.
 
-Confirmed: business rules | Source implemented: gap/profile/API UI | Open: published Role-Level/compatibility integration and runtime acceptance | Rejected: mastery rewrite or baseline reset.
+Confirmed: unchanged gap rules/compatibility preservation | Source updated/built2026-10-28: local0.11 compatibility retaining v08/v010 | Open: actual profile/hash round-trip, production publication/semantic adapters and runtime evidence | Rejected: mastery rewrite/reset or tests without C3.

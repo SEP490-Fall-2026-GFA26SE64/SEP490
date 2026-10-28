@@ -1,5 +1,9 @@
 # System testing
 
+2026-10-28 final handoff: [static reconciliation and next-machine gates](REQ-041-042-v011-handoff-review.md). Requested journey ends at Employee's own approved pathway display; planner inputs/fresh Compose/manual flow remain incomplete. Next session reports first, waits for OK; no automatic executable tests/C3.
+
+2026-10-28 REQ-041/042 C2: [native fresh DB cutover/manual receipt](REQ-041-042-v011-native-cutover.md): V1–V28 applied, exact0.11 graph sealed, API/FE read smoke observed. Owner readiness/content/full flow and executable acceptance remain pending; no C3 transition.
+
 2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
 
 **Latest, 2026-10-24 REQ-001/002/009:** [Cluster 4 evidence/gate audit](REQ-001-002-009-cluster4-20261024-evidence.md) reconciles the [original Cluster 3 receipt](REQ-001-002-009-cluster3-20261024-execution.md): 168 pass/4 fail across BE, FE and synthetic browser fixtures. **0 current real-stack system passes; nine journeys Not run (`--list` only)**. Integration/numerical/performance remain blocked; Cluster 3/4 incomplete. [23 October131P/0F](REQ-001-002-cluster4-evidence.md) retains its dated source/fixture, with no pass carry-forward.

@@ -1,22 +1,27 @@
 # Initial gap/pathway acceptance-to-test plan
 
-Updated2026-10-27. **Cluster1 planning only; every row Planned/Not run.** No executable test file is created or executed by this document. Proposed filenames/method groups/commands below are destinations for a separately approved Cluster3, not evidence that those files exist or pass.
+Updated2026-10-28 for the confirmed0.11 policy/whole-path objective/local assignment. **Cluster1 planning only; every executable row Planned/Not run.** No executable file is created or executed. Proposed filenames/methods/commands are destinations for separately approved C3, not existing/passing evidence. Historical2026-10-27 manual/build observations retain their original scope only. User-deferred evening manual/UI checks are a separate pending C2 activity.
+
+Later C2 observations: [source/build](system/REQ-041-042-v011-source-build.md), [native V1–V28/import/read smoke](system/REQ-041-042-v011-native-cutover.md) and [pre-transfer reconciliation](system/REQ-041-042-v011-handoff-review.md). They do not mark executable rows below Pass or authorize C3. Native SQL application is proved; legacy/hash/transaction/optimizer/security and positive full-flow acceptance remain unproved.
+
+Current user milestone is real baseline→mastery→Role+Level gaps→confirm/generation→Expert include/exclude/validate/exact approve→Employee own approved pathway display. Actual learning-content/start/segment execution (E04–E06 execution aspects) is deferred to its owner's later approved scope; retain those planned rules, do not silently remove their security contracts. Planning prerequisite evidence/gate mapping and Availability remain required. Next session reads/reports first and waits for OK before creating the manual Compose walkthrough document/setup/manual work; executable files/suites require separately approved C3. “Manual test file” means a Markdown procedure here, not an assertion script.
 
 Contracts: [F02](../features/Competency%20profiling%20and%20gap%20analysis/Calculate%20Target-Role%20Gaps.md), [F01 generation](../features/Initial%20pathway%20generation/Generate%20Initial%20Adaptive%20Pathway.md), [shared design](../features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md), [review](../features/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md), [include](../features/Pathway%20adjustment/Include%20Pathway%20Module.md), [exclude](../features/Pathway%20adjustment/Exclude%20Pathway%20Module.md), [Employee view](../features/Adaptive%20pathway/View%20Adaptive%20Pathway.md). [Testing guidance](README.md) still applies; no historical baseline test count is carried into this acceptance.
 
 ## Actors, fixtures and method mapping
 
-- ORG-A/Employee-A and ORG-B/Employee-B; Expert-A assigned to Role-A, Expert-U unassigned, revoked Expert-R; unauthenticated/other-actor cases. All IDs opaque synthetic fixture identifiers, not production fixtures.
-- BR-A explicitly binds catalog Role R and Level L-J; BR-S same catalog Role different L-S. Duplicate/foreign/unpublished/missing bindings included.
+- ORG-A/Employee-A and ORG-B/Employee-B; Expert-A assigned to Role-A, Expert-U unassigned, revoked Expert-R; one configured local Expert-L with separate default-off gate/Role scope; unauthenticated/other-actor/mixed-prod cases. Opaque synthetic fixture IDs are not production truth.
+- Employee explicitly selects Role R with member Level L-J or L-S; server derives effective-choice IDs. Duplicate/foreign/nonmember/unpublished/missing pairs included; no guessed Level or enterprise mapping.
 - Mastery fixture: SQL0.60 required0.75; Modeling0.80 required0.70; Quality new absent; mandatory/optional flags. Genuine immutable baseline/profile original scope and history; corrupt expected original skill is a separate fixture.
-- Graph fixture built in isolated Testcontainers: A/B/C needs, P→foundation of A, shared provider MBC, alternative MA1/MA2, unsuitable/retired/content-missing variants, same-module internal-gate variants and an affected cycle. Every case pins exact graph/policy/content/readiness version.
-- instructionLevel fixtures are exact FOUNDATIONAL/INTERMEDIATE/ADVANCED per TEACHES edge; numeric/missing/retired names are rejected by consumer, not silently mapped. Demo seed is not oracle; expected results authored explicitly.
-- Policy/readiness fixtures expose approved suitability preference and exact PASS/FAIL/NOT_ASSESSED mapping. Missing contract errors tested; no new mastery→depth or Role-tier→depth formula encoded.
+- Isolated graph fixture: A/B/C needs and prerequisite P, MBC with B PRIMARY/C SUPPORTING plus C's own Primary MC, alternative MA1/MA2, unusable Primary variants, internal-gate variants and cycles. Shared coverage is legal only under confirmed fallback permission; every Module has exactly one Primary. Pin graph/policy/content/readiness version; use deterministic hand-authored expected objectives, never the development seed as oracle.
+- Exact pair enums are PRIMARY/SUPPORTING/INCIDENTAL and LOW/MEDIUM/HIGH; include one Module with independent per-skill difficulties, invalid/missing/retired fields and zero/multiple Primary fixtures. Format1 instructionLevel remains only a historical-read fixture, never translated into new teaching fields.
+- Mastery-band fixtures include0,1, finite decimals on both sides of1/3 and2/3, rational equality at the policy boundary where representable by the policy fixture, UNKNOWN/null with reason, known gap0, invalid evidence and prerequisite-only needs. Expected classification uses exact comparisons; no rounded decimal stands in for exact1/3.
+- Real readiness fixtures expose version-matched PASS/FAIL/NOT_ASSESSED evidence through approved owner contracts; they are independent of difficulty bands. Missing contract/outage denies; no completion-to-PASS fixture shortcut.
 - Every row below inherits actor/tenant fixture plus trigger→expected. Each rule maps to proposed method name equal to rule ID or a descriptive method carrying that ID.
 
 | Suite code | Proposed file / method naming | Proposed command (not run) |
 | --- | --- | --- |
-| GU | backend/src/test/java/com/adaptlearngraph/competency/domain/TargetRoleGapPolicyTest.java, Gxx_* | backend: `.\mvnw.cmd '-Dtest=TargetRoleGapPolicyTest' test` |
+| GU | backend/src/test/java/com/adaptlearngraph/recommendation/domain/RoleGapTest.java, Gxx_* | backend: `.\mvnw.cmd '-Dtest=RoleGapTest' test` |
 | PU | backend/src/test/java/com/adaptlearngraph/recommendation/domain/InitialPathwayPlannerTest.java, Pxx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayPlannerTest' test` |
 | RU | backend/src/test/java/com/adaptlearngraph/pathway/application/InitialPathwayReviewTest.java, Rxx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayReviewTest' test` |
 | API | backend/src/test/java/com/adaptlearngraph/pathway/api/InitialPathwayApiBoundaryTest.java, G/P/R/Exx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayApiBoundaryTest' test` |
@@ -27,18 +32,18 @@ Package/file names are Proposed until implementation structure exists; later evi
 
 | Function | Acceptance rule mapping |
 | --- | --- |
-| REQ-041-F02 | G01–G11; G12 at confirmation handoff only |
+| REQ-041-F02 | G01–G11/G13; G12 at confirmation handoff only |
 | REQ-001-F02 confirmation extension | G03/G08/G11/G12, P01/P12/P13; original selection rules retain their separate historical plan |
-| REQ-042-F01 | P01–P14 |
-| REQ-020-F01 include | R01/R03–R05/R07/R09–R12 |
-| REQ-020-F02 exclude | R01/R05–R12 |
-| REQ-019-F01 review/confirm | R01/R02/R08–R12; E04 for downstream denial |
-| REQ-004-F01 read | E01–E03/E07/E08; E04–E06 additionally verify dependent content/start-owner gates |
+| REQ-042-F01 | P01–P20 |
+| REQ-020-F01 include | R01/R03–R05/R07/R09–R14; P19 historical-read dependency |
+| REQ-020-F02 exclude | R01/R05–R14; P19 historical-read dependency |
+| REQ-019-F01 review/confirm | R01/R02/R08–R14; E04 downstream denial; P19 exact old approval/hash |
+| REQ-004-F01 read | E01–E03/E07–E09; E04–E06 additionally verify actual content/start/segment owner gates; P19 history |
 | REQ-046 limited consistency/recovery | G11/G12/P12/P13/R10/R11 only for this flow; no full REQ-046 delivery claim |
 
 All mappings are planned acceptance, not implemented methods. Read-only cases compare before/after learner state, receipts/outbox, selection, baseline pins and pathway pointers in their isolated fixtures; operational request logging is permitted. Identity/assignment unavailability and protected response-cache scope are failure variants, never permissive defaults. Proposal-dependent wire/hash choices require final contract disposition before executable assertions are fixed.
 
-## F02 and confirmation — G01–G12
+## F02 and confirmation — G01–G13
 
 | Rule | Actor/fixture and trigger | Expected output/state | Suites |
 | --- | --- | --- | --- |
@@ -54,19 +59,20 @@ All mappings are planned acceptance, not implemented methods. Read-only cases co
 | G10 | Empty mandatory/malformed/nonfinite requirement input | Invalid configuration, no empty-set success/partial result | GU/INT |
 | G11 | Preview Role-B while Role-A current; confirm B; also stale preview/selection/profile/catalog variants | Current preview succeeds and planning hash binds resulting B selection; stale variants409 with no winner overwrite; no hash circularity or client source substitution | API/INT |
 | G12 | Same key/body replay after later selection change; key/different body; different-key equivalent input; competing confirmations/write failure | Reauthorize exact receipt before new-command checks; mismatch409; equivalent generation input converges; one effective result/atomic state, no duplicate dispatch or replay-driven selection restore | API/INT/SYS |
+| G13 | Same original v08/v010 profile against reviewed v011; unsupported origin, changed skill semantics and unchanged pairs | Known exact provenance retains identical mastery/confidence/origin pins; requirements follow selected Level; unsupported/changed semantics deny; no fingerprint overwrite/reset/retake/rescore/repin or new baseline allowance | GU/API/INT |
 
 Baseline allowance/admission remains existing evidence scope plus new regression; this plan does not claim re-execution of baseline suites.
 
-## Generation — P01–P14
+## Generation — P01–P20
 
 | Rule | Actor/fixture and trigger | Expected output/state | Suites |
 | --- | --- | --- | --- |
 | P01 | Explicit Employee confirmation with usable current F02; preview/bare GET; missing or in-progress baseline | Only explicit usable intent schedules; accepted PENDING/GENERATING until proposal durable, then AWAITING_EXPERT_REVIEW; baseline-required next step admits no pathway request | API/INT/SYS |
 | P02 | A/B/C with shared transitive P and repeated providers | Related graph metadata dedup, no per-skill N+1 adapter calls by default; preserved missing reasons | PU/INT |
-| P03 | Valid instructionLevel edges and numeric/missing/unknown/retired field variants | Exact text consumed per pair, malformed contract rejected; no numeric fallback/default | PU/INT |
-| P04 | Several providers with owner suitability preferences/duration/price ties | Suitable-depth first, shorter duration, lower price, stable ID; unrelated skill's higher depth irrelevant | PU |
-| P05 | UNKNOWN with Advanced-only unsuited provider; missing suitability policy | Foundational-suitability required or unresolved/blocked; no invented mastery/tier mapping | PU/INT |
-| P06 | MBC suits B/C; one Module maps other unsuited skill | MBC included once for actual suitable target coverage only; no automatic mastery/PASS | PU/INT |
+| P03 | Valid pair enums, one Module with differing per-skill difficulties; numeric/missing/retired fields; Primary outside initial need subset; zero/two Primary variants | Exact full Module teaching inventory checked, one Primary enforced; malformed contract rejected, no instructionLevel conversion/module-wide difficulty guess | PU/INT |
+| P04 | Several full pathways with different quality/minutes/VND/benefit/count and exact ties | Compare confirmed whole-path tuple, count amounts once, suitable plan beats shorter fallback, final IDs/assignments stable; per-offer first-valid ranking cannot substitute | PU |
+| P05 | UNKNOWN need with exact LOW available, then only MEDIUM/HIGH eligible; absent suitability/own evidence | Preferred LOW and retained null mastery/reason; ordered flagged difficulty fallback when allowed; no forced mastery0/fixed gain, missing policy/corrupt evidence blocks | PU/INT |
+| P06 | MBC B PRIMARY/C SUPPORTING with MC C PRIMARY available; then no usable C Primary anywhere; incidental C variant | Normally retain MC for C; benefit may improve a true tie. Legal Supporting coverage only when Primary infeasible, with warning; module amounts dedup and incidental never covers | PU/INT |
 | P07 | Top provider infeasible; ranked alternative feasible | Whole-path selection tries valid alternative deterministically, not independent top1-only sort | PU |
 | P08 | P before A, independent B/C, multi-hop prerequisites | Feasible topo order respects dependencies; independent steps not unnecessarily serial-locked | PU/INT |
 | P09 | Same provider teaches prerequisite/dependent with/without explicit internal gate | Valid internal contract represented; absent contract not silently self-loop dropped | PU/INT |
@@ -75,13 +81,19 @@ Baseline allowance/admission remains existing evidence scope plus new regression
 | P12 | Same-input concurrent worker/retry/crash before/after commit/outbox delivery; lease expires and old worker resumes; retry exhausted | One effective immutable result/current pointer; only current claim token commits; dedup receipt/outbox; exhausted work explicit failure with no duplicate success | INT |
 | P13 | Catalog/selection drift between graph batches/during compute, Role switch, or Expert review started | Reject mixed snapshot; old-selection work cannot commit; history retained, no automatic replacement of review edits or stale publication; owner freshness protocol needed | INT/SYS |
 | P14 | Valid complete path needs>5 Modules; outage after partial read | No rank5 truncation; outage not missing-content/UNKNOWN and never partial success | PU/INT |
+| P15 | Known mandatory need at exact conceptual band boundaries/neighboring finite decimals,0/1; same positive gap at differing mastery; known gap0; prerequisite-only UNKNOWN/known | Correct unrounded3m comparison, preferred LOW/MEDIUM/HIGH; gap gates need rather than band; known gap0 excluded; prerequisite uses its own evidence; invalid evidence distinct from UNKNOWN | PU/API/INT |
+| P16 | Each preferred difficulty with all alternatives; wrong-band Primary vs exact-band Supporting; Primary unavailable vs outage/limit | LOW→MEDIUM→HIGH; MEDIUM→LOW→HIGH; HIGH→MEDIUM→LOW. Primary precedence/absence proved under mandatory conditions; every coverage fallback has attention+reason; warnings separate from validation errors | PU/INT |
+| P17 | Multi-need competing fallback counters; duration tie/price tie; independent Supporting pair difficulties; duplicate beneficiary/UNKNOWN/prerequisite/gap0 cases | Minimize Supporting count, then rank2 count, then rank1 count, then minutes/VND; maximize distinct eligible Supporting beneficiaries only after ties, retain actual pair difficulty; no double-count coverage-as-benefit or implicit change to coverage rank; fewer modules then stable IDs | PU |
+| P18 | First feasible path is suboptimal; same optimum via different iteration orders; search budget before proof with feasible incumbent; proven infeasibility | Proven best required for generation publication; deterministic result; SEARCH_LIMIT/NOT_PROVEN is not SUCCEEDED/current valid proposal; errors/outages do not establish Primary absence or infeasibility | PU/INT/SYS |
+| P19 | Existing format1 revision/approval/receipt and original hashes; format2 write/read; unknown format; changed warning/content/version | Exact old decoding/hash retained, new shape enforces per-pair/coverage constraints and immutable history, no label/backfill/fake legacy value; new hash binds warnings/policy/overrides; unknown/corrupt format denies | PU/API/INT |
+| P20 | Missing/mismatched policy/readiness/catalog/search/worker version/config; gate off/prod; same config then changed config | Explicit configuration failure before valid publication; real pins bind admitted work; preserve claim/CAS/history, no guessed operational defaults or successful partial path | API/INT |
 
-## Review/adjustment — R01–R12
+## Review/adjustment — R01–R14
 
 | Rule | Actor/fixture and trigger | Expected output/state | Suites |
 | --- | --- | --- | --- |
 | R01 | Assigned/unassigned/revoked/cross-org Expert queue/detail | Authorize before existence/count/paging; no foreign review/evidence | API/INT/SYS |
-| R02 | Expert inspects current proposal | Source versions, safe gap/UNKNOWN, unique Modules/targets/depth/reasons/dependencies consistent; no answer keys/theta/SE | API/SYS |
+| R02 | Expert inspects current proposal | Source versions, safe gap/UNKNOWN, grouped Modules/per-skill focus/difficulty/coverage/benefit, separate warnings/errors/totals/quality/dependencies match exact revision; no answer keys/theta/SE | API/SYS |
 | R03 | Assigned Expert includes eligible alternative | New revision/hash/override history, dedup/recomputed order/validation; no approval/mastery mutation | RU/INT/SYS |
 | R04 | Include foreign/unpublished/unsuited Module | Deny or invalid eligibility without partial writes | RU/API/INT |
 | R05 | Include already included/exclude absent, expected revision current/stale | Current no-op preserves uniqueness; stale still409; replay safe | RU/INT |
@@ -92,8 +104,10 @@ Baseline allowance/admission remains existing evidence scope plus new regression
 | R10 | Concurrent distinct edits/confirmation; concurrent identical key/body; same-key/different body | Distinct edits have one CAS winner/409 loser; identical accepted retries return one receipt; mismatch409, no lost edit/stale approval | INT |
 | R11 | Dependency outage/write failure/unknown commit; replay accepted revision4→5 edit after revision6; new key with revision4 | Rollback on failed transaction; authorized replay returns original revision5 outcome without reapplying; new stale command409; GET returns current revision6; no approval transfer | INT |
 | R12 | No-gap without proposal; initial unresolved without draft vs excluded invalid draft; Role drift/archive/revoked reviewer | No mandatory no-gap approval/fake completion; only existing editable draft repaired; preserve history, restrict stale/archived/revoked scope including receipt replay | API/INT/SYS |
+| R13 | Configured Expert-L/ORG-A/Role allowlist vs wrong Expert/tenant/Role, inactive account/grant, flag-off/prod and substitute replacement | Filter before existence/paging/receipt; store versioned local scope; real exact persisted approval still required; revocation/replacement denies as required without deleting approval/history; no unconditional valid adapter | API/INT/SYS |
+| R14 | Include/exclude fixed set with valid fallback warnings, valid more-expensive Expert set, Primary exclusion leaving Supporting, search-uncertain validation, exact confirmation | Preserve explicit module set without auto-optimization/readd; retain hash-bound warnings; valid warning-bearing set approvable; illegal coverage/uncertainty not VALID; same receipt/CAS/current-hash rules | RU/API/INT/SYS |
 
-## Employee read/access — E01–E08
+## Employee read/access — E01–E09
 
 | Rule | Actor/fixture and trigger | Expected output/state | Suites |
 | --- | --- | --- | --- |
@@ -105,18 +119,29 @@ Baseline allowance/admission remains existing evidence scope plus new regression
 | E06 | Independent Module after another locked branch; same-module internal gate | No artificial global sequential lock; internal gate still respected | API/INT/SYS |
 | E07 | Archived path, return to same Role, later baseline Blueprint change | History read-only/no resume; Blueprint alone not erase progress/mastery/archive active path | API/INT/SYS |
 | E08 | Readiness/content permission revoked or dependency outage during read/start | Restricted/unavailable; no permissive default or write from projection GET | API/INT/SYS |
+| E09 | Own approved0.11 path with per-skill fallback notes and legacy archive; repeat reads with availability change; direct content/segment request bypassing UI | Natural equivalent EN/VI notes and useful lock reasons, no draft rankings or false gap closure; old content refs unchanged, no GET learner writes; actual protected route rechecks current tenant/exact approval/readiness, no public contentUri bypass | API/INT/SYS |
 
 ## Manual flow planned — not executed
 
-Environment URLs are to be supplied from an approved deployed environment, not assumed available localhost. Reuse existing Target Roles, /expert/pathway-review, /expert/pathway-review/:pathwayId and /employee/pathway surfaces.
+The positive manual journey remains pending on the next Docker-capable machine; the native receipt records only fresh provisioning/read smoke. First read/reconcile/report and wait for user OK; then supply actual API/web URLs and trusted actor/tenant/source/configuration before setup/manual checks. Reuse Target Roles, /expert/pathway-review, /expert/pathway-review/:pathwayId and /employee/pathway. C3 real-adapter tests still require separately approved disposable Testcontainers environments, not direct reuse of development DBs.
 
-1. Employee-A with genuine completed baseline views authorized BR-A gaps; verify SQL/Quality explanations, optional skills and no selection mutation.
+1. LD authors/reviews/publishes a genuine baseline for the scoped fixture; Employee-A completes it and views persisted mastery, then authorized exact Role+Level gaps. Retain pair if selected earlier; verify skill explanations, optional skills and no selection mutation from preview.
 2. Confirm Role with retained retry identity; see generating, then awaiting review only after persisted valid proposal.
-3. Assigned Expert-A opens queue/detail, excludes sole provider; see all uncovered needs and blocked confirmation. Include valid replacement, inspect recomputed dependencies/order, then confirm exact revision.
-4. Employee-A reads approved path; attempt locked direct module access; verify server denial. A separately authorized readiness fixture may provide exact PASS through real owner mechanism to inspect unlocking; do not manufacture learner progress or reset real state.
+3. Authorized Expert-A (or explicitly configured local Expert-L with a real same-tenant account/grant) opens scoped queue/detail, inspects focus/difficulty/notes and unique totals. Exclude sole provider; see missing coverage and blocked confirmation. Include replacement, inspect fixed-set order/warnings, validate then confirm exact revision; no automatic approval/reoptimization. Finish current manual journey by returning as the same Employee and viewing the safe approved sequence/notes; no learning start is required. Access may remain LOCKED/UNAVAILABLE without a fabricated entry.
+4. Employee-A reads own exact approved sequence/notes and safe LOCKED/UNAVAILABLE states where learning input is absent. End the current milestone here; no Module start/content interaction required.
 5. Repeat cross-tenant/stale/replay/failure cases in isolated fixture environment, verify history and no unauthorized writes.
 
+Deferred owner scope: direct protected Module/start/segment denial and real versioned readiness PASS/unlock observations remain in E04–E06 for separately approved integration; never manufacture progress/PASS. Automated variants of all manual cases remain C3-only.
+
 Later receipt must supply actual date/environment/commit, exact fixture IDs, commands/test file/method, counts/results, failures and limits. Static source/JSON/document review in Cluster1 is not execution of these cases.
+
+## Cluster1 document amendment receipt — 2026-10-28
+
+Reference source5b17c7768dee4dbcee3a19881177e5b476b4350a, owner main4c33273, preserved c932981/7080f00/85e1ff6. User confirmed0.11 semantics/quality/fallback/search choices and requested C1 updates. Seven Function contracts, shared flow/data design, architecture/planned schema, Mermaid source and acceptance/index were updated:12 product Markdown files. New rules G13/P15–P20/R13–R14/E09 remain Planned/Not run.
+
+Document QA: `git diff --check` passed;21 added/changed local-link occurrences resolved to existing files/fragments; changed Markdown code-fence counts are balanced. Diff scope contains no non-Markdown files, backend/frontend/config/migration changes or staged entries. Mermaid source was inspected, not rendered. This receipt is document QA only, not executable-test, build, deployment, security, optimizer or runtime evidence. Workspace task/current/temporary09/Vietnamese records are updated separately.
+
+No executable tests, compile/build/lint, DB/network-to-DB, migration/import, container/tool installation, Git stage/commit/push or automatic C2 transition occurred. User-reported installed JDK/Node and usable external DB are environment context, not this agent's runtime verification. The planned C2 source/build milestone and user-deferred evening manual/UI acceptance remain separate and unexecuted.
 
 ## Cluster1 document review receipt — 2026-10-27
 
@@ -128,6 +153,6 @@ Only documents changed, all unstaged; no runtime/migration/frontend implementati
 
 No numerical scoring validation/latency SLA/planner caps certified. Later separately approved measurement should report graph size/degree, candidates/prerequisite closure, query database hits/degree, query/rank/select/sort timings, concurrency, cache state, p50/p95/p99 and memory/error rates with agreed thresholds. Do not substitute a successful small seed request for benchmark or real-pilot acceptance.
 
-Missing owner publication, business Role binding, semantic compatibility, depth suitability, reviewer assignment and actual readiness are named integration blockers for relevant tests. Technical physical schema/job leases/retry budgets remain Proposed design parameters. Current0.10 review package can be an explicit isolated fixture input only, not production truth; Compose0.9 is not ready for instructionLevel consumers.
+Confirmed policy/binding/local substitute design does not prove adapter implementation. Owner production publication/semantic/assignment/revocation plus planner readiness definitions/evidence/Availability remain integration dependencies. Current source consumes0.11 per-pair focus/difficulty and retains legacy readers; V28 applied only on the recorded fresh native DB, with no format/hash round-trip or positive proposal/approval proof. Job/search/lease budgets require explicit versioned operational settings before activation. Learning-content/start/segment execution is deferred from the current view-only manual milestone. Any seed, including0.11, is only a named fixture/source, never a production oracle. All new executable rules remain Planned/Not run.
 
 Confirmed acceptance intent | Planned: file/method/commands | Open: real owner adapters/measurement thresholds | All new executable results: Not run.

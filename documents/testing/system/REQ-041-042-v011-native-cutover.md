@@ -1,0 +1,51 @@
+# REQ-041/042 catalog0.11 — native DB cutover and bounded manual observations
+
+Later scope clarification: [pre-transfer reconciliation](REQ-041-042-v011-handoff-review.md) records the current milestone ending at Employee approved pathway display; actual learning execution is deferred. Planner-required readiness/availability remain blockers. Native observations below are historical, not next-machine state. Later direct-URL authorized-account warning was not browser-verified as repaired; portal/session instructions are not acceptance evidence.
+
+Date: 2026-10-28, Asia/Bangkok; final localhost restart/read observations by13:21+07. Cluster2 only. User explicitly authorized applying current database versions and starting again without retaining learner data. This supersedes the earlier no-DB boundary; no Cluster3 executable tests were created or run.
+
+## Environment and source
+
+- Windows, JDK21.0.12.1, PostgreSQL17.11, Neo4j Community2026.10.1, Node26.12.1. No Docker. Neo4j differs from the repository image5.26: actual driver/import/read-only startup observations below apply to2026.10.1 only.
+- Product branch `Generate-Initial-Adaptive-Pathway`, base HEAD `5b17c7768dee4dbcee3a19881177e5b476b4350a` plus uncommitted C1/C2 work. No commit/push/history rewrite.
+- One additional compatible source extension: `LocalDemoSeedConfiguration` accepts `assessment.baseline.local-demo.catalog-seed-file` and `assessment.baseline.local-demo.bank-scope-file`; existing container defaults, exact artifact hashes and local/!prod activation gates remain. This avoids hardcoded `/seed` paths on Windows.
+- Backend package succeeded12:57:16+07 using Java21/Maven3.9.11,344 source files, `mvnw.cmd -B -ntp -Dmaven.repo.local=B:\project\SelfSEP490\.tools\m2 -Dmaven.test.skip=true package`. Test resources/compilation/execution were skipped. Runtime JAR SHA256 `ddd2bdc69ef89b30a3347a525a075914838ed43b5307458734edfa8d3cb1685c`; the earlier [build receipt](REQ-041-042-v011-source-build.md) retains its distinct12:19 artifact.
+
+## Isolated databases and applied versions
+
+The installed PostgreSQL service on5432 was left untouched: its administrator credentials were unavailable. A separate project cluster was initialized under workspace `.tools/runtime/native-v011/pg_data`, listening only on127.0.0.1:15432. Database `adapt_learn_graph_v011`, role `alg_local_admin`; generated credentials stay in ignored `.tools/runtime/native-v011/credentials.json`, never in tracked source or this receipt. Existing local database contents were not deleted. This is a fresh fixture, not a migration of retained learner history.
+
+1. Native `initdb` used UTF8/SCRAM, followed by `pg_ctl ... -o '-h 127.0.0.1 -p 15432' start`. Windows ACLs were corrected only for this verified project data directory after the sandbox-created cluster could not be read by the launch identity. No system cluster ACL/authentication was changed.
+2. Runtime environment supplied DB/Neo4j connection credentials to the JAR. `java -jar backend/target/adapt-learn-graph.jar --spring.profiles.active=local,migrate --spring.main.web-application-type=none --catalog.seed.enabled=false` exited0. Flyway applied V1–V28 successfully by12:58+07.
+3. Direct `psql` against `public.flyway_schema_history` read28 successful migrations. Latest V28 checksum661244655, V27 checksum-350114661; twelve `platform.initial_*` tables exist, including `initial_pathway_teaching_v2`. Its primary key, three foreign keys and eleven CHECK constraints exist. This proves SQL application/catalog presence, not behavioral constraint/transaction/hash acceptance.
+4. The local seed JAR ran with `local,local-demo-seed`, Flyway disabled, explicit native seed/scope paths and the explicit seed gate. It exited0 after importing the exact0.11 artifact and135 original DRAFT bank item versions. Graph source hash `f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7`.
+
+Neo4j uses a separate workspace configuration/data/log/transaction directory and dedicated Windows service `AdaptLearnGraphNeo4jV011` (Automatic), with Bolt127.0.0.1:7687 and HTTP127.0.0.1:7474. The installed distribution's other database/configuration was not replaced. Generated initial password is in the ignored credentials file. Telemetry/fleet discovery are disabled in this local configuration; advertised endpoints are local.
+
+An initial forced console stop left indexes needing rebuild, which prevented read-only user-database startup. Recovery restarted this project graph writable, waited for all eight indexes ONLINE, then stopped it gracefully through its dedicated service and restarted with `server.databases.default_to_read_only=true`. Final `SHOW DATABASE neo4j` reports `online`, `read-only`; `SHOW SETTINGS` reports the read-only default true. Direct counts:994 nodes,5121 relationships; TEACHES PRIMARY246/SUPPORTING257/INCIDENTAL161. Subsequent application initialization accepted the adapter's full exact-source parity/seal checks. Catalog review metadata remains NEEDS_EXPERT_REVIEW, explicitly allowed only for the demo; no publication/approval/readiness PASS was fabricated.
+
+## Application activation and manual observations
+
+Ignored `.tools/runtime/native-v011/api.properties` selects `local,local-baseline-demo`, bind127.0.0.1:18080, Flyway off, pathway gates, exact current/historical artifact paths and server-configured Expert UUID `f0fe3f90-3b39-31ee-b748-9533d1ef22b2`. Local assignment is enabled for the fixed LOCAL-DEMO tenant, no Role allowlist, max-pathways5000. Search version `native-v011-bounded-1`: closure128 nodes/256 edges, providers2048, batch32, max-states250000; max requirement rows2048. These are explicit local bounds, not measured production/performance values. Pathway and baseline deadline workers are off. No arbitrary readiness-version pin is set.
+
+The seed supplies LOCAL-DEMO org/bank owner; existing local-demo provisioning creates labeled synthetic demo accounts/state/IRT parameters. A real same-tenant Expert account/grant was inserted idempotently for the scoped substitute; it has `DEMO_NO_PASSWORD_LOGIN`, not a usable password login. This is not a production assignment or approval. Fixture org `00000000-0000-0000-0000-000000000001`; Employee persona `employee-a`, Expert persona `expert`; actors are resolved by existing server demo mapping. Browser/API commands must use the HttpOnly persona cookie through the demo session endpoint; PowerShell manual reads used a WebRequestSession CookieContainer.
+
+| Function / acceptance scope | Manual trigger | Actual result | Limit |
+| --- | --- | --- | --- |
+| Infrastructure dependency, P persistence | `psql` history/schema readback |28/28 success, latest28, twelve initial tables;135 items | No legacy format/hash round-trip or command mutation proved |
+| REQ-001-F01/F02, REQ-041-F02 catalog input | Employee GET `/api/v1/employee/target-roles` |200,48 Roles/144 Levels, catalog0.11.0 | Read availability only; no selection mutation |
+| REQ-041-F02 fresh-profile branch | Employee GET `/api/v1/employee/role-gaps?roleId=ROLE-BC681F40F67B&levelId=LV-BC681F40F67B-J` |422 `BASELINE_REQUIRED` | Expected for fresh learner; no numerical gap/compatibility proof |
+| REQ-019-F01/R13 local substitute activation | Expert session then GET `/api/v1/expert/initial-pathways` |200 DOMAIN_EXPERT session;200 empty queue | No proposal exists; include/exclude/validate/approve/revocation unobserved |
+| REQ-004-F01 own projection | Employee GET `/api/v1/employee/pathway` |200, status null, empty modules/dependencies, archived false | No approved pathway/content/start proved |
+| Native service wiring | GET `http://127.0.0.1:18080/actuator/health` |200 UP | Not full acceptance/production readiness |
+| Same-origin FE wiring | GET `http://127.0.0.1:5173/`, proxied Employee catalog GET |200 HTML;48 Roles via proxy | No interactive browser/visual/user-journey observation |
+
+Post-smoke direct counts: zero profile revisions, occupation profiles, adaptive baseline attempts, pathway requests/revisions/approvals. Startup demo scaffolding is present, but no baseline completion, mastery/profile, proposal or approval was invented. Initial API boot before graph recovery failed safely; healthy API initialized against the sealed source at13:12+07, then restarted with localhost binding at13:19+07; repeated health/catalog/Expert queue/Employee empty projection reads succeeded. Frontend Vite served5173. Raw runtime logs/readback remain under ignored `.tools/runtime/native-v011/` (`postgres.log`, `postgresql-readback.txt`, `neo_logs`, `api-final.log/.err`, `final-manual-readback.json`, `frontend.log/.err`); earlier failed/startup logs are retained. Secrets must not be copied into evidence.
+
+## Remaining scope and operation
+
+Database migration/import/connectivity is complete for this fresh local fixture. Full C2 is **incomplete**: real ReadinessDefinitions/LiveReadiness/Availability/ContentAccess and protected content/start/segment-owner integration remain missing/default-deny. Worker stays off until real inputs exist. Starting a fresh baseline also requires the genuine LD author/review/publish flow; no assessment result or published blueprint was fabricated. Generation→Expert edit/approval→Employee learning, optimizer proof, legacy history compatibility, concurrency/security, browser UI and performance remain unverified. All executable acceptance cases remain Planned/Not run pending separate C3 approval.
+
+Operator URLs: frontend `http://127.0.0.1:5173`, API `http://127.0.0.1:18080`, Neo4j Browser `http://127.0.0.1:7474`. Restart paths/config/credential handling are in the workspace native manual guide. Do not accidentally use the installed PostgreSQL5432 or run the ordinary JAR with its default DB name. The native properties file and generated secrets are local, not portable deployment configuration.
+
+Rollback: stop the project API/FE, leave both forward readers/schema, disable new admission/worker/local substitutes. Stop Neo4j gracefully through its dedicated service before changing its read-only configuration; stop only the project PostgreSQL datadir with `pg_ctl`. Retain old databases/volumes/distribution files. No down-migration, old migration edit, automatic approval or test-suite execution occurred.

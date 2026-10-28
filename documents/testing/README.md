@@ -1,12 +1,16 @@
 # Test Documentation
 
+**2026-10-28 transfer review:** [baseline→own approved pathway view reconciliation](system/REQ-041-042-v011-handoff-review.md) records source/doc alignment, remaining planner/Compose/fixture/session blockers and next-session read/report/OK gate. Learning execution is outside this milestone; a manual walkthrough document/setup follows OK, executable tests require separate C3. No new execution/pass claim.
+
 **Latest, 2026-10-24 REQ-001/002/009:** [Cluster 4 evidence and gate audit](system/REQ-001-002-009-cluster4-20261024-evidence.md): 74 BE + 61 FE pass; synthetic browser fixtures33 pass/4 fail. Real-adapter integration Blocked; nine real-stack journeys Not run; numerical/performance Blocked/Not run. **Cluster 3/4 incomplete.** Dedicated [unit/API/component](unit/REQ-001-002-009-20261024-execution.md) and [integration blocker](integration/REQ-001-002-009-20261024-execution.md) receipts retain actual method/fixture/command mappings. The [23 October131P/0F evidence](system/REQ-001-002-cluster4-evidence.md) is historical before the latest UI; no old passes are carried forward. No executable tests were run during this documentation synchronization.
 
 **Slices4–5,2026-10-22:** common UI and pinned full/legacy result/history source implemented; no schema/diagram regeneration or executable acceptance. [Evidence and unverified browser checklist](system/REQ-002-F02-REQ-009-occupation-ui-results.md).
 
 Current REQ-002 slice2–3 compile/manual observations: [dedicated evidence and procedures](system/REQ-002-F01-F02-occupation-admission-management.md). Revised executable acceptance remains Planned/Not run; no tests were created or executed.
 
-**2026-10-27 initial gap/pathway Cluster1:** [acceptance-to-test plan](REQ-041-042-initial-pathway-test-plan.md) maps G01–G12/P01–P14/R01–R12/E01–E08 for preview/confirmation, query-rank-select-sort, Expert include/exclude/approval and own prerequisite-locked Employee view. All proposed executable files/commands are **Planned/Not run**. No current runtime or historical baseline certification is inferred.
+**2026-10-28 initial gap/pathway Cluster1 amendment:** [acceptance plan](REQ-041-042-initial-pathway-test-plan.md) maps G01–G13/P01–P20/R01–R14/E01–E09 for Role+Level/history, per-pair focus/difficulty/mastery policy, proven whole-path objective/search limits, forward format compatibility, scoped local assignment/exact approval and protected Employee access. All executable files/commands remain **Planned/Not run**. Native code/build work and deferred user manual/UI verification are separate; no DB/runtime or historical baseline certification is inferred.
+
+**2026-10-28 C2:** [source/build receipt](system/REQ-041-042-v011-source-build.md) and later [native DB/manual receipt](system/REQ-041-042-v011-native-cutover.md): BE package with tests skipped, FE build/scoped lint; fresh native PG V1–V28/Neo4j0.11 import/seal, API/FE/proxy and empty/fresh-baseline-required reads observed. Mandatory readiness/content owner integration, positive full flow, interactive UI and executable acceptance remain pending. No full C2/test-pass claim.
 
 ## Current Scope Alignment
 
