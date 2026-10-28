@@ -62,20 +62,25 @@ public final class Neo4jInitialGraph implements Graphs {
             frontier.removeAll(visited);
             if(visited.size()+frontier.size()>limits.maxClosureNodes() || edges.size()>limits.maxClosureEdges()) throw new Failure(422,"CATALOG_LIMIT");
         }
-        var providers=new ArrayList<Provider>(); var pairs=new HashSet<List<String>>(); var ids=new ArrayList<>(visited);int scanned=0;
+        var providers=new ArrayList<Provider>();var pairs=new HashSet<List<String>>();var ids=new ArrayList<>(visited);int scanned=0;
+        var loadedModules=new TreeSet<String>();var primaryCounts=new TreeMap<String,Integer>();var unusable=new HashSet<String>();
         for(int offset=0;offset<ids.size();offset+=limits.batchSize()) {
             var batch=ids.subList(offset,Math.min(ids.size(),offset+limits.batchSize()));
             long remaining=(long)limits.maxProviders()-scanned;
             var rows=tx.run("""
-                    MATCH (m:LearningModule)-[t:TEACHES]->(s:MicroSkill)
-                    WHERE s.id IN $ids AND m.status='ACTIVE' AND t.status='ACTIVE'
-                      AND all(n IN [m,t,s] WHERE n.organizationId IS NULL OR n.organizationId=$org)
+                    MATCH (m:LearningModule)-[candidate:TEACHES]->(seed:MicroSkill)
+                    WHERE seed.id IN $ids AND m.status='ACTIVE' AND candidate.status='ACTIVE'
+                      AND NOT m.id IN $loaded
+                      AND all(n IN [m,candidate,seed] WHERE n.organizationId IS NULL OR n.organizationId=$org)
+                    WITH DISTINCT m
+                    MATCH (m)-[t:TEACHES]->(s:MicroSkill)
                     RETURN properties(m) AS m,properties(t) AS t,properties(s) AS s,s.id AS skill,
                         elementId(m) AS mi,elementId(t) AS ti,elementId(s) AS si ORDER BY m.id,s.id LIMIT $maximum
-                    """,Map.of("ids",batch,"org",scope.organizationId().toString(),"maximum",remaining+1)).list();
+                    """,Map.of("ids",batch,"loaded",List.copyOf(loadedModules),"org",scope.organizationId().toString(),"maximum",remaining+1)).list();
             if(rows.size()>remaining)throw new Failure(422,"CATALOG_LIMIT",false);scanned+=rows.size();
             for(var row:rows) {
                 var module=row.get("m"); String id=module.get("id").asString(), skill=row.get("skill").asString();
+                loadedModules.add(id);
                 if(!pairs.add(List.of(id,skill))) throw new Failure(503,"DUPLICATE_PROVIDER_PAIR");
                 InitialCatalogMetadata.requirePublished(row.get("s"),scope,version,localReview);
                 InitialCatalogMetadata.unique(identities,"MicroSkill",row.get("s"),row.get("si").asString());
@@ -83,16 +88,22 @@ public final class Neo4jInitialGraph implements Graphs {
                 InitialCatalogMetadata.unique(identities,"relationship",row.get("t"),row.get("ti").asString());
                 boolean modulePublished=InitialCatalogMetadata.published(module,scope,version,localReview);
                 boolean mappingPublished=InitialCatalogMetadata.published(row.get("t"),scope,version,localReview);
-                if(!modulePublished || !mappingPublished)continue;
-                InstructionLevel level;
-                try { level=InstructionLevel.valueOf(row.get("t").get("instructionLevel").asString()); }
-                catch(RuntimeException invalid) { throw new Failure(503,"INSTRUCTION_LEVEL_CONTRACT_REQUIRED"); }
+                if(!modulePublished || !mappingPublished){unusable.add(id);continue;}
+                TeachingFocus focus;Difficulty difficulty;
+                try {
+                    focus=TeachingFocus.valueOf(row.get("t").get("teachingFocus").asString());
+                    difficulty=Difficulty.valueOf(row.get("t").get("difficultyLevel").asString());
+                }catch(RuntimeException invalid){throw new Failure(503,"TEACHING_CONTRACT_REQUIRED",false);}
+                primaryCounts.merge(id,focus==TeachingFocus.PRIMARY?1:0,Integer::sum);
                 var duration=InitialCatalogMetadata.decimal(module,"duration");var price=InitialCatalogMetadata.decimal(module,"price");
                 if(duration.signum()<=0 || duration.stripTrailingZeros().scale()>0 || price.signum()<=0)throw new Failure(503,"CATALOG_MODULE_METADATA_INVALID",false);
-                providers.add(new Provider(id,InitialCatalogMetadata.text(module,"title"),InitialCatalogMetadata.text(module,"contentVersion"),duration,price,skill,level));
+                providers.add(new Provider(id,InitialCatalogMetadata.text(module,"title"),InitialCatalogMetadata.text(module,"contentVersion"),duration,price,skill,focus,difficulty));
                 if(providers.size()>limits.maxProviders()) throw new Failure(422,"CATALOG_LIMIT");
             }
         }
+        for(String module:loadedModules)if(!unusable.contains(module) && primaryCounts.getOrDefault(module,0)!=1)
+            throw new Failure(503,"MODULE_PRIMARY_CARDINALITY_INVALID",false);
+        providers.removeIf(p->unusable.contains(p.moduleId()));
         return new Graph(visited,edges,providers,binding.releaseToken());
     }
 }

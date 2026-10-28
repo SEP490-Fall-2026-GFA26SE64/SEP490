@@ -14,7 +14,8 @@ public interface InitialPathwayStore {
                     List<List<String>> overrides,String contentHash,Validation validation) {
         public Revision { selectedModules=Set.copyOf(selectedModules); overrides=overrides.stream().map(List::copyOf).toList(); }
         public static String identity(Plan plan,Set<String> selected,List<List<String>> overrides) {
-            return com.adaptlearngraph.recommendation.domain.InitialIdentity.hash("revision",List.of(plan.contentHash(overrides),new TreeSet<>(selected).stream().toList()));
+            return com.adaptlearngraph.recommendation.domain.InitialIdentity.hash(plan.formatVersion()==null?"revision":"revision-v2",
+                    List.of(plan.contentHash(overrides),new TreeSet<>(selected).stream().toList()));
         }
     }
     record Claim(Request request,UUID token,int attempt,String workerVersion) {}

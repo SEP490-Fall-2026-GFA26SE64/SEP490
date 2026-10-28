@@ -45,7 +45,7 @@ services:
       - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
     volumes:
       # The pre-cutover neo4j_data volume remains intact; never down -v to upgrade.
-      - neo4j_catalog_v010_data:/data
+      - neo4j_catalog_v011_data:/data
     healthcheck:
       test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
       interval: 10s
@@ -77,7 +77,7 @@ services:
       SPRING_MAIN_WEB_APPLICATION_TYPE: none
       ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
     volumes:
-      - ./documents/dataset/import/ontology_seed-v010.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
     depends_on:
       migrate:
@@ -96,8 +96,26 @@ services:
       PATHWAY_INITIAL_ENABLED: ${PATHWAY_INITIAL_ENABLED:-false}
       PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: ${PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED:-false}
       PATHWAY_INITIAL_CATALOG_MAX_REQUIREMENT_ROWS: "1891"
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED:-false}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS:-}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS:-}
+      PATHWAY_INITIAL_READINESS_VERSION: ${PATHWAY_INITIAL_READINESS_VERSION:-}
+      PATHWAY_INITIAL_SEARCH_VERSION: ${PATHWAY_INITIAL_SEARCH_VERSION:-}
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES:-}
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES:-}
+      PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS: ${PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS:-}
+      PATHWAY_INITIAL_SEARCH_BATCH_SIZE: ${PATHWAY_INITIAL_SEARCH_BATCH_SIZE:-}
+      PATHWAY_INITIAL_SEARCH_MAX_STATES: ${PATHWAY_INITIAL_SEARCH_MAX_STATES:-}
+      PATHWAY_INITIAL_WORKER_ENABLED: ${PATHWAY_INITIAL_WORKER_ENABLED:-false}
+      PATHWAY_INITIAL_WORKER_VERSION: ${PATHWAY_INITIAL_WORKER_VERSION:-}
+      PATHWAY_INITIAL_WORKER_LEASE_MS: ${PATHWAY_INITIAL_WORKER_LEASE_MS:-}
+      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: ${PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS:-}
+      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS:-}
+      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS:-}
+      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: ${PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS:-}
     volumes:
-      - ./documents/dataset/import/ontology_seed-v010.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-v010.json:/seed/baseline-history-v010.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
     depends_on:
@@ -135,3 +153,4 @@ volumes:
   postgres_data:
   neo4j_data:
   neo4j_catalog_v010_data:
+  neo4j_catalog_v011_data:

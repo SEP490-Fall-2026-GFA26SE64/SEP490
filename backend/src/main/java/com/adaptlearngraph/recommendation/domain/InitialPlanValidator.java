@@ -12,21 +12,23 @@ public final class InitialPlanValidator {
         for(var need:needed.values()) {
             var offer=assignments.get(need.skillId());
             if(offer==null || !selectedModules.contains(offer.moduleId())) errors.add("MISSING_PROVIDER:"+need.skillId());
-            else if(!problem.offers().contains(offer) || !offer.skillId().equals(need.skillId())
-                    || need.foundational() && !offer.foundationalSuitable()) errors.add("UNSUITABLE_PROVIDER:"+need.skillId());
+            else if(!problem.offers().contains(offer) || !offer.skillId().equals(need.skillId()) || !offer.canCover())
+                errors.add("UNSUITABLE_PROVIDER:"+need.skillId());
         }
         var byModule=new TreeMap<String,List<Offer>>();
         for(String id:new TreeSet<>(selectedModules)) {
-            var assigned=assignments.values().stream().filter(o->id.equals(o.moduleId())).sorted(Comparator.comparing(Offer::skillId)).toList();
-            var targets=assigned.isEmpty()?problem.offers().stream().filter(o->id.equals(o.moduleId()) && needed.containsKey(o.skillId())
-                    && (!needed.get(o.skillId()).foundational() || o.foundationalSuitable())).sorted(Comparator.comparing(Offer::skillId)).toList()
-                    :assigned;
+            var targets=problem.offers().stream().filter(o->id.equals(o.moduleId())).sorted(Comparator.comparing(Offer::skillId))
+                    .map(o->o.assigned(o.equals(assignments.get(o.skillId())))).toList();
             if(targets.isEmpty()) errors.add("UNMATCHED_MODULE:"+id); else byModule.put(id,targets);
+            if(targets.stream().filter(o->o.teachingFocus()==TeachingFocus.PRIMARY).count()!=1)errors.add("MODULE_PRIMARY_CARDINALITY_INVALID:"+id);
+            if(!targets.isEmpty() && targets.stream().noneMatch(o->o.preferredDifficulty()!=null && o.teachingFocus()!=TeachingFocus.INCIDENTAL))
+                errors.add("UNMATCHED_MODULE:"+id);
         }
         var dependencies=new ArrayList<Dependency>(); var arcs=new TreeMap<String,Set<String>>();
         byModule.keySet().forEach(id->arcs.put(id,new TreeSet<>()));
         for(var edge:problem.edges()) {
-            for(var target:byModule.values().stream().flatMap(List::stream).filter(o->o.skillId().equals(edge.dependentSkillId())).toList()) {
+            for(var target:byModule.values().stream().flatMap(List::stream).filter(o->o.skillId().equals(edge.dependentSkillId())
+                    && o.preferredDifficulty()!=null && o.teachingFocus()!=TeachingFocus.INCIDENTAL).toList()) {
             var provider=assignments.get(edge.prerequisiteSkillId());
             if(provider==null && !problem.externallyReadySkills().contains(edge.prerequisiteSkillId())) {
                 errors.add("UNPLANNED_PREREQUISITE:"+edge.prerequisiteSkillId()); continue;
@@ -55,7 +57,10 @@ public final class InitialPlanValidator {
                     || o.durationMinutes().compareTo(first.durationMinutes())!=0 || o.priceVnd().compareTo(first.priceVnd())!=0)) errors.add("INCOHERENT_MODULE:"+id);
             modules.add(new Module(id,first.title(),first.contentVersion(),first.durationMinutes(),first.priceVnd(),++ordinal,targets));
         }
-        return new Plan(modules,dependencies,List.copyOf(errors),problem.sourcePins());
+        var warnings=modules.stream().flatMap(m->m.targets().stream()).filter(t->Boolean.TRUE.equals(t.expertAttention()))
+                .map(t->t.skillId()+":"+t.moduleId()+":"+t.attentionReason()).sorted().toList();
+        return new Plan(modules,dependencies,List.copyOf(errors),problem.sourcePins(),2,warnings,
+                InitialPlanObjective.quality(modules),new Search("VALIDATION",true,"NOT_APPLICABLE",0),problem.needs());
     }
     public static List<String> topological(Map<String,? extends Set<String>> arcs) {
         var incoming=new TreeMap<String,Integer>(); arcs.keySet().forEach(k->incoming.put(k,0));

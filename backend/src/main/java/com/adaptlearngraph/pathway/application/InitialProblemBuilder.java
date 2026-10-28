@@ -20,7 +20,8 @@ public final class InitialProblemBuilder {
         InitialPathwayAdmission.requirePlanningVersions(binding);
         var limits=settings.get();
         var needs=new TreeMap<String,Need>();
-        gaps.skills().stream().filter(RoleGap.Row::needsLearning).forEach(r->needs.put(r.skillId(),new Need(r.skillId(),r.evidenceState()==RoleGap.EvidenceState.UNKNOWN)));
+        gaps.skills().stream().filter(RoleGap.Row::needsLearning).forEach(r->needs.put(r.skillId(),
+                new Need(r.skillId(),r.evidenceState()==RoleGap.EvidenceState.UNKNOWN,r.mastery(),r.unknownReason())));
         if(needs.isEmpty()) throw new IllegalArgumentException("No learning need; use NO_LEARNING_REQUIRED");
         var graph=graphs.load(scope,binding,needs.keySet(),limits);
         if(!graph.releaseToken().equals(binding.releaseToken()) || !graph.skillIds().containsAll(needs.keySet())) throw new Failure(503,"INCOHERENT_CATALOG");
@@ -40,20 +41,26 @@ public final class InitialProblemBuilder {
                 relevantEdges.add(edge);var decision=readiness.prerequisite(scope,binding,edge);
                 pins.put("readinessEvidence:"+InitialIdentity.hash("edge",List.of(edge.dependentSkillId(),edge.prerequisiteSkillId(),edge.requiredScore())),decision.evidenceIdentity());
                 if(decision.learningRequired()) {
-                    needs.merge(edge.prerequisiteSkillId(),new Need(edge.prerequisiteSkillId(),decision.foundational()),(a,b)->new Need(a.skillId(),a.foundational()||b.foundational()));
+                    if(!needs.containsKey(edge.prerequisiteSkillId())) {
+                        if(decision.mastery()==null && (decision.unknownReason()==null || decision.unknownReason().isBlank()))
+                            throw new Failure(503,"READINESS_EVIDENCE_NOT_CONFIGURED",false);
+                        needs.put(edge.prerequisiteSkillId(),new Need(edge.prerequisiteSkillId(),decision.mastery()==null,decision.mastery(),decision.unknownReason()));
+                    }
                     frontier.add(edge.prerequisiteSkillId());
                 }else ready.add(edge.prerequisiteSkillId());
             }
         }
-        var offers=new ArrayList<Offer>(); var gates=new ArrayList<GateDefinition>();
+        var offers=new ArrayList<Offer>();var gates=new ArrayList<GateDefinition>();var unavailableModules=new HashSet<String>();
+        var availabilityByModule=new HashMap<List<String>,Boolean>();
         for(var provider:graph.providers()) {
-            if(!needs.containsKey(provider.skillId())) continue;
-            var result=suitability.evaluate(scope,binding,gaps,provider);
-            if(!result.version().equals(binding.versions().get("suitability"))) throw new Failure(503,"INCOHERENT_POLICY");
-            if(!result.eligible() || needs.get(provider.skillId()).foundational() && !result.foundationalSuitable()) continue;
-            if(!availability.available(scope,provider.moduleId(),provider.contentVersion()))continue;
+            if(!availabilityByModule.computeIfAbsent(List.of(provider.moduleId(),provider.contentVersion()),
+                    k->availability.available(scope,provider.moduleId(),provider.contentVersion()))) {unavailableModules.add(provider.moduleId());continue;}
+            var need=needs.get(provider.skillId());
+            var result=need==null || provider.teachingFocus()==TeachingFocus.INCIDENTAL?null:suitability.evaluate(scope,binding,need,provider);
+            if(result!=null && !result.version().equals(binding.versions().get("suitability")))throw new Failure(503,"INCOHERENT_POLICY");
+            if(result!=null && !result.eligible()){unavailableModules.add(provider.moduleId());continue;}
             var providerGates=new ArrayList<GateDefinition>();boolean mapped=true;
-            for(var edge:relevantEdges) if(edge.dependentSkillId().equals(provider.skillId())) {
+            for(var edge:relevantEdges) if(result!=null && edge.dependentSkillId().equals(provider.skillId())) {
                 var mapping=readiness.gate(scope,binding,provider,edge);
                 if(mapping.isEmpty()){mapped=false;break;}
                 var gate=mapping.get();
@@ -62,11 +69,14 @@ public final class InitialProblemBuilder {
                     throw new Failure(503,"INCOHERENT_READINESS_DEFINITION");
                 providerGates.add(gate);
             }
-            if(!mapped)continue;
+            if(!mapped){unavailableModules.add(provider.moduleId());continue;}
             offers.add(new Offer(provider.moduleId(),provider.title(),provider.contentVersion(),provider.durationMinutes(),provider.priceVnd(),
-                    provider.skillId(),provider.instructionLevel(),result.preference(),result.foundationalSuitable(),result.version(),result.reason()));
+                    provider.skillId(),null,result==null?0:result.preference(),true,binding.versions().get("suitability"),
+                    result==null?"ANCILLARY_TEACHING":result.reason(),provider.teachingFocus(),provider.difficultyLevel(),
+                    result==null?null:InitialSuitability.preferred(need),CoverageRole.ANCILLARY,false,null));
             gates.addAll(providerGates);
         }
+        offers.removeIf(o->unavailableModules.contains(o.moduleId()));gates.removeIf(g->unavailableModules.contains(g.moduleId()));
         return new Problem(List.copyOf(needs.values()),relevantEdges,offers,gates,ready,pins);
     }
 }

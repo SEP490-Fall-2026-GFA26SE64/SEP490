@@ -15,7 +15,7 @@ public final class InitialPathwayReview {
     public record Edit(String moduleId,Long expectedRevision,String expectedContentHash,String reason) {}
     public record Summary(UUID id,long revision,String contentHash,Review reviewStatus,Validation validationStatus,String roleName,String levelName) {}
     public record Detail(Summary summary,RoleGap.Result gaps,Revision revision,List<Offer> candidates) {}
-    public record Checked(Validation validationStatus,List<String> diagnostics,String revisionContentHash) {}
+    public record Checked(Validation validationStatus,List<String> diagnostics,String revisionContentHash,List<String> warnings,Quality quality,Search search) {}
     private final Actors actors;private final ReviewAssignments assignments;private final InitialPathwayStore store;
     private final Coordination coordination;private final Bindings bindings;private final InitialProblemBuilder builder;
     private final Receipts receipts;private final Codec codec;private final Supplier<Limits> settings;
@@ -55,7 +55,8 @@ public final class InitialPathwayReview {
         var a=expert();var s=scope(a,id);var r=request(s,id);summary(r);var previous=store.revision(s,id,r.revision());
         var plan=planner.review(problem(r),previous.selectedModules(),settings.get().maxSearchStates());scope(a,id);
         String hash=Revision.identity(plan,previous.selectedModules(),previous.overrides());
-        return new Checked(!hash.equals(previous.contentHash())?Validation.STALE:plan.valid()?Validation.VALID:Validation.UNRESOLVED,plan.diagnostics(),hash);
+        return new Checked(!hash.equals(previous.contentHash())?Validation.STALE:plan.valid()?Validation.VALID:Validation.UNRESOLVED,
+                plan.diagnostics(),hash,plan.warnings(),plan.quality(),plan.search());
     }
     public Receipt edit(UUID id,String key,Edit command,boolean include) {
         if(command==null)throw new Failure(400,"INVALID_REQUEST");InitialPathwayPorts.text(command.moduleId());
@@ -76,7 +77,7 @@ public final class InitialPathwayReview {
         if(!noOp) {
             var p=problem(before);
             if(operation.equals("INCLUDE")) {
-                if(p.offers().stream().noneMatch(o->o.moduleId().equals(moduleId)))throw new Failure(422,"MODULE_NOT_ELIGIBLE");
+                if(p.offers().stream().noneMatch(o->o.moduleId().equals(moduleId) && o.canCover()))throw new Failure(422,"MODULE_NOT_ELIGIBLE");
                 selected.add(moduleId);
             }else if(operation.equals("EXCLUDE"))selected.remove(moduleId);
             if(!operation.equals("CONFIRM"))overrides.add(List.of(operation,moduleId,Objects.toString(reason,"")));

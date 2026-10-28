@@ -17,10 +17,10 @@ import static com.adaptlearngraph.assessment.infrastructure.OfficialQuestionBank
 @Profile("local-demo-seed & local & !prod & !migrate")
 @ConditionalOnProperty(name="assessment.baseline.local-demo.seed-enabled",havingValue="true")
 public class LocalDemoSeedConfiguration {
-    @Bean ApplicationRunner localDemoSeed(DataSource source, Driver driver, ConfigurableApplicationContext context) {
+    @Bean ApplicationRunner localDemoSeed(DataSource source, Driver driver, ConfigurableApplicationContext context,org.springframework.core.env.Environment environment) {
         return args -> {
-            byte[] graph=Files.readAllBytes(Path.of("/seed/ontology_seed.json"));
-            byte[] scope=Files.readAllBytes(Path.of("/seed/catalog-scope.json"));
+            byte[] graph=Files.readAllBytes(Path.of(environment.getProperty("assessment.baseline.local-demo.catalog-seed-file","/seed/ontology_seed.json")));
+            byte[] scope=Files.readAllBytes(Path.of(environment.getProperty("assessment.baseline.local-demo.bank-scope-file","/seed/catalog-scope.json")));
             byte[] manifest;
             try(var in=new org.springframework.core.io.ClassPathResource("db/seed/question-bank-15-1212.00-v1-ontology-v09.json").getInputStream()){manifest=in.readAllBytes();}
             require(sha256(scope).equals("454b5531a43dba70c29597d866cb29f5e614a02de5e6e596c379bb2712c667a6"),"Scope seed drift");

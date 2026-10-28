@@ -28,10 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class InitialPathwayConfiguration {
     @Bean Actors initialActors(LocalDemoIdentity identity,DataSource source) { return new LocalPathwayActors(identity,new NamedParameterJdbcTemplate(source)); }
     @Bean Codec initialCodec(ObjectMapper mapper) {
-        return new Codec() {
-            public String encode(Object value) { try{return mapper.writeValueAsString(value);}catch(Exception e){throw new IllegalStateException("Pathway serialization failed",e);} }
-            public <T>T decode(String value,Class<T> type) { try{return mapper.readValue(value,type);}catch(Exception e){throw new IllegalStateException("Pathway record invalid",e);} }
-        };
+        return new InitialRevisionCodec(mapper);
     }
     @Bean Coordination initialCoordination(CurrentRoleSelectionStore store,CurrentRoleCatalog catalog) { return new CurrentSelectionCoordination(store,catalog); }
     @Bean Profiles initialProfiles(DataSource source,ObjectMapper mapper) { return new JdbcInitialProfiles(new NamedParameterJdbcTemplate(source),mapper); }
@@ -40,7 +37,8 @@ public class InitialPathwayConfiguration {
     @Bean @ConditionalOnMissingBean(ReleaseAuthority.class) ReleaseAuthority initialReleaseAuthority(org.neo4j.driver.Driver driver,Environment env) {
         if(env.getProperty("pathway.initial.catalog.allow-review-seed",Boolean.class,false)) {
             try{return new LocalReviewCatalogRelease(driver,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(
-                    java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))));}
+                    java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),
+                    env.getProperty("pathway.initial.readiness.version"));}
             catch(java.io.IOException invalid){throw new IllegalStateException("Local review seed unavailable",invalid);}
         }
         return new ReleaseAuthority() {
@@ -69,21 +67,30 @@ public class InitialPathwayConfiguration {
         if(releases instanceof LocalReviewCatalogRelease) {
             try{return new LocalSeedSemantics(json,LocalDemoIdentity.ORG,
                     java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),
-                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of("/seed/baseline-history-v08.json")),
-                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of("/seed/baseline-bank-v08.json")));}
+                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.history-v08-file","/seed/baseline-history-v08.json"))),
+                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.bank-v08-file","/seed/baseline-bank-v08.json"))),
+                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.history-v010-file","/seed/baseline-history-v010.json"))));}
             catch(java.io.IOException invalid){throw new IllegalStateException("Local compatibility source unavailable",invalid);}
         }
         return (b,p)->{throw missing("SEMANTIC_COMPATIBILITY_NOT_CONFIGURED");};
     }
     @Bean @ConditionalOnMissingBean(Graphs.class) Graphs initialCatalogGraph(Neo4jInitialGraph.PublishedSessions sessions){return new Neo4jInitialGraph(sessions,sessions instanceof LocalReviewSessions);}
-    @Bean @ConditionalOnMissingBean(SuitabilityPolicy.class) SuitabilityPolicy unavailableInitialSuitability(){return (s,b,g,p)->{throw missing("SUITABILITY_NOT_CONFIGURED");};}
+    @Bean @ConditionalOnMissingBean(SuitabilityPolicy.class) SuitabilityPolicy initialSuitability(){return new MasterySuitabilityPolicy();}
     @Bean @ConditionalOnMissingBean(ReadinessDefinitions.class) ReadinessDefinitions unavailableInitialReadinessDefinitions(){
         return new ReadinessDefinitions(){
             public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.recommendation.domain.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
             public Optional<com.adaptlearngraph.recommendation.domain.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.recommendation.domain.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
         };
     }
-    @Bean @ConditionalOnMissingBean(ReviewAssignments.class) ReviewAssignments unavailableInitialAssignments(){
+    @Bean @ConditionalOnMissingBean(ReviewAssignments.class) ReviewAssignments initialAssignments(DataSource source,Environment env){
+        if(env.getProperty("pathway.initial.local-assignment.enabled",Boolean.class,false)) {
+            try {
+                UUID expert=UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id"));
+                var roles=new TreeSet<String>();
+                for(String role:env.getProperty("pathway.initial.local-assignment.role-ids","").split(","))if(!role.isBlank())roles.add(role.trim());
+                return new LocalPathwayAssignments(new NamedParameterJdbcTemplate(source),LocalDemoIdentity.ORG,expert,roles,integer(env,"local-assignment.max-pathways"));
+            }catch(IllegalArgumentException invalid){throw new IllegalStateException("Local pathway assignment configuration invalid",invalid);}
+        }
         return new ReviewAssignments(){
             public Assignment require(Actor a,UUID id){throw missing("REVIEW_ASSIGNMENT_NOT_CONFIGURED");}
             public Set<UUID> assignedPathways(Actor a){throw missing("REVIEW_ASSIGNMENT_NOT_CONFIGURED");}

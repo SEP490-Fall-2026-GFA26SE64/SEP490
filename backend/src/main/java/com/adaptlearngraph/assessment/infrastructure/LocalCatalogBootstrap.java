@@ -8,8 +8,8 @@ import static com.adaptlearngraph.assessment.infrastructure.OfficialQuestionBank
 
 /** Development-only exact release bootstrap. Existing different graphs are never overwritten. */
 public final class LocalCatalogBootstrap {
-    public static final String VERSION="0.10.0";
-    public static final String SOURCE_HASH="fb4b308402e5413a246de65621f97df464d3538ad36264f40e827be005728b25";
+    public static final String VERSION="0.11.0";
+    public static final String SOURCE_HASH="f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7";
     private static final Map<String,String> LABELS=Map.of("Occupations","Occupation","TargetRoles","TargetRole","Levels","Level",
             "Competencies","Competency","MicroSkills","MicroSkill","LearningModules","LearningModule");
     private static final Set<String> TYPES=Set.of("HAS_ROLE","HAS_LEVEL","HAS_COMPETENCY","HAS_SKILL","REQUIRES_SKILL","TEACHES","HAS_SKILL_PREREQUISITE");
@@ -33,7 +33,7 @@ public final class LocalCatalogBootstrap {
             require(expectedEdges.put((String)props.get("id"),canonical(JSON.valueToTree(edge)))==null,"Duplicate catalog edge");
             edges.computeIfAbsent(type,k->new ArrayList<>()).add(edge);
         }
-        require(expectedNodes.size()==833 && expectedEdges.size()==4638,"Incomplete latest catalog");
+        require(expectedNodes.size()==994 && expectedEdges.size()==5121,"Incomplete latest catalog");
     }
     private static Map<String,Object> properties(JsonNode row) {
         Map<String,Object> props=JSON.convertValue(row,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});
@@ -43,7 +43,7 @@ public final class LocalCatalogBootstrap {
         try(var session=driver.session()) {
             boolean present=session.executeRead(tx->{long count=tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong();if(count>0)verify(tx);return count>0;});
             if(present)return; // Also permits exact idempotent startup on a sealed read-only release.
-            for(String label:nodes.keySet())session.run("CREATE CONSTRAINT ontology_v010_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
+            for(String label:nodes.keySet())session.run("CREATE CONSTRAINT ontology_v011_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
             session.executeWrite(tx->{
                 require(tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong()==0,"Catalog changed before import");
                 nodes.forEach((label,rows)->tx.run("UNWIND $rows AS row CREATE (n:"+label+") SET n=row",Map.of("rows",rows)).consume());

@@ -5,13 +5,15 @@ import com.adaptlearngraph.pathway.application.InitialPathwayStore.*;
 import com.adaptlearngraph.pathway.domain.InitialPathwayState;
 import com.adaptlearngraph.pathway.domain.InitialPathwayState.*;
 import com.adaptlearngraph.recommendation.domain.InitialPlanning.Module;
+import com.adaptlearngraph.recommendation.domain.InitialPlanning.*;
 import java.util.*;
 
 /** Employee DTOs never serialize frozen worker input or unapproved module/candidate details. */
 public final class InitialPathwayView {
     public record Status(UUID requestId,Generation generationStatus,Review reviewStatus,Validation validationStatus,
                          String displayState,String reasonCode,Long revision,String revisionContentHash,String roleName,String levelName) {}
-    public record Target(String skillId,String instructionLevel) {}
+    public record Target(String skillId,String instructionLevel,TeachingFocus teachingFocus,Difficulty difficultyLevel,
+                         CoverageRole coverageRole,boolean expertAttention,String attentionReason) {}
     public record ModuleSummary(String id,String title,String contentVersion,int ordinal,java.math.BigDecimal durationMinutes,
                                 java.math.BigDecimal priceVnd,List<Target> targets) {}
     public record ModuleView(ModuleSummary module,String accessState,String reasonCode,String entry) {}
@@ -39,7 +41,8 @@ public final class InitialPathwayView {
         var revision=store.revision(scope,request.id(),request.revision());var modules=new ArrayList<ModuleView>();
         for(var module:revision.plan().modules()) {
             var safe=new ModuleSummary(module.id(),module.title(),module.contentVersion(),module.ordinal(),module.durationMinutes(),module.priceVnd(),
-                    module.targets().stream().map(t->new Target(t.skillId(),t.instructionLevel().name())).toList());
+                    module.targets().stream().map(t->new Target(t.skillId(),t.instructionLevel()==null?null:t.instructionLevel().name(),
+                            t.teachingFocus(),t.difficultyLevel(),t.coverageRole(),Boolean.TRUE.equals(t.expertAttention()),t.attentionReason())).toList());
             if(archived)modules.add(new ModuleView(safe,"ARCHIVED",null,null));
             else try { modules.add(new ModuleView(safe,"AVAILABLE",null,access.requireEntry(request.id(),module.id()))); }
             catch(Failure unavailable) {

@@ -10,10 +10,11 @@ final class JdbcInitialRevisions {
     JdbcInitialRevisions(InitialJdbc db) { this.db=db; }
     Revision revision(Scope scope,UUID id,long revision) {
         return db.jdbc.query("""
-                SELECT content,content_hash FROM platform.initial_pathway_revision
+                SELECT content,content_hash,format_version FROM platform.initial_pathway_revision
                 WHERE organization_id=:org AND learner_id=:learner AND request_id=:id AND revision=:revision
                 """,InitialJdbc.key(scope).addValue("id",id).addValue("revision",revision),(rs,n)->{
             var result=db.codec.decode(rs.getString("content"),Revision.class);
+            if(rs.getInt("format_version")!=(result.plan().formatVersion()==null?1:2))throw new Failure(503,"PATHWAY_FORMAT_MISMATCH",false);
             if(!result.requestId().equals(id) || result.revision()!=revision || !result.contentHash().equals(rs.getString("content_hash"))
                     || !result.contentHash().equals(Revision.identity(result.plan(),result.selectedModules(),result.overrides())))throw new Failure(503,"PATHWAY_INTEGRITY_FAILURE");
             return result;
@@ -23,13 +24,15 @@ final class JdbcInitialRevisions {
         InitialJdbc.requireTransaction();
         if(!value.contentHash().equals(Revision.identity(value.plan(),value.selectedModules(),value.overrides()))
                 || (value.validation()==Validation.VALID)!=value.plan().valid())throw new Failure(503,"INVALID_REVISION");
+        if(value.plan().formatVersion()!=null && (value.plan().search()==null || value.plan().quality()==null
+                || !Set.of("GENERATION","FIXED_SET").contains(value.plan().search().scope())))throw new Failure(503,"INVALID_REVISION_FORMAT",false);
         var p=InitialJdbc.key(scope).addValue("id",value.requestId()).addValue("revision",value.revision()).addValue("run",value.runId())
                 .addValue("selection",selection.id()).addValue("selectionRevision",selection.revision()).addValue("hash",value.contentHash())
-                .addValue("validation",value.validation().name()).addValue("content",db.codec.encode(value));
+                .addValue("validation",value.validation().name()).addValue("content",db.codec.encode(value)).addValue("format",value.plan().formatVersion()==null?1:2);
         db.jdbc.update("""
                 INSERT INTO platform.initial_pathway_revision(request_id,revision,organization_id,learner_id,selection_id,selection_revision,
-                    run_id,content_hash,validation_status,content)
-                VALUES(:id,:revision,:org,:learner,:selection,:selectionRevision,:run,:hash,:validation,CAST(:content AS jsonb))
+                    run_id,content_hash,validation_status,content,format_version)
+                VALUES(:id,:revision,:org,:learner,:selection,:selectionRevision,:run,:hash,:validation,CAST(:content AS jsonb),:format)
                 """,p);
         for(var module:value.plan().modules()) {
             p.addValue("module",module.id()).addValue("contentVersion",module.contentVersion()).addValue("ordinal",module.ordinal())
@@ -39,6 +42,21 @@ final class JdbcInitialRevisions {
                     VALUES(:id,:revision,:module,:contentVersion,:ordinal,:duration,:price)
                     """,p);
             for(var target:module.targets()) {
+                if(value.plan().formatVersion()!=null) {
+                    p.addValue("skill",target.skillId()).addValue("focus",target.teachingFocus().name()).addValue("difficulty",target.difficultyLevel().name())
+                            .addValue("coverage",target.coverageRole().name()).addValue("preferred",target.preferredDifficulty()==null?null:target.preferredDifficulty().name())
+                            .addValue("rank",target.coverageRole()==com.adaptlearngraph.recommendation.domain.InitialPlanning.CoverageRole.COVERAGE?target.preference():null)
+                            .addValue("attention",target.expertAttention()).addValue("attentionReason",target.attentionReason())
+                            .addValue("policy",target.suitabilityVersion()).addValue("reason",target.reason());
+                    db.jdbc.update("""
+                            INSERT INTO platform.initial_pathway_teaching_v2(request_id,revision,organization_id,learner_id,selection_id,selection_revision,
+                                module_id,skill_id,teaching_focus,difficulty_level,coverage_role,preferred_difficulty,difficulty_fallback_rank,
+                                expert_attention,attention_reason,suitability_version,reason)
+                            VALUES(:id,:revision,:org,:learner,:selection,:selectionRevision,:module,:skill,:focus,:difficulty,:coverage,:preferred,:rank,
+                                :attention,:attentionReason,:policy,:reason)
+                            """,p);
+                    continue;
+                }
                 p.addValue("skill",target.skillId()).addValue("level",target.instructionLevel().name()).addValue("policy",target.suitabilityVersion()).addValue("reason",target.reason());
                 db.jdbc.update("""
                         INSERT INTO platform.initial_pathway_target(request_id,revision,module_id,skill_id,instruction_level,suitability_version,reason)

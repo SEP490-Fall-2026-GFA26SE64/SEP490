@@ -9,7 +9,8 @@ import java.util.*;
 
 /** Exact local artifact compatibility, never an ID-only or numeric mastery conversion. */
 final class LocalSeedSemantics implements Semantics {
-    static final String VERSION="LOCAL_SEED_IDENTITY_V1";
+    static final String VERSION="LOCAL_SEED_IDENTITY_V2";
+    private static final String V010_HASH="fb4b308402e5413a246de65621f97df464d3538ad36264f40e827be005728b25";
     private static final String HISTORY_HASH="0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125";
     private static final String BANK_HASH="52d065a031aa9adca51808c59a7682872b7436343f0c300db84cfe1beb2fe882";
     private final ObjectMapper json;
@@ -18,15 +19,15 @@ final class LocalSeedSemantics implements Semantics {
     private final Map<String,Map<String,String>> originalSkills;
     private record Edge(String kind,String from,String to,Map<String,Object> properties) {}
     private record Snapshot(String fingerprint,Map<String,String> skills) {}
-    LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank)throws java.io.IOException {
+    LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous)throws java.io.IOException {
         this.json=json;
         requireHash(current,com.adaptlearngraph.assessment.infrastructure.LocalCatalogBootstrap.SOURCE_HASH);
-        requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);
+        requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);requireHash(previous,V010_HASH);
         var manifest=json.readTree(bank);occupation=manifest.path("occupationId").asText();
-        var now=snapshot(current,organization);var old=snapshot(historical,organization);
+        var now=snapshot(current,organization);var old=snapshot(historical,organization);var v010=snapshot(previous,organization);
         currentFingerprint=now.fingerprint();currentSkills=now.skills();
         originalSkills=Map.of(eligibility(old.fingerprint(),organization,manifest),old.skills(),
-                eligibility(now.fingerprint(),organization,manifest),now.skills());
+                eligibility(v010.fingerprint(),organization,manifest),v010.skills(),eligibility(now.fingerprint(),organization,manifest),now.skills());
     }
     @Override public Compatibility resolve(Binding binding,Profile profile) {
         if(!occupation.equals(binding.occupationId()) || !currentFingerprint.equals(binding.catalogFingerprint())

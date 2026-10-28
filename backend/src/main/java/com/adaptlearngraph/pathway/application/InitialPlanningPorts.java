@@ -14,18 +14,24 @@ public final class InitialPlanningPorts {
         }
     }
     public record Provider(String moduleId,String title,String contentVersion,BigDecimal durationMinutes,BigDecimal priceVnd,
-                           String skillId,InstructionLevel instructionLevel) {}
+                           String skillId,TeachingFocus teachingFocus,Difficulty difficultyLevel) {}
     public record Graph(Set<String> skillIds,List<Edge> edges,List<Provider> providers,String releaseToken) {
         public Graph { skillIds=Set.copyOf(skillIds); edges=List.copyOf(edges); providers=List.copyOf(providers); RoleGap.text(releaseToken); }
     }
     public record Suitability(boolean eligible,int preference,boolean foundationalSuitable,String version,String reason) {
         public Suitability { RoleGap.text(version); RoleGap.text(reason); if(preference<0) throw new IllegalArgumentException("Invalid preference"); }
     }
-    public record PrerequisiteNeed(boolean learningRequired,boolean foundational,String evidenceIdentity) {
-        public PrerequisiteNeed { RoleGap.text(evidenceIdentity); }
+    public record PrerequisiteNeed(boolean learningRequired,boolean foundational,String evidenceIdentity,BigDecimal mastery,String unknownReason) {
+        public PrerequisiteNeed {
+            RoleGap.text(evidenceIdentity);
+            if(mastery!=null){RoleGap.unit(mastery);if(unknownReason!=null)throw new IllegalArgumentException("Ambiguous prerequisite evidence");}
+        }
+        public PrerequisiteNeed(boolean learningRequired,boolean foundational,String evidenceIdentity) {
+            this(learningRequired,foundational,evidenceIdentity,null,null);
+        }
     }
     public interface Graphs { Graph load(Scope scope,Binding binding,Set<String> skills,Limits limits); }
-    public interface SuitabilityPolicy { Suitability evaluate(Scope scope,Binding binding,RoleGap.Result gaps,Provider provider); }
+    public interface SuitabilityPolicy { Suitability evaluate(Scope scope,Binding binding,Need need,Provider provider); }
     public interface ReadinessDefinitions {
         PrerequisiteNeed prerequisite(Scope scope,Binding binding,Edge edge);
         Optional<GateDefinition> gate(Scope scope,Binding binding,Provider provider,Edge edge);

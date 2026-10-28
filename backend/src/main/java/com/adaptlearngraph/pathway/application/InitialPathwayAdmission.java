@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 /** REQ-001-F02 handoff: retained replay first; selection+snapshot+intent+receipt share one UoW. */
 public final class InitialPathwayAdmission {
-    public static final String ALGORITHM="initial-ranked-feasible-v1";
+    public static final String ALGORITHM=com.adaptlearngraph.recommendation.domain.InitialPathwayPlanner.VERSION;
     public record Confirm(String roleId,String levelId,UUID expectedSelectionId,Long expectedSelectionRevision,String expectedGapInputHash) {}
     public record Accepted(UUID requestId,UUID selectionId,long selectionRevision,String planningInputHash,String displayState) {}
     private final Actors actors; private final Coordination coordination; private final Bindings bindings;
