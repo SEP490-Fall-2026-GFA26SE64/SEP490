@@ -1801,7 +1801,7 @@ export function TargetRolesPage() {
 
 
 
-    const orgId = activeComp?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -2197,7 +2197,7 @@ export function TargetRolesPage() {
 
 
 
-    const orgId = activeComp?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -2461,7 +2461,7 @@ export function TargetRolesPage() {
 
 
 
-    const orgId = activeComp?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -2737,7 +2737,7 @@ export function TargetRolesPage() {
 
 
 
-    const orgId = activeComp?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -3013,7 +3013,7 @@ export function TargetRolesPage() {
 
 
 
-    const orgId = activeComp?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -6383,38 +6383,16 @@ export function TargetRolesPage() {
 
 
 
-                    selectedRole.status === 'submitted' || selectedRole.status === 'sent'
-
-
-
+                    selectedRole.status === 'submitted'
                       ? 'success'
-
-
-
-                      : selectedRole.status === 'draft'
-
-
-
-                        ? 'warning'
-
-
-
-                        : 'outline'
-
-
-
+                      : selectedRole.status === 'sent'
+                        ? 'secondary'
+                        : selectedRole.status === 'draft'
+                          ? 'warning'
+                          : 'outline'
                   }
-
-
-
                 >
-
-
-
-                  {(selectedRole.status === 'sent' ? 'SUBMITTED' : selectedRole.status).toUpperCase()}
-
-
-
+                  {selectedRole.status.toUpperCase()}
                 </Badge>
 
 
@@ -10840,7 +10818,7 @@ export function TargetRolesPage() {
 
 
 
-              {(viewingDetailsRole.status === 'submitted' || viewingDetailsRole.status === 'sent') && (
+              {(viewingDetailsRole.status?.toLowerCase() === 'submitted') && (
 
 
 
