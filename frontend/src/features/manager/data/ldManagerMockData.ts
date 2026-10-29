@@ -51,6 +51,11 @@ export interface OnetOccupation {
   assignedExpertIds: string[]
 }
 
+export const EXPERT_SARAH_CHEN_ID = 'a0000000-0000-0000-0000-000000000002'
+export const EXPERT_MARCUS_VANCE_ID = 'a0000000-0000-0000-0000-000000000005'
+export const EXPERT_ALEX_RIVERA_ID = 'a0000000-0000-0000-0000-000000000006'
+export const EXPERT_LINH_NGUYEN_ID = 'a0000000-0000-0000-0000-000000000007'
+
 export const ONET_OCCUPATIONS: OnetOccupation[] = [
   {
     code: '15-1252.00',
@@ -58,7 +63,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Design, code, and test applications, systems software, and infrastructure pipelines.',
     jobZone: 4,
     profiles: ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH'],
-    assignedExpertIds: ['expert-chen', 'expert-vance'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID],
   },
   {
     code: '15-1243.00',
@@ -66,7 +71,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Design database systems, analytical warehouses, governance policies, and data pipelines.',
     jobZone: 4,
     profiles: ['DATARCH', 'DATAENG', 'DATAGOV', 'DBANALYSIS', 'DBDEV', 'ENTERPRISE'],
-    assignedExpertIds: ['expert-vance', 'expert-nguyen'],
+    assignedExpertIds: [EXPERT_MARCUS_VANCE_ID],
   },
   {
     code: '15-1253.00',
@@ -74,7 +79,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Design test automation suites, quality gates, and system verification protocols.',
     jobZone: 4,
     profiles: ['QAAUTO', 'QAA', 'QAENG'],
-    assignedExpertIds: ['expert-chen', 'expert-rivera'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID, EXPERT_ALEX_RIVERA_ID],
   },
   {
     code: '15-1299.08',
@@ -82,7 +87,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Architect complex systems, cloud infrastructure networks, and enterprise solutions.',
     jobZone: 4,
     profiles: ['SYSARCH', 'INFRA', 'INTEGRATION', 'SYSANALYSIS', 'WEBARCH'],
-    assignedExpertIds: ['expert-rivera', 'expert-vance'],
+    assignedExpertIds: [EXPERT_ALEX_RIVERA_ID],
   },
   {
     code: '15-1212.00',
@@ -90,7 +95,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Engineer security perimeters, vulnerability analysis, access policies, and incident response.',
     jobZone: 4,
     profiles: ['SECOFFICER', 'SECANALYSIS', 'NETSEC'],
-    assignedExpertIds: ['expert-rivera', 'expert-chen'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID],
   },
 ]
 
@@ -108,15 +113,19 @@ export const ONTOLOGY_LEVELS: OntologyLevel[] = [
   { code: 'S', name: 'Senior', rank: 3, threshold: 0.90, context: 'Complex solution architecture, system review, and governance' },
 ]
 
-export function resolveOccupationForRole(role: {
-  code?: string
-  title?: string
-  domainCode?: string
-  familyCode?: string
-  occupationCode?: string
-}): OnetOccupation {
+export function resolveOccupationForRole(
+  role: {
+    code?: string
+    title?: string
+    domainCode?: string
+    familyCode?: string
+    occupationCode?: string
+  },
+  organizationId?: string
+): OnetOccupation {
+  const occupations = getAvailableOccupations(organizationId)
   if (role.occupationCode) {
-    const found = ONET_OCCUPATIONS.find((o) => o.code === role.occupationCode)
+    const found = occupations.find((o) => o.code === role.occupationCode)
     if (found) return found
   }
 
@@ -127,18 +136,19 @@ export function resolveOccupationForRole(role: {
 
   // Match by keyword in title, code, or family
   if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
-    return ONET_OCCUPATIONS[4] // 15-1212.00
+    return occupations.find((o) => o.code === '15-1212.00') || ONET_OCCUPATIONS[4]
   }
   if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
-    return ONET_OCCUPATIONS[2] // 15-1253.00
+    return occupations.find((o) => o.code === '15-1253.00') || ONET_OCCUPATIONS[2]
   }
   if (title.includes('data') || title.includes('database') || title.includes('analytics') || domain === 'DATA' || code.includes('DATA') || family.includes('DATA')) {
-    return ONET_OCCUPATIONS[1] // 15-1243.00
+    return occupations.find((o) => o.code === '15-1243.00') || ONET_OCCUPATIONS[1]
   }
   if (title.includes('system') || title.includes('network') || title.includes('cloud') || title.includes('infrastructure') || (title.includes('architect') && !title.includes('software')) || code.includes('SYS') || code.includes('INFRA')) {
-    return ONET_OCCUPATIONS[3] // 15-1299.08
+    return occupations.find((o) => o.code === '15-1299.08') || ONET_OCCUPATIONS[3]
   }
-  return ONET_OCCUPATIONS[0] // 15-1252.00 Software Developers
+
+  return occupations.find((o) => o.code === '15-1252.00') || ONET_OCCUPATIONS[0]
 }
 
 /**
@@ -303,40 +313,81 @@ export const CAREER_FAMILIES = [
   { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust', domain: 'ICT' },
 ] as const
 
-export const EXPERT_SARAH_CHEN_ID = 'a0000000-0000-0000-0000-000000000002'
-
 export const ELIGIBLE_EXPERTS = [
   { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
-  { id: 'a0000000-0000-0000-0000-000000000005', name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
-  { id: 'a0000000-0000-0000-0000-000000000006', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
-  { id: 'a0000000-0000-0000-0000-000000000007', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
-] as const
+  { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
+  { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
+  { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
+] as const;
 
-export type EligibleExpert = typeof ELIGIBLE_EXPERTS[number]
+export type EligibleExpert = typeof ELIGIBLE_EXPERTS[number];
 
 export function normalizeExpertId(id?: string | null): string {
-  if (!id) return EXPERT_SARAH_CHEN_ID
-  if (id === 'expert-chen') return EXPERT_SARAH_CHEN_ID
-  return id
+  if (!id) return '';
+  if (id === 'expert-chen' || id === EXPERT_SARAH_CHEN_ID) return EXPERT_SARAH_CHEN_ID;
+  if (id === 'expert-vance' || id === EXPERT_MARCUS_VANCE_ID) return EXPERT_MARCUS_VANCE_ID;
+  if (id === 'expert-rivera' || id === EXPERT_ALEX_RIVERA_ID) return EXPERT_ALEX_RIVERA_ID;
+  if (id === 'expert-nguyen' || id === EXPERT_LINH_NGUYEN_ID) return EXPERT_LINH_NGUYEN_ID;
+  return id;
 }
 
 export function findEligibleExpert(id?: string | null): EligibleExpert | undefined {
-  if (!id) return undefined
-  const normalized = normalizeExpertId(id)
-  return ELIGIBLE_EXPERTS.find((e) => (e.id as string) === normalized || (normalized === EXPERT_SARAH_CHEN_ID && (e.id as string) === 'expert-chen'))
+  if (!id) return undefined;
+  const normalized = normalizeExpertId(id);
+  return ELIGIBLE_EXPERTS.find((e) => normalizeExpertId(e.id) === normalized);
+}
+
+export function getAvailableOccupations(organizationId?: string): OnetOccupation[] {
+  const codeMap = new Map<string, OnetOccupation>();
+  for (const o of ONET_OCCUPATIONS) {
+    codeMap.set(o.code, { ...o });
+  }
+
+  const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
+    ? organizationId
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || '00000000-0000-0000-0000-000000000001' : '00000000-0000-0000-0000-000000000001');
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('adaptlearn_occupations_v2_' + effectiveOrg);
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (Array.isArray(stored)) {
+          for (const item of stored) {
+            if (item.code) {
+              const existing = codeMap.get(item.code);
+              codeMap.set(item.code, {
+                code: item.code,
+                name: item.name || existing?.name || item.code,
+                description: item.description || existing?.description || '',
+                jobZone: item.jobZone || existing?.jobZone || 4,
+                profiles: existing?.profiles || ['DEV'],
+                assignedExpertIds: Array.isArray(item.assignedExperts)
+                  ? item.assignedExperts.map((ae: any) => normalizeExpertId(ae.id || ae))
+                  : existing?.assignedExpertIds || [],
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch {}
+
+  return Array.from(codeMap.values());
 }
 
 /**
  * Returns domain experts who are specifically assigned and certified for a given O*NET occupation.
  */
-export function getEligibleExpertsForOccupation(occupationCode?: string): EligibleExpert[] {
-  if (!occupationCode) return [...ELIGIBLE_EXPERTS]
-  const occ = ONET_OCCUPATIONS.find((o) => o.code === occupationCode)
+export function getEligibleExpertsForOccupation(occupationCode?: string, organizationId?: string): EligibleExpert[] {
+  if (!occupationCode) return [...ELIGIBLE_EXPERTS];
+  const occupations = getAvailableOccupations(organizationId);
+  const occ = occupations.find((o) => o.code === occupationCode);
   if (!occ || !occ.assignedExpertIds || occ.assignedExpertIds.length === 0) {
-    return [...ELIGIBLE_EXPERTS]
+    return [];
   }
-  const matched = ELIGIBLE_EXPERTS.filter((exp) => occ.assignedExpertIds.includes(exp.id))
-  return matched.length > 0 ? matched : [...ELIGIBLE_EXPERTS]
+  const assignedNormalized = occ.assignedExpertIds.map(normalizeExpertId);
+  return ELIGIBLE_EXPERTS.filter((exp) => assignedNormalized.includes(normalizeExpertId(exp.id)));
 }
 
 export interface CompetencyModel {

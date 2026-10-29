@@ -230,6 +230,8 @@ import {
 
 
 
+  getAvailableOccupations,
+  normalizeExpertId,
   getEligibleExpertsForOccupation,
 
 
@@ -264,23 +266,6 @@ import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Com
 
 
 
-const OCCUPATION_OPTIONS: ComboboxOption[] = ONET_OCCUPATIONS.map((occ) => ({
-
-
-
-  value: occ.code,
-
-
-
-  label: `${occ.code} — ${occ.name}`,
-
-
-
-  description: occ.description,
-
-
-
-}))
 
 
 
@@ -288,11 +273,9 @@ const OCCUPATION_OPTIONS: ComboboxOption[] = ONET_OCCUPATIONS.map((occ) => ({
 
 
 
-const getExpertOptionsForOccupation = (occupationCode?: string): ComboboxOption[] => {
 
-
-
-  const eligible = getEligibleExpertsForOccupation(occupationCode)
+const getExpertOptionsForOccupation = (occupationCode?: string, organizationId?: string): ComboboxOption[] => {
+  const eligible = getEligibleExpertsForOccupation(occupationCode, organizationId)
 
 
 
@@ -467,6 +450,18 @@ export function TargetRolesPage() {
   const session = React.useContext(WorkspaceSessionContext)
   const activeComp = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
+
+  const availableOccupations = React.useMemo(() => {
+    return getAvailableOccupations(orgId)
+  }, [orgId])
+
+  const occupationOptions: ComboboxOption[] = React.useMemo(() => {
+    return availableOccupations.map((occ) => ({
+      value: occ.code,
+      label: `${occ.code} — ${occ.name}`,
+      description: occ.description,
+    }))
+  }, [availableOccupations])
 
 
 
@@ -1690,55 +1685,19 @@ export function TargetRolesPage() {
 
 
 
-    const defaultOcc = ONET_OCCUPATIONS[0]
-
-
-
-    const eligibleExperts = getEligibleExpertsForOccupation(defaultOcc.code)
-
-
-
+    const defaultOcc = availableOccupations[0] || ONET_OCCUPATIONS[0]
+    const eligibleExperts = getEligibleExpertsForOccupation(defaultOcc.code, orgId)
     setRoleForm({
-
-
-
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-
-
-
       title: '',
-
-
-
       occupationCode: defaultOcc.code,
-
-
-
       scope: defaultOcc.description,
-
-
-
-      familyCode: defaultOcc.profiles[0] || 'DEV',
-
-
-
+      familyCode: defaultOcc.profiles?.[0] || 'DEV',
       domainCode: 'ICT',
-
-
-
       track: 'PROFESSIONAL',
-
-
-
       seniority: 'P3',
-
-
-
       levelNames: ['Junior', 'Middle', 'Senior'],
-
-
-
-      assignedExpertId: eligibleExperts[0]?.id || ELIGIBLE_EXPERTS[0].id,
+      assignedExpertId: eligibleExperts[0]?.id || '',
 
 
 
@@ -2362,31 +2321,15 @@ export function TargetRolesPage() {
 
 
 
-    const occ = resolveOccupationForRole(role)
-
-
-
+    const occ = resolveOccupationForRole(role, orgId)
     const occCode = role.occupationCode || occ.code
-
-
-
-    const eligibleExperts = getEligibleExpertsForOccupation(occCode)
-
-
-
-    const isCurrentEligible = eligibleExperts.some((e) => e.id === role.assignedExpertId)
-
-
-
+    const eligibleExperts = getEligibleExpertsForOccupation(occCode, orgId)
+    const isCurrentEligible = eligibleExperts.some(
+      (e) => normalizeExpertId(e.id) === normalizeExpertId(role.assignedExpertId)
+    )
     const effectiveExpertId = isCurrentEligible
-
-
-
       ? (role.assignedExpertId || '')
-
-
-
-      : (eligibleExperts[0]?.id || role.assignedExpertId || '')
+      : (eligibleExperts[0]?.id || '')
 
 
 
@@ -5763,7 +5706,7 @@ export function TargetRolesPage() {
 
 
 
-                  options={OCCUPATION_OPTIONS}
+                  options={occupationOptions}
 
 
 
@@ -5779,18 +5722,11 @@ export function TargetRolesPage() {
 
 
 
-                    const occ = ONET_OCCUPATIONS.find((o) => o.code === val)
-
-
-
-                    const eligible = getEligibleExpertsForOccupation(val)
-
-
-
-                    const isCurrentEligible = eligible.some((e) => e.id === roleForm.assignedExpertId)
-
-
-
+                    const occ = availableOccupations.find((o) => o.code === val) || ONET_OCCUPATIONS.find((o) => o.code === val)
+                    const eligible = getEligibleExpertsForOccupation(val, orgId)
+                    const isCurrentEligible = eligible.some(
+                      (e) => normalizeExpertId(e.id) === normalizeExpertId(roleForm.assignedExpertId)
+                    )
                     const newExpertId = isCurrentEligible ? roleForm.assignedExpertId : (eligible[0]?.id || '')
 
 
@@ -6219,7 +6155,7 @@ export function TargetRolesPage() {
 
 
 
-                Only subject matter experts assigned to {roleForm.occupationCode} ({ONET_OCCUPATIONS.find(o => o.code === roleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
+                Only subject matter experts assigned to {roleForm.occupationCode} ({availableOccupations.find(o => o.code === roleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
 
 
 
@@ -7619,7 +7555,7 @@ export function TargetRolesPage() {
 
 
 
-                  options={OCCUPATION_OPTIONS}
+                  options={occupationOptions}
 
 
 
@@ -7635,18 +7571,11 @@ export function TargetRolesPage() {
 
 
 
-                    const occ = ONET_OCCUPATIONS.find((o) => o.code === val)
-
-
-
-                    const eligible = getEligibleExpertsForOccupation(val)
-
-
-
-                    const isCurrentEligible = eligible.some((e) => e.id === editRoleForm.assignedExpertId)
-
-
-
+                    const occ = availableOccupations.find((o) => o.code === val) || ONET_OCCUPATIONS.find((o) => o.code === val)
+                    const eligible = getEligibleExpertsForOccupation(val, orgId)
+                    const isCurrentEligible = eligible.some(
+                      (e) => normalizeExpertId(e.id) === normalizeExpertId(editRoleForm.assignedExpertId)
+                    )
                     const newExpertId = isCurrentEligible ? editRoleForm.assignedExpertId : (eligible[0]?.id || '')
 
 
@@ -8099,7 +8028,7 @@ export function TargetRolesPage() {
 
 
 
-                  Only subject matter experts assigned to {editRoleForm.occupationCode} ({ONET_OCCUPATIONS.find(o => o.code === editRoleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
+                  Only subject matter experts assigned to {editRoleForm.occupationCode} ({availableOccupations.find(o => o.code === editRoleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
 
 
 
