@@ -315,7 +315,7 @@ export function TargetRoleGraphModal({
     // 1. Role root node - only show the role code (no organization or version)
     addNodeSafely({
       id: `role-${graphData.roleId}`,
-      label: `<b>${extractCleanRoleCode(graphData.roleCode)}</b>`,
+      label: `<b>${extractCleanRoleCode(graphData.roleCode || graphData.roleId)}</b>`,
       shape: 'box',
       shapeProperties: { borderRadius: 8 },
       margin: { top: 12, right: 16, bottom: 12, left: 16 },
@@ -841,7 +841,7 @@ export function TargetRoleGraphModal({
                 </h3>
                 {graphData?.roleCode && (
                   <Badge variant="outline" className="font-mono text-[9px] px-1 py-0 text-primary border-primary/30">
-                    {extractCleanRoleCode(graphData.roleCode)}
+                    {extractCleanRoleCode(graphData.roleCode || graphData.roleId)}
                   </Badge>
                 )}
               </div>

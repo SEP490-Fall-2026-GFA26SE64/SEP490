@@ -3031,7 +3031,7 @@ export function ExpertAssignedRolesPage() {
 
           }}
 
-          className="max-w-5xl w-full min-h-[580px] max-h-[92vh] flex flex-col p-6 overflow-hidden transition-all duration-200"
+          className="max-w-5xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden transition-all duration-200"
 
         >
 
@@ -3645,7 +3645,11 @@ export function ExpertAssignedRolesPage() {
 
                                 <td className="py-2.5 px-3 text-muted-foreground">
 
-                                  <span className="line-clamp-1">{desc}</span>
+                                  <div className="line-clamp-2 overflow-hidden text-xs text-muted-foreground leading-relaxed break-words" title={desc}>
+
+                                    {desc}
+
+                                  </div>
 
                                 </td>
 
@@ -4367,7 +4371,7 @@ export function ExpertAssignedRolesPage() {
 
           onOpenChange={(open) => !open && setViewingDetailsRole(null)}
 
-          className="max-w-5xl w-full max-h-[92vh] flex flex-col p-6 overflow-hidden"
+          className="max-w-5xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
 
         >
 
@@ -5097,11 +5101,11 @@ export function ExpertAssignedRolesPage() {
 
                                                 <td className="py-2 px-3 text-muted-foreground">
 
-                                                  <p className="line-clamp-1 text-xs text-muted-foreground leading-normal" title={comp?.description}>
+                                                  <div className="line-clamp-2 overflow-hidden text-xs text-muted-foreground leading-relaxed break-words" title={comp?.description}>
 
                                                     {comp?.description || 'Core knowledge and functional capability cluster.'}
 
-                                                  </p>
+                                                  </div>
 
                                                 </td>
 

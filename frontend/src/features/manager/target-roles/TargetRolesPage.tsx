@@ -9194,7 +9194,7 @@ export function TargetRolesPage() {
 
 
 
-          className="max-w-5xl w-full max-h-[92vh] flex flex-col p-6 overflow-hidden"
+          className="max-w-5xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
 
 
 
