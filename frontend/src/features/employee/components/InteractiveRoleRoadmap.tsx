@@ -1,3 +1,5 @@
+import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
+import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
 import * as React from 'react'
 import {
   ArrowRight,
@@ -34,12 +36,19 @@ import {
 import './InteractiveRoleRoadmap.css'
 
 export interface InteractiveRoleRoadmapProps {
+  assigned?: AssignedPathwayViewProps
   targetRole?: string
   isSkillMode?: boolean
   compact?: boolean
 }
 
-export function InteractiveRoleRoadmap({
+export function InteractiveRoleRoadmap(props: InteractiveRoleRoadmapProps = {}) {
+  return props.assigned
+    ? <AssignedPathwayPresentation {...props.assigned} mode="roadmap" />
+    : <PrototypeRoleRoadmap {...props} />
+}
+
+function PrototypeRoleRoadmap({
   targetRole: propTargetRole,
   isSkillMode: propIsSkillMode,
   compact = false,

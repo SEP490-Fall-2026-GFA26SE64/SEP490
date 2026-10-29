@@ -1537,7 +1537,9 @@ test('R6 restores original pathway and lesson UI with real Text Video and persis
     .getByLabel('Learning pathway', { exact: true })
     .selectOption({ label: assignment }, { timeout: 90000 })
   const section = page.getByRole('region', { name: assignment, exact: true })
-  await expect(section.getByTestId('original-roadmap')).toBeVisible({ timeout: 90000 })
+  await expect(section.getByTestId('original-roadmap')).toBeVisible({
+    timeout: 90000,
+  })
   const module = section.getByRole('button', {
     name: /R4 - Lesson review cef9f873/,
   })
@@ -1597,7 +1599,9 @@ test('R6 restores original pathway and lesson UI with real Text Video and persis
     page.getByRole('button', { name: 'Lesson completed', exact: true }),
   ).toBeDisabled()
   await expect(
-    page.getByText('Introduction to the skill with a concrete example.', { exact: true }),
+    page.getByText('Introduction to the skill with a concrete example.', {
+      exact: true,
+    }),
   ).toBeVisible({ timeout: 60000 })
   await page.screenshot({
     path: r6Artifact('REQ-013-R6-reading.png'),
@@ -1677,7 +1681,9 @@ test('R6 restores original pathway and lesson UI with real Text Video and persis
   await page
     .getByLabel('Learning pathway', { exact: true })
     .selectOption({ label: assignment })
-  await expect(section.getByTestId('original-roadmap')).toBeVisible({ timeout: 90000 })
+  await expect(section.getByTestId('original-roadmap')).toBeVisible({
+    timeout: 90000,
+  })
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -1786,4 +1792,109 @@ test('R6 mobile original canvas scrolls to actual module and opens real lessons'
     ),
   ).toBe(true)
   await page.screenshot({ path: r6Artifact('REQ-013-R6-player-mobile.png') })
+})
+
+test('R7 source-style pathway toolbar dialogs and timeline use actual assigned content', async ({
+  page,
+  baseURL,
+}) => {
+  test.setTimeout(240000)
+  test.skip(baseURL !== 'http://localhost:8088', 'Dedicated dev stack required')
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const artifact = (name: string) =>
+    fileURLToPath(
+      new URL(
+        '../../documents/testing/system/artifacts/REQ-013-learning-content-R7/' +
+          name,
+        import.meta.url,
+      ),
+    )
+  await login(page, 4, '/employee/pathway')
+  await page
+    .getByLabel('Learning pathway', { exact: true })
+    .selectOption(
+      { label: 'R4 - Learning content practice' },
+      { timeout: 90000 },
+    )
+  const region = page.getByRole('region', {
+    name: 'R4 - Learning content practice',
+    exact: true,
+  })
+  const roadmap = region.getByTestId('original-roadmap')
+  await expect(roadmap).toBeVisible({ timeout: 90000 })
+  const learning = (await (
+    await page.request.get(
+      root + '/learning/MOD-e52f4286-6713-4426-b98d-24b02584bcc8/view',
+    )
+  ).json()) as LearningView
+  const lessons = learning.revision.payload.content.lessons ?? []
+  const allCompleted =
+    lessons.length > 0 &&
+    lessons.every((lesson) =>
+      learning.progress.some(
+        (progress) => progress.lessonId === lesson.id && progress.completedAt,
+      ),
+    )
+  await expect(
+    region.getByText(
+      `${allCompleted ? 1 : 0} / 1 modules with content completed`,
+    ),
+  ).toBeVisible()
+  await page.screenshot({ path: artifact('roadmap.png') })
+  const module = roadmap.getByRole('button', {
+    name: /R4 - Lesson review cef9f873/,
+  })
+  await module.focus()
+  await page.keyboard.press('Enter')
+  const details = page.getByRole('dialog', {
+    name: 'Module details',
+    exact: true,
+  })
+  await expect(details.getByText('Estimated duration')).toBeVisible()
+  await expect(
+    details.getByRole('heading', { name: 'Micro-skills taught' }),
+  ).toBeVisible()
+  await expect(details.getByText(/3. Video demonstration/)).toBeVisible()
+  await page.screenshot({ path: artifact('module-details.png') })
+  await details
+    .getByRole('button', {
+      name: 'Analyse information security risks',
+      exact: true,
+    })
+    .click()
+  const skill = page.getByRole('dialog', { name: 'Skill details', exact: true })
+  await expect(skill.getByText('Teaching focus', { exact: true })).toBeVisible()
+  await expect(skill.getByText('Difficulty', { exact: true })).toBeVisible()
+  await page.screenshot({ path: artifact('skill-details.png') })
+  await page.keyboard.press('Escape')
+  await expect(skill).not.toBeVisible()
+  await page
+    .getByLabel('Search micro-skills', { exact: true })
+    .fill('no-skill-matches-this')
+  await expect(roadmap.locator('.roadmap-skill-box')).toHaveClass(/opacity-30/)
+  await page.getByLabel('Search micro-skills', { exact: true }).fill('')
+  await page
+    .getByRole('button', { name: 'Learning timeline', exact: true })
+    .click()
+  await expect(
+    region.getByText('Expert-confirmed pathway · Actual content progress'),
+  ).toBeVisible()
+  await expect(
+    region.getByRole('link', { name: 'Open module lessons' }),
+  ).toHaveAttribute('href', /MOD-/)
+  await expect(
+    region.getByText(
+      /Certified|Next Best Action|Locked Gate|AI-Driven|Simulate/,
+    ),
+  ).toHaveCount(0)
+  await page.screenshot({ path: artifact('timeline.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true)
+  await page.screenshot({ path: artifact('timeline-mobile.png') })
+  expect(errors).toEqual([])
 })

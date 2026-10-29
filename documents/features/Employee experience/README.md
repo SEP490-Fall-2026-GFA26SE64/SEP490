@@ -154,3 +154,7 @@ These anchors preserve existing references, not additional functional requiremen
 | <a id="req-055-f04"></a>REQ-055-F04 | [FR-06.07](#fr-06-07); [FR-06.08](../Assessment%20workflows/README.md#fr-06-08) |
 | <a id="req-070"></a>REQ-070 | [FR-06.09](#fr-06-09) |
 | <a id="req-070-f01"></a>REQ-070-F01 | [FR-06.09](#fr-06-09) |
+
+## Adaptive Pathway component integration — R7 (2026-10-29)
+
+The Employee pathway now enters the existing roadmap/timeline component owners with actual assigned snapshots. The source presentation from target-roles-flow supplies the search toolbar, original graph geometry, Module/skill detail hierarchy and timeline track/cards. Module details expose actual duration, lesson progress, mapped skills and lesson navigation. Successful empty assignments remain blank. Role/Skill context, mastery, certification and simulated adaptation are not invented where persisted evidence is unavailable. The lesson reader and version/progress policies are preserved. [Verification and manual checks](../../testing/system/REQ-013-learning-content-R7.md).

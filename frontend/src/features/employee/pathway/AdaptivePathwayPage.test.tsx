@@ -158,6 +158,11 @@ describe('R6 original pathway UI with actual assignments', () => {
         .getAttribute('href'),
     ).toBe('/employee/modules/real-module')
     expect(within(dialog).getByText(/1. Read/)).toBeTruthy()
+    expect(within(dialog).getByText('Estimated duration')).toBeTruthy()
+    expect(within(dialog).getByText('4 min')).toBeTruthy()
+    expect(
+      within(dialog).getByRole('heading', { name: 'Micro-skills taught' }),
+    ).toBeTruthy()
     fireEvent.keyDown(dialog, { key: 'Escape' })
     fireEvent.click(screen.getByRole('button', { name: 'Learning timeline' }))
     expect(screen.getByTestId('original-timeline')).toBeTruthy()
@@ -300,5 +305,24 @@ describe('R6 original pathway UI with actual assignments', () => {
     expect(
       screen.getByRole('link', { name: 'Mở bài học trong module' }),
     ).toBeTruthy()
+  })
+})
+
+describe('R7 original component integration', () => {
+  it('opens a real teaching from the source-style module skill cards without fabricated mastery', async () => {
+    mount()
+    fireEvent.click(
+      await screen.findByRole('button', { name: /Actual approved module/ }),
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Module details' })
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Actual skill' }),
+    )
+    const skill = screen.getByRole('dialog', { name: 'Skill details' })
+    expect(within(skill).getByText('Primary')).toBeTruthy()
+    expect(within(skill).getByText('Low')).toBeTruthy()
+    expect(
+      screen.queryByText(/Skills Mastery|Production Readiness|Certified|90%/),
+    ).toBeNull()
   })
 })

@@ -1,3 +1,5 @@
+import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
+import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
 import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
@@ -157,7 +159,13 @@ const SKILL_PATHWAY: PathwayStep[] = [
   },
 ]
 
-export function AdaptivePathwayTimeline() {
+export function AdaptivePathwayTimeline({ assigned }: { assigned?: AssignedPathwayViewProps } = {}) {
+  return assigned
+    ? <AssignedPathwayPresentation {...assigned} mode="timeline" />
+    : <PrototypePathwayTimeline />
+}
+
+function PrototypePathwayTimeline() {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
   const { profile } = useEmployeeLearningState()
   const isSkillMode = profile.selectedViewType === 'skill'

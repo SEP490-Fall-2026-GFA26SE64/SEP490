@@ -337,3 +337,7 @@ The restored Employee pathway surface uses the already approved Module snapshot 
 ### Original Employee presentation — R6 (2026-10-29)
 
 R6 restores the original pathway and lesson layouts using existing authorized Module snapshots and TEACHES mappings. Selecting one pathway reads only its Module snapshots; no graph label, relationship, property or migration changes. Assignments, version pins and lesson/video progress remain PostgreSQL-owned. Empty assignment results produce a blank pathway body. [Runtime presentation boundary](ARCHITECTURE.md#original-employee-pathway-and-lesson-presentation--r6-2026-10-29).
+
+### Adaptive Pathway UI integration — R7 (2026-10-29)
+
+R7 reuses existing TEACHES metadata in original-style skill nodes and detail cards, without adding graph fields or inferring learner mastery. No label, relationship, property, migration or import change; assignments/pins/progress remain PostgreSQL-owned. [Presentation boundary](ARCHITECTURE.md#adaptive-pathway-component-integration--r7-2026-10-29).
