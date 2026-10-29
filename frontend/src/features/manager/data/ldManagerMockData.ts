@@ -320,7 +320,64 @@ export const ELIGIBLE_EXPERTS = [
   { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
 ] as const;
 
-export type EligibleExpert = typeof ELIGIBLE_EXPERTS[number];
+export type EligibleExpert = {
+  id: string;
+  name: string;
+  title: string;
+  email?: string;
+};
+
+export function getOrganizationExperts(organizationId?: string): EligibleExpert[] {
+  const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
+    ? organizationId
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
+
+  // 1. Try to load dynamically cached experts for this organization from the subscription/members API
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('adaptlearn_org_experts_' + effectiveOrg);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Try to load from companyStore companies in localStorage
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const rawCompanies = localStorage.getItem('adaptlearn_companies_v4');
+      if (rawCompanies) {
+        const companies = JSON.parse(rawCompanies);
+        if (Array.isArray(companies)) {
+          const matched = companies.find((c: any) => c.id === effectiveOrg || (effectiveOrg === 'e0000000-0000-0000-0000-000000000001' && c.id === 'comp-technova'));
+          if (matched && Array.isArray(matched.users)) {
+            const expertUsers = matched.users.filter((u: any) => u.role === 'Expert' || u.role === 'DOMAIN_EXPERT');
+            if (expertUsers.length > 0) {
+              return expertUsers.map((u: any) => ({
+                id: u.id,
+                name: u.name,
+                title: u.department || 'Domain Expert',
+                email: u.email,
+              }));
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // 3. TechNova / default fallback
+  if (effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org') {
+    return [
+      { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect', email: 'expert@technova.com' },
+    ];
+  }
+
+  return [];
+}
 
 export function normalizeExpertId(id?: string | null): string {
   if (!id) return '';
@@ -331,9 +388,12 @@ export function normalizeExpertId(id?: string | null): string {
   return id;
 }
 
-export function findEligibleExpert(id?: string | null): EligibleExpert | undefined {
+export function findEligibleExpert(id?: string | null, organizationId?: string): EligibleExpert | undefined {
   if (!id) return undefined;
   const normalized = normalizeExpertId(id);
+  const orgExperts = getOrganizationExperts(organizationId);
+  const found = orgExperts.find((e) => normalizeExpertId(e.id) === normalized);
+  if (found) return found;
   return ELIGIBLE_EXPERTS.find((e) => normalizeExpertId(e.id) === normalized);
 }
 
@@ -377,17 +437,22 @@ export function getAvailableOccupations(organizationId?: string): OnetOccupation
 }
 
 /**
- * Returns domain experts who are specifically assigned and certified for a given O*NET occupation.
+ * Returns domain experts who are specifically assigned and certified for a given O*NET occupation,
+ * or all experts available to this organization if none are specifically restricted.
  */
 export function getEligibleExpertsForOccupation(occupationCode?: string, organizationId?: string): EligibleExpert[] {
-  if (!occupationCode) return [...ELIGIBLE_EXPERTS];
+  const orgExperts = getOrganizationExperts(organizationId);
+  if (!occupationCode) return orgExperts;
+
   const occupations = getAvailableOccupations(organizationId);
   const occ = occupations.find((o) => o.code === occupationCode);
   if (!occ || !occ.assignedExpertIds || occ.assignedExpertIds.length === 0) {
-    return [];
+    return orgExperts;
   }
+
   const assignedNormalized = occ.assignedExpertIds.map(normalizeExpertId);
-  return ELIGIBLE_EXPERTS.filter((exp) => assignedNormalized.includes(normalizeExpertId(exp.id)));
+  const filtered = orgExperts.filter((exp) => assignedNormalized.includes(normalizeExpertId(exp.id)));
+  return filtered.length > 0 ? filtered : orgExperts;
 }
 
 export interface CompetencyModel {

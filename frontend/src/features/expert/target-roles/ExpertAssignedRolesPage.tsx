@@ -84,6 +84,7 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 
 import { getActiveCompany, updateActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { getMembers } from '../../subscription/subscriptionApi'
 import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
 
 import {
@@ -91,6 +92,8 @@ import {
   ELIGIBLE_EXPERTS,
   normalizeExpertId,
   findEligibleExpert,
+  getOrganizationExperts,
+  type EligibleExpert,
 
   JOB_DOMAINS,
 
@@ -161,6 +164,36 @@ export function ExpertAssignedRolesPage() {
   const session = React.useContext(WorkspaceSessionContext)
   const activeCompany = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
+
+  const [orgExperts, setOrgExperts] = React.useState<EligibleExpert[]>(() => getOrganizationExperts(orgId))
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadOrgMembers = async () => {
+      try {
+        const members = await getMembers(orgId).catch(() => [])
+        const expertMembers = (members || []).filter(
+          (m) => m.active && (m.roles.includes('DOMAIN_EXPERT') || m.roles.includes('EXPERT'))
+        )
+        if (expertMembers.length > 0) {
+          const mapped: EligibleExpert[] = expertMembers.map((m) => ({
+            id: m.accountId,
+            name: m.fullName || m.email,
+            title: m.occupationName || m.departmentName || 'Domain Expert',
+            email: m.email,
+          }))
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('adaptlearn_org_experts_' + orgId, JSON.stringify(mapped))
+          }
+          if (isMounted) {
+            setOrgExperts(mapped)
+          }
+        }
+      } catch {}
+    }
+    loadOrgMembers()
+    return () => { isMounted = false }
+  }, [orgId])
 
   const [realMicroSkills, setRealMicroSkills] = React.useState<MicroSkillModel[]>([])
 
@@ -260,7 +293,10 @@ export function ExpertAssignedRolesPage() {
 
 
 
-  const activeExpert = findEligibleExpert(selectedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === selectedExpertId) || ELIGIBLE_EXPERTS[0]
+  const loggedInOrgExpert = orgExperts.find((e) => session?.identity?.email && e.email?.toLowerCase() === session.identity.email.toLowerCase())
+  const effectiveExpert = loggedInOrgExpert?.id || selectedExpertId || orgExperts[0]?.id || ELIGIBLE_EXPERTS[0].id
+  const activeExpert = orgExperts.find((e) => e.id === effectiveExpert) || findEligibleExpert(effectiveExpert, orgId) || orgExperts[0] || ELIGIBLE_EXPERTS[0]
+  const activeExpertName = session?.identity?.fullName || activeExpert?.name || session?.identity?.email || 'Domain Expert'
 
 
 
@@ -269,7 +305,8 @@ export function ExpertAssignedRolesPage() {
     try {
 
       const currentCompany = getActiveCompany()
-      const effectiveExpert = selectedExpertId || ELIGIBLE_EXPERTS[0].id
+      const loggedInExpert = orgExperts.find((e) => session?.identity?.email && e.email?.toLowerCase() === session.identity.email.toLowerCase())
+      const effectiveExpert = loggedInExpert?.id || selectedExpertId || orgExperts[0]?.id || ELIGIBLE_EXPERTS[0].id
 
       const res = await fetch(
 
@@ -2242,16 +2279,11 @@ export function ExpertAssignedRolesPage() {
 
               >
 
-                {ELIGIBLE_EXPERTS.map((exp) => (
-
+                {(orgExperts.length > 0 ? orgExperts : ELIGIBLE_EXPERTS).map((exp) => (
                   <option key={exp.id} value={exp.id}>
-
                     {exp.name} ({exp.title})
-
                   </option>
-
                 ))}
-
               </select>
 
             </div>
@@ -3262,7 +3294,7 @@ export function ExpertAssignedRolesPage() {
 
                     <span className="font-semibold text-primary mt-0.5 truncate block">
 
-                      {authoringRole.assignedExpertName || ELIGIBLE_EXPERTS.find((e) => e.id === authoringRole.assignedExpertId)?.name || activeExpert.name}
+                      {authoringRole.assignedExpertName || ELIGIBLE_EXPERTS.find((e) => e.id === authoringRole.assignedExpertId)?.name || activeExpertName}
 
                     </span>
 
@@ -4663,7 +4695,7 @@ export function ExpertAssignedRolesPage() {
 
                 <span className="font-semibold text-primary mt-0.5 truncate block">
 
-                  {viewingDetailsRole.assignedExpertName || ELIGIBLE_EXPERTS.find((e) => e.id === viewingDetailsRole.assignedExpertId)?.name || activeExpert.name}
+                  {viewingDetailsRole.assignedExpertName || ELIGIBLE_EXPERTS.find((e) => e.id === viewingDetailsRole.assignedExpertId)?.name || activeExpertName}
 
                 </span>
 

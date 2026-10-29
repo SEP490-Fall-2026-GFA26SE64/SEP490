@@ -189,6 +189,7 @@ import { useToast } from '../../../shared/hooks/useToast'
 
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { getMembers } from '../../subscription/subscriptionApi'
 
 
 
@@ -233,6 +234,8 @@ import {
   getAvailableOccupations,
   normalizeExpertId,
   getEligibleExpertsForOccupation,
+  getOrganizationExperts,
+  type EligibleExpert,
 
 
 
@@ -274,7 +277,7 @@ import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Com
 
 
 
-const getExpertOptionsForOccupation = (occupationCode?: string, organizationId?: string): ComboboxOption[] => {
+export const getExpertOptionsForOccupation = (occupationCode?: string, organizationId?: string): ComboboxOption[] => {
   const eligible = getEligibleExpertsForOccupation(occupationCode, organizationId)
 
 
@@ -453,6 +456,42 @@ export function TargetRolesPage() {
 
   const availableOccupations = React.useMemo(() => {
     return getAvailableOccupations(orgId)
+  }, [orgId])
+
+  const [orgExperts, setOrgExperts] = React.useState<EligibleExpert[]>(() => getOrganizationExperts(orgId))
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadOrgMembers = async () => {
+      try {
+        const members = await getMembers(orgId).catch(() => [])
+        const expertMembers = (members || []).filter(
+          (m) => m.active && (m.roles.includes('DOMAIN_EXPERT') || m.roles.includes('EXPERT'))
+        )
+        if (expertMembers.length > 0) {
+          const mapped: EligibleExpert[] = expertMembers.map((m) => ({
+            id: m.accountId,
+            name: m.fullName || m.email,
+            title: m.occupationName || m.departmentName || 'Domain Expert',
+            email: m.email,
+          }))
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('adaptlearn_org_experts_' + orgId, JSON.stringify(mapped))
+          }
+          if (isMounted) {
+            setOrgExperts(mapped)
+          }
+        } else {
+          const fallback = getOrganizationExperts(orgId)
+          if (isMounted) setOrgExperts(fallback)
+        }
+      } catch {
+        const fallback = getOrganizationExperts(orgId)
+        if (isMounted) setOrgExperts(fallback)
+      }
+    }
+    loadOrgMembers()
+    return () => { isMounted = false }
   }, [orgId])
 
   const occupationOptions: ComboboxOption[] = React.useMemo(() => {
@@ -1338,14 +1377,13 @@ export function TargetRolesPage() {
 
 
   const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
-
-
-
-    return getExpertOptionsForOccupation(roleForm.occupationCode)
-
-
-
-  }, [roleForm.occupationCode])
+    const list = orgExperts.length > 0 ? orgExperts : getEligibleExpertsForOccupation(roleForm.occupationCode, orgId)
+    return list.map((exp) => ({
+      value: exp.id,
+      label: exp.name,
+      description: exp.title,
+    }))
+  }, [orgExperts, roleForm.occupationCode, orgId])
 
 
 
@@ -1354,14 +1392,13 @@ export function TargetRolesPage() {
 
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
-
-
-
-    return getExpertOptionsForOccupation(editRoleForm.occupationCode)
-
-
-
-  }, [editRoleForm.occupationCode])
+    const list = orgExperts.length > 0 ? orgExperts : getEligibleExpertsForOccupation(editRoleForm.occupationCode, orgId)
+    return list.map((exp) => ({
+      value: exp.id,
+      label: exp.name,
+      description: exp.title,
+    }))
+  }, [orgExperts, editRoleForm.occupationCode, orgId])
 
 
 
@@ -1697,7 +1734,7 @@ export function TargetRolesPage() {
       track: 'PROFESSIONAL',
       seniority: 'P3',
       levelNames: ['Junior', 'Middle', 'Senior'],
-      assignedExpertId: eligibleExperts[0]?.id || '',
+      assignedExpertId: (orgExperts[0]?.id || eligibleExperts[0]?.id || ''),
 
 
 
@@ -1821,7 +1858,7 @@ export function TargetRolesPage() {
 
 
 
-    const assignedExpert = findEligibleExpert(roleForm.assignedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
+    const assignedExpert = orgExperts.find((e) => e.id === roleForm.assignedExpertId) || findEligibleExpert(roleForm.assignedExpertId, orgId) || ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
 
 
 
@@ -2449,19 +2486,13 @@ export function TargetRolesPage() {
 
 
 
-    const assignedExpert = findEligibleExpert(editRoleForm.assignedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
-
+    const assignedExpert = orgExperts.find((e) => e.id === editRoleForm.assignedExpertId) || findEligibleExpert(editRoleForm.assignedExpertId, orgId) || ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
 
     const expertName = assignedExpert?.name || 'Assigned Expert'
 
-
-
     const selectedOcc = ONET_OCCUPATIONS.find((o) => o.code === editRoleForm.occupationCode) || ONET_OCCUPATIONS[0]
-
-
-
-    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -4422,7 +4453,7 @@ export function TargetRolesPage() {
 
 
 
-                      const expert = findEligibleExpert(role.assignedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
+                      const expert = orgExperts.find((e) => e.id === role.assignedExpertId) || findEligibleExpert(role.assignedExpertId, orgId) || ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
 
 
 
@@ -6155,7 +6186,7 @@ export function TargetRolesPage() {
 
 
 
-                Only subject matter experts assigned to {roleForm.occupationCode} ({availableOccupations.find(o => o.code === roleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
+                Assign an active subject matter expert from your organization to curate role competencies and micro-skills.
 
 
 
@@ -8006,7 +8037,7 @@ export function TargetRolesPage() {
 
 
 
-                  Only subject matter experts assigned to {editRoleForm.occupationCode} ({availableOccupations.find(o => o.code === editRoleForm.occupationCode)?.name || 'this occupation'}) are eligible to curate skills.
+                  Assign an active subject matter expert from your organization to curate role competencies and micro-skills.
 
 
 

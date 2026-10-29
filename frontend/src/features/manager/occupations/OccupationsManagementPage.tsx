@@ -37,7 +37,7 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { ELIGIBLE_EXPERTS } from '../data/ldManagerMockData'
+import { getOrganizationExperts, type EligibleExpert } from '../data/ldManagerMockData'
 import {
   createOccupation,
   updateOccupation,
@@ -653,9 +653,12 @@ export function OccupationsManagementPage() {
   }, [assignedExpertsInModal, assignedFilter, newlyAssignedIds])
 
   // Available experts not yet assigned to this occupation
+  const orgExperts = React.useMemo(() => getOrganizationExperts(orgId), [orgId])
+
+  // Available experts not yet assigned to this occupation
   const availableExperts = React.useMemo(() => {
     const assignedIds = new Set(assignedExpertsInModal.map((ae) => ae.id))
-    return ELIGIBLE_EXPERTS.filter((exp) => !assignedIds.has(exp.id)).filter((exp) => {
+    return orgExperts.filter((exp) => !assignedIds.has(exp.id)).filter((exp) => {
       if (!availableExpertSearch.trim()) return true
       const q = availableExpertSearch.toLowerCase()
       return exp.name.toLowerCase().includes(q) || exp.title.toLowerCase().includes(q)
@@ -687,7 +690,7 @@ export function OccupationsManagementPage() {
   }
 
   // Add single expert
-  const handleAddSingleExpert = (expert: (typeof ELIGIBLE_EXPERTS)[number]) => {
+  const handleAddSingleExpert = (expert: EligibleExpert) => {
     if (!selectedOccupationForAssign) return
     setAndSaveOccupations((prev) =>
       prev.map((o) => {
@@ -1738,7 +1741,7 @@ export function OccupationsManagementPage() {
 
             {availableExperts.length === 0 ? (
               <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg bg-muted/10">
-                {ELIGIBLE_EXPERTS.length === assignedExpertsInModal.length
+                {orgExperts.length === assignedExpertsInModal.length
                   ? 'All eligible experts in the organization are already assigned to this occupation.'
                   : 'No available experts matching filter.'}
               </div>
