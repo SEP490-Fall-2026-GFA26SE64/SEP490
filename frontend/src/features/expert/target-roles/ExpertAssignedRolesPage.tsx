@@ -39,7 +39,7 @@ import {
   Send,
 
   Sliders,
-  Sparkles,
+  Filter,
 
   Trash2,
 
@@ -50,6 +50,7 @@ import {
 } from 'lucide-react'
 
 import * as React from 'react'
+import { cn } from '../../../shared/lib/utils'
 
 import { Badge } from '../../../shared/components/ui/Badge'
 
@@ -1437,9 +1438,8 @@ export function ExpertAssignedRolesPage() {
       })
 
       const hasMissingPrereq = matchingPrereqs.length > 0
-      const prereqBadge = hasMissingPrereq ? `⭐ Unlocks: ${matchingPrereqs.join(', ')}` : ''
       const memberSkillsSummary = memberSkillCodes.length > 0
-        ? ` [Skills: ${memberSkillCodes.slice(0, 6).join(', ')}${memberSkillCodes.length > 6 ? '...' : ''}]`
+        ? ` · ${memberSkillCodes.length} micro-skills`
         : ''
 
       return {
@@ -1447,8 +1447,12 @@ export function ExpertAssignedRolesPage() {
         hasMissingPrereq,
         option: {
           value: comp.id,
-          label: `${hasMissingPrereq ? '⭐ ' : ''}${comp.code || comp.id} — ${comp.name}${hasMissingPrereq ? ` (${prereqBadge})` : ''}`,
-          description: `${hasMissingPrereq ? `${prereqBadge} — ` : ''}${comp.description || 'Domain Competency'}${memberSkillsSummary}`,
+          label: hasMissingPrereq
+            ? `${comp.code || comp.id} — ${comp.name} [Unlocks: ${matchingPrereqs.join(', ')}]`
+            : `${comp.code || comp.id} — ${comp.name}`,
+          description: hasMissingPrereq
+            ? `⭐ Unlocks prerequisite ${matchingPrereqs.join(', ')} · ${comp.description || 'Domain Competency'}${memberSkillsSummary}`
+            : `${comp.description || 'Domain Competency'}${memberSkillsSummary}`,
         },
       }
     })
@@ -3518,78 +3522,67 @@ export function ExpertAssignedRolesPage() {
 
 
                 {authoringRole.status !== 'published' && authoringRole.status !== 'submitted' && (
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-foreground block">
+                      Select Competency for {selectedLevelNamesLabel}
+                    </label>
 
-                  <div className="flex items-end gap-2.5">
-
-                    <div className="flex-1">
-
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <label className="text-[11px] font-semibold text-foreground">
-                          Select Competency for {selectedLevelNamesLabel}
-                        </label>
-                        {missingPrereqCodesForSelectedLevels.size > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setFilterOnlyPrereqUnlocks((prev) => !prev)}
-                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold border transition-all cursor-pointer ${
-                              filterOnlyPrereqUnlocks
-                                ? 'bg-amber-500 text-white border-amber-600 shadow-2xs hover:bg-amber-600'
-                                : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-700'
-                            }`}
-                            title={filterOnlyPrereqUnlocks ? 'Showing only competencies unlocking missing prerequisites. Click to show all.' : 'Filter dropdown to show only competencies that unlock missing prerequisites.'}
-                          >
-                            <Sparkles className="h-3 w-3 shrink-0" />
-                            <span>
-                              {filterOnlyPrereqUnlocks ? 'Filtering: ' : 'Filter: '}
-                              Unlocks Missing Prereqs ({missingPrereqCompetenciesCount})
-                            </span>
-                            {filterOnlyPrereqUnlocks && <X className="h-3 w-3 ml-0.5 shrink-0" />}
-                          </button>
-                        )}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <Combobox
+                          size="sm"
+                          clearable={false}
+                          options={competencyOptions}
+                          value={newCompetencyId}
+                          onChange={(val) => setNewCompetencyId(val)}
+                          placeholder={
+                            filterOnlyPrereqUnlocks
+                              ? `Showing ${missingPrereqCompetenciesCount} competencies unlocking missing prereqs...`
+                              : `Search & select competency for ${selectedLevelNamesLabel}...`
+                          }
+                          searchPlaceholder="Search by competency code or title..."
+                          emptyMessage={
+                            filterOnlyPrereqUnlocks
+                              ? 'No available competencies unlock the missing prerequisites.'
+                              : `All competencies are already assigned to ${selectedLevelNamesLabel}`
+                          }
+                        />
                       </div>
-                      <Combobox
+
+                      {missingPrereqCodesForSelectedLevels.size > 0 && (
+                        <Button
+                          type="button"
+                          variant={filterOnlyPrereqUnlocks ? 'secondary' : 'outline'}
+                          size="sm"
+                          onClick={() => setFilterOnlyPrereqUnlocks((prev) => !prev)}
+                          className={cn(
+                            'font-semibold text-xs whitespace-nowrap h-8 px-2.5 transition-all shadow-2xs shrink-0',
+                            filterOnlyPrereqUnlocks
+                              ? 'border-primary/40 text-primary bg-secondary hover:bg-secondary-hover'
+                              : 'text-muted-foreground hover:text-foreground border-border hover:bg-muted/50'
+                          )}
+                          leftIcon={<Filter className={cn('h-3.5 w-3.5', filterOnlyPrereqUnlocks ? 'text-primary' : 'text-muted-foreground')} />}
+                          title={filterOnlyPrereqUnlocks ? 'Clear missing prerequisites filter' : 'Filter dropdown to show only competencies that unlock missing prerequisites'}
+                        >
+                          <span>
+                            {filterOnlyPrereqUnlocks ? 'Filter Active' : 'Missing Prereqs'} ({missingPrereqCompetenciesCount})
+                          </span>
+                          {filterOnlyPrereqUnlocks && <X className="h-3 w-3 ml-1 text-primary" />}
+                        </Button>
+                      )}
+
+                      <Button
+                        type="button"
+                        variant="primary"
                         size="sm"
-                        clearable={false}
-                        options={competencyOptions}
-                        value={newCompetencyId}
-                        onChange={(val) => setNewCompetencyId(val)}
-                        placeholder={
-                          filterOnlyPrereqUnlocks
-                            ? `Select competency unlocking missing prereqs (${missingPrereqCompetenciesCount} available)...`
-                            : `Search & select competency for ${selectedLevelNamesLabel}...`
-                        }
-                        searchPlaceholder="Search by competency code or title..."
-                        emptyMessage={
-                          filterOnlyPrereqUnlocks
-                            ? 'No available competencies unlock the missing prerequisites.'
-                            : `All competencies are already assigned to ${selectedLevelNamesLabel}`
-                        }
-                      />
-
+                        disabled={!newCompetencyId}
+                        onClick={() => handleAddCompetency(newCompetencyId)}
+                        className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
+                        leftIcon={<Plus className="h-3.5 w-3.5" />}
+                      >
+                        Add Competency
+                      </Button>
                     </div>
-
-                    <Button
-
-                      type="button"
-
-                      variant="primary"
-
-                      size="sm"
-
-                      disabled={!newCompetencyId}
-
-                      onClick={() => handleAddCompetency(newCompetencyId)}
-
-                      className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
-
-                      leftIcon={<Plus className="h-3.5 w-3.5" />}
-
-                    >
-
-                      Add Competency
-
-                    </Button>
-
                   </div>
 
                 )}
