@@ -1371,64 +1371,180 @@ export function ExpertAssignedRolesPage() {
 
 
 
+  // Helper to find parent competencies for a micro-skill in ontology
+  const getParentCompetenciesForSkill = React.useCallback(
+    (skillIdOrCode: string): CompetencyDto[] => {
+      if (!skillIdOrCode) return []
+      const skillObj = companyMicroSkills.find(
+        (s) => s.id === skillIdOrCode || s.code === skillIdOrCode
+      )
+      const targetId = skillObj?.id || skillIdOrCode
+      const targetCode = skillObj?.code || skillIdOrCode
+      const macroCode = skillObj?.macroCompetencyCode
+
+      const sourceComps: CompetencyDto[] = realCompetencies.length > 0 ? realCompetencies : ((activeCompany?.competencies || []) as unknown as CompetencyDto[])
+
+      return sourceComps.filter((c) => {
+        const inSkillIds =
+          (c.skillIds || []).includes(targetId) ||
+          (c.skillIds || []).includes(targetCode) ||
+          (c.skillIds || []).includes(skillIdOrCode)
+        const inMemberSkills = ((c as CompetencyDto).memberSkills || []).some(
+          (m: { id?: string; code?: string }) =>
+            m.id === targetId ||
+            m.code === targetCode ||
+            m.id === skillIdOrCode ||
+            m.code === skillIdOrCode
+        )
+        const matchesMacro = Boolean(macroCode && (c.code === macroCode || c.id === macroCode))
+        return inSkillIds || inMemberSkills || matchesMacro
+      })
+    },
+    [companyMicroSkills, realCompetencies, activeCompany]
+  )
+
+  // Missing prerequisites for the currently selected level(s)
+  const selectedLevelsMissingPrereqs = React.useMemo(() => {
+    const seen = new Set<string>()
+    const list: Array<{ skillCode: string; prereqCode: string; level: string }> = []
+    authoringRoleMissingPrereqs.forEach((m) => {
+      if (!selectedAuthoringLevels.includes(m.level)) return
+      const key = `${m.skillCode}-${m.prereqCode}-${m.level}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        list.push(m)
+      }
+    })
+    return list
+  }, [authoringRoleMissingPrereqs, selectedAuthoringLevels])
+
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
+    const missingPrereqCodes = new Set(
+      authoringRoleMissingPrereqs
+        .filter((m) => selectedAuthoringLevels.includes(m.level))
+        .map((m) => m.prereqCode)
+    )
 
-    return availableCompetencies.map((comp) => ({
+    return availableCompetencies.map((comp) => {
+      const memberSkillCodes = (comp.memberSkills || []).map((m) => m.code || m.id)
+      const matchingPrereqs = Array.from(missingPrereqCodes).filter((code) => {
+        const parentComps = getParentCompetenciesForSkill(code)
+        return parentComps.some((c) => c.id === comp.id || c.code === comp.code)
+      })
 
-      value: comp.id,
+      const hasMissingPrereq = matchingPrereqs.length > 0
+      const prereqBadge = hasMissingPrereq ? `⭐ Unlocks: ${matchingPrereqs.join(', ')}` : ''
+      const memberSkillsSummary = memberSkillCodes.length > 0
+        ? ` [Skills: ${memberSkillCodes.slice(0, 6).join(', ')}${memberSkillCodes.length > 6 ? '...' : ''}]`
+        : ''
 
-      label: `${comp.code || comp.id} — ${comp.name}`,
+      return {
+        value: comp.id,
+        label: `${comp.code || comp.id} — ${comp.name}${hasMissingPrereq ? ` (${prereqBadge})` : ''}`,
+        description: `${hasMissingPrereq ? `${prereqBadge} — ` : ''}${comp.description || 'Domain Competency'}${memberSkillsSummary}`,
+      }
+    })
+  }, [availableCompetencies, authoringRoleMissingPrereqs, selectedAuthoringLevels, getParentCompetenciesForSkill])
 
-      description: comp.description || undefined,
-
-    }))
-
-  }, [availableCompetencies])
-
-
-
-  // Add competency strictly to all currently selected levels
-
-  const handleAddCompetency = (compId: string) => {
-
-    if (!authoringRole || !compId || selectedAuthoringLevels.length === 0) return
+  // Add competency strictly to all currently selected levels, or a specific targeted level
+  const handleAddCompetency = (compId: string, targetLevel?: string) => {
+    if (!authoringRole || !compId) return
+    const levelsToTarget = targetLevel ? [targetLevel] : selectedAuthoringLevels
+    if (levelsToTarget.length === 0) return
 
     const updatedLevelCompetencies = { ...(authoringRole.levelCompetencies || {}) }
-
-    selectedAuthoringLevels.forEach((lvl) => {
-
+    levelsToTarget.forEach((lvl) => {
       const existing = updatedLevelCompetencies[lvl] || []
-
       if (!existing.includes(compId)) {
-
         updatedLevelCompetencies[lvl] = [...existing, compId]
-
       }
-
     })
+    const allUnionComps = Array.from(new Set(Object.values(updatedLevelCompetencies).flat()))
+
+    const updatedRole: TargetRoleModel = {
+      ...authoringRole,
+      levelCompetencies: updatedLevelCompetencies,
+      competencyIds: allUnionComps,
+      updatedAt: new Date().toISOString(),
+    }
+
+    setAuthoringRole(updatedRole)
+    setNewCompetencyId('')
+
+    const compObj = realCompetencies.find((c) => c.id === compId || c.code === compId)
+    toast({
+      title: 'Competency Added',
+      description: `Added "${compObj?.code || compId}" to ${levelsToTarget.join(', ')}. Associated micro-skills are now unlocked for configuration.`,
+    })
+  }
+
+  // Quick-assign a missing prerequisite micro-skill and ensure its parent competency is added
+  const handleAssignPrerequisiteSkill = (skillCodeOrId: string, targetLevel: string) => {
+    if (!authoringRole || !skillCodeOrId || !targetLevel) return
+
+    const skillObj = companyMicroSkills.find(
+      (s) => s.id === skillCodeOrId || s.code === skillCodeOrId
+    )
+    if (!skillObj) {
+      toast({
+        title: 'Skill Not Found',
+        description: `Micro-skill "${skillCodeOrId}" is not present in the catalog.`,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // 1. Ensure parent competency is added to targetLevel
+    const parentComps = getParentCompetenciesForSkill(skillCodeOrId)
+    const updatedLevelCompetencies = { ...(authoringRole.levelCompetencies || {}) }
+    const existingComps = updatedLevelCompetencies[targetLevel] || []
+
+    let addedCompCode = ''
+    if (parentComps.length > 0) {
+      const primaryComp = parentComps[0]
+      if (!existingComps.includes(primaryComp.id) && (!primaryComp.code || !existingComps.includes(primaryComp.code))) {
+        updatedLevelCompetencies[targetLevel] = [...existingComps, primaryComp.id]
+        addedCompCode = primaryComp.code || primaryComp.id
+      }
+    }
 
     const allUnionComps = Array.from(new Set(Object.values(updatedLevelCompetencies).flat()))
 
+    // 2. Add skill target if not already added to targetLevel
+    const existingSkillTargets = authoringRole.skillTargets || []
+    const alreadyHasSkill = existingSkillTargets.some(
+      (st) =>
+        (st.skillId === skillObj.id || st.skillCode === skillObj.code) &&
+        (st.level || currentRoleLevels[0]) === targetLevel
+    )
 
-
-    const updatedRole: TargetRoleModel = {
-
-      ...authoringRole,
-
-      levelCompetencies: updatedLevelCompetencies,
-
-      competencyIds: allUnionComps,
-
-      updatedAt: new Date().toISOString(),
-
+    let nextSkillTargets = existingSkillTargets
+    if (!alreadyHasSkill) {
+      nextSkillTargets = [
+        ...existingSkillTargets,
+        {
+          skillId: skillObj.id,
+          skillCode: skillObj.code,
+          skillName: skillObj.name,
+          level: targetLevel,
+          threshold: 80,
+        },
+      ]
     }
 
-
+    const updatedRole: TargetRoleModel = {
+      ...authoringRole,
+      levelCompetencies: updatedLevelCompetencies,
+      competencyIds: allUnionComps,
+      skillTargets: nextSkillTargets,
+      updatedAt: new Date().toISOString(),
+    }
 
     setAuthoringRole(updatedRole)
-
-    setNewCompetencyId('')
-
+    toast({
+      title: 'Prerequisite Skill Assigned',
+      description: `Assigned "${skillObj.code} — ${skillObj.name}" (80% mastery)${addedCompCode ? ` and added parent competency "${addedCompCode}"` : ''} for ${targetLevel}.`,
+    })
   }
 
 
@@ -3708,7 +3824,101 @@ export function ExpertAssignedRolesPage() {
 
 
 
-              {/* Form to Add New Micro-Skill Target for Selected Level(s) */}
+                            {/* Missing Prerequisite Guidance Banner */}
+              {selectedLevelsMissingPrereqs.length > 0 && authoringRole.status !== 'published' && authoringRole.status !== 'submitted' && (
+                <div className="p-3.5 rounded-lg border border-amber-300/80 bg-amber-50/60 text-foreground space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                      <span className="text-xs font-bold text-amber-950">
+                        Prerequisite Resolution Guide for {selectedLevelNamesLabel} ({selectedLevelsMissingPrereqs.length} missing)
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-amber-800">
+                      Add parent competency to unlock the required skill
+                    </span>
+                  </div>
+                  <div className="divide-y divide-amber-200/60 text-xs">
+                    {selectedLevelsMissingPrereqs.map((m, idx) => {
+                      const prereqSkill = companyMicroSkills.find((s) => s.id === m.prereqCode || s.code === m.prereqCode)
+                      const parentComps = getParentCompetenciesForSkill(m.prereqCode)
+                      const isCompAdded = parentComps.some(
+                        (c) =>
+                          (authoringRole.levelCompetencies?.[m.level] || []).includes(c.id) ||
+                          (authoringRole.levelCompetencies?.[m.level] || []).includes(c.code || '')
+                      )
+
+                      return (
+                        <div key={`${m.skillCode}-${m.prereqCode}-${m.level}-${idx}`} className="py-2.5 first:pt-1 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <p className="text-amber-950 font-medium">
+                              <span className="font-mono font-bold text-primary">{m.skillCode}</span> requires{' '}
+                              <span className="font-mono font-bold text-destructive">{m.prereqCode}</span>
+                              {prereqSkill && <span className="text-muted-foreground ml-1 font-normal">({prereqSkill.name})</span>}
+                            </p>
+                            <p className="text-[11px] text-amber-900 flex items-center gap-1.5 flex-wrap">
+                              <span>Belongs to Competency:</span>
+                              {parentComps.length > 0 ? (
+                                parentComps.map((c) => (
+                                  <Badge
+                                    key={c.id}
+                                    variant="outline"
+                                    className={`text-[10px] font-medium ${isCompAdded ? 'border-emerald-300 text-emerald-800 bg-emerald-50' : 'border-primary/40 text-primary bg-primary/5'}`}
+                                  >
+                                    {c.code || c.id} — {c.name} {isCompAdded ? '(Added)' : '(Needed)'}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="italic text-muted-foreground">Unassigned to any competency in ontology</span>
+                              )}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {parentComps.map((c) => {
+                              const compAdded =
+                                (authoringRole.levelCompetencies?.[m.level] || []).includes(c.id) ||
+                                (authoringRole.levelCompetencies?.[m.level] || []).includes(c.code || '')
+
+                              if (!compAdded) {
+                                return (
+                                  <Button
+                                    key={c.id}
+                                    type="button"
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => handleAddCompetency(c.id, m.level)}
+                                    className="text-[11px] h-7 px-2.5 font-semibold shadow-2xs whitespace-nowrap"
+                                    leftIcon={<Plus className="h-3 w-3" />}
+                                  >
+                                    Add {c.code || c.id}
+                                  </Button>
+                                )
+                              }
+
+                              return (
+                                <Button
+                                  key={c.id}
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleAssignPrerequisiteSkill(m.prereqCode, m.level)}
+                                  className="text-[11px] h-7 px-2.5 font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 shadow-2xs whitespace-nowrap"
+                                  leftIcon={<Plus className="h-3 w-3 text-emerald-600" />}
+                                >
+                                  Assign {m.prereqCode}
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+{/* Form to Add New Micro-Skill Target for Selected Level(s) */}
 
               {authoringRole.status !== 'published' && authoringRole.status !== 'submitted' && (
 
@@ -4063,13 +4273,66 @@ export function ExpertAssignedRolesPage() {
                                     )}
 
                                     {missingPrereqs.length > 0 && (
+                                      <div className="flex flex-col gap-1 w-full mt-1">
+                                        {missingPrereqs.map((p) => {
+                                          const pCode = p.targetSkillCode || p.targetSkillId
+                                          const prereqSkill = companyMicroSkills.find((s) => s.id === pCode || s.code === pCode)
+                                          const parentComps = getParentCompetenciesForSkill(pCode)
+                                          const parentCompLabels = parentComps.map((c) => c.code || c.id)
 
-                                      <Badge variant="outline" className="text-[9.5px] font-mono text-destructive border-destructive/30 bg-destructive/5" title="Prerequisite skill not yet added to this level">
+                                          return (
+                                            <div key={pCode} className="flex items-center gap-1.5 flex-wrap">
+                                              <Badge
+                                                variant="outline"
+                                                className="text-[9.5px] font-mono text-destructive border-destructive/30 bg-destructive/5 flex items-center gap-1 py-0.5 px-1.5"
+                                                title={`Prerequisite "${pCode}${prereqSkill ? ` — ${prereqSkill.name}` : ''}" is required. Parent competencies: ${parentComps.map((c) => `${c.code || c.id} (${c.name})`).join(', ') || 'None'}.`}
+                                              >
+                                                <AlertCircle className="h-3 w-3 shrink-0 text-destructive" />
+                                                <span>Missing prereq: {pCode}</span>
+                                                {parentCompLabels.length > 0 && (
+                                                  <span className="text-[9px] font-semibold text-primary ml-1">
+                                                    (in {parentCompLabels.join(', ')})
+                                                  </span>
+                                                )}
+                                              </Badge>
 
-                                        Missing prereq: {missingPrereqs.map((p) => p.targetSkillCode || p.targetSkillId).join(', ')}
+                                              {authoringRole.status !== 'published' && authoringRole.status !== 'submitted' && parentComps.map((c) => {
+                                                const isCompAdded =
+                                                  (authoringRole.levelCompetencies?.[stLevel] || []).includes(c.id) ||
+                                                  (authoringRole.levelCompetencies?.[stLevel] || []).includes(c.code || '')
 
-                                      </Badge>
+                                                if (!isCompAdded) {
+                                                  return (
+                                                    <button
+                                                      key={c.id}
+                                                      type="button"
+                                                      onClick={() => handleAddCompetency(c.id, stLevel)}
+                                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9.5px] font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded transition-colors cursor-pointer"
+                                                      title={`Add parent competency ${c.code || c.id} (${c.name}) to ${stLevel}`}
+                                                    >
+                                                      <Plus className="h-2.5 w-2.5" />
+                                                      Add {c.code || c.id}
+                                                    </button>
+                                                  )
+                                                }
 
+                                                return (
+                                                  <button
+                                                    key={c.id}
+                                                    type="button"
+                                                    onClick={() => handleAssignPrerequisiteSkill(pCode, stLevel)}
+                                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9.5px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded transition-colors cursor-pointer"
+                                                    title={`Assign prerequisite skill ${pCode} to ${stLevel}`}
+                                                  >
+                                                    <Plus className="h-2.5 w-2.5 text-emerald-600" />
+                                                    Assign {pCode}
+                                                  </button>
+                                                )
+                                              })}
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
                                     )}
 
                                   </div>
