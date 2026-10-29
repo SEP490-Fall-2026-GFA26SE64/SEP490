@@ -4,7 +4,9 @@
 
 ![Sơ đồ ontology](diagrams/neo4j.svg)
 
-[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
+[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
+
+Catalog uses stable string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection, profiles, assessment evidence and pathway state; Neo4j owns catalog only. Existing attempts retain their original catalog/model pins. The source v0.11 release does not prove an existing database has been upgraded.
 
 ## 1. Cấu trúc tổng quát
 

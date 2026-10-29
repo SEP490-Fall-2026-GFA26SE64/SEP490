@@ -1,5 +1,21 @@
 # System Testing Directory & Standards
 
+## Dated adaptive checkpoint evidence
+
+2026-10-29 selected review/read C4: [real system evidence](REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) records **2/2 Passed**,0 failed/skipped/flaky, real session/CSRF/baseline/API/worker/persistence, isolated final4 stack on38088. Expert repair/order/Check/preview/final approval → same Employee revision5/hash/order14; real archived unresolved equal-hash repair locked after separately approved C2 guard. [Counts/failures/limits](REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29). Native browser drag Not run, E04–E06/protected execution deferred, production owners Open; old build/manual evidence below remains historical. C4 did not start services or rerun tests; generic shared8088 commands below are not this run's harness.
+
+2026-10-28 final handoff: [static reconciliation and next-machine gates](REQ-041-042-v011-handoff-review.md). Requested journey ends at Employee's own approved pathway display; planner inputs/fresh Compose/manual flow remain incomplete. Next session reports first, waits for OK; no automatic executable tests/C3.
+
+2026-10-28 REQ-041/042 C2: [native fresh DB cutover/manual receipt](REQ-041-042-v011-native-cutover.md): V1–V28 applied, exact0.11 graph sealed, API/FE read smoke observed. Owner readiness/content/full flow and executable acceptance remain pending; no C3 transition.
+
+2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
+
+**Latest, 2026-10-24 REQ-001/002/009:** [Cluster 4 evidence/gate audit](REQ-001-002-009-cluster4-20261024-evidence.md) reconciles the [original Cluster 3 receipt](REQ-001-002-009-cluster3-20261024-execution.md): 168 pass/4 fail across BE, FE and synthetic browser fixtures. **0 current real-stack system passes; nine journeys Not run (`--list` only)**. Integration/numerical/performance remain blocked; Cluster 3/4 incomplete. [23 October131P/0F](REQ-001-002-cluster4-evidence.md) retains its dated source/fixture, with no pass carry-forward.
+
+Local baseline manual history: [demo contract](../../technical/baseline/Local%20Demo%20Flow.md), [dated manual observations/limits](REQ-002-local-demo.md), [user walkthrough](../../../../../s2%20work/Test%20Guides/REQ-002-F02-full-walkthrough-test-guide.md). These observations do not establish current rendered/system acceptance; latest fixture browser results and real-stack gaps are linked above. Production owner integrations/operational C are separate.
+
+[23 October memory/code/doc/schema review](REQ-002-memory-schema-sync.md) records current read-only V23/86-table verification, regenerated diagrams and retained bypasses; no tests were run. Historical [Session1](REQ-002-official-question-bank-session1.md), [cutover](REQ-002-official-local-cutover.md), [Session2](REQ-002-official-question-bank-session2.md) and [Session3](REQ-002-official-question-bank-session3.md) evidence preserve their original environment/date, not current startup instructions.
+
 ## Current Scope Alignment
 
 Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). End-to-end gates cover Guest registration/verification/payment/setup, platform administration, renewal/seats/access, departments/occupations/assignments/publication/approval, baseline/RIASEC -> direct AI guidance -> Employee selection, initial pathway -> Expert confirmation -> learning/adaptation, independent learning and development/ROI reporting. Verify isolation with at least two organizations, private files, notifications and audit. Product benchmark screens, cancellation and exports are not required.
@@ -20,6 +36,7 @@ System testing validates complete end-to-end integration across all system tiers
 
 | Requirement ID | Feature Name | Workflows Covered | System Test Document | Manual Procedure | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Review and own approved read | Repair/order/exact approval→Employee; archived equal-hash repair lock | [Actual system cases/isolation](REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) | [Current procedure / history](REQ-019-REQ-020-manual-browser-check.md) | **2 Passed; native drag/learning execution not passed** |
 | **REQ-060-F01-F03** | Registration, email and MFA/resume | Real API/SMTP, desktop/mobile, recovery, restart and expiry | [REQ-060-registration.md](REQ-060-registration.md) | [Manual/Gmail checklist](REQ-060-registration-manual-check.md) | **Local Passed / Live Gmail Blocked** |
 | **REQ-001-F01** | View Target Roles | Learner Role Catalog Browse | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | [REQ-001-F01-manual-browser-check.md](REQ-001-F01-manual-browser-check.md) | **PASSED** (API) / Manual Available |
 | **REQ-001-F02** | Choose Target Role | Target Role Selection Flow | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | [Playwright Spec](../../../frontend/system-tests/REQ-001-F02-target-role-selection.spec.ts) | **PASSED** (Compose API & Playwright) |

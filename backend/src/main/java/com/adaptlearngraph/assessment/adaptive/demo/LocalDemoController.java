@@ -16,11 +16,11 @@ public class LocalDemoController {
     private final LocalDemoIdentity identity;
     public LocalDemoController(LocalDemoIdentity identity) { this.identity=identity; }
     @GetMapping("/api/v1/local-baseline-demo/session")
-    ResponseEntity<?> session() { return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(Map.of("persona",identity.selected(),"personas",LocalDemoIdentity.PERSONAS.stream().sorted().toList(),"origin","SYNTHETIC","occupationId",LocalDemoIdentity.OCC,"organizationId",LocalDemoIdentity.ORG)); }
+    ResponseEntity<?> session() { return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(Map.of("persona",identity.selected(),"personas",identity.personas().stream().sorted().toList(),"actorId",identity.actor(),"role",identity.role(),"origin","SYNTHETIC","occupationId",LocalDemoIdentity.OCC,"organizationId",LocalDemoIdentity.ORG)); }
     public record Switch(String persona) {}
     @PostMapping("/api/v1/local-baseline-demo/session")
     ResponseEntity<?> change(@RequestBody Switch input) {
-        if (input.persona()==null || !LocalDemoIdentity.PERSONAS.contains(input.persona())) return ResponseEntity.badRequest().build();
+        if (input.persona()==null || !identity.personas().contains(input.persona())) return ResponseEntity.badRequest().build();
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE,ResponseCookie.from("baseline_demo_persona",input.persona()).httpOnly(true).sameSite("Strict").path("/api").build().toString()).build();
     }
     @GetMapping("/api/v1/ld/baseline-blueprint-catalog/occupations")

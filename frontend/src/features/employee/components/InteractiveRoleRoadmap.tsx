@@ -1,4 +1,9 @@
 import * as React from 'react'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
+import { baselineTargetMet, pathwaySkill } from '../../../shared/api/initialPathwayMessages'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { Heading } from '../../../shared/components/typography/Heading'
 import {
   ArrowRight,
   Award,
@@ -17,7 +22,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Badge } from '../../../shared/components/ui/Badge'
+import { Badge, badgeVariants } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Dialog } from '../../../shared/components/ui/Dialog'
 import { Progress } from '../../../shared/components/ui/Progress'
@@ -34,12 +39,58 @@ import {
 import './InteractiveRoleRoadmap.css'
 
 export interface InteractiveRoleRoadmapProps {
+  pathway?: PathwayView
+  search?: string
   targetRole?: string
   isSkillMode?: boolean
   compact?: boolean
 }
 
-export function InteractiveRoleRoadmap({
+export function InteractiveRoleRoadmap(props: InteractiveRoleRoadmapProps = {}) {
+  return props.pathway ? <ApprovedRoleRoadmap pathway={props.pathway} search={props.search ?? ''} /> : <LegacyInteractiveRoleRoadmap {...props} />
+}
+function ApprovedRoleRoadmap({ pathway, search }: { pathway: PathwayView; search: string }) {
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key)
+  const [selection, setSelection] = React.useState<PathwayDetailSelection>(null)
+  const query = search.trim().toLocaleLowerCase()
+  function skillNode(id: string) {
+    const skill = pathwaySkill(pathway, id), met = baselineTargetMet(skill), known = skill?.mastery != null
+    const matches = !query || `${id} ${skill?.name ?? ''}`.toLocaleLowerCase().includes(query)
+    return <Button key={id} variant="outline" className={cn('roadmap-skill-box h-auto min-h-10 w-full whitespace-normal [&>span]:w-full [&>span]:whitespace-normal', met ? 'is-achieved' : known ? 'is-not-achieved' : 'is-unknown', query && !matches && 'opacity-40', query && matches && 'ring-2 ring-ring')}
+      title={skill?.name ?? id} onClick={() => setSelection({ kind: 'skill', id })}>
+      <span className="max-w-full shrink-0 break-all rounded bg-muted px-1.5 py-0.5 font-mono text-[length:var(--text-eyebrow)] text-foreground">{id}</span>
+      <span className="min-w-0 flex-1 break-words text-left">{skill?.name ?? id}</span>
+      <span className="shrink-0" aria-label={met ? ui('targetMet') : known ? tr('mastery') : tr('unknown')}>{met ? <Check className="size-4 text-success" /> : known ? `${(skill!.mastery! * 100).toLocaleString(language, { maximumFractionDigits: 1 })}%` : '?'}</span>
+    </Button>
+  }
+  return <>
+    <section className="roadmap-container approved-roadmap" aria-label={t('pathway.interactiveRoadmap')}>
+      <div className="roadmap-canvas">
+        <div className="roadmap-target-role-node max-w-full space-y-2"><span className="inline-flex items-center gap-2 text-[length:var(--text-caption)] font-semibold uppercase text-primary"><Target className="size-4" />{tr('targetRole')}</span><Heading level={2} size="page">{pathway.status?.roleName}</Heading><span className="block text-[length:var(--text-body-sm)] text-muted-foreground">{pathway.status?.levelName}</span></div>
+        <div className="roadmap-spine-segment h-12" aria-hidden="true" />
+        {pathway.modules.map(({ module, accessState }, index) => {
+          const targets = [...module.targets].sort((a, b) => Number(b.teachingFocus === 'PRIMARY') - Number(a.teachingFocus === 'PRIMARY'))
+          const matches = !query || `${module.id} ${module.title} ${targets.map(target => pathwaySkill(pathway, target.skillId)?.name ?? target.skillId).join(' ')}`.toLocaleLowerCase().includes(query)
+          return <React.Fragment key={module.id}>
+            <div className={cn('approved-roadmap-row', query && !matches && 'opacity-40')}>
+              <div className="approved-roadmap-skills is-left">{targets.filter((_, i) => (i + index) % 2 === 0).map(target => skillNode(target.skillId))}</div>
+              <Button className="roadmap-module-box h-auto w-full whitespace-normal [&>span]:block [&>span]:w-full [&>span]:whitespace-normal" onClick={() => setSelection({ kind: 'module', id: module.id })}>
+                <span className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-primary-foreground/25 pb-2 text-[length:var(--text-caption)]"><span className="break-all font-mono">{module.id}</span><span className={badgeVariants({ variant: 'outline', className: 'whitespace-normal border-primary-foreground/40 bg-primary-hover text-primary-foreground' })}>{accessState === 'PREVIEW' ? tr('reviewFlow.draft') : tr('state.' + accessState)}</span></span>
+                <span className="block break-words">{module.title}</span>
+              </Button>
+              <div className="approved-roadmap-skills is-right">{targets.filter((_, i) => (i + index) % 2 !== 0).map(target => skillNode(target.skillId))}</div>
+            </div>
+            {index < pathway.modules.length - 1 && <div className="roadmap-spine-segment h-12" aria-hidden="true" />}
+          </React.Fragment>
+        })}
+        <div className="roadmap-spine-segment h-12" aria-hidden="true" />
+        <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-5 py-3 text-[length:var(--text-body-sm)]"><CheckCircle2 className="size-4 text-primary" /><span>{pathway.status?.displayState === 'PREVIEW' ? tr('reviewFlow.draft') : ui(pathway.archived ? 'archivedPlan' : 'approvedPlan')} · {pathway.modules.length} {tr('moduleCount')}</span></div>
+      </div>
+    </section>
+    <InitialPathwayDetails pathway={pathway} selection={selection} onClose={() => setSelection(null)} />
+  </>
+}
+function LegacyInteractiveRoleRoadmap({
   targetRole: propTargetRole,
   isSkillMode: propIsSkillMode,
   compact = false,
