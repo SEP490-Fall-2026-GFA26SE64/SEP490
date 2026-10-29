@@ -1,38 +1,42 @@
 # Include Pathway Module
 
-29Oct confirmed amendment: see [Expert order/removal](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md#confirmed-expert-order-and-neutral-removal--2026-10-29). Include keeps the same trusted intent/revision/key contract; after explicit Expert ordering, retain valid relative prior order and insert new prerequisite providers before their dependents. Check/Confirm preserve that saved order while freshly validating. REMOVE is distinct from Exclude and may return an eligible candidate here. Earlier no-reorder statements below describe the prior scope, superseded only by this approved amendment.
+**Function:** REQ-020-F01. **Actor:** assigned Expert. **Contract updated:** 2026-10-29.
+Business requirements: [FR-05.07](../../../features/Pathway%20review/README.md#fr-05-07).
 
-Confirmed UX2026-10-28: Catalog→Included and Excluded→Included drops are alternate gestures for this same command. Keyboard/mobile Include/Restore buttons remain. Only currently eligible candidates from the scoped server response can be included; last persisted overrides determine excluded membership. Ignore external/same-list/stale drag and lock during pending/approved states. Reconcile exact server revision/hash/order; no position field, reorder, localStorage mutation, fabricated success or automatic approval. See REQ-019's confirmed UX restoration; C2 build/manual evidence is separate from planned C3 cases.
+## Goal and preconditions
 
-**Function:** REQ-020-F01. **Actor:** authorized Expert. **Status:**0.11 C2 source/API UI/format/local-scope adaptation built2026-10-28; runtime evidence pending.
+Add an eligible Catalog module or restore an Excluded module to the existing initial draft. Inclusion adjusts the fixed selected set and can repair missing coverage/prerequisites; it grants no approval, mastery or learning access. Require current trusted Expert/org/assignment, existing AWAITING_EXPERT_REVIEW proposal and exact current expected revision/hash. UNRESOLVED is editable; approved/archive and generation failures without a draft are not.
 
-## Current Scope Alignment
+## Input, output and protected fields
 
-Include an eligible Module in an initial pathway draft without granting learning access. Expert supplies intent; engine owns revalidation/order. [Shared design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). Subsequent confirmation is REQ-019-F01, not an effect of inclusion.
+POST `/api/v1/expert/initial-pathways/{id}/inclusions`: opaque pathway ID, moduleId, expectedRevision, expectedContentHash, optional reason <=2000 characters, Idempotency-Key. Actor/org/learner/assignment, eligible teaching pairs, providers, order, validation and timestamps come from the server. Unknown request properties are rejected.
 
-## Actor, fields and ordered flow
+Return pathwayId, resulting revision/revisionContentHash, reviewStatus, validationStatus and diagnostics in a retained receipt. Authorized detail exposes actual grouped modules, per-skill teaching metadata, warnings/quality/dependencies and safe gaps. No protected answer/theta/SE or client-owned approval/order/mastery is accepted or exposed.
 
-Trusted server actor/org and current reviewer assignment are required; only the confirmed separately gated local assignment adapter may substitute assignment in demo, as [shared section14.5](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#145-local-assignment-substitute-and-mandatory-owner-ports) defines. Client sends proposal ID, moduleId, expected revision/hash, optional reason and key. Server owns eligibility, teachingFocus/difficultyLevel, coverage/benefit assignments, warnings, order/status and new revision. Arbitrary learner/org/mastery/order is rejected.
+## Ordered flow
 
-1. Authorize assignment before resource/receipt read; load own-scope current initial draft. Reauthorize replay; exact key/body replays, key reuse conflicts.
-2. Lock/CAS expected revision/hash. Stale/approved/archived proposal cannot be silently edited. If already included, return no-op after revision checks.
-3. Read current Module/content/publication/suitability and related needs/dependencies through ports. Only eligible permitted content can be included; catalog downtime is not permission.
-4. Construct the fixed new Module set; retain inclusion/reason/source, dedup Module costs and keep per-skill focus/difficulty/coverage/ancillary metadata. SUPPORTING does not replace an available Primary provider; INCIDENTAL cannot close a need. Include a suitable alternative before explicitly excluding the old provider if desired; no silent replacement.
-5. Validate fixed-set coverage/prerequisite/internal-gate/order/freshness with the shared versioned policy. Retain separate Expert-attention fallback notes/UNKNOWN reasons and quality/totals. Do not optimize away selected Modules to restore the generation optimum. A complete feasible warning-bearing draft is VALID; missing coverage/gates remains editable UNRESOLVED; search uncertainty cannot be VALID. Dependency outage rolls back.
-6. Atomically save immutable next revision/override/receipt/audit/outbox and current pointer CAS. Return resulting revision/hash/validation and reasons, not approved status. No mastery/baseline/learning access change.
+1. Authenticate and authorize assignment before existence/receipt reads. Validate command shape and exact expected tuple.
+2. Reauthorize exact receipt replay before checking the now-current revision. Same key/body returns the accepted outcome; changed body conflicts. An unseen command must match the editable current draft.
+3. If already selected, return current-revision no-op: no duplicate module/revision/override, but store the accepted receipt after current selection/binding/assignment checks. A new stale key still conflicts.
+4. Otherwise resolve current pinned configuration/binding and planning problem through graph, suitability, availability and readiness ports. Require a matching offer that can cover a learning need; ineligible/foreign/unavailable content cannot be included.
+5. Add only the requested module, append INCLUDE/reason and validate the exact new set. Dedup totals by module; keep actual per-skill PRIMARY/SUPPORTING/INCIDENTAL, difficulty, coverage/ancillary role, UNKNOWN/fallback warnings and source pins. Review may reassign providers within the set but cannot silently remove/add other selected modules or infer global Primary absence from an exclusion.
+6. When explicit Expert order exists, preserve valid relative order and insert new prerequisite providers before dependents. Without an explicit move, use deterministic dependency-valid server order. Internal gates and valid external evidence remain required; titles and difficulty do not establish prerequisites.
+7. Persist a VALID or editable UNRESOLVED revision. Advisory warnings alone are not blocking; incomplete coverage/gates/cycles/search uncertainty cannot be VALID. A dependency outage is an error, not fabricated missing evidence.
+8. Under learner coordination, recheck receipt/expected tuple/current selection/binding/assignment; atomically save revision, module ordinals/teaching/dependencies, override, pointer CAS, receipt, audit/outbox. Roll back the whole write on failure.
+9. Reconcile authorized detail and run a fresh Check. Follow-up Check failure does not erase the successful Include or require a new mutation key. Preview and exact final approval remain REQ-019-F01.
 
-Command routes remain unchanged; format2 codec/storage/DTO source now exists under shared section15, with V28 source unapplied. Original format1 identity computation/reader is retained without relabeling or immutable-row updates; actual round-trip is untested. Compulsory justification/reorder/AI regeneration is not assumed; foreign/inaccessible content cannot fix a gap.
+## Alternative and failure flows
 
-For a previously accepted exact command, return its retained receipt after reauthorization before checking the now-old expected revision. New commands still require the current revision, including include-existing no-ops. A generation failure without a proposal is not an editable draft. Readiness results remain live; revision hash freezes gate definitions and actual content/targets/overrides as shared design section5.1 specifies.
+Catalog→Included and eligible Excluded→Included drag/drop are the same intent as Include/Restore buttons. Ignore external/same-list/stale drag payloads. Lock all edit surfaces during pending/unknown outcome, preview and approved/archive states. An ineligible excluded item stays visible with Restore disabled.
 
-## Failure, history and acceptance
+400 rejects invalid body/key; 401/403/safe404 protects scope; 422 MODULE_NOT_ELIGIBLE rejects unsuitable membership; 409 rejects stale revision/selection, reused key with different body or invalid lifecycle; 503 reports dependency/integrity failure without a partial edit. Unknown outcome retains the exact key/body; a recorded success is reconciled with GET, never reinterpreted as approval.
 
-401/403 or safe404 for forbidden scope;400/422 invalid input/eligibility;409 revision/key conflict;503 dependency outage. Unknown commit→same key/body replay. Concurrent include/exclude/confirm produces one winner; no lost updates. Do not erase previous excluded record; new override explicitly supersedes it in this initial review. Later recalculation preservation remains REQ-043 dependency.
+## History, implementation and acceptance
 
-R03–R06/R09–R14 in [test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md): authorized Expert/local gates, no-op, pair/benefit/warnings, fixed-set validation, unresolved approval denial, stale/race/outage rollback/history/no unlock. Planned/Not run. [Source/build receipt](../../../testing/system/REQ-041-042-v011-source-build.md) does not prove runtime behavior.
+A new INCLUDE changes current membership without deleting earlier EXCLUDE/REMOVE/MOVE history. REMOVE returns an eligible module to neutral Catalog and is distinct from Exclude. No catalog, baseline/profile/progress or learning-authority write belongs here. Later recalculation is a separate dependency.
 
-Confirmed: authorized intent/fixed-set revalidation/warnings | Source implemented/built:0.11 adaptation | Open: owner content/readiness/production assignment and runtime evidence | Rejected: implicit replacement, fake mastery/approval or tests without C3.
+InitialPathwayReview.edit/mutate, InitialReviewOrder and JdbcInitialRevisions implement this path at cced745. PostgreSQL holds revisions/history; catalog reads stay in Neo4j. Preserve original format1/2 content identities and applied V28/V35; no backfill, old migration edit or down-migration. Runtime gates/production owner limitations and the Check repair lifecycle gap are described in the [review contract](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md).
 
-## Confirmed local Compose amendment ? 2026-10-28
+R01/R03–R05/R07/R09–R14 and P19 map eligibility/no-op, order preservation, fixed-set/warnings, repair, scope/CAS/replay/failure/no-unlock/history in the [test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md). The [dated receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md) contains bounded HTTP repair observations; it does not pass executable cases or all production/security branches.
 
-[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.
+Status: Confirmed.

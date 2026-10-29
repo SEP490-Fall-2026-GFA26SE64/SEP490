@@ -1,204 +1,159 @@
 # Initial gap-to-pathway flow and data design
 
-Confirmed29Oct2026 amendment: the user approved [assigned Expert adjacent ordering and neutral Remove](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md#confirmed-expert-order-and-neutral-removal--2026-10-29), including additive workspace V35 widening override action CHECK only. This supersedes the old manual-reorder exclusion for Expert drafts, not the Employee prohibition or generation algorithm/objective. New moves/removals use the existing trusted scope/assignment/exact revision/hash/idempotency/history/approval pipeline. Fresh revalidation preserves explicit order and rejects prerequisite inversions; Remove is not Exclude or catalog CRUD. Existing immutable formats/hashes and production routing remain. New routes are POST `/api/v1/expert/initial-pathways/{id}/moves` and `/removals`; all client and server fields/failures are defined in the linked contract. Build/manual observations do not establish browser/C3 acceptance.
-
-
-Updated2026-10-28. **C1 contract confirmed; C2 source/build update recorded in section15, runtime/owner acceptance incomplete.** Sections1–8/14 define scope. Sections9–13 retain dated0.10 observations; section14 supersedes their old field/policy/environment statements. Source/build is not deployment or executable acceptance.
-
-**Current user amendment:** section12 supersedes earlier statements that a business Role is pre-bound and Employee cannot select Level. Employee explicitly selects TargetRole + Level; three Levels are three effective targets. Other safety/approval/readiness invariants remain in force.
-
-**Current policy/environment amendment:** user confirmed per-TEACHES teachingFocus/difficultyLevel, mastery bands, fallback rules and whole-path objective in section14. This workstation cannot use Docker; user reports JDK/Node installed and usable databases on another machine. This C1 task neither connects to nor changes those databases. Code/build work is a later C2 milestone; evening manual/UI verification remains pending. Production publication and real readiness remain strict.
+**Current contract consolidated:** 2026-10-29. **Source inspected:** product cced745. Sections1–8 are the current shared design, including the confirmed Expert adjacent moves and neutral removal. Sections9–18 retain dated design/implementation history and existing link anchors; their old source-only, unapplied-migration, no-reorder and pending-runtime statements are historical, not the current contract. Detailed dated verification stays in the [workspace receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md).
 
 ## 1. Product goal, example and Function boundaries
 
-An Employee chooses TargetRole then its member Level, reviews own gaps, confirms that pair, sees generation then review status, and learns only after an authorized Expert validates and confirms the exact initial proposal. Expert can include/exclude Modules; Employee cannot choose/reorder pathway Modules. Assignment may use the explicit local substitute in section14.5; approval and readiness cannot be bypassed.
+An Employee selects a target Role and its member Level, completes a genuine full-Occupation baseline when required, reviews own gaps and explicitly confirms generation. An assigned Expert inspects and edits the proposal, Checks it, previews Roadmap/Timeline and finally confirms the exact valid revision. Employee display then uses that same approved order. Learning execution is a separate owner integration.
 
-Illustrative input: SQL required0.75/mastery0.60 → gap0.15 and preferred MEDIUM; Modeling required0.70/mastery0.80 → gap0, no provider; Quality without compatible evidence → UNKNOWN/null gap, prefers LOW with its original reason. A SQL PRIMARY module's Quality SUPPORTING link is a benefit, not a substitute for Quality's available Primary provider. Every chosen module contributes duration/price once. These figures are examples, not a production dataset/oracle.
-
-| Function | Responsibility | Dependency only |
+| Function | Responsibility | Boundary |
 | --- | --- | --- |
-| REQ-041-F02 | Own Role gap preview/current snapshot, numeric and UNKNOWN learning needs | No module selection or mastery rewrite |
-| REQ-001-F02 handoff | Explicit confirmed business Role and durable generation intent; retain baseline entry/selection rules | Selection commit does not run graph planner synchronously |
-| REQ-042-F01 | Batch graph, exact policy, proven whole-path objective, order/validate and explained proposal | No Expert authority or mastery certification |
-| REQ-020-F01/F02 | Assigned Expert include/exclude and versioned override history | No fake readiness or direct learning unlock |
-| REQ-019-F01 | Assigned Expert inspection and exact-current-revision confirmation | No unrestricted AI regenerate/manual reorder in this slice |
-| REQ-004-F01 | Own status/approved ordered path, lock reasons and protected access | No change to module assessment or post-learning tracing |
+| REQ-041-F02 | No-write own Role+Level gap preview | No mastery rewrite or module selection |
+| REQ-001-F02 handoff | Confirm exact pair/input and durably admit generation with existing selection coordination | No synchronous graph planning in selection transaction |
+| REQ-042-F01 | Bounded deterministic initial planning, providers, order and diagnostics | No Expert approval or mastery certification |
+| REQ-020-F01/F02 | Include/Exclude fixed draft membership with history | No automatic replacement, fake readiness or learning unlock |
+| REQ-019-F01 | Inspect, adjacent Move Up/Down, neutral Remove, Check, preview and exact final approval | No unrestricted order array, AI regeneration or catalog CRUD |
+| REQ-004-F01 | Own approved/current and own approved-archived sequence, dependencies and access reasons | No learning execution/content engine or progress fabrication |
 
-Keep initial Role-first baseline entry: an Employee without a genuine initialized profile still chooses a Role to start/resume permitted full-Occupation baseline. After a valid profile exists, own gap preview and explicit initial-pathway confirmation use that profile. Added catalog skills do not reopen the completed baseline allowance. Preview alone never selects a Role or archives/generates a pathway.
+Example: SQL required0.75/mastery0.60 has gap0.15 and preferred MEDIUM; Modeling required0.70/mastery0.80 needs no extra provider; missing compatible Quality evidence is UNKNOWN/null and prefers LOW. A SQL module's SUPPORTING Quality teaching is a benefit, not automatic replacement for an available Quality PRIMARY. Distinct module costs count once. Examples and development seeds are not production truth or test oracles.
 
-## 2. Catalog handoff review — static source, not deployment evidence
+## 2. Sources, versions and dependency ownership
 
-Reviewed source5b17c77 includes owner main4c33273. Owner [schema](../../../neo4j_schema.md), [ontology](../../../dataset/ONTOLOGY.md) and [teaching contract](../../../dataset/TEACHING_FOCUS_DIFFICULTY.md) define0.11.0, six labels/seven relationship types, with required case-sensitive `TEACHES.teachingFocus=PRIMARY|SUPPORTING|INCIDENTAL` and `TEACHES.difficultyLevel=LOW|MEDIUM|HIGH`. Both belong to a Module–Skill pair, not the whole Module. Exactly one PRIMARY per Module is a catalog invariant; a skill can have many alternatives. Old instructionLevel cannot be relabeled into either new field.
+Neo4j owns catalog Role/Level/skills, per-TEACHES focus/difficulty and skill-prerequisite edges. PostgreSQL owns selection, immutable baseline/mastery, gap snapshot, request/run/revision/modules/dependencies, overrides/approvals/receipts/audit/outbox. Learner state is never stored in Neo4j.
 
-Read-only source inventory:994 nodes/5121 relationships;246 Modules/79 skills/664 TEACHES (246 PRIMARY,257 SUPPORTING,161 INCIDENTAL). Every skill has Primary at all three difficulties. Compared with0.10 excluding version, skill/Role/Level definitions,1891 requirements and11 prerequisites are unchanged. Nine retained modules change title/contentUri/contentVersion; original durations/prices are unchanged. New packages are authored scaffolds pending review, not real readiness/attainment evidence. Counts and existing content files do not guarantee eligible providers at runtime.
+New planning consumes teachingFocus PRIMARY/SUPPORTING/INCIDENTAL and difficultyLevel LOW/MEDIUM/HIGH independently per module–skill pair, exactly one PRIMARY per module. Historical instructionLevel retains its old meaning; never translate it into new fields. Bind coherent graph release/requirements/semantic compatibility/content/readiness/policy/algorithm/configuration identities. Unknown formats, mixed source identity or corrupt expected evidence fail safely.
 
-Seed SHA256 is `f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7`. Base5b17c77 pinned0.10/instructionLevel; section15 records the uncommitted0.11 bootstrap/mapper/Compose adaptation. Nothing is imported/published by this source update. Owner dataset/importer/Neo4j schema files are unchanged. Preserve historical files/pins and verify exact source/graph parity before separately authorized cutover. Role+Level is the explicit pair, not another guessed enterprise mapping.
+Relevant ports are Bindings, Profiles, Semantics, Graphs, SuitabilityPolicy, ReadinessDefinitions, Availability, ReviewAssignments, LiveReadiness and ContentAccess. Availability/readiness definitions for planning do not establish live protected learning entry. Production source-coherence, publication, assignment and retroactive revocation remain owner contracts. PostgreSQL locks do not make Neo4j and PostgreSQL one serializable transaction.
 
 ## 3. Confirmed learning-need and ranking rules
 
-F02 uses stored conservative baseline mastery logistic(theta-k×SE), original mapping/model pins, requiredScore[0,1] and gap=max(0,requiredScore-mastery). Equality is zero; confidence explains, with no extra LOW gate or double SE penalty. Mandatory skills never compensate each other. Optional skill gaps remain reference-only.
+Known gap=max(0, requiredScore−stored conservative mastery), with no extra confidence penalty. Mandatory positive gap and genuine UNKNOWN require learning; optional deficits and known gap0 do not create mandatory providers. Missing/corrupt expected evidence is an error rather than UNKNOWN. All mandatory known/gap0 yields NO_LEARNING_REQUIRED without proposal approval, certification or fabricated completion. Role/Level changes reuse full-Occupation evidence and preserve allowance/history.
 
-Genuine absent/incompatible evidence remains UNKNOWN/null mastery and numeric gap. Mandatory UNKNOWN enters foundational learning, no retake or baseline/profile/history rewrite. If expected original evidence is corrupt/missing due to persistence/read failure, fail instead of UNKNOWN. All mandatory known/gap0 → NO_LEARNING_REQUIRED; positive mandatory gap or UNKNOWN → LEARNING_REQUIRED. Empty mandatory requirement set is invalid configuration. Planning need is not occupational Level or prerequisite readiness certification.
+For a need's own mastery m in[0,1], compare exactly: 3m<1 LOW; else3m<2 MEDIUM; else HIGH. UNKNOWN prefers LOW with original reason, not numeric0. Prerequisite-only needs retain their own evidence/provenance. No fixed mastery gain or obligation to study three difficulties.
 
-After learning-need eligibility, stored mastery selects preferred difficulty: `3m<1 → LOW`, otherwise `3m<2 → MEDIUM`, otherwise HIGH for valid m∈[0,1]. No rounding, raw-gap thirds or gap/target thirds. Mandatory UNKNOWN prefers LOW without numeric mastery0. Known gap0 needs no additional provider. The same rule applies to prerequisite-only learning needs using their own trusted mastery/UNKNOWN provenance, not another skill's gap row. This is a confirmed initial heuristic, not a mastery-gain model.
+PRIMARY provides normal coverage. SUPPORTING may cover only when the eligible source universe has no feasible usable PRIMARY-backed option across all three difficulties under the same frozen mandatory conditions. An Expert exclusion cannot manufacture Primary unavailability. INCIDENTAL is neither coverage nor benefit. Difficulty preference order is LOW→MEDIUM→HIGH, MEDIUM→LOW→HIGH, HIGH→MEDIUM→LOW. Coverage fallbacks carry separate hash-bound Expert-attention reasons; warnings alone do not invalidate a complete feasible set.
 
-PRIMARY fulfills a need; SUPPORTING ordinarily contributes benefit only. SUPPORTING may fulfill a need only when usable PRIMARY-backed coverage is unavailable under mandatory feasibility checks, with an Expert-attention reason. INCIDENTAL never fulfills a need or contributes a learning-benefit score. Difficulty fallbacks: LOW→MEDIUM→HIGH; MEDIUM→LOW→HIGH; HIGH→MEDIUM→LOW. All difficulty/focus fallbacks carry nonblocking warnings; they cannot skip coverage, prerequisites, publication/content or authorization.
+After mandatory eligibility, coverage, prerequisites, versions, tenant and gate constraints, compare complete generation plans lexically: fewer Supporting coverage fallbacks; fewer rank2 difficulty fallbacks; fewer rank1 fallbacks; lower distinct duration; lower distinct price; more distinct required-need Supporting beneficiaries; fewer modules; deterministic module IDs then provider assignments. Supporting coverage is not extra benefit to the same need. Optional/gap0/incidental/unrelated links do not earn benefit.
 
-Compare complete feasible pathways by the confirmed quality tuple, unique total duration, unique total price, Supporting benefit, unique module count, then deterministic IDs in section14.2. Per-provider rank is search ordering only. Minutes and VND are independent nonnegative cost dimensions; current catalog requires positive values. Invalid/missing metadata is not zero/free/fast. A shorter fallback cannot outrank better quality. Do not prescribe all three difficulties or fabricate mastery increments; post-learning assessments determine mastery changes.
+Bounded search must prove the generation optimum. SEARCH_LIMIT/NOT_PROVEN cannot publish an approximate successful current proposal. Fixed-set review retains the Expert's selected modules and validates coverage/providers; it may cost more than the generation optimum. It cannot add/remove modules to reoptimize, fake global optimality or approve search uncertainty.
 
 ## 4. Ordered read, compute and write pipeline
 
-1. Authorize Employee/trusted org before querying existence, counts or receipts. Load applicable business Role binding/publication, profile/evidence and current selection revision. Missing valid baseline → BASELINE_REQUIRED or the existing baseline-in-progress next step, with no pathway request admitted; missing/corrupt expected profile → unavailable/review-needed; preserve existing admission rules. This baseline state is not generationStatus=PENDING.
-2. F02 preview reads a coherent versioned requirement set and compatibility decisions; creates deterministic gapInputHash in memory with no learner writes. Client sees own requirement/known mastery/confidence/gap/UNKNOWN reason and expected selection identity separately, never theta/SE/answer keys. New requirement missing from historic profile uses UNKNOWN.
-3. Employee confirmation supplies roleId+levelId, expected current selection/revision and preview input hash, with command key. Server reauthorizes and recomputes authoritative input. Stale preview →409/no substitution. Reuse existing selection coordination/expected-selection semantics; no competing handler or client-supplied effective-choice identity.
-4. Commit selection change/no-op, confirmed F02 snapshot, request/receipt/audit/outbox in the existing shared PostgreSQL UoW. Bind planningInputHash to the resulting selection as section5.1 defines. Source coordination exists;0.11 adaptation must preserve its transaction/locking, not introduce split writes. Later asynchronous failure does not roll back accepted selection. Cross-store distributed ACID is not claimed.
-5. An idempotent worker claims pending request; frozen input identifies org/learner/selection, Role binding, profile attempt/hash, requirement/catalog/publication/compatibility/policy/algorithm versions. Read all relevant gap/UNKNOWN and transitive prerequisite skills plus provider metadata in batches through catalog ports; retain missing/blocked reasons, dedup before multiplying paths. No unbounded all-simple-path enumeration or one query per skill by default.
-6. Filter publication/content access/version/focus/difficulty and readiness mapping. Prerequisite unmet skills form separate learning needs with their own trusted evidence and coverage providers. Read all teaching links for candidate Modules to verify one Primary and preserve useful Supporting metadata; bound the expanded query. An incidental link is never provider coverage. Do not require new module-prerequisite graph fields.
-7. Search complete assignments with bounded deterministic branch-and-bound or exhaustive comparison under section14.2. Dedup Modules and costs, separate coverage from benefit, and prove the best objective before publication. A first-valid combination is insufficient. Budget exhaustion reports SEARCH_LIMIT/NOT_PROVEN, with no current valid proposal even if an internal feasible incumbent exists. Missing Primary cannot be inferred from an outage or incomplete search. Technical limits are explicit/versioned, not arbitrary old defaults.
-8. Build module dependency graph from selected providers/readiness. If one module teaches both sides, require owner-provided internal sequence/readiness gate; no silent self-loop removal or mutual co-teaching cycle. Topological sort feasible modules; ties use frozen deterministic order. Missing provider, affected cycle or no feasible alternative → PATHWAY_UNRESOLVED with diagnostics, no approvable partial path. No top5 truncation.
-9. Recheck current input/publication/selection under tenant/learner coordination before committing output. Stale → retain stale run/history, do not publish current proposal; queue current initialization work if still requested and not reviewed. Never silently replace Expert edits. Atomically save result/proposal revision/module targets/dependencies/reasons/receipt/audit/outbox. Catalog is a read snapshot; no distributed transaction assumed.
-10. Expert include/exclude creates a new draft revision and override, then validates the fixed selected Module set using the same policy/coverage/dependency/order rules. Do not optimize away Expert choices. Missing coverage can be retained as UNRESOLVED for repair, never approved. An exclusion does not prove mastery or make Supporting legal while a usable Primary alternative exists. All warnings remain visible and hash-bound; warnings alone do not invalidate a complete feasible draft.
-11. Expert confirmation reauthorizes assignment and verifies expected revision/hash, current inputs/publication and complete validation. Approval binds the exact content hash. Invalid edits→422, stale→409, dependency outage→503; no approval or access mutation on failure.
-12. Employee view exposes approved own sequence, per-module lock state/reason and appropriate module details. Module-start/content authorization must independently verify current approved revision, availability and prerequisite readiness through applicable owner port. List position or module completion alone is not readiness PASS. Rechecks on reads/start cannot create mastery or complete learning.
+1. Authorize Employee/org before profile/selection/existence/receipt reads. Resolve exact Role+member Level, requirements, original compatible profile and versions. Missing baseline uses the existing admission rules; it is not an accepted generation PENDING.
+2. Preview computes gaps and deterministic gapInputHash in memory with expected selection identity. No selection/pathway/mastery writes.
+3. Explicit confirmation recomputes authoritative input and compares expected pair/selection/preview hash. Stale input conflicts without substitution.
+4. In the existing PostgreSQL selection UoW, commit selection change/no-op, frozen gap snapshot, durable request, receipt and audit/outbox. Later worker failure does not undo accepted selection.
+5. Worker claims frozen work with lease/token/fencing; batches relevant graph/prerequisite/provider data under configured closure/provider/search limits. Pins cover the exact selection, profile, catalog, policy and configuration.
+6. Build needs/provider/gate assignments; apply full metadata/availability/Primary/fallback rules and bounded whole-path search. Derive module DAG from actual skill prerequisite/provider assignments. External evidence can satisfy an edge; co-teaching needs a real versioned internal gate. No title/difficulty-derived prerequisite or fabricated PASS.
+7. Recheck selection/binding and claim before atomic publication. Persist exact ordered revision, targets/dependencies/reasons and current pointer. Infeasible/cycle/search-limit and dependency failures stay explicit; never publish approvable partial coverage.
+8. Expert Include/Exclude/Remove validates the fixed resulting set and stores VALID or editable UNRESOLVED. Remove clears membership; Exclude retains explicit exclusion. After an explicit Move, preserve valid relative order and insert new prerequisites before dependents.
+9. Move swaps one adjacent pair, checks fresh actual dependencies and rejects inversion with safe diagnostics/no writes. Successful edits append ordinals/hash/revision/override/receipt/audit/outbox. Old records remain immutable.
+10. Check freshly reviews the persisted set/order without a write. FE reloads detail only on hash difference. Preview refreshes and checks again, captures exact revision/hash and grants no approval/access.
+11. Final confirmation reauthorizes assignment, expected revision/hash, current selection/binding and fixed-set validity. Atomically persist exact approval/receipt/current review state/audit/outbox.
+12. Employee GET projects the exact approved order/dependencies with safe frozen baseline and live lock/unavailable reasons. Protected learning owner routes must reauthorize independently. GET does not generate, approve, complete learning or write mastery.
 
-Example: A/B/C need learning; A needs P. P:[MP1,MP2], A:[MA1,MA2], B:[MBC,MB], C:[MBC,MC]. Feasible choice MP1/MA1/MBC appears once each; MP1 precedes MA1. If MA1 cannot satisfy dependencies choose a feasible alternative or unresolved. A user may see MP1 before MA1 yet MA1 stays locked until exact readiness evidence is PASS.
+## 5. HTTP and DTO contract — current source
 
-## 5. HTTP and DTO contract — C2 source routes, default-off
+All paths use /api/v1 and no-store responses. Actor/org/learner/assignment come from trusted context. Current activation is non-production gated (section8), not a deployed production API claim.
 
-Routes are under /api/v1; actor/org always from trusted context. C2 source wiring/activation and incomplete integrations are recorded in sections9–10; no deployed-route claim follows. Existing PUT /employee/target-role-selection remains baseline selection boundary. New orchestration reuses its owner write/transaction/history without a second selection handler.
-
-| Planned boundary | Client fields | Server response / rule |
+| Route | Client fields | Output / rule |
 | --- | --- | --- |
-| GET /employee/role-gaps?roleId=...&levelId=... | Explicit Role+Level choice, not arbitrary learner/org | F02 gapInputHash, expected selection ID/revision (null when absent), validated Role+Level refs/versions and own gap projection; zero learner writes |
-| POST /employee/initial-pathway-requests | roleId, levelId, expectedSelectionId/revision, expectedGapInputHash; Idempotency-Key |202 on durable acceptance; exact replay retains outcome. No client mastery/status/module picks; missing baseline or required planning-policy pins admits no request |
-| GET /employee/initial-pathway-requests/{id} | Own opaque request ID | generationStatus/reviewStatus/validationStatus/displayState as section5.2; safe reasons and proposal/current revision refs where permitted; no another learner's details |
-| GET /expert/initial-pathways | Scope/paging/filter only | Assignment-filtered queue; filter before counts/paging; no broad organization employee list |
-| GET /expert/initial-pathways/{id} | Opaque proposal ID | Current revision/hash, assigned-review scope, frozen needs, modules/candidates/targets/reasons/dependencies/readiness/unresolved and safe source versions |
-| POST /expert/initial-pathways/{id}/inclusions | moduleId, expectedRevision/hash, optional reason; key | New draft revision/result; eligibility/order/coverage revalidation |
-| POST /expert/initial-pathways/{id}/exclusions | moduleId, expectedRevision/hash, optional reason; key | New draft revision/unresolved reasons; no mastery mutation |
-| POST /expert/initial-pathways/{id}/confirmation | expectedRevision/hash; key | Exact confirmed revision or no-op replay; no arbitrary approval status |
-| GET /employee/pathway | No arbitrary learner/tenant | Own approved current sequence or explicit generation/review/no-gap/unavailable state; no learning link before confirmation |
-| GET /employee/pathways/{id} | Own opaque historical pathway ID | Authorized archived sequence/history only, no resume/start actions; proposed read surface, not a deployed route |
+| GET /employee/role-gaps | roleId, levelId | Own safe gaps, gapInputHash and expected selection ID/revision |
+| POST /employee/initial-pathway-requests | roleId, levelId, expectedSelectionId/revision, expectedGapInputHash; key |202 durable outcome; exact replay, no client module/mastery/status |
+| GET /employee/initial-pathway-requests/{id} | Own opaque ID | Safe generation/review/validation/display status |
+| GET /expert/initial-pathways | offset(default0), limit(default20,max100) | Assignment-filtered IDs before SQL paging; UI search/filter/stats are page-local |
+| GET /expert/initial-pathways/{id} | Assigned ID | Summary, frozen gaps, revision/selected set/history/plan and candidate teaching offers |
+| GET /expert/initial-pathways/{id}/validation | Assigned ID | Fresh validationStatus, diagnostics, revisionContentHash, warnings, quality, search; no write |
+| POST /expert/initial-pathways/{id}/inclusions | Edit tuple | Include eligible module; current Include-existing no-op |
+| POST /expert/initial-pathways/{id}/exclusions | Edit tuple | Explicit exclusion; current Exclude-absent no-op, no preemptive ban |
+| POST /expert/initial-pathways/{id}/moves | Edit tuple + direction UP/DOWN | Adjacent move or422 with prerequisite diagnostic |
+| POST /expert/initial-pathways/{id}/removals | Edit tuple | Neutral REMOVE; current already-neutral no-op |
+| POST /expert/initial-pathways/{id}/confirmation | expectedRevision, expectedContentHash; key | Exact valid approval; no preview-side approval |
+| GET /employee/pathway | No learner/tenant fields | Own status or exact approved current sequence |
+| GET /employee/pathways/{id} | Own archived ID | Implemented read-only archived projection, no resume/entry |
 
-Optional reasons are retained when supplied; compulsory reason rules remain a Proposed UX policy, not silently mandatory. UI retains key/body on uncertain outcome; same key/different body→409. Replay reauthorizes first. Equivalent semantic generation input reuses existing effective work even with a different key; a different confirmed selection/input is new initial work. Include-existing is a no-op without duplicate; exclude-absent is a safe no-op; both still check expected revision for a new command. Any durable edit increments revision and invalidates old validation/approval applicability.
+Edit tuple: moduleId, expectedRevision>=1, expectedContentHash(64 lowercase hex), optional reason<=2000 characters and Idempotency-Key header. Reject unknown body properties, body>16384 characters, arbitrary actor/org/mastery/approval/order. Candidate grouping and EN/VI text are presentation only; coverage is server-owned.
 
-### 5.1 Input identity and exact retry — Proposed technical contract
+### 5.1 Input identity and exact retry — current technical contract
 
-Three identities have different purposes; do not reuse one hash for all of them:
-- `gapInputHash` identifies the authorized business Role binding, baseline origin/profile hash, normalized requirements and compatibility/calculation policy versions. Preview computes it without persisting a selection or snapshot. Expected current selection ID/revision is a separate concurrency precondition.
-- `planningInputHash` binds the confirmed gap snapshot to the **resulting** selection ID/revision, relevant catalog/publication/suitability/readiness-definition versions and planner algorithm/configuration. Confirming a different Role creates a new selection; it must not compare that new ID to a preview hash containing the former selection. Confirming the same Role may keep the existing selection revision.
-- `revisionContentHash` binds immutable selected Module/content versions, matched targets/reasons, ordinals, dependency/internal-gate definitions, source pins and effective overrides. Live readiness PASS/FAIL, current availability and queue/display timestamps are read projections, not mutable content inside the approved revision.
+gapInputHash identifies Role binding, original baseline/profile, normalized requirements and compatibility/calculation policy; expected current selection is a separate precondition. planningInputHash binds that snapshot to the resulting selection and planning source/policy/configuration. revisionContentHash binds selected set, content refs, actual ordinals, teaching/provider assignments, needs, dependencies/gate definitions, warnings/quality, pins and ordered override history. Format2 search execution counters/scope/proof metadata are retained outside the material content hash; live readiness/availability is also outside it.
 
-Legacy canonical serialization is fixed in section9 and implemented in existing C2 source. Section14.4 defines version2 records/identities, retaining version1 decoding and original hashes. Both require stable ordering, normalized decimals, explicit null/UNKNOWN and exact IDs; display rounding/localized labels do not change identity. JSON property order does not define identity. Command body hash covers operation/resource/expected revision; retry key is excluded from semantic generation identity.
+Command body hash covers operation/resource/expected tuple/module/reason. Receipts are scoped by actor+tenant+operation+resource+key. Authorize/re-authorize -> receipt lookup -> conflict or exact outcome -> only new command checks current expected state -> coordinated CAS/write/receipt. A revision4→5 success may replay its original revision5 outcome after revision6; a new key expecting4 conflicts. Replay does not confer current approval/access. No-op still requires current draft/selection/binding/assignment and writes only its receipt.
 
-Command order: authorize current actor/tenant/assignment → look up receipt scoped by actor+tenant+operation+resource+key → reject different body or return retained exact outcome → only for an unseen command check current expected selection/revision and dependencies → CAS/write/receipt atomically. Thus an accepted revision4 inclusion returning revision5 can replay its original result after another edit reaches revision6; it must not be executed again or rejected merely because revision4 is no longer current. A **new** key with revision4 is stale409. Replay returns the recorded outcome, not current approval/access permission; clients reconcile GET afterward. Revoked/unassigned actors cannot replay protected outcomes. Concurrent identical keys converge on the same receipt; different edits compete by CAS. This does not deduplicate distinct Expert intents solely because their bodies happen to match.
+Unknown outcome retains original key/body. A successful POST followed by failed GET requires read reconciliation; it does not warrant a new intent. Concurrent edits/confirmations must retain one CAS winner and no partial writes. This is the required invariant; full concurrent evidence remains unrun.
 
-### 5.2 Status projection and recovery — C2 wire contract
+### 5.2 Status projection and recovery — current wire contract
 
-The earlier single status list mixes execution and review. Planned request/detail reads expose these separate fields plus a safe `displayState`:
+generationStatus: PENDING, GENERATING, SUCCEEDED, NO_LEARNING_REQUIRED, UNRESOLVED, BLOCKED, FAILED_RETRYABLE, STALE. reviewStatus: NONE, AWAITING_EXPERT_REVIEW, APPROVED, STALE, ARCHIVED. validationStatus: null without revision, else VALID/UNRESOLVED/BLOCKED/STALE. displayState combines these, so SUCCEEDED never means learning authority and exact approval ends awaiting-review display.
 
-| Field | Values / authority |
+A generation failure without a proposal differs from an editable draft made UNRESOLVED by exclusion/removal. Corrected authoritative input requires fresh preview/confirmation; refreshing an already reviewed stale draft remains an owner decision, not an authorized regeneration endpoint. No-gap acknowledgement is optional Proposed UX with no command in this slice.
+
+Errors generally carry code/retryable/correlationId; prerequisite-order rejection specifically returns code+diagnostics. Identity/CSRF filters can have a smaller safe envelope. FE handles safe codes/status and optional diagnostics, never assumes all error envelopes contain the same fields. Network/5xx/invalid responses are treated as uncertain for commands. Caches are actor/tenant scoped and cleaned on identity switch.
+
+## 6. Persistence and consistency design — current source
+
+| Record | Ownership / invariant |
 | --- | --- |
-| generationStatus | PENDING, GENERATING, SUCCEEDED, NO_LEARNING_REQUIRED, UNRESOLVED, BLOCKED, FAILED_RETRYABLE, STALE; durable worker/request projection |
-| reviewStatus | NONE until a proposal exists; AWAITING_EXPERT_REVIEW, APPROVED, STALE or ARCHIVED from the current revision/lifecycle pointer |
-| validationStatus | VALID, UNRESOLVED, BLOCKED or STALE for an existing revision; null when there is no proposal |
-| displayState | PENDING/GENERATING; then AWAITING_EXPERT_REVIEW for a valid draft, UNRESOLVED/BLOCKED for an invalid draft, APPROVED for exact current confirmation, or explicit no-gap/failure/stale/archive state |
+| initial_gap_snapshot | Frozen own confirmed input/resulting selection, original baseline/profile/evidence/requirements and hashes |
+| initial_pathway_request/run | Frozen planning identity, generation state, claim/lease/attempt/fencing and failure history |
+| initial_pathway_current | Scoped mutable current revision/review/archive pointer; CAS and lifecycle checks |
+| initial_pathway_revision | Immutable format/content/hash/selected set/override history |
+| initial_pathway_module / target / teaching_v2 / dependency | Exact module ordinal/content/cost, legacy or per-pair teaching metadata and versioned provider/gate definitions |
+| initial_pathway_override / approval | Expert/assignment ID/version, action/reason, previous/next revision; exact approved revision/hash/time |
+| receipt / audit / outbox | Atomic accepted outcome and events with owned state; recoverable idempotent delivery |
 
-SUCCEEDED means proposal computation persisted, never permission to learn. Editing can leave generationStatus=SUCCEEDED, reviewStatus=AWAITING_EXPERT_REVIEW and validationStatus=UNRESOLVED. Approval atomically advances the review pointer and receipt/outbox; polling then exposes APPROVED, not perpetual awaiting-review. Each response reads one coherent pointer/revision/hash; live readiness failure restricts access without rewriting approved content. Employee does not receive candidate diagnostics or draft learning links.
+V27 initial storage and V28 format2 source/readers exist; dated receipts record application, including workspace V1–V35. V35 widens only override.action to INCLUDE/EXCLUDE/MOVE_UP/MOVE_DOWN/REMOVE, with no table/column or graph change. It is applied on shared development per recorded evidence; this document review neither queries nor changes live DB.
 
-Worker-only PENDING is visible as preparation, with no duplicate admission. Transient retry resumes the same frozen request/run identity under a fresh claim token; only the current token can commit. Expired-lease workers cannot publish after a replacement claimant. Exhausted retry/budget remains explicit failed/blocked work with diagnostics and no success; retry values and operator recovery interface are Open. A duplicate confirmation is a receipt lookup, not an operator retry or automatic regeneration command.
+Format1 keeps original instructionLevel, codec and identity; format2 uses a separate discriminator/material hash with immutable teaching_v2 children. Unknown format/hash mismatch denies. Never backfill old history, edit applied migration/checksum, narrow CHECK or downgrade to a reader that cannot handle new records. Rollback stops new writes/substitutes and retains forward schema/dual readers/receipts/approvals/history. Production/native migration rollout is separate scope.
 
-Generation UNRESOLVED/BLOCKED may have diagnostics but **no editable proposal**. That is distinct from an existing Expert draft made UNRESOLVED by exclusion. Missing owner data/policy must be corrected first; changed authoritative input requires a fresh preview and explicit confirmation. Refresh of a stale reviewed draft must preserve edits/history and needs a separately defined owner contract; no automatic refresh/regeneration endpoint is authorized here. NO_LEARNING_REQUIRED has no proposal/approval requirement; optional Expert acknowledgement UX is Proposed and has no command/storage contract in this slice.
+## 7. Lifecycle, failure and acceptance
 
-Employee outputs never expose item content/correctness/theta/SE/internal candidate rankings across tenants. Expert sees only assigned review scope and required safe evidence summary, not protected assessment keys. Gap/Expert/pathway UI extend existing components/fonts/tokens/EN–VI patterns; no new parallel design system or implementation metadata in product copy.
-
-Planned HTTP errors carry a stable safe code, retryability and correlation identity; authorized conflict responses may include current revision/hash for reconciliation. Do not leak foreign-resource identity, protected evidence or dependency internals. Read/error responses containing learner/review information use no-store caching; UI caches, if later introduced, must be actor/tenant scoped and cleared on session change. Required identity/assignment dependency failure denies the operation rather than reusing stale browser authority. Exact error-envelope fields remain D10 technical Proposed design.
-
-## 6. Persistence and consistency design — existing V27 and planned additive format2
-
-V27 implements the initial11 tables; section13 records old-machine application. External DB state is unverified here. V27 instruction_level cannot store the new meanings. Section14.4 defines the additive design; section15 records new **V28 source, not applied/SQL-verified schema**, with parallel format2 teaching records. Do not edit V27 or update immutable history.
-
-| Logical record | Identity and retained fields |
+| Condition | Required result |
 | --- | --- |
-| gap_snapshot | gapSnapshotId + org/learner/resulting selectionId+revision; business/catalog Role+Level binding; baselineAttempt/profileHash; requirements/evidenceCompatibility/policy versions; normalized requirements/results; gapInputHash and immutable snapshot contentHash |
-| initial_pathway_request/run | requestId/runId; scoped planningInputHash+algorithm identity; generationStatus, frozen input, claim token/lease and attempt metadata, explicit failure/unresolved; no manufactured legacy progress/profile UUID |
-| initial_pathway_revision | pathwayId/revision, org/learner/selectionId+revision, run/gap refs, draft/approved/stale/archive lifecycle, validation state, canonical content hash and source pins |
-| pathway_module/teaching/dependency | unique revision+moduleId, content version/duration/price, ordinal; versioned per-skill focus/difficulty/coverage role/benefit/fallback warning and evidence/policy pins; explicit readiness dependencies/internal gates; legacy target table remains readable |
-| review_override/confirmation | Expert identity/assignment snapshot, include/exclude action, optional reason, previous/next revision; approval exact revision+hash and timestamp |
-| request_receipt/audit/outbox | trusted actor+tenant+operation+resource+key/body hash/outcome, aggregate/revision/correlation; atomic with owned state changes; at-least-once consumers dedup by event identity |
+| Unauthenticated/wrong role/foreign/unassigned |401/403 or safe404; no scoped detail/count/receipt leak |
+| Invalid shape/enum/key |400; no writes |
+| Ineligible Include / nonmember or boundary Move |422; no revision/override |
+| Provider-order inversion |422 PREREQUISITE_ORDER_VIOLATION with provider/dependent/skill reasons; entire draft/history unchanged |
+| Missing coverage after membership edit | Save editable UNRESOLVED with reasons; no approval or fake mastery |
+| Stale expected revision/hash/selection / approved/archive edit |409; preserve winner/history |
+| Same key/different command |409 IDEMPOTENCY_CONFLICT |
+| Invalid final draft / changed validation identity |422 INVALID_PATHWAY_DRAFT /409 VALIDATION_CHANGED |
+| Dependency/config/integrity failure | Explicit503 or worker failure state; no permissive fallback/partial edit/approval |
+| Read concurrent pointer change |409 STALE_PATHWAY_VIEW; no mixed successful projection |
+| Unknown commit / worker crash | Exact receipt/claim recovery, never duplicate approval/current revision |
+| No gap | Recorded no-learning-required outcome, no fabricated completion |
 
-Proposed design may use new additive tables/compatible adapters rather than coerce V4 legacy FKs. Final physical names/indexes/migration number must be selected after current migration head and owner unit-of-work are rechecked. Preserve legacy recommendation/pathway readers, current V25 selection/profile and old archive semantics. Do not fill V4 progress_revision/profile_revision with fake UUID or cap full pathway using rank1..5. Current V25 original profile is immutable; new UNKNOWN belongs in gap/current projection, not baseline overwrite.
+Role changes retain archived history and make old-selection work ineligible to commit. Blueprint replacement alone does not reset baseline/mastery or archive an approved pathway. Current revoke/unpublish/readiness restrictions must deny protected access without rewriting frozen history. Retroactive effect of assignment revocation and post-approval catalog recalculation remain open owner policies.
 
-Required invariants, independent of physical table choice:
-- Composite tenant/learner/selection checks on read/write and uniqueness; one effective current initial request/proposal per confirmed input, not one accidental global learner row.
-- Immutable snapshots/revisions and canonical hash; mutable current pointer/CAS/lifecycle projection separated. Re-review references new revision, old approval cannot unlock it.
-- Short PostgreSQL coordination transactions; no locks held across graph traversal. Commit only after version revalidation. Read graph frozen source+fingerprint and policy version.
-- Claim/retry/crash/outbox delivery recoverable and idempotent. Retry only transient failures with configured bounded backoff; counts/lease/timeout are Open technical parameters, not approved1/5/30s values. Unknown commit outcome uses exact receipt lookup; don't send a new logical command.
-- No-gap/unresolved/failed/stale distinct from awaiting review and approved; partial computation never becomes current successful learning path.
-- Compatible rollback stops new admission/dispatch/edits and retains readable data/history; no down migration, learner reset, rescore or repin. Real DB cutover requires separate authorization.
+[Acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md): G01–G13/P01–P20/R01–R14/E01–E09. Required cases cover tenant/actor/assignment, empty/not-found/outage/no-write reads, exact retry/CAS/fencing, both formats, fixed-set repair, saved order, Check/preview/final confirmation and own projection. E04–E06 learning execution remains deferred owner scope; no new executable tests are authorized here.
 
-## 7. Planned lifecycle and failure matrix
+## 8. Implementation alignment and remaining dependencies
 
-Visible lifecycle: PENDING/GENERATING → AWAITING_EXPERT_REVIEW or NO_LEARNING_REQUIRED or UNRESOLVED/BLOCKED; transient outage→FAILED_RETRYABLE; conflicting input→STALE. Section5.2 separates durable generation, review and validation fields. Draft revisions can be VALID/UNRESOLVED/BLOCKED/STALE independently of review lifecycle. Confirmation of a VALID current exact revision yields APPROVED. Role change archives prior approved path as read-only and makes pending old-selection work ineligible to commit; returning to the Role never reactivates it. Baseline Blueprint changes alone do not erase mastery or archive active pathway; catalog-driven post-approval revision policy remains REQ-043 dependency.
-
-| Condition | Outcome / retry / no-state-change rule |
+| Existing behavior | Disposition / state |
 | --- | --- |
-| Unauthenticated/forbidden |401/403; no result/resource existence leakage or mutation |
-| Foreign/missing/unassigned resource | Safe404 where applicable; no cross-org projection |
-| Invalid enum/binding/requirements/command |400/422 or explicit invalid configuration; no guessed Level/focus/difficulty/default readiness |
-| Missing valid baseline | BASELINE_REQUIRED/existing baseline next step; no pathway admission/proposal success; original allowance preserved, distinct from a durably accepted generation PENDING |
-| New catalog skill with genuine absent evidence | UNKNOWN + foundational learning; not dependency failure |
-| Corrupt expected profile or catalog read failure |503/review-needed; do not fabricate UNKNOWN/empty result |
-| Stale preview/revision/key-body mismatch |409; preserve current winner, refresh/reconcile |
-| Missing suitability/publication/readiness contract | BLOCKED/POLICY_NOT_CONFIGURED or UNRESOLVED as appropriate, no production bypass |
-| Missing eligible content/cycle/resource budget exhausted | Explicit unresolved/limit, not successful partial coverage |
-| Review edit removes last provider/prerequisite | Retain new UNRESOLVED draft with reasons; no approval |
-| Two edits/approval race | CAS: one winner; other409, no lost update or stale approval |
-| Dependency outage mid-edit/confirmation |503; no partial edit/approval; retry same key/body |
-| Worker crash/timeout | Recover claimed work/receipt/outbox without duplicate successful revision |
-| Exact accepted command retried after later edits | Reauthorize, return its retained receipt before new-command revision checks; no reapply or stale approval transfer |
-| Role/publication/input drift | Mark stale/suspend relevant current admission; no silent reselect or overwrite of review edits |
+| Full-Occupation baseline/original mastery/history/allowance | Keep; no reset/rescore/retake/repin |
+| Selection UoW, generation planner/worker, fixed-set review | Compatible extensions already in source; preserve current gates/ports |
+| Disabled Expert arrows/trash/no-manual-reorder scope | Replaced by confirmed adjacent Move/neutral Remove, not catalog deletion or unrestricted drag order |
+| UI browser/localStorage approval or invented readiness | Rejected; real exact approval and trusted ports required |
+| API-backed EN/VI Catalog/Included/Excluded/preview/Employee views | Keep established components and saved order; Check-dialog repair lifecycle guard has a conditional source gap |
+| Development fixtures | Keep explicit activation/temporary registry; never production publication/assignment/learning truth |
+| Applied migrations and historical format/hash/receipts | Keep; no edit/down-migration or history cleanup |
 
-### Source coherence and revocation boundaries
+Current runtime source: InitialPathwayController and WorkspaceInitialPathwayConfiguration require local+workspace-baseline+!local-baseline-demo+!prod with initial/workspace gates. WorkspacePathwayActors resolves real server session, current membership/role/entitlement; WorkspaceInitialPathwaySecurity retains session CSRF. Legacy local-baseline-demo is mutually exclusive, has separate explicit bypass gates/allowlist and keeps the new arrows/trash disabled.
 
-Version labels alone do not establish a consistent multi-query graph read. The catalog owner must provide an immutable published release/read token or a verifiable snapshot/fingerprint protocol covering requirements, transitive edges, providers and eligibility metadata. The consumer checks that identity across batches and before admission/commit; mixed/unknown reads fail safely. A source change after the last check cannot be prevented by a PostgreSQL learner lock. Publication/revocation therefore also requires the owner's authoritative access check at content/start; this design makes no cross-store serializability claim. The exact owner freshness protocol remains Open and blocks claiming stale-proof production integration.
+ReviewAssignments remains a bounded configured development Expert/org/optional Role scope with live account/grant checks and real exact persisted approval verification. Local catalog release/semantic compatibility and planning availability/prerequisite evidence are exact development artifacts. TMP-REQ001-11/12 are the current workspace/SE registry routes. LocalSeedPlanning uses original compatible mastery against the exact prerequisite threshold for planning only; it writes no PASS and invents no internal gate. LiveReadiness/ContentAccess default-deny. Production publication/coherence/semantic/assignment adapters and actual protected learning routes are incomplete.
 
-Readiness **definitions**, mapping and required content/evidence versions are frozen in dependency gates; current readiness **results** are read from their owner at access time. Completion-only is not PASS. Revoking Expert assignment denies future read/edit/confirmation/replay immediately according to trusted owner context. Whether it also invalidates a previously valid confirmation is an Open owner policy; retain the historical confirmation and deny access when required current approval-validity checks cannot be established, without inventing retroactive deletion or automatic re-review.
+The SE source bank and module/prerequisite supplements are development startup inputs. The earlier restore to100 real user responses was a separate one-time database maintenance operation, not seed behavior or a Docker startup reset. Preserve all subsequent user edits, baseline/Security/approval history and sealed graph.
 
-## 8. Alignment, acceptance and remaining dependencies
+Source/build/manual receipt records BE428/FE2507/lint, V35 preservation and selected HTTP branches. User confirms Move Up/Down and Remove UI happy cases. No new runtime operation or executable test was performed in this document reconciliation. New-order exact final approval→Employee, negative UI/EN-VI/focus/mobile, full two-tenant/revocation/CAS/outage/internal-gate/legacy/performance proof remain unverified. Old revisions11/18 are historical observations, never current pointers.
 
-| Existing behavior | Classification |
-| --- | --- |
-| Conservative baseline/history/allowance, trusted scope, selection replay/coordination | Keep |
-| Current selection API/full Occupation baseline | Compatible extension for explicit pathway confirmation; preview stays no-write |
-| CurrentRoleFlowController/RoleBaselineFlow string local path vs legacy UUID TargetRoleSelectionController | Keep profile/property routing and existing UoW. Explicit Role+Level/server choice ID is confirmed; production Identity/routing remains owner integration. No duplicate handler or name-based string→UUID conversion |
-| Numeric OC/legacy instructionLevel as current rank input | Reject conversion; consume explicit0.11 per-pair teachingFocus/difficultyLevel only for new plans |
-| V4 rank1..5 and legacy profile/progress FKs | Planned compatible adapter/additive storage, not direct full-path reuse |
-| Expert localStorage/mock approval | Routed pages already use durable API; preserve unconsumed old store/history and unrelated consumers. Adapt new fields in place, never restore browser approval |
-| AI regeneration/exclusion persistence across regeneration/manual drag order | Historical larger UI scope; not approved current runtime scope |
-| Applied migrations/current DB/seed/history | Keep; no edits/import/reset in Cluster1 |
+Open decisions are limited to owning contracts: retroactive assignment-revocation effects and safe refresh of reviewed stale drafts. They are not prerequisites to correcting these confirmed documents and do not authorize new runtime/API/schema work. Conditional UI lifecycle gap and obsolete Regenerate spec are recorded separately in the [reconciliation matrix](../../../testing/system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29).
 
-Acceptance G01–G13/P01–P20/R01–R14/E01–E09 is mapped in the [test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md); all executable results remain Planned/Not run. [Flow/state/data diagrams](../../../diagrams/gap-pathway-initial-flow.md) are planned design, not runtime/implementation/performance evidence.
+Status: Confirmed.
 
-Confirmed policy/binding: explicit Role+Level, section3 mastery bands, section14 objective/fallback/local assignment design. Open integration: production publication/coherent release/semantic mapping, real readiness definitions/evidence/content entry, production Identity/assignment/revocation. Current source already has selection UoW/archive and exact local artifact compatibility, but the new0.11 paths require C2 adaptation and runtime evidence. A reachable database does not resolve these owner contracts. Do not invent PASS to hide them.
+## Dated design and implementation history
 
-### Consolidated decision and conflict disposition
-
-| Record | Disposition / status |
-| --- | --- |
-| Current-task business decisions | Confirmed: Employee selects Role+Level; no-write preview; conservative gap/UNKNOWN; section14 per-pair policy/whole-path objective; exact Expert approval and real readiness; local assignment substitute only |
-| D10 API/DTO boundary | C2 source: section5/9–10 routes, distinct hash/status fields, retained replay ordering, safe errors/read projections; production owner routing, approval-validity/revocation and stale-draft refresh contracts Open; runtime evidence absent |
-| D12 persistence/revision/recovery | C2 source: V27 additive layout/indexes, current selection-owner UoW, canonical encoding, resulting-selection binding, immutable records, fencing/receipts/CAS/audit/outbox; operational values/operator interface and actual SQL/transaction/runtime evidence remain Open/Not run |
-| Catalog0.10 review contract vs Compose0.9/backend README | Verified source conflict retained:181 text instructionLevels in review payload, none in pinned seed. No runtime upgrade or owner file change inferred |
-| Legacy V4 pathway/UUID route vs current V25 string selection/profile | Existing source mismatch; compatible additive owner design required. Keep profile gating/history, no fake legacy keys or second handler. Current PostgreSQL source head V26 |
-| Old UI approval/reorder/regeneration wording vs confirmed initial slice | Provisional local UI reference; durable exact approval is Planned, additional regeneration/manual reorder remains outside scope |
-| No-gap Expert acknowledgement wording | Corrected: no-gap is a separate outcome without a pathway to approve; acknowledgement UX is Proposed, not an extra confirmed learning gate |
-
-Rows describing0.10/Compose0.9/pre-V27 are dated source conflicts, superseded by sections2/13/14. They do not redefine current policy or establish executable evidence. No historical decision IDs beyond routed D10/D12 are reconstructed by guesswork.
-
-Confirmed: current contract in sections1–8/14 | Existing source: dated sections9–13, pending0.11 adaptation | Open: owner readiness/content and runtime evidence | Rejected: implicit imports/resets/tests or automatic cluster transition.
-
-**Historical boundary:** sections9–13 below retain the2026-10-27 implementation/evidence and original wording. The confirmed2026-10-28 policy/storage/environment in section14 supersedes their unconfirmed mapping, instructionLevel and Docker-only assumptions. Do not infer present-machine DB or source completion from them.
+Sections9–18 below preserve original dated context and anchors. Their observations apply only to their recorded environment/date; current requirements, source status, authority and deployment limits are consolidated above. No old reset/volume-deletion/next-session approval instruction is current authority. Historical evidence is linked rather than promoted to a new pass.
 
 ## 9. C2-00 engineering closure — 2026-10-27
 

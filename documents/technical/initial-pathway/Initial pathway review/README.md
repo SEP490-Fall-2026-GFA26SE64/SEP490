@@ -1,19 +1,12 @@
 # Initial Pathway Review
 
-## Current Scope Alignment
+REQ-019-F01 lets the assigned Expert inspect, Check, preview and finally approve the exact current valid initial pathway. Adjacent Move Up/Down and neutral Remove are confirmed parts of draft review; approved/archive content remains read-only. Regeneration, catalog CRUD and learning execution are separate scope.
 
-REQ-019. Assigned Expert. C2 durable command/read and API UI source exists; assignment/policy integration and runtime acceptance remain incomplete. Inspect current proposal, include/exclude through REQ-020 and confirm exact valid current revision/hash. AI regeneration, unrestricted manual reordering and later recalculation are not in this initial scope.
+- [Business requirements / FR-05.07](../../../features/Pathway%20review/README.md#fr-05-07)
+- [Current Function contract](Review%20Initial%20Adaptive%20Pathway.md)
+- [Include and Exclude](../Pathway%20adjustment/README.md)
+- [Shared API, storage and dependency design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md)
+- [Acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md)
+- [Dated source/manual evidence and remaining gaps](../../../testing/system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29)
 
-Current Function contract: [Review Initial Adaptive Pathway](Review%20Initial%20Adaptive%20Pathway.md). [Shared full-flow design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) and [acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md) govern the 2026-10-27 initial flow. All new executable evidence Planned/Not run; historical/mock implementation labels below do not certify this flow.
-
-## Historical Specification
-Use the alignment above where older details conflict.
-
-Let an Expert inspect an employee's generated pathway after baseline assessment.
-
-**Source:** [REQ-019](../../../PRODUCT_OVERVIEW.md)  
-**Actor:** Domain Expert
-
-## Functions
-
-- [Review Initial Adaptive Pathway](Review%20Initial%20Adaptive%20Pathway.md)
+Contract status: Confirmed. Implementation and acceptance evidence are separate; no full C2/C3/C4/C5 or production completion is claimed.

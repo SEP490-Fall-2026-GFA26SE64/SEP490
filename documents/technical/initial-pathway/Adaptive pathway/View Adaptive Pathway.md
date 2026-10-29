@@ -1,63 +1,57 @@
 # View Adaptive Pathway
 
-## Confirmed Employee visual restoration — 2026-10-28
+**Function:** REQ-004-F01. **Actor:** Employee. **Contract updated:** 2026-10-29.
+[Business requirement](../../../features/Employee%20experience/README.md#fr-06-06). This milestone ends at own pathway display; protected learning execution/content/start/segment/assessment integration remains owner scope.
 
-User approved restoring the reference screenshots on the existing Employee roadmap/timeline files, replacing the generic InitialPathwayModules card-grid/list bypass. Show a compact Role/Level/status and view toolbar, baseline-target count/search, a top Role node with approved Modules down the center and their actual teaching skills on both sides, connecting lines, and the existing timeline track composition. Keep Module order/dependencies from the approved projection. Scope the responsive styles to this trusted path; preserve independent-skill consumers and existing shared primitives/tokens/EN-VI. Module/skill activation opens a read-only detail dialog; safe content links remain conditional on live AVAILABLE entry/current non-archived status.
+## Goal, preconditions and fields
 
-Extend the own approved/own approved-archived GET only with safe context (frozen roleId/levelId/occupationId) and the existing frozen RoleGap.Result: names/requirements/mastery/confidence/UNKNOWN from the exact prepared input. Do not serialize full profile/input/worker candidates or change approval hashes. Non-approved/empty responses expose neither these learning details nor Modules. Reads retain own authorization and final revision/hash check and perform no writes or migrations. Baseline snapshot is historical planning evidence, not live learning progress; the denominator is mandatory Role skills, deduplicated, and a met target requires known mastery >= its exact requiredScore. Optional/out-of-Role targets do not alter that count. An out-of-Role target absent from the retained role snapshot displays its ID and unavailable evidence rather than guessed mastery/threshold/name.
+After exact Expert confirmation, the Employee reads the same approved revision, saved module order, teaching details and dependency/lock explanations in Roadmap or Timeline. Before confirmation, show safe lifecycle status rather than draft modules/candidates or learning links. Own historical approved-archived pathways are read-only.
 
-Source design contains mocked Success/In Progress/70%-exam/certification states, simulation commands and a Target Role Verified footer. Those behaviors are not restored. Approved means Expert confirmed the plan; AVAILABLE/LOCKED/UNAVAILABLE/ARCHIVED come from trusted access projection and never prove completion. Explain unavailable learning content separately from plan generation, with a concise common notice and details on demand. No extra page header. Only the trusted current Role is shown; Skill navigation uses the existing skill-selection route, not fabricated pathway history. Empty/pending/stale/error/archive behavior stays explicit and safe.
+Require trusted active Employee/org/entitlement. GET current accepts no learner/tenant input; GET archived accepts only own opaque pathway ID. Server resolves selection, current request, exact revision/hash and approval. Never accept client approval, progress, readiness or mastery.
 
-Acceptance E01–E09 extends to source layout restoration, search/highlight, accurate frozen baseline counts/UNKNOWN and absent targets, safe no-write projection and dialogs, responsive EN/VI, correct access messages and retained archived/no-entry guards. Planned executable evidence remains C3 Not run; C2 build/manual observations are recorded separately. Confirmed.
+Safe approved output contains status, archived flag, frozen Role/Level/Occupation context, frozen RoleGap.Result, unique module IDs/ordinals/content versions/duration/price and per-skill legacy or current teaching metadata. Dependencies expose module/provider/dependentSkill/prerequisiteSkill/internal flag. Access fields are AVAILABLE/LOCKED/UNAVAILABLE/ARCHIVED, reasonCode and nullable entry. Exclude worker candidates, draft detail, answer keys, theta/SE and foreign data.
 
-**Function:** REQ-004-F01. **Actor:** Employee. **Status:** C2 projection/API UI0.11 format/notes source updated/built2026-10-28; positive approved-view evidence pending. Current user milestone ends at pathway display; learning-content/start execution is deferred to its owner.
+## Visible lifecycle and ordered reads
 
-## Current Scope Alignment
-
-Employee sees own generation/review outcome, then the Expert-confirmed ordered initial pathway with prerequisite lock reasons. No include/exclude/reorder capability. [Shared flow/API/data design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). Module learning/assessment execution is a dependency, not implemented by this read Function.
-
-Current milestone boundary: [shared design17](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#17-current-milestone-and-machine-transfer-gate--2026-10-28). Employee must see the safe exact approved sequence/notes even when individual learning entries remain LOCKED/UNAVAILABLE. Source maps access423/503 per Module without fabricating entry/PASS. Planning prerequisite/availability inputs remain required upstream. Protected start/content/segment rules below are retained future owner contracts, not instructions to implement the learning page or execute learning during this manual milestone. All positive approved-view/runtime security acceptance remains unverified.
-
-## Actor, client/server fields and protected output
-
-Trusted active Employee/org only. Read current selection/request and own approved revision, or own archived path ID. Never accept arbitrary learner/org/approval/progress/readiness from client. Output safe Role-Level/order, distinct Module amounts, per-skill teachingFocus/difficultyLevel and nonblocking fallback notes (“Cần Expert xem xét”), server states and useful lock/unavailable reasons. No answer keys/theta/SE/foreign learner or draft candidate rankings. Supporting benefit is explanatory, never a claim that another skill gap is closed.
-
-| Condition | Visible behavior |
+| State | Behavior |
 | --- | --- |
-| No confirmed request | Prompt Role review/confirmation; never generate on GET |
-| PENDING | Request durably accepted, preparation pending; no duplicate confirmation needed or learning actions |
-| GENERATING | “Your pathway is being prepared” / “Đang tạo lộ trình học”; no learning actions |
-| AWAITING_EXPERT_REVIEW | “Your pathway is awaiting review” / “Lộ trình học đang chờ duyệt”; no learning access |
-| UNRESOLVED/BLOCKED | Explain content/configuration issue safely; no complete valid-path claim |
-| FAILED_RETRYABLE/STALE | Reconcile/refresh appropriate state; no silent new Role or fake empty result |
-| NO_LEARNING_REQUIRED | No additional mandatory learning for this snapshot; no fabricated certification/completion |
-| APPROVED current | Ordered Modules and explicit available/locked/unavailable/completed projection from trusted owner sources |
-| Archived | Read-only recorded sequence/history; no resume or new assessment actions |
+| No request | Empty state and Role review/confirmation guidance; GET never generates |
+| PENDING / GENERATING | Preparation status; no duplicate admission or learning actions |
+| AWAITING_EXPERT_REVIEW | Awaiting-review status; no draft module/context/baseline learning projection |
+| UNRESOLVED / BLOCKED / FAILED_RETRYABLE / STALE | Safe reason/retry or refresh guidance; never fake successful/empty pathway |
+| NO_LEARNING_REQUIRED | No additional mandatory learning for that snapshot; no certification/completion claim |
+| APPROVED current | Exact approved module order and dependency projection with live access restrictions |
+| ARCHIVED | Own recorded approved sequence with ARCHIVED entries and null links; no resume |
 
-## Ordered reads and no-state-change guarantee
+1. Authenticate/authorize own scope before existence reads. Current GET resolves request and checks its selection still matches the current server selection.
+2. Read lifecycle/approval visibility. Without an approved current revision or exact approved archived record, return status and empty modules/dependencies/context/baseline.
+3. Load the immutable revision using tenant/learner/request/revision and validate stored format/content identity. Keep persisted module sequence and dependency providers; do not regenerate, canonicalize Expert order or substitute newest content.
+4. For current modules, InitialPathwayAccess checks exact current VALID approval, current selection, assignment validity, current binding, module availability/version and applicable external prerequisite readiness. Internal gates are passed to ContentAccess. Map access423 to LOCKED and503 to UNAVAILABLE with null entry; other authorization/stale failures fail the response. Archive maps every module to ARCHIVED/null without granting entry.
+5. Reread request revision/hash/review state after projection and reject changed content with409 STALE_PATHWAY_VIEW. Return safe frozen context/baseline and dependencies from that same revision.
+6. Reads create no selection, mastery, progress, approval, command receipt or outbox record. Dependency failures cannot fabricate ready access. This is application coherence checking, not cross-store serializability.
 
-1. Authenticate/authorize own scope before request/path existence reads.
-2. Resolve current selection and request/approved revision through ports; do not infer readiness from a terminal baseline attempt alone or localStorage.
-3. Verify approved exact revision/hash pointer and allowed visibility. Read frozen sequence/content refs plus actual current availability/readiness for applicable gates.
-4. Compute lock reasons server-side. A Module with unmet prerequisites stays locked even if ordinal is next. Independent modules need not be sequentially locked merely because another Module precedes them. Final unlock requires defined version-matched readiness PASS, not completion/list position alone.
-5. Return projection; reads do not confirm, advance progress, write mastery or dispatch. Protected Module/content/start/internal-segment routes must independently invoke exact approval/current tenant/content/readiness checks on each applicable access; a projected entry or contentUri is not an access token. A direct public Markdown link is not sufficient enforcement. Independent ready branches remain usable without global ordinal locks.
+## Roadmap, Timeline and readiness rules
 
-Dependency failure→explicit unavailable/retry, not empty/no-path/UNKNOWN or newly unlocked access. A locked content direct request remains denied. Current revoke/unpublish restriction cannot be bypassed using frozen display metadata.
+Use the existing Role/Module/flanking-skill Roadmap and Timeline, compact view/search toolbar and read-only module/skill dialogs with shared tokens and equivalent EN/VI. Show the trusted current Role, persisted module order and real teaching skills. Do not restore mock Success/In Progress, simulated exam percentages, certification or Target Role Verified claims.
 
-Request polling and pathway reads use the shared generation/review/validation projection; after approval the current display is APPROVED rather than the generation worker's earlier awaiting-review outcome. Each response uses a coherent revision/hash pointer. Live readiness/availability can restrict an approved Module without mutating its frozen hash or fabricating progress. Historical command receipts are outcomes to reconcile, not current access tokens. Archived own-ID read is a separate proposed route in shared design section5.
+Frozen baseline counts use deduplicated mandatory Role skills and known mastery meeting their exact target. UNKNOWN and out-of-Role absent evidence stay explicit; baseline attainment is not live learning completion. Supporting benefit cannot imply another gap is closed.
 
-## History and compatibility
+A prerequisite provider appearing earlier is planning order, not PASS. Current version-matched readiness evidence governs access; independent branches do not inherit a global ordinal lock. Internal prerequisite/dependent teaching requires its defined internal gate. Content/start/segment owner routes must independently enforce approval/tenant/version/readiness on each protected request; a displayed URL or public Markdown path is not authority. This contract does not implement those owner routes.
 
-Role change archives old pathway and retains recorded sequence/progress. Returning to that Role does not reactivate archived path. Blueprint replacement/deactivation alone governs baseline admission, not deletion of mastery or automatic archival of an otherwise active approved pathway. A Module/content/access change may independently restrict access; post-approval catalog-driven recalculation/re-review belongs to REQ-043/lifecycle policy and is not silently implemented here.
+Expert preview is a separate authorized draft projection with PREVIEW/null entry, never an Employee response or approval. Only final exact confirmation allows the own approved read. Editing a draft or a UI success banner cannot unlock learning.
 
-Employee timeline/roadmap now uses typed legacy/new pair parsing and shared teaching/attention explanations, explicit search-limit text and existing typography/tokens/EN–VI; independent consumers remain untouched. Source retains historical format1 hash computation/readers/content refs without latest-version substitution. Actual content/start/segment mounting is still missing; a hook is not direct-access evidence. The default-off local assignment adapter checks real exact stored approval, not unconditional success. Owner assessment/readiness/content ports remain denied until integrated; scaffold/mastery is not PASS. [Actual build receipt](../../../testing/system/REQ-041-042-v011-source-build.md) records no runtime/UI execution.
+## Failures, history and compatibility
 
-## Acceptance-to-test mapping
+401/403/safe404 protect identity/scope;409 handles stale selection/view or nonarchived ID at archived route;503 signals integrity/dependency failures, with per-module unavailable projection where supported. Empty/not-found/outage are distinct. Repeat read is safe and does not dispatch work.
 
-E01–E09 in [test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md): own/no-write scope, lifecycle/error states, unique amounts/order/0.11 notes, exact approval, independent/prerequisite/internal locks and actual direct-access denial, legacy archive/no-resume, history/revocation/failure. All executable evidence Planned/Not run. C2 source/build completion is a separate milestone from the user-deferred evening manual/UI verification on another machine; do not call runtime accepted before its evidence.
+Role changes retain archived history and do not reactivate old pathways when returning to that Role. Blueprint replacement alone does not reset mastery or erase approval history. Later catalog-driven recalculation/re-review is a separate owner policy. Format1 and2 keep their original hashes and content references; no legacy relabeling, latest-version substitution, reset or repin.
 
-Confirmed: own approved/locked view and safe pair/attention explanations | Source implemented/built: C2 adaptation | Open: live readiness/content-start, runtime/UI evidence and later recalculation | Rejected: UI-only security, fake unlock/PASS or tests without C3.
+## Implementation alignment and evidence
 
-## Confirmed local Compose amendment ? 2026-10-28
+InitialPathwayView/Access, JdbcInitialPathways/Revisions and typed initialPathway.ts own this path at cced745. Archived GET is implemented, not merely proposed. Workspace identity is real-session based but assignment/catalog/planning adapters remain explicitly development-gated; ContentAccess and LiveReadiness default-deny. Modules may therefore stay UNAVAILABLE/null after approval. Production assignment/publication and protected owner mounting are incomplete.
 
-[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.
+The [workspace receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md) records an older exact approved3-module Employee HTTP read; it does not prove Employee projection after the newer manual reorder. User-confirmed Move/Remove UI happy cases do not establish browser-observed Employee/negative/security cases.
+
+E01–E03/E07–E09 and P19 in the [test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md) cover own/no-write/empty/error/state, frozen counts, exact order/hash/dependencies, access reasons, format/history and responsive EN/VI. E04–E06 retain future protected learning-owner rules; execution remains deferred. New executable cases remain Planned/Not run.
+
+Status: Confirmed.
