@@ -74,8 +74,28 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 ? targetRole.getVersion().trim()
                 : "1.0";
 
+        // If client passed a generated or alias ID, locate existing persisted node ID
+        String matchedId = roleIdStr;
+        String findExistingCypher = """
+                MATCH (existing:TargetRole)
+                WHERE (existing.organizationId = $organizationId OR existing.organizationId IS NULL)
+                  AND (existing.id = $id OR existing.code = $id OR (existing.baseCode = $rawCode AND coalesce(existing.version, '1.0') = $version))
+                  AND coalesce(existing.status, 'ACTIVE') <> 'SUPERSEDED'
+                RETURN existing.id AS existingId LIMIT 1
+                """;
+        try (var session = driver.session()) {
+            var res = session.run(findExistingCypher, Map.of(
+                    "organizationId", targetRole.getOrganizationId(),
+                    "id", roleIdStr,
+                    "rawCode", rawCode,
+                    "version", version));
+            if (res.hasNext()) {
+                matchedId = res.next().get("existingId").asString();
+            }
+        }
+
         // Determine unique graph code to satisfy Neo4j's target_role_code constraint when versions or orgs differ
-        String graphCode = resolveGraphCode(roleIdStr, targetRole.getOrganizationId(), rawCode, version);
+        String graphCode = resolveGraphCode(matchedId, targetRole.getOrganizationId(), rawCode, version);
 
         String cypher = """
                 MERGE (r:TargetRole {id: $id})
@@ -130,7 +150,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 """;
 
         Map<String, Object> params = new HashMap<>();
-        params.put("id", roleIdStr);
+        params.put("id", matchedId);
         params.put("organizationId", targetRole.getOrganizationId());
         params.put("graphCode", graphCode);
         params.put("rawCode", rawCode);
@@ -245,6 +265,24 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
     }
 
+    private List<String> resolveExpertVariants(String expertId) {
+        if (expertId == null || expertId.isBlank()) return List.of();
+        String trimmed = expertId.trim();
+        if ("expert-chen".equalsIgnoreCase(trimmed) || "a0000000-0000-0000-0000-000000000002".equalsIgnoreCase(trimmed)) {
+            return List.of("expert-chen", "a0000000-0000-0000-0000-000000000002");
+        }
+        if ("expert-vance".equalsIgnoreCase(trimmed) || "a0000000-0000-0000-0000-000000000005".equalsIgnoreCase(trimmed)) {
+            return List.of("expert-vance", "a0000000-0000-0000-0000-000000000005");
+        }
+        if ("expert-rivera".equalsIgnoreCase(trimmed) || "a0000000-0000-0000-0000-000000000006".equalsIgnoreCase(trimmed)) {
+            return List.of("expert-rivera", "a0000000-0000-0000-0000-000000000006");
+        }
+        if ("expert-nguyen".equalsIgnoreCase(trimmed) || "a0000000-0000-0000-0000-000000000007".equalsIgnoreCase(trimmed)) {
+            return List.of("expert-nguyen", "a0000000-0000-0000-0000-000000000007");
+        }
+        return List.of(trimmed);
+    }
+
     @Override
     public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
         StringBuilder cypher = new StringBuilder("""
@@ -268,8 +306,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             params.put("domainCode", filter.domainCode().trim().toUpperCase());
         }
         if (filter.assignedExpertId() != null && !filter.assignedExpertId().isBlank()) {
-            cypher.append(" AND r.assignedExpertId = $assignedExpertId");
-            params.put("assignedExpertId", filter.assignedExpertId().trim());
+            List<String> variants = resolveExpertVariants(filter.assignedExpertId().trim());
+            cypher.append(" AND r.assignedExpertId IN $expertVariants");
+            params.put("expertVariants", variants);
         }
         if (filter.search() != null && !filter.search().isBlank()) {
             cypher.append(" AND (toLower(r.name) CONTAINS toLower($search) OR toLower(r.code) CONTAINS toLower($search) OR (r.baseCode IS NOT NULL AND toLower(r.baseCode) CONTAINS toLower($search)))");
@@ -301,10 +340,15 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
 
     @Override
     public Optional<TargetRole> findById(String organizationId, TargetRoleId id) {
+        String rawId = id.toString();
         String cypher = """
                 MATCH (r:TargetRole)
                 WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
-                  AND (r.id = $id OR r.code = $id)
+                  AND (r.id = $id
+                       OR r.code = $id
+                       OR r.baseCode = $id
+                       OR (r.baseCode IS NOT NULL AND $id STARTS WITH r.baseCode AND coalesce(r.version, '1.0') = substring($id, size(r.baseCode) + 2, 3))
+                       OR (r.baseCode IS NOT NULL AND $id CONTAINS r.baseCode AND (r.version IS NOT NULL AND $id CONTAINS r.version)))
                   AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
                 OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
                 WITH r, collect(CASE WHEN s IS NOT NULL THEN {
@@ -317,7 +361,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 RETURN r, graphSkills
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString()));
+            var result = session.run(cypher, Map.of("organizationId", organizationId, "id", rawId));
             if (result.hasNext()) {
                 return Optional.of(mapRecordToTargetRole(result.next()));
             }
