@@ -314,10 +314,10 @@ export const CAREER_FAMILIES = [
 ] as const
 
 export const ELIGIBLE_EXPERTS = [
-  { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
-  { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
-  { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
-  { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
+  { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect', email: 'expert@technova.com' },
+  { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect', email: 'marcus.vance@technova.com' },
+  { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer', email: 'alex.rivera@technova.com' },
+  { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist', email: 'linh.nguyen@technova.com' },
 ] as const;
 
 export type EligibleExpert = {
@@ -373,6 +373,9 @@ export function getOrganizationExperts(organizationId?: string): EligibleExpert[
   if (effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org') {
     return [
       { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect', email: 'expert@technova.com' },
+      { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect', email: 'marcus.vance@technova.com' },
+      { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer', email: 'alex.rivera@technova.com' },
+      { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist', email: 'linh.nguyen@technova.com' },
     ];
   }
 

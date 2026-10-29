@@ -21,9 +21,24 @@ export const EXPERT_DIRECTORY: Record<string, { name: string; email: string; rol
     email: 'expert@technova.com',
     roleTitle: 'Senior AI & Knowledge Architect',
   },
+  'a0000000-0000-0000-0000-000000000005': {
+    name: 'Marcus Vance',
+    email: 'marcus.vance@technova.com',
+    roleTitle: 'Principal Graph Database Architect',
+  },
+  'a0000000-0000-0000-0000-000000000006': {
+    name: 'Alex Rivera',
+    email: 'alex.rivera@technova.com',
+    roleTitle: 'Staff Cloud Infrastructure Engineer',
+  },
+  'a0000000-0000-0000-0000-000000000007': {
+    name: 'Linh Nguyen',
+    email: 'linh.nguyen@technova.com',
+    roleTitle: 'Lead Data Systems Specialist',
+  },
   'expert-chen': {
     name: 'Dr. Sarah Chen',
-    email: 'expert-chen@adaptlearn.internal',
+    email: 'expert@technova.com',
     roleTitle: 'Senior AI & Knowledge Architect',
   },
   'expert-vance': {

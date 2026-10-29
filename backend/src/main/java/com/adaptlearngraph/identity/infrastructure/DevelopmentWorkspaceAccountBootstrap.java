@@ -49,6 +49,9 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
     public static final UUID MANAGER_ACCOUNT_ID = UUID.fromString("a0000000-0000-0000-0000-000000000001");
     public static final UUID EXPERT_ACCOUNT_ID = UUID.fromString("a0000000-0000-0000-0000-000000000002");
     public static final UUID EMPLOYEE_ACCOUNT_ID = UUID.fromString("a0000000-0000-0000-0000-000000000003");
+    public static final UUID EXPERT_MARCUS_VANCE_ID = UUID.fromString("a0000000-0000-0000-0000-000000000005");
+    public static final UUID EXPERT_ALEX_RIVERA_ID = UUID.fromString("a0000000-0000-0000-0000-000000000006");
+    public static final UUID EXPERT_LINH_NGUYEN_ID = UUID.fromString("a0000000-0000-0000-0000-000000000007");
 
     public static final String DEFAULT_PASSWORD = "Password123!";
 
@@ -110,6 +113,9 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         seedMember(ADMIN_ACCOUNT_ID, "admin@technova.com", "Elena Rostova", "ORGANIZATION_ADMINISTRATOR", passwordHash, null, null);
         seedMember(MANAGER_ACCOUNT_ID, "manager@technova.com", "Sarah Connor", "LD_MANAGER", passwordHash, null, null);
         seedMember(EXPERT_ACCOUNT_ID, "expert@technova.com", "Dr. Sarah Chen", "DOMAIN_EXPERT", passwordHash, null, null);
+        seedMember(EXPERT_ALEX_RIVERA_ID, "alex.rivera@technova.com", "Alex Rivera", "DOMAIN_EXPERT", passwordHash, null, null);
+        seedMember(EXPERT_LINH_NGUYEN_ID, "linh.nguyen@technova.com", "Linh Nguyen", "DOMAIN_EXPERT", passwordHash, null, null);
+        seedMember(EXPERT_MARCUS_VANCE_ID, "marcus.vance@technova.com", "Marcus Vance", "DOMAIN_EXPERT", passwordHash, null, null);
         seedMember(EMPLOYEE_ACCOUNT_ID, "employee@technova.com", "Alex Chen", "EMPLOYEE", passwordHash, TECHNOVA_DEPT_ID, TECHNOVA_OCC_REF_ID);
 
         // 5. Organization Registration (Satisfies organization_workspace foreign key)

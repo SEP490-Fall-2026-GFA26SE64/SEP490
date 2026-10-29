@@ -69,14 +69,44 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       avatar: 'SC',
     },
     {
-      id: 'USR-102',
+      id: 'a0000000-0000-0000-0000-000000000002',
       name: 'Dr. Sarah Chen',
-      email: 'expert-chen@adaptlearn.internal',
+      email: 'expert@technova.com',
       role: 'Expert',
       department: 'Cognitive Architecture & AI',
       status: 'active',
       lastActive: '10 mins ago',
       avatar: 'SC',
+    },
+    {
+      id: 'a0000000-0000-0000-0000-000000000006',
+      name: 'Alex Rivera',
+      email: 'alex.rivera@technova.com',
+      role: 'Expert',
+      department: 'Cloud & Infrastructure DevOps',
+      status: 'active',
+      lastActive: '20 mins ago',
+      avatar: 'AR',
+    },
+    {
+      id: 'a0000000-0000-0000-0000-000000000007',
+      name: 'Linh Nguyen',
+      email: 'linh.nguyen@technova.com',
+      role: 'Expert',
+      department: 'Data Systems & Engineering',
+      status: 'active',
+      lastActive: '1 hour ago',
+      avatar: 'LN',
+    },
+    {
+      id: 'a0000000-0000-0000-0000-000000000005',
+      name: 'Marcus Vance',
+      email: 'marcus.vance@technova.com',
+      role: 'Expert',
+      department: 'Graph Database & Backend Architecture',
+      status: 'active',
+      lastActive: 'Yesterday',
+      avatar: 'MV',
     },
     {
       id: 'USR-103',
@@ -88,17 +118,6 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       targetRole: 'AI Knowledge Architect',
       lastActive: '15 mins ago',
       avatar: 'AC',
-    },
-    {
-      id: 'USR-104',
-      name: 'Marcus Vance',
-      email: 'marcus.vance@adaptlearn.internal',
-      role: 'Employee',
-      department: 'Backend Engineering',
-      status: 'active',
-      targetRole: 'Machine Learning Engineer',
-      lastActive: 'Yesterday',
-      avatar: 'MV',
     },
     {
       id: 'USR-105',
@@ -221,11 +240,17 @@ export function loadCompanies(): CompanyRecord[] {
           let users = comp.users || []
           const isTechnova = comp.id === 'comp-technova' || comp.id === SEED_COMPANY_TECHNOVA.id
           if (isTechnova) {
-            const hasElena = users.some((u) => u.id === 'USR-106')
-            if (!hasElena) {
-              const elenaUser = SEED_COMPANY_TECHNOVA.users.find((u) => u.id === 'USR-106')
-              if (elenaUser) {
-                users = [...users, elenaUser]
+            for (const seedUser of SEED_COMPANY_TECHNOVA.users) {
+              const existingIdx = users.findIndex(
+                (u) =>
+                  u.id === seedUser.id ||
+                  (u.email && u.email.toLowerCase() === seedUser.email.toLowerCase()) ||
+                  (u.name && u.name.toLowerCase() === seedUser.name.toLowerCase())
+              )
+              if (existingIdx === -1) {
+                users.push(seedUser)
+              } else if (seedUser.role === 'Expert' && users[existingIdx].role !== 'Expert') {
+                users[existingIdx] = { ...users[existingIdx], ...seedUser }
               }
             }
           }
