@@ -263,6 +263,14 @@ export function CompetencyOntologyPage() {
       }))
   }, [microSkills, competencyForm.skillIds])
 
+  const prereqSkillComboboxOptions: ComboboxOption[] = React.useMemo(() => {
+    return microSkills.map((skill) => ({
+      value: skill.id,
+      label: `${skill.code} — ${skill.name}`,
+      description: skill.description || undefined,
+    }))
+  }, [microSkills])
+
   // Synchronize state when active company scope changes & fetch live from Neo4j
   const handleSync = React.useCallback(async () => {
       const active = getActiveCompany()
@@ -1613,7 +1621,6 @@ export function CompetencyOntologyPage() {
                           <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                             <th className="py-2.5 px-3">Competency Code</th>
                             <th className="py-2.5 px-3">Title &amp; Scope</th>
-                            <th className="py-2.5 px-3">Seniority Levels</th>
                             <th className="py-2.5 px-3 text-center">Member Micro-skills</th>
                             <th className="py-2.5 px-3 text-center">Status</th>
                             <th className="py-2.5 px-3 text-right">Actions</th>
@@ -1631,19 +1638,6 @@ export function CompetencyOntologyPage() {
                                   <div className="font-semibold text-foreground text-xs">{comp.name}</div>
                                   <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
                                     {comp.description || 'Domain competency capability scope.'}
-                                  </div>
-                                </td>
-                                <td className="py-3 px-3">
-                                  <div className="flex items-center gap-1 flex-wrap">
-                                    {comp.levelCodes && comp.levelCodes.length > 0 ? (
-                                      comp.levelCodes.map((lvl) => (
-                                        <Badge key={lvl} variant="outline" className="text-[10px] font-mono py-0 px-1.5">
-                                          {lvl}
-                                        </Badge>
-                                      ))
-                                    ) : (
-                                      <span className="text-[11px] text-muted-foreground italic">General</span>
-                                    )}
                                   </div>
                                 </td>
                                 <td className="py-3 px-3 text-center">
@@ -1844,7 +1838,7 @@ export function CompetencyOntologyPage() {
       <Dialog
         open={isPrereqModalOpen}
         onOpenChange={setIsPrereqModalOpen}
-        className="max-w-xl w-full p-6 sm:p-7 overflow-hidden"
+        className="max-w-3xl w-full p-6 sm:p-8 min-h-[660px] sm:min-h-[700px] max-h-[92vh] flex flex-col justify-between overflow-y-auto overflow-x-visible"
       >
         {(() => {
           const selectedSourceSkill = microSkills.find((s) => s.id === prereqForm.sourceSkillId)
@@ -1873,11 +1867,11 @@ export function CompetencyOntologyPage() {
 
               <div className="space-y-5 text-xs flex-1">
                 {/* Visual Sequence Card */}
-                <div className="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3">
+                <div className="rounded-xl border border-border/80 bg-muted/20 p-5 space-y-4">
                   {/* Step 1: Source Skill */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2 relative z-30">
                     <div className="flex items-center justify-between">
-                      <label className="font-semibold text-foreground flex items-center gap-1.5">
+                      <label className="font-semibold text-foreground flex items-center gap-1.5 text-xs">
                         <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
                           1
                         </span>
@@ -1893,36 +1887,35 @@ export function CompetencyOntologyPage() {
                         </Badge>
                       )}
                     </div>
-                    <select
+                    <Combobox
+                      size="sm"
+                      clearable={false}
+                      options={prereqSkillComboboxOptions}
                       value={prereqForm.sourceSkillId}
-                      onChange={(e) => setPrereqForm({ ...prereqForm, sourceSkillId: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs"
-                    >
-                      {microSkills.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.code} — {s.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setPrereqForm((prev) => ({ ...prev, sourceSkillId: val }))}
+                      placeholder="Select source micro-skill (must master first)..."
+                      searchPlaceholder="Search by skill code or title..."
+                      emptyMessage="No matching micro-skills found."
+                    />
                     {selectedSourceSkill?.description && (
-                      <p className="text-[11px] text-muted-foreground line-clamp-1 italic px-0.5">
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 italic px-0.5">
                         "{selectedSourceSkill.description}"
                       </p>
                     )}
                   </div>
 
                   {/* Directional Connector Bridge */}
-                  <div className="flex items-center justify-center my-0.5">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-mono text-[10px] font-bold tracking-wider shadow-2xs">
+                  <div className="flex items-center justify-center my-1">
+                    <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-mono text-[10px] font-bold tracking-wider shadow-2xs">
                       <span>MUST BE MASTERED BEFORE</span>
                       <ArrowDown className="h-3.5 w-3.5" />
                     </div>
                   </div>
 
                   {/* Step 2: Target Skill */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2 relative z-20">
                     <div className="flex items-center justify-between">
-                      <label className="font-semibold text-foreground flex items-center gap-1.5">
+                      <label className="font-semibold text-foreground flex items-center gap-1.5 text-xs">
                         <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
                           2
                         </span>
@@ -1938,29 +1931,26 @@ export function CompetencyOntologyPage() {
                         </Badge>
                       )}
                     </div>
-                    <select
+                    <Combobox
+                      size="sm"
+                      clearable={false}
+                      options={prereqSkillComboboxOptions}
                       value={prereqForm.targetSkillId}
-                      onChange={(e) => setPrereqForm({ ...prereqForm, targetSkillId: e.target.value })}
+                      onChange={(val) => setPrereqForm((prev) => ({ ...prev, targetSkillId: val }))}
+                      placeholder="Select target micro-skill (unlocked next)..."
+                      searchPlaceholder="Search by skill code or title..."
+                      emptyMessage="No matching micro-skills found."
                       className={cn(
-                        'w-full px-3 py-2 rounded-lg bg-background border text-foreground text-xs font-medium focus:outline-none focus:ring-2 transition-all shadow-2xs',
-                        isSelfPrereq
-                          ? 'border-destructive focus:ring-destructive/25 focus:border-destructive'
-                          : 'border-border focus:ring-primary/25 focus:border-primary'
+                        isSelfPrereq && 'border-destructive ring-1 ring-destructive rounded-md'
                       )}
-                    >
-                      {microSkills.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.code} — {s.name}
-                        </option>
-                      ))}
-                    </select>
+                    />
                     {isSelfPrereq ? (
                       <p className="text-[11px] text-destructive font-medium px-0.5 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
                         Source and target skills cannot be identical.
                       </p>
                     ) : selectedTargetSkill?.description ? (
-                      <p className="text-[11px] text-muted-foreground line-clamp-1 italic px-0.5">
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 italic px-0.5">
                         "{selectedTargetSkill.description}"
                       </p>
                     ) : null}
@@ -2019,7 +2009,7 @@ export function CompetencyOntologyPage() {
                 </div>
 
                 {/* Automatic Graph Validation Banner */}
-                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-[11px] text-muted-foreground flex items-center gap-2.5">
+                <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 text-[11px] text-muted-foreground flex items-center gap-2.5">
                   <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                   <span>
                     <strong className="text-foreground font-semibold">Acyclic Graph Guard:</strong> Automated cycle detection verifies this edge will not create circular dependency deadlocks before saving.
@@ -2805,20 +2795,7 @@ export function CompetencyOntologyPage() {
                 </p>
               </div>
 
-              {viewingCompetencyDetails.levelCodes && viewingCompetencyDetails.levelCodes.length > 0 && (
-                <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
-                  <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-1.5">
-                    Associated Seniority Levels
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {viewingCompetencyDetails.levelCodes.map((lvl) => (
-                      <Badge key={lvl} variant="outline" className="text-xs font-mono">
-                        {lvl}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+
 
               <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
                 <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-2">
