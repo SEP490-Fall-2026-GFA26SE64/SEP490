@@ -18,10 +18,16 @@ import java.util.*;
 public final class JdbcLearningContentAdapter implements LearningContentPort {
     private final JdbcTemplate jdbc;
     private final ObjectMapper json;
+    @FunctionalInterface public interface GeneratedAssignment { boolean permits(String organization,String learner,String module); }
+    private final GeneratedAssignment generated;
 
     public JdbcLearningContentAdapter(JdbcTemplate jdbc, ObjectMapper json) {
+        this(jdbc,json,(organization,learner,module)->false);
+    }
+    public JdbcLearningContentAdapter(JdbcTemplate jdbc,ObjectMapper json,GeneratedAssignment generated) {
         this.jdbc = jdbc;
         this.json = json;
+        this.generated = generated;
     }
 
     private static String time(java.sql.ResultSet row, String field) throws java.sql.SQLException {
@@ -291,7 +297,7 @@ public final class JdbcLearningContentAdapter implements LearningContentPort {
                         Boolean.class,
                         org,
                         learner,
-                        encode(List.of(module))));
+                        encode(List.of(module)))) || generated.permits(org,learner,module);
     }
 
     @Override

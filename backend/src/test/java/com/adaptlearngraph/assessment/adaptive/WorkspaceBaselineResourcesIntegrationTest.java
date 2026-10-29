@@ -31,7 +31,7 @@ class WorkspaceBaselineResourcesIntegrationTest {
                     VALUES (?,?,?,?,'A',true),(?,?,?,?,'B',true)
                     """, reference,UUID.randomUUID(),org,department,foreignReference,UUID.randomUUID(),other,foreignDepartment);
             var migration = Flyway.configure().dataSource(source).load();
-            assertThat(migration.migrate().migrationsExecuted).isEqualTo(22);
+            assertThat(migration.migrate().migrationsExecuted).isEqualTo(20);
             assertThat(migration.migrate().migrationsExecuted).isZero();
             migration.validate();
             assertThat(jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=12 ORDER BY installed_rank")).isEqualTo(checksums);

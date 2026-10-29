@@ -37,12 +37,6 @@ public final class SubscriptionTestRuntime {
     public static class RuntimeConfiguration {}
     @TestConfiguration(proxyBeanMethods=false)
     public static class Fixtures {
-        @Bean ModuleWorkspaceTestFixtures moduleFixtures(JdbcTemplate jdbc, RegistrationSecrets secrets,
-                org.springframework.transaction.PlatformTransactionManager manager, org.neo4j.driver.Driver graph,
-                com.adaptlearngraph.subscription.application.port.out.PaymentOrderStore orders,
-                com.adaptlearngraph.subscription.application.port.out.PaymentProcessingStore payments) {
-            return new ModuleWorkspaceTestFixtures(jdbc, secrets, manager, graph, orders, payments);
-        }
         @Bean WorkspaceBaselineTestFixtures baselineFixtures(JdbcTemplate jdbc, RegistrationSecrets secrets,
                 org.springframework.transaction.PlatformTransactionManager manager, org.neo4j.driver.Driver graph, ObjectMapper json) {
             return new WorkspaceBaselineTestFixtures(jdbc,secrets,manager,graph,json);

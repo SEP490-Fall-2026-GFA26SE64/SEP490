@@ -52,6 +52,7 @@ function LearnLink({ item }: { item: AssignedModule }) {
   return (
     <Link
       to={`/employee/modules/${encodeURIComponent(item.id)}`}
+      state={{ returnTo: '/employee/pathway?view=assigned' }}
       className="inline-flex min-h-10 items-center gap-1.5 rounded-md font-semibold text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
     >
       {vi ? 'Mở bài học trong module' : 'Open module lessons'}

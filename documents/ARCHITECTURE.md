@@ -1,5 +1,9 @@
 # Current Project Architecture
 
+## Shared workspace adaptive integration
+
+Real workspace identity/CSRF now composes the retained initial-pathway source. The [integration contract](technical/Workspace%20Adaptive%20Integration.md) records actor/tenant boundaries, portable development seed gates, separate migration lineage/volumes and view-only limits. Detailed Function rules are retained in [technical contracts](technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md); domain REQ/FR anchors remain reserved. Current Role-first entry resolves the full-Occupation baseline before gap/confirmation; SRS discussion of another ordering does not silently change this accepted flow. Source/build checks are distinct from [new runtime verification still Not run](testing/system/REQ-002-041-042-workspace-integration.md).
+
 ## Workspace Baseline Integration (2026-10-28)
 
 The combined main/local development runtime uses `local,workspace-baseline`. It retains real workspace login, single membership roles, entitlement checks and existing onboarding/billing. L&D baseline configuration and Employee role/attempt/result APIs reuse the incoming adaptive engine through trusted workspace adapters; demo personas are not enabled by default.
@@ -355,3 +359,11 @@ The existing AdaptivePathwayPage and LearningModuleReaderPage owners reuse the o
 ### Adaptive Pathway component integration — R7 (2026-10-29)
 
 AssignedLearningPathways dispatches authorized assigned props to the existing InteractiveRoleRoadmap/AdaptivePathwayTimeline owners. Their AssignedPathwayPresentation reuses original graph styles and source layout with actual Module snapshots; Employee rendering does not invoke prototype stores or simulated mastery. Existing manager compact prototype caller remains outside this slice. No endpoint, persistent field, migration, seed, assignment or storage responsibility changes. Selected-path fresh reads, PostgreSQL lesson progress/pins and Neo4j TEACHES mappings remain unchanged. [R7 evidence](testing/system/REQ-013-learning-content-R7.md).
+
+### Main / Module content integration — 2026-10-29
+
+The initial-generation/review implementation from main and the Module content owner share the original roadmap/timeline components through separate typed props (`pathway` versus `assigned`). `/employee/pathway` retains initial role pathway generation/review; `/employee/pathway?view=assigned` retains existing explicit manual assignments, linked when such assignments exist. Successful empty initial responses have a blank body. Manual lesson navigation retains its return context; generated entries return to the initial pathway. No mastery is inferred from lesson completion.
+
+Generated content admission reuses `InitialPathwayAccess.requireCurrentEntry` on protected content reads, including private assets. This revalidates the current exact approval, selection, binding, availability and prerequisite checks; it does not treat membership in a generated draft as permission. The content owner supplies only a protected reader URL for the exact released/pinned contentVersion with stored lessons. Internal segment prerequisites remain unavailable until their owner capability exists; no bypass or fabricated segment completion is added. Manual Expert-confirmed assignment admission remains an independent existing grant. Live readiness, assignment/resource configuration and production activation remain the initial pathway owner's prerequisites.
+
+Migration lineages are explicit: the retained Module database uses canonical `db/migration` V1–V38 unchanged plus V39 initial gap/pathway, V40 teaching-v2 and V41 Expert ordering/removal. Existing main workspace databases retain `db/workspace-migration` V1–V35 unchanged plus V36–V41 for Module authoring/intake/content/legacy lessons/video precision/coverage clock. `WORKSPACE_MIGRATION_LOCATION` selects the workspace lineage for compose.dev; accounts-dev retains the canonical default. Do not point a populated database at the other lineage, repair checksums or replay old numbered scripts. Neither lineage changes Neo4j schema. The dev API was clean-built after stale target resources initially caused duplicate migration detection; preserved account/content storage was backed up before the successful additive V38→V41 upgrade.

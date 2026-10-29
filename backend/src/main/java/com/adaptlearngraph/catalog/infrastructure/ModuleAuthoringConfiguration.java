@@ -39,7 +39,30 @@ public class ModuleAuthoringConfiguration {
             ModuleAuthoringService service, JdbcTemplate jdbc, ObjectMapper mapper) {
         return new ExcelLearningImport(modules, content, files, service, jdbc, mapper);
     }
-    @Bean LearningContentPort learningContentPort(JdbcTemplate jdbc, ObjectMapper mapper) { return new JdbcLearningContentAdapter(jdbc, mapper); }
+    @Bean LearningContentPort learningContentPort(JdbcTemplate jdbc, ObjectMapper mapper, ModuleAuthoringPort modules,
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.pathway.application.InitialPathwayAccess> pathways) {
+        return new JdbcLearningContentAdapter(jdbc,mapper,(organization,learner,module)->{
+            var actor=modules.actor();
+            if(!organization.equals(actor.organizationId()) || !learner.equals(actor.id()) || !actor.roles().contains("EMPLOYEE")) return false;
+            var access=pathways.getIfAvailable();if(access==null)return false;
+            try { access.requireCurrentEntry(module);return true; }
+            catch(com.adaptlearngraph.pathway.application.InitialPathwayPorts.Failure denied){return false;}
+        });
+    }
+    @Bean @Primary
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="pathway.initial.enabled",havingValue="true")
+    com.adaptlearngraph.pathway.application.InitialPlanningPorts.ContentAccess modulePathwayContentAccess(ModuleAuthoringPort modules) {
+        return (scope,module,version,internalGates)->{
+            if(!internalGates.isEmpty()) throw new com.adaptlearngraph.pathway.application.InitialPathwayPorts.Failure(503,"CONTENT_SEGMENT_GATES_NOT_CONFIGURED");
+            var document=modules.documents(scope.organizationId().toString()).stream().filter(d->d.id().equals(module)).findFirst()
+                .orElseThrow(()->new com.adaptlearngraph.pathway.application.InitialPathwayPorts.Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED"));
+            var pin=modules.pinned(scope.organizationId().toString(),scope.learnerId().toString(),module);
+            var revision=pin.flatMap(number->document.revisions().stream().filter(r->r.number()==number).findFirst()).orElse(document.released());
+            if(revision==null || !version.equals(revision.payload().contentVersion()) || revision.payload().content().lessons().isEmpty())
+                throw new com.adaptlearngraph.pathway.application.InitialPathwayPorts.Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED");
+            return "/employee/modules/"+module;
+        };
+    }
     @Bean ModuleAuthoringService moduleAuthoringService(ModuleAuthoringPort port, LearningContentPort content) { return new ModuleAuthoringService(port, content); }
     @Bean LearningContentService learningContentService(ModuleAuthoringPort port, LearningContentPort content, ModuleAuthoringService modules) { return new LearningContentService(port, content, modules); }
 }

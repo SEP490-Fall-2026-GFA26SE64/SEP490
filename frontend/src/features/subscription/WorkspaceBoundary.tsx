@@ -32,7 +32,7 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
       if (!identity.data?.organizationId) throw new Error('An authenticated organization is required.')
       return getSummary(identity.data.organizationId)
     }, enabled: authenticated && permitted && users, staleTime: 0, refetchInterval: 5000 })
-  if (authenticated && permitted && (billing || platform || (!users && access.isSuccess) ||
+  if (identity.isSuccess && authenticated && permitted && (billing || platform || (!users && access.isSuccess) ||
     (users && memberAccess.isSuccess && memberAccess.data.workspaceStatus !== 'SUSPENDED')) && identity.data) {
     return <WorkspaceSessionContext.Provider value={{
       identity: { fullName: identity.data.fullName, email: identity.data.email, organizationId: identity.data.organizationId,
@@ -50,9 +50,10 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
   </SubscriptionShell>
 }
 
+// Stable component identity preserves forms/retry commands across entitlement polling.
 function WorkspaceQueryScope({ children }: { children: ReactNode }) {
   const parent = useQueryClient()
   const [client] = useState(() => new QueryClient({ defaultOptions: parent.getDefaultOptions() }))
-  useEffect(() => () => client.clear(), [client])
+  useEffect(() => () => { void client.cancelQueries(); client.clear() }, [client])
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }

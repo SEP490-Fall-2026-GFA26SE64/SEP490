@@ -6,7 +6,9 @@ RUN npm ci
 FROM dependencies AS dev
 COPY . .
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Compose retains node_modules in a volume across image rebuilds. Reconcile it
+# with the bind-mounted lockfile before Vite starts; never reuse stale packages.
+CMD ["/bin/sh", "-ec", "npm ci --no-audit --no-fund; exec npm run dev -- --host 0.0.0.0"]
 
 FROM dependencies AS build
 COPY . .

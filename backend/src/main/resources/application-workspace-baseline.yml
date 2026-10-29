@@ -1,3 +1,7 @@
+spring:
+  flyway:
+    locations: ${WORKSPACE_MIGRATION_LOCATION:classpath:db/migration}
+
 assessment:
   baseline:
     workspace:

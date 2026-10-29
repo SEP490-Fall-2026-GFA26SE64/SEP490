@@ -177,7 +177,7 @@ test('real authoring, L&D preview/approval, confirmed pathway, explicit text com
     }),
   ).toBeVisible()
   await signOut(page)
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   await expect(
     page.getByRole('heading', { name: title + ' pathway', exact: true }),
   ).toBeVisible()
@@ -420,7 +420,7 @@ test('private MP4 upload, L&D approval, assignment admission, byte ranges and ac
     ).ok(),
   ).toBeTruthy()
   await signOut(page)
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   expect(
     (await mutate(page.request, root + `/learning/${doc.id}/begin`)).status(),
   ).toBe(403)
@@ -1097,7 +1097,7 @@ test('learning issue/version notifications persist in-app and deliver only into 
     )
     .toBeTruthy()
   await signOut(page)
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   const learnerNotices = (await (
     await page.request.get(root + '/notifications')
   ).json()) as { kind: string; title: string }[]
@@ -1407,7 +1407,7 @@ test('R5 restores roadmap and timeline with a real assigned R4 module and persis
     ).toBeVisible()
   }
   await signOut(page)
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   const section = page.getByRole('region', {
     name: assignment.title,
     exact: true,
@@ -1479,7 +1479,7 @@ test('R5 restores roadmap and timeline with a real assigned R4 module and persis
     (lesson) =>
       after.progress.some((p) => p.lessonId === lesson.id && p.completedAt),
   ).length
-  await page.goto('/employee/pathway')
+  await page.goto('/employee/pathway?view=assigned')
   await page
     .getByLabel('Learning pathway', { exact: true })
     .selectOption({ label: assignment.title })
@@ -1531,7 +1531,7 @@ test('R6 restores original pathway and lesson UI with real Text Video and persis
   test.skip(baseURL !== 'http://localhost:8088', 'Dedicated dev stack required')
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   const assignment = 'R4 - Learning content practice'
   await page
     .getByLabel('Learning pathway', { exact: true })
@@ -1702,7 +1702,7 @@ test('R6 keeps pathway body blank on an empty result and recovers from a failed 
 }) => {
   test.setTimeout(360000)
   test.skip(baseURL !== 'http://localhost:8088', 'Dedicated dev stack required')
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   // UI-only response fixtures; no account assignments or persisted data are deleted.
   await page.route('**/api/v1/module-management/pathways', (route) =>
     route.fulfill({ status: 200, json: [] }),
@@ -1746,7 +1746,7 @@ test('R6 mobile original canvas scrolls to actual module and opens real lessons'
 }) => {
   test.setTimeout(360000)
   test.skip(baseURL !== 'http://localhost:8088', 'Dedicated dev stack required')
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   await page
     .getByLabel('Learning pathway', { exact: true })
     .selectOption(
@@ -1810,7 +1810,7 @@ test('R7 source-style pathway toolbar dialogs and timeline use actual assigned c
         import.meta.url,
       ),
     )
-  await login(page, 4, '/employee/pathway')
+  await login(page, 4, '/employee/pathway?view=assigned')
   await page
     .getByLabel('Learning pathway', { exact: true })
     .selectOption(
@@ -1896,5 +1896,112 @@ test('R7 source-style pathway toolbar dialogs and timeline use actual assigned c
     ),
   ).toBe(true)
   await page.screenshot({ path: artifact('timeline-mobile.png') })
+  expect(errors).toEqual([])
+})
+
+test('merge main keeps generated pathway presentation and real assigned lessons independently accessible', async ({
+  page,
+  baseURL,
+}) => {
+  test.setTimeout(240000)
+  test.skip(baseURL !== 'http://localhost:8088', 'Dedicated dev stack required')
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await login(page, 4, '/employee/pathway?view=role')
+  await expect(page.getByTestId('empty-initial-pathway')).toBeEmpty({
+    timeout: 90000,
+  })
+  await page
+    .getByRole('link', { name: 'Assigned modules', exact: true })
+    .click()
+  await expect(
+    page.getByLabel('Learning pathway', { exact: true }),
+  ).toBeVisible({ timeout: 90000 })
+  const id = 'MOD-e52f4286-6713-4426-b98d-24b02584bcc8'
+  const learning = (await (
+    await page.request.get(root + `/learning/${id}/view`)
+  ).json()) as LearningView
+  const payload = learning.revision.payload
+  // Explicit UI response fixture, not a persisted/generated algorithm outcome.
+  await page.route('**/api/v1/employee/pathway', (route) =>
+    route.fulfill({
+      json: {
+        status: {
+          requestId: '00000000-0000-0000-0000-000000000019',
+          generationStatus: 'SUCCEEDED',
+          reviewStatus: 'APPROVED',
+          validationStatus: 'VALID',
+          displayState: 'APPROVED',
+          reasonCode: null,
+          revision: 1,
+          revisionContentHash: 'a'.repeat(64),
+          roleName: 'Merge UI fixture role',
+          levelName: 'Fixture level',
+        },
+        archived: false,
+        baseline: null,
+        context: null,
+        dependencies: [],
+        modules: [
+          {
+            module: {
+              id,
+              title: payload.title,
+              contentVersion: payload.contentVersion,
+              ordinal: 1,
+              durationMinutes: payload.duration,
+              priceVnd: payload.price,
+              targets: payload.teachings.map((teaching) => ({
+                skillId: teaching.skillId,
+                instructionLevel: null,
+                teachingFocus: teaching.teachingFocus,
+                difficultyLevel: teaching.difficultyLevel,
+                coverageRole:
+                  teaching.teachingFocus === 'INCIDENTAL'
+                    ? 'ANCILLARY'
+                    : 'COVERAGE',
+                expertAttention: false,
+                attentionReason: null,
+              })),
+            },
+            accessState: 'AVAILABLE',
+            reasonCode: null,
+            entry: `/employee/modules/${id}`,
+          },
+        ],
+      },
+    }),
+  )
+  await page.goto('/employee/pathway?view=role')
+  await expect(
+    page.getByRole('heading', { name: 'Merge UI fixture role', exact: true }),
+  ).toBeVisible({ timeout: 90000 })
+  const mergeArtifact = (name: string) => fileURLToPath(new URL('../../documents/testing/system/artifacts/REQ-013-main-integration/' + name, import.meta.url))
+  await page.screenshot({ path: mergeArtifact('generated-ui-fixture.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.screenshot({ path: mergeArtifact('generated-ui-fixture-mobile.png') })
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await page.getByRole('button', { name: new RegExp(payload.title) }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(
+    dialog.getByText(payload.contentVersion, { exact: false }).first(),
+  ).toBeVisible()
+  await dialog.locator(`a[href="/employee/modules/${id}"]`).click()
+  await expect(
+    page.getByRole('complementary', { name: 'Module syllabus' }),
+  ).toBeVisible({ timeout: 60000 })
+  await page.screenshot({
+    path: fileURLToPath(
+      new URL(
+        '../../documents/testing/system/artifacts/REQ-013-main-integration/real-reader.png',
+        import.meta.url,
+      ),
+    ),
+  })
+  await page.getByRole('link', { name: 'Back to Pathway', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Merge UI fixture role', exact: true }),
+  ).toBeVisible({ timeout: 90000 })
   expect(errors).toEqual([])
 })

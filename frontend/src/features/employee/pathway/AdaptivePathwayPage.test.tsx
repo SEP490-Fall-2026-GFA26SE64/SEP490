@@ -13,7 +13,7 @@ import type {
   ManualPathway,
 } from '../../../shared/api/moduleAuthoringApi'
 import { moduleRequest } from '../../../shared/api/moduleAuthoringApi'
-import { AdaptivePathwayPage } from './AdaptivePathwayPage'
+import { ManualAssignedPathwayPage as AdaptivePathwayPage } from './ManualAssignedPathwayPage'
 import { assignedModuleProgress } from '../modules/useAssignedLearningPathways'
 vi.mock('../../../shared/layouts/WorkspaceLayout', () => ({
   WorkspaceLayout: ({ children }: { children: ReactNode }) => <>{children}</>,

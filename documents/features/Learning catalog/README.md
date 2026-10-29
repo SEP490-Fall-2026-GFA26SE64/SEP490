@@ -8,37 +8,19 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 ## Current Implementation
 
-**Source-inspected:** 2026-10-29 (merged Module slice). See the [implementation legend](../README.md#current-implementation-overview).
+**Source-inspected:** 2026-10-28. See the [implementation legend](../README.md#current-implementation-overview).
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-04.06](#fr-04-06) | Partial | The local L&D Module workspace reads persisted Expert submissions, returns revisions with feedback, and approves/releases exact versions to Neo4j. | L&D now previews ordered Text/Video and reviews the complete content revision. Complete module-assessment bundle approval remains outside this slice. |
+| [FR-04.06](#fr-04-06) | Prototype | The L&D approval queue displays seeded module/assessment submissions and changes their local status to approved or revision-requested, with feedback. | The queue is not populated by Expert submissions and does not persist approval of a module/content/assessment bundle. |
 | [FR-05.01](#fr-05-01) | Partial | Micro-skill APIs and Neo4j persistence support search, create, update/status and guarded deletion. The ontology page loads skills and macro competencies and calls skill mutations. | The authoring model covers code/name/description/macro category/status, not complete assigned-occupation proficiency-level management. Legacy actor headers/browser company context remain. |
 | [FR-05.04](#fr-05-04) | Partial | Prerequisite APIs list, save and remove graph edges with minimum mastery/status; the service rejects self-edges, cycles and mastery outside 0..1. The ontology UI uses those APIs. | Trusted assignment-scoped authorization and complete update UX remain unestablished. Local import/browser data is not equivalent to a persisted prerequisite operation. |
-| [FR-05.05](#fr-05-05) | Partial | The local Module workspace reads the Neo4j catalog and persists authoring versions, skill mappings, content snapshots, intake and history in PostgreSQL using the real workspace session. | Ordered Text/Video, private MP4/images, rich editing and atomic Excel/ZIP imports are implemented in the local slice. Vimeo live playback remains blocked by a provider connection restriction; production delivery/operations are not certified. New authoring/content reuse/import do not require Occupation; historical intake permissions remain a separate workflow. |
-| [FR-05.08](#fr-05-08) | Partial | Experts submit persisted Module/content revisions; L&D can return them for revision or approve and release them. Editors and reviewers are recorded separately. | The full module-assessment bundle is not connected to this durable submission workflow. |
+| [FR-05.05](#fr-05-05) | Prototype | The module page edits versioned local module records, skill mappings, duration and a sample content URI, using company browser storage. | No connected module/content authoring API, private-file upload/access workflow or persisted ordered content lifecycle was found. A content URI is not an implemented content-management service. |
+| [FR-05.08](#fr-05-08) | Prototype | Local module/question/blueprint authoring and a separate sample L&D queue exist. | There is no durable submission that transfers a versioned module plus content and assessments into that queue and supports revision/resubmission. |
 
 **Entry points:** `/expert/ontology`, `/expert/modules`, `/expert/assessment-bank`, `/ld-manager/approvals`.
 
-**Code references:** [ontology page](../../../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx), [micro-skill API](../../../backend/src/main/java/com/adaptlearngraph/competency/api/MicroSkillController.java), [prerequisite service](../../../backend/src/main/java/com/adaptlearngraph/competency/application/PrerequisiteService.java), [Module workspace](../../../frontend/src/features/expert/modules/ModuleManagementWorkspace.tsx), [approval entry](../../../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx), [Module API](../../../backend/src/main/java/com/adaptlearngraph/catalog/api/ModuleAuthoringController.java). Module assessment authoring is separately described in [Assessment workflows](../Assessment%20workflows/README.md#current-implementation).
-
-## Learning Content local delivery — 2026-10-29
-
-The existing Module workspace now supports ordered Text/Video lessons, rich text/table/code/link/private-image editing and preview, MP4 upload, YouTube/Vimeo adapters, and immutable content revisions. Incomplete manual drafts can be saved; submission/import requires complete valid content. L&D reviews the whole Module revision. Creator, responsible Expert, subsequent editor and reviewer history stay in PostgreSQL; another Expert has read-only access.
-
-Excel imports use Modules/Lessons sheets; ZIP packages add referenced Markdown/video/images. Preview makes no Module writes; confirmation revalidates the complete batch atomically. A foreign-owned duplicate rejects the batch. An owned released duplicate requires explicit confirmation to create a new draft revision; unresolved draft/review conflicts are rejected. Legacy Markdown becomes one stable Text lesson; absent content is shown as Needs content.
-
-Only confirmed same-organization manual pathways admit Employees. Versioned content, resume/coverage/completion and notifications are persisted; private bytes are stored in MinIO. Upload limits are audited global Platform Administrator settings. No automatic asset deletion is installed. [Architecture/store fields](../../ARCHITECTURE.md#learning-content-runtime-extension--v35v38), [actual tests and manual checklist](../../testing/system/REQ-013-learning-content.md). Local YouTube and uploaded MP4 playback passed; Vimeo live acceptance remains blocked by the external provider's connection-security restriction. This does not claim full production or module-assessment completion.
-
-## R4 local refinement — 2026-10-29
-
-Module and content creation now require the responsible Expert's real organization/session, valid skill mappings and the existing content rules; no Occupation selection or grant is required. Content reuse is not filtered by Occupation. New records have no occupation membership; old snapshot tags/history remain intact. Excel/ZIP templates omit occupationIds, and the optional old column is ignored. Owner and cross-organization protections remain enforced.
-
-L&D Details & history displays each revision's **Lesson 1, Lesson 2, Lesson 3…** as individual cards with title, Reading/Video, duration and actual content/player. The combined “Preview this content version” expander is removed. Review still approves or returns the complete Module revision, not individual lessons. Shared preview components use the same numbered presentation.
-
-Private media also revalidates the trusted session/workspace on async servlet redispatch, fixing an actual AccessDenied stream failure without public access or fake identities. The pre-existing catalog intake permission controls remain explicitly labeled intake-only.
-
-Verified locally: creation without Occupation, three-lesson desktop/mobile L&D reading/playback/release, Excel new/legacy compatibility, organization/owner isolation, Employee private video 90%/reload, 43 backend unit/API checks, 12 frontend checks and 2 affected store-integration scenarios across focused runs. [Evidence and manual checklist](../../testing/system/REQ-013-learning-content-R4.md). This refinement does not certify the separate Vimeo/live-provider or complete module-assessment boundaries.
+**Code references:** [ontology page](../../../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx), [micro-skill API](../../../backend/src/main/java/com/adaptlearngraph/competency/api/MicroSkillController.java), [prerequisite service](../../../backend/src/main/java/com/adaptlearngraph/competency/application/PrerequisiteService.java), [module prototype](../../../frontend/src/features/manager/modules/LearningModulesPage.tsx), [approval prototype](../../../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx), [company browser store](../../../frontend/src/shared/stores/companyStore.ts). Module assessment authoring is separately described in [Assessment workflows](../Assessment%20workflows/README.md#current-implementation).
 
 ## Requirements
 
@@ -155,6 +137,26 @@ These anchors preserve existing references, not additional functional requiremen
 | <a id="req-053-f02"></a>REQ-053-F02 | [FR-04.06](#fr-04-06) |
 | <a id="req-053-f03"></a>REQ-053-F03 | [FR-04.06](#fr-04-06) |
 | <a id="req-053-f04"></a>REQ-053-F04 | [FR-04.06](#fr-04-06) |
+
+## Learning Content local delivery — 2026-10-29
+
+The existing Module workspace now supports ordered Text/Video lessons, rich text/table/code/link/private-image editing and preview, MP4 upload, YouTube/Vimeo adapters, and immutable content revisions. Incomplete manual drafts can be saved; submission/import requires complete valid content. L&D reviews the whole Module revision. Creator, responsible Expert, subsequent editor and reviewer history stay in PostgreSQL; another Expert has read-only access.
+
+Excel imports use Modules/Lessons sheets; ZIP packages add referenced Markdown/video/images. Preview makes no Module writes; confirmation revalidates the complete batch atomically. A foreign-owned duplicate rejects the batch. An owned released duplicate requires explicit confirmation to create a new draft revision; unresolved draft/review conflicts are rejected. Legacy Markdown becomes one stable Text lesson; absent content is shown as Needs content.
+
+Only confirmed same-organization manual pathways admit Employees. Versioned content, resume/coverage/completion and notifications are persisted; private bytes are stored in MinIO. Upload limits are audited global Platform Administrator settings. No automatic asset deletion is installed. [Architecture/store fields](../../ARCHITECTURE.md#learning-content-runtime-extension--v35v38), [actual tests and manual checklist](../../testing/system/REQ-013-learning-content.md). Local YouTube and uploaded MP4 playback passed; Vimeo live acceptance remains blocked by the external provider's connection-security restriction. This does not claim full production or module-assessment completion.
+
+
+## R4 local refinement — 2026-10-29
+
+Module and content creation now require the responsible Expert's real organization/session, valid skill mappings and the existing content rules; no Occupation selection or grant is required. Content reuse is not filtered by Occupation. New records have no occupation membership; old snapshot tags/history remain intact. Excel/ZIP templates omit occupationIds, and the optional old column is ignored. Owner and cross-organization protections remain enforced.
+
+L&D Details & history displays each revision's **Lesson 1, Lesson 2, Lesson 3…** as individual cards with title, Reading/Video, duration and actual content/player. The combined “Preview this content version” expander is removed. Review still approves or returns the complete Module revision, not individual lessons. Shared preview components use the same numbered presentation.
+
+Private media also revalidates the trusted session/workspace on async servlet redispatch, fixing an actual AccessDenied stream failure without public access or fake identities. The pre-existing catalog intake permission controls remain explicitly labeled intake-only.
+
+Verified locally: creation without Occupation, three-lesson desktop/mobile L&D reading/playback/release, Excel new/legacy compatibility, organization/owner isolation, Employee private video 90%/reload, 43 backend unit/API checks, 12 frontend checks and 2 affected store-integration scenarios across focused runs. [Evidence and manual checklist](../../testing/system/REQ-013-learning-content-R4.md). This refinement does not certify the separate Vimeo/live-provider or complete module-assessment boundaries.
+
 
 ## Module responsibility and peer visibility
 

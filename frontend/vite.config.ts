@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
 
   server: {
     host: '127.0.0.1',
+    watch: { usePolling: process.env.DEV_WATCH_POLLING === 'true', interval: 300 },
     proxy: {
       '/api': loadEnv(mode, process.cwd(), '').API_PROXY_TARGET || 'http://127.0.0.1:18080',
     },

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   Award,
   Check,
@@ -35,6 +35,13 @@ export function LearningModuleReaderPage() {
   return <LearningModuleReader key={moduleId} moduleId={moduleId} />
 }
 function LearningModuleReader({ moduleId }: { moduleId: string }) {
+  const location = useLocation()
+  const navigation = location.state as { returnTo?: string } | null
+  const pathwayUrl =
+    navigation?.returnTo === '/employee/pathway?view=assigned'
+      ? navigation.returnTo
+      : '/employee/pathway'
+
   const { language } = useTranslation()
   const vi = language === 'vi'
   const [view, setView] = useState<LearningView | null>(null)
@@ -219,7 +226,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       >
         <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card px-4 py-2.5 shadow-2xs sm:px-6">
           <Link
-            to="/employee/pathway"
+            to={pathwayUrl}
             className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-3 text-body-sm font-semibold text-foreground hover:bg-muted hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             <ChevronLeft

@@ -1,6 +1,6 @@
 # REQ-060-F01-F03: PostgreSQL, HTTP and delivery evidence
 
-**Contract:** [Approved revision 12](../../features/Organization%20onboarding/README.md#implementation-brief-registration-first).  
+**Contract:** [Approved revision 12](../../features/Organization%20onboarding/README.md#implementation-brief-registration-first).
 **Date:** 2026-10-21. **Result:** Passed at this tier. Live Gmail remains separately blocked.
 
 ## Environment
@@ -27,7 +27,7 @@ Java 21.0.6, Docker 28.1.1, PostgreSQL 17.6-alpine in disposable Testcontainers.
 
 - [RegistrationPostgresIntegrationTest.java](../../../backend/src/test/java/com/adaptlearngraph/identity/infrastructure/RegistrationPostgresIntegrationTest.java): **17 passed** in the final focused rerun.
 - [RegistrationApiIntegrationTest.java](../../../backend/src/test/java/com/adaptlearngraph/identity/api/RegistrationApiIntegrationTest.java): **4 passed** in the final API/profile regression rerun.
-- [V8 migration](../../../backend/src/main/resources/db/migration/V8__organization_registration.sql): applied successfully to disposable containers and isolated Compose.
+- [V8 migration](../../../backend/src/main/resources/db/workspace-migration/V8__organization_registration.sql): applied successfully to disposable containers and isolated Compose.
 
 From `backend`:
 

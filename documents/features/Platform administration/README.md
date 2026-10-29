@@ -19,8 +19,6 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Backend reference:** [lifecycle API](../../../backend/src/main/java/com/adaptlearngraph/subscription/api/SubscriptionLifecycleController.java) and [workspace persistence](../../../backend/src/main/java/com/adaptlearngraph/subscription/infrastructure/JdbcSubscriptionWorkspaceStore.java). Password-only seeded Platform Administrator identity is a separate implemented slice; see [Workspace administration](../Workspace%20administration/README.md#implemented-policy-reference).
 
-Learning Content supporting control (2026-10-29): `/platform-admin/learning-upload-settings` provides persisted global MP4/image/ZIP limits with actor/time audit and optimistic concurrency. Defaults are 200/5/500 MiB; reducing limits affects new uploads, not accepted historical files. Other roles cannot edit these controls. This is a supporting control for the approved Learning Content extension, not completion of the platform activity-monitoring requirement. [Evidence/checklist](../../testing/system/REQ-013-learning-content.md).
-
 ## Requirements
 
 <a id="fr-02-01"></a>

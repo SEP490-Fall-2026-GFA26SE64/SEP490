@@ -1,1215 +1,276 @@
-import * as React from 'react'
-import {
-  ArrowLeft,
-  BookOpen,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Compass,
-  Filter,
-  GripVertical,
-  MinusCircle,
-  Plus,
-  PlusCircle,
-  RefreshCw,
-  Search,
-  Sparkles,
-  Trash2,
-  User,
-} from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useId, useRef, useState, type DragEvent } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useParams } from 'react-router-dom'
+import { checkReview, prepareReviewCommand, readReviewDetail, sendPathwayCommand, PathwayError, type PendingPathwayCommand, type ReviewDetail, type ReviewAction, type TeachingTarget } from '../../../shared/api/initialPathway'
+import { useInitialPathwaySession } from '../../../shared/hooks/useInitialPathwaySession'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { InitialGapTable } from '../../../shared/components/InitialGapTable'
+import { InitialPathwayFeedback } from '../../../shared/components/InitialPathwayFeedback'
+import { pathwayDiagnostic, pathwayMessage, reviewLearnerName } from '../../../shared/api/initialPathwayMessages'
+import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
+import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
-import { EmptyState } from '../../../shared/components/ui/EmptyState'
+import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { useToast } from '../../../shared/hooks/useToast'
+import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { cn } from '../../../shared/lib/utils'
-import {
-  AVAILABLE_CATALOG_MODULES,
-  getStoredPathwayById,
-  updateStoredPathway,
-  type CatalogModuleItem,
-  type InitialPathwayItem,
-  type PathwayModuleItem,
-} from './pathwayReviewStore'
-
-type DragSourceType = 'pathway' | 'excluded' | 'catalog'
-
-interface DragTransferData {
-  source: DragSourceType
-  id: string
-  index: number
-}
+import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronUp, GripVertical, MinusCircle, Plus, RefreshCw, Search, Trash2, User } from 'lucide-react'
+import { InitialTeachingDetails } from '../../../shared/components/InitialTeachingDetails'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Combobox } from '../../../shared/components/ui/Combobox'
+import { ReviewValidation } from './ReviewValidation'
+import { ReviewPathwayPreview } from './ReviewPathwayPreview'
 
 export function ExpertPathwayDetailPage() {
-  const { pathwayId } = useParams<{ pathwayId: string }>()
-  const navigate = useNavigate()
-  const { toast } = useToast()
-
-  const [pathway, setPathway] = React.useState<InitialPathwayItem | null>(() => {
-    return pathwayId ? getStoredPathwayById(pathwayId) || null : null
-  })
-
-  // Synchronize state when store updates
-  React.useEffect(() => {
-    if (!pathwayId) return
-    const handleUpdate = () => {
-      const current = getStoredPathwayById(pathwayId)
-      if (current) setPathway(current)
-    }
-    window.addEventListener('expert_pathway_list_updated', handleUpdate)
-    return () => window.removeEventListener('expert_pathway_list_updated', handleUpdate)
-  }, [pathwayId])
-
-  // Cleanup dragging class on unmount
-  React.useEffect(() => {
-    return () => {
-      document.body.classList.remove('cursor-grabbing-active')
-    }
-  }, [])
-
-  // Catalog module search & filter
-  const [catalogSearch, setCatalogSearch] = React.useState('')
-  const [catalogDomainFilter, setCatalogDomainFilter] = React.useState('all')
-
-  // Regeneration state
-  const [isRegenerating, setIsRegenerating] = React.useState(false)
-  const [isRegenerateModalOpen, setIsRegenerateModalOpen] = React.useState(false)
-  const [regenerationInstructions, setRegenerationInstructions] = React.useState('')
-
-  // Drag and drop state
-  const [draggingItem, setDraggingItem] = React.useState<DragTransferData | null>(null)
-  const [dragOverTarget, setDragOverTarget] = React.useState<{
-    list: DragSourceType
-    index: number | null
-  } | null>(null)
-
-  // Module addition from catalog
-  const availableCatalog = React.useMemo(() => {
-    if (!pathway) return []
-    const existingCodes = new Set([
-      ...pathway.modules.map((m) => m.code),
-      ...pathway.excludedModules.map((m) => m.code),
-    ])
-
-    return AVAILABLE_CATALOG_MODULES.filter((m) => {
-      const notExisting = !existingCodes.has(m.code)
-      const q = catalogSearch.toLowerCase().trim()
-      const matchesQuery =
-        !q ||
-        m.title.toLowerCase().includes(q) ||
-        m.code.toLowerCase().includes(q) ||
-        m.domain.toLowerCase().includes(q)
-      const matchesDomain =
-        catalogDomainFilter === 'all' || m.domain === catalogDomainFilter
-      return notExisting && matchesQuery && matchesDomain
-    })
-  }, [pathway, catalogSearch, catalogDomainFilter])
-
-  // Handlers for modifying lists
-  const handleExcludeModule = (moduleId: string) => {
-    if (isRegenerating || !pathway) return
-    const moduleToExclude = pathway.modules.find((m) => m.id === moduleId)
-    if (!moduleToExclude) return
-
-    updateStoredPathway(pathway.id, (prev) => ({
-      ...prev,
-      modules: prev.modules.filter((m) => m.id !== moduleId),
-      excludedModules: [...prev.excludedModules, moduleToExclude],
-    }))
-
-    toast({
-      title: 'Module Excluded',
-      description: `"${moduleToExclude.title}" moved to excluded list. It will be remembered and skipped in future regenerations.`,
-      variant: 'info',
-    })
+  const session = useInitialPathwaySession(), { pathwayId = '' } = useParams<{ pathwayId: string }>(), { t } = useTranslation()
+  return <WorkspaceLayout>{session.scope && session.data?.role === 'DOMAIN_EXPERT' ? <Review key={session.scope + pathwayId} scope={session.scope} id={pathwayId} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
+}
+function Review({ scope, id }: { scope: string; id: string }) {
+  const [orderWarningOpen, setOrderWarningOpen] = useState(false)
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('reviewUi.' + key), client = useQueryClient()
+  const detail = useQuery({ queryKey: ['initialPathway', scope, 'review', id], queryFn: ({ signal }) => readReviewDetail(id, signal), retry: false, gcTime: 0, refetchOnWindowFocus: false })
+  const [pending, setPending] = useState<PendingPathwayCommand | null>(null), [approval, setApproval] = useState<{ command: PendingPathwayCommand; detail: ReviewDetail } | null>(null)
+  const [validationOpen, setValidationOpen] = useState(false)
+  const [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null), [reason, setReason] = useState('')
+  const [checkResult, setCheckResult] = useState<{ hash: string; status: string; diagnostics: string[] } | null>(null)
+  const lock = useRef(false), committed = useRef(false), d = detail.data
+  const checked = checkResult?.hash === d?.summary.contentHash ? checkResult?.status : null
+  const blocked = busy || pending !== null, editable = d?.summary.reviewStatus === 'AWAITING_EXPERT_REVIEW'
+  async function reconcile() { const latest = await readReviewDetail(id); client.setQueryData(['initialPathway', scope, 'review', id], latest); return latest }
+  function acceptCheck(snapshot: ReviewDetail, result: Awaited<ReturnType<typeof checkReview>>, showIssues: boolean) {
+    const status = result.revisionContentHash === snapshot.summary.contentHash ? result.validationStatus : 'STALE'
+    setCheckResult({ hash: snapshot.summary.contentHash, status, diagnostics: result.diagnostics })
+    if (showIssues) setValidationOpen(status !== 'VALID')
+    return status === 'VALID'
   }
-
-  const handleIncludeModule = (moduleId: string) => {
-    if (isRegenerating || !pathway) return
-    const moduleToInclude = pathway.excludedModules.find((m) => m.id === moduleId)
-    if (!moduleToInclude) return
-
-    updateStoredPathway(pathway.id, (prev) => ({
-      ...prev,
-      excludedModules: prev.excludedModules.filter((m) => m.id !== moduleId),
-      modules: [...prev.modules, moduleToInclude],
-    }))
-
-    toast({
-      title: 'Module Restored to Pathway',
-      description: `"${moduleToInclude.title}" added back into active learning steps.`,
-      variant: 'success',
-    })
-  }
-
-  const handleRemoveModule = (moduleId: string, fromList: DragSourceType) => {
-    if (isRegenerating || !pathway) return
-    updateStoredPathway(pathway.id, (prev) => ({
-      ...prev,
-      modules: fromList === 'pathway' ? prev.modules.filter((m) => m.id !== moduleId) : prev.modules,
-      excludedModules:
-        fromList === 'excluded'
-          ? prev.excludedModules.filter((m) => m.id !== moduleId)
-          : prev.excludedModules,
-    }))
-
-    toast({
-      title: 'Module Removed',
-      description: 'The learning module has been removed from this profile.',
-      variant: 'default',
-    })
-  }
-
-  const handleMoveStep = (fromIndex: number, direction: 'up' | 'down') => {
-    if (isRegenerating || !pathway) return
-    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1
-    if (toIndex < 0 || toIndex >= pathway.modules.length) return
-
-    updateStoredPathway(pathway.id, (prev) => {
-      const updated = [...prev.modules]
-      const [moved] = updated.splice(fromIndex, 1)
-      updated.splice(toIndex, 0, moved)
-      return { ...prev, modules: updated }
-    })
-  }
-
-  const handleAddCatalogModule = (mod: CatalogModuleItem, targetList: DragSourceType = 'pathway') => {
-    if (isRegenerating || !pathway) return
-    const newModule: PathwayModuleItem = {
-      id: `mod-${Date.now()}-${mod.code.toLowerCase()}`,
-      code: mod.code,
-      title: mod.title,
-      estimatedHours: mod.estimatedHours,
-      domain: mod.domain,
-      reason: mod.reason,
-    }
-
-    updateStoredPathway(pathway.id, (prev) => {
-      if (targetList === 'pathway') {
-        return { ...prev, modules: [...prev.modules, newModule] }
+  async function submit(command: PendingPathwayCommand) {
+    if (lock.current) return
+    lock.current = true; setBusy(true); setPending(command); setError(null); setCheckResult(null)
+    try {
+      if (!committed.current) { await sendPathwayCommand(command); committed.current = true }
+      const latest = await reconcile()
+      void client.invalidateQueries({ queryKey: ['initialPathway', scope, 'reviewQueue'] })
+      setPending(null); setApproval(null); setCheckResult(null); committed.current = false
+      if (latest.summary.reviewStatus === 'AWAITING_EXPERT_REVIEW') {
+        // A failed check must not turn a committed Include into an uncertain command/replay.
+        try { acceptCheck(latest, await checkReview(id), true) }
+        catch (cause) { setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')); setValidationOpen(true) }
       }
-      return { ...prev, excludedModules: [...prev.excludedModules, newModule] }
-    })
-
-    toast({
-      title: targetList === 'pathway' ? 'Module Added to Pathway' : 'Module Added to Excluded List',
-      description: `"${mod.title}" (${mod.code}) appended.`,
-      variant: 'success',
-    })
+    } catch (cause) {
+      const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure)
+      if (failure.code === 'PREREQUISITE_ORDER_VIOLATION') setOrderWarningOpen(true)
+      if (!failure.ambiguous && !committed.current) { setPending(null); setApproval(null); void detail.refetch() }
+    } finally { lock.current = false; setBusy(false) }
   }
-
-  // Drag and Drop implementation
-  const handleDragStart = (e: React.DragEvent, source: DragSourceType, id: string, index: number) => {
-    if (isRegenerating) {
-      e.preventDefault()
-      return
+  async function validate() {
+    if (lock.current || !d) return
+    lock.current = true; setBusy(true); setError(null); setCheckResult(null)
+    try {
+      const result = await checkReview(id)
+      // The server checks its current revision. Reload the large detail only on a hash change.
+      const snapshot = result.revisionContentHash === d.summary.contentHash ? d : await reconcile()
+      acceptCheck(snapshot, result, true)
     }
-    const transfer: DragTransferData = { source, id, index }
-    setDraggingItem(transfer)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('application/json', JSON.stringify(transfer))
-    document.body.classList.add('cursor-grabbing-active')
+    catch (cause) { setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')); setValidationOpen(true) }
+    finally { lock.current = false; setBusy(false) }
   }
-
-  const handleItemDragOver = (e: React.DragEvent, targetList: DragSourceType, index: number) => {
-    e.preventDefault()
-    e.stopPropagation()
-    e.dataTransfer.dropEffect = 'move'
-
-    const rect = e.currentTarget.getBoundingClientRect()
-    const isBottomHalf = e.clientY > rect.top + rect.height / 2
-    const dropIdx = isBottomHalf ? index + 1 : index
-
-    if (
-      !dragOverTarget ||
-      dragOverTarget.list !== targetList ||
-      dragOverTarget.index !== dropIdx
-    ) {
-      setDragOverTarget({ list: targetList, index: dropIdx })
-    }
+  async function preview() {
+    if (lock.current || checked !== 'VALID' || !d) return
+    lock.current = true; setBusy(true); setError(null)
+    try {
+      const latest = await reconcile()
+      const unchanged = latest.summary.contentHash === d.summary.contentHash && latest.summary.revision === d.summary.revision
+      const valid = acceptCheck(latest, await checkReview(id), true)
+      if (!unchanged) { setError(new PathwayError('STALE_REVISION', 409)); return }
+      if (valid && latest.summary.reviewStatus === 'AWAITING_EXPERT_REVIEW') setApproval({ command: prepareReviewCommand(id, latest, 'confirmation'), detail: latest })
+    } catch (cause) { setCheckResult(null); setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')); setValidationOpen(true) }
+    finally { lock.current = false; setBusy(false) }
   }
-
-  const handleContainerDragOver = (e: React.DragEvent, targetList: DragSourceType) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    if (!dragOverTarget || dragOverTarget.list !== targetList) {
-      const defaultLen =
-        targetList === 'pathway'
-          ? (pathway?.modules.length || 0)
-          : targetList === 'excluded'
-          ? (pathway?.excludedModules.length || 0)
-          : null
-      setDragOverTarget({ list: targetList, index: defaultLen })
-    }
-  }
-
-  const handleContainerDragLeave = (e: React.DragEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragOverTarget(null)
-    }
-  }
-
-  const handleDropOnList = (e: React.DragEvent, targetList: DragSourceType, dropIndex: number | null = null) => {
-    e.preventDefault()
-    e.stopPropagation()
-    document.body.classList.remove('cursor-grabbing-active')
-
-    if (!pathway || !draggingItem || isRegenerating) {
-      setDraggingItem(null)
-      setDragOverTarget(null)
-      return
-    }
-
-    const { source, id, index: sourceIndex } = draggingItem
-
-    // Case 1: Drop within same list (reordering)
-    if (source === targetList) {
-      if (source === 'catalog' || dropIndex === null) {
-        setDraggingItem(null)
-        setDragOverTarget(null)
-        return
-      }
-
-      updateStoredPathway(pathway.id, (prev) => {
-        const list = targetList === 'pathway' ? [...prev.modules] : [...prev.excludedModules]
-        let finalIndex = dropIndex
-        if (sourceIndex < dropIndex) {
-          finalIndex = dropIndex - 1
-        }
-        if (finalIndex === sourceIndex || finalIndex < 0 || finalIndex >= list.length) {
-          return prev
-        }
-        const [moved] = list.splice(sourceIndex, 1)
-        list.splice(finalIndex, 0, moved)
-
-        return targetList === 'pathway'
-          ? { ...prev, modules: list }
-          : { ...prev, excludedModules: list }
-      })
-    } else if (source === 'catalog') {
-      // Case 2: Dragging a catalog module into Pathway or Excluded list
-      const candidate = AVAILABLE_CATALOG_MODULES.find((m) => m.code === id)
-      if (candidate) {
-        const newModule: PathwayModuleItem = {
-          id: `mod-${Date.now()}-${candidate.code.toLowerCase()}`,
-          code: candidate.code,
-          title: candidate.title,
-          estimatedHours: candidate.estimatedHours,
-          domain: candidate.domain,
-          reason: candidate.reason,
-        }
-
-        updateStoredPathway(pathway.id, (prev) => {
-          if (targetList === 'pathway') {
-            const nextPathway = [...prev.modules]
-            if (dropIndex !== null && dropIndex <= nextPathway.length) {
-              nextPathway.splice(dropIndex, 0, newModule)
-            } else {
-              nextPathway.push(newModule)
-            }
-            return { ...prev, modules: nextPathway }
-          } else if (targetList === 'excluded') {
-            const nextExcluded = [...prev.excludedModules]
-            if (dropIndex !== null && dropIndex <= nextExcluded.length) {
-              nextExcluded.splice(dropIndex, 0, newModule)
-            } else {
-              nextExcluded.push(newModule)
-            }
-            return { ...prev, excludedModules: nextExcluded }
-          }
-          return prev
-        })
-
-        if (targetList === 'pathway') {
-          toast({
-            title: 'Catalog Module Added to Pathway',
-            description: `"${candidate.title}" added to active Pathway steps via drag & drop.`,
-            variant: 'success',
-          })
-        } else if (targetList === 'excluded') {
-          toast({
-            title: 'Catalog Module Excluded',
-            description: `"${candidate.title}" placed directly into Excluded Modules via drag & drop.`,
-            variant: 'info',
-          })
-        }
-      }
-    } else if (targetList === 'catalog') {
-      // Case 3: Dragging an existing module from Pathway or Excluded back to Catalog
-      const itemTitle =
-        source === 'pathway'
-          ? pathway.modules.find((m) => m.id === id)?.title
-          : pathway.excludedModules.find((m) => m.id === id)?.title
-
-      updateStoredPathway(pathway.id, (prev) => ({
-        ...prev,
-        modules: source === 'pathway' ? prev.modules.filter((m) => m.id !== id) : prev.modules,
-        excludedModules:
-          source === 'excluded' ? prev.excludedModules.filter((m) => m.id !== id) : prev.excludedModules,
-      }))
-
-      toast({
-        title: 'Module Returned to Catalog',
-        description: `"${itemTitle || 'Module'}" returned to available catalog modules.`,
-        variant: 'default',
-      })
-    } else {
-      // Case 4: Cross-list drag & drop (Pathway <-> Excluded)
-      updateStoredPathway(pathway.id, (prev) => {
-        if (source === 'pathway' && targetList === 'excluded') {
-          // Moving from Pathway to Excluded
-          const item = prev.modules.find((m) => m.id === id)
-          if (!item) return prev
-          const nextExcluded = [...prev.excludedModules]
-          if (dropIndex !== null && dropIndex <= nextExcluded.length) {
-            nextExcluded.splice(dropIndex, 0, item)
-          } else {
-            nextExcluded.push(item)
-          }
-          return {
-            ...prev,
-            modules: prev.modules.filter((m) => m.id !== id),
-            excludedModules: nextExcluded,
-          }
-        } else if (source === 'excluded' && targetList === 'pathway') {
-          // Moving from Excluded to Pathway
-          const item = prev.excludedModules.find((m) => m.id === id)
-          if (!item) return prev
-          const nextPathway = [...prev.modules]
-          if (dropIndex !== null && dropIndex <= nextPathway.length) {
-            nextPathway.splice(dropIndex, 0, item)
-          } else {
-            nextPathway.push(item)
-          }
-          return {
-            ...prev,
-            excludedModules: prev.excludedModules.filter((m) => m.id !== id),
-            modules: nextPathway,
-          }
-        }
-        return prev
-      })
-
-      if (source === 'pathway' && targetList === 'excluded') {
-        toast({
-          title: 'Module Excluded via Drag',
-          description: 'Module moved into the Excluded List. It will be excluded during the next pathway regeneration.',
-          variant: 'info',
-        })
-      } else {
-        toast({
-          title: 'Module Included via Drag',
-          description: 'Module restored into active pathway steps.',
-          variant: 'success',
-        })
-      }
-    }
-
-    setDraggingItem(null)
-    setDragOverTarget(null)
-  }
-
-  const handleDragEnd = () => {
-    setDraggingItem(null)
-    setDragOverTarget(null)
-    document.body.classList.remove('cursor-grabbing-active')
-  }
-
-  // Open Regeneration Modal
-  const handleOpenRegenerateDialog = () => {
-    if (isRegenerating) return
-    setRegenerationInstructions('')
-    setIsRegenerateModalOpen(true)
-  }
-
-  // Trigger Pathway Regeneration with Spinning Icon & Lock
-  const handleSubmitRegeneration = () => {
-    if (!pathway) return
-    setIsRegenerateModalOpen(false)
-    setIsRegenerating(true)
-
-    const instructions =
-      regenerationInstructions.trim() ||
-      'Expert requested adaptive replanning with updated prerequisite alignment.'
-
-    // Remember the currently excluded modules:
-    const currentlyExcluded = [...pathway.excludedModules]
-    const excludedCodes = new Set(currentlyExcluded.map((m) => m.code))
-
-    toast({
-      title: 'Regeneration in Progress',
-      description: `AI Replanner is recalibrating pathway for ${pathway.employeeName}. Strictly omitting ${currentlyExcluded.length} excluded modules.`,
-      variant: 'default',
-    })
-
-    // Simulate async AI replanner execution
-    setTimeout(() => {
-      // Create regenerated modules sequence omitting excluded items
-      const candidatePool: PathwayModuleItem[] = [
-        {
-          id: `mod-regen-auto-${Date.now()}-1`,
-          code: 'MOD-REGEN-101',
-          title: 'Advanced Graph Schema Evolution & Migrations',
-          estimatedHours: 8,
-          domain: 'Knowledge Systems',
-          reason: `Adapted according to expert instructions: "${instructions}"`,
-        },
-        {
-          id: `mod-regen-auto-${Date.now()}-2`,
-          code: 'MOD-REGEN-202',
-          title: 'Prerequisite Adaptive Refactoring & Lab Workshop',
-          estimatedHours: 10,
-          domain: 'AI & Data Science',
-          reason: 'Algorithmic reinforcement based on assessment diagnostic delta.',
-        },
-      ]
-
-      // Filter out any candidates that conflict with exclusions
-      const approvedCandidates = candidatePool.filter((c) => !excludedCodes.has(c.code))
-
-      updateStoredPathway(pathway.id, (prev) => ({
-        ...prev,
-        status: 'PENDING_EXPERT_CONFIRMATION',
-        generatedAt: 'Just now (Regenerated)',
-        regenerationFeedback: instructions,
-        // Existing active modules that weren't excluded + new regenerated recommendation
-        modules: [
-          ...prev.modules.filter((m) => !excludedCodes.has(m.code)),
-          ...(approvedCandidates.length > 0 ? [approvedCandidates[0]] : []),
-        ],
-        // The exclude list STILL has the list of excluded modules before, so user can rethink
-        excludedModules: currentlyExcluded,
-      }))
-
-      setIsRegenerating(false)
-
-      toast({
-        title: 'Pathway Regenerated Successfully',
-        description: `Adaptive pathway recalibrated! ${currentlyExcluded.length} excluded module${
-          currentlyExcluded.length === 1 ? '' : 's'
-        } remain preserved in your exclude list for further review.`,
-        variant: 'success',
-      })
-    }, 1800)
-  }
-
-  // Approve Pathway for Learning
-  const handleApprovePathway = () => {
-    if (!pathway || isRegenerating) return
-
-    updateStoredPathway(pathway.id, (prev) => ({
-      ...prev,
-      status: 'APPROVED',
-    }))
-
-    toast({
-      title: 'Pathway Approved for Learning',
-      description: `Initial learning pathway for ${pathway.employeeName} has been approved with ${pathway.modules.length} modules. Now unlocked for employee learning.`,
-      variant: 'success',
-    })
-  }
-
-  if (!pathway) {
-    return (
-      <WorkspaceLayout>
-        <div className="py-16 text-center space-y-4">
-          <EmptyState
-            icon={<Compass className="h-8 w-8 text-muted-foreground" />}
-            title="Pathway Not Found"
-            description="The requested learning pathway could not be located in the review queue."
-            action={
-              <Button variant="primary" onClick={() => navigate('/expert/pathway-review')}>
-                <ArrowLeft className="h-4 w-4 mr-1.5" />
-                Return to Review Queue
-              </Button>
-            }
-          />
+  const totals = d?.revision.plan.quality
+  const issues = checked !== null ? checkResult?.diagnostics ?? [] : d?.revision.plan.diagnostics ?? []
+  const issueMessages = [...new Set(issues.map(issue => {
+    const labels = issue.split(':').slice(1).map(ref => d?.gaps.skills.find(skill => skill.skillId === ref)?.name ?? ref)
+    return [pathwayDiagnostic(issue, t), ...labels].join(' · ')
+  }))]
+  return <div className="min-w-0 space-y-5 pb-8">
+    <h1 className="sr-only">{tr('reviewTitle')}</h1>
+    {detail.isPending && <LoadingCard label={tr('loading')} />}
+    {detail.isError && <InitialPathwayFeedback error={detail.error} onRetry={() => void detail.refetch()} busy={detail.isFetching} />}
+    {error && error.code !== 'PREREQUISITE_ORDER_VIOLATION' && <InitialPathwayFeedback error={error} onRetry={() => { if (pending) void submit(pending); else void detail.refetch() }} busy={busy} />}
+    {pending && <Text role="status">{tr(busy ? 'savingMembership' : 'uncertain')}</Text>}
+    {d && !detail.isError && <>
+      <Card><CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex min-w-0 items-center gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary"><User className="size-5" /></div><div className="min-w-0"><Text variant="caption">{ui('employee')}</Text><Text className="break-words font-semibold">{reviewLearnerName(d.summary, t)}</Text></div></div>
+        <div className="min-w-0"><Text variant="caption">{tr('targetRole')}</Text><Text className="break-words font-semibold">{d.summary.roleName}</Text></div>
+        <div><Text variant="caption">{tr('level')}</Text><Badge variant="outline" className="mt-1 whitespace-normal">{d.summary.levelName}</Badge></div>
+        <div><Text variant="caption">{tr('reviewRevision')}</Text><Text className="font-semibold">{d.summary.revision}</Text></div>
+      </CardContent></Card>
+      <PathwayModules detail={d} disabled={blocked || !editable || approval !== null} onEdit={(action, moduleId) => { void submit(prepareReviewCommand(id, d, action, moduleId, reason)) }} />
+      <Card className="border-primary/40"><CardContent className="space-y-4 p-4" aria-busy={busy}>
+        {editable && <div aria-live="polite" role="status" className={`space-y-1 rounded-lg border-l-4 p-3 ${blocked ? 'border-primary bg-secondary/40' : error || checked && checked !== 'VALID' ? 'border-destructive bg-destructive/5' : checked === 'VALID' ? 'border-success bg-success/5' : 'border-primary bg-secondary/40'}`}>
+          <Text className="font-semibold">{pending && !busy ? tr('uncertain') : tr('reviewFlow.' + (busy ? 'checking' : error ? 'checkFailed' : checked === 'VALID' ? 'valid' : checked ? 'invalid' : 'checkNeeded'))}</Text>
+          {!blocked && issueMessages.map(message => <Text key={message} variant="body-sm">{message}</Text>)}
+          {checked === 'STALE' && <Text variant="body-sm">{tr('stale')}</Text>}
+          {checked === 'VALID' && <Text variant="caption">{tr('reviewFlow.readyHelp')}</Text>}
+        </div>}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+        <label className="min-w-0 flex-1 basis-72 space-y-1"><Text as="span" variant="caption">{tr('reason')}</Text><Input value={reason} maxLength={2000} disabled={blocked || !editable || approval !== null} onChange={e => setReason(e.target.value)} /></label>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <Badge variant={d.summary.reviewStatus === 'APPROVED' ? 'success' : 'warning'} className="w-max shrink-0 whitespace-nowrap px-3 py-1 text-[length:var(--text-caption)] leading-normal">{d.summary.reviewStatus === 'APPROVED' ? tr('approved') : tr('awaiting')}</Badge>
+          <Link to="/expert/pathway-review" className={buttonVariants({ variant: 'ghost', size: 'sm' })}><ArrowLeft className="mr-1.5 size-4" />{tr('back')}</Link>
+          <Button className="h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal sm:min-h-8" variant="outline" size="sm" disabled={blocked || approval !== null} isLoading={busy && !pending} onClick={() => void validate()}><RefreshCw className="size-4 shrink-0" />{tr('check')}</Button>
+          <Button className="h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal sm:min-h-8" size="sm" disabled={blocked || !editable || approval !== null || checked !== 'VALID' || error !== null} onClick={() => void preview()}><CheckCircle2 className="size-4 shrink-0" />{tr('approve')}</Button>
         </div>
-      </WorkspaceLayout>
-    )
+        </div>
+      </CardContent></Card>
+      <details className="rounded-lg border border-border bg-card p-4"><summary className="cursor-pointer text-body-sm font-semibold">{ui('reviewDetails')}</summary><div className="mt-4 space-y-4">
+        {totals && <div className="flex flex-wrap gap-6"><Text variant="body-sm">{tr('moduleCount')}: {totals.moduleCount}</Text><Text variant="body-sm">{tr('totalDuration')}: {totals.durationMinutes.toLocaleString(language)} {tr('duration')}</Text><Text variant="body-sm">{tr('totalPrice')}: {totals.priceVnd.toLocaleString(language)} {tr('price')}</Text></div>}
+        <InitialGapTable result={d.gaps} />
+      </div></details>
+    </>}
+    <Dialog open={orderWarningOpen} onOpenChange={setOrderWarningOpen} ariaLabel={ui('orderBlocked')} closeLabel={tr('display.close')}>
+      <DialogHeader><DialogTitle>{ui('orderBlocked')}</DialogTitle><DialogDescription>{ui('orderUnchanged')}</DialogDescription></DialogHeader>
+      <DialogBody><ul className="space-y-3">{error?.diagnostics.map(diagnostic => {
+        const [, provider, dependent, skill] = diagnostic.split(':')
+        const title = (id: string | undefined) => d?.revision.plan.modules.find(m => m.id === id)?.title ?? id ?? '—'
+        return <li key={diagnostic}><Text variant="body-sm">{ui('orderRequired').replace('{before}', title(provider)).replace('{after}', title(dependent)).replace('{skill}', d?.gaps.skills.find(s => s.skillId === skill)?.name ?? skill ?? '—')}</Text></li>
+      })}</ul></DialogBody>
+      <DialogFooter><Button onClick={() => setOrderWarningOpen(false)}>{tr('display.close')}</Button></DialogFooter>
+    </Dialog>
+    <Dialog open={validationOpen} size="wide" className="border-2 border-primary/40" onOpenChange={open => { if (!blocked) setValidationOpen(open) }} ariaLabel={tr('reviewFlow.checkTitle')} closeLabel={tr('display.close')}>
+      <DialogHeader><DialogTitle>{tr('reviewFlow.checkTitle')}</DialogTitle><DialogDescription>{d?.summary.roleName} · {d?.summary.levelName} · {tr('reviewRevision')} {d?.summary.revision}</DialogDescription></DialogHeader>
+      <DialogBody className="space-y-4">
+        {blocked && <Text role="status">{tr('savingMembership')}</Text>}
+        {error && <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4" role="alert"><Text>{tr(pending ? 'uncertain' : 'reviewFlow.checkFailed')}</Text><Text variant="body-sm">{error.code === 'MODULE_NOT_ELIGIBLE' ? tr('moduleNotEligible') : pathwayMessage(error, t)}</Text></div>}
+        {!error && checked === 'STALE' && <Text role="status">{tr('stale')}</Text>}
+        {d && !error && checked !== 'STALE' && <ReviewValidation detail={d} diagnostics={issues} disabled={blocked || !editable || approval !== null} onInclude={moduleId => { void submit(prepareReviewCommand(id, d, 'inclusions', moduleId, reason)) }} />}
+      </DialogBody>
+      <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setValidationOpen(false)}>{tr('display.close')}</Button>{pending ? <Button disabled={busy} onClick={() => void submit(pending)}>{tr('retryExact')}</Button> : <Button disabled={blocked} onClick={() => void validate()}>{tr('check')}</Button>}</DialogFooter>
+    </Dialog>
+    <Dialog open={approval !== null} size="wide" className="border-2 border-primary/40" onOpenChange={open => { if (!open && !blocked) setApproval(null) }} ariaLabel={tr('reviewFlow.previewTitle')} closeLabel={tr('reviewFlow.backToEdit')}>
+      <DialogHeader><DialogTitle>{tr('reviewFlow.previewTitle')}</DialogTitle><DialogDescription>{tr('approveDescription')}</DialogDescription></DialogHeader>
+      <DialogBody className="space-y-4">{error && <Text role="alert">{pathwayMessage(error, t)}</Text>}{approval && <ReviewPathwayPreview detail={approval.detail} />}</DialogBody>
+      <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setApproval(null)}>{tr('reviewFlow.backToEdit')}</Button><Button isLoading={busy} onClick={() => { const command = pending ?? approval?.command; if (command) void submit(command) }}>{tr(pending ? 'retryExact' : 'reviewFlow.finalConfirm')}</Button></DialogFooter>
+    </Dialog>
+  </div>
+}
+
+
+type Zone = 'catalog' | 'included' | 'excluded'
+type Row = { id: string; title: string; durationMinutes?: number; priceVnd?: number; targets: TeachingTarget[]; eligible: boolean; ordinal?: number; reason?: string }
+type Props = { detail: ReviewDetail; disabled: boolean; onEdit: (action: Exclude<ReviewAction, 'confirmation'>, moduleId: string) => void }
+
+/** Gestures express membership intent. Persisted order and every saved move come from the server. */
+function PathwayModules({ detail, disabled, onEdit }: Props) {
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), hintId = useId()
+  const [search, setSearch] = useState(''), [filter, setFilter] = useState('ALL:ALL')
+  const [focus, difficulty] = filter.split(':')
+  const ui = (key: string) => tr('reviewUi.' + key)
+  const [dragged, setDragged] = useState<{ id: string; from: Zone; hash: string } | null>(null)
+  const [over, setOver] = useState<Zone | null>(null)
+  const skillNames = new Map(detail.gaps.skills.map(skill => [skill.skillId, skill.name]))
+  const candidates = new Map<string, Row>()
+  for (const pair of detail.candidates) {
+    const row: Row = candidates.get(pair.moduleId) ?? { id: pair.moduleId, title: pair.title, durationMinutes: pair.durationMinutes, priceVnd: pair.priceVnd, targets: [], eligible: false }
+    row.targets.push(pair)
+    row.eligible ||= pair.preferredDifficulty !== null && pair.teachingFocus !== 'INCIDENTAL'
+    candidates.set(row.id, row)
   }
-
-  const totalIncludedHours = pathway.modules.reduce((sum, m) => sum + m.estimatedHours, 0)
-  const totalExcludedHours = pathway.excludedModules.reduce((sum, m) => sum + m.estimatedHours, 0)
-
-  return (
-    <WorkspaceLayout>
-      <div className="space-y-6 pb-20">
-        {/* Top Navigation & Breadcrumb Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
-          <div className="space-y-1">
-            <Link
-              to="/expert/pathway-review"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors font-semibold"
-            >
-              <ArrowLeft size={13} />
-              <span>Back to Pathway Review Queue</span>
-            </Link>
-            <div className="flex items-center gap-2.5 flex-wrap pt-0.5">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-                <Compass className="h-5 w-5 text-primary shrink-0" />
-                Audit Initial Pathway: {pathway.employeeName}
-              </h1>
-              {pathway.status === 'APPROVED' ? (
-                <Badge variant="success">APPROVED</Badge>
-              ) : (
-                <Badge variant="warning">AWAITING REVIEW</Badge>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Review, reorder, or exclude modules for this employee&apos;s adaptive study plan before final approval.
-            </p>
-          </div>
-
-          {/* Action CTAs */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isRegenerating}
-              onClick={handleOpenRegenerateDialog}
-              className="text-xs font-semibold text-primary border-primary/30 hover:bg-secondary gap-1.5 h-9"
-            >
-              <RefreshCw
-                size={14}
-                className={cn('text-primary transition-all', isRegenerating && 'animate-spin')}
-              />
-              <span>{isRegenerating ? 'Regenerating Pathway...' : 'Regenerate Pathway'}</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              disabled={isRegenerating || pathway.status === 'APPROVED'}
-              onClick={handleApprovePathway}
-              className="text-xs font-semibold shadow-2xs gap-1.5 h-9"
-            >
-              <CheckCircle2 size={14} />
-              <span>{pathway.status === 'APPROVED' ? 'Approved for Learning' : 'Approve for Learning'}</span>
-            </Button>
-          </div>
+  const selected = new Set(detail.revision.selectedModules), lastOverrides = new Map(detail.revision.overrides.map(o => [o.moduleId, o]))
+  const excluded: Row[] = [...lastOverrides.values()].filter(o => o.action === 'EXCLUDE' && !selected.has(o.moduleId)).map(o => ({
+    ...(candidates.get(o.moduleId) ?? { id: o.moduleId, title: tr('state.UNAVAILABLE'), targets: [], eligible: false }), reason: o.reason,
+  }))
+  const excludedIds = new Set(excluded.map(row => row.id))
+  const included = detail.revision.selectedModules.map<Row>(id => {
+    const module = detail.revision.plan.modules.find(m => m.id === id)
+    return module ? { ...module, eligible: true } : candidates.get(id) ?? { id, title: tr('state.UNAVAILABLE'), targets: [], eligible: false }
+  }).sort((a, b) => (a.ordinal ?? Number.MAX_SAFE_INTEGER) - (b.ordinal ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id))
+  const available = [...candidates.values()].filter(row => row.eligible && !selected.has(row.id) && !excludedIds.has(row.id))
+  const catalog = available.filter(row => `${row.title} ${row.id} ${row.targets.map(pair => `${pair.skillId} ${skillNames.get(pair.skillId) ?? ''}`).join(' ')}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+    .filter(row => row.targets.some(pair => (focus === 'ALL' || pair.teachingFocus === focus) && (difficulty === 'ALL' || pair.difficultyLevel === difficulty)))
+  const sourceStillValid = dragged && (dragged.from === 'included' ? selected.has(dragged.id) : candidates.get(dragged.id)?.eligible && !selected.has(dragged.id))
+  const currentDrag = !disabled && sourceStillValid && dragged?.hash === detail.summary.contentHash ? dragged : null
+  const canDrop = (zone: Zone) => Boolean(currentDrag && (zone === 'included' && currentDrag.from !== 'included' || zone === 'excluded' && currentDrag.from === 'included'))
+  function start(event: DragEvent, row: Row, from: Zone) {
+    if (disabled || from !== 'included' && !row.eligible) { event.preventDefault(); return }
+    event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', row.id)
+    setDragged({ id: row.id, from, hash: detail.summary.contentHash })
+  }
+  function drop(event: DragEvent, zone: Zone) {
+    event.preventDefault(); event.stopPropagation()
+    if (canDrop(zone) && currentDrag && event.dataTransfer.getData('text/plain') === currentDrag.id) onEdit(zone === 'included' ? 'inclusions' : 'exclusions', currentDrag.id)
+    setDragged(null); setOver(null)
+  }
+  function list(zone: 'included' | 'excluded', rows: Row[]) {
+    const accepts = canDrop(zone), minutes = rows.every(row => row.durationMinutes !== undefined) ? rows.reduce((sum, row) => sum + row.durationMinutes!, 0) : null
+    return <div className="grid min-w-0 grid-rows-[auto_1fr] gap-3 lg:row-span-2 lg:grid-rows-subgrid">
+      <div className="min-w-0 space-y-2">
+        <div className="flex flex-wrap items-center gap-2"><Heading level={2} size="card" className="min-w-0 break-words">{ui(zone === 'included' ? 'learningModules' : 'excludedModules')}</Heading><Badge variant={zone === 'included' ? 'primary' : 'outline'} className="max-w-full whitespace-normal break-words font-mono">{rows.length} {ui(zone === 'included' ? 'includedCount' : 'excludedCount')} · {minutes === null ? '—' : (minutes / 60).toLocaleString(language, { maximumFractionDigits: 2 })} {ui('hours')}</Badge>
+          {zone === 'included' && <Text variant="caption" className="ml-auto font-semibold text-primary">{ui('activeCurriculum')}</Text>}
         </div>
-
-        {/* Locked Regeneration Alert Banner */}
-        {isRegenerating && (
-          <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/30 flex items-center gap-3 text-xs text-foreground animate-pulse shadow-sm">
-            <RefreshCw size={16} className="text-primary animate-spin shrink-0" />
-            <div className="flex-1">
-              <strong className="font-semibold text-primary block">
-                AI Replanning in Progress
-              </strong>
-              <span>
-                Recalibrating prerequisite graph while strictly omitting {pathway.excludedModules.length} excluded
-                module{pathway.excludedModules.length === 1 ? '' : 's'}. All edits are locked during regeneration.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Employee Profile Metadata Summary Tile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-card border border-border rounded-xl p-3.5 shadow-2xs">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-              <User size={15} />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[11px] text-muted-foreground block">Employee</span>
-              <span className="text-xs font-bold text-foreground truncate block">
-                {pathway.employeeName}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-[11px] text-muted-foreground block">Target Role</span>
-            <div className="flex items-center gap-1.5 truncate">
-              <span className="text-xs font-bold text-foreground truncate">
-                {pathway.targetRoleTitle}
-              </span>
-              <Badge variant="outline" className="text-[10px] font-mono shrink-0">
-                {pathway.targetRoleCode}
-              </Badge>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-[11px] text-muted-foreground block">Occupation &amp; Code</span>
-            <div className="flex items-center gap-1.5 truncate">
-              <span className="font-mono text-[10px] bg-muted px-1 rounded border border-border">
-                {pathway.occupationCode}
-              </span>
-              <span className="text-xs text-foreground truncate">{pathway.occupationTitle}</span>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-[11px] text-muted-foreground block">Pathway Generation Date</span>
-            <span className="text-xs font-mono text-foreground font-semibold">
-              {pathway.generatedAt}
-            </span>
-          </div>
-        </div>
-
-
-        {/* Catalog Module Addition Accordion/Dock with Drag & Drop */}
-        <Card
-          onDragOver={(e) => handleContainerDragOver(e, 'catalog')}
-          onDragLeave={handleContainerDragLeave}
-          onDrop={(e) => handleDropOnList(e, 'catalog', null)}
-          className={cn(
-            'transition-all',
-            isRegenerating && 'opacity-60 pointer-events-none',
-            dragOverTarget?.list === 'catalog' && 'border-primary ring-2 ring-primary/25 bg-primary/5'
-          )}
-        >
-          <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <BookOpen size={15} className="text-primary shrink-0" />
-                <span className="text-xs font-bold text-foreground">
-                  Add Existing Catalog Module
-                </span>
-                <span className="text-[11px] text-muted-foreground">
-                  ({availableCatalog.length} available • Drag &amp; drop directly into Pathway or Excluded tables below)
-                </span>
-              </div>
-
-              {/* Search & Domain Filter */}
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="relative w-48 sm:w-56">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                  <Input
-                    type="text"
-                    placeholder="Search catalog module..."
-                    value={catalogSearch}
-                    onChange={(e) => setCatalogSearch(e.target.value)}
-                    disabled={isRegenerating}
-                    className="h-7 pl-8 text-xs bg-background"
-                  />
-                </div>
-
-                <div className="relative w-36">
-                  <Filter className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-                  <select
-                    value={catalogDomainFilter}
-                    onChange={(e) => setCatalogDomainFilter(e.target.value)}
-                    disabled={isRegenerating}
-                    aria-label="Filter Catalog by Domain"
-                    className="w-full h-7 pl-6 pr-2 rounded-md border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-                  >
-                    <option value="all">All Domains</option>
-                    <option value="Graph Database">Graph Database</option>
-                    <option value="AI & Data Science">AI & Data Science</option>
-                    <option value="Knowledge Systems">Knowledge Systems</option>
-                    <option value="Distributed Systems">Distributed Systems</option>
-                    <option value="Data Persistence">Data Persistence</option>
-                    <option value="Infrastructure">Infrastructure</option>
-                    <option value="Security">Security</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-3">
-            <div className="max-h-52 overflow-y-auto divide-y divide-border border border-border rounded-lg bg-background shadow-2xs">
-              {availableCatalog.length === 0 ? (
-                <div className="p-5 text-center text-xs text-muted-foreground">
-                  No catalog modules available or matching filter. Try clearing your search query.
-                </div>
-              ) : (
-                availableCatalog.map((candidate, idx) => (
-                  <div
-                    key={candidate.code}
-                    draggable={!isRegenerating}
-                    onDragStart={(e) => handleDragStart(e, 'catalog', candidate.code, idx)}
-                    onDragEnd={handleDragEnd}
-                    className={cn(
-                      'p-2.5 px-3 flex items-center justify-between gap-3 transition-all select-none group',
-                      !isRegenerating ? 'cursor-grab active:cursor-grabbing hover:bg-muted/30' : 'cursor-not-allowed',
-                      draggingItem?.id === candidate.code && 'opacity-40 border-2 border-dashed border-primary bg-primary/5'
-                    )}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div
-                        className="cursor-grab active:cursor-grabbing text-muted-foreground/60 group-hover:text-primary transition-colors p-1 rounded hover:bg-muted shrink-0"
-                        title="Drag into Pathway Learning Modules or Excluded Modules below"
-                      >
-                        <GripVertical size={14} />
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-0.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {candidate.title}
-                          </span>
-                          <Badge variant="outline" className="text-[10px] font-mono shrink-0">
-                            {candidate.code}
-                          </Badge>
-                          <Badge variant="secondary" className="text-[10px] shrink-0">
-                            {candidate.domain}
-                          </Badge>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground truncate">
-                          {candidate.reason} •{' '}
-                          <strong className="text-foreground">{candidate.estimatedHours} hrs</strong>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isRegenerating}
-                        onClick={() => handleAddCatalogModule(candidate, 'pathway')}
-                        className="h-7 text-xs font-semibold gap-1 text-primary border-primary/30 hover:bg-primary hover:text-white transition-colors"
-                        title="Add directly to active Pathway (or drag & drop below)"
-                      >
-                        <Plus size={12} />
-                        <span>Add to Pathway</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isRegenerating}
-                        onClick={() => handleAddCatalogModule(candidate, 'excluded')}
-                        className="h-7 text-xs font-semibold gap-1 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
-                        title="Add directly to Excluded list (or drag & drop below)"
-                      >
-                        <MinusCircle size={12} />
-                        <span>Add to Exclude</span>
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* PARALLEL DUAL TABLES: PATHWAY MODULES vs EXCLUDED MODULES */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* ===================== LEFT COLUMN: PATHWAY LEARNING MODULES ===================== */}
-          <div
-            className={cn(
-              'space-y-3 transition-opacity',
-              isRegenerating && 'opacity-60 pointer-events-none'
-            )}
-          >
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-bold text-foreground">Pathway Learning Modules</h2>
-                  <Badge variant="primary" className="text-xs font-mono">
-                    {pathway.modules.length} Included • {totalIncludedHours} hrs
-                  </Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Drag steps to reorder, or drag/click Exclude to move into the Excluded table.
-                </p>
-              </div>
-
-              <span className="text-[11px] font-semibold text-primary">Active Curriculum</span>
-            </div>
-
-            {/* Droppable Pathway Container */}
-            <div
-              onDragOver={(e) => handleContainerDragOver(e, 'pathway')}
-              onDragLeave={handleContainerDragLeave}
-              onDrop={(e) => handleDropOnList(e, 'pathway', dragOverTarget?.index ?? null)}
-              className={cn(
-                'min-h-[380px] divide-y divide-border border rounded-xl overflow-hidden bg-card shadow-2xs transition-all p-1.5 space-y-1',
-                dragOverTarget?.list === 'pathway' && dragOverTarget.index === null
-                  ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
-                  : 'border-border'
-              )}
-            >
-              {pathway.modules.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-                  <Compass className="h-8 w-8 text-muted-foreground/60 mb-2" />
-                  <p className="text-xs font-semibold text-foreground">No active modules in pathway</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 max-w-xs">
-                    Drag modules from the Excluded table or use the catalog above to add learning modules.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {pathway.modules.map((mod, idx) => (
-                    <React.Fragment key={mod.id}>
-                      {/* Insertion Indicator before item idx */}
-                      {dragOverTarget?.list === 'pathway' &&
-                        dragOverTarget.index === idx &&
-                        draggingItem &&
-                        !(
-                          draggingItem.source === 'pathway' &&
-                          (draggingItem.index === idx || draggingItem.index === idx - 1)
-                        ) && (
-                          <div className="relative py-1 my-0.5 pointer-events-none transition-all">
-                            <div className="h-1 bg-primary rounded-full w-full shadow-sm animate-pulse" />
-                            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background shadow-xs flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                            </div>
-                          </div>
-                        )}
-
-                      <div
-                        draggable={!isRegenerating}
-                        onDragStart={(e) => handleDragStart(e, 'pathway', mod.id, idx)}
-                        onDragOver={(e) => handleItemDragOver(e, 'pathway', idx)}
-                        onDrop={(e) => handleDropOnList(e, 'pathway', dragOverTarget?.index ?? idx)}
-                        onDragEnd={handleDragEnd}
-                        className={cn(
-                          'p-3 rounded-lg flex items-center justify-between gap-3 transition-all select-none border border-transparent',
-                          !isRegenerating
-                            ? 'cursor-grab active:cursor-grabbing hover:bg-muted/30 hover:border-border'
-                            : 'cursor-not-allowed',
-                          draggingItem?.id === mod.id &&
-                            'opacity-35 border-2 border-dashed border-primary bg-primary/5 scale-[0.99]'
-                        )}
-                      >
-                        {/* Drag Handle & Reorder arrows */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <div
-                            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted"
-                            title="Drag to reorder or drag to Excluded table"
-                          >
-                            <GripVertical size={15} />
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            <button
-                              type="button"
-                              disabled={isRegenerating || idx === 0}
-                              onClick={() => handleMoveStep(idx, 'up')}
-                              className="text-muted-foreground hover:text-primary disabled:opacity-20 p-0.5 rounded hover:bg-muted"
-                              title="Move step up"
-                            >
-                              <ChevronUp size={12} />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={isRegenerating || idx === pathway.modules.length - 1}
-                              onClick={() => handleMoveStep(idx, 'down')}
-                              className="text-muted-foreground hover:text-primary disabled:opacity-20 p-0.5 rounded hover:bg-muted"
-                              title="Move step down"
-                            >
-                              <ChevronDown size={12} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Step details */}
-                        <div className="space-y-1 flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-[11px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
-                              Step {idx + 1}
-                            </span>
-                            <span className="text-xs font-semibold text-foreground truncate">
-                              {mod.title}
-                            </span>
-                            <Badge variant="outline" className="text-[10px] font-mono shrink-0">
-                              {mod.code}
-                            </Badge>
-                            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                              {mod.domain}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground truncate">
-                            {mod.reason} •{' '}
-                            <strong className="text-foreground">{mod.estimatedHours} hrs</strong>
-                          </p>
-                        </div>
-
-                        {/* Action buttons: Exclude & Remove */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={isRegenerating}
-                            onClick={() => handleExcludeModule(mod.id)}
-                            className="text-xs font-semibold h-7 px-2.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 hover:bg-destructive/5 transition-all gap-1"
-                            title="Move to Excluded table"
-                          >
-                            <MinusCircle size={12} className="text-destructive" />
-                            <span>Exclude</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={isRegenerating}
-                            onClick={() => handleRemoveModule(mod.id, 'pathway')}
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            title="Remove module completely"
-                          >
-                            <Trash2 size={13} />
-                          </Button>
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  ))}
-
-                  {/* Insertion Indicator at end of list */}
-                  {dragOverTarget?.list === 'pathway' &&
-                    dragOverTarget.index === pathway.modules.length &&
-                    draggingItem &&
-                    !(
-                      draggingItem.source === 'pathway' &&
-                      draggingItem.index === pathway.modules.length - 1
-                    ) && (
-                      <div className="relative py-1 my-0.5 pointer-events-none transition-all">
-                        <div className="h-1 bg-primary rounded-full w-full shadow-sm animate-pulse" />
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background shadow-xs flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                        </div>
-                      </div>
-                    )}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* ===================== RIGHT COLUMN: EXCLUDED MODULES ===================== */}
-          <div
-            className={cn(
-              'space-y-3 transition-opacity',
-              isRegenerating && 'opacity-60 pointer-events-none'
-            )}
-          >
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-bold text-foreground">Excluded Modules</h2>
-                  <Badge variant="outline" className="text-xs font-mono text-muted-foreground border-border">
-                    {pathway.excludedModules.length} Excluded • {totalExcludedHours} hrs
-                  </Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Remembered for future regenerations. Drag back or click Include if you change your mind.
-                </p>
-              </div>
-
-              <span className="text-[11px] font-semibold text-muted-foreground">Excluded from AI</span>
-            </div>
-
-            {/* Droppable Excluded Container */}
-            <div
-              onDragOver={(e) => handleContainerDragOver(e, 'excluded')}
-              onDragLeave={handleContainerDragLeave}
-              onDrop={(e) => handleDropOnList(e, 'excluded', dragOverTarget?.index ?? null)}
-              className={cn(
-                'min-h-[380px] divide-y divide-border border rounded-xl overflow-hidden bg-card/60 shadow-2xs transition-all p-1.5 space-y-1',
-                dragOverTarget?.list === 'excluded' && dragOverTarget.index === null
-                  ? 'border-destructive ring-2 ring-destructive/20 bg-destructive/5'
-                  : 'border-border border-dashed'
-              )}
-            >
-              {pathway.excludedModules.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-                  <MinusCircle className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                  <p className="text-xs font-semibold text-foreground">No excluded modules yet</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 max-w-xs">
-                    Click &ldquo;Exclude&rdquo; on any pathway module or drag it here. Excluded modules will be strictly
-                    bypassed by the AI replanner on future regenerations.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {pathway.excludedModules.map((mod, idx) => (
-                    <React.Fragment key={mod.id}>
-                      {/* Insertion Indicator before item idx */}
-                      {dragOverTarget?.list === 'excluded' &&
-                        dragOverTarget.index === idx &&
-                        draggingItem &&
-                        !(
-                          draggingItem.source === 'excluded' &&
-                          (draggingItem.index === idx || draggingItem.index === idx - 1)
-                        ) && (
-                          <div className="relative py-1 my-0.5 pointer-events-none transition-all">
-                            <div className="h-1 bg-destructive rounded-full w-full shadow-sm animate-pulse" />
-                            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-destructive border-2 border-background shadow-xs flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                            </div>
-                          </div>
-                        )}
-
-                      <div
-                        draggable={!isRegenerating}
-                        onDragStart={(e) => handleDragStart(e, 'excluded', mod.id, idx)}
-                        onDragOver={(e) => handleItemDragOver(e, 'excluded', idx)}
-                        onDrop={(e) => handleDropOnList(e, 'excluded', dragOverTarget?.index ?? idx)}
-                        onDragEnd={handleDragEnd}
-                        className={cn(
-                          'p-3 rounded-lg flex items-center justify-between gap-3 transition-all select-none bg-muted/40 border border-transparent',
-                          !isRegenerating
-                            ? 'cursor-grab active:cursor-grabbing hover:bg-muted/70 hover:border-border'
-                            : 'cursor-not-allowed',
-                          draggingItem?.id === mod.id &&
-                            'opacity-35 border-2 border-dashed border-destructive bg-destructive/5 scale-[0.99]'
-                        )}
-                      >
-                        {/* Drag Handle */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <div
-                            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted"
-                            title="Drag back into Pathway"
-                          >
-                            <GripVertical size={15} />
-                          </div>
-                        </div>
-
-                        {/* Step details */}
-                        <div className="space-y-1 flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="destructive" className="text-[10px] font-mono shrink-0">
-                              EXCLUDED
-                            </Badge>
-                            <span className="text-xs font-medium text-muted-foreground line-through truncate">
-                              {mod.title}
-                            </span>
-                            <Badge variant="outline" className="text-[10px] font-mono shrink-0 opacity-70">
-                              {mod.code}
-                            </Badge>
-                            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                              {mod.domain}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground truncate">
-                            {mod.reason} •{' '}
-                            <strong className="text-foreground">{mod.estimatedHours} hrs</strong>
-                          </p>
-                        </div>
-
-                        {/* Action buttons: Include back & Remove */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={isRegenerating}
-                            onClick={() => handleIncludeModule(mod.id)}
-                            className="text-xs font-semibold h-7 px-2.5 border-primary/40 text-primary bg-primary/5 hover:bg-primary/15 transition-all gap-1"
-                            title="Restore module back to active pathway"
-                          >
-                            <PlusCircle size={12} className="text-primary" />
-                            <span>Include</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={isRegenerating}
-                            onClick={() => handleRemoveModule(mod.id, 'excluded')}
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            title="Remove module completely"
-                          >
-                            <Trash2 size={13} />
-                          </Button>
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  ))}
-
-                  {/* Insertion Indicator at end of list */}
-                  {dragOverTarget?.list === 'excluded' &&
-                    dragOverTarget.index === pathway.excludedModules.length &&
-                    draggingItem &&
-                    !(
-                      draggingItem.source === 'excluded' &&
-                      draggingItem.index === pathway.excludedModules.length - 1
-                    ) && (
-                      <div className="relative py-1 my-0.5 pointer-events-none transition-all">
-                        <div className="h-1 bg-destructive rounded-full w-full shadow-sm animate-pulse" />
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-destructive border-2 border-background shadow-xs flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                        </div>
-                      </div>
-                    )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
+        <Text variant="caption" className="break-words">{tr(zone === 'included' ? 'includedDropHint' : 'excludedDropHint')}</Text>
       </div>
+      <section aria-label={ui(zone === 'included' ? 'learningModules' : 'excludedModules')} aria-describedby={hintId}
+        className={`flex min-h-64 min-w-0 flex-col rounded-xl border p-1.5 shadow-2xs transition-colors lg:min-h-[380px] ${zone === 'excluded' ? 'border-dashed bg-card/60' : 'bg-card'} ${over === zone && accepts ? 'border-primary bg-secondary ring-2 ring-primary/20' : 'border-border'}`}
+        onDragOver={event => { if (accepts) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setOver(zone) } }}
+        onDragLeave={event => { if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setOver(null) }} onDrop={event => drop(event, zone)}>
+        {rows.length === 0 ? <div className="flex min-h-64 flex-1 items-center justify-center p-6 text-center"><Text variant="body-sm">{tr(zone === 'included' ? 'noModules' : 'noExcluded')}</Text></div> : <ol className="min-w-0 space-y-1">{rows.map((row, index) => moduleRow(row, zone, index))}</ol>}
+      </section>
+    </div>
+  }
+  function moduleRow(row: Row, zone: Zone, index: number) {
+    const movable = !disabled && (zone === 'included' || row.eligible)
+    return <li key={row.id} draggable={movable} onDragStart={event => start(event, row, zone)} onDragEnd={() => { setDragged(null); setOver(null) }} className={currentDrag?.id === row.id ? 'opacity-40' : undefined}>
+      <ReviewModuleRow row={row} zone={zone} step={index + 1} skillNames={skillNames} movable={movable} disabled={disabled || zone !== 'included' && !row.eligible} onAction={() => onEdit(zone === 'included' ? 'exclusions' : 'inclusions', row.id)}
+        onMoveUp={!disabled && import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true' && index > 0 ? () => onEdit('move-up', row.id) : undefined}
+        onMoveDown={!disabled && import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true' && index < included.length - 1 ? () => onEdit('move-down', row.id) : undefined}
+        onRemove={!disabled && import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true' ? () => onEdit('removals', row.id) : undefined} />
+    </li>
+  }
+  return <div className="min-w-0 space-y-6">
+    <Text id={hintId} className="sr-only">{tr(disabled ? 'reviewReadOnly' : 'dragMembershipHint')}</Text>
+    <Card className="min-w-0">
+      <CardHeader className="rounded-t-lg border-b border-border bg-muted/30 px-4 py-3"><div className="flex flex-col justify-between gap-3 xl:flex-row xl:items-center">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2"><BookOpen className="size-4 shrink-0 text-primary" /><Heading level={2} size="card">{ui('catalogTitle')}</Heading><Text variant="caption">({available.length} {ui('available')}) · {tr(disabled ? 'reviewReadOnly' : 'includedDropHint')}</Text></div>
+        <div className="grid min-w-0 gap-2 sm:grid-cols-2 xl:w-112 xl:shrink-0"><div className="min-w-0"><Input className="h-10 min-w-0" leftIcon={<Search className="size-4" />} aria-label={tr('searchModules')} placeholder={ui('catalogSearch')} value={search} onChange={event => setSearch(event.target.value)} /></div><div className="min-w-0" role="group" aria-label={ui('teachingFilter')}><Combobox clearable={false} wrapOptions value={filter} onChange={setFilter} options={['ALL', 'PRIMARY', 'SUPPORTING', 'INCIDENTAL'].flatMap(focus => ['ALL', 'LOW', 'MEDIUM', 'HIGH'].map(difficulty => ({ value: `${focus}:${difficulty}`, label: `${tr(focus === 'ALL' ? 'allFocus' : 'focus.' + focus)} · ${tr(difficulty === 'ALL' ? 'allDifficulties' : 'difficulty.' + difficulty)}` })))} /></div></div>
+      </div></CardHeader>
+      <CardContent className="p-3"><div className="max-h-80 overflow-y-auto overscroll-contain rounded-lg border border-border bg-background shadow-2xs scrollbar-hidden sm:max-h-52" tabIndex={0} role="region" aria-label={ui('catalogTitle')}>
+        {catalog.length === 0 ? <Text variant="body-sm" className="p-5 text-center">{tr(search.trim() || filter !== 'ALL:ALL' ? 'noSearchResults' : 'noAlternatives')}</Text> : <ol className="divide-y divide-border">{catalog.map((row, index) => moduleRow(row, 'catalog', index))}</ol>}
+      </div></CardContent>
+    </Card>
+    <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-6 lg:grid-cols-2 lg:gap-y-3">{list('included', included)}{list('excluded', excluded)}</div>
+  </div>
+}
 
-      {/* REGENERATE INSTRUCTIONS MODAL */}
-      <Dialog
-        open={isRegenerateModalOpen}
-        onOpenChange={setIsRegenerateModalOpen}
-        className="max-w-md"
-      >
-        <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Request Pathway Regeneration
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Provide guidance for {pathway.employeeName}&apos;s learning pathway. The {pathway.excludedModules.length}{' '}
-            currently excluded module{pathway.excludedModules.length === 1 ? '' : 's'} will be strictly skipped.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3 py-2 text-xs">
-          <div>
-            <label className="text-xs font-semibold text-foreground block mb-1.5">
-              Adjustment Notes &amp; Guidance (Optional)
-            </label>
-            <textarea
-              rows={4}
-              placeholder="E.g., Emphasize foundational graph indexing; focus strictly on core architecture; optimize sequence pacing..."
-              value={regenerationInstructions}
-              onChange={(e) => setRegenerationInstructions(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25"
-            />
-          </div>
-          <div className="p-2.5 rounded-lg bg-muted/50 border border-border space-y-1">
-            <span className="font-semibold text-foreground block">
-              Excluded Constraints ({pathway.excludedModules.length} modules):
-            </span>
-            {pathway.excludedModules.length === 0 ? (
-              <span className="text-[11px] text-muted-foreground italic">No modules currently excluded.</span>
-            ) : (
-              <div className="flex flex-wrap gap-1 pt-1">
-                {pathway.excludedModules.map((m) => (
-                  <Badge key={m.id} variant="outline" className="text-[10px] font-mono">
-                    {m.code}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+/** Existing row composition, with server-persisted membership and adjacent-order commands. */
+function ReviewModuleRow({ row, zone, step, skillNames, movable, disabled, onAction, onMoveUp, onMoveDown, onRemove }: { row: Row; zone: Zone; step: number; skillNames: ReadonlyMap<string, string>; movable: boolean; disabled: boolean; onAction: () => void; onMoveUp?: () => void; onMoveDown?: () => void; onRemove?: () => void }) {
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('reviewUi.' + key)
+  const [expanded, setExpanded] = useState(false), detailsId = useId(), primary = row.targets.find(pair => pair.teachingFocus === 'PRIMARY') ?? row.targets[0]
+  return <div className={`@container group min-w-0 rounded-lg px-3 py-4 transition-colors ${zone === 'excluded' ? 'bg-muted/30' : 'hover:bg-muted/20'} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+    <div className="flex flex-wrap items-center gap-3 @lg:flex-nowrap">
+      <GripVertical aria-hidden="true" className={`size-4 shrink-0 text-muted-foreground ${movable ? 'group-hover:text-primary' : 'opacity-40'}`} />
+      {zone === 'included' && <div className="flex shrink-0 flex-col" title={ui('serverOrder')}><Button variant="ghost" size="icon" className="size-6" disabled={!onMoveUp} onClick={onMoveUp} aria-label={ui('moveUp')}><ChevronUp className="size-4" /></Button><Button variant="ghost" size="icon" className="size-6" disabled={!onMoveDown} onClick={onMoveDown} aria-label={ui('moveDown')}><ChevronDown className="size-4" /></Button></div>}
+      <div className="min-w-0 flex-1 basis-40 space-y-2 @lg:basis-0">
+        {zone !== 'catalog' && <Badge variant={zone === 'excluded' ? 'destructive' : 'secondary'}>{zone === 'excluded' ? ui('excludedBadge') : `${ui('step')} ${step}`}</Badge>}
+        <div className="flex min-w-0 flex-wrap items-center gap-2"><button type="button" className={`min-w-0 max-w-full whitespace-normal break-words rounded text-left text-[length:var(--text-card)] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @lg:truncate ${zone === 'excluded' ? 'text-muted-foreground line-through' : 'text-foreground hover:text-primary'}`} title={row.title} aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded(value => !value)}>{row.title}</button>
+          {zone === 'catalog' && <Badge variant="outline" className="max-w-full whitespace-normal break-all font-mono">{row.id}</Badge>}
+          {zone === 'catalog' && primary && <Badge variant="secondary" className="max-w-full whitespace-normal">{skillNames.get(primary.skillId) ?? primary.skillId}</Badge>}
+          {row.targets.some(pair => pair.expertAttention) && <Badge variant="warning">{tr('expertAttention')}</Badge>}
         </div>
-
-        <DialogFooter>
-          <Button variant="outline" size="sm" onClick={() => setIsRegenerateModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSubmitRegeneration}
-            className="font-semibold shadow-2xs gap-1.5"
-          >
-            <RefreshCw size={13} />
-            <span>Start Regeneration</span>
-          </Button>
-        </DialogFooter>
-      </Dialog>
-    </WorkspaceLayout>
-  )
+        {zone !== 'catalog' && <div className="flex flex-wrap items-center gap-2"><Badge variant="outline" className="max-w-full whitespace-normal break-all font-mono">{row.id}</Badge>{primary && <Text as="span" variant="caption" className="min-w-0 break-words rounded bg-muted px-2 py-1">{skillNames.get(primary.skillId) ?? primary.skillId}</Text>}</div>}
+        <Text variant="caption" className="line-clamp-2 break-words">{row.reason || (primary ? `${skillNames.get(primary.skillId) ?? primary.skillId}${primary.difficultyLevel ? ' · ' + tr('difficulty.' + primary.difficultyLevel) : ''}` : tr('moduleNotEligible'))}{row.durationMinutes !== undefined && <> · <strong className="text-foreground">{(row.durationMinutes / 60).toLocaleString(language, { maximumFractionDigits: 2 })} {ui('hours')}</strong></>}</Text>
+      </div>
+      <div className="ml-auto flex w-full min-w-0 flex-wrap items-center justify-end gap-2 @lg:w-auto @lg:shrink-0 @lg:flex-nowrap">
+        <Button variant="outline" size="sm" className={`h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal @lg:min-h-8 ${zone === 'included' ? 'text-muted-foreground' : 'border-primary/30 text-primary hover:bg-secondary'}`} disabled={disabled} onClick={onAction}>{zone === 'included' ? <MinusCircle className="size-4 shrink-0 text-destructive" /> : <Plus className="size-4 shrink-0" />}{zone === 'catalog' ? ui('addToPathway') : tr(zone === 'included' ? 'exclude' : 'include')}</Button>
+        {zone === 'catalog' ? <span className="min-w-0 max-w-full" title={ui('preemptiveUnavailable')}><Button variant="outline" size="sm" className="h-auto min-h-10 max-w-full whitespace-normal text-muted-foreground [&>span]:whitespace-normal @lg:min-h-8" disabled><MinusCircle className="size-4 shrink-0" />{ui('addToExclude')}</Button></span> : <span title={ui('returnCatalog')}><Button variant="ghost" size="icon" className="size-8 text-muted-foreground" disabled={!onRemove} onClick={onRemove} aria-label={ui('removeModule')}><Trash2 className="size-4" /></Button></span>}
+      </div>
+    </div>
+    {expanded && <div id={detailsId} className="ml-7 mt-4 space-y-3 border-t border-border pt-3"><Heading level={3} size="card" className="break-words">{row.title}</Heading>
+      {row.durationMinutes !== undefined && row.priceVnd !== undefined && <Text variant="caption">{row.durationMinutes.toLocaleString(language)} {tr('duration')} · {row.priceVnd.toLocaleString(language)} {tr('price')}</Text>}
+      {!row.eligible && <Text variant="caption">{tr('moduleNotEligible')}</Text>}
+      {row.reason && <Text variant="body-sm" className="break-words">{tr('exclusionReason')}: {row.reason}</Text>}
+      <InitialTeachingDetails targets={row.targets} skillNames={skillNames} />
+    </div>}
+  </div>
 }

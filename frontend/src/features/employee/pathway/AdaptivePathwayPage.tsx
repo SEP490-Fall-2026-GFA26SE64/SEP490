@@ -1,135 +1,131 @@
-import { useState } from 'react'
-import { GitFork, ListOrdered } from 'lucide-react'
-import { Button } from '../../../shared/components/ui/Button'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { ManualAssignedPathwayPage } from './ManualAssignedPathwayPage'
+import * as React from 'react'
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '../../../shared/components/ui/Tabs'
-import { FormField } from '../../../shared/components/ui/FormField'
+  ArrowRight,
+  GitFork,
+  ListOrdered,
+  Lock,
+  RefreshCw,
+} from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Button } from '../../../shared/components/ui/Button'
+import { Card, CardContent } from '../../../shared/components/ui/Card'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { TargetRoleSelector } from '../../../shared/components/ui/TargetRoleSelector'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { AssignedPathwayViews } from '../modules/AssignedLearningPathways'
-import { useAssignedLearningPathways } from '../modules/useAssignedLearningPathways'
+import { AdaptivePathwayTimeline } from '../components/AdaptivePathwayTimeline'
+import { InteractiveRoleRoadmap } from '../components/InteractiveRoleRoadmap'
+import { InitialEmployeePathway } from './InitialEmployeePathway'
 
 export function AdaptivePathwayPage() {
-  const [activeTab, setActiveTab] = useState('roadmap')
-  const [selectedId, setSelectedId] = useState('')
-  const { language } = useTranslation()
-  const vi = language === 'vi'
-  const { items, loading, error, refresh } =
-    useAssignedLearningPathways(selectedId)
-  const selected =
-    items.find((item) => item.pathway.id === selectedId) ?? items[0]
+  const { profile } = useEmployeeLearningState()
+  const [params] = useSearchParams()
+  if (params.get('view') === 'assigned') return <ManualAssignedPathwayPage />
+  return params.get('view') !== 'role' && profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
+}
+function IndependentSkillPathwayPage() {
+  const [activeTab, setActiveTab] = React.useState('roadmap')
+  const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
+  const { t } = useTranslation()
+
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {/* Actions Bar */}
           <PageHeader
             actions={
-              <div className="flex w-full flex-wrap items-center justify-between gap-3">
-                {selected && !loading && !error && (
-                  <div className="min-w-0 max-w-full rounded-xl border border-border bg-card px-3 py-1.5 shadow-xs">
-                    <FormField label={vi ? 'Lộ trình học' : 'Learning pathway'}>
-                      <select
-                        className="h-8 w-full max-w-72 truncate rounded bg-card text-body-sm font-semibold text-foreground focus-visible:outline-primary"
-                        value={selected.pathway.id}
-                        onChange={(event) => {
-                          setSelectedId(event.target.value)
-                          refresh()
-                        }}
-                      >
-                        {items.map((item) => (
-                          <option key={item.pathway.id} value={item.pathway.id}>
-                            {item.pathway.title}
-                          </option>
-                        ))}
-                      </select>
-                    </FormField>
-                  </div>
-                )}
-                <TabsList
-                  className="h-auto w-full bg-muted/70 p-1 sm:w-auto"
-                  aria-label={vi ? 'Chế độ xem lộ trình' : 'Pathway view'}
-                >
+              <div className="w-full flex items-center justify-between gap-2.5 flex-wrap">
+                <TargetRoleSelector />
+
+                <TabsList className="w-auto bg-muted/70 p-1">
                   <TabsTrigger
                     value="roadmap"
-                    aria-pressed={activeTab === 'roadmap'}
-                    aria-label={vi ? 'Sơ đồ học tập' : 'Interactive roadmap'}
-                    className="min-w-0 flex-1 gap-1.5 px-2 font-semibold sm:flex-none sm:px-3"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
                   >
-                    <GitFork
-                      size={15}
-                      className="shrink-0 text-primary"
-                      aria-hidden="true"
-                    />
-                    <span className="sm:hidden">
-                      {vi ? 'Sơ đồ' : 'Roadmap'}
-                    </span>
-                    <span className="hidden sm:inline">
-                      {vi ? 'Sơ đồ học tập' : 'Interactive roadmap'}
-                    </span>
+                    <GitFork size={15} className="text-primary" />
+                    <span>{t('pathway.interactiveRoadmap')}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="timeline"
-                    aria-pressed={activeTab === 'timeline'}
-                    aria-label={vi ? 'Tiến trình học tập' : 'Learning timeline'}
-                    className="min-w-0 flex-1 gap-1.5 px-2 font-semibold sm:flex-none sm:px-3"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card"
                   >
-                    <ListOrdered
-                      size={15}
-                      className="shrink-0 text-primary"
-                      aria-hidden="true"
-                    />
-                    <span className="sm:hidden">
-                      {vi ? 'Tiến trình' : 'Timeline'}
-                    </span>
-                    <span className="hidden sm:inline">
-                      {vi ? 'Tiến trình học tập' : 'Adaptive timeline'}
-                    </span>
+                    <ListOrdered size={15} className="text-primary" />
+                    <span>{t('pathway.adaptiveTimeline')}</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
             }
           />
-          {loading ? (
-            <div
-              role="status"
-              className="mt-4 h-48 animate-pulse rounded-xl border border-border bg-muted p-5"
-            >
-              {vi ? 'Đang tải lộ trình…' : 'Loading pathway…'}
-            </div>
-          ) : error ? (
-            <div
-              role="alert"
-              className="mt-4 space-y-3 rounded-xl border border-border bg-card p-5"
-            >
-              <p className="text-destructive">{error}</p>
-              <Button variant="outline" onClick={refresh}>
-                {vi ? 'Thử lại' : 'Retry'}
-              </Button>
-            </div>
-          ) : selected ? (
+
+          {/* LOCKED STATE OVERLAY IF DIAGNOSTIC IS NOT YET COMPLETED */}
+          {isLearningLocked && profile.selectedViewType !== 'skill' ? (
+            <Card className="border border-warning/30 bg-gradient-to-br from-card via-card to-warning/5 shadow-xs overflow-hidden mt-6">
+              <CardContent className="py-12 px-6 text-center max-w-2xl mx-auto space-y-5">
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-warning/15 text-warning border border-warning/30 flex items-center justify-center shadow-xs">
+                  <Lock size={28} />
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold text-foreground tracking-tight">
+                    Adaptive Learning Pathway Calibration Pending
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    You have selected your target role as{' '}
+                    <strong className="text-primary">{profile.targetRole || 'AI Knowledge Architect'}</strong>.
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    Before your personalized curriculum map and interactive timeline can be calibrated,
+                    you must complete the initial <strong className="text-foreground">Diagnostic Assessment</strong> in the
+                    assessment quiz. This ensures accurate Bayesian Knowledge Tracing and eliminates redundant prerequisites.
+                  </p>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Link to="/employee/assessment?diagnostic=true">
+                    <Button
+                      variant="primary"
+                      size="default"
+                      rightIcon={<ArrowRight size={16} />}
+                      className="font-bold shadow-xs px-5"
+                    >
+                      Take Diagnostic Assessment Now
+                    </Button>
+                  </Link>
+
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={toggleDiagnosticLock}
+                    className="text-xs font-semibold hover:border-primary/40"
+                    leftIcon={<RefreshCw size={13} />}
+                  >
+                    Quick Unlock (Demo Test)
+                  </Button>
+                </div>
+
+                <div className="pt-4 border-t border-border/60 text-[11px] text-muted-foreground font-mono">
+                  System Policy: Continuous Knowledge Tracing &bull; Baseline Diagnostic Mandatory
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
             <>
+
+
+              {/* TAB 1: INTERACTIVE ROADMAP */}
               <TabsContent value="roadmap" className="mt-4">
-                <AssignedPathwayViews
-                  items={[selected]}
-                  mode="roadmap"
-                  retry={refresh}
-                />
+                <InteractiveRoleRoadmap />
               </TabsContent>
+
+              {/* TAB 2: ADAPTIVE TIMELINE */}
               <TabsContent value="timeline" className="mt-4">
-                <AssignedPathwayViews
-                  items={[selected]}
-                  mode="timeline"
-                  retry={refresh}
-                />
+                <AdaptivePathwayTimeline />
               </TabsContent>
             </>
-          ) : (
-            <div data-testid="empty-pathway" />
           )}
         </Tabs>
       </div>

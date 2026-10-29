@@ -1,0 +1,59 @@
+# Shared workspace development
+
+Expert draft controls now persist adjacent up/down moves and neutral Remove-to-Catalog. Normal `docker compose up --build -d` applies workspace V35 automatically, widening only the existing override-action CHECK. Move violations report prerequisites without saving; Remove can leave an unresolved draft until Include repairs coverage. Check/preview/exact approval remain required. This does not change catalog-management CRUD or delete history; legacy persona-demo controls remain disabled. [Contract and limits](documents/technical/initial-pathway/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md#confirmed-expert-order-and-neutral-removal--2026-10-29).
+
+## Software Developers seed (same schema and catalog 0.11.0)
+
+The normal command below also runs `se-seed` after the existing workspace seed and sealed-catalog readiness. Two checked-in backend resources supply the inputs: [se-modules.json](backend/src/main/resources/db/seed/se-modules.json) reuses seven existing modules/teaching pairs and describes three additional skill prerequisites; [question-bank-se.json](backend/src/main/resources/db/seed/question-bank-se.json) contains 360 DRAFT decision questions for the existing 40-skill Software Developers Occupation. No new catalog version, PostgreSQL migration, Neo4j service or volume is introduced. The original byte-pinned artifacts stay unchanged.
+
+**Current shared workspace:** on2026-10-29 the user explicitly approved stopping API/worker, backing up the catalog, temporarily enabling writes, importing exactly the three supplement edges, then resealing. The graph now has994 nodes/5124 edges with the full SE chain/AND data, and retains all original node/edge properties. Schema and catalog version remain unchanged. Normal startup verifies the exact sealed graph and does not unseal it automatically. Another machine with an older sealed base needs the same separately approved maintenance procedure. **Initially empty graph:** the existing importer includes base plus supplement before first seal; this fresh path still needs separate runtime observation. Never delete a volume to force it. The dated receipt records the backup and data checks.
+
+`se-seed` imports the bank insert-only, checks drift, creates the exact SE resource/model/mapping/parameter tuple and a separate real Employee `employee-se@workspace.dev.invalid`. It uses the same development password setting below. Existing Security accounts, membership, baseline and pathway history are retained. The existing L&D and Expert accounts are reused; the additional Employee receives only the same narrowly gated WORKSPACE entitlement. No Blueprint, activation, responses, results, mastery, pathway or approval is seeded.
+
+For SE, sign in as L&D and select Software Developers (`OCC-15-1252.00`). Configure, preview and activate the full-Occupation baseline yourself. There are 40 skills and 9 draft items per skill; the current minimum-evidence policy requires at least 120 answers. Example bounds are maximum360 questions /10800 seconds; the server must validate readiness and capacity. Sign in as the SE Employee and choose Software Engineer / Middle for the intended example. Continue through the genuine assessment and existing review flow. No learner outcome is guaranteed by a seed.
+
+The new questions are locally authored development decisions with unreviewed EASY/MEDIUM/HARD labels, not a psychometrically validated production bank. SE 3PL parameters remain explicitly synthetic (`a=1.5`, `b=-1/0/1`, `c=0.25`), with SEEDED provenance. The development seed validates the exact360 rows, seals BUILDING→CANDIDATE, then transitions that exact fixture to PROMOTED using the existing development L&D technical actor and actual database timestamp. This status is required by the unchanged Blueprint persistence guard; model approval stays null and no calibration/ACTUAL_PILOT or production publication is invented. Reruns preserve the original fixture activation timestamp. An exact non-production adapter permits only this tuple/actor/provenance; production operational lookup still requires actual calibrated approved inputs and rejects SEEDED. This seed neither calibrates a model nor proves that a learner will exceed a prerequisite threshold. Learning content/readiness and protected entries remain unavailable.
+
+The shared development configuration uses **real password/session login and membership authorization**. It prepares an Information Security fixture for the baseline → mastery → Role+Level gap → initial proposal → exact Expert approval → own pathway journey. This is a development slice, with explicit synthetic/review/planning/assignment limits; it is not production provisioning. On 2026-10-29, fresh Compose startup and the genuine journey through approval were observed through manual HTTP calls, including seed reruns and API restart. Interactive browser, responsive and EN/VI acceptance remain unverified. See [current evidence](documents/testing/system/REQ-002-041-042-workspace-integration.md#c2-runtime-follow-up--2026-10-29).
+
+## Start on a development machine
+
+From the repository root, with Docker Engine/Compose available:
+
+```sh
+docker compose up --build -d
+```
+
+`compose.yaml` includes `compose.dev.yml`. PostgreSQL/Neo4j/API/web bind to loopback ports 15432/7474,7687/18080/8088 by default; override conflicting ports using `.env.example`. Use one browser origin throughout, for example **http://127.0.0.1:8088/login**.
+
+Startup order is migrate ? exact v0.11 graph/135-item bank import ? real workspace/member/model-resource seed; graph sealing and private session-key initialization complete before API; web installs its lockfile dependencies before Vite becomes ready. `migrate`, `seed`, `workspace-seed`, `workspace-keys` and `catalog-ready` should finish with exit 0. API waits for the dependencies. Check `docker compose ps -a` and the relevant service logs if startup fails. No Blueprint, assessment outcome or pathway is generated by startup.
+
+## Development accounts
+
+| Actor | Email |
+| --- | --- |
+| L&D Manager | ld@workspace.dev.invalid |
+| Employee | employee@workspace.dev.invalid |
+| Expert | expert@workspace.dev.invalid |
+
+The public **development-only** default password is `Workspace-Development-490!`. Set `WORKSPACE_DEVELOPMENT_PASSWORD` before first startup to use another development password. Repeated seed refuses account/password/role/resource drift instead of overwriting it. Sign out and sign in to switch actors; URL/menu/localStorage never changes server authority. These accounts are not production credentials. The seed supplies no Organization Administrator or paid order. A tightly scoped development WORKSPACE entitlement grants these three fixture members access without creating a payment/subscription history; normal billing/admin actions and other tenants retain the real checks.
+
+## Actual journey to verify
+
+1. Sign in as L&D and open `/ld-manager/baseline-assessments`. Choose Information Security Analysts; configure bounds, Save, Preview and Activate a genuine full-Occupation Blueprint. The fixture has 15 skills/135 DRAFT items; the current reference minimum requires 45 answers. Use the capacity/readiness shown by the server.
+2. Sign out, sign in as Employee and open `/employee/upskilling?tab=roles`. Choose an Information Security Role and its Level. Start/resume the genuine baseline, answer and submit; My Mastery must show the persisted own results. Low mastery does not reopen the baseline allowance.
+3. Review the exact Role+Level skill gap, then explicitly confirm the Role and prepare the pathway. Preview alone must not change selection, mastery or pathway. Generation is durable and asynchronous.
+4. Sign out, sign in as Expert and open `/expert/pathway-review`. Inspect the assigned proposal, Include/Exclude/Restore through real commands, Validate and approve the exact current valid revision/hash. Invalid/stale drafts must not be approved. The development assignment is fixed/bounded and separately gated; real assignment remains an owner integration.
+5. Sign back in as the same Employee and open `/employee/pathway?view=role`. Verify the exact approved Module order/notes in the original roadmap/timeline, baseline snapshot counts/search and read-only detail popups. The counts measure baseline target attainment at planning time, not learning completion. Entries remain unavailable until protected content/readiness owners are integrated. Stop at pathway display.
+
+Also verify wrong-role/foreign IDs are denied, logout/account switching clears previous data/pending commands, refresh retains committed results, and approved plans are read-only. Run desktop/mobile and EN/VI observations separately. These are manual expectations, not premarked Pass; executable tests need separate C3 approval.
+
+## Data, gates and retention
+
+The dev deployment uses `db/workspace-migration`: main V1?V32 plus forward V33/V34 for initial pathways/format2. The original 28 migration files remain byte-exact in `db/migration` as retained legacy artifacts. New volumes are `postgres_workspace_data`, `neo4j_workspace_v011_data`, `workspace_catalog_v011_bootstrap` and `workspace_security` (Compose adds the project prefix). Old demo volumes/history remain untouched; no account/email matching imports their learner history. Never use Flyway repair, baseline-on-migrate or volume deletion to reconcile the two lineages. Production routing/cutover requires separate review; this guide does not authorize production use.
+
+`local,workspace-baseline,workspace-development` plus the explicit development-fixture property activate exact fixture eligibility, synthetic technical versions, the narrow development entitlement and temporary planning/assignment inputs. Persona auth is disabled. The v0.11 catalog keeps NEEDS_EXPERT_REVIEW and the bank keeps DRAFT; no reviewer or readiness PASS is fabricated. Exact artifact/hash, same-tenant membership and server authorization still apply. Without the development gate, normal strict publication/operational resources and missing-owner denial remain. Other Occupations have no seeded baseline question bank. [Technical boundary](documents/technical/Workspace%20Adaptive%20Integration.md).
+
+Session encryption/HMAC keys are generated once in the private `workspace_security` volume and mounted read-only into API; values are not printed or committed. Preserve that volume alongside the workspace DB. Dev mail/payment workers and the unused mail health indicator are off; database/graph health indicators remain active. No live SMTP/payOS operation is required for these fixture accounts.
+
+Do not reformat or repin checked-in seed JSON: `.gitattributes` keeps the pinned CRLF bytes and shell scripts LF. Web uses Node22 and `npm ci` before Vite; wait for its ready message before checking the serving UI. Native builds may use a different Node version; record it. Existing large-bundle/lint notices are not resolved by deleting data.

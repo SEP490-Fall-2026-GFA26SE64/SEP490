@@ -17,8 +17,14 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
     private final NamedParameterJdbcTemplate jdbc;
     private final ObjectMapper json;
     private final TransactionTemplate transaction;
+    private final boolean seedPersonaAccounts;
+    private final UUID technicalActor;
     public LocalDemoProvisioning(DataSource source,ObjectMapper json) {
+        this(source,json,true,LocalDemoIdentity.id("admin"));
+    }
+    public LocalDemoProvisioning(DataSource source,ObjectMapper json,boolean seedPersonaAccounts,UUID technicalActor) {
         this.jdbc=new NamedParameterJdbcTemplate(source); this.json=json; this.transaction=new TransactionTemplate(new JdbcTransactionManager(source));
+        this.seedPersonaAccounts=seedPersonaAccounts;this.technicalActor=Objects.requireNonNull(technicalActor);
     }
     public void run(ApplicationArguments arguments) throws Exception {
         byte[] bytes=new ClassPathResource("demo/synthetic-fitted-v1.json").getInputStream().readAllBytes();
@@ -40,7 +46,7 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
         var pins=jdbc.query("SELECT item_version_id,content_hash FROM platform.item_version WHERE question_bank_id=:bank",base,(rs,row)->Map.entry(rs.getObject(1,UUID.class),rs.getString(2)));
         var expected=new HashMap<UUID,String>(); fitted.path("items").forEach(i->expected.put(UUID.fromString(i.path("pin").path("itemVersionId").asText()),i.path("pin").path("contentHash").asText()));
         if (pins.size()!=135 || expected.size()!=135 || pins.stream().anyMatch(i->!i.getValue().equals(expected.get(i.getKey())))) throw new IllegalStateException("Official bank pins drift");
-        for (String persona:LocalDemoIdentity.PERSONAS) {
+        for (String persona:seedPersonaAccounts?LocalDemoIdentity.PERSONAS:Set.<String>of()) {
             String role=persona.equals("ld")?"LD_MANAGER":persona.equals("admin")?"ADMINISTRATOR":persona.startsWith("expert-")?"DOMAIN_EXPERT":"EMPLOYEE";
             var a=new MapSqlParameterSource("id",LocalDemoIdentity.id(persona)).addValue("org",LocalDemoIdentity.ORG).addValue("name", "local-baseline-demo-"+persona).addValue("role",role);
             jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES(:id,:org,:name,:name,'DEMO_NO_PASSWORD_LOGIN') ON CONFLICT(account_id) DO NOTHING",a);
@@ -48,7 +54,7 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
             jdbc.update("INSERT INTO platform.account_role(account_id,role_code) VALUES(:id,:role) ON CONFLICT DO NOTHING",a);
             if (role.equals("EMPLOYEE")) jdbc.update("INSERT INTO platform.learner_state(learner_id) VALUES(:id) ON CONFLICT DO NOTHING",a);
         }
-        var key=base.addValue("model",LocalDemoIdentity.id("model-v1")).addValue("mapping",LocalDemoIdentity.id("mapping-v1")).addValue("set",LocalDemoIdentity.id("fitted-v1")).addValue("admin",LocalDemoIdentity.id("admin")).addValue("hash",hash).addValue("mappingHash",sha256(mapping)).addValue("modelJson",model).addValue("mappingJson",mapping);
+        var key=base.addValue("model",LocalDemoIdentity.id("model-v1")).addValue("mapping",LocalDemoIdentity.id("mapping-v1")).addValue("set",LocalDemoIdentity.id("fitted-v1")).addValue("admin",technicalActor).addValue("hash",hash).addValue("mappingHash",sha256(mapping)).addValue("modelJson",model).addValue("mappingJson",mapping);
         jdbc.update("INSERT INTO platform.model_version(model_version_id,algorithm,version,parameter_hash,configuration,artifact_ref) VALUES(:model,'IRT_3PL','LOCAL_DEMO_SYNTHETIC_V1',:hash,CAST(:modelJson AS jsonb),'local-demo:SYNTHETIC:fixed-c-MML-EM-v1') ON CONFLICT(model_version_id) DO NOTHING",key);
         jdbc.update("INSERT INTO platform.mastery_mapping_version(mastery_mapping_version_id,mapping_type,configuration,configuration_hash) VALUES(:mapping,'LOGISTIC_CONSERVATIVE_V1',CAST(:mappingJson AS jsonb),:mappingHash) ON CONFLICT DO NOTHING",key);
         if (!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.model_version WHERE model_version_id=:model AND configuration=CAST(:modelJson AS jsonb) AND parameter_hash=:hash AND approved_by IS NULL AND artifact_ref='local-demo:SYNTHETIC:fixed-c-MML-EM-v1')",key,Boolean.class)) || !Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.mastery_mapping_version WHERE mastery_mapping_version_id=:mapping AND configuration=CAST(:mappingJson AS jsonb) AND configuration_hash=:mappingHash)",key,Boolean.class))) throw new IllegalStateException("Demo policy drift");

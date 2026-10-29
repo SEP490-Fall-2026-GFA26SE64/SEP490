@@ -142,7 +142,3 @@ These anchors preserve existing references, not additional functional requiremen
 <a id="implementation-brief-req-037-f01-login-appearance-restoration"></a>
 
 Older documents link here for implementation briefs or delivery records that are no longer part of this functional-requirements catalog. These compatibility anchors do not reproduce or reconfirm those designs, approvals or completion claims. Consult the dated [testing guides and evidence](../../testing/README.md) for recorded verification; the source-level requirements above do not certify runtime behavior.
-
-## Local development identities
-
-The opt-in [local account tooling](../../../tools/dev-accounts/README.md) supplies five separate role identities for development on an isolated current-schema database. This is fixture support, not a registration policy change: Platform Administrator is organization-free, company members retain exactly one role, and Organization Administrator still enrolls MFA through the normal login page. No default production password or public bootstrap endpoint is added.

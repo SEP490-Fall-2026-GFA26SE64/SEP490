@@ -33,10 +33,14 @@ public final class JdbcAdaptiveBlueprintStore implements AdaptiveBlueprintStore 
 
     public JdbcAdaptiveBlueprintStore(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper,
                                      PlatformTransactionManager transactionManager) {
+        this(jdbc,mapper,transactionManager,false);
+    }
+    public JdbcAdaptiveBlueprintStore(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper,
+                                     PlatformTransactionManager transactionManager, boolean workspaceNames) {
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
         this.json = new AdaptiveBlueprintJson(mapper);
         this.transactions = new TransactionTemplate(transactionManager);
-        this.listing = new JdbcAdaptiveBlueprintListing(jdbc, transactionManager);
+        this.listing = new JdbcAdaptiveBlueprintListing(jdbc, transactionManager, workspaceNames);
         transactions.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
 

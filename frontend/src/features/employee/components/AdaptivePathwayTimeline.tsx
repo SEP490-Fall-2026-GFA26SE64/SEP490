@@ -2,6 +2,13 @@ import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
 import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
 import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
+import { baselineTargetMet, pathwaySkill } from '../../../shared/api/initialPathwayMessages'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Text } from '../../../shared/components/typography/Text'
+import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
 import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -159,13 +166,37 @@ const SKILL_PATHWAY: PathwayStep[] = [
   },
 ]
 
-export function AdaptivePathwayTimeline({ assigned }: { assigned?: AssignedPathwayViewProps } = {}) {
-  return assigned
-    ? <AssignedPathwayPresentation {...assigned} mode="timeline" />
-    : <PrototypePathwayTimeline />
+export function AdaptivePathwayTimeline({ assigned, pathway, search = '' }: { assigned?: AssignedPathwayViewProps; pathway?: PathwayView; search?: string } = {}) {
+  return assigned ? <AssignedPathwayPresentation {...assigned} mode="timeline" /> : pathway ? <ApprovedPathwayTimeline pathway={pathway} search={search} /> : <LegacyAdaptivePathwayTimeline />
 }
-
-function PrototypePathwayTimeline() {
+function ApprovedPathwayTimeline({ pathway, search }: { pathway: PathwayView; search: string }) {
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key)
+  const [selection, setSelection] = React.useState<PathwayDetailSelection>(null), query = search.trim().toLocaleLowerCase()
+  return <>
+    <Card className="min-w-0 overflow-hidden">
+      <CardHeader className="border-b border-border bg-muted/20"><div className="flex items-center gap-2"><Sparkles className="size-5 shrink-0 text-primary" /><Heading level={2} size="subsection">{t('pathway.adaptiveTimeline')}</Heading></div><Text variant="body-sm">{pathway.status?.displayState === 'PREVIEW' ? tr('reviewFlow.previewHelp') : ui('orderHelp')}</Text></CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <div className="relative"><div className="pointer-events-none absolute bottom-6 left-5 top-6 w-px bg-border" aria-hidden="true" /><ol className="relative space-y-6">
+          {pathway.modules.map(({ module, accessState }) => {
+            const matches = !query || `${module.id} ${module.title} ${module.targets.map(target => pathwaySkill(pathway, target.skillId)?.name ?? target.skillId).join(' ')}`.toLocaleLowerCase().includes(query)
+            return <li key={module.id} className={`relative flex min-w-0 items-start gap-3 sm:gap-5 ${matches ? '' : 'opacity-40'}`}>
+              <span className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-xl border-2 ${accessState === 'AVAILABLE' || accessState === 'PREVIEW' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground'}`}>{accessState === 'AVAILABLE' || accessState === 'PREVIEW' ? module.ordinal : <Lock className="size-4" />}</span>
+              <div className="min-w-0 flex-1 space-y-4 rounded-xl border border-border bg-card p-4 shadow-2xs">
+                <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1 basis-48"><Text variant="caption" className="break-all font-mono">{module.id}</Text><Button variant="link" className="h-auto max-w-full whitespace-normal p-0 text-left text-[length:var(--text-card)] font-semibold text-foreground [&>span]:whitespace-normal" onClick={() => setSelection({ kind: 'module', id: module.id })}>{module.ordinal}. {module.title}</Button></div><Badge variant={accessState === 'AVAILABLE' ? 'success' : 'warning'} className="max-w-full whitespace-normal">{accessState === 'PREVIEW' ? tr('reviewFlow.draft') : tr('state.' + accessState)}</Badge></div>
+                <div className="flex flex-wrap gap-4"><Text variant="caption">{(module.durationMinutes / 60).toLocaleString(language, { maximumFractionDigits: 2 })} {ui('hours')}</Text><Text variant="caption">{module.priceVnd.toLocaleString(language)} {tr('price')}</Text></div>
+                <div className="flex min-w-0 flex-wrap gap-2">{module.targets.map(target => { const skill = pathwaySkill(pathway, target.skillId); return <Button key={target.skillId} variant="outline" size="sm" className={`h-auto min-h-9 max-w-full whitespace-normal py-2 text-left [&>span]:whitespace-normal ${baselineTargetMet(skill) ? 'border-success/30 bg-success/10' : 'bg-secondary/40'}`} onClick={() => setSelection({ kind: 'skill', id: target.skillId })}>{baselineTargetMet(skill) && <CheckCircle2 className="size-3 shrink-0 text-success" />}<span className="min-w-0 break-words">{skill?.name ?? target.skillId}</span></Button> })}</div>
+                {module.targets.some(target => target.expertAttention) && <Badge variant="warning">{tr('expertAttention')}</Badge>}
+                <Button variant="ghost" size="sm" onClick={() => setSelection({ kind: 'module', id: module.id })}>{t('upskillingUi.showDetails')}<ChevronRight className="size-4" /></Button>
+              </div>
+            </li>
+          })}
+        </ol></div>
+      </CardContent>
+    </Card>
+    <InitialPathwayDetails pathway={pathway} selection={selection} onClose={() => setSelection(null)} />
+  </>
+}
+function LegacyAdaptivePathwayTimeline() {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
   const { profile } = useEmployeeLearningState()
   const isSkillMode = profile.selectedViewType === 'skill'

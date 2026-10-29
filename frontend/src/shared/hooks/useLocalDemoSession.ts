@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 
-const demoPersonas = ['ld', 'employee-a', 'employee-b', 'employee-c', 'admin', 'expert-chen', 'expert-vance', 'expert-rivera', 'expert-nguyen'] as const
+const demoPersonas = ['ld', 'employee-a', 'employee-b', 'employee-c', 'admin', 'expert-chen', 'expert-vance', 'expert-rivera', 'expert-nguyen', 'expert'] as const
+export type LocalDemoPersona = typeof demoPersonas[number]
 export function useLocalDemoSession() {
   const enabled = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true'
   const switching = useRef(false)
@@ -8,7 +9,14 @@ export function useLocalDemoSession() {
     if (!enabled || switching.current || !demoPersonas.some(value => value === persona)) return false
     switching.current = true
     try {
+      if (persona === 'expert') {
+        const session = await fetch('/api/v1/local-baseline-demo/session', { credentials: 'same-origin', cache: 'no-store' })
+        if (!session.ok) return false
+        const value: unknown = await session.json()
+        if (!value || typeof value !== 'object' || !('personas' in value) || !Array.isArray(value.personas) || !value.personas.includes('expert')) return false
+      }
       const response = await fetch('/api/v1/local-baseline-demo/session', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona }) })
+      if (response.ok) window.dispatchEvent(new Event('initial_pathway_session_changed'))
       return response.ok
     } catch { return false }
     finally { switching.current = false }

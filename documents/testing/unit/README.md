@@ -1,19 +1,6 @@
 # Unit Testing Directory & Standards
 
-2026-10-29 one responsible Expert per Module: [ownership verification](REQ-013-single-expert.md).
-
-2026-10-29 five local dev roles: [seed/login verification](REQ-037-dev-accounts.md).
-
-2026-10-29 Module/main merge repair: [dedicated verification and compatibility boundary](REQ-013-main-merge-resolution.md).
-
-REQ-013/016 user-authorized v0.11 local import: [dedicated evidence and preservation checks](REQ-013-016-v011-import.md).
-
-REQ-013/016 local Module authoring: [dedicated unit/component evidence](REQ-013-module-management.md), separate from review-dataset and legacy runtime acceptance.
-
-2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
-
-**Latest, 2026-10-24 REQ-001/002/009:** [Unit/API/component evidence](REQ-001-002-009-20261024-execution.md) records74 BE/61 FE pass,0 fail/skipped. [Consolidated gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md) retains four synthetic-browser mobile failures, blocked integration, unexecuted system and numerical/performance limits: **Cluster 3/4 incomplete**. [23 October131P/0F](../system/REQ-001-002-cluster4-evidence.md) is dated history, not current acceptance.
-
+2026-10-29 selected review/read C4: [unit/component/API-security mapping](../system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping) and [recorded commands](../system/REQ-002-041-042-workspace-integration.md#recorded-commands) reuse the existing scoped evidence document. B includes92 C3 non-integration cases (66 domain/application/codec +26 API/security/activation/actor bridge) and39 regression; F49 includes44 C3+5 regression. Real integration29 is indexed separately and is already part of B160. Mock ports/session/HTTP/owner hooks are not real-adapter evidence. C4 only synchronized documents; no tests rerun.
 ## Current Scope Alignment
 
 Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). Revised unit/API contracts cover six actors, organization/occupation/role permissions, registration/payment/renewal/seat policies, L&D baseline/publication/approval, direct AI guidance, Expert initial confirmation, independent evidence and ROI edge cases. Existing PASSED labels and runtime actor codes below remain historical evidence, not Version 2 acceptance.
@@ -34,6 +21,7 @@ Unit testing in this workspace validates pure domain invariants, application ser
 
 | Requirement ID | Feature Name | Primary Actor | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
+| **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Review/order/repair/approval and safe own read | Assigned Expert / Employee | [Scoped methods and mocks](../system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping) | **Passed for mapped review/read scope; production owners separate** |
 | **REQ-060-F01-F03** | Registration, email and MFA/resume | Guest | [REQ-060-registration.md](REQ-060-registration.md) | **PASSED locally; live gate separate** |
 | **REQ-001-F01** | View Target Roles | `LEARNER` | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
 | **REQ-001-F02** | Choose Target Role | `LEARNER` | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |
@@ -82,7 +70,3 @@ When implementing or updating a requirement (`REQ-nnn`):
 2. **Include Acceptance Criteria**: Pin every test method to an AC from the corresponding `documents/features/<Feature>/<Function>.md`.
 3. **Assert Architectural Completeness**: Explicitly verify all architecturally defined fields (e.g., track, seniority, responsibilities, version, assignedExpertId).
 4. **Link to this index**: Add the requirement to the table above.
-
-- [REQ-053 — L&D module navigation](REQ-053-ld-module-navigation.md)
-
-- [REQ-013/053 — Per-module catalog intake](REQ-013-module-intake.md)

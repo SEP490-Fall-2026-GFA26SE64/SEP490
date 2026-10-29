@@ -2,6 +2,12 @@
 
 ## Current Scope Alignment
 
+## Planned initial gap/pathway — 2026-10-27
+
+[Mermaid flow/sequence/state/logical-data source and rendered Markdown view](gap-pathway-initial-flow.md) accompanies the [Cluster1 design](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). It is **Planned**, not DB inventory, deployed topology or runtime evidence. It does not replace the verified V26 metadata images or member-owned Neo4j diagram. A supporting Mermaid viewer is required to render the inline diagrams.
+
+## Verified inventory — 2026-10-23
+
 [Version 2](../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md) controls product scope; [architecture](../ARCHITECTURE.md) separates the required target from the recorded technical baseline. These diagrams inventory existing storage, not a completed multi-organization subscription/learning implementation.
 Tenant isolation, departments/occupations/assignments, subscription/provisioning/entitlements, many-to-many learning coverage, private content, L&D publication/approval, direct AI guidance, independent progress and ROI need agreed physical mappings before regeneration. Documentation alignment does not change migrations or generated images.
 
@@ -46,3 +52,7 @@ java -DPLANTUML_LIMIT_SIZE=16384 -jar path\to\plantuml.jar -tsvg documents\diagr
 The default generator invocation still targets development Compose. Do not upload private diagrams or schema content to an external renderer.
 
 Latest lifecycle regeneration used `-ComposeOverride .\compose.subscription-test.yml`, not the retained development database. Groups contain 24 identity/catalog, 16 lifecycle/member-reference, 23 assessment and 13 pathway tables. Identity/subscription/runtime SVGs were rendered with existing local PlantUML 1.2025.10 and XML-validated. Neo4j schema and ontology are unchanged by this feature.
+
+## Workspace integration source
+
+Active shared development uses db/workspace-migration V1?V34; retained db/migration V1?V28 is the old demo lineage, never a combined Flyway location. See [integration ownership and compatibility](../technical/Workspace%20Adaptive%20Integration.md). Existing rendered diagrams retain their dated scope; no live DB capture or diagram regeneration was performed in this source/build task.
