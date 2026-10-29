@@ -51,7 +51,7 @@ const STORAGE_KEY_ACTIVE_COMPANY = 'adaptlearn_active_company_id'
 
 // Initial seeded enterprise company: TechNova
 const SEED_COMPANY_TECHNOVA: CompanyRecord = {
-  id: 'comp-technova',
+  id: 'e0000000-0000-0000-0000-000000000001', // TechNova Workspace UUID
   name: 'TechNova Cognitive Labs',
   packageTier: 'Enterprise',
   maxUsers: 50,
@@ -250,7 +250,10 @@ export function saveCompanies(companies: CompanyRecord[]) {
 
 export function getActiveCompanyId(): string {
   const saved = localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY)
-  if (saved) return saved
+  if (saved) {
+    if (saved === 'comp-technova') return 'e0000000-0000-0000-0000-000000000001'
+    return saved
+  }
   return SEED_COMPANY_TECHNOVA.id
 }
 
