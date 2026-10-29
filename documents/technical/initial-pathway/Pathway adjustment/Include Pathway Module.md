@@ -1,5 +1,7 @@
 # Include Pathway Module
 
+29Oct confirmed amendment: see [Expert order/removal](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md#confirmed-expert-order-and-neutral-removal--2026-10-29). Include keeps the same trusted intent/revision/key contract; after explicit Expert ordering, retain valid relative prior order and insert new prerequisite providers before their dependents. Check/Confirm preserve that saved order while freshly validating. REMOVE is distinct from Exclude and may return an eligible candidate here. Earlier no-reorder statements below describe the prior scope, superseded only by this approved amendment.
+
 Confirmed UX2026-10-28: Catalog→Included and Excluded→Included drops are alternate gestures for this same command. Keyboard/mobile Include/Restore buttons remain. Only currently eligible candidates from the scoped server response can be included; last persisted overrides determine excluded membership. Ignore external/same-list/stale drag and lock during pending/approved states. Reconcile exact server revision/hash/order; no position field, reorder, localStorage mutation, fabricated success or automatic approval. See REQ-019's confirmed UX restoration; C2 build/manual evidence is separate from planned C3 cases.
 
 **Function:** REQ-020-F01. **Actor:** authorized Expert. **Status:**0.11 C2 source/API UI/format/local-scope adaptation built2026-10-28; runtime evidence pending.

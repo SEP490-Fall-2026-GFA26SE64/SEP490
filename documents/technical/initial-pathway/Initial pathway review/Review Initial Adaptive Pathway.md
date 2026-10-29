@@ -1,5 +1,17 @@
 # Review Initial Adaptive Pathway
 
+## Confirmed Expert order and neutral removal — 2026-10-29
+
+The user explicitly approved adjacent Move Up/Down and Remove-to-Catalog, including the additional PostgreSQL CHECK migration. This supersedes the earlier disabled-control/no-manual-reorder scope below. It does not grant Module catalog CRUD, generation-objective changes, learner overrides or history deletion.
+
+Only an active assigned Expert in the trusted organization may edit a current AWAITING_EXPERT_REVIEW draft. POST `/{id}/moves` accepts moduleId, direction UP/DOWN, expectedRevision, expectedContentHash and optional reason with Idempotency-Key; POST `/{id}/removals` accepts the same edit tuple without direction. No client actor/org/mastery/order array is accepted. The service resolves the fresh pinned planning problem, provider assignment, skill prerequisites, external evidence and internal gates through existing policy; it never infers prerequisites from title or difficulty. Move swaps one adjacent pair and rejects any provider-after-dependent order with422 PREREQUISITE_ORDER_VIOLATION plus diagnostic provider/dependent/skill IDs. Rejection writes no revision/override/receipt; retry with stale expected fields still rejects. Boundary/nonmember moves reject. Authorized UI first/last, busy, unknown-outcome, approved/archive locks remain.
+
+Successful changes retain immutable revision/ordinal/content hash/override history and exact replay/CAS/assignment/binding guards. Fresh Check/preview/Confirm retain and validate the explicit Expert order rather than overwrite it with canonical topological order. Include/Exclude/Remove preserve valid relative existing order after a manual move, placing new prerequisites before dependents; unresolved coverage/gates remain unresolved and cannot approve. Generation/provider selection/objective and source graph are unchanged. Existing format1/2 records retain their original hashes; only new edited revisions change.
+
+Remove clears selected or excluded membership with an explicit REMOVE history action. Eligible candidates return to Add Existing Catalog Module; candidates no longer eligible do not become falsely selectable. Exclude continues to record EXCLUDE and populate Excluded Modules. Removing a required provider is allowed as an editable UNRESOLVED draft, with existing Check/Include suggestions and approval denial; it never deletes a Module, original override or approval.
+
+Shared development uses additive workspace V35 to widen only initial_pathway_override.action for MOVE_UP/MOVE_DOWN/REMOVE; no table/column/Neo4j change, old migration edit or production cutover. Legacy persona-demo new controls stay disabled and its route allowlist is unchanged. API/build/manual receipt is separate from pending browser and C3 evidence. Confirmed.
+
 ## Confirmed responsive workspaces — 2026-10-28
 
 User approved responsive status sizing and linked workspace heights. Awaiting-review badges keep one line with natural width/consistent padding; wide queue tables scroll within their own region on narrow screens. Desktop Included/Excluded share header and body grid tracks: top and bottom edges align and the longer list sets both body heights, including empty destinations. The full stretched body is the existing guarded drop surface, so lower modules can move horizontally into the opposite workspace without scrolling to its top. Remove the redundant excluded subheading that offset its body. Shared page scrolling moves both panels together; no independent list scrollers or saved-order change.

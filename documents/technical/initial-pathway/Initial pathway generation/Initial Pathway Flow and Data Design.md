@@ -1,5 +1,7 @@
 # Initial gap-to-pathway flow and data design
 
+Confirmed29Oct2026 amendment: the user approved [assigned Expert adjacent ordering and neutral Remove](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md#confirmed-expert-order-and-neutral-removal--2026-10-29), including additive workspace V35 widening override action CHECK only. This supersedes the old manual-reorder exclusion for Expert drafts, not the Employee prohibition or generation algorithm/objective. New moves/removals use the existing trusted scope/assignment/exact revision/hash/idempotency/history/approval pipeline. Fresh revalidation preserves explicit order and rejects prerequisite inversions; Remove is not Exclude or catalog CRUD. Existing immutable formats/hashes and production routing remain. New routes are POST `/api/v1/expert/initial-pathways/{id}/moves` and `/removals`; all client and server fields/failures are defined in the linked contract. Build/manual observations do not establish browser/C3 acceptance.
+
 
 Updated2026-10-28. **C1 contract confirmed; C2 source/build update recorded in section15, runtime/owner acceptance incomplete.** Sections1–8/14 define scope. Sections9–13 retain dated0.10 observations; section14 supersedes their old field/policy/environment statements. Source/build is not deployment or executable acceptance.
 

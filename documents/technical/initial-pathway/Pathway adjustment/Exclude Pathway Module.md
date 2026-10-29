@@ -1,5 +1,7 @@
 # Exclude Pathway Module
 
+29Oct confirmed amendment: [Expert order/removal](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md#confirmed-expert-order-and-neutral-removal--2026-10-29) preserves Exclude as a recorded explicit exclusion. The trash action is now REMOVE, returning eligible modules to neutral Catalog membership while retaining all prior history. Exclude/Remove can leave an editable UNRESOLVED draft when coverage/prerequisites are missing; exact approval remains denied. Manual order, when present, is revalidated and preserved where dependencies allow. No Module catalog deletion or Employee edit authority.
+
 Confirmed UX2026-10-28: Included→Excluded drop is an alternate gesture for this same exact-revision command, alongside the existing keyboard/mobile Exclude button. Excluded remains visible from persisted override history/reason after GET/refresh; current selected IDs cannot appear in both panels. Catalog→Excluded preemptive bans and deleting history are outside scope. Missing coverage remains editable UNRESOLVED and cannot approve. No client-owned order/approval/state. See REQ-019's confirmed UX restoration and the C2 manual receipt; executable cases stay C3-only.
 
 **Function:** REQ-020-F02. **Actor:** authorized Expert. **Status:**0.11 C2 policy/format/local-scope source updated/built2026-10-28; runtime evidence pending.

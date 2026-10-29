@@ -4,6 +4,192 @@ Source/build date: 2026-10-28; final static/Git follow-up: 2026-10-29, Asia/Bang
 
 ## Source and conflict disposition
 
+The following source checkpoint is retained history. The newer SE observations are recorded next; they do not establish executable-test or browser acceptance.
+
+## Git handoff — 2026-10-29
+
+At the user's explicit request, the pending main integration was committed as `f790cdb` with parents `b2ed102` and `9b76905`; its tree is exactly the preserved checkpoint `afe072a0a4d18e07fb8fe7b574e47ad484a17e8b`. The later work is grouped into backend commit `d59b0c3` (24 files), frontend commit `0b734f6` (6 files), and the documentation commit containing this record. Recoverable index/merge metadata, staged/working binary patches and untracked file copies are retained under ignored workspace `.tools/git-checkpoints/20261029-before-grouped-commits/`. Historical Markdown whitespace findings in the original merge checkpoint were retained without unrelated formatting edits; the new grouped changes pass their whitespace checks. No new executable tests, history rewrite, data mutation or push was performed for these commits. The planned code/document/SRS reconciliation remains a separate follow-up, not completed by committing these records.
+
+## Expert adjacent order and neutral Remove — 2026-10-29
+
+Subsequent acceptance reported by the user: happy-case UI testing succeeded for the Move Up/Down and Remove behavior. Record this as user-confirmed manual acceptance only, not agent-observed browser evidence or an executable-test/C3 pass. Negative/security/concurrency/responsive cases remain limited to the actual evidence below or planned follow-up.
+
+Authority: user explicitly approved Move Up/Down and Remove, then separately approved the required backend/API and CHECK expansion after schema/CRUD clarification. Scope REQ-019-F01/REQ-020-F01/F02 draft review; no Module/Skill/Role/Occupation management CRUD, graph/schema change, generation objective/selection algorithm change, learner override, production/native-migration cutover or executable C3. Contract amendment and acceptance mapping are in the existing review/include/exclude/shared-flow documents and initial-pathway test plan. These supersede the earlier disabled placeholders, not historical evidence.
+
+Implementation: InitialReviewOrder applies saved Expert order after fresh fixed-set planning, validates actual provider/gate/external-readiness dependencies, rejects inversions with422 and structured diagnostics/no write, and preserves valid relative order while placing newly included prerequisites. Review/controller add POST `/api/v1/expert/initial-pathways/{id}/moves` and `/removals` with expected revision/hash/key and existing actor/org/assignment/selection/binding/receipt/CAS guards. MOVE_UP/MOVE_DOWN and neutral REMOVE create immutable revisions/ordinals/hashes/history; Check/preview/Confirm revalidate without discarding explicit order. Remove is distinct from EXCLUDE and returns eligible modules to Catalog. Required-provider removal remains editable UNRESOLVED; existing approval denial applies. UI uses the original arrows/trash/rows/components with pending/first-last/approved locks and EN/VI prerequisite popup; legacy persona controls remain disabled and its route allowlist is unchanged. Check reload-only-on-hash-change behavior is retained. No shared workspaceFetch/CSRF change.
+
+Before rollout, stopped API/embedded worker, captured17 table count/content aggregates, and took full PostgreSQL custom backup to ignored workspace `.tools/db-backups/20261029-expert-order-remove/before.dump`:2816639 bytes,SHA256 `75bb9828ca011d994a1d546aa9f7bb354b2eb9407eb9797bffaecedd488c4c6e`. Backup creation/copy/hash observed; full restore not exercised. `docker compose up -d` applied V35 through the standard migrate job; all readiness/seed jobs exit0. Readback: Flyway35 success; initial_pathway_override_action_check permits exactly INCLUDE/EXCLUDE/MOVE_UP/MOVE_DOWN/REMOVE. No old migration repair/edit/table/column change or learner/pathway row change from migration: all17 aggregates matched exactly after startup. Final image loaded with `docker compose up -d --no-deps api` after the final order-placement refinement; API/PG/Neo4j healthy/web running. No catalog unseal; Neo4j remains994 nodes/5124 edges/read-only/online.
+
+| Build/static command | Actual outcome | Limits |
+|---|---|---|
+| `docker compose build api` | Final Java21.0.12.1/Maven3.9.11 package428 sources BUILD SUCCESS at15:00:55+07; image config `sha256:0e601a7d6ff1b256a8375e5f87cfe602d32f79c59fbd5cdcc4ffc2d53cfec217` | Dockerfile `-Dmaven.test.skip=true`; test resources/compile/execution entirely skipped |
+| `docker build --target build -t adapt-learn-graph-frontend:expert-order-check ./frontend` | Node22 TypeScript/Vite8.3.0 build2507 modules succeeds; bundle-size notice retained | Initial TS1294 parameter-property syntax was corrected to explicit fields for existing erasableSyntaxOnly; final build used corrected source. No executable test |
+| `npx.cmd --no-install oxlint` on detail/API/en/vi files | Exit0/no diagnostics | Four affected frontend files only |
+| Git/source checks | Changed diff clean; original index treeafe072a0a4d18e07fb8fe7b574e47ad484a17e8b exact, HEAD/MERGE_HEAD unchanged, no unmerged paths, old migration/production-Compose/shared-CSRF deltas0 | Existing unrelated staged/unstaged/untracked work retained, no stage/commit/push |
+
+Bounded C2 manual HTTP through8088, approximately15:02–15:07+07; real `expert@workspace.dev.invalid`, fixed development organization, live assignment, current SE draft `cf0fcb00-44fe-47d0-87a9-242c51d46c26`, Software Engineer/Middle. No executable test file/method, runner, mock or outcome seed was created/run. Baseline completion/gap/generation inputs already belonged to the user's real flow. No confirmation/approval was sent.
+
+| Acceptance / manual trigger | Observed result |
+|---|---|
+| R03/R14: move FS03-LOW-ALT up over READ-CORE01 at revision4 |422 PREREQUISITE_ORDER_VIOLATION; diagnostic `PREREQUISITE_ORDER:MOD-READ-CORE01:MOD-FOCUS-FS03-LOW-ALT:MS-CORE01`; revision4/hash `b1489689fa434fb051ac348742e927fd9137515f8f7639a0fcd58d99b8ff0d51` unchanged, no history row |
+| R03/R09: independent FS07-LOW-ALT up over FS04-LOW |200/revision5, displayed order starts FS07 then FS04; GET validation VALID with matching hash `9948c09d2df0c46b1e8cc019b040747e19c8994fa27172cc88284b6df041f7fc` |
+| R10: exact same move body/key replay |200/revision5 again, no duplicate revision; inverse DOWN creates revision6/VALID and restores original order |
+| R03/R14: REMOVE READ-CORE01 from Included |200/revision7, not selected, latest override REMOVE, eligible Catalog candidate present; Check UNRESOLVED with MISSING_PROVIDER:MS-CORE01 and UNPLANNED_PREREQUISITE:MS-CORE01 |
+| R03/R14: Include provider again |200/revision8/VALID; provider inserted before dependent modules |
+| R03/R06: Exclude provider, then trash/REMOVE from Excluded |EXCLUDE revision9/UNRESOLVED; REMOVE revision10 leaves neutral membership rather than EXCLUDE; Catalog return does not erase old overrides |
+| R03/R14: Include and final read/Check |Revision11,15 selected modules in exact original15-module order, VALID/empty diagnostics and matching hash `47748de33d076e5d19edac49cd518d1d7bfa49097765d611e6c35b848998fa23`, still AWAITING_EXPERT_REVIEW |
+| R14: repeat forbidden FS03 inversion at revision11 |422 with exact structured provider/dependent/skill diagnostic; no further revision; all verification sessions signed out204 |
+
+The7 successful edit revisions/overrides/receipts intentionally remain as real development review history (4→5 MOVE_UP→6 MOVE_DOWN→7 REMOVE→8 INCLUDE→9 EXCLUDE→10 REMOVE→11 INCLUDE). They were not deleted to simulate a clean run. Baseline3 attempts/165 responses/2 results/55 evidence/2 profiles, role selections3, gap snapshots3, requests3, old approvals2 and both active baselines remain unchanged. After excluding only the newly appended SE revisions/module/dependency/override/receipt rows and its intentionally advanced current pointer, all16 original table/row-set aggregates match the before snapshot, including all77 original revisions/695 module rows/35 dependencies/74 overrides/79 receipts. No Employee outcome/selection/Security/approved-content mutation was performed. Rollback must retain readers/V35/new history and disable new mutations; do not narrow CHECK or rewrite old records to hide the operations.
+
+Remaining: browser inventory apps/browsers empty. Real arrow/trash click, popup rendering/focus/keyboard/mobile/EN-VI/drag gestures are not agent-observed; build and HTTP are not browser acceptance. New-order exact final approval/Employee projection, negative stale/foreign/revoked/approved/legacy cases, evidence-ready/internal-gate variants, concurrent CAS/outages and executable C3 remain planned/not run. No production readiness or cluster transition is claimed.
+
+## User-selected SE rewind to100 real responses — 2026-10-29
+
+Authority: after requesting a way to retry the UI following a genuine120-answer completion, the user explicitly selected option2: retain100 already-answered questions and continue from101. This is a one-time shared-development maintenance exception to normal immutable history, scoped to this exact SE attempt. It does not add an application reset route, change migrations/production gates, or seed fabricated outcomes. No executable tests were created/run.
+
+Verified ownership: org `00000000-0000-0000-0000-000000000001`, learner `01f1fb56-c545-3454-8c3e-68401f6ba3ef`, real account `employee@workspace.dev.invalid`, attempt `8027e869-1cb0-4c2a-af2f-296f96a73239`, occupation `OCC-15-1252.00`. This is the same Employee that owns the earlier Security assessment; Security is outside the operation. Pre-state AUTO_SUBMITTED/revision121/120 responses/40 mastery evidence/one profile. There is no gap/pathway/processing-job dependency, successor attempt or delivered mastery event.
+
+Stopped API/embedded worker before backup. `pg_dump -Fc` completed and the archive was copied out of the container to ignored workspace `.tools/db-backups/20261029-se-answer100/before.dump`:2804089 bytes,SHA256 `c05e734e72e00c5073fecc74eea5cc78e6c81b3af3e633649dc3483ad289aa59`. `pg_restore -l` read1038 TOC entries; a full restore was not exercised. The one-time SQL is retained beside that backup, not imported by Docker startup or tracked in product source.
+
+The final maintenance transaction locks the relevant tables, checks exact actor/attempt/state/counts/dependencies/deadline, then restores the real ANSWER receipt at revision101:100 responses/101 presented items/40 actual provisional skill states. It removes only this attempt's later20 responses/19 presentations/20 receipts, completion result,40 skill results,40 evidence rows, SE profile and its one undelivered completion outbox event. It keeps original times/pins/pool and correct/incorrect values; no answers or scores are generated. Exact history guards were temporarily disabled only for the targeted maintenance and re-enabled before commit; foreign keys/checks/deferred aggregate validators remained enabled. `SET CONSTRAINTS ALL IMMEDIATE` succeeded before commit. Initial SQL/identity guard issues and one preservation-query alias error rolled back completely; no partial state/disabled guard was committed by those failures.
+
+Final COMMIT at approximately14:20+07: IN_PROGRESS/revision101/answered100/currentQuestion101. All124 other platform-table scoped count/content digests matched; first100 responses, first101 presentations/receipts, all360 pool items and original108 audit rows were verified unchanged. One explicit `BASELINE_REWOUND_FOR_UI_CHECK` development-maintenance audit was appended with actual database time, null actor rather than an invented application reviewer. Deadline remains `2026-10-29T08:31:01.326432Z` =15:31:01+07; no extension. Earlier complete results are retained in the backup/audit; the live SE profile is intentionally absent until genuine completion again.
+
+Post-restart: existing Compose start reran readiness/migrate/seed dependencies successfully and API is healthy/web running. Readback shows0 disabled platform triggers and0 SE result/evidence/profile rows. A separate real Employee session GET through8088 returned200: IN_PROGRESS/revision101/answeredCount100/presentedCount101/only unansweredPosition101/expired:false; signed out204. No answer/submit was sent on the user's behalf. Browser/UI interaction and C3 acceptance remain Not run. `git diff --check` receipt clean, original index compares exact; HEAD/MERGE_HEAD, source/migrations/catalog/production config unchanged by this operation; no stage/commit/push.
+
+## Baseline quiz scroll and action stability — 2026-10-29
+
+Final correction verification: Docker Node22 `docker build --target build -t adapt-learn-graph-frontend:baseline-ui-check ./frontend` exits0, TypeScript/Vite8.3.0 build2507 modules; retained bundle-size notice. Scoped oxlint exits0/no diagnostics, changed diff clean, index/HEAD/MERGE_HEAD unchanged. This is build/static evidence only; no executable tests or browser interaction was run.
+
+Subsequent user-approved correction: the screenshot showed the constrained question body clipping options behind an inner scrollbar. User explicitly approved natural question-card height to show the full prompt/all4 choices, with Previous/Save below and normal page scrolling. The correction removes only the question card's viewport/minimum height/flex layout and body flex-fill/overflow containment classes in BaselineAttemptPanel.tsx. Navigation scrollbar hiding/contained current-question scroll, panel state retention and removal of the in-progress LoadingCard remain. This supersedes only the fixed-height/inner-scroll description and UI04 expectation below; action position now follows content height as accepted. Scoped oxlint exits0; final Docker build is recorded after completion. Manual UI04 expectation is now: all4 choices visible in the expanded card without inner scrolling or clipping, long content remains reachable through normal page scroll, saved answers remain read-only. No new screenshot/browser/executable-test pass, API/backend/CSRF/data change or service restart is claimed.
+
+Authority: user confirmed UI group1, then explicitly requested implementing only group1 and dropping performance group2. Scope REQ-002-F01 Employee baseline presentation: `BaselineAttemptPanel.tsx` and `EmployeeBaselinePage.tsx` only. No shared fetch/CSRF change, batch-content adapter, API/backend/scoring/planner/data change or latency claim.
+
+Source findings: an in-progress command inserted a full LoadingCard above the retained attempt, shifting the page on busy transitions. The panel key included revision, remounting the navigation after every accepted answer and losing list scroll. Actions were below variable-height question content. The correction keeps the panel keyed by attempt ID, derives current question/unsaved choice from revision, and adjusts only the navigation element's scrollTop when the current question is outside its visible bounds. It does not use scrollIntoView on the page. Navigation scrollbar is hidden locally; overflow scrolling, focus rings and scroll containment remain. The question card uses a viewport-based fixed height with a minimum, scrollable question body and separate action footer. Initial/terminal loading remains; active writes show busy feedback on the save button. Existing own-attempt/revision/idempotency/unknown-outcome retry/deadline/committed-readonly rules remain in the unchanged hook/API/backend.
+
+| Check / command | Observed outcome | Boundary |
+|---|---|---|
+| Native `npm.cmd run build` | Blocked by TS5033/EPERM writing node_modules/.tmp tsbuildinfo | No source type error reported before the filesystem failure; not a successful build |
+| `npx.cmd --no-install oxlint src/features/employee/baseline-assessment/BaselineAttemptPanel.tsx src/features/employee/baseline-assessment/EmployeeBaselinePage.tsx` | Exit0, no diagnostics | Scoped static lint only |
+| `docker compose exec -T web npm run build` | Could not run: service web is not running | User's stopped stack was retained, no restart/data mutation |
+| `docker build --target build -t adapt-learn-graph-frontend:baseline-ui-check ./frontend` | Docker Node22 TypeScript/Vite8 build succeeds,2507 modules; retained large-bundle notice | Separate build image, not deployment or browser acceptance; no executable tests |
+| Browser inventory | apps/browsers empty | No connected-browser visual/interaction evidence |
+
+Manual acceptance remains Not run, not C3 Passed. Use the existing real Employee session/owned IN_PROGRESS attempt at `http://127.0.0.1:8088/employee/baseline-assessment/<attemptId>` after the user starts the existing stack. Do not reset attempts or submit answers on the user's behalf. Each row below is a procedure/expected result, not executed evidence; no test file/method was added or run.
+
+| Acceptance | Actor/fixture/trigger | Expected observation |
+|---|---|---|
+| UI01 stable submit | Authorized Employee, own attempt, scroll to Save and submit chosen answer | Busy indicator stays in action bar; no extra card/page displacement; after server confirmation the new question appears, its unsaved choice is empty and action footer remains in place |
+| UI02 current navigation | Own attempt with enough questions to overflow navigation, answer a later question | Current question stays visible within navigation; list does not reset to question1; page scroll is not changed by the navigation effect |
+| UI03 hidden scrollbar/containment | Same attempt, wheel/touchpad and Tab through navigation; reach either list boundary | No navigation scrollbar; list remains scrollable/focus-visible and does not chain wheel scrolling to the page at its boundary |
+| UI04 long content/responsive/review | Same attempt, long prompt/options; desktop/mobile and EN/VI; Previous/Next on saved answers | Content scrolls within question body, actions remain separate/reachable, no horizontal clipping; saved answers remain read-only; no answer write from review |
+| UI05 failure/expiry/completion | Existing manual/C3-owned fixtures for ambiguous failure/retry, expiry and terminal result | Controls retain lock/retry semantics; unsent choice never counts as saved; no automatic next before a confirmed response; server expiry/finalization authoritative; initial/terminal loading retained |
+
+Original index/HEAD/MERGE_HEAD and pre-existing local work are retained. No stage/commit/push, stack restart, executable-test creation/execution, learner answer or volume change in this slice. Required browser/Playwright evidence remains open; C3 needs separate explicit approval under workspace rules.
+
+## SE activation input and Occupation display fix — 2026-10-29
+
+Authority: user explicitly approved correcting the reported Occupation-name and SE activation-input defects, then requested continuation. Scope: REQ-002-F02 L&D listing/technical inputs and REQ-002-F01 admission dependency; C2 build/manual smoke only. No executable test file/method or test runner was created/run. No automatic Finalize/Activate, learner outcome, schema/migration/catalog-version change, frontend/planner change, or production-gate relaxation.
+
+Root cause: the initial SE seed/exact development adapter accepted SEEDED/CANDIDATE, while unchanged V23 `guard_baseline_version_namespace` requires PROMOTED for every new adaptive Blueprint version. PostgreSQL rejected Finalize at11:56:13.797 and11:59:37.829+07, rolling back the version and activation. Separately, draft listing fell back to occupation_id when no released version existed. The reported successful UI toast was not browser/network reproduced; this change does not claim to fix a proven toast defect. One Active version per `(organization_id,occupation_id)` was already correctly enforced; Security Active does not block SE.
+
+Implementation: workspace listing opts into a same-organization active resource/occupation/department name lookup; released names remain immutable snapshots and default legacy constructors retain their old query without workspace-table dependencies. The SE seed validates all360 exact synthetic parameters and transitions BUILDING→CANDIDATE→PROMOTED with the existing real development L&D actor and actual database timestamp. The exact development adapter requires that status/actor/timestamp plus original tuple/hash/configuration/provenance. Source remains SEEDED, diagnostics `operationalPromotionEligible:false`, model approval null; no calibration/ACTUAL_PILOT approval is fabricated. Operational effective lookup still requires CALIBRATED/approved actual-pilot input and rejects SEEDED. Reruns preserve the fixture promotion timestamp.
+
+| Observation / command | Actor / fixture / actual outcome | Limits |
+|---|---|---|
+| `docker compose config --quiet`; `docker compose build api` | Config valid; Java21.0.12.1/Maven3.9.11 package427 sources BUILD SUCCESS at12:27:21+07, image config `sha256:5737885f9f890fad1c2b5299ec9528c61241b0eef742fac928ef26e1cd5b9b77` | `-Dmaven.test.skip=true`: all test resources/compile/execution skipped |
+| `docker compose up -d` | Normal startup completed12:29+07; all seed/migrate/readiness jobs exit0, API/PostgreSQL/Neo4j healthy, existing web serves8088 | No reset/unseal/maintenance override |
+| Read-only parameter/model query | SE set `c4ab5b11-9504-3cd5-978b-1e5adb022966`: SEEDED/PROMOTED, actor `d797db9b-c2f2-3f5b-98c5-ae20197f8b0c`, activated_at `2026-10-29T05:29:35.774459Z`; model approval null | Technical fixture activation is distinct from Blueprint activation |
+| Real L&D sign-in; GET `/api/v1/ld/adaptive-baseline-blueprints` | Manual HTTP13:21–13:22+07, fixed org `00000000-0000-0000-0000-000000000001`, real LD_MANAGER:200; DEMO DRAFT occupationName **Software Developers**; Security version1 remains ACTIVE | Browser interaction/visual state Not run |
+| GET `/api/v1/ld/adaptive-baseline-blueprints/occupations/OCC-15-1252.00`; POST same path `/test` with saved revision3 |200; capacity360/40/min120/missing0; Preview200 feasible:true,120 sample items,0 shortages; sign-out204 | Manual preview only; sample answers/keys not logged. SE still NO_ACTIVE; no Finalize/Activate or Employee attempt sent |
+| `docker compose run --rm --no-deps se-seed` at13:22–13:23+07 | Exit0; exact original promotion timestamp preserved; draft revision3/working rows and command hashes unchanged | No crash/concurrent/drift executable verification |
+| Neo4j read-only query | Setting default_to_read_only=true; neo4j read-only/online,994 nodes/5124 edges | No catalog write; earlier3-edge maintenance receipt remains separate |
+
+Before deployment versus after startup, all14 count/content aggregates below match. Shape: `SELECT count(*),md5(coalesce(string_agg(to_jsonb(t)::text,'|' ORDER BY to_jsonb(t)::text),'')) FROM platform.<table> t`. User's current DEMO working ID `490ca554-1d04-48bb-b890-4d71eb534dfd`, revision3 OPEN, maxQuestions120/timeLimitSeconds7200 remains intact. Role selections had legitimately increased to3 before this deployment; no attempt to restore the earlier2-row snapshot. Manual Preview and repeated seed also leave working/command aggregates unchanged. This is bounded preservation evidence, not executable regression coverage.
+
+| Table | Count | Unchanged MD5 aggregate |
+|---|---:|---|
+| baseline_adaptive_attempt |2|ea0f65349423e4026f68748a2019d357|
+| baseline_attempt_response |45|fc0ee6adc31615c505195fc7d6b7dbae|
+| baseline_attempt_result |1|988e35f6e1cf73617c4e442c8f5f4806|
+| baseline_mastery_evidence |15|69a9ffa8180a3f69a4d3e7ff98ec7cbb|
+| employee_occupation_profile |1|95781268632e99b187beaec4ec290e82|
+| employee_role_selection |3|378db5aeb8fc5521464939c244f9b6a5|
+| initial_pathway_request |2|7a6c3a2f030096a1280f4424062b975b|
+| initial_pathway_revision |73|310a3cdab177dfd448b074dbed89ebf7|
+| initial_pathway_approval |2|aceeb9a3cde92162004c95c9c19a6dec|
+| baseline_adaptive_blueprint_working_revision |2|aebb7b2fe7172b294252a851c7166c48|
+| baseline_adaptive_blueprint_version |1|531bb9c02b4baf5bcd1b8d7359e7c747|
+| baseline_blueprint_activation |1|9da21d86a3305790660c8ca067ce2f3d|
+| baseline_blueprint_activation_event |1|b7d0838f1d3b2cbe32b682e8d55f52df|
+| baseline_blueprint_command |5|7ee0673bf43d98d2caec7598a2a784c8|
+
+Final readback after Preview and repeated seed again matched all14 aggregates above. Working-tree `git diff --check` clean; original index tree `afe072a0a4d18e07fb8fe7b574e47ad484a17e8b` compares exact, HEAD/MERGE_HEAD unchanged, no unmerged paths and no migration/production-Compose delta. Existing local work is retained; no stage/commit/push.
+
+Remaining acceptance: user Refresh→Preview→Activate to observe the actual SE version commit, then genuine Employee assessment→mastery→gap→generation→Expert review→Employee view. No post-fix activation commit, browser success/error feedback, two-Occupation simultaneous-activation runtime check, numerical calibration/search, cross-tenant/concurrent/drift/production regression or C3 pass is claimed.
+
+## SE shared seed — 2026-10-29, 11:03–11:20 Asia/Bangkok
+
+The initial limits in this section are dated. The user subsequently explicitly approved applying the three data edges through stop/backup/controlled-write/reseal; the follow-up immediately below supersedes its pending-edge status.
+
+### Approved prerequisite data application — 2026-10-29, 11:36 onward Asia/Bangkok
+
+Authority: after confirming these are data rows using existing HAS_SKILL_PREREQUISITE/MicroSkill schema, the user said “Ok vậy thêm phần đó đi” in response to the concrete stop API/worker → backup → temporary write → exact3-edge import → verify → reseal procedure. This resolves the earlier approval block for this bounded development operation, not automatic unsealing of arbitrary catalogs. No source/runtime algorithm/schema/version change, executable tests or learner outcomes are part of this operation.
+
+- Stopped API (including its embedded worker) and Neo4j gracefully. PostgreSQL and existing volumes remained in place. Captured fresh count/content aggregates for the same9 history tables; current counts remained2 attempts/45 responses/1 result/15 evidence/1 profile/2 selections/2 requests/73 revisions/2 approvals.
+- `docker cp ...:/catalog-state .../catalog-state` preserved marker state. With graph stopped, `docker compose run --rm --no-deps --entrypoint neo4j-admin -v <backup>:/backups neo4j database dump neo4j --to-path=/backups` exited0. Backup: workspace `.tools/catalog-backups/20261029-113627-se-prerequisites/neo4j.dump`,724593 bytes,SHA256 `b18e3d770e87635fed7c87f71b24ec8dd88b6071026b6bf1b30716e477d2266c`. Dump success/hash are observed; restore was not exercised.
+- An ignored one-time maintenance Compose override restarted the SAME Neo4j service/data volume using its standard entrypoint with `server.databases.default_to_read_only=false`, while API/worker remained stopped. This override is not part of default startup. No volume deletion, reset, new persistent graph or artifact repin.
+- A bounded importer verified both source byte hashes, read all nodes/edges in a Neo4j transaction, required exact original or exact supplemented parity, then MERGEd only the3 approved skill edges with ON CREATE properties. A complete in-transaction readback required unchanged original nodes/edges and exactly5124 final edges before commit; any mismatch would roll back. Observed committed:true,created:3,nodes:994,edges:5124,allOriginalNodesAndEdgesUnchanged:true. RequiredScore0.75 and NEEDS_EXPERT_REVIEW remain; no reviewer/PASS fabricated.
+- Added `MS-FS03 → MS-CORE01`, `MS-FS05 → MS-FS04`, `MS-FS16 → MS-FS05` (stored dependent→prerequisite). All use existing node IDs/type/version0.11.0. No Module→Module catalog relation.
+- Stopped the maintenance instance and restarted using DEFAULT Compose/unchanged start-catalog.sh. Readback: `server.databases.default_to_read_only=true`, database read-only/online, all3 new edges present at0.75. Then ran normal `docker compose up -d` to rerun exact seeds and start API/worker. Final startup and HTTP status are recorded below when observed.
+- After commit/reseal, the fresh9-table count/content aggregate snapshot exactly matched the before-operation snapshot. The actual evidence-high/complete genuine SE assessment→approval/browser journeys and all executable tests remain Not run.
+- Final11:45–11:46+07: default `docker compose up -d` exited0, migrate/seed/workspace-seed/se-seed/catalog-ready/workspace-keys exited0; API/PostgreSQL/Neo4j healthy and web serving8088. No maintenance override remains active. Real L&D login200→SE workspace GET200 capacity360/40/min120/0 missing/NO_ACTIVE. Existing Security Employee login200→own current pathway200 APPROVED/VALID revision70,hash `5edb904c2eb242786113147c443b5eb667b4a8f1fabad15a5565d5571b675365`,9 modules retained. Both sessions signed out204. `git diff --check` working changes clean; original523-path index still exactly afe072a0a4d18e07fb8fe7b574e47ad484a17e8b, HEAD/MERGE_HEAD unchanged. No executable tests, stage, commit or push. This follow-up changed data and affected explanatory/evidence/memory files only, not product runtime source.
+
+Authority: user explicitly approved adding two shared SE seed files and integrating the existing Docker startup, without a new catalog version. User clarified local seed discussion is not Cluster1 final-product documentation. Scope: REQ-002-F02/F01/009 inputs; existing REQ-041-F02/042-F01/019/020/004 integration is reused. No executable test was created/run, and no learner outcome was seeded. No UI/planner/schema/migration/production-Compose changes.
+
+| Input | Exact source/provenance |
+|---|---|
+| Module/prerequisite input | `backend/src/main/resources/db/seed/se-modules.json`, SHA256 `3ece80a4a63043b5044ad46f82e9503da12bf9fa1a8eaeee3378034817bb1a1a`; reuses7 Module snapshots/19 TEACHES, proposes3 skill edges, retains catalog0.11.0/base hash |
+| Question bank | `backend/src/main/resources/db/seed/question-bank-se.json`, SHA256 `8922129d2d67ec8ec9736ae1aa560e2af992fe82633464aebeea6c09ad034552`;360 locally authored DRAFT decision questions,40 existing union skills,9 items/skill (3 EASY/3 MEDIUM/3 HARD); labels/content remain unreviewed, not psychometric validation |
+| Exact SE resources | bank `4ad4254f-2a39-3738-8c04-f196b07f550b`; model `7da02cd4-f73d-36c7-b91b-4f36a5e7549e`; mapping `80e1ead2-04e9-3fc5-8c18-6048be445244`; parameter set `c4ab5b11-9504-3cd5-978b-1e5adb022966`; fixed development org retained |
+| Technical provenance | Declared synthetic a1.5 / b-1,0,1 / c0.25; existing reference MAP/3PL policy and conservative mapping k1. SEEDED/CANDIDATE assembled through BUILDING in one transaction, activation/reviewer null; no calibration result/promotion fabricated |
+
+Automatic approval review rejected the attempted startup edit that restarted an existing sealed graph writable and applied Cypher directly, citing conflict with the seal restriction and risk of irreversible catalog mutation. The edit did not apply. Both catalog lifecycle scripts remain byte-exact relative to the starting index. The safer implemented path only adds edges in the existing EMPTY-graph initial import before seal; on this existing sealed base it verifies and retains the exact graph. Three new edges (FS03→CORE01, FS05→FS04, FS16→FS05) remain absent/pending a separately approved catalog update. No workaround, unseal, volume reset, Flyway repair, artifact repin or historical row update was performed.
+
+| Observation / command | Actor / trigger / actual outcome | Limits |
+|---|---|---|
+| `docker compose config --quiet` | Existing Compose + se-seed dependency config valid | Static configuration only |
+| `docker compose build api` | Final build Java21.0.12.1/Maven3.9.11,427 sources, BUILD SUCCESS at11:12:54+07; image config `sha256:cbdda2d89e393a76545670d2d8251671bf0fcf3233f1c87f97977cbfbf43c3d6`. Dockerfile uses `-Dmaven.test.skip=true`; no test resources/compilation/execution | Native corrected Maven command was blocked by target-resource filesystem write permission; Docker is the build evidence |
+| Initial normal up | Bank import succeeded; SE fixture transaction failed the existing BUILDING-before-CANDIDATE trigger and rolled back | Source corrected to assemble then seal once; no trigger/schema change |
+| Corrected `docker compose up -d` | migrate/seed/workspace-seed/catalog-ready/workspace-keys/se-seed exited0; API/PG/Neo4j healthy, web serving8088 | Existing graph retained; no new prerequisite edges applied |
+| Repeated normal `docker compose up -d` | Exit0; seed rerun verifies existing bank/immutable parameter rows without extending them; API remains healthy | No concurrent/crash/drift test performed |
+| PostgreSQL read-only inventory | Security135 DRAFT/15 skills retained; SE360 DRAFT/40 skills; total495 items,2 resource bindings,360 SE parameter rows. Original SEEDED/PROMOTED Security set retained; new SE set is SEEDED/CANDIDATE | This is input provisioning, not learner evidence |
+| L&D real session + GET `/api/v1/ld/baseline-blueprint-catalog/occupations` | HTTP200, Security and Software Developers visible | Correct fixed org and LD_MANAGER membership, no actor/tenant client selector |
+| L&D GET `/api/v1/ld/adaptive-baseline-blueprints/occupations/OCC-15-1252.00` | HTTP200; occupation capacity360,40 skills, minimumPerSkill3/minimumQuestions120, modelMaxQuestions4096, missing parameter count0; working/current null, admission NO_ACTIVE | No Blueprint saved/previewed/activated. Full L&D→Employee→mastery SE journey Not run |
+| New real Employee SE sign-in + GET `/api/v1/employee/target-roles` | HTTP200;18 total authorized Roles,10 SE Roles. Both manual sessions signed out204 | No Role selection, attempt or outcome created; browser/UI interaction Not run |
+| Neo4j read-only inventory |994 nodes/5121 edges,0 REL-SE additions,online/read-only; Neo4j remained running throughout these startups | Fresh EMPTY-graph supplemented import Not run |
+
+Before startup and after corrected startup/repeated up, row counts and MD5 content aggregates matched for all nine existing learner/pathway tables. The read-only SQL shape was `SELECT count(*),md5(coalesce(string_agg(to_jsonb(t)::text,'|' ORDER BY to_jsonb(t)::text),'')) FROM platform.<table> t`; only digests/counts were emitted, no protected answers. It is a bounded preservation observation, not a regression suite.
+
+| Table | Count | Unchanged MD5 aggregate |
+|---|---:|---|
+| baseline_adaptive_attempt |2|ea0f65349423e4026f68748a2019d357|
+| baseline_attempt_response |45|fc0ee6adc31615c505195fc7d6b7dbae|
+| baseline_attempt_result |1|988e35f6e1cf73617c4e442c8f5f4806|
+| baseline_mastery_evidence |15|69a9ffa8180a3f69a4d3e7ff98ec7cbb|
+| employee_occupation_profile |1|95781268632e99b187beaec4ec290e82|
+| employee_role_selection |2|712e2eb950d36820c2ed99f940c53398|
+| initial_pathway_request |2|7a6c3a2f030096a1280f4424062b975b|
+| initial_pathway_revision |73|310a3cdab177dfd448b074dbed89ebf7|
+| initial_pathway_approval |2|aceeb9a3cde92162004c95c9c19a6dec|
+
+No SE baseline_blueprint row exists after these reads; only the original Security Blueprint remains. Source/index preservation: HEAD b2ed102a41b2101c4f2bc9a1c2afae80bab8525d and MERGE_HEAD9b76905c4a2560300efb44ef4d1bc44b559e85ab unchanged; index compares byte-exact to starting tree afe072a0a4d18e07fb8fe7b574e47ad484a17e8b. New work is unstaged/untracked, no stage/commit/push. `git diff --check` for working changes clean. Original SQL and pinned catalog/Security-bank artifacts are untouched.
+
+Remaining: permission/process for applying3 edges to the existing sealed graph; fresh bootstrap/runtime proof, full genuine SE baseline/mastery/generation/review journey, numerical evidence-high feasibility, search budget, two-tenant/drift/outage/concurrency/production-boundary checks, browser/mobile/EN-VI. All executable C3 remains Not run and requires separate approval. Learning execution/content access remains unavailable.
+
+## Original source checkpoint
+
 Fetch origin succeeded; main remained `9b76905`. The actual merge initially reported the same 26 content/modify-delete conflict paths as the Phase A preview. Resolve UI hunks by preserving real-auth workspace shell/guards plus the confirmed adaptive Role/Level/gap/review/approved-view behavior. Keep both language domains. The real login page replaces the retired preset login: LoginPage.test.tsx is byte-exact incoming main source; old preset tests are retained in the ignored pre-merge backup, not rewritten into new assertions or executed.
 
 The main domain/FR document structure is retained. Detailed confirmed Function contracts moved to `documents/technical/initial-pathway/` and baseline technical documents; affected links were repaired. Domain descriptions now distinguish API-backed initial slices from remaining prototypes. Historical test results retain their original source/environment scope.
