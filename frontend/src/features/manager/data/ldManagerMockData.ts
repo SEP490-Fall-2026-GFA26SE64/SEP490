@@ -327,41 +327,48 @@ export type EligibleExpert = {
   email?: string;
 };
 
+export function normalizeExpertId(id?: string | null): string {
+  if (!id) return '';
+  if (id === 'expert-chen' || id === EXPERT_SARAH_CHEN_ID || id === 'USR-102') return EXPERT_SARAH_CHEN_ID;
+  if (id === 'expert-vance' || id === EXPERT_MARCUS_VANCE_ID || id === 'USR-104') return EXPERT_MARCUS_VANCE_ID;
+  if (id === 'expert-rivera' || id === EXPERT_ALEX_RIVERA_ID) return EXPERT_ALEX_RIVERA_ID;
+  if (id === 'expert-nguyen' || id === EXPERT_LINH_NGUYEN_ID) return EXPERT_LINH_NGUYEN_ID;
+  return id;
+}
+
 export function getOrganizationExperts(organizationId?: string): EligibleExpert[] {
   const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
     ? organizationId
     : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
 
-  // 1. Try to load dynamically cached experts for this organization from the subscription/members API
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+
+  const expertsMap = new Map<string, EligibleExpert>();
+
+  // 1. If TechNova, seed standard eligible experts so all 4 are ALWAYS available
+  if (isTechnova) {
+    for (const exp of ELIGIBLE_EXPERTS) {
+      expertsMap.set(exp.id, { ...exp });
+    }
+  }
+
+  // 2. Try to load dynamically cached experts for this organization from the subscription/members API
   if (typeof localStorage !== 'undefined') {
     try {
       const cached = localStorage.getItem('adaptlearn_org_experts_' + effectiveOrg);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch {}
-  }
-
-  // 2. Try to load from companyStore companies in localStorage
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const rawCompanies = localStorage.getItem('adaptlearn_companies_v4');
-      if (rawCompanies) {
-        const companies = JSON.parse(rawCompanies);
-        if (Array.isArray(companies)) {
-          const matched = companies.find((c: any) => c.id === effectiveOrg || (effectiveOrg === 'e0000000-0000-0000-0000-000000000001' && c.id === 'comp-technova'));
-          if (matched && Array.isArray(matched.users)) {
-            const expertUsers = matched.users.filter((u: any) => u.role === 'Expert' || u.role === 'DOMAIN_EXPERT');
-            if (expertUsers.length > 0) {
-              return expertUsers.map((u: any) => ({
-                id: u.id,
-                name: u.name,
-                title: u.department || 'Domain Expert',
-                email: u.email,
-              }));
+        if (Array.isArray(parsed)) {
+          for (const p of parsed) {
+            if (p && p.id) {
+              const canonicalId = normalizeExpertId(p.id);
+              const matchedSeed = ELIGIBLE_EXPERTS.find((se) => se.id === canonicalId || se.name.toLowerCase() === p.name?.toLowerCase());
+              expertsMap.set(canonicalId, {
+                id: canonicalId,
+                name: p.name || matchedSeed?.name || 'Domain Expert',
+                title: p.title || matchedSeed?.title || 'Domain Expert',
+                email: p.email || matchedSeed?.email,
+              });
             }
           }
         }
@@ -369,26 +376,35 @@ export function getOrganizationExperts(organizationId?: string): EligibleExpert[
     } catch {}
   }
 
-  // 3. TechNova / default fallback
-  if (effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org') {
-    return [
-      { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect', email: 'expert@technova.com' },
-      { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect', email: 'marcus.vance@technova.com' },
-      { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer', email: 'alex.rivera@technova.com' },
-      { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist', email: 'linh.nguyen@technova.com' },
-    ];
+  // 3. Try to load from companyStore companies in localStorage
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const rawCompanies = localStorage.getItem('adaptlearn_companies_v4');
+      if (rawCompanies) {
+        const companies = JSON.parse(rawCompanies);
+        if (Array.isArray(companies)) {
+          const matched = companies.find((c: any) => c.id === effectiveOrg || (isTechnova && c.id === 'comp-technova'));
+          if (matched && Array.isArray(matched.users)) {
+            const expertUsers = matched.users.filter((u: any) => u.role === 'Expert' || u.role === 'DOMAIN_EXPERT');
+            for (const u of expertUsers) {
+              if (u && u.id) {
+                const canonicalId = normalizeExpertId(u.id);
+                const matchedSeed = ELIGIBLE_EXPERTS.find((se) => se.id === canonicalId || se.name.toLowerCase() === u.name?.toLowerCase());
+                expertsMap.set(canonicalId, {
+                  id: canonicalId,
+                  name: u.name || matchedSeed?.name || 'Domain Expert',
+                  title: u.department || matchedSeed?.title || 'Domain Expert',
+                  email: u.email || matchedSeed?.email,
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch {}
   }
 
-  return [];
-}
-
-export function normalizeExpertId(id?: string | null): string {
-  if (!id) return '';
-  if (id === 'expert-chen' || id === EXPERT_SARAH_CHEN_ID) return EXPERT_SARAH_CHEN_ID;
-  if (id === 'expert-vance' || id === EXPERT_MARCUS_VANCE_ID) return EXPERT_MARCUS_VANCE_ID;
-  if (id === 'expert-rivera' || id === EXPERT_ALEX_RIVERA_ID) return EXPERT_ALEX_RIVERA_ID;
-  if (id === 'expert-nguyen' || id === EXPERT_LINH_NGUYEN_ID) return EXPERT_LINH_NGUYEN_ID;
-  return id;
+  return Array.from(expertsMap.values());
 }
 
 export function findEligibleExpert(id?: string | null, organizationId?: string): EligibleExpert | undefined {

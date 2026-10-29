@@ -37,7 +37,7 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getOrganizationExperts, type EligibleExpert } from '../data/ldManagerMockData'
+import { getOrganizationExperts, normalizeExpertId, type EligibleExpert } from '../data/ldManagerMockData'
 import {
   createOccupation,
   updateOccupation,
@@ -657,13 +657,13 @@ export function OccupationsManagementPage() {
 
   // Available experts not yet assigned to this occupation
   const availableExperts = React.useMemo(() => {
-    const assignedIds = new Set(assignedExpertsInModal.map((ae) => ae.id))
-    return orgExperts.filter((exp) => !assignedIds.has(exp.id)).filter((exp) => {
+    const assignedIds = new Set(assignedExpertsInModal.map((ae) => normalizeExpertId(ae.id)))
+    return orgExperts.filter((exp) => !assignedIds.has(normalizeExpertId(exp.id))).filter((exp) => {
       if (!availableExpertSearch.trim()) return true
       const q = availableExpertSearch.toLowerCase()
       return exp.name.toLowerCase().includes(q) || exp.title.toLowerCase().includes(q)
     })
-  }, [assignedExpertsInModal, availableExpertSearch])
+  }, [orgExperts, assignedExpertsInModal, availableExpertSearch])
 
   // Toggle select all available
   const handleToggleSelectAllAvailable = () => {
@@ -695,7 +695,7 @@ export function OccupationsManagementPage() {
     setAndSaveOccupations((prev) =>
       prev.map((o) => {
         if (o.id !== selectedOccupationForAssign.id) return o
-        if (o.assignedExperts.some((ae) => ae.id === expert.id)) return o
+        if (o.assignedExperts.some((ae) => normalizeExpertId(ae.id) === normalizeExpertId(expert.id))) return o
         return {
           ...o,
           assignedExperts: [
@@ -703,7 +703,7 @@ export function OccupationsManagementPage() {
             {
               id: expert.id,
               name: expert.name,
-              email: `${expert.id}@adaptlearn.internal`,
+              email: expert.email || `${expert.id}@adaptlearn.internal`,
               title: expert.title,
             },
           ],
@@ -730,7 +730,7 @@ export function OccupationsManagementPage() {
     const newlyAdded = expertsToAdd.map((exp) => ({
       id: exp.id,
       name: exp.name,
-      email: `${exp.id}@adaptlearn.internal`,
+      email: exp.email || `${exp.id}@adaptlearn.internal`,
       title: exp.title,
     }))
 
@@ -759,7 +759,7 @@ export function OccupationsManagementPage() {
         if (o.id !== occId) return o
         return {
           ...o,
-          assignedExperts: o.assignedExperts.filter((ae) => ae.id !== expertId),
+          assignedExperts: o.assignedExperts.filter((ae) => normalizeExpertId(ae.id) !== normalizeExpertId(expertId)),
         }
       })
     )
@@ -1782,7 +1782,7 @@ export function OccupationsManagementPage() {
                             </div>
                             <div>
                               <div className="font-semibold text-foreground">{exp.name}</div>
-                              <div className="text-[11px] text-muted-foreground">{exp.id}@adaptlearn.internal</div>
+                              <div className="text-[11px] text-muted-foreground">{exp.email || `${exp.id}@adaptlearn.internal`}</div>
                             </div>
                           </div>
                         </td>
