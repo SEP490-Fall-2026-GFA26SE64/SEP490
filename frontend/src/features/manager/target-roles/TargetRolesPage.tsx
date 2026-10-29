@@ -188,6 +188,7 @@ import { useToast } from '../../../shared/hooks/useToast'
 
 
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 
 
 
@@ -196,6 +197,7 @@ import {
 
 
   getActiveCompany,
+  resolveWorkspaceOrgId,
 
 
 
@@ -461,11 +463,9 @@ export function TargetRolesPage() {
 
 
 
+  const session = React.useContext(WorkspaceSessionContext)
   const activeComp = getActiveCompany()
-
-
-
-  const orgId = activeComp?.id || 'comp-technova'
+  const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeComp?.id)
 
 
 
@@ -11778,7 +11778,7 @@ export function TargetRolesPage() {
 
 
 
-        organizationId={activeComp?.id || 'default-org'}
+        organizationId={orgId}
 
 
 

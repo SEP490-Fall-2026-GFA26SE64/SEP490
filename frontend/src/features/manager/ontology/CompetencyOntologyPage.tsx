@@ -44,7 +44,9 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
   getActiveCompany,
   updateActiveCompany,
+  resolveWorkspaceOrgId,
 } from '../../../shared/stores/companyStore'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import {
   fetchMicroSkills,
   createMicroSkill,
@@ -178,6 +180,9 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
 
 export function CompetencyOntologyPage() {
   const { toast } = useToast()
+  const session = React.useContext(WorkspaceSessionContext)
+  const activeCompany = getActiveCompany()
+  const effectiveOrgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
   // State for active tab
   const [activeTab, setActiveTab] = React.useState('skills')
@@ -261,7 +266,7 @@ export function CompetencyOntologyPage() {
   // Synchronize state when active company scope changes & fetch live from Neo4j
   const handleSync = React.useCallback(async () => {
       const active = getActiveCompany()
-      const orgId = active?.id || 'default-org'
+      const orgId = effectiveOrgId
 
       try {
         const [liveSkills, liveComps, livePrereqs] = await Promise.all([
@@ -504,8 +509,7 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    const active = getActiveCompany()
-    const orgId = active?.id || 'default-org'
+    const orgId = effectiveOrgId
 
     if (selectedSkill) {
       try {
@@ -630,8 +634,7 @@ export function CompetencyOntologyPage() {
   }
 
   const handleDeleteSkill = async (skill: MicroSkillModel) => {
-    const active = getActiveCompany()
-    const orgId = active?.id || 'default-org'
+    const orgId = effectiveOrgId
 
     try {
       await deleteMicroSkill(orgId, skill.id)
@@ -680,8 +683,7 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    const active = getActiveCompany()
-    const orgId = active?.id || 'default-org'
+    const orgId = effectiveOrgId
     const minMastery = minMasteryPercent / 100.0
 
     try {
@@ -728,8 +730,7 @@ export function CompetencyOntologyPage() {
   }
 
   const handleDeletePrereq = async (edge: PrerequisiteEdge) => {
-    const active = getActiveCompany()
-    const orgId = active?.id || 'default-org'
+    const orgId = effectiveOrgId
 
     try {
       await deletePrerequisite(orgId, edge.sourceSkillId, edge.targetSkillId)
@@ -890,8 +891,7 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    const active = getActiveCompany()
-    const orgId = active?.id || 'default-org'
+    const orgId = effectiveOrgId
 
     try {
       if (selectedCompetency) {
@@ -968,8 +968,7 @@ export function CompetencyOntologyPage() {
   }
 
   const handleDeleteCompetency = async (comp: CompetencyModel) => {
-    const active = getActiveCompany()
-    const orgId = active?.id || 'default-org'
+    const orgId = effectiveOrgId
 
     try {
       await deleteCompetency(orgId, comp.id)
@@ -1519,7 +1518,7 @@ export function CompetencyOntologyPage() {
               microSkills={microSkills}
               competencies={competencies}
               prerequisites={prerequisites}
-              organizationId={getActiveCompany()?.id || 'comp-technova'}
+              organizationId={effectiveOrgId}
               activeTab={activeTab}
               onRefreshData={handleSync}
             />

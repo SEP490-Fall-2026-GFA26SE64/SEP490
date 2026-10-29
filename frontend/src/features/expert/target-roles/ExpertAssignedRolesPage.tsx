@@ -80,7 +80,8 @@ import { useToast } from '../../../shared/hooks/useToast'
 
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 
-import { getActiveCompany, updateActiveCompany } from '../../../shared/stores/companyStore'
+import { getActiveCompany, updateActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 
 import {
 
@@ -152,9 +153,9 @@ export function ExpertAssignedRolesPage() {
 
   // Company state
 
+  const session = React.useContext(WorkspaceSessionContext)
   const activeCompany = getActiveCompany()
-
-  const orgId = activeCompany?.id || 'comp-technova'
+  const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
   const [realMicroSkills, setRealMicroSkills] = React.useState<MicroSkillModel[]>([])
 

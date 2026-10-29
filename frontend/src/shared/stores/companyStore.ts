@@ -200,6 +200,17 @@ export const PACKAGE_LIMITS: Record<PackageTier, { limit: number; price: string;
   },
 }
 
+export function resolveWorkspaceOrgId(contextOrgId?: string | null): string {
+  if (contextOrgId && contextOrgId !== 'comp-technova' && contextOrgId !== 'default-org') {
+    return contextOrgId
+  }
+  const activeId = getActiveCompanyId()
+  if (activeId && activeId !== 'comp-technova' && activeId !== 'default-org') {
+    return activeId
+  }
+  return SEED_COMPANY_TECHNOVA.id
+}
+
 export function loadCompanies(): CompanyRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_COMPANIES)
@@ -208,7 +219,8 @@ export function loadCompanies(): CompanyRecord[] {
       if (Array.isArray(parsed) && parsed.length > 0) {
         return (parsed as CompanyRecord[]).map((comp) => {
           let users = comp.users || []
-          if (comp.id === 'comp-technova') {
+          const isTechnova = comp.id === 'comp-technova' || comp.id === SEED_COMPANY_TECHNOVA.id
+          if (isTechnova) {
             const hasElena = users.some((u) => u.id === 'USR-106')
             if (!hasElena) {
               const elenaUser = SEED_COMPANY_TECHNOVA.users.find((u) => u.id === 'USR-106')
@@ -217,14 +229,16 @@ export function loadCompanies(): CompanyRecord[] {
               }
             }
           }
+          const normalizedId = isTechnova ? SEED_COMPANY_TECHNOVA.id : (comp.id || SEED_COMPANY_TECHNOVA.id)
           return {
             ...comp,
+            id: normalizedId,
             users,
             microSkills: Array.isArray(comp.microSkills) ? comp.microSkills : [],
             competencies: Array.isArray(comp.competencies) ? comp.competencies : [],
             blueprints: Array.isArray(comp.blueprints)
               ? comp.blueprints
-              : comp.id === 'comp-technova'
+              : isTechnova
               ? INITIAL_BLUEPRINTS
               : [],
           }
@@ -241,7 +255,8 @@ export function loadCompanies(): CompanyRecord[] {
 
 export function saveCompanies(companies: CompanyRecord[]) {
   try {
-    localStorage.setItem(STORAGE_KEY_COMPANIES, JSON.stringify(companies))
+    const sanitized = companies.map((c) => (c.id === 'comp-technova' ? { ...c, id: SEED_COMPANY_TECHNOVA.id } : c))
+    localStorage.setItem(STORAGE_KEY_COMPANIES, JSON.stringify(sanitized))
     window.dispatchEvent(new Event('companies_updated'))
   } catch (e) {
     console.error('Failed to save companies:', e)
@@ -251,23 +266,30 @@ export function saveCompanies(companies: CompanyRecord[]) {
 export function getActiveCompanyId(): string {
   const saved = localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY)
   if (saved) {
-    if (saved === 'comp-technova') return 'e0000000-0000-0000-0000-000000000001'
+    if (saved === 'comp-technova' || saved === 'default-org') return SEED_COMPANY_TECHNOVA.id
     return saved
   }
   return SEED_COMPANY_TECHNOVA.id
 }
 
 export function setActiveCompanyId(id: string) {
-  localStorage.setItem(STORAGE_KEY_ACTIVE_COMPANY, id)
+  const normalized = id === 'comp-technova' || id === 'default-org' ? SEED_COMPANY_TECHNOVA.id : id
+  localStorage.setItem(STORAGE_KEY_ACTIVE_COMPANY, normalized)
   window.dispatchEvent(new Event('active_company_changed'))
 }
 
 export function getActiveCompany(): CompanyRecord {
   const companies = loadCompanies()
   const activeId = getActiveCompanyId()
-  const found = companies.find((c) => c.id === activeId)
-  if (found) return found
-  return companies[0] || SEED_COMPANY_TECHNOVA
+  const found = companies.find((c) => c.id === activeId || (activeId === SEED_COMPANY_TECHNOVA.id && c.id === 'comp-technova'))
+  if (found) {
+    if (found.id === 'comp-technova') {
+      return { ...found, id: SEED_COMPANY_TECHNOVA.id }
+    }
+    return found
+  }
+  const fallback = companies[0] || SEED_COMPANY_TECHNOVA
+  return fallback.id === 'comp-technova' ? { ...fallback, id: SEED_COMPANY_TECHNOVA.id } : fallback
 }
 
 export function updateActiveCompany(updater: (company: CompanyRecord) => CompanyRecord) {

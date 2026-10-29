@@ -1,5 +1,14 @@
 import { workspaceFetch as fetch } from './workspaceFetch'
 
+const DEFAULT_ORG_UUID = 'e0000000-0000-0000-0000-000000000001'
+
+function normalizeOrg(orgId?: string): string {
+  if (!orgId || orgId === 'default-org' || orgId === 'comp-technova') {
+    return DEFAULT_ORG_UUID
+  }
+  return orgId
+}
+
 export interface MicroSkillDto {
   id: string
   organizationId?: string
@@ -37,7 +46,7 @@ export interface UpdateMicroSkillPayload {
 }
 
 export async function fetchMicroSkills(organizationId: string, q?: string): Promise<MicroSkillDto[]> {
-  const url = new URL(`/api/v1/organizations/${encodeURIComponent(organizationId)}/micro-skills`, window.location.origin)
+  const url = new URL(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills`, window.location.origin)
   if (q) {
     url.searchParams.set('q', q)
   }
@@ -56,7 +65,7 @@ export async function createMicroSkill(
   organizationId: string,
   payload: CreateMicroSkillPayload
 ): Promise<MicroSkillDto> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/micro-skills`, {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -79,7 +88,7 @@ export async function updateMicroSkill(
   payload: UpdateMicroSkillPayload
 ): Promise<MicroSkillDto> {
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/micro-skills/${encodeURIComponent(skillId)}`,
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills/${encodeURIComponent(skillId)}`,
     {
       method: 'PUT',
       headers: {
@@ -100,7 +109,7 @@ export async function updateMicroSkill(
 
 export async function deleteMicroSkill(organizationId: string, skillId: string): Promise<void> {
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/micro-skills/${encodeURIComponent(skillId)}`,
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills/${encodeURIComponent(skillId)}`,
     {
       method: 'DELETE',
       headers: {
@@ -116,7 +125,7 @@ export async function deleteMicroSkill(organizationId: string, skillId: string):
 }
 
 export async function fetchMacroCompetencies(organizationId: string): Promise<MacroCompetencyDto[]> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/macro-competencies`, {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/macro-competencies`, {
     headers: {
       Accept: 'application/json',
     },
