@@ -5,10 +5,10 @@ Follow [current test criteria](README.md#current-scope-alignment). Revalidate as
 
 ## Historical Test Plan and Evidence
 
-**Requirement:** [REQ-018 Target-Role Graph Editing](../../PRODUCT_OVERVIEW.md)  
+**Requirement:** [REQ-018 Target-Role Graph Editing](../PRODUCT_OVERVIEW.md)<br>
 **Feature Specifications:**
-- [REQ-018-F01 View Target-Role Graph](../features/Target-role%20graph%20editing/View%20Target-Role%20Graph.md)
-- [REQ-018-F02 Edit Prerequisite Relationships](../features/Target-role%20graph%20editing/Edit%20Prerequisite%20Relationships.md)
+- [REQ-018-F01 View Target-Role Graph](../features/Learning%20catalog/README.md#req-018-f01)
+- [REQ-018-F02 Edit Prerequisite Relationships](../features/Learning%20catalog/README.md#req-018-f02)
 
 **Actors:** Domain Expert, L&D Manager  
 **Primary Schema Sources:** [ARCHITECTURE.md](../ARCHITECTURE.md) & [neo4j_schema.md](../neo4j_schema.md)  

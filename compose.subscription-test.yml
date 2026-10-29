@@ -1,0 +1,55 @@
+name: adapt-learn-graph-subscription-test
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: subscription-test-only
+    ports: !override
+      - "127.0.0.1:15436:5432"
+  neo4j:
+    environment:
+      NEO4J_AUTH: neo4j/subscription-test-only
+    ports: !override
+      - "127.0.0.1:7482:7474"
+      - "127.0.0.1:7692:7687"
+  migrate:
+    image: adapt-learn-graph-backend:subscription-migrate-test
+    environment:
+      DB_PASSWORD: subscription-test-only
+      NEO4J_PASSWORD: subscription-test-only
+      CATALOG_SEED_ENABLED: "false"
+  api:
+    image: adapt-learn-graph-backend:subscription-test
+    build:
+      context: .
+      dockerfile: backend/src/test/Dockerfile.subscription
+    environment:
+      DB_PASSWORD: subscription-test-only
+      NEO4J_PASSWORD: subscription-test-only
+      REGISTRATION_ENCRYPTION_KEY: ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWU=
+      REGISTRATION_HMAC_KEY: aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg=
+      REGISTRATION_COOKIE_SECURE: "false"
+      SUBSCRIPTION_PUBLIC_URL: http://127.0.0.1:8092
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: subscription@example.test
+      SMTP_AUTH: "false"
+      SMTP_STARTTLS: "false"
+      PAYOS_CLIENT_ID: ""
+      PAYOS_API_KEY: ""
+      PAYOS_CHECKSUM_KEY: ""
+    ports: !override
+      - "127.0.0.1:18084:8080"
+    depends_on:
+      mailpit:
+        condition: service_started
+  web:
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    ports: !override
+      - "127.0.0.1:8092:5173"
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:8029:8025"

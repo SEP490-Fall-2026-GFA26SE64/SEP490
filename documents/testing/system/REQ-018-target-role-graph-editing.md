@@ -27,14 +27,8 @@ Follow [current system criteria](README.md#current-scope-alignment). Revalidate 
 
 
 **Feature Contract:**
-
-
-
-- [REQ-018-F01 View Target-Role Graph](../../features/Target-role%20graph%20editing/View%20Target-Role%20Graph.md)
-
-
-
-- [REQ-018-F02 Edit Prerequisite Relationships](../../features/Target-role%20graph%20editing/Edit%20Prerequisite%20Relationships.md)
+- [REQ-018-F01 View Target-Role Graph](../../features/Learning%20catalog/README.md#req-018-f01)
+- [REQ-018-F02 Edit Prerequisite Relationships](../../features/Learning%20catalog/README.md#req-018-f02)
 
 
 

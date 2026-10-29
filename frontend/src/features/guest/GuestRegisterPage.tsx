@@ -1,496 +1,504 @@
 import * as React from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import {
-  Building2,
-  CheckCircle2,
-  Globe,
-  KeyRound,
-  Mail,
-  RotateCcw,
-  ShieldCheck,
-  Sparkles,
-  User,
-} from 'lucide-react'
-import { Heading } from '../../shared/components/typography/Heading'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate } from 'react-router-dom'
+import { Building2, CheckCircle2, KeyRound, Mail, ShieldCheck } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { Text } from '../../shared/components/typography/Text'
 import { Badge } from '../../shared/components/ui/Badge'
-import { Button } from '../../shared/components/ui/Button'
+import { Button, buttonVariants } from '../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../shared/components/ui/Card'
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../../shared/components/ui/Dialog'
 import { Input } from '../../shared/components/ui/Input'
-import { useToast } from '../../shared/hooks/useToast'
+import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { GuestLayout } from './GuestLayout'
+import { useCopy } from '../subscription/SubscriptionFeedback'
+import {
+  confirmRegistrationTotp, getRegistration, HEADCOUNTS, INDUSTRIES, recoverRegistrationTotp,
+  registerOrganization, RegistrationApiError, resendRegistrationEmail, setupRegistrationTotp,
+  signInRegistration, signOutRegistration, verifyRegistrationEmail, verifyRegistrationTotp,
+  type Enrollment, type RegistrationFields, type RegistrationView,
+} from './registrationApi'
 
-const DRAFT_STORAGE_KEY = 'adaptlearn_guest_registration_draft'
-
-export interface RegistrationDraft {
-  organizationName: string
-  subdomain: string
-  industry: string
-  headcount: string
-  adminName: string
-  adminEmail: string
-  isEmailVerified: boolean
+const SESSION_QUERY = ['registration-session'] as const
+const SELECT_CLASS = 'h-10 w-full rounded-md border border-input bg-card px-3 text-body-sm text-foreground shadow-2xs focus:outline-none focus:ring-2 focus:ring-ring'
+const EMPTY_FORM: RegistrationFields = {
+  organizationName: '', subdomain: null, industry: null, headcount: null, adminName: '', adminEmail: '',
 }
+const FieldErrors = React.createContext<Record<string, string>>({})
 
-export function GuestRegisterPage() {
+export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | 'resume' }) {
+  const c = useCopy()
   const navigate = useNavigate()
-  const { toast } = useToast()
-
-  const [form, setForm] = React.useState<RegistrationDraft>(() => {
-    try {
-      const saved = localStorage.getItem(DRAFT_STORAGE_KEY)
-      if (saved) {
-        return JSON.parse(saved)
-      }
-    } catch {
-      // fallback
-    }
-    return {
-      organizationName: '',
-      subdomain: '',
-      industry: 'Software Engineering & AI',
-      headcount: '50 - 200 employees',
-      adminName: '',
-      adminEmail: '',
-      isEmailVerified: false,
-    }
-  })
-
+  const client = useQueryClient()
+  const [form, setForm] = React.useState<RegistrationFields>(EMPTY_FORM)
   const [password, setPassword] = React.useState('')
-  const [confirmPassword, setConfirmPassword] = React.useState('')
-  const [hasDraft, setHasDraft] = React.useState(false)
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [confirmation, setConfirmation] = React.useState('')
+  const [signInEmail, setSignInEmail] = React.useState('')
+  const [code, setCode] = React.useState('')
+  const [recovering, setRecovering] = React.useState(false)
+  const [enrollment, setEnrollment] = React.useState<Enrollment | null>(null)
+  const [recoveryCodes, setRecoveryCodes] = React.useState<string[] | null>(null)
+  const [failure, setFailure] = React.useState<RegistrationApiError | null>(null)
+  const [entryStep, setEntryStep] = React.useState<1 | 2>(1)
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({})
+  const [now, setNow] = React.useState(Date.now)
+  const errorRef = React.useRef<HTMLDivElement>(null)
+  const headingRef = React.useRef<HTMLDivElement>(null)
+  const channelRef = React.useRef<BroadcastChannel | null>(null)
 
-  // Verification code modal state
-  const [isVerifyOpen, setIsVerifyOpen] = React.useState(false)
-  const [verificationCode, setVerificationCode] = React.useState('')
-  const [simulatedCode, setSimulatedCode] = React.useState('849201')
+  const session = useQuery({
+    queryKey: SESSION_QUERY,
+    queryFn: ({ signal }) => getRegistration(signal),
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: query => query.state.data?.stage === 'VERIFY_EMAIL'
+      && query.state.data.deliveryStatus === 'PENDING' ? 3000 : false,
+  })
+  const view = session.data
 
-  React.useEffect(() => {
-    const saved = localStorage.getItem(DRAFT_STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        if (parsed.organizationName || parsed.adminEmail) {
-          setHasDraft(true)
-        }
-      } catch {
-        // ignore
-      }
-    }
+  const clearSecrets = React.useCallback(() => {
+    setPassword('')
+    setConfirmation('')
+    setCode('')
+    setEnrollment(null)
+    setRecoveryCodes(null)
+    setRecovering(false)
   }, [])
 
-  // Auto-slugify organization name
-  const handleOrgNameChange = (val: string) => {
-    const slug = val
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-    setForm((prev) => ({
-      ...prev,
-      organizationName: val,
-      subdomain: prev.subdomain && !prev.subdomain.startsWith(prev.organizationName.toLowerCase().slice(0, 3))
-        ? prev.subdomain
-        : slug,
-    }))
-  }
-
-  const persistDraft = (updated: RegistrationDraft) => {
-    setForm(updated)
-    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(updated))
-  }
-
-  const handleResetDraft = () => {
-    localStorage.removeItem(DRAFT_STORAGE_KEY)
-    setForm({
-      organizationName: '',
-      subdomain: '',
-      industry: 'Software Engineering & AI',
-      headcount: '50 - 200 employees',
-      adminName: '',
-      adminEmail: '',
-      isEmailVerified: false,
-    })
-    setPassword('')
-    setConfirmPassword('')
-    setHasDraft(false)
-    toast({
-      title: 'Draft Cleared',
-      description: 'You can now start a fresh organization registration.',
-      variant: 'info',
-    })
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!form.organizationName.trim()) {
-      toast({ title: 'Organization Name Required', description: 'Please enter your organization name.', variant: 'destructive' })
-      return
-    }
-    if (!form.adminEmail.trim() || !form.adminEmail.includes('@')) {
-      toast({ title: 'Invalid Email', description: 'Please enter a valid administrator work email.', variant: 'destructive' })
-      return
-    }
-    if (!form.adminName.trim()) {
-      toast({ title: 'Admin Name Required', description: 'Please specify the administrator full name.', variant: 'destructive' })
-      return
-    }
-    if (password.length < 6) {
-      toast({ title: 'Password Too Short', description: 'Password must be at least 6 characters.', variant: 'destructive' })
-      return
-    }
-    if (password !== confirmPassword) {
-      toast({ title: 'Passwords Mismatch', description: 'The confirmation password does not match.', variant: 'destructive' })
-      return
-    }
-
-    persistDraft(form)
-
-    // Check if email verified
-    if (!form.isEmailVerified) {
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
-      setSimulatedCode(code)
-      setIsVerifyOpen(true)
-      return
-    }
-
-    setIsSubmitting(true)
-    // Otherwise navigate to plans
-    navigate('/guest/plans')
-  }
-
-  const handleConfirmVerification = () => {
-    if (verificationCode.trim() !== simulatedCode && verificationCode.trim() !== '123456') {
-      toast({
-        title: 'Invalid Verification Code',
-        description: 'Please check your code or click "Auto-fill Demo Code" to continue.',
-        variant: 'destructive',
+  React.useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+    const channel = new BroadcastChannel('registration-session')
+    channelRef.current = channel
+    channel.onmessage = () => {
+      clearSecrets()
+      setForm(EMPTY_FORM)
+      setSignInEmail('')
+      setFailure(null)
+      void client.cancelQueries({ queryKey: SESSION_QUERY }).then(() => {
+        client.setQueryData(SESSION_QUERY, null)
+        return client.invalidateQueries({ queryKey: SESSION_QUERY })
       })
+    }
+    return () => {
+      channelRef.current = null
+      channel.close()
+    }
+  }, [client, clearSecrets])
+
+  React.useEffect(() => {
+    if (failure) errorRef.current?.focus()
+  }, [failure])
+
+  React.useEffect(() => {
+    if (view?.stage !== 'VERIFY_EMAIL') return
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [view?.stage])
+
+  const command = useMutation({
+    mutationFn: (action: () => Promise<void>) => action(),
+    gcTime: 0,
+    onMutate: () => setFailure(null),
+    onError: (error: Error) => {
+      const failure = error instanceof RegistrationApiError ? error
+        : new RegistrationApiError(0, 'NETWORK_ERROR', 'Cannot reach the registration service. Check your connection and retry.')
+      setFailure(failure)
+      if (failure.field && ['organizationName', 'subdomain', 'industry', 'headcount'].includes(failure.field)) setEntryStep(1)
+      if (failure.status === 401) {
+        clearSecrets()
+        client.setQueryData(SESSION_QUERY, null)
+        navigate('/guest/resume', { replace: true })
+      }
+    },
+    onSettled: (): void => { command.reset() },
+  })
+
+  async function accept(next: RegistrationView | null) {
+    await client.cancelQueries({ queryKey: SESSION_QUERY })
+    client.setQueryData(SESSION_QUERY, next)
+    clearSecrets()
+    setForm(EMPTY_FORM)
+    setFailure(null)
+    setFieldErrors({})
+    setEntryStep(1)
+    channelRef.current?.postMessage('changed')
+  }
+
+  function validateFields(event: React.FormEvent) {
+    const errors: Record<string, string> = {}
+    if (event.currentTarget instanceof HTMLFormElement) {
+      for (const field of Array.from(event.currentTarget.elements)) {
+        if ((field instanceof HTMLInputElement || field instanceof HTMLSelectElement) &&
+          (!field.validity.valid || (['registration-organizationName', 'registration-adminName'].includes(field.id) && !field.value.trim()))) {
+          const message = field.validity.valueMissing || !field.value.trim() ? c('Please complete this field.', 'Vui lòng nhập thông tin này.')
+            : field.validity.typeMismatch ? c('Enter a valid email address.', 'Nhập địa chỉ email hợp lệ.')
+              : c('Check the format and length of this value.', 'Kiểm tra định dạng và độ dài của giá trị.')
+          errors[field.id] = `${field.labels?.[0]?.textContent?.replace('*', '').trim() ?? ''}: ${message}`
+        }
+      }
+    }
+    setFieldErrors(errors)
+    if (Object.keys(errors).length) {
+      setFailure(new RegistrationApiError(400, 'INVALID_INPUT', c('Review the highlighted fields to continue.', 'Kiểm tra các trường được đánh dấu để tiếp tục.')))
+      return false
+    }
+    return true
+  }
+
+  function submitRegistration(event: React.FormEvent) {
+    event.preventDefault()
+    if (!validateFields(event)) return
+    if (entryStep === 1) {
+      setFailure(null)
+      setEntryStep(2)
+      headingRef.current?.focus()
       return
     }
-
-    const updated = { ...form, isEmailVerified: true }
-    persistDraft(updated)
-    setIsVerifyOpen(false)
-    setIsSubmitting(true)
-    toast({
-      title: 'Email Verified Successfully',
-      description: 'Account security check confirmed. Proceeding to subscription selection.',
-      variant: 'success',
-    })
-    navigate('/guest/plans')
+    if (password !== confirmation) {
+      setFailure(new RegistrationApiError(400, 'INVALID_INPUT', c('Passwords do not match.', 'Mật khẩu xác nhận chưa khớp.'), 'confirmation'))
+      return
+    }
+    if ([...password].length < 12 || [...password].length > 128) {
+      setFailure(new RegistrationApiError(400, 'INVALID_INPUT', c('Use a password with 12-128 characters.', 'Sử dụng mật khẩu từ 12 đến 128 ký tự.'), 'password'))
+      return
+    }
+    command.mutate(async () => accept(await registerOrganization({ ...form, password })))
   }
+
+  function submitProof(event: React.FormEvent) {
+    event.preventDefault()
+    if (!validateFields(event)) return
+    command.mutate(async () => {
+      if (view?.stage === 'VERIFY_EMAIL') {
+        await accept(await verifyRegistrationEmail(code))
+      } else if (view?.stage === 'SETUP_MFA' || view?.stage === 'SETUP_MFA_RECOVERY') {
+        const completion = await confirmRegistrationTotp(code)
+        await accept(completion.registration)
+        setRecoveryCodes(completion.recoveryCodes)
+      } else if (recovering || view?.stage === 'RECOVERY_REQUIRED') {
+        await accept(await recoverRegistrationTotp(code))
+      } else {
+        await accept(await verifyRegistrationTotp(code))
+      }
+    })
+  }
+
+  function fieldError(field: string) {
+    return failure?.field === field || fieldErrors[`registration-${field}`]
+      || (field === 'proof' && ['INVALID_PROOF', 'EXPIRED_PROOF'].includes(failure?.code ?? ''))
+      ? { 'aria-invalid': true as const, 'aria-describedby': `registration-${field}-error` }
+      : {}
+  }
+
+  function update(field: 'subdomain' | 'industry' | 'headcount', value: string) {
+    setForm(previous => ({ ...previous, [field]: value || null }))
+  }
+
+  const isSetup = view?.stage === 'SETUP_MFA' || view?.stage === 'SETUP_MFA_RECOVERY'
+  const isRecovery = recovering || view?.stage === 'RECOVERY_REQUIRED'
+  const resendWait = view?.resendAvailableAt
+    ? Math.max(0, Math.ceil((Date.parse(view.resendAvailableAt) - now) / 1000)) : 0
+  const step = !view ? entryStep : view.stage === 'VERIFY_EMAIL' ? 3 : 4
+  const title = !view ? mode === 'resume' ? c('Resume your registration', 'Tiếp tục đăng ký') : entryStep === 1
+    ? c('Register your organization', 'Đăng ký tổ chức') : c('Create your administrator account', 'Tạo tài khoản quản trị viên')
+    : view.stage === 'VERIFY_EMAIL' ? c('Verify your email', 'Xác thực email')
+      : view.stage === 'COMPLETE' ? recoveryCodes ? c('Save your recovery codes', 'Lưu mã khôi phục') : c('Registration complete', 'Đăng ký hoàn tất')
+        : isSetup ? c('Set up your authenticator', 'Thiết lập ứng dụng xác thực') : isRecovery ? c('Recover your authenticator', 'Khôi phục ứng dụng xác thực') : c('Verify your authenticator', 'Xác thực tài khoản')
+
+  React.useEffect(() => {
+    if (!failure) {
+      headingRef.current?.focus({ preventScroll: true })
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+  }, [title, view?.stage, failure])
 
   return (
-    <GuestLayout currentStep={1}>
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Intro Banner */}
-        <div className="text-center space-y-2">
-          <Badge variant="primary" className="mx-auto mb-1">
-            <Sparkles size={12} className="mr-1.5" /> Self-Service Workspace Onboarding
-          </Badge>
-          <Heading level={1} className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Register Your Organization Workspace
-          </Heading>
-          <Text className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
-            Establish a private multi-tenant workspace with dedicated graph projections, competency models, and automated learning pathways.
-          </Text>
+    <GuestLayout currentStep={step}>
+      <FieldErrors.Provider value={{ ...fieldErrors, ...(failure?.field ? { [`registration-${failure.field}`]: failure.message } : {}),
+        ...(failure && ['INVALID_PROOF', 'EXPIRED_PROOF'].includes(failure.code) ? { 'registration-proof': failure.message } : {}) }}>
+      <div className="mx-auto max-w-3xl space-y-5">
+        <div ref={headingRef} tabIndex={-1} className="outline-none">
+          <PageHeader title={title} icon={<ShieldCheck aria-hidden="true" size={24} />}
+            description={entryStep === 1 && !view ? c('Tell us about your organization. Next, create the account that will manage your workspace.', 'Nhập thông tin tổ chức. Tiếp theo, tạo tài khoản quản lý không gian làm việc.')
+              : view?.stage === 'COMPLETE' && !recoveryCodes ? c('Your account is secure. Continue to choose a plan for your organization.', 'Tài khoản đã được bảo mật. Tiếp tục chọn gói phù hợp cho tổ chức.')
+                : c('Your progress is saved after account creation. Verify your email and secure your account to continue.', 'Tiến trình được lưu sau khi tạo tài khoản. Xác thực email và bảo mật tài khoản để tiếp tục.')} />
         </div>
 
-        {hasDraft && (
-          <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/60 flex items-center justify-between gap-4 shadow-2xs">
-            <div className="flex items-center gap-2.5">
-              <RotateCcw size={16} className="text-primary shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-foreground">
-                Loaded saved registration draft for <strong>{form.organizationName || 'your organization'}</strong>.
-              </span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleResetDraft} className="text-xs h-7 text-muted-foreground hover:text-destructive">
-              Clear Draft
-            </Button>
+        {failure && (
+          <div ref={errorRef} id="registration-error" role="alert" tabIndex={-1}
+            className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-body-sm text-destructive focus:outline-none focus:ring-2 focus:ring-ring">
+            <p className="font-semibold">{c('Unable to continue', 'Chưa thể tiếp tục')}</p>
+            <p>{failure.message}</p>
+            {failure.field && <a className="underline" href={`#registration-${failure.field}`}>{c('Review this field', 'Kiểm tra trường này')}</a>}
+            {Object.entries(fieldErrors).map(([id, message]) => <p key={id}><a className="underline" href={`#${id}`}>{message}</a></p>)}
+            {failure.retryAfterSeconds > 0 && <p>{c('Try again after', 'Thử lại sau')} {failure.retryAfterSeconds} {c('seconds.', 'giây.')}</p>}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <Card className="shadow-xs border-border bg-card">
-            <CardHeader className="border-b border-border/70 pb-4">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Building2 size={18} className="text-primary" />
-                1. Organization Information
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Details about your company entity and tenant subdomain.
-              </CardDescription>
+        {session.isPending ? (
+          <Card><CardContent className="py-8"><p role="status">{c('Checking your saved registration...', 'Đang kiểm tra đăng ký đã lưu...')}</p></CardContent></Card>
+        ) : session.isError ? (
+          <Card><CardContent className="space-y-4 py-6">
+            <p role="alert">{c('Registration is currently unavailable.', 'Hiện chưa thể kết nối dịch vụ đăng ký.')} {session.error.message}</p>
+            <Button onClick={() => { void session.refetch() }} isLoading={session.isFetching}>{c('Retry connection', 'Kết nối lại')}</Button>
+          </CardContent></Card>
+        ) : !view ? (
+          mode === 'register' ? (
+            <form noValidate onSubmit={submitRegistration} className="space-y-4">
+              <Card>
+                {entryStep === 1 && <>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Building2 size={18} aria-hidden="true" />{c('Organization details', 'Thông tin tổ chức')}</CardTitle>
+                  <CardDescription>{c('Use your organization’s details. You may leave optional fields blank.', 'Sử dụng thông tin tổ chức. Có thể để trống các trường không bắt buộc.')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Organization Legal Name" id="registration-organizationName" required>
+                      <Input id="registration-organizationName" value={form.organizationName} maxLength={200}
+                        autoComplete="organization" required {...fieldError('organizationName')}
+                        onChange={event => setForm(previous => ({ ...previous, organizationName: event.target.value }))} />
+                    </Field>
+                    <Field label="Workspace URL Slug" id="registration-subdomain" hint="Optional. Leave empty for an automatically generated, reserved identifier.">
+                      <Input id="registration-subdomain" value={form.subdomain ?? ''} maxLength={63}
+                        placeholder="e.g. acme-learning" autoCapitalize="none" spellCheck={false} {...fieldError('subdomain')}
+                        onChange={event => update('subdomain', event.target.value)} />
+                    </Field>
+                    <Field label="Industry / Technology Domain" id="registration-industry">
+                      <select id="registration-industry" value={form.industry ?? ''} className={SELECT_CLASS}
+                        {...fieldError('industry')} onChange={event => update('industry', event.target.value)}>
+                        <option value="">{c('Not specified (optional)', 'Chưa chọn (không bắt buộc)')}</option>
+                        {INDUSTRIES.map(choice => <option key={choice}>{choice}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Estimated Engineering Headcount" id="registration-headcount" hint="Informational only; this does not allocate subscription seats.">
+                      <select id="registration-headcount" value={form.headcount ?? ''} className={SELECT_CLASS}
+                        {...fieldError('headcount')} onChange={event => update('headcount', event.target.value)}>
+                        <option value="">{c('Not specified (optional)', 'Chưa chọn (không bắt buộc)')}</option>
+                        {HEADCOUNTS.map(choice => <option key={choice}>{choice}</option>)}
+                      </select>
+                    </Field>
+                  </div>
+                </CardContent>
+                </>}
+                {entryStep === 2 && <>
+                  <CardHeader>
+                    <CardTitle>{c('Administrator account', 'Tài khoản quản trị viên')}</CardTitle>
+                    <CardDescription>{c('Manage your workspace with this account. Use an email address you can access.', 'Quản lý không gian làm việc bằng tài khoản này. Sử dụng email bạn có thể truy cập.')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
+                      <span className="min-w-0 break-words text-body-sm font-medium">{form.organizationName}</span>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => { setEntryStep(1); setFailure(null); setFieldErrors({}) }}>{c('Edit', 'Sửa')}</Button>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Administrator Full Name" id="registration-adminName" required>
+                        <Input id="registration-adminName" value={form.adminName} autoComplete="name" maxLength={120}
+                          required {...fieldError('adminName')}
+                          onChange={event => setForm(previous => ({ ...previous, adminName: event.target.value }))} />
+                      </Field>
+                      <Field label="Work Email Address" id="registration-adminEmail" required>
+                        <Input id="registration-adminEmail" type="email" value={form.adminEmail} autoComplete="email"
+                          maxLength={254} required {...fieldError('adminEmail')}
+                          onChange={event => setForm(previous => ({ ...previous, adminEmail: event.target.value }))} />
+                      </Field>
+                      <Field label="Password" id="registration-password" required hint="12-128 characters. Password managers and paste are supported.">
+                        <Input id="registration-password" type="password" value={password} autoComplete="new-password"
+                          maxLength={256} required {...fieldError('password')} onChange={event => setPassword(event.target.value)} />
+                      </Field>
+                      <Field label="Confirm Password" id="registration-confirmation" required>
+                        <Input id="registration-confirmation" type="password" value={confirmation} autoComplete="new-password"
+                          maxLength={256} required {...fieldError('confirmation')} onChange={event => setConfirmation(event.target.value)} />
+                      </Field>
+                    </div>
+                  </CardContent>
+                </>}
+              </Card>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                {entryStep === 1 ? <Link to="/guest/resume" className="text-body-sm text-primary underline underline-offset-4">{c('Resume a saved registration', 'Tiếp tục đăng ký đã lưu')}</Link>
+                  : <Button type="button" variant="outline" onClick={() => { setEntryStep(1); setFailure(null); setFieldErrors({}) }}>{c('Back', 'Quay lại')}</Button>}
+                <Button type="submit" isLoading={command.isPending}>{entryStep === 1 ? c('Continue to account', 'Tiếp tục tạo tài khoản') : c('Save and verify email', 'Lưu và xác thực email')}</Button>
+              </div>
+            </form>
+          ) : (
+            <form noValidate onSubmit={event => {
+              event.preventDefault()
+              if (!validateFields(event)) return
+              command.mutate(async () => accept(await signInRegistration(signInEmail, password)))
+            }}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{c('Sign in to registration', 'Đăng nhập để tiếp tục')}</CardTitle>
+                  <CardDescription>{c('Resume your saved progress using your account and authenticator.', 'Tiếp tục tiến trình đã lưu bằng tài khoản và ứng dụng xác thực.')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Field label="Work Email Address" id="registration-adminEmail" required>
+                    <Input id="registration-adminEmail" type="email" autoComplete="username" value={signInEmail}
+                      maxLength={254} required onChange={event => setSignInEmail(event.target.value)} />
+                  </Field>
+                  <Field label="Password" id="registration-password" required>
+                    <Input id="registration-password" type="password" autoComplete="current-password"
+                      value={password} maxLength={256} required onChange={event => setPassword(event.target.value)} />
+                  </Field>
+                  <Button type="submit" isLoading={command.isPending}>{c('Continue securely', 'Tiếp tục an toàn')}</Button>
+                  <p><Link to="/guest/register" className="text-body-sm text-primary underline">{c('Start a new registration', 'Đăng ký tổ chức mới')}</Link></p>
+                </CardContent>
+              </Card>
+            </form>
+          )
+        ) : recoveryCodes ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{c('Keep these codes somewhere safe', 'Lưu mã khôi phục ở nơi an toàn')}</CardTitle>
+              <CardDescription>{c('Shown once. Each code can be used once with your password to replace a lost authenticator.', 'Chỉ hiển thị một lần. Mỗi mã dùng một lần cùng mật khẩu để thay thế ứng dụng xác thực bị mất.')}</CardDescription>
             </CardHeader>
-
-            <CardContent className="pt-6 space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    Organization Legal Name <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    placeholder="e.g., Cyberdyne Systems Labs"
-                    value={form.organizationName}
-                    onChange={(e) => handleOrgNameChange(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    Workspace URL Slug <span className="text-destructive">*</span>
-                  </label>
-                  <div className="flex items-center rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs">
-                    <Globe size={14} className="text-muted-foreground mr-1.5 shrink-0" />
-                    <input
-                      type="text"
-                      className="bg-transparent text-foreground font-mono focus:outline-none flex-1"
-                      placeholder="workspace-slug"
-                      value={form.subdomain}
-                      onChange={(e) => setForm({ ...form, subdomain: e.target.value })}
-                      required
-                    />
-                    <span className="text-muted-foreground font-mono">.adaptlearn.io</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Industry / Technology Domain
-                  </label>
-                  <select
-                    className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    value={form.industry}
-                    onChange={(e) => setForm({ ...form, industry: e.target.value })}
-                  >
-                    <option value="Software Engineering & AI">Software Engineering & AI</option>
-                    <option value="Cloud Infrastructure & DevOps">Cloud Infrastructure & DevOps</option>
-                    <option value="Data Engineering & Analytics">Data Engineering & Analytics</option>
-                    <option value="Cybersecurity & Network Systems">Cybersecurity & Network Systems</option>
-                    <option value="Enterprise Financial Technology">Enterprise Financial Technology</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Estimated Engineering Headcount
-                  </label>
-                  <select
-                    className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    value={form.headcount}
-                    onChange={(e) => setForm({ ...form, headcount: e.target.value })}
-                  >
-                    <option value="1 - 20 employees">1 - 20 employees (Starter)</option>
-                    <option value="21 - 50 employees">21 - 50 employees (Growth)</option>
-                    <option value="51 - 200 employees">51 - 200 employees (Enterprise)</option>
-                    <option value="200+ employees">200+ enterprise seats</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Section 2: Administrator Account */}
-              <div className="pt-4 border-t border-border/70 space-y-4">
-                <div>
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <User size={16} className="text-primary" />
-                    2. Primary System Administrator Credentials
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    This account will hold designated Organization Administrator and billing management authority.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      Administrator Full Name <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      placeholder="e.g., Elena Rostova"
-                      value={form.adminName}
-                      onChange={(e) => setForm({ ...form, adminName: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        Work Email Address <span className="text-destructive">*</span>
-                      </span>
-                      {form.isEmailVerified && (
-                        <Badge variant="success" className="text-[10px] py-0">
-                          <CheckCircle2 size={10} className="mr-1" /> Verified
-                        </Badge>
-                      )}
-                    </label>
-                    <div className="relative">
-                      <Mail size={14} className="absolute left-3 top-3 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        className="pl-9"
-                        placeholder="elena@cyberdyne.io"
-                        value={form.adminEmail}
-                        onChange={(e) => setForm({ ...form, adminEmail: e.target.value, isEmailVerified: false })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      Password <span className="text-destructive">*</span>
-                    </label>
-                    <div className="relative">
-                      <KeyRound size={14} className="absolute left-3 top-3 text-muted-foreground" />
-                      <Input
-                        type="password"
-                        className="pl-9"
-                        placeholder="At least 6 characters"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      Confirm Password <span className="text-destructive">*</span>
-                    </label>
-                    <div className="relative">
-                      <KeyRound size={14} className="absolute left-3 top-3 text-muted-foreground" />
-                      <Input
-                        type="password"
-                        className="pl-9"
-                        placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Security callout */}
-              <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs text-muted-foreground flex items-start gap-2.5">
-                <ShieldCheck size={16} className="text-success mt-0.5 shrink-0" />
-                <span>
-                  All employee assessments, micro-skill competency profiles, and training ROI records are strictly isolated within your secure organization workspace.
-                </span>
-              </div>
+            <CardContent className="space-y-4">
+              <p role="status" className="text-body-sm text-muted-foreground">{c('Reloading or leaving this page hides these codes. Do not share them or include them in screenshots.', 'Tải lại hoặc rời trang sẽ ẩn các mã này. Không chia sẻ hoặc chụp màn hình chứa mã.')}</p>
+              <ol data-sensitive className="grid gap-2 rounded-lg border border-border bg-muted p-4 font-mono text-caption">
+                {recoveryCodes.map(value => <li key={value} className="break-all select-all">{value}</li>)}
+              </ol>
+              <Button onClick={() => setRecoveryCodes(null)}>{c('I have saved my recovery codes', 'Tôi đã lưu mã khôi phục')}</Button>
             </CardContent>
           </Card>
-
-          {/* Form Actions */}
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <Link to="/login" className="text-xs text-muted-foreground hover:text-foreground order-2 sm:order-1">
-              ← Return to Login
-            </Link>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto order-1 sm:order-2"
-            >
-              {isSubmitting ? 'Processing Workspace...' : 'Continue to Subscription Plans →'}
-            </Button>
-          </div>
-        </form>
-
-        {/* Verification Dialog */}
-        <Dialog open={isVerifyOpen} onOpenChange={setIsVerifyOpen} className="max-w-lg">
-          <DialogHeader>
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
-              <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-                <Mail className="h-5 w-5 text-primary shrink-0" />
-                <span>Verify Organization Work Email</span>
-              </DialogTitle>
-              <Badge variant="primary" className="text-[10px] font-bold">
-                SECURITY CHECK
-              </Badge>
-            </div>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Enter the 6-digit confirmation PIN sent to authorize workspace creation for <strong>{form.organizationName || 'your organization'}</strong>.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2 text-xs">
-            {/* Top metadata panel */}
-            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/40 border border-border">
-              <div>
-                <span className="text-muted-foreground block text-[11px] font-medium">Recipient Email</span>
-                <strong className="font-mono text-foreground font-bold text-xs truncate block">{form.adminEmail}</strong>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[11px] font-medium">Tenant Domain</span>
-                <strong className="font-mono text-primary font-bold text-xs truncate block">{form.subdomain}.adaptlearn.io</strong>
-              </div>
-              <div className="col-span-2">
-                <span className="text-muted-foreground block text-[11px] font-medium">Organization Legal Name</span>
-                <span className="text-foreground font-semibold text-xs">{form.organizationName}</span>
-              </div>
-            </div>
-
-            {/* Demo code helper callout */}
-            <div className="p-3 bg-secondary/80 border border-primary/20 rounded-xl flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Sparkles size={14} className="text-primary shrink-0" />
-                <span className="text-muted-foreground">Demo Verification PIN:</span>
-              </div>
-              <span className="font-mono font-bold tracking-widest text-primary text-sm bg-card px-2.5 py-0.5 rounded border border-primary/20 shadow-2xs">
-                {simulatedCode}
-              </span>
-            </div>
-
-            {/* Code input */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground block">
-                Enter 6-Digit PIN
-              </label>
-              <Input
-                className="text-center font-mono text-xl tracking-[0.3em] font-extrabold h-12 bg-background border-border"
-                placeholder="000000"
-                maxLength={6}
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-border mt-4 shrink-0">
-            <button
-              type="button"
-              onClick={() => setVerificationCode(simulatedCode)}
-              className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer transition-colors"
-            >
-              <RotateCcw size={12} />
-              <span>Auto-fill Demo Code</span>
-            </button>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsVerifyOpen(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleConfirmVerification}>
-                <CheckCircle2 size={13} className="mr-1.5" />
-                Verify & Continue
-              </Button>
-            </div>
-          </div>
-        </Dialog>
+        ) : view.stage === 'COMPLETE' && view.fields ? (
+          <Card>
+            <CardHeader>
+              <Badge variant="success" className="w-fit"><CheckCircle2 size={14} aria-hidden="true" />{c('Account secured', 'Tài khoản đã được bảo mật')}</Badge>
+              <CardTitle>{c('Your registration is saved', 'Đăng ký đã được lưu')}</CardTitle>
+              <CardDescription>{c('Your account is ready. Choose a subscription next, then complete payment to prepare your workspace.', 'Tài khoản đã sẵn sàng. Tiếp theo, chọn gói và thanh toán để chuẩn bị không gian làm việc.')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <Detail label={c('Organization', 'Tổ chức')} value={view.fields.organizationName} />
+                <Detail label={c('Reserved workspace slug', 'Định danh không gian đã giữ chỗ')} value={view.fields.subdomain ?? ''} />
+                <Detail label={c('Administrator', 'Quản trị viên')} value={view.fields.adminName} />
+                <Detail label={c('Work email', 'Email')} value={view.fields.adminEmail} />
+                <Detail label={c('Industry', 'Lĩnh vực')} value={view.fields.industry ?? c('Not specified', 'Chưa cung cấp')} />
+                <Detail label={c('Headcount', 'Quy mô')} value={view.fields.headcount ?? c('Not specified', 'Chưa cung cấp')} />
+              </dl>
+              <Text variant="body-sm" className="mt-5">{c('These committed details are read-only. Sign in with your password and authenticator to view them again.', 'Thông tin đã lưu chỉ được xem. Đăng nhập bằng mật khẩu và ứng dụng xác thực để xem lại.')}</Text>
+              <Link className={buttonVariants({ className: 'mt-4 text-primary-foreground!' })} to="/guest/plans">
+                {c('Continue to subscription plans', 'Tiếp tục chọn gói')}
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {view.stage === 'VERIFY_EMAIL' ? <Mail size={18} aria-hidden="true" /> : <KeyRound size={18} aria-hidden="true" />}
+                {view.stage === 'VERIFY_EMAIL' ? c('Email verification', 'Xác thực email') : isSetup ? c('Authenticator enrollment', 'Thiết lập xác thực') : isRecovery ? c('Use a recovery code', 'Sử dụng mã khôi phục') : c('Two-factor authentication', 'Xác thực hai yếu tố')}
+              </CardTitle>
+              <CardDescription><span className="break-all">{view.email}</span></CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {view.stage === 'VERIFY_EMAIL' && <>
+                <p role="status" className="text-body-sm">
+                  {view.deliveryStatus === 'PENDING' ? c('Your verification email is queued for delivery.', 'Email xác thực đang chờ gửi.')
+                    : view.deliveryStatus === 'SENT' ? c('Email accepted by the mail server. Check your inbox and spam folder.', 'Máy chủ thư đã tiếp nhận email. Kiểm tra hộp thư đến và thư rác.')
+                      : view.deliveryStatus === 'FAILED' ? c('The email could not be delivered. Request a new code when available.', 'Chưa gửi được email. Yêu cầu mã mới khi có thể.')
+                        : c('Request an email code to continue.', 'Yêu cầu mã email để tiếp tục.')}
+                </p>
+                <Text variant="body-sm">{c('Use the latest six-digit code. It expires 10 minutes after it was requested. A new sign-in during unfinished MFA setup requires fresh email proof.', 'Sử dụng mã 6 chữ số mới nhất, có hiệu lực 10 phút. Nếu đăng nhập lại khi chưa thiết lập MFA xong, bạn cần mã email mới.')}</Text>
+              </>}
+              {isSetup && <>
+                {view.stage === 'SETUP_MFA_RECOVERY' && <p role="status" className="rounded-md bg-secondary p-3 text-body-sm">Previous sessions are revoked. Set up a new authenticator to restore access.</p>}
+                {!enrollment ? (
+                  <Button isLoading={command.isPending} onClick={() => command.mutate(async () => setEnrollment(await setupRegistrationTotp()))}>
+                    {c('Set up authenticator', 'Thiết lập ứng dụng xác thực')}
+                  </Button>
+                ) : (
+                  <div data-sensitive className="space-y-3 rounded-lg border border-border bg-muted/40 p-4">
+                    <Text variant="body-sm">{c('Scan this QR code with your authenticator, or enter the setup key manually.', 'Quét QR bằng ứng dụng xác thực hoặc nhập khóa thiết lập thủ công.')}</Text>
+                    <QRCodeSVG size={192} marginSize={4} title="Authenticator enrollment QR code"
+                      fgColor="hsl(var(--foreground))" bgColor="hsl(var(--card))"
+                      value={`otpauth://totp/${encodeURIComponent(`Adapt-Learn-Graph:${enrollment.email}`)}?secret=${enrollment.manualSecret}&issuer=Adapt-Learn-Graph&algorithm=SHA1&digits=6&period=30`} />
+                    <p className="text-caption font-semibold">{c('Manual setup key', 'Khóa thiết lập thủ công')}</p>
+                    <code className="block break-all select-all font-mono text-body-sm">{enrollment.manualSecret}</code>
+                  </div>
+                )}
+              </>}
+              {(!isSetup || enrollment) && (
+                <form noValidate onSubmit={submitProof} className="space-y-4">
+                  <Field label={isRecovery && !isSetup ? 'Recovery code' : view.stage === 'VERIFY_EMAIL' ? 'Email verification code' : 'Authenticator code'}
+                    id="registration-proof" required>
+                    <Input id="registration-proof" value={code} required
+                      inputMode={isRecovery && !isSetup ? 'text' : 'numeric'}
+                      autoComplete={isRecovery && !isSetup ? 'off' : 'one-time-code'}
+                      spellCheck={false} autoCapitalize="none" maxLength={isRecovery && !isSetup ? 32 : 6}
+                      pattern={isRecovery && !isSetup ? '[a-fA-F0-9]{32}' : '[0-9]{6}'}
+                      aria-invalid={failure?.code === 'INVALID_PROOF' || failure?.code === 'EXPIRED_PROOF'}
+                      aria-describedby={failure ? 'registration-error' : undefined}
+                      onChange={event => setCode(event.target.value.trim())} className="h-12 max-w-sm font-mono text-subsection tracking-[0.3em]" {...fieldError('proof')} />
+                  </Field>
+                  <Button type="submit" isLoading={command.isPending}>
+                    {view.stage === 'VERIFY_EMAIL' ? c('Verify email', 'Xác thực email') : isSetup ? c('Confirm authenticator', 'Xác nhận ứng dụng xác thực') : isRecovery ? c('Recover and replace authenticator', 'Khôi phục và thay ứng dụng xác thực') : c('Verify and resume', 'Xác thực và tiếp tục')}
+                  </Button>
+                </form>
+              )}
+              {view.stage === 'VERIFY_EMAIL' && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button variant="outline" disabled={resendWait > 0} isLoading={command.isPending}
+                    onClick={() => command.mutate(async () => accept(await resendRegistrationEmail()))}>{c('Send new email code', 'Gửi mã email mới')}</Button>
+                  {resendWait > 0 && <Text variant="caption">{c('Available in', 'Có thể gửi sau')} {resendWait} {c('seconds', 'giây')}</Text>}
+                </div>
+              )}
+              {(view.stage === 'CHALLENGE_MFA' || view.stage === 'RECOVERY_REQUIRED') && <>
+                <Text variant="body-sm">{isRecovery
+                  ? 'Recovery revokes existing sessions and requires a new authenticator. There is no email-only reset.'
+                  : 'Enter a current six-digit code. Previously accepted codes cannot be reused.'}</Text>
+                {view.stage === 'CHALLENGE_MFA' && <Button variant="link" onClick={() => {
+                  setRecovering(previous => !previous)
+                  setCode('')
+                  setFailure(null)
+                }}>{recovering ? c('Use my authenticator instead', 'Dùng ứng dụng xác thực') : c('Use a recovery code', 'Sử dụng mã khôi phục')}</Button>}
+              </>}
+            </CardContent>
+          </Card>
+        )}
+        {view && !session.isError && (
+          <Button variant="ghost" isLoading={command.isPending} onClick={() => command.mutate(async () => {
+            await signOutRegistration()
+            await accept(null)
+            navigate('/guest/resume')
+          })}>{c('Sign out of registration', 'Đăng xuất đăng ký')}</Button>
+        )}
       </div>
+      </FieldErrors.Provider>
     </GuestLayout>
   )
+}
+
+function Field({ label, id, required, hint, children }: {
+  label: string; id: string; required?: boolean; hint?: string; children: React.ReactNode
+}) {
+  const errors = React.useContext(FieldErrors)
+  const c = useCopy()
+  const labels: Record<string, string> = {
+    'Organization Legal Name': 'Tên pháp lý tổ chức', 'Workspace URL Slug': 'Định danh không gian',
+    'Industry / Technology Domain': 'Lĩnh vực hoạt động', 'Estimated Engineering Headcount': 'Quy mô đội ngũ dự kiến',
+    'Administrator Full Name': 'Họ tên quản trị viên', 'Work Email Address': 'Địa chỉ email',
+    'Password': 'Mật khẩu', 'Confirm Password': 'Xác nhận mật khẩu', 'Email verification code': 'Mã xác thực email',
+    'Authenticator code': 'Mã từ ứng dụng xác thực', 'Recovery code': 'Mã khôi phục',
+  }
+  const hints: Record<string, string> = {
+    'Optional. Leave empty for an automatically generated, reserved identifier.': 'Không bắt buộc. Để trống để hệ thống tạo và giữ chỗ định danh.',
+    'Informational only; this does not allocate subscription seats.': 'Chỉ mang tính thông tin; không quyết định số chỗ của gói.',
+    '12-128 characters. Password managers and paste are supported.': 'Từ 12 đến 128 ký tự. Hỗ trợ trình quản lý mật khẩu và thao tác dán.',
+  }
+  return (
+    <div className="min-w-0 space-y-1.5">
+      <label htmlFor={id} className="block text-body-sm font-semibold">
+        {c(label, labels[label] ?? label)}{required && <span aria-hidden="true" className="ml-1 text-destructive">*</span>}
+      </label>
+      {children}
+      {errors[id] && <p id={`${id}-error`} className="text-caption text-destructive">{errors[id]}</p>}
+      {hint && <Text variant="caption" className="block leading-relaxed">{c(hint, hints[hint] ?? hint)}</Text>}
+    </div>
+  )
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return <div className="min-w-0"><dt className="text-caption text-muted-foreground">{label}</dt>
+    <dd className="break-words text-body-sm font-medium">{value}</dd></div>
 }

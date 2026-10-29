@@ -11,6 +11,7 @@ export interface PaginationProps {
   itemLabel?: string
   className?: string
   disabled?: boolean
+  locale?: 'en' | 'vi'
   labels?: Partial<{ navigation: string; first: string; previous: string; next: string; last: string; showing: string; of: string }>
 }
 
@@ -47,8 +48,14 @@ export function Pagination({
   className,
   disabled = false,
   labels,
+  locale = 'en',
 }: PaginationProps) {
-  const copy = { navigation: 'Pagination', first: 'First page', previous: 'Prev', next: 'Next', last: 'Last page', showing: 'Showing', of: 'of', ...labels }
+  const copy = {
+    ...(locale === 'vi'
+      ? { navigation: 'Phân trang', first: 'Trang đầu', previous: 'Trước', next: 'Sau', last: 'Trang cuối', showing: 'Hiển thị', of: 'trên' }
+      : { navigation: 'Pagination', first: 'First page', previous: 'Prev', next: 'Next', last: 'Last page', showing: 'Showing', of: 'of' }),
+    ...labels,
+  }
   if (totalPages <= 0 && (!totalItems || totalItems === 0)) {
     return null
   }
@@ -97,8 +104,8 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={disabled || safeCurrentPage <= 1}
-          title={copy.previous}
-          aria-label={copy.previous}
+          title={labels?.previous ?? (locale === 'vi' ? 'Trang trước' : 'Previous page')}
+          aria-label={labels?.previous ?? (locale === 'vi' ? 'Trang trước' : 'Previous page')}
           className="h-8 px-3 inline-flex items-center justify-center gap-1.5 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors select-none cursor-pointer whitespace-nowrap"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
@@ -145,8 +152,8 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={disabled || safeCurrentPage >= totalPages}
-          title={copy.next}
-          aria-label={copy.next}
+          title={labels?.next ?? (locale === 'vi' ? 'Trang sau' : 'Next page')}
+          aria-label={labels?.next ?? (locale === 'vi' ? 'Trang sau' : 'Next page')}
           className="h-8 px-3 inline-flex items-center justify-center gap-1.5 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors select-none cursor-pointer whitespace-nowrap"
         >
           <span>{copy.next}</span>
@@ -168,4 +175,3 @@ export function Pagination({
     </div>
   )
 }
-

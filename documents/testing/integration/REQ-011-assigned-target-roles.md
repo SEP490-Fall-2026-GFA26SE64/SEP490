@@ -5,7 +5,7 @@ Follow [current integration criteria](README.md#current-scope-alignment). Revali
 
 ## Historical Test Plan and Evidence
 
-**Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)  
+**Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Role%20catalog/README.md#req-011-f01)<br>
 **Level:** Integration (Neo4j Testcontainers Database Adapter & Cypher Queries)  
 **Status:** PASSED (2026-09-30)
 

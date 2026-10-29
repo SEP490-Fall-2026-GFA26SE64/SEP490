@@ -8,8 +8,8 @@ Follow [current test criteria](README.md#current-scope-alignment). Revalidate L&
 **Status:** Domain, Application, Controller/Security, Neo4j Testcontainers Integration, and UI modal tests passed; manual browser verification checklist verified.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-024-expert-assignment.md) | [Integration Test](integration/REQ-024-expert-assignment.md) | [System Test](system/REQ-024-expert-assignment.md)  
 **Feature contracts:**
-- [REQ-024-F01 Assign Target Role to Expert](../features/Expert%20assignment/Assign%20Target%20Role%20to%20Expert.md)
-- [REQ-024-F02 Reassign Target Role Expert](../features/Expert%20assignment/Reassign%20Target%20Role%20Expert.md)
+- [REQ-024-F01 Assign Target Role to Expert](../features/Role%20catalog/README.md#req-024-f01)
+- [REQ-024-F02 Reassign Target Role Expert](../features/Role%20catalog/README.md#req-024-f02)
 
 Under [ARCHITECTURE.md](../ARCHITECTURE.md) and [neo4j_schema.md](../neo4j_schema.md), the `assignedExpertId` field is a core architectural attribute stored directly on each `(:TargetRole)` node in **Neo4j 5.26 Community**. Each role is assigned to exactly one primary Domain Expert responsible for micro-skill threshold authoring and graph publication.
 

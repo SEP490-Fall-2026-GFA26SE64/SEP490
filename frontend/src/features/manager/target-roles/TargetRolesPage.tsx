@@ -1,3 +1,4 @@
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
 import { fetchCompetencies, type CompetencyDto } from '../../../shared/api/competencyApi'
 
 
@@ -11810,6 +11811,4 @@ export function TargetRolesPage() {
 
 
 }
-
-
 

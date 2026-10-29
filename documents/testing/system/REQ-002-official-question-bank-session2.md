@@ -4,7 +4,7 @@
 
 The user subsequently permitted **isolated SYNTHETIC simulation, operational promotion ineligible**, and delegated numerical/persistence choices to the agent. The agent selected the fixed-c MML/EM package and minimal forward scoped-selection/receipt design. This supersedes the pending-question checkpoint below; it does not invent content/model approval or a trusted Admin.
 
-Delivered source:24 new main Java files for typed pins/policy/budget/admission, MML E/M steps, immutable dataset/source ports, run/candidate lifecycle and worker lease/cancellation/recovery, separate Admin promotion/CAS/receipt/audit, default-off API/wiring and standalone synthetic operation. Exactly3 pre-existing runtime files extend the technical port/store/eligibility caller for scoped future selection; backups are in workspace `.tools/official-question-bank-session2/20261022/source-before`. V23 adds only the scoped effective-selection and immutable command-receipt structures/guards. **V23 is unapplied; no current DB schema/model/run/set was changed.** [Full contract/source/API/limitations](../../features/Baseline%20knowledge%20assessment/Calibrate%20and%20Promote%20IRT%20Parameters.md).
+Delivered source:24 new main Java files for typed pins/policy/budget/admission, MML E/M steps, immutable dataset/source ports, run/candidate lifecycle and worker lease/cancellation/recovery, separate Admin promotion/CAS/receipt/audit, default-off API/wiring and standalone synthetic operation. Exactly3 pre-existing runtime files extend the technical port/store/eligibility caller for scoped future selection; backups are in workspace `.tools/official-question-bank-session2/20261022/source-before`. V23 adds only the scoped effective-selection and immutable command-receipt structures/guards. **V23 is unapplied; no current DB schema/model/run/set was changed.** [Full contract/source/API/limitations](../../technical/baseline/Calibrate%20and%20Promote%20IRT%20Parameters.md).
 
 [Machine-readable implementation/source/artifact preservation observation](REQ-002-official-question-bank-session2-implementation-observation.json) complements the historical C0 snapshot below. Global worker serialization covers expensive input parsing/preflight as well as fitting, without holding a long SQL transaction.
 
@@ -32,7 +32,7 @@ Rollback: keep administration flag off and preserve all artifacts/history. Main 
 
 2026-10-22, Asia/Bangkok. **C0 prepared; user decisions pending. C1/C2 implementation remains incomplete.** This records static inspection and bounded manual READ ONLY observations, not executable-test evidence or calibration results.
 
-The user explicitly requested agreement on authorized responses, simulation/actual pilot and numerical/input policy before algorithm work. Questions were submitted for response origin, a concrete numerical demo package and scoped promotion persistence. No answer/approval is inferred from elapsed time. [Reviewable contract and decisions](../../features/Baseline%20knowledge%20assessment/Calibrate%20and%20Promote%20IRT%20Parameters.md).
+The user explicitly requested agreement on authorized responses, simulation/actual pilot and numerical/input policy before algorithm work. Questions were submitted for response origin, a concrete numerical demo package and scoped promotion persistence. No answer/approval is inferred from elapsed time. [Reviewable contract and decisions](../../technical/baseline/Calibrate%20and%20Promote%20IRT%20Parameters.md).
 
 ## Actual observations
 

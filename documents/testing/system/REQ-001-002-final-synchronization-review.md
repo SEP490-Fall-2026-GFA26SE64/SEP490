@@ -12,7 +12,7 @@ No backend/frontend runtime source, migration, configuration, seed, estimator, B
 
 Current user confirmations take precedence, followed by the scoped feature documents, Product Overview and architecture/schema. Source/migrations/tests describe implementation, not requirements. The older repository AGENTS architecture-first/automatic-test instructions conflict with the workspace/current user's gates; current explicit authority governs. Temporary SRSv2 actor/SaaS/S2–S4 differences remain unresolved and were not adopted. Open/Proposed/Provisional items were not promoted to confirmed behavior.
 
-Read-only source review followed controller → use case/ports → JDBC/Neo4j adapters → migrations, and FE route/API → Role gate/configuration/results/profile consumers. Existing historical UUID/fixed/module readers remain intentional compatibility paths; current demo controllers are profile-exclusive. [Contracts](../../features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md), [architecture](../../ARCHITECTURE.md), [schema/diagrams](../../diagrams/README.md).
+Read-only source review followed controller → use case/ports → JDBC/Neo4j adapters → migrations, and FE route/API → Role gate/configuration/results/profile consumers. Existing historical UUID/fixed/module readers remain intentional compatibility paths; current demo controllers are profile-exclusive. [Contracts](../../technical/baseline/Role%20Selection%20and%20Occupation%20Baseline.md), [architecture](../../ARCHITECTURE.md), [schema/diagrams](../../diagrams/README.md).
 
 ## Verified stores and distinct versions
 

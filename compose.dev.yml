@@ -1,124 +1,151 @@
-name: adapt-learn-graph-dev
-
-x-backend-build: &backend-build
-  context: .
-  dockerfile: backend/Dockerfile
-x-backend-environment: &backend-environment
-  DB_URL: jdbc:postgresql://postgres:5432/adapt_learn_graph
-  DB_USER: adapt_learn_graph
-  DB_PASSWORD: ${DB_PASSWORD:-local-only-postgres}
-  NEO4J_URI: bolt://neo4j:7687
-  NEO4J_USER: neo4j
-  NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
-  TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:-false}
-  # Main startup never restores retired graph/bank/model seeds or fixed authoring.
-  CATALOG_SEED_ENABLED: "false"
-  ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED: "false"
-  BASELINE_ANSWER_REVIEW_ENABLED: "false"
-  ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED: "false"
-
-services:
-  postgres:
-    image: postgres:17.6-alpine
-    environment:
-      POSTGRES_DB: adapt_learn_graph
-      POSTGRES_USER: adapt_learn_graph
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-local-only-postgres}
-    ports:
-      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U adapt_learn_graph -d adapt_learn_graph"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-
-  neo4j:
-    image: neo4j:5.26-community
-    environment:
-      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-local-only-neo4j}
-    ports:
-      - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
-      - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
-    volumes:
-      - neo4j_data:/data
-    healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
-      interval: 10s
-      timeout: 10s
-      retries: 18
-      start_period: 45s
-
-  migrate:
-    image: adapt-learn-graph-backend:dev
-    build: *backend-build
-    environment:
-      <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,migrate
-      # Schema first; the separate local seed service initializes missing catalog/bank data.
-      CATALOG_SEED_ENABLED: "false"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      neo4j:
-        condition: service_healthy
-    restart: "no"
-
-  seed:
-    image: adapt-learn-graph-backend:dev
-    build: *backend-build
-    environment:
-      <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,local-demo-seed
-      SPRING_MAIN_WEB_APPLICATION_TYPE: none
-      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
-    volumes:
-      - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
-      - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    restart: "no"
-
-  api:
-    image: adapt-learn-graph-backend:dev
-    build: *backend-build
-    environment:
-      <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,local-baseline-demo
-      ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "true"
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    ports:
-      - "127.0.0.1:${API_PORT:-18080}:8080"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
-
-  web:
-    build:
-      context: ./frontend
-      target: dev
-    environment:
-      API_PROXY_TARGET: http://api:8080
-      VITE_LOCAL_BASELINE_DEMO_ENABLED: "true"
-      # Visibility gates only; these grant no backend identity, publication or model readiness.
-      VITE_ADAPTIVE_BASELINE_ENABLED: ${VITE_ADAPTIVE_BASELINE_ENABLED:-true}
-      VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED: ${VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED:-true}
-    volumes:
-      - ./frontend:/workspace
-      - /workspace/node_modules
-    depends_on:
-      api:
-        condition: service_healthy
-    ports:
-      - "127.0.0.1:${WEB_PORT:-8088}:5173"
-
-volumes:
-  postgres_data:
-  neo4j_data:
+name: adapt-learn-graph-dev
+
+x-backend-build: &backend-build
+  context: .
+  dockerfile: backend/Dockerfile
+x-backend-environment: &backend-environment
+  DB_URL: jdbc:postgresql://postgres:5432/adapt_learn_graph
+  DB_USER: adapt_learn_graph
+  DB_PASSWORD: ${DB_PASSWORD:-local-only-postgres}
+  NEO4J_URI: bolt://neo4j:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
+  TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:-false}
+  # Main startup never restores retired graph/bank/model seeds or fixed authoring.
+  CATALOG_SEED_ENABLED: "false"
+  ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED: "false"
+  BASELINE_ANSWER_REVIEW_ENABLED: "false"
+  ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED: "false"
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: adapt_learn_graph
+      POSTGRES_USER: adapt_learn_graph
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local-only-postgres}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adapt_learn_graph -d adapt_learn_graph"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  neo4j:
+    image: neo4j:5.26-community
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-local-only-neo4j}
+    ports:
+      - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
+      - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+      start_period: 45s
+
+  migrate:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,migrate
+      # Schema first; the separate local seed service initializes missing catalog/bank data.
+      CATALOG_SEED_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    restart: "no"
+
+  seed:
+    profiles: ["tools"]
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,local-demo-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
+    volumes:
+      - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  api:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline
+      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:-}
+      REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:-}
+      REGISTRATION_COOKIE_SECURE: ${REGISTRATION_COOKIE_SECURE:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      SUBSCRIPTION_PUBLIC_URL: ${SUBSCRIPTION_PUBLIC_URL:-http://127.0.0.1:8088}
+      SUBSCRIPTION_WORKER_ENABLED: ${SUBSCRIPTION_WORKER_ENABLED:-true}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${API_PORT:-18080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  platform-seed:
+    profiles: ["tools"]
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,platform-bootstrap
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      CATALOG_SEED_ENABLED: "false"
+      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-}
+      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-}
+
+  web:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      API_PROXY_TARGET: http://api:8080
+      VITE_LOCAL_BASELINE_DEMO_ENABLED: "false"
+      # Visibility gates only; these grant no backend identity, publication or model readiness.
+      VITE_ADAPTIVE_BASELINE_ENABLED: ${VITE_ADAPTIVE_BASELINE_ENABLED:-true}
+      VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED: ${VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED:-true}
+    volumes:
+      - ./frontend:/workspace
+      - /workspace/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8088}:5173"
+
+volumes:
+  postgres_data:
+  neo4j_data:

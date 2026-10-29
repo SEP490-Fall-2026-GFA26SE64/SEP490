@@ -1,0 +1,13 @@
+FROM maven:3.9.11-eclipse-temurin-21 AS build
+WORKDIR /workspace/backend
+COPY backend/pom.xml ./
+COPY backend/src ./src
+RUN mvn -B -ntp -DskipTests package dependency:copy-dependencies -DincludeScope=test -DoutputDirectory=target/test-libs
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /workspace/backend/target/classes ./classes
+COPY --from=build /workspace/backend/target/test-classes ./test-classes
+COPY --from=build /workspace/backend/target/test-libs ./libs
+ENV ISOLATED_SUBSCRIPTION_TEST=true
+ENTRYPOINT ["java","-cp","/app/classes:/app/test-classes:/app/libs/*","com.adaptlearngraph.subscription.infrastructure.SubscriptionTestRuntime"]

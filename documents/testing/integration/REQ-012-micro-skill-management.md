@@ -5,7 +5,7 @@ Follow [current integration criteria](README.md#current-scope-alignment). Revali
 
 ## Historical Test Plan and Evidence
 
-**Feature Contract:** [REQ-012-F01 Create Micro-Skill](../../features/Micro-skill%20management/Create%20Micro-Skill.md)  
+**Feature Contract:** [REQ-012-F01 Create Micro-Skill](../../features/Learning%20catalog/README.md#req-012-f01)<br>
 **Level:** Integration (Neo4j Testcontainers Graph Persistence & Ontological Edges)  
 **Status:** PASSED (2026-09-30)
 

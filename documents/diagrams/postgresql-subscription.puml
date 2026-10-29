@@ -1,0 +1,193 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+title PostgreSQL - Subscriptions, payments and workspace membership
+class subscription_plan {
+    plan_id : uuid [PK, FK]
+    code : text
+    current_version_id : uuid [FK]
+}
+class subscription_plan_version {
+    version_id : uuid [PK]
+    plan_id : uuid [FK]
+    revision : bigint
+    name : text
+    description : text
+    price_vnd : bigint
+    currency : character varying(3)
+    duration_months : integer
+    employee_seats : integer
+    created_at : timestamp with time zone
+    created_by? : uuid [FK]
+    creation_source : text
+}
+class subscription_intent {
+    intent_id : uuid [PK, FK]
+    kind : text
+    state : text
+    registration_id? : uuid [FK]
+    organization_id? : uuid [FK]
+    owner_account_id : uuid [FK]
+    applied_order_id? : uuid [FK]
+    created_at : timestamp with time zone
+    updated_at : timestamp with time zone
+}
+class payment_order {
+    order_id : uuid [PK]
+    intent_id : uuid [FK]
+    created_by : uuid [FK]
+    attempt : integer
+    provider_order_code : bigint
+    plan_id : uuid [FK]
+    plan_version_id : uuid [FK]
+    name : text
+    description : text
+    price_vnd : bigint
+    currency : character varying(3)
+    duration_months : integer
+    employee_seats : integer
+    idempotency_key : uuid
+    request_digest : platform.content_hash
+    payment_status : text
+    provider_status? : text
+    payment_link_id? : text
+    checkout_url? : text
+    observed_paid_amount? : bigint
+    paid_at? : timestamp with time zone
+    last_checked_at? : timestamp with time zone
+    failure_code? : text
+    supersedes_order_id? : uuid [FK]
+    revision : bigint
+    created_at : timestamp with time zone
+    expires_at : timestamp with time zone
+}
+class payment_observation {
+    observation_id : uuid [PK]
+    order_id? : uuid [FK]
+    provider_order_code : bigint
+    provider_reference? : text
+    payment_link_id? : text
+    amount? : bigint
+    currency? : text
+    observed_status : text
+    payload_digest : platform.content_hash
+    source : text
+    received_at : timestamp with time zone
+    provider_paid_at? : timestamp with time zone
+    disposition : text
+}
+class payment_application {
+    application_id : uuid [PK]
+    order_id : uuid [FK]
+    intent_id : uuid [FK]
+    state : text
+    period_id? : uuid [FK]
+    applied_at? : timestamp with time zone
+    failure_code? : text
+    updated_at : timestamp with time zone
+}
+class subscription {
+    subscription_id : uuid [PK]
+    organization_id : uuid [FK]
+    revision : bigint
+    created_at : timestamp with time zone
+}
+class subscription_period {
+    period_id : uuid [PK]
+    subscription_id : uuid [FK]
+    order_id : uuid [FK]
+    starts_at : timestamp with time zone
+    ends_at : timestamp with time zone
+    billing_zone : text
+    anniversary_day : integer
+    created_at : timestamp with time zone
+}
+class organization_workspace {
+    workspace_id : uuid [PK]
+    organization_id : uuid [FK]
+    registration_id : uuid [FK]
+    slug : character varying(63)
+    setup_state : text
+    created_at : timestamp with time zone
+    ready_at? : timestamp with time zone
+    failure_code? : text
+}
+class department_reference {
+    department_id : uuid [PK]
+    organization_id : uuid [FK]
+    name : text
+    active : boolean
+}
+class occupation_department_reference {
+    occupation_reference_id : uuid [PK]
+    occupation_id : uuid
+    organization_id : uuid [FK]
+    department_id : uuid [FK]
+    name : text
+    active : boolean
+}
+class organization_membership {
+    membership_id : uuid [PK]
+    account_id : uuid [FK]
+    organization_id : uuid [FK]
+    active : boolean
+    department_id? : uuid [FK]
+    occupation_reference_id? : uuid [FK]
+    revision : bigint
+    created_at : timestamp with time zone
+    updated_at : timestamp with time zone
+}
+class organization_membership_role {
+    membership_id : uuid [PK, FK]
+    role_code : text [PK]
+}
+class platform_administrator {
+    account_id : uuid [PK, FK]
+    granted_at : timestamp with time zone
+    granted_by? : uuid [FK]
+    grant_source : text
+}
+class workspace_account_profile {
+    account_id : uuid [PK, FK]
+    full_name : character varying(120)
+    email_verified_at : timestamp with time zone
+    auth_version : bigint
+    recovery_required : boolean
+}
+class workspace_activation {
+    activation_id : uuid [PK]
+    organization_id : uuid [FK]
+    created_by : uuid [FK]
+    full_name : character varying(120)
+    email : character varying(254)
+    roles : text[]
+    department_id? : uuid [FK]
+    occupation_reference_id? : uuid [FK]
+    proof_hash : platform.content_hash
+    generation : bigint
+    expires_at : timestamp with time zone
+    created_at : timestamp with time zone
+    last_sent_at : timestamp with time zone
+    consumed_at? : timestamp with time zone
+    account_id? : uuid [FK]
+}
+department_reference --> occupation_department_reference
+department_reference --> organization_membership
+department_reference --> workspace_activation
+occupation_department_reference --> organization_membership
+occupation_department_reference --> workspace_activation
+organization_membership --> organization_membership_role
+payment_order --> payment_application
+payment_order --> payment_observation
+payment_order --> payment_order
+payment_order --> subscription_intent
+payment_order --> subscription_period
+subscription --> subscription_period
+subscription_intent --> payment_application
+subscription_intent --> payment_order
+subscription_period --> payment_application
+subscription_plan --> subscription_plan_version
+subscription_plan_version --> payment_order
+subscription_plan_version --> subscription_plan
+@enduml

@@ -6,9 +6,9 @@ Follow [current integration criteria](README.md#current-scope-alignment). Revali
 ## Historical Test Plan and Evidence
 
 **Feature Contracts:**
-- [REQ-015-F01 Link Micro-Skill to Target Role](../../features/Role%20requirements/Link%20Micro-Skill%20to%20Target%20Role.md)
-- [REQ-015-F02 Unlink Micro-Skill from Target Role](../../features/Role%20requirements/Unlink%20Micro-Skill%20from%20Target%20Role.md)
-- [REQ-015-F03 Set Required Proficiency](../../features/Role%20requirements/Set%20Required%20Proficiency.md)
+- [REQ-015-F01 Link Micro-Skill to Target Role](../../features/Role%20catalog/README.md#req-015-f01)
+- [REQ-015-F02 Unlink Micro-Skill from Target Role](../../features/Role%20catalog/README.md#req-015-f02)
+- [REQ-015-F03 Set Required Proficiency](../../features/Role%20catalog/README.md#req-015-f03)
 
 **Level:** Integration (Neo4j Testcontainers Graph Edges & Properties)  
 **Status:** PASSED (2026-09-30)

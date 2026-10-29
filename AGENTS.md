@@ -10,7 +10,7 @@ Every frontend change in this workspace must adhere to the **UI-UX Pro Max** sta
 - **Breadcrumb Rule**: Breadcrumbs are kept **only** in `DesignSystemShowcasePage.tsx`. Do not add breadcrumbs to individual feature pages.
 
 ### 2. Design Tokens (Zero Hardcoded Hex Codes)
-Always use CSS variables from `tokens.css`:
+Always use CSS variables from [tokens.css](frontend/src/shared/styles/tokens.css):
 - Brand Orange: `hsl(var(--primary))` (`#EA580C`)
 - Amber Hover: `hsl(var(--primary-hover))` (`#C2410C`)
 - Soft Tint: `hsl(var(--secondary))` (`#FFF5EB`)
@@ -38,47 +38,24 @@ Always use CSS variables from `tokens.css`:
 - Eyebrow: `12px` (`--text-eyebrow`), uppercase, bold
 
 ### 4. Shared Components First
-Always check and reuse components in `src/shared/components/ui/` and `src/shared/components/typography/`:
+Always check and reuse [shared UI](frontend/src/shared/components/ui/) and [typography](frontend/src/shared/components/typography/):
 - `<PageHeader />` for all page headers
 - `<StatCard />` for all metric / KPI cards
 - `<Heading />`, `<Text />`, `<Button />`, `<Badge />`, `<Card />`, `<Tabs />`, `<Accordion />`, `<Dialog />`, `<Input />`, `<Progress />`
-- If a component is shared across actors (Learner, Manager, Admin), place it in `src/shared/components/ui/`.
+- If a component is shared across actors, place it in [shared UI](frontend/src/shared/components/ui/).
 
 ---
 
-## Mandatory AI Feature Implementation Lifecycle (Always Active)
+## Mandatory Feature Workflow
 
-When implementing any feature, enhancement, or bug fix using AI, all agents must strictly follow the 5-step lifecycle in sequence:
+For feature, enhancement or bug-fix work, load and follow the [feature-implementation skill](.agents/skills/feature-implementation/SKILL.md). It is the single definition of the ordered seven-stage process. Select [Feature Implementer](.github/agents/feature-implementer.agent.md) in VS Code or invoke `/feature-implementation` with a function ID, name or description. The [legacy rule entry](.agents/rules/ai-feature-workflow.md) remains a compatibility link, not a second workflow.
 
-1. **Clear Requirement of Function Using AI**: Find and read the function specification in `documents/features/<Feature>/<Function>.md` (extract ID `REQ-nnn-Fnn`, rules, inputs/outcomes, and open decisions). **Architectural Schema Inventory & Primary Source of Truth**: Treat [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) and [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md) as the **primary source of truth FIRST**. Note that the frontend is a UI created beforehand to visualize the system and may contain legacy mock attributes (`provenance`, `bloomLevel`, `observableOutcome`, etc.) not in the schema. Never alter backend/domain schemas to match mock UI fields; instead, refactor the frontend to strictly follow the architecture. Proactively discuss and align with the user; do not touch code until requirements and architectural field scope are cleared.
-2. **Implement Using AI**: Start implementation only after user alignment.
-   - **Zero Blank Architecture Fields & Strict Schema Compliance**: Under NO circumstances should any field defined in [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) (or [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md)) be left empty, unmapped, unseeded, or ignored. Remove legacy mock attributes not defined in the architecture. All database seeders (`DevelopmentCatalogSeeder`, Flyway), persistence mappers (`Neo4jTargetRoleMapper`, `Neo4jMicroSkillRepository`), domain models, DTOs, and frontend UI forms/tables/modals MUST fully populate, map, and utilize every defined field without omissions.
-   - **UI-UX Pro Max Enforcement**: Strictly adhere to `tokens.css` (zero hardcoded hex colors), standard typography scale, snug modern density, and surface elevation.
-   - **Shared Components First**: Always reuse shared components from `src/shared/components/ui/` (`<PageHeader />`, `<StatCard />`, `<Button />`, `<Badge />`, `<Card />`, `<Pagination />`, etc.).
-   - **Clean Architecture**: Strict hexagonal boundaries (no unauthorized cross-layer dependencies, enforced by ArchUnit).
-   - **Zero Frontend Mock Data**: Remove all mock data related to the task on the frontend and migrate initial/seed data into PostgreSQL or Neo4j per architecture.
-3. **Test Using AI**: Read and strictly follow the testing documentation in `documents/testing/` ([README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/README.md), [unit/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/unit/README.md), [integration/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/integration/README.md), and [system/README.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/testing/system/README.md)). Perform all relevant testing levels (Unit, Integration with Testcontainers, and System with Compose stack). Explicitly assert that all architecturally defined fields are persisted, retrieved, and non-empty. Maintain dedicated test evidence files per REQ in `unit/`, `integration/`, and `system/` folders (do not use README.md as a monolithic central registry).
-4. **Test Manual**: Interactively verify visual behavior, user flows, and field completeness (ensure all architectural fields are displayed and populated with meaningful data). Always provide the user with a structured Manual Test Checklist (URL, prerequisites, steps, expected results).
-5. **Update Document**: Update everything related to that task in the `documents/` folder. This strictly includes [documents/ARCHITECTURE.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/ARCHITECTURE.md) (entity schemas, field definitions, and store responsibilities) and [documents/neo4j_schema.md](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/documents/neo4j_schema.md), feature specifications (`documents/features/`), dedicated test evidence (`documents/testing/<level>/<REQ-ID>-<feature>.md`), and manual browser procedures (`documents/testing/system/`).
-
-Detailed guide: [.agents/rules/ai-feature-workflow.md](file:///d:/Code/Capstone/SEP490/.agents/rules/ai-feature-workflow.md).
-
----
-
-## Capstone Committee Evaluation & UX Semantic Standard (Always Active)
-
-Every feature and modification must meet enterprise presentation standards for the **Capstone Evaluation Committee (Hội đồng chấm Capstone)**:
-
-1. **Human-Centric UX Semantics (Highest Priority)**:
-   - **Zero Spec Dumps**: Never dump technical architecture, database schemas, or developer checklists into UI labels, subtitles, or tooltips (e.g., replace *"Structure internal business units, assign department leadership, align O\*NET occupations, and manage workforce capacity..."* with clear, benefit-driven copy: *"Organize company departments, assign leadership, and track team competency coverage across your business units."*).
-   - **Zero Unusable Terms**: Never describe capabilities the user cannot actually perform on that screen.
-   - **Bi-directional i18n**: Both English and Vietnamese microcopy must be polished, professional, and natural.
-2. **Shared Component Reuse**: Mandatory reuse of `<PageHeader />`, `<StatCard />`, `<Card />`, `<Button />`, `<Badge />`, `<Dialog />`, `<Input />`, `<Tabs />`, etc. No unstyled ad-hoc HTML duplicates.
-3. **Clean Code & Strict Boundaries**: 100% strict TypeScript types (zero `any`), no unused code/console logs, strict Hexagonal boundaries.
-4. **Exhaustive Edge Cases**: Fully handle empty states (helpful empty state + CTA), long strings/truncation, async loading skeletons, double-click/mutation locking, and network error recovery.
-5. **Playwright E2E Flow Testing**: Validate complete end-to-end user journeys (navigate $\rightarrow$ interact $\rightarrow$ mutation $\rightarrow$ visual update $\rightarrow$ edge/cancel flows) with automated Playwright specs (`frontend/system-tests/`) running against the Compose stack.
-
-Detailed guide: [.agents/rules/ux-semantics-clean-code-playwright.md](file:///d:/Code/Capstone/SEP490/.agents/rules/ux-semantics-clean-code-playwright.md).
-
-
+- **Inspect before implementing:** Inventory the selected function's current code, integrations, UI and tests before planning. Distinguish implemented, partial, missing, incorrect and unverified behavior with source evidence. Reuse existing components and preserve working behavior; implement only the approved gaps, without duplicating capabilities or adding unrelated abstractions. If the requested behavior already exists, verify it and report no implementation needed.
+- **Clarification and approval:** Resolve scope, measurable DoD, business rules and verification through one single-choice question at a time, with options and a justified recommendation. Save each answer in a temporary working contract in session storage before the next question, not in feature READMEs. Read-only inspection and temporary brief updates may precede approval; implementation requires explicit approval of the presented revision. Reconfirm material changes or missing approval context. This is instruction-based guidance, not a tool-level security lock.
+- **Current contract structure:** Start at the [feature index](documents/features/README.md); durable feature documentation lives in domain README files with stable `REQ-nnn-Fnn` anchors. Reuse those definitions and IDs; keep proposed additions, decisions and implementation plans in the temporary working contract until completion, and never reuse retired IDs. Do not recreate a permanent file per function. Customization/documentation tasks use their task brief, not invented product IDs.
+- **Product and technical truth:** [Version 2](documents/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md) and approved decisions define intended scope. [Architecture](documents/ARCHITECTURE.md), [schema inventory](documents/neo4j_schema.md), actual migrations and code distinguish current implementation from target behavior. Resolve conflicts explicitly; schema changes need an approved design and forward migration. Never change domain/backend schemas merely to match prototype UI fields.
+- **Complete, authorized field handling:** Inventory affected fields and their type, nullability, validation, store ownership and API/UI visibility. Populate and map every required field through the appropriate seed/migration, persistence and domain boundaries. Preserve legitimate nulls, historical references and intentional operation-specific DTO projections. Sensitive/server-managed fields must not become visible/editable merely to satisfy field coverage. Never fabricate review identities or timestamps. Tests must assert both required values and permitted nullability.
+- **Engineering safeguards:** Preserve hexagonal boundaries and ArchUnit checks, shared UI/design conventions, trusted organization/assignment/entitlement authorization and relevant error states. Replace task-related runtime mocks with approved real API/persistence behavior; isolated test doubles are allowed. Preserve unrelated user changes and do not silently expand scope or dependencies.
+- **Verification and documentation:** Follow the [testing guides](documents/testing/README.md) at every applicable level, including unit/component, API/security, integration/Testcontainers and system/Compose. UI changes require Playwright. Record actual results in dedicated per-REQ evidence and preserve historical runs; blocked checks cannot be reported as Passed. After implementation and required verification are complete, update only the affected feature README sections with concise outcomes, actors, inputs, business rules and relevant limitations. Do not put working contracts, interviews, approvals, test cases/results or architecture details in feature READMEs. Update affected architecture/schema/API/diagram documents separately only when needed, and keep manual checklists with testing evidence. Do not rewrite unrelated plans or claim production completion from a local slice.
+- **Operational boundaries:** No unrequested commits, pushes, deployments, real payment operations or destructive database resets. Ask separately for consequential operations outside the approved slice; never collect secrets through the clarification tool.
 
