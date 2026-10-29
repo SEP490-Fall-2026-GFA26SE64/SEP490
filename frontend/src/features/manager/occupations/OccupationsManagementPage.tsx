@@ -1364,7 +1364,7 @@ export function OccupationsManagementPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-[11px] font-semibold text-foreground block mb-1">
-                    Standard Occupation Code (O*NET-SOC) <span className="text-destructive">*</span>
+                    Standard Occupation Code <span className="text-destructive">*</span>
                   </label>
                   <Input
                     placeholder="e.g. 15-1252.00"
