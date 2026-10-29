@@ -325,3 +325,7 @@ R7 reuses existing TEACHES metadata in original-style skill nodes and detail car
 ### Initial pathway / learning content integration — 2026-10-29
 
 The merge adds no graph label/property/relationship or catalog import. Initial planning continues to consume the existing catalog/TEACHES graph; Module authoring and content retain their current owners. PostgreSQL owns initial generation/review revisions as well as manual assignments, content snapshots, assets, pins and lesson progress. Generated lesson access requires current exact Expert approval and live dependency checks, plus an actual matching content version. Unsupported internal segment gates stay unavailable. [Runtime and migration lineage boundary](ARCHITECTURE.md#main--module-content-integration--2026-10-29).
+
+### Manual test assignment removal — 2026-10-30
+
+No Neo4j schema, catalog import or data deletion. Historical PostgreSQL manual assignments remain stored but no longer authorize learning or appear in active UI. Actual generated pathway authorization and versioned lesson/progress ownership remain unchanged. This supersedes the manual-display admission described in R5–R7 above.

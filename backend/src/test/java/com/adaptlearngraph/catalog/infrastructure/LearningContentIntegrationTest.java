@@ -64,6 +64,13 @@ class LearningContentIntegrationTest {
                     tree.at("/revisions/0/payload/content/lessons/0/id").asText());
             assertTrue(tree.at("/revisions/0/payload/content/createdBy").isNull());
             var adapter = new JdbcLearningContentAdapter(jdbc, new ObjectMapper());
+            assertFalse(adapter.assigned("org", "learner", "module"));
+            var generated = new JdbcLearningContentAdapter(jdbc, new ObjectMapper(),
+                    (org, learner, module) -> org.equals("org") && learner.equals("learner") && module.equals("module"));
+            assertTrue(generated.assigned("org", "learner", "module"));
+            assertFalse(generated.assigned("other", "learner", "module"));
+            assertFalse(generated.assigned("org", "other", "module"));
+            assertFalse(generated.assigned("org", "learner", "other"));
             var initial = adapter.limits();
             assertEquals(209715200, initial.videoBytes());
             assertEquals(5242880, initial.imageBytes());

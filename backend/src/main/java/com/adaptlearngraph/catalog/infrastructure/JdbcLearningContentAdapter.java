@@ -287,17 +287,7 @@ public final class JdbcLearningContentAdapter implements LearningContentPort {
 
     @Override
     public boolean assigned(String org, String learner, String module) {
-        return Boolean.TRUE.equals(
-                jdbc.queryForObject(
-                        "SELECT EXISTS(SELECT 1 FROM platform.manual_learning_pathway p JOIN"
-                            + " platform.account a ON a.account_id=p.learner_id AND"
-                            + " a.organization_id=p.organization_id WHERE p.organization_id::text=?"
-                            + " AND p.learner_id::text=? AND p.module_ids @> ?::jsonb AND"
-                            + " a.active)",
-                        Boolean.class,
-                        org,
-                        learner,
-                        encode(List.of(module)))) || generated.permits(org,learner,module);
+        return generated.permits(org, learner, module);
     }
 
     @Override

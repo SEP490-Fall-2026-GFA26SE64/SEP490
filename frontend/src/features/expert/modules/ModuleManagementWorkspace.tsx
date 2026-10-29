@@ -1,6 +1,5 @@
 import { newLesson } from '../../../shared/lib/learningLessons'
 import { LearningImportPanel } from './LearningImportPanel'
-import { ManualPathwayPanel } from './ManualPathwayPanel'
 import { LearningLessonsEditor } from '../../../shared/components/learning/LearningLessonsEditor'
 import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
 import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
@@ -66,7 +65,6 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<ModuleSave>(initialForm)
   const [moduleLessons, setModuleLessons] = useState<LearningLesson[]>([newLesson('TEXT')])
-  const [pathwayOpen, setPathwayOpen] = useState(false)
   const [contentOpen, setContentOpen] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', markdown: '', lessons: [newLesson('TEXT')] as LearningLesson[] })
   const [preview, setPreview] = useState<ModuleContent | null>(null)
@@ -226,7 +224,7 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
         {manager && <Link to="/ld-manager/approvals">{copy('Approvals & assignments', 'Duyệt và phân công')}</Link>}
       </nav>}
       {loading ? <div role="status" aria-label={copy('Loading', 'Đang tải')} className="h-32 animate-pulse rounded-xl border border-border bg-muted" /> : null}
-      {expert && mode === 'modules' && <><details className="rounded-lg border border-border bg-card p-3"><summary className="cursor-pointer font-semibold">{copy('Import Excel / ZIP', 'Import Excel / ZIP')}</summary><div className="mt-3"><LearningImportPanel onImported={() => void load()} /></div></details><details onToggle={event => setPathwayOpen(event.currentTarget.open)} className="rounded-lg border border-border bg-card p-3"><summary className="cursor-pointer font-semibold">{copy('Assign a learning pathway', 'Gán lộ trình học')}</summary><div className="mt-3">{pathwayOpen && <ManualPathwayPanel />}</div></details></>}
+      {expert && mode === 'modules' && <><details className="rounded-lg border border-border bg-card p-3"><summary className="cursor-pointer font-semibold">{copy('Import Excel / ZIP', 'Import Excel / ZIP')}</summary><div className="mt-3"><LearningImportPanel onImported={() => void load()} /></div></details></>}
       {mode === 'learning' ? <Card><CardContent className="space-y-4 pt-6">
         {!learning ? <Button disabled={busy || contentBusy || loading} onClick={() => void run(async () => { setLearning(await moduleRequest<ModuleRevision>(`/learning/${encodeURIComponent(moduleId ?? '')}/start`, 'POST')) })}>{copy('Start learning', 'Bắt đầu học')}</Button>
           : <><Heading level={2}>{learning.payload.title}</Heading><Badge variant="outline">{copy('Revision', 'Phiên bản')} {learning.number}</Badge><ModuleMarkdown markdown={learning.payload.content.markdown} /></>}

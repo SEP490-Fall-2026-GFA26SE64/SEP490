@@ -1,4 +1,3 @@
-import { ManualAssignedPathwayPage } from './ManualAssignedPathwayPage'
 import * as React from 'react'
 import {
   ArrowRight,
@@ -23,7 +22,6 @@ import { InitialEmployeePathway } from './InitialEmployeePathway'
 export function AdaptivePathwayPage() {
   const { profile } = useEmployeeLearningState()
   const [params] = useSearchParams()
-  if (params.get('view') === 'assigned') return <ManualAssignedPathwayPage />
   return params.get('view') !== 'role' && profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
 }
 function IndependentSkillPathwayPage() {

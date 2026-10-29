@@ -1,4 +1,4 @@
-import { moduleRequest, type ManualPathway } from '../../../shared/api/moduleAuthoringApi'
+import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { GitFork, ListOrdered, RefreshCw, Search, Sparkles, Target } from 'lucide-react'
@@ -21,8 +21,7 @@ import { baselineTargetMet, pathwayAccessNote } from '../../../shared/api/initia
 
 export function InitialEmployeePathway() {
   const session = useInitialPathwaySession(), { t } = useTranslation()
-  const assignments = useQuery({ queryKey: ['manualPathways', session.scope], queryFn: ({ signal }) => moduleRequest<ManualPathway[]>('/pathways', 'GET', undefined, signal), enabled: Boolean(session.scope && session.data?.role === 'EMPLOYEE'), retry: false })
-  return <WorkspaceLayout>{Boolean(assignments.data?.length) && <Link className={buttonVariants({ variant: 'outline', className: 'mb-4' })} to="/employee/pathway?view=assigned">{t('initialPathway.display.assignedModules')}</Link>}{session.scope && session.data?.role === 'EMPLOYEE' ? <Pathway key={session.scope} scope={session.scope} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
+  return <WorkspaceLayout>{session.scope && session.data?.role === 'EMPLOYEE' ? <Pathway key={session.scope} scope={session.scope} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
 }
 function Pathway({ scope }: { scope: string }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key), [params] = useSearchParams(), archiveId = params.get('archive')
@@ -46,7 +45,7 @@ function Pathway({ scope }: { scope: string }) {
         </div>
         <div className="flex max-w-full flex-wrap items-center gap-2"><TabsList className="h-auto w-auto max-w-full flex-wrap"><TabsTrigger value="roadmap" className="gap-1.5"><GitFork className="size-4 text-primary" />{t('pathway.interactiveRoadmap')}</TabsTrigger><TabsTrigger value="timeline" className="gap-1.5"><ListOrdered className="size-4 text-primary" />{t('pathway.adaptiveTimeline')}</TabsTrigger></TabsList><Button variant="ghost" size="icon" title={tr('refresh')} aria-label={tr('refresh')} disabled={path.isFetching} onClick={() => void path.refetch()}><RefreshCw className="size-4" /></Button></div>
       </div>
-      {!status && <div data-testid="empty-initial-pathway" />}
+      {!status && <EmptyState data-testid="empty-initial-pathway" title={tr('empty')} action={<Link to="/employee/upskilling?tab=roles" className={buttonVariants({ variant: 'secondary' })}>{tr('roles')}</Link>} />}
       {status && status.displayState !== 'APPROVED' && !data.archived && <Card><CardContent className="p-4"><Text role="status">{status.displayState === 'NO_LEARNING_REQUIRED' ? tr('noLearningHelp') : ['BLOCKED', 'UNRESOLVED', 'STALE'].includes(status.displayState) ? tr(status.reasonCode === 'SEARCH_LIMIT' ? 'searchLimitNote' : status.displayState === 'STALE' ? 'stale' : 'setup') : tr('state.' + status.displayState)}</Text></CardContent></Card>}
       {data.modules.length > 0 && <>
         <Card><CardContent className="flex min-w-0 flex-wrap items-center justify-between gap-3 p-3 sm:p-4"><div className="flex min-w-0 flex-wrap items-center gap-2" title={ui('snapshotHelp')}>

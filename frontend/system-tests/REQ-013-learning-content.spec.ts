@@ -2005,3 +2005,42 @@ test('merge main keeps generated pathway presentation and real assigned lessons 
   ).toBeVisible({ timeout: 90000 })
   expect(errors).toEqual([])
 })
+
+// Current replacement for the historical R5–R7 manual-assignment journeys.
+// Each actor has its own test/session: no cross-role logout under concurrent catalog reads.
+test('retired manual assignment Expert UI and API', async ({ page }) => {
+  test.setTimeout(120000)
+  await login(page, 3, '/expert/modules')
+  await expect(page.getByText('Import Excel / ZIP', { exact: true })).toBeVisible()
+  await expect(page.getByText('Assign a learning pathway', { exact: true })).toHaveCount(0)
+  expect((await page.request.get(root + '/pathways')).status()).toBe(410)
+  expect((await mutate(page.request, root + '/pathways', 'POST', { learnerId: 'retired', title: 'Retired', moduleIds: [] })).status()).toBe(410)
+})
+
+test('retired manual assignment Employee guided pathway desktop and mobile', async ({ page }) => {
+  test.setTimeout(120000)
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  const firstRead = page.waitForResponse(response => response.url().endsWith('/api/v1/employee/pathway') && response.status() === 200, { timeout: 60000 })
+  await login(page, 4, '/employee/pathway?view=assigned')
+  await (await firstRead).finished()
+  await expect(page.getByTestId('empty-initial-pathway')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Review Roles', exact: true })).toBeVisible()
+  await expect(page.getByText('R4 - Learning content practice', { exact: true })).toHaveCount(0)
+  const reloadRead = page.waitForResponse(response => response.url().endsWith('/api/v1/employee/pathway') && response.status() === 200, { timeout: 60000 })
+  await page.reload()
+  await (await reloadRead).finished()
+  await expect(page.getByTestId('empty-initial-pathway')).toBeVisible()
+  await page.screenshot({ path: '/tmp/sep490-remove-manual-desktop.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('link', { name: 'Review Roles', exact: true })).toBeVisible()
+  await page.screenshot({ path: '/tmp/sep490-remove-manual-mobile.png', fullPage: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy()
+  expect(errors).toEqual([])
+})
+
+test('retired manual assignment cannot grant Employee lesson access', async ({ page }) => {
+  test.setTimeout(120000)
+  await login(page, 4, '/employee/pathway')
+  expect((await page.request.get(root + '/learning/MOD-e52f4286-6713-4426-b98d-24b02584bcc8/view')).status()).toBe(403)
+})

@@ -158,14 +158,14 @@ public class LearningContentController {
 
     @GetMapping("/pathways")
     public List<Pathway> pathways() {
-        return service.pathways();
+        throw new Failure(410, "Manual learning pathway assignment is no longer available");
     }
 
     public record Assignment(String learnerId, String title, List<String> moduleIds) {}
 
     @PostMapping("/pathways")
     public Pathway assign(@RequestBody Assignment input) {
-        return service.assign(input.learnerId(), input.title(), input.moduleIds());
+        throw new Failure(410, "Manual learning pathway assignment is no longer available");
     }
 
     @GetMapping("/learning/{id}/view")
