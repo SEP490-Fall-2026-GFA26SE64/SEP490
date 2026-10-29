@@ -376,15 +376,15 @@ export function TargetRoleVersionDiff({
             title="Click to view Target Mastery Adjusted skills"
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'MODIFIED'
-                ? 'bg-warning text-warning-foreground border-warning shadow-xs ring-2 ring-warning/25'
-                : 'bg-warning/20 text-amber-900 dark:text-amber-200 border-warning/40 hover:bg-warning/30 hover:border-warning/60'
+                ? 'bg-warning text-black border-warning shadow-xs ring-2 ring-warning/30 font-bold'
+                : 'bg-warning/20 text-black border-warning/50 hover:bg-warning/30 hover:border-warning/70'
             }`}
           >
-            <Sliders className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'MODIFIED' ? 'text-warning-foreground' : 'text-amber-900 dark:text-amber-200'}`} />
-            <span className={activeFilter === 'MODIFIED' ? 'text-warning-foreground' : 'text-amber-900 dark:text-amber-200'}>
+            <Sliders className="h-3.5 w-3.5 shrink-0 text-black" />
+            <span className="text-black font-semibold">
               {filteredModifiedSkills.length} Target Mastery Adjusted
             </span>
-            {activeFilter === 'MODIFIED' && <Check className="h-3 w-3 ml-0.5 text-warning-foreground" />}
+            {activeFilter === 'MODIFIED' && <Check className="h-3 w-3 ml-0.5 text-black stroke-[2.5]" />}
           </button>
 
           {/* Unchanged Skills Badge */}
@@ -394,15 +394,15 @@ export function TargetRoleVersionDiff({
             title="Click to view Unchanged skills"
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'UNCHANGED'
-                ? 'bg-secondary text-secondary-foreground border-primary/40 shadow-xs ring-2 ring-primary/25 font-bold'
+                ? 'bg-slate-700 text-white border-slate-700 shadow-xs ring-2 ring-slate-700/25 font-bold'
                 : 'bg-muted/70 text-muted-foreground border-border hover:bg-muted hover:text-foreground hover:border-muted-foreground/30'
             }`}
           >
-            <CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'UNCHANGED' ? 'text-primary' : 'text-muted-foreground'}`} />
-            <span className={activeFilter === 'UNCHANGED' ? 'text-secondary-foreground' : 'text-muted-foreground'}>
+            <CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'UNCHANGED' ? 'text-white' : 'text-muted-foreground'}`} />
+            <span className={activeFilter === 'UNCHANGED' ? 'text-white' : 'text-muted-foreground'}>
               {filteredUnchangedSkills.length} Unchanged
             </span>
-            {activeFilter === 'UNCHANGED' && <Check className="h-3 w-3 ml-0.5 text-primary" />}
+            {activeFilter === 'UNCHANGED' && <Check className="h-3 w-3 ml-0.5 text-white" />}
           </button>
         </div>
       </div>
@@ -560,7 +560,7 @@ export function TargetRoleVersionDiff({
                                 {cur.threshold}%
                               </td>
                               <td className="py-2 px-3 text-right">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-warning/20 text-amber-900 dark:text-amber-200 border border-warning/40">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-warning/20 text-black border border-warning/50">
                                   ~ {diffPct > 0 ? `+${diffPct}%` : `${diffPct}%`}
                                 </span>
                               </td>
