@@ -36,6 +36,12 @@ public final class InitialPathwayController {
     @PostMapping("/expert/initial-pathways/{id}/exclusions") ResponseEntity<?> exclude(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body) {
         return outcome(review.edit(id,key,parse(body,InitialPathwayReview.Edit.class),false));
     }
+    @PostMapping("/expert/initial-pathways/{id}/moves") ResponseEntity<?> move(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body) {
+        return outcome(review.move(id,key,parse(body,InitialPathwayReview.Move.class)));
+    }
+    @PostMapping("/expert/initial-pathways/{id}/removals") ResponseEntity<?> remove(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body) {
+        return outcome(review.remove(id,key,parse(body,InitialPathwayReview.Edit.class)));
+    }
     @PostMapping("/expert/initial-pathways/{id}/confirmation") ResponseEntity<?> approve(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body) {
         return outcome(review.confirm(id,key,parse(body,InitialPathwayReview.Expected.class)));
     }
@@ -48,6 +54,9 @@ public final class InitialPathwayController {
     private <T> ResponseEntity<T> ok(T body) { return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(body); }
     @ExceptionHandler(Failure.class) ResponseEntity<?> failure(Failure e) {
         return ResponseEntity.status(e.status()).cacheControl(CacheControl.noStore()).body(Map.of("code",e.code(),"retryable",e.retryable(),"correlationId",e.correlationId()));
+    }
+    @ExceptionHandler(InitialReviewOrder.Rejected.class) ResponseEntity<?> orderFailure(InitialReviewOrder.Rejected e) {
+        return ResponseEntity.unprocessableEntity().cacheControl(CacheControl.noStore()).body(Map.of("code","PREREQUISITE_ORDER_VIOLATION","diagnostics",e.diagnostics()));
     }
     @ExceptionHandler(com.adaptlearngraph.learning.application.RoleBaselineFlow.Failure.class)
     ResponseEntity<?> selectionFailure(com.adaptlearngraph.learning.application.RoleBaselineFlow.Failure e) { return failure(new Failure(e.status,e.code)); }

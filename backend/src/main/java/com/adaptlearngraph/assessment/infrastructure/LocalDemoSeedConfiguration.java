@@ -27,7 +27,8 @@ public class LocalDemoSeedConfiguration {
             require(sha256(manifest).equals("ca4fb71cc4a167e9d37d7133d9fe62a0cf8e9400ca9a5faeb22b4264a51b0bb6"),"Bank seed drift");
             var bank=parse(manifest,OfficialQuestionBankManifest.class);var catalog=parse(scope,OfficialQuestionBankCatalog.Scope.class);
             bank.validate(catalog);
-            var latest=new LocalCatalogBootstrap(graph);
+            var latest=com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(environment)
+                    ? LocalCatalogBootstrap.withSoftwareDevelopment(graph) : new LocalCatalogBootstrap(graph);
             latest.requireBaselineCompatibility(catalog);
             latest.bootstrap(driver);
             var jdbc=new NamedParameterJdbcTemplate(source);

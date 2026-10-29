@@ -44,23 +44,25 @@ public class WorkspaceBaselineConfiguration {
             if(!enabled(environment)) return;
             try {
                 var seed=java.nio.file.Files.readAllBytes(java.nio.file.Path.of(environment.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
-                new com.adaptlearngraph.assessment.infrastructure.LocalCatalogBootstrap(seed).verifySealed(driver);
+                com.adaptlearngraph.assessment.infrastructure.LocalCatalogBootstrap.forExistingDevelopment(driver,seed);
             } catch(java.io.IOException invalid) { throw new IllegalStateException("Exact sealed development catalog required",invalid); }
         };
     }
     private static boolean developmentBank(Environment environment,UUID organization,String occupation,UUID bank) {
         return catalog(enabled(environment),organization,occupation)
-                && com.adaptlearngraph.assessment.adaptive.demo.LocalDemoIdentity.BANK.equals(bank);
+                && (OCCUPATION.equals(occupation) && com.adaptlearngraph.assessment.adaptive.demo.LocalDemoIdentity.BANK.equals(bank)
+                    || com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION.equals(occupation)
+                    && com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.id("bank").equals(bank));
     }
     @Bean WorkspaceBaselineResources workspaceBaselineResources(DataSource source) {
         return new WorkspaceBaselineResources(new NamedParameterJdbcTemplate(source));
     }
     @Bean AdaptiveBlueprintStore workspaceBlueprintStore(DataSource source, ObjectMapper json, PlatformTransactionManager transactions) {
-        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(source), json, transactions);
+        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(source), json, transactions, true);
     }
-    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,Environment environment) {
+    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,Environment environment,ObjectMapper json) {
         var delegate=new JdbcAdaptiveTechnicalVersionStore(new NamedParameterJdbcTemplate(source));
-        return enabled(environment)?new DevelopmentTechnicalVersions(delegate):delegate;
+        return enabled(environment)?new DevelopmentTechnicalVersions(new SoftwareDevelopmentTechnicalVersions(source,json,delegate)):delegate;
     }
     @Bean AdaptiveBaselineCatalogPort workspaceBaselineCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment) {
         return scope -> {
@@ -154,7 +156,7 @@ public class WorkspaceBaselineConfiguration {
         return organization -> {
             var occupations = resources.occupations(organization);
             if (occupations.isEmpty()) return List.of();
-            boolean development=enabled(environment) && ORGANIZATION.equals(organization) && occupations.equals(Set.of(OCCUPATION));
+            boolean development=enabled(environment) && ORGANIZATION.equals(organization) && Set.of(OCCUPATION,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION).containsAll(occupations);
             return new CurrentRoleCatalog(driver, json, organization, occupations, development).roles(organization);
         };
     }

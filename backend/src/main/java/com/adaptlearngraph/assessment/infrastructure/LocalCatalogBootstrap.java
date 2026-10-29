@@ -16,6 +16,40 @@ public final class LocalCatalogBootstrap {
     private final Map<String,List<Map<String,Object>>> nodes=new TreeMap<>();
     private final Map<String,List<Map<String,Object>>> edges=new TreeMap<>();
     private final Map<String,String> expectedNodes=new TreeMap<>(),expectedEdges=new TreeMap<>();
+    private Map<String,String> baseEdges;
+    public static LocalCatalogBootstrap withSoftwareDevelopment(byte[] bytes) throws java.io.IOException {
+        var catalog=new LocalCatalogBootstrap(bytes);catalog.addSoftwareDevelopment();return catalog;
+    }
+    public boolean hasSoftwareDevelopment() { return baseEdges!=null; }
+    public static LocalCatalogBootstrap forExistingDevelopment(Driver driver,byte[] seed) throws java.io.IOException {
+        try(var session=driver.session()) {
+            var count=session.executeRead(tx->tx.run("MATCH ()-[r]->() RETURN count(r) AS c").single().get("c").asLong());
+            var catalog=count==5121 ? new LocalCatalogBootstrap(seed) : withSoftwareDevelopment(seed);
+            catalog.verifySealed(driver);return catalog;
+        }
+    }
+    private void addSoftwareDevelopment() throws java.io.IOException {
+        baseEdges=Map.copyOf(expectedEdges);
+        var bytes=SoftwareDevelopmentSeed.modules();
+        require(SoftwareDevelopmentSeed.MODULES_HASH.equals(sha256(bytes)),"SE module seed drift");
+        var manifest=JSON.readTree(bytes);
+        require(SOURCE_HASH.equals(manifest.path("baseSha256").asText()) && VERSION.equals(manifest.path("catalogVersion").asText()),"SE base pin drift");
+        for(var module:manifest.path("reusedModules")) {
+            var props=properties(module);
+            require(canonical(JSON.valueToTree(Map.of("label","LearningModule","props",props))).equals(expectedNodes.get(props.get("id"))),"SE reused module drift");
+        }
+        for(var row:manifest.path("reusedTeaching")) {
+            var props=properties(row);var type=props.remove("type");var from=props.remove("fromId");var to=props.remove("toId");
+            require(canonical(JSON.valueToTree(Map.of("type",type,"from",from,"to",to,"props",props))).equals(expectedEdges.get(props.get("id"))),"SE reused teaching drift");
+        }
+        for(var row:manifest.path("relationships")) {
+            var props=properties(row);var type=props.remove("type");var from=props.remove("fromId");var to=props.remove("toId");
+            require("HAS_SKILL_PREREQUISITE".equals(type) && expectedNodes.containsKey(from) && expectedNodes.containsKey(to),"Invalid SE prerequisite");
+            var edge=Map.<String,Object>of("type",type,"from",from,"to",to,"props",props);
+            require(expectedEdges.putIfAbsent((String)props.get("id"),canonical(JSON.valueToTree(edge)))==null,"Duplicate SE edge");
+            edges.computeIfAbsent((String)type,k->new ArrayList<>()).add(edge);
+        }
+    }
     public LocalCatalogBootstrap(byte[] bytes)throws java.io.IOException {
         require(SOURCE_HASH.equals(sha256(bytes)),"Latest catalog source drift");
         var data=JSON.readTree(bytes);
@@ -41,14 +75,14 @@ public final class LocalCatalogBootstrap {
     }
     void bootstrap(Driver driver) {
         try(var session=driver.session()) {
-            boolean present=session.executeRead(tx->{long count=tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong();if(count>0)verify(tx);return count>0;});
+            boolean present=session.executeRead(tx->{long count=tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong();if(count>0)verify(tx,true);return count>0;});
             if(present)return; // Also permits exact idempotent startup on a sealed read-only release.
             for(String label:nodes.keySet())session.run("CREATE CONSTRAINT ontology_v011_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
             session.executeWrite(tx->{
                 require(tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong()==0,"Catalog changed before import");
                 nodes.forEach((label,rows)->tx.run("UNWIND $rows AS row CREATE (n:"+label+") SET n=row",Map.of("rows",rows)).consume());
                 edges.forEach((type,rows)->tx.run("UNWIND $rows AS row MATCH (a {id:row.from}),(b {id:row.to}) CREATE (a)-[r:"+type+"]->(b) SET r=row.props",Map.of("rows",rows)).consume());
-                verify(tx);return true;
+                verify(tx,true);return true;
             });
         }
     }
@@ -58,10 +92,10 @@ public final class LocalCatalogBootstrap {
             var setting=session.run("SHOW SETTINGS YIELD name,value WHERE name='server.databases.default_to_read_only' RETURN value").single();
             require("true".equals(setting.get("value").asString()),"Local catalog must be sealed read-only before pathway use");
             require("read-only".equals(session.run("SHOW DATABASE neo4j YIELD access RETURN access").single().get("access").asString()),"Catalog database is writable");
-            session.executeRead(tx->{verify(tx);return true;});
+            session.executeRead(tx->{verify(tx,false);return true;});
         }
     }
-    private void verify(TransactionContext tx) {
+    private void verify(TransactionContext tx,boolean allowBase) {
         var actualNodes=new TreeMap<String,String>();var actualEdges=new TreeMap<String,String>();
         for(var row:tx.run("MATCH (n) RETURN labels(n) AS labels,properties(n) AS props").list()) {
             var labels=row.get("labels").asList(v->v.asString());require(labels.size()==1,"Unexpected catalog label");
@@ -69,7 +103,8 @@ public final class LocalCatalogBootstrap {
         }
         for(var row:tx.run("MATCH (a)-[r]->(b) RETURN type(r) AS type,a.id AS source,b.id AS target,properties(r) AS props").list())
             require(actualEdges.put(row.get("props").get("id").asString(),canonical(JSON.valueToTree(Map.of("type",row.get("type").asString(),"from",row.get("source").asString(),"to",row.get("target").asString(),"props",row.get("props").asMap()))))==null,"Ambiguous catalog edge");
-        require(expectedNodes.equals(actualNodes) && expectedEdges.equals(actualEdges),"Existing graph differs from latest release; preserve it and use a new volume");
+        require(expectedNodes.equals(actualNodes) && (expectedEdges.equals(actualEdges) || allowBase && baseEdges!=null && baseEdges.equals(actualEdges)),
+                "Catalog drift: expected exact base or approved SE supplement; preserve graph and inspect source");
     }
     /** Assessment bank keeps its original release. Only unchanged assessment semantics may be reused. */
     void requireBaselineCompatibility(OfficialQuestionBankCatalog.Scope historical) {

@@ -34,14 +34,15 @@ record OfficialQuestionBankManifest(String formatVersion, String manifestVersion
         return JSON.readValue(bytes, type);
     }
 
-    void validate(OfficialQuestionBankCatalog.Scope scope) {
+    void validate(OfficialQuestionBankCatalog.Scope scope) { validate(scope,15); }
+    void validate(OfficialQuestionBankCatalog.Scope scope,int expectedSkills) {
         require("official-question-bank-v1".equals(formatVersion), "Unsupported manifest format");
         text(manifestVersion); text(questionBank.name());
-        require(questionBank.id() != null && items != null && items.size() == 135, "Expected 135 items");
+        require(questionBank.id() != null && items != null && items.size() == expectedSkills*9, "Incomplete question-bank item scope");
         require(sourceSha256.equals(scope.sourceSha256()) && occupationId.equals(scope.occupationId())
                 && catalogVersion.equals(scope.catalogVersion()), "Manifest/snapshot mismatch");
         Map<String, String> skills = scope.skills();
-        require(skills.size() == 15, "Expected complete 15-skill Occupation");
+        require(skills.size() == expectedSkills, "Incomplete Occupation skill scope");
         Set<UUID> versionIds = new HashSet<>();
         Set<String> identities = new HashSet<>();
         Set<String> prompts = new HashSet<>();

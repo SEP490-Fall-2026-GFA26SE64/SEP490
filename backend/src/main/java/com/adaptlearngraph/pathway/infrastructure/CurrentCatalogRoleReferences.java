@@ -19,6 +19,8 @@ public final class CurrentCatalogRoleReferences implements RoleReferences {
         if(role.levels().stream().filter(l->l.id().equals(levelId)).count()!=1)throw new Failure(404,"LEVEL_NOT_AVAILABLE",false);
         if(!role.catalogVersion().equals(release.versions().get("catalog")))throw new Failure(503,"INCOHERENT_CATALOG_VERSION",false);
         var versions=new TreeMap<>(release.versions());versions.put("binding","role-level-choice-v1");
+        if(releases instanceof LocalReviewCatalogRelease local && local.hasSoftwareDevelopment() && com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION.equals(role.occupationId()))
+            versions.put("developmentSeed",com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.MODULES_HASH);
         return new RoleReference(scope.organizationId(),InitialCatalogPort.choiceId(roleId,levelId),roleId,levelId,role.occupationId(),
                 role.fingerprint(),release.token(),versions);
     }

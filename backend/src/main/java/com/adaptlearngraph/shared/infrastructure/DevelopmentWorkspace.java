@@ -18,6 +18,6 @@ public final class DevelopmentWorkspace {
                 && environment.getProperty("workspace.development-fixtures.enabled", Boolean.class, false);
     }
     public static boolean catalog(boolean enabled, UUID organization, String occupation) {
-        return enabled && ORGANIZATION.equals(organization) && OCCUPATION.equals(occupation);
+        return enabled && ORGANIZATION.equals(organization) && (OCCUPATION.equals(occupation) || "OCC-15-1252.00".equals(occupation));
     }
 }

@@ -14,3 +14,5 @@ documents/dataset/import/ontology_seed-v010.json text eol=crlf
 documents/dataset/import/ontology_seed-v011.json text eol=crlf
 # Bootstrap executes inside Linux containers, including on Windows hosts.
 docker/dev/*.sh text eol=lf
+backend/src/main/resources/db/seed/se-modules.json text eol=lf
+backend/src/main/resources/db/seed/question-bank-se.json text eol=lf

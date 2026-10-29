@@ -20,13 +20,20 @@ final class LocalSeedSemantics implements Semantics {
     private record Edge(String kind,String from,String to,Map<String,Object> properties) {}
     private record Snapshot(String fingerprint,Map<String,String> skills) {}
     LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous)throws java.io.IOException {
+        this(json,organization,current,historical,bank,previous,false);
+    }
+    static LocalSeedSemantics softwareDevelopment(ObjectMapper json,UUID organization,byte[] current) throws java.io.IOException {
+        return new LocalSeedSemantics(json,organization,current,current,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.bankBytes(),current,true);
+    }
+    private LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment) throws java.io.IOException {
         this.json=json;
         requireHash(current,com.adaptlearngraph.assessment.infrastructure.LocalCatalogBootstrap.SOURCE_HASH);
-        requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);requireHash(previous,V010_HASH);
+        if(softwareDevelopment)requireHash(bank,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.BANK_HASH);
+        else {requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);requireHash(previous,V010_HASH);}
         var manifest=json.readTree(bank);occupation=manifest.path("occupationId").asText();
         var now=snapshot(current,organization);var old=snapshot(historical,organization);var v010=snapshot(previous,organization);
         currentFingerprint=now.fingerprint();currentSkills=now.skills();
-        originalSkills=Map.of(eligibility(old.fingerprint(),organization,manifest),old.skills(),
+        originalSkills=softwareDevelopment ? Map.of(eligibility(now.fingerprint(),organization,manifest),now.skills()) : Map.of(eligibility(old.fingerprint(),organization,manifest),old.skills(),
                 eligibility(v010.fingerprint(),organization,manifest),v010.skills(),eligibility(now.fingerprint(),organization,manifest),now.skills());
     }
     @Override public Compatibility resolve(Binding binding,Profile profile) {

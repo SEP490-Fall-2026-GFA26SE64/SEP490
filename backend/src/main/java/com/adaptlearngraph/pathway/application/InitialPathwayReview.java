@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 public final class InitialPathwayReview {
     public record Expected(Long expectedRevision,String expectedContentHash) {}
     public record Edit(String moduleId,Long expectedRevision,String expectedContentHash,String reason) {}
+    public record Move(String moduleId,String direction,Long expectedRevision,String expectedContentHash,String reason) {}
     public record Summary(UUID id,long revision,String contentHash,Review reviewStatus,Validation validationStatus,String roleName,String levelName,
                           UUID learnerId,String learnerLabel) {}
     public record Detail(Summary summary,RoleGap.Result gaps,Revision revision,List<Offer> candidates) {}
@@ -55,7 +56,7 @@ public final class InitialPathwayReview {
     }
     public Checked validate(UUID id) {
         var a=expert();var s=scope(a,id);var r=request(s,id);summary(r);var previous=store.revision(s,id,r.revision());
-        var plan=planner.review(problem(r),previous.selectedModules(),settings.get().maxSearchStates());scope(a,id);
+        var plan=InitialReviewOrder.retain(planner.review(problem(r),previous.selectedModules(),settings.get().maxSearchStates()),previous,false);scope(a,id);
         String hash=Revision.identity(plan,previous.selectedModules(),previous.overrides());
         return new Checked(!hash.equals(previous.contentHash())?Validation.STALE:plan.valid()?Validation.VALID:Validation.UNRESOLVED,
                 plan.diagnostics(),hash,plan.warnings(),plan.quality(),plan.search());
@@ -67,6 +68,17 @@ public final class InitialPathwayReview {
         return mutate(id,key,new Expected(command.expectedRevision(),command.expectedContentHash()),operation,command.moduleId(),command.reason());
     }
     public Receipt confirm(UUID id,String key,Expected expected) { return mutate(id,key,expected,"CONFIRM",null,null); }
+    public Receipt remove(UUID id,String key,Edit command) {
+        if(command==null)throw new Failure(400,"INVALID_REQUEST");InitialPathwayPorts.text(command.moduleId());
+        if(command.reason()!=null && command.reason().length()>2000)throw new Failure(400,"INVALID_REQUEST");
+        return mutate(id,key,new Expected(command.expectedRevision(),command.expectedContentHash()),"REMOVE",command.moduleId(),command.reason());
+    }
+    public Receipt move(UUID id,String key,Move command) {
+        if(command==null || !Set.of("UP","DOWN").contains(Objects.toString(command.direction(),"")))throw new Failure(400,"INVALID_REQUEST");
+        InitialPathwayPorts.text(command.moduleId());
+        if(command.reason()!=null && command.reason().length()>2000)throw new Failure(400,"INVALID_REQUEST");
+        return mutate(id,key,new Expected(command.expectedRevision(),command.expectedContentHash()),"MOVE_"+command.direction(),command.moduleId(),command.reason());
+    }
     private Receipt mutate(UUID id,String key,Expected expected,String operation,String moduleId,String reason) {
         var a=expert();var s=scope(a,id);InitialPathwayPorts.commandKey(key);
         if(expected==null || expected.expectedRevision()==null || expected.expectedRevision()<1 || expected.expectedContentHash()==null
@@ -74,16 +86,20 @@ public final class InitialPathwayReview {
         String bodyHash=InitialIdentity.hash("command",Arrays.asList(operation,id,expected.expectedRevision(),expected.expectedContentHash(),moduleId,reason));
         var replay=coordination.transaction(s,()->receipt(a,id,key,operation,bodyHash));if(replay.isPresent())return replay.get();
         var before=request(s,id);check(before,expected);var old=store.revision(s,id,before.revision());
-        boolean noOp=operation.equals("INCLUDE") && old.selectedModules().contains(moduleId) || operation.equals("EXCLUDE") && !old.selectedModules().contains(moduleId);
+        String last=old.overrides().stream().filter(o->o.get(1).equals(moduleId)).reduce((a1,b1)->b1).map(List::getFirst).orElse("");
+        boolean noOp=operation.equals("INCLUDE") && old.selectedModules().contains(moduleId) || operation.equals("EXCLUDE") && !old.selectedModules().contains(moduleId)
+                || operation.equals("REMOVE") && !old.selectedModules().contains(moduleId) && !last.equals("EXCLUDE");
         var selected=new TreeSet<>(old.selectedModules());var overrides=new ArrayList<>(old.overrides());Plan plan=old.plan();
         if(!noOp) {
             var p=problem(before);
             if(operation.equals("INCLUDE")) {
                 if(p.offers().stream().noneMatch(o->o.moduleId().equals(moduleId) && o.canCover()))throw new Failure(422,"MODULE_NOT_ELIGIBLE");
                 selected.add(moduleId);
-            }else if(operation.equals("EXCLUDE"))selected.remove(moduleId);
+            }else if(operation.equals("EXCLUDE") || operation.equals("REMOVE"))selected.remove(moduleId);
             if(!operation.equals("CONFIRM"))overrides.add(List.of(operation,moduleId,Objects.toString(reason,"")));
             plan=planner.review(p,selected,settings.get().maxSearchStates());
+            plan=operation.startsWith("MOVE_")?InitialReviewOrder.move(plan,old,moduleId,operation.equals("MOVE_UP")):
+                    InitialReviewOrder.retain(plan,old,!operation.equals("CONFIRM"));
         }
         final var validated=plan;
         return coordination.transaction(s,()->{

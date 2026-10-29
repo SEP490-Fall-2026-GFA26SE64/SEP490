@@ -18,10 +18,16 @@ final class LocalSeedPlanning implements ReadinessDefinitions, Availability {
     private final Set<Edge> edges;
 
     LocalSeedPlanning(ObjectMapper json,byte[] seed,Profiles profiles,Semantics semantics) throws java.io.IOException {
+        this(json,seed,profiles,semantics,false);
+    }
+    LocalSeedPlanning(ObjectMapper json,byte[] seed,Profiles profiles,Semantics semantics,boolean softwareDevelopment) throws java.io.IOException {
         // Constructor checks the exact source hash and catalog invariants; no DB mutation.
         new LocalCatalogBootstrap(seed);
         this.profiles=profiles;this.semantics=semantics;
-        var root=json.readTree(seed);var inventory=new TreeMap<String,String>();var prerequisites=new HashSet<Edge>();
+        var root=json.readTree(seed);
+        if(softwareDevelopment) for(var edge:com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.supplement().path("relationships"))
+            ((com.fasterxml.jackson.databind.node.ArrayNode)root.path("relationships")).add(edge);
+        var inventory=new TreeMap<String,String>();var prerequisites=new HashSet<Edge>();
         for(var module:root.path("LearningModules"))if("ACTIVE".equals(module.path("status").asText()))
             inventory.put(module.path("id").asText(),module.path("contentVersion").asText());
         for(var relation:root.path("relationships"))if("HAS_SKILL_PREREQUISITE".equals(relation.path("type").asText())

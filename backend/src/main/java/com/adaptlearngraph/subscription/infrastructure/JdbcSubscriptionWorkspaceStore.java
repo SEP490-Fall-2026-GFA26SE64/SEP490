@@ -52,7 +52,7 @@ public final class JdbcSubscriptionWorkspaceStore implements SubscriptionWorkspa
         // Explicit development grant, never a fabricated paid order/period or a billing privilege.
         boolean developmentGrant=developmentFixtures && action==Action.WORKSPACE
                 && com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.ORGANIZATION.equals(organizationId)
-                && Set.of("employee","expert","ld").stream().map(com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace::id)
+                && Set.of("employee","employee-se","expert","ld").stream().map(com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace::id)
                     .anyMatch(actual.accountId()::equals);
         if (!SubscriptionAccessPolicy.permits(actual, action, organizationId, state.ready(), state.suspended(), state.paid() || developmentGrant)) throw forbidden();
     }

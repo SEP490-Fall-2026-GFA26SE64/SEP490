@@ -36,7 +36,7 @@ abstract class InitialPathwayComponents {
         if(localFixtures(env) && env.getProperty("pathway.initial.catalog.allow-review-seed",Boolean.class,false)) {
             try{return new LocalReviewCatalogRelease(driver,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(
                     java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),
-                    env.getProperty("pathway.initial.readiness.version"));}
+                    env.getProperty("pathway.initial.readiness.version"),com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(env));}
             catch(java.io.IOException invalid){throw new IllegalStateException("Local review seed unavailable",invalid);}
         }
         return new ReleaseAuthority() {
@@ -63,11 +63,16 @@ abstract class InitialPathwayComponents {
     }
     @Bean @ConditionalOnMissingBean(Semantics.class) Semantics initialSemantics(ReleaseAuthority releases,ObjectMapper json,Environment env) {
         if(releases instanceof LocalReviewCatalogRelease) {
-            try{return new LocalSeedSemantics(json,LocalDemoIdentity.ORG,
+            try{var original=new LocalSeedSemantics(json,LocalDemoIdentity.ORG,
                     java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),
                     java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.history-v08-file","/seed/baseline-history-v08.json"))),
                     java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.bank-v08-file","/seed/baseline-bank-v08.json"))),
-                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.history-v010-file","/seed/baseline-history-v010.json"))));}
+                    java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.history-v010-file","/seed/baseline-history-v010.json"))));
+                if(!com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(env))return original;
+                var se=LocalSeedSemantics.softwareDevelopment(json,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))));
+                return (binding,profile)->com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION.equals(binding.occupationId())
+                        ? se.resolve(binding,profile) : original.resolve(binding,profile);
+            }
             catch(java.io.IOException invalid){throw new IllegalStateException("Local compatibility source unavailable",invalid);}
         }
         return (b,p)->{throw missing("SEMANTIC_COMPATIBILITY_NOT_CONFIGURED");};
@@ -78,7 +83,7 @@ abstract class InitialPathwayComponents {
         if(!LocalSeedPlanning.VERSION.equals(env.getProperty("pathway.initial.readiness.version")))
             throw new IllegalStateException("Local planning requires its exact policy version");
         try{return new LocalSeedPlanning(json,java.nio.file.Files.readAllBytes(java.nio.file.Path.of(
-                env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),profiles,semantics);}
+                env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),profiles,semantics,com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(env));}
         catch(java.io.IOException invalid){throw new IllegalStateException("Local planning source unavailable",invalid);}
     }
     @Bean @ConditionalOnMissingBean(ReadinessDefinitions.class) ReadinessDefinitions initialReadinessDefinitions(ObjectMapper json,Profiles profiles,Semantics semantics,Environment env){

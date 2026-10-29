@@ -78,9 +78,10 @@ services:
     entrypoint: ["/bin/sh", "-ec", "java -jar /app/app.jar; touch /catalog-state/imported-v011"]
     environment:
       <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,local-demo-seed
+      SPRING_PROFILES_ACTIVE: local,local-demo-seed,workspace-development
       SPRING_MAIN_WEB_APPLICATION_TYPE: none
       ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
     volumes:
       - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
@@ -109,6 +110,24 @@ services:
       WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:-Workspace-Development-490!}
     depends_on:
       seed:
+        condition: service_completed_successfully
+    restart: "no"
+
+  se-seed:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,workspace-development,software-development-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:-Workspace-Development-490!}
+    volumes:
+      - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
+    depends_on:
+      workspace-seed:
+        condition: service_completed_successfully
+      catalog-ready:
         condition: service_completed_successfully
     restart: "no"
 
@@ -179,6 +198,8 @@ services:
       - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
       - workspace_security:/workspace-config:ro
     depends_on:
+      se-seed:
+        condition: service_completed_successfully
       workspace-keys:
         condition: service_completed_successfully
       workspace-seed:
