@@ -1,8 +1,15 @@
+management:
+  health:
+    mail:
+      enabled: false
+
 spring:
   flyway:
     enabled: false
 
 registration:
+  encryption-key: ${REGISTRATION_ENCRYPTION_KEY:ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWU=}
+  hmac-key: ${REGISTRATION_HMAC_KEY:aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg=}
   cookie-secure: ${REGISTRATION_COOKIE_SECURE:false}
 
 catalog:

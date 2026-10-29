@@ -3645,7 +3645,7 @@ export function ExpertAssignedRolesPage() {
 
                                 <td className="py-2.5 px-3 text-muted-foreground">
 
-                                  <div className="line-clamp-2 overflow-hidden text-xs text-muted-foreground leading-relaxed break-words" title={desc}>
+                                  <div className="line-clamp-2 max-h-[2.5rem] overflow-hidden text-xs text-muted-foreground leading-relaxed break-words" title={desc}>
 
                                     {desc}
 
@@ -5101,7 +5101,7 @@ export function ExpertAssignedRolesPage() {
 
                                                 <td className="py-2 px-3 text-muted-foreground">
 
-                                                  <div className="line-clamp-2 overflow-hidden text-xs text-muted-foreground leading-relaxed break-words" title={comp?.description}>
+                                                  <div className="line-clamp-2 max-h-[2.5rem] overflow-hidden text-xs text-muted-foreground leading-relaxed break-words" title={comp?.description}>
 
                                                     {comp?.description || 'Core knowledge and functional capability cluster.'}
 
