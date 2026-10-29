@@ -279,10 +279,10 @@ export function TargetRoleVersionDiff({
             <button
               type="button"
               onClick={() => setSelectedLevel('ALL')}
-              className={`px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 selectedLevel === 'ALL'
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                  : 'bg-card text-foreground hover:bg-muted/40 border-border'
+                  ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                  : 'bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50 border-border'
               }`}
             >
               All Levels ({diff.totalChanges} changes)
@@ -299,17 +299,17 @@ export function TargetRoleVersionDiff({
                   key={lvl}
                   type="button"
                   onClick={() => setSelectedLevel(lvl)}
-                  className={`px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
                     selectedLevel === lvl
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                      : 'bg-card text-foreground hover:bg-muted/40 border-border'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                      : 'bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50 border-border'
                   }`}
                 >
                   <span>{lvl}</span>
                   <span
-                    className={`text-[10px] px-1 py-0.2 rounded-full font-mono ${
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
                       selectedLevel === lvl
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-white/25 text-white'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >
@@ -331,24 +331,24 @@ export function TargetRoleVersionDiff({
           )}
         </div>
 
-        {/* 2. Interactive Change Metric Badges (Full Solid Background, Black Text, Unified Skills & Competencies) */}
+        {/* 2. Interactive Change Metric Badges (Strict Design System Tokens) */}
         <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
           {/* Added Badge (Skills + Competencies) */}
           <button
             type="button"
             onClick={() => handleToggleFilter('ADDED')}
             title="Click to view Added Skills and Competencies"
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer border bg-[#DCFCE7] text-slate-900 border-[#86EFAC] hover:bg-[#BBF7D0] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'ADDED'
-                ? 'ring-2 ring-slate-900 shadow-xs scale-[1.02] bg-[#BBF7D0]'
-                : ''
+                ? 'bg-success text-success-foreground border-success shadow-xs ring-2 ring-success/25'
+                : 'bg-success/15 text-success border-success/30 hover:bg-success/25 hover:border-success/50'
             }`}
           >
-            <PlusCircle className="h-3.5 w-3.5 text-slate-900 shrink-0" />
-            <span className="text-slate-900">
+            <PlusCircle className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'ADDED' ? 'text-success-foreground' : 'text-success'}`} />
+            <span className={activeFilter === 'ADDED' ? 'text-success-foreground' : 'text-success'}>
               +{filteredAddedSkills.length} Skills · +{filteredAddedComps.length} Competencies Added
             </span>
-            {activeFilter === 'ADDED' && <Check className="h-3 w-3 ml-0.5 text-slate-900" />}
+            {activeFilter === 'ADDED' && <Check className="h-3 w-3 ml-0.5 text-success-foreground" />}
           </button>
 
           {/* Removed Badge (Skills + Competencies) */}
@@ -356,17 +356,17 @@ export function TargetRoleVersionDiff({
             type="button"
             onClick={() => handleToggleFilter('REMOVED')}
             title="Click to view Removed Skills and Competencies"
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer border bg-[#FFE4E6] text-slate-900 border-[#FDA4AF] hover:bg-[#FECDD3] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'REMOVED'
-                ? 'ring-2 ring-slate-900 shadow-xs scale-[1.02] bg-[#FECDD3]'
-                : ''
+                ? 'bg-destructive text-destructive-foreground border-destructive shadow-xs ring-2 ring-destructive/25'
+                : 'bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/25 hover:border-destructive/50'
             }`}
           >
-            <MinusCircle className="h-3.5 w-3.5 text-slate-900 shrink-0" />
-            <span className="text-slate-900">
+            <MinusCircle className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'REMOVED' ? 'text-destructive-foreground' : 'text-destructive'}`} />
+            <span className={activeFilter === 'REMOVED' ? 'text-destructive-foreground' : 'text-destructive'}>
               -{filteredRemovedSkills.length} Skills · -{filteredRemovedComps.length} Competencies Removed
             </span>
-            {activeFilter === 'REMOVED' && <Check className="h-3 w-3 ml-0.5 text-slate-900" />}
+            {activeFilter === 'REMOVED' && <Check className="h-3 w-3 ml-0.5 text-destructive-foreground" />}
           </button>
 
           {/* Modified Skills Badge */}
@@ -374,17 +374,17 @@ export function TargetRoleVersionDiff({
             type="button"
             onClick={() => handleToggleFilter('MODIFIED')}
             title="Click to view Target Mastery Adjusted skills"
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer border bg-[#FEF3C7] text-slate-900 border-[#FCD34D] hover:bg-[#FDE68A] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'MODIFIED'
-                ? 'ring-2 ring-slate-900 shadow-xs scale-[1.02] bg-[#FDE68A]'
-                : ''
+                ? 'bg-warning text-warning-foreground border-warning shadow-xs ring-2 ring-warning/25'
+                : 'bg-warning/20 text-amber-900 dark:text-amber-200 border-warning/40 hover:bg-warning/30 hover:border-warning/60'
             }`}
           >
-            <Sliders className="h-3.5 w-3.5 text-slate-900 shrink-0" />
-            <span className="text-slate-900">
+            <Sliders className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'MODIFIED' ? 'text-warning-foreground' : 'text-amber-900 dark:text-amber-200'}`} />
+            <span className={activeFilter === 'MODIFIED' ? 'text-warning-foreground' : 'text-amber-900 dark:text-amber-200'}>
               {filteredModifiedSkills.length} Target Mastery Adjusted
             </span>
-            {activeFilter === 'MODIFIED' && <Check className="h-3 w-3 ml-0.5 text-slate-900" />}
+            {activeFilter === 'MODIFIED' && <Check className="h-3 w-3 ml-0.5 text-warning-foreground" />}
           </button>
 
           {/* Unchanged Skills Badge */}
@@ -392,15 +392,17 @@ export function TargetRoleVersionDiff({
             type="button"
             onClick={() => handleToggleFilter('UNCHANGED')}
             title="Click to view Unchanged skills"
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer border bg-[#F1F5F9] text-slate-900 border-[#CBD5E1] hover:bg-[#E2E8F0] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'UNCHANGED'
-                ? 'ring-2 ring-slate-900 shadow-xs scale-[1.02] bg-[#E2E8F0]'
-                : ''
+                ? 'bg-secondary text-secondary-foreground border-primary/40 shadow-xs ring-2 ring-primary/25 font-bold'
+                : 'bg-muted/70 text-muted-foreground border-border hover:bg-muted hover:text-foreground hover:border-muted-foreground/30'
             }`}
           >
-            <CheckCircle2 className="h-3.5 w-3.5 text-slate-900 shrink-0" />
-            <span className="text-slate-900">{filteredUnchangedSkills.length} Unchanged</span>
-            {activeFilter === 'UNCHANGED' && <Check className="h-3 w-3 ml-0.5 text-slate-900" />}
+            <CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${activeFilter === 'UNCHANGED' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <span className={activeFilter === 'UNCHANGED' ? 'text-secondary-foreground' : 'text-muted-foreground'}>
+              {filteredUnchangedSkills.length} Unchanged
+            </span>
+            {activeFilter === 'UNCHANGED' && <Check className="h-3 w-3 ml-0.5 text-primary" />}
           </button>
         </div>
       </div>
@@ -522,7 +524,7 @@ export function TargetRoleVersionDiff({
                                 {st.threshold}%
                               </td>
                               <td className="py-2 px-3 text-right">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#DCFCE7] text-slate-900 border border-[#86EFAC]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-success/15 text-success border border-success/30">
                                   + Added
                                 </span>
                               </td>
@@ -558,7 +560,7 @@ export function TargetRoleVersionDiff({
                                 {cur.threshold}%
                               </td>
                               <td className="py-2 px-3 text-right">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEF3C7] text-slate-900 border border-[#FCD34D]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-warning/20 text-amber-900 dark:text-amber-200 border border-warning/40">
                                   ~ {diffPct > 0 ? `+${diffPct}%` : `${diffPct}%`}
                                 </span>
                               </td>
@@ -591,7 +593,7 @@ export function TargetRoleVersionDiff({
                               </td>
                               <td className="py-2 px-3 text-center text-muted-foreground font-mono">—</td>
                               <td className="py-2 px-3 text-right">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#FFE4E6] text-slate-900 border border-[#FDA4AF]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-destructive/15 text-destructive border border-destructive/30">
                                   - Removed
                                 </span>
                               </td>
@@ -653,7 +655,7 @@ export function TargetRoleVersionDiff({
                                 <span className="text-muted-foreground">{comp?.name || compId}</span>
                               </td>
                               <td className="py-2 px-3 text-right">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#DCFCE7] text-slate-900 border border-[#86EFAC]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-success/15 text-success border border-success/30">
                                   + Added
                                 </span>
                               </td>
@@ -679,7 +681,7 @@ export function TargetRoleVersionDiff({
                                 <span className="text-muted-foreground line-through">{comp?.name || compId}</span>
                               </td>
                               <td className="py-2 px-3 text-right">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#FFE4E6] text-slate-900 border border-[#FDA4AF]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-destructive/15 text-destructive border border-destructive/30">
                                   - Removed
                                 </span>
                               </td>
@@ -740,7 +742,7 @@ export function TargetRoleVersionDiff({
                               {st.threshold}%
                             </td>
                             <td className="py-2 px-3 text-right">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
                                 <Check className="h-3 w-3" /> Unchanged
                               </span>
                             </td>
