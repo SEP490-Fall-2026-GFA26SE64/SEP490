@@ -118,7 +118,7 @@ export function Combobox({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md animate-in fade-in-80">
+        <div className="absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80">
           <div className={cn('flex items-center border-b border-border', size === 'sm' ? 'px-2.5 py-1.5' : 'px-3 py-2')}>
             <Search className={cn('mr-2 shrink-0 text-muted-foreground', size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
             <input

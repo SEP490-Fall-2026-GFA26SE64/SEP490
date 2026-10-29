@@ -3,6 +3,7 @@ export interface SkillTargetConfig {
   skillCode: string
   skillName: string
   threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
+  level?: string
 }
 
 export interface RoleLevelThresholds {
@@ -30,11 +31,12 @@ export interface TargetRoleModel {
   rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
+  levelCompetencies?: Record<string, string[]>
   activeEnrollments: number
   occupationCode?: string
   occupationTitle?: string
   scope?: string
-  levels?: ('Junior' | 'Middle' | 'Senior')[]
+  levels?: string[]
   levelThresholds?: RoleLevelThresholds
   createdAt?: string
   updatedAt: string
@@ -49,6 +51,11 @@ export interface OnetOccupation {
   assignedExpertIds: string[]
 }
 
+export const EXPERT_SARAH_CHEN_ID = 'a0000000-0000-0000-0000-000000000002'
+export const EXPERT_MARCUS_VANCE_ID = 'a0000000-0000-0000-0000-000000000005'
+export const EXPERT_ALEX_RIVERA_ID = 'a0000000-0000-0000-0000-000000000006'
+export const EXPERT_LINH_NGUYEN_ID = 'a0000000-0000-0000-0000-000000000007'
+
 export const ONET_OCCUPATIONS: OnetOccupation[] = [
   {
     code: '15-1252.00',
@@ -56,7 +63,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Design, code, and test applications, systems software, and infrastructure pipelines.',
     jobZone: 4,
     profiles: ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH'],
-    assignedExpertIds: ['expert-chen', 'expert-vance'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID],
   },
   {
     code: '15-1243.00',
@@ -64,7 +71,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Design database systems, analytical warehouses, governance policies, and data pipelines.',
     jobZone: 4,
     profiles: ['DATARCH', 'DATAENG', 'DATAGOV', 'DBANALYSIS', 'DBDEV', 'ENTERPRISE'],
-    assignedExpertIds: ['expert-vance', 'expert-nguyen'],
+    assignedExpertIds: [EXPERT_MARCUS_VANCE_ID],
   },
   {
     code: '15-1253.00',
@@ -72,7 +79,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Design test automation suites, quality gates, and system verification protocols.',
     jobZone: 4,
     profiles: ['QAAUTO', 'QAA', 'QAENG'],
-    assignedExpertIds: ['expert-chen', 'expert-rivera'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID, EXPERT_ALEX_RIVERA_ID],
   },
   {
     code: '15-1299.08',
@@ -80,7 +87,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Architect complex systems, cloud infrastructure networks, and enterprise solutions.',
     jobZone: 4,
     profiles: ['SYSARCH', 'INFRA', 'INTEGRATION', 'SYSANALYSIS', 'WEBARCH'],
-    assignedExpertIds: ['expert-rivera', 'expert-vance'],
+    assignedExpertIds: [EXPERT_ALEX_RIVERA_ID],
   },
   {
     code: '15-1212.00',
@@ -88,7 +95,7 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
     description: 'Engineer security perimeters, vulnerability analysis, access policies, and incident response.',
     jobZone: 4,
     profiles: ['SECOFFICER', 'SECANALYSIS', 'NETSEC'],
-    assignedExpertIds: ['expert-rivera', 'expert-chen'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID],
   },
 ]
 
@@ -106,15 +113,19 @@ export const ONTOLOGY_LEVELS: OntologyLevel[] = [
   { code: 'S', name: 'Senior', rank: 3, threshold: 0.90, context: 'Complex solution architecture, system review, and governance' },
 ]
 
-export function resolveOccupationForRole(role: {
-  code?: string
-  title?: string
-  domainCode?: string
-  familyCode?: string
-  occupationCode?: string
-}): OnetOccupation {
+export function resolveOccupationForRole(
+  role: {
+    code?: string
+    title?: string
+    domainCode?: string
+    familyCode?: string
+    occupationCode?: string
+  },
+  organizationId?: string
+): OnetOccupation {
+  const occupations = getAvailableOccupations(organizationId)
   if (role.occupationCode) {
-    const found = ONET_OCCUPATIONS.find((o) => o.code === role.occupationCode)
+    const found = occupations.find((o) => o.code === role.occupationCode)
     if (found) return found
   }
 
@@ -125,18 +136,19 @@ export function resolveOccupationForRole(role: {
 
   // Match by keyword in title, code, or family
   if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
-    return ONET_OCCUPATIONS[4] // 15-1212.00
+    return occupations.find((o) => o.code === '15-1212.00') || ONET_OCCUPATIONS[4]
   }
   if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
-    return ONET_OCCUPATIONS[2] // 15-1253.00
+    return occupations.find((o) => o.code === '15-1253.00') || ONET_OCCUPATIONS[2]
   }
   if (title.includes('data') || title.includes('database') || title.includes('analytics') || domain === 'DATA' || code.includes('DATA') || family.includes('DATA')) {
-    return ONET_OCCUPATIONS[1] // 15-1243.00
+    return occupations.find((o) => o.code === '15-1243.00') || ONET_OCCUPATIONS[1]
   }
   if (title.includes('system') || title.includes('network') || title.includes('cloud') || title.includes('infrastructure') || (title.includes('architect') && !title.includes('software')) || code.includes('SYS') || code.includes('INFRA')) {
-    return ONET_OCCUPATIONS[3] // 15-1299.08
+    return occupations.find((o) => o.code === '15-1299.08') || ONET_OCCUPATIONS[3]
   }
-  return ONET_OCCUPATIONS[0] // 15-1252.00 Software Developers
+
+  return occupations.find((o) => o.code === '15-1252.00') || ONET_OCCUPATIONS[0]
 }
 
 /**
@@ -209,18 +221,6 @@ export function sortTargetRolesWithDraftsBelowPublished(
   // For existing published roles, anchor to the published base version's creation time so spawning a successor draft does not alter the lineage order.
   // For brand-new draft roles, use the creation time of that new role.
   const getLineageBaseTime = (groupRoles: TargetRoleModel[]): number => {
-    const published = groupRoles.filter((r) => r.status === 'published')
-    if (published.length > 0) {
-      let baseTime = Infinity
-      for (const r of published) {
-        const t = r.createdAt ? new Date(r.createdAt).getTime() : 0
-        if (!isNaN(t) && t > 0 && t < baseTime) {
-          baseTime = t
-        }
-      }
-      return baseTime === Infinity ? 0 : baseTime
-    }
-
     let latest = 0
     for (const r of groupRoles) {
       const createdTime = r.createdAt ? new Date(r.createdAt).getTime() : 0
@@ -246,20 +246,16 @@ export function sortTargetRolesWithDraftsBelowPublished(
     const roleB = rolesB[0]
 
     if (sortBy === 'latest') {
-      const isPureDraftA = isPureDraftLineage(rolesA)
-      const isPureDraftB = isPureDraftLineage(rolesB)
-
-      // Rule: Brand-new / pure draft roles (e.g. ROLE-GENAI-01 or newly created role) take precedence on top
-      if (isPureDraftA && !isPureDraftB) return -1
-      if (isPureDraftB && !isPureDraftA) return 1
-
-      // If both are pure drafts (e.g. brand new role vs existing draft role) or both have published versions:
-      // The newest created lineage goes to the top.
       const timeA = getLineageBaseTime(rolesA)
       const timeB = getLineageBaseTime(rolesB)
       if (timeB !== timeA) {
         return timeB - timeA
       }
+
+      const isPureDraftA = isPureDraftLineage(rolesA)
+      const isPureDraftB = isPureDraftLineage(rolesB)
+      if (isPureDraftA && !isPureDraftB) return -1
+      if (isPureDraftB && !isPureDraftA) return 1
 
       // Priority: Newly dispatched / submitted roles
       const hasSentA = rolesA.some((r) => r.status === 'submitted' || r.status === 'sent')
@@ -285,8 +281,7 @@ export function sortTargetRolesWithDraftsBelowPublished(
       .sort((a, b) => compareRoleVersions(b.version, a.version))
 
     const newestPublished = published[0]
-    // Older published versions ordered ascending: v1.0 -> v1.1 -> v1.2
-    const olderPublished = published.slice(1).sort((a, b) => compareRoleVersions(a.version, b.version))
+    const olderPublished = published.slice(1)
 
     // Draft / sent / rejected versions placed immediately below published
     const nonPublished = groupRoles
@@ -319,25 +314,168 @@ export const CAREER_FAMILIES = [
 ] as const
 
 export const ELIGIBLE_EXPERTS = [
-  { id: 'expert-chen', name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
-  { id: 'expert-vance', name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
-  { id: 'expert-rivera', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
-  { id: 'expert-nguyen', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
-] as const
+  { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect', email: 'expert@technova.com' },
+  { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect', email: 'marcus.vance@technova.com' },
+  { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer', email: 'alex.rivera@technova.com' },
+  { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist', email: 'linh.nguyen@technova.com' },
+] as const;
 
-export type EligibleExpert = typeof ELIGIBLE_EXPERTS[number]
+export type EligibleExpert = {
+  id: string;
+  name: string;
+  title: string;
+  email?: string;
+};
+
+export function normalizeExpertId(id?: string | null): string {
+  if (!id) return '';
+  if (id === 'expert-chen' || id === EXPERT_SARAH_CHEN_ID || id === 'USR-102') return EXPERT_SARAH_CHEN_ID;
+  if (id === 'expert-vance' || id === EXPERT_MARCUS_VANCE_ID || id === 'USR-104') return EXPERT_MARCUS_VANCE_ID;
+  if (id === 'expert-rivera' || id === EXPERT_ALEX_RIVERA_ID) return EXPERT_ALEX_RIVERA_ID;
+  if (id === 'expert-nguyen' || id === EXPERT_LINH_NGUYEN_ID) return EXPERT_LINH_NGUYEN_ID;
+  return id;
+}
+
+export function getOrganizationExperts(organizationId?: string): EligibleExpert[] {
+  const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
+    ? organizationId
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
+
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+
+  const expertsMap = new Map<string, EligibleExpert>();
+
+  // 1. If TechNova, seed standard eligible experts so all 4 are ALWAYS available
+  if (isTechnova) {
+    for (const exp of ELIGIBLE_EXPERTS) {
+      expertsMap.set(exp.id, { ...exp });
+    }
+  }
+
+  // 2. Try to load dynamically cached experts for this organization from the subscription/members API
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('adaptlearn_org_experts_' + effectiveOrg);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          for (const p of parsed) {
+            if (p && p.id) {
+              const canonicalId = normalizeExpertId(p.id);
+              const matchedSeed = ELIGIBLE_EXPERTS.find((se) => se.id === canonicalId || se.name.toLowerCase() === p.name?.toLowerCase());
+              expertsMap.set(canonicalId, {
+                id: canonicalId,
+                name: p.name || matchedSeed?.name || 'Domain Expert',
+                title: p.title || matchedSeed?.title || 'Domain Expert',
+                email: p.email || matchedSeed?.email,
+              });
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // 3. Try to load from companyStore companies in localStorage
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const rawCompanies = localStorage.getItem('adaptlearn_companies_v4');
+      if (rawCompanies) {
+        const companies = JSON.parse(rawCompanies);
+        if (Array.isArray(companies)) {
+          const matched = companies.find((c: any) => c.id === effectiveOrg || (isTechnova && c.id === 'comp-technova'));
+          if (matched && Array.isArray(matched.users)) {
+            const expertUsers = matched.users.filter((u: any) => u.role === 'Expert' || u.role === 'DOMAIN_EXPERT');
+            for (const u of expertUsers) {
+              if (u && u.id) {
+                const canonicalId = normalizeExpertId(u.id);
+                const matchedSeed = ELIGIBLE_EXPERTS.find((se) => se.id === canonicalId || se.name.toLowerCase() === u.name?.toLowerCase());
+                expertsMap.set(canonicalId, {
+                  id: canonicalId,
+                  name: u.name || matchedSeed?.name || 'Domain Expert',
+                  title: u.department || matchedSeed?.title || 'Domain Expert',
+                  email: u.email || matchedSeed?.email,
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return Array.from(expertsMap.values());
+}
+
+export function findEligibleExpert(id?: string | null, organizationId?: string): EligibleExpert | undefined {
+  if (!id) return undefined;
+  const normalized = normalizeExpertId(id);
+  const orgExperts = getOrganizationExperts(organizationId);
+  const found = orgExperts.find((e) => normalizeExpertId(e.id) === normalized);
+  if (found) return found;
+  return ELIGIBLE_EXPERTS.find((e) => normalizeExpertId(e.id) === normalized);
+}
+
+export function getAvailableOccupations(organizationId?: string): OnetOccupation[] {
+  const codeMap = new Map<string, OnetOccupation>();
+  for (const o of ONET_OCCUPATIONS) {
+    codeMap.set(o.code, { ...o });
+  }
+
+  const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
+    ? organizationId
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
+
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('adaptlearn_occupations_v2_' + effectiveOrg) ||
+        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_e0000000-0000-0000-0000-000000000001') : null) ||
+        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_comp-technova') : null);
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (Array.isArray(stored)) {
+          for (const item of stored) {
+            if (item.code) {
+              const existing = codeMap.get(item.code);
+              codeMap.set(item.code, {
+                code: item.code,
+                name: item.name || existing?.name || item.code,
+                description: item.description || existing?.description || '',
+                jobZone: item.jobZone || existing?.jobZone || 4,
+                profiles: existing?.profiles || ['DEV'],
+                assignedExpertIds: Array.isArray(item.assignedExperts)
+                  ? item.assignedExperts.map((ae: any) => normalizeExpertId(ae.id || ae))
+                  : existing?.assignedExpertIds || [],
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch {}
+
+  return Array.from(codeMap.values());
+}
 
 /**
- * Returns domain experts who are specifically assigned and certified for a given O*NET occupation.
+ * Returns domain experts who are specifically assigned and certified for a given O*NET occupation,
+ * or all experts available to this organization if none are specifically restricted.
  */
-export function getEligibleExpertsForOccupation(occupationCode?: string): EligibleExpert[] {
-  if (!occupationCode) return [...ELIGIBLE_EXPERTS]
-  const occ = ONET_OCCUPATIONS.find((o) => o.code === occupationCode)
+export function getEligibleExpertsForOccupation(occupationCode?: string, organizationId?: string): EligibleExpert[] {
+  const orgExperts = getOrganizationExperts(organizationId);
+  if (!occupationCode) return orgExperts;
+
+  const occupations = getAvailableOccupations(organizationId);
+  const occ = occupations.find((o) => o.code === occupationCode);
   if (!occ || !occ.assignedExpertIds || occ.assignedExpertIds.length === 0) {
-    return [...ELIGIBLE_EXPERTS]
+    return orgExperts;
   }
-  const matched = ELIGIBLE_EXPERTS.filter((exp) => occ.assignedExpertIds.includes(exp.id))
-  return matched.length > 0 ? matched : [...ELIGIBLE_EXPERTS]
+
+  const assignedNormalized = occ.assignedExpertIds.map(normalizeExpertId);
+  const filtered = orgExperts.filter((exp) => assignedNormalized.includes(normalizeExpertId(exp.id)));
+  return filtered.length > 0 ? filtered : orgExperts;
 }
 
 export interface CompetencyModel {
@@ -347,6 +485,7 @@ export interface CompetencyModel {
   description?: string
   status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
   skillIds: string[] // HAS_SKILL links
+  levelCodes?: string[]
   createdAt?: string
   updatedAt?: string
 }
@@ -474,186 +613,11 @@ export interface SkillAcquisitionMetric {
 // INITIAL PREREQUISITES & PROTOTYPE MOCK DATA
 // ----------------------------------------------------
 
-export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = [
-  {
-    id: 'pre-1',
-    sourceSkillId: 'skill-cypher',
-    targetSkillId: 'skill-embeddings',
-    minMastery: 0.75,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'pre-2',
-    sourceSkillId: 'skill-embeddings',
-    targetSkillId: 'skill-gnn',
-    minMastery: 0.80,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'pre-3',
-    sourceSkillId: 'skill-owl-rdf',
-    targetSkillId: 'skill-cypher',
-    minMastery: 0.70,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'pre-4',
-    sourceSkillId: 'skill-gnn',
-    targetSkillId: 'skill-dkt',
-    minMastery: 0.85,
-    status: 'ACTIVE',
-  },
-]
-
-export const INITIAL_COMPETENCIES: CompetencyModel[] = [
-  {
-    id: 'comp-knowledge',
-    code: 'KNOWLEDGE',
-    name: 'Knowledge Graph & Data Engineering',
-    description: 'Core semantic graph structures, RDF triplestores, and Cypher query languages.',
-    status: 'ACTIVE',
-    skillIds: ['skill-cypher', 'skill-owl-rdf', 'skill-vector-db'],
-  },
-  {
-    id: 'comp-innovation',
-    code: 'INNOVATION',
-    name: 'Cognitive AI & Inductive Modeling',
-    description: 'Deep graph representation learning, node embeddings, and dynamic knowledge tracing.',
-    status: 'ACTIVE',
-    skillIds: ['skill-gnn', 'skill-embeddings', 'skill-dkt', 'skill-attn-01'],
-  },
-]
-
-export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = [
-  {
-    id: 'skill-cypher',
-    code: 'SKILL-CYPHER-01',
-    name: 'Neo4j Cypher Traversal & DDL',
-    description: 'Declarative Cypher query patterns, property graph indexing, and idempotent schema constraints.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'KNOWLEDGE',
-  },
-  {
-    id: 'skill-gnn',
-    code: 'SKILL-GNN-02',
-    name: 'Graph Neural Networks & Inductive Representation',
-    description: 'Spatial and spectral neighborhood convolutions, message passing mechanisms, and over-smoothing mitigations.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'INNOVATION',
-  },
-  {
-    id: 'skill-embeddings',
-    code: 'SKILL-EMB-03',
-    name: 'Node2Vec & Transductive Graph Embeddings',
-    description: 'Biased random walks, skip-gram objective functions, and low-dimensional manifold representations.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'INNOVATION',
-  },
-  {
-    id: 'skill-owl-rdf',
-    code: 'SKILL-RDF-04',
-    name: 'OWL 2 DL Ontologies & RDF Triplestores',
-    description: 'Description logics, open-world assumption, functional properties, and SPARQL 1.1 query syntax.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'KNOWLEDGE',
-  },
-  {
-    id: 'skill-vector-db',
-    code: 'SKILL-VEC-05',
-    name: 'HNSW Vector Indexes & Approximate Nearest Neighbors',
-    description: 'Hierarchical Navigable Small World graphs for high-dimensional semantic search and similarity retrieval.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'KNOWLEDGE',
-  },
-  {
-    id: 'skill-dkt',
-    code: 'SKILL-DKT-06',
-    name: 'Dynamic Knowledge Tracing & Pedagogical Modeling',
-    description: 'Sequential neural attention models tracking learner latent knowledge states and mastery probabilities.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'INNOVATION',
-  },
-  {
-    id: 'skill-attn-01',
-    code: 'SKILL-ATTN-07',
-    name: 'Multi-Head Attention & Transformer Architectures',
-    description: 'Self-attention mechanisms, scaled dot-product matrices, and contextual sequence representation.',
-    status: 'ACTIVE',
-    macroCompetencyCode: 'INNOVATION',
-  },
-]
-
+export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = []
+export const INITIAL_COMPETENCIES: CompetencyModel[] = []
+export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = []
 export const INITIAL_TARGET_ROLES: TargetRoleModel[] = []
-
-
-export const INITIAL_MODULES: LearningModuleModel[] = [
-  {
-    id: 'mod-cypher-mastery',
-    stableId: 'mod-uuid-01',
-    code: 'MOD-CYP-101',
-    title: 'Accelerated Cypher Querying & Pattern Traversal',
-    version: '1.0',
-    status: 'published',
-    durationMinutes: 45,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/cypher-101/index.html',
-    teachesSkillIds: ['skill-cypher'],
-    activePlanEnrollments: 36,
-    updatedAt: '2026-01-18',
-  },
-  {
-    id: 'mod-gnn-fundamentals',
-    stableId: 'mod-uuid-02',
-    code: 'MOD-GNN-201',
-    title: 'Hands-on Geometric Deep Learning & Message Passing',
-    version: '1.0',
-    status: 'published',
-    durationMinutes: 75,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/gnn-201/interactive-lab.ipynb',
-    teachesSkillIds: ['skill-gnn', 'skill-embeddings'],
-    activePlanEnrollments: 28,
-    updatedAt: '2026-02-01',
-  },
-  {
-    id: 'mod-owl-foundations',
-    stableId: 'mod-uuid-03',
-    code: 'MOD-ONT-301',
-    title: 'Enterprise Ontology Modeling with OWL 2 & Protege',
-    version: '1.0',
-    status: 'published',
-    durationMinutes: 60,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/owl-301/protege-guide.pdf',
-    teachesSkillIds: ['skill-owl-rdf'],
-    activePlanEnrollments: 14,
-    updatedAt: '2026-01-30',
-  },
-  {
-    id: 'mod-dkt-advanced',
-    stableId: 'mod-uuid-04',
-    code: 'MOD-DKT-401',
-    title: 'Personalized Cognitive Modeling with Transformer DKT',
-    version: '1.1',
-    status: 'draft',
-    durationMinutes: 90,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/dkt-401/spec.html',
-    teachesSkillIds: ['skill-dkt'],
-    activePlanEnrollments: 0,
-    updatedAt: '2026-02-25',
-  },
-  {
-    id: 'mod-legacy-sql-graph',
-    stableId: 'mod-uuid-05',
-    code: 'MOD-LEG-001',
-    title: 'Legacy Relational-to-Graph Migration Fundamentals',
-    version: '1.0',
-    status: 'archived',
-    durationMinutes: 30,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/legacy-001/archive.pdf',
-    teachesSkillIds: ['skill-cypher'],
-    activePlanEnrollments: 4,
-    replacementModuleId: 'mod-cypher-mastery',
-    updatedAt: '2025-10-10',
-  },
-]
+export const INITIAL_MODULES: LearningModuleModel[] = []
 
 export const INITIAL_QUESTIONS: QuizQuestionModel[] = [
   {

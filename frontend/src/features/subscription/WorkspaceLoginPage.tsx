@@ -9,6 +9,7 @@ import { Button } from '../../shared/components/ui/Button'
 import { authenticate, completeTotp, getIdentity, setupTotp, request, type Identity } from './subscriptionApi'
 import { Failure, Loading, useCopy } from './SubscriptionFeedback'
 import { ROLE_HOME, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
+import { setActiveCompanyId } from '../../shared/stores/companyStore'
 
 export function WorkspaceLoginPage() {
   const c = useCopy()
@@ -25,7 +26,7 @@ export function WorkspaceLoginPage() {
   const [secret, setSecret] = useState<{ manualSecret: string; email: string } | null>(null)
   const session = identity ?? current.data
   const finish = (value: Identity) => {
-    setIdentity(value); setCode(''); setPassword(''); cache.clear(); cache.setQueryData(['workspace-identity'], value)
+    setIdentity(value); setCode(''); setPassword(''); cache.clear(); cache.setQueryData(['workspace-identity'], value); if (value.organizationId) { setActiveCompanyId(value.organizationId); }
   }
   const signIn = useMutation({ mutationFn: () => authenticate('sign-in', { email, password }), onSuccess: finish })
   const restart = useMutation({ mutationFn: () => request('/api/v1/workspace-auth/sign-out', 'POST'), onSuccess: () => {

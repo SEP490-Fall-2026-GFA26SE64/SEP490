@@ -335,9 +335,6 @@ export function BaselineBlueprintPage() {
     <WorkspaceLayout>
       <div className="space-y-6">
         <PageHeader
-          title={t('baselineBlueprint.pageTitle')}
-          description={t('baselineBlueprint.pageDescription')}
-          icon={<FileQuestion size={24} />}
           actions={<Badge variant={assessment?.publicationState === 'PUBLISHED' ? 'success' : 'outline'}>
             {assessment?.publicationState === 'PUBLISHED'
               ? t('baselineBlueprint.status.published')

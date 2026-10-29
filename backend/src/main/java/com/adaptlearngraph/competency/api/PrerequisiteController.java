@@ -7,7 +7,6 @@ import com.adaptlearngraph.competency.domain.PrerequisiteEdge;
 import com.adaptlearngraph.competency.domain.SkillStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@ConditionalOnProperty(prefix = "catalog.legacy-api", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/organizations/{organizationId}/prerequisites")
 public class PrerequisiteController {
 
@@ -100,6 +98,10 @@ public class PrerequisiteController {
         if (role == null) return false;
         String normalized = role.trim().toUpperCase();
         return normalized.equals("DOMAIN_EXPERT") || normalized.equals("EXPERT")
-                || normalized.equals("ROLE_DOMAIN_EXPERT") || normalized.equals("ROLE_EXPERT");
+                || normalized.equals("ROLE_DOMAIN_EXPERT") || normalized.equals("ROLE_EXPERT")
+                || normalized.equals("LD_MANAGER") || normalized.equals("ROLE_LD_MANAGER")
+                || normalized.equals("ADMINISTRATOR") || normalized.equals("ROLE_ADMINISTRATOR")
+                || normalized.equals("ADMIN") || normalized.equals("ROLE_ADMIN")
+                || normalized.equals("MANAGER") || normalized.equals("ROLE_MANAGER");
     }
 }

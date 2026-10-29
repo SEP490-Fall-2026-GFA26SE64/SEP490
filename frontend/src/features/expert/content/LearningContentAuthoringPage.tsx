@@ -284,8 +284,6 @@ export function LearningContentAuthoringPage() {
       <div className="space-y-6 pb-16">
         {/* Page Header */}
         <PageHeader
-          title="Learning Content Studio"
-          description="Design, author, and submit structured interactive reading lessons and video curricula for L&D Manager approval before module publication."
           actions={
             <Button
               variant="primary"

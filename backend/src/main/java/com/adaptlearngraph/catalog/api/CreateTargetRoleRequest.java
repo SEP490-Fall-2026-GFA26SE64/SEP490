@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 public record CreateTargetRoleRequest(
-        @NotBlank(message = "Role code is required")
-        @Size(min = 2, max = 64, message = "Role code must be between 2 and 64 characters")
-        @Pattern(regexp = "^[A-Za-z0-9_-]+$", message = "Role code must only contain letters, numbers, hyphens, and underscores")
+        @Size(max = 64, message = "Role code must be at most 64 characters")
         String code,
 
         @NotBlank(message = "Role name is required")
         @Size(min = 2, max = 128, message = "Role name must be between 2 and 128 characters")
         String name,
+
+        List<String> levels,
 
         String domainCode,
 
@@ -39,7 +39,28 @@ public record CreateTargetRoleRequest(
         @Pattern(regexp = "^(DRAFT|SENT|REJECTED|ACTIVE|PUBLISHED|RETIRED)?$", message = "Status must be valid")
         String status,
 
-        List<Map<String, Object>> skillTargets) {
+        List<Map<String, Object>> skillTargets,
+
+        Map<String, List<String>> levelCompetencies,
+
+        List<String> competencyIds) {
+
+    public CreateTargetRoleRequest(
+            String code,
+            String name,
+            List<String> levels,
+            String domainCode,
+            String familyCode,
+            String track,
+            String seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            String status,
+            List<Map<String, Object>> skillTargets) {
+        this(code, name, levels, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, version, status, skillTargets, Map.of(), List.of());
+    }
 
     public CreateTargetRoleRequest(
             String code,
@@ -51,7 +72,7 @@ public record CreateTargetRoleRequest(
             String assignedExpertId,
             String description,
             List<String> responsibilities) {
-        this(code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, "1.0", "DRAFT", List.of());
+        this(code, name, List.of(), domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, "1.0", "DRAFT", List.of());
     }
 
     public CreateTargetRoleRequest(
@@ -62,11 +83,11 @@ public record CreateTargetRoleRequest(
             String track,
             String assignedExpertId,
             String description) {
-        this(code, name, domainCode, familyCode, track, null, assignedExpertId, description, List.of(), "1.0", "DRAFT", List.of());
+        this(code, name, List.of(), domainCode, familyCode, track, null, assignedExpertId, description, List.of(), "1.0", "DRAFT", List.of());
     }
 
     public CreateTargetRoleRequest(String code, String name, String familyCode, String track, String description) {
-        this(code, name, "ICT", familyCode, track, null, "", description, List.of(), "1.0", "DRAFT", List.of());
+        this(code, name, List.of(), "ICT", familyCode, track, null, "", description, List.of(), "1.0", "DRAFT", List.of());
     }
 }
 

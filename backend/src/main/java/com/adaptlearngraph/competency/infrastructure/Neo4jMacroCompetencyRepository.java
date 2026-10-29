@@ -42,12 +42,26 @@ public class Neo4jMacroCompetencyRepository implements MacroCompetencyRepository
                 String status = node.containsKey("status") && !node.get("status").isNull()
                         ? node.get("status").asString()
                         : "ACTIVE";
-                Instant createdAt = node.containsKey("createdAt") && !node.get("createdAt").isNull()
-                        ? node.get("createdAt").asZonedDateTime().toInstant()
-                        : Instant.now();
-                Instant updatedAt = node.containsKey("updatedAt") && !node.get("updatedAt").isNull()
-                        ? node.get("updatedAt").asZonedDateTime().toInstant()
-                        : Instant.now();
+                Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
+                if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
+                    try {
+                        createdAt = node.get("createdAt").asZonedDateTime().toInstant();
+                    } catch (Exception e1) {
+                        try {
+                            createdAt = Instant.parse(node.get("createdAt").asString());
+                        } catch (Exception ignored) {}
+                    }
+                }
+                Instant updatedAt = createdAt;
+                if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
+                    try {
+                        updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
+                    } catch (Exception e1) {
+                        try {
+                            updatedAt = Instant.parse(node.get("updatedAt").asString());
+                        } catch (Exception ignored) {}
+                    }
+                }
                 list.add(new MacroCompetency(id, code, name, desc, status, createdAt, updatedAt));
             }
             return list;

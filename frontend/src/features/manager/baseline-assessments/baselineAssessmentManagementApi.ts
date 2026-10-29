@@ -471,7 +471,7 @@ function parseOccupation(value: unknown): BaselineAssessmentOccupation {
     latestBlueprintVersion: optionalPositiveInteger(item.latestBlueprintVersion, 'latestBlueprintVersion'),
     pendingStage: pendingStage as PendingStage,
     openAssessmentVersion: optionalPositiveInteger(item.openAssessmentVersion, 'openAssessmentVersion'),
-    openAssessmentState,
+    openAssessmentState: openAssessmentState as OpenAssessmentState | null,
     activeAssessmentVersion: optionalPositiveInteger(item.activeAssessmentVersion, 'activeAssessmentVersion'),
     lastUpdatedAt: optionalString(item.lastUpdatedAt, 'lastUpdatedAt'),
   }

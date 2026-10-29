@@ -69,10 +69,10 @@ public class LocalCatalogSecurityConfiguration {
     @Order(2)
     SecurityFilterChain localOrganizationManagementSecurity(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/v1/organizations/**")
+                .securityMatcher("/api/v1/organizations/**", "/error")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/organizations/**").permitAll()
+                        .requestMatchers("/api/v1/organizations/**", "/error").permitAll()
                         .anyRequest().denyAll())
                 .build();
     }

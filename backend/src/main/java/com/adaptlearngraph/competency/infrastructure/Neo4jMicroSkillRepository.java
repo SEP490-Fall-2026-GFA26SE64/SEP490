@@ -46,13 +46,17 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                     s.code = $code,
                     s.name = $name,
                     s.description = $description,
+                    s.definition = $description,
                     s.macroCompetencyCode = $macroCompetencyCode,
                     s.status = $status,
+                    s.version = '0.10.0',
+                    s.reviewStatus = 'APPROVED',
                     s.createdAt = datetime($createdAt),
                     s.updatedAt = datetime($updatedAt)
                 ON MATCH SET
                     s.name = $name,
                     s.description = $description,
+                    s.definition = $description,
                     s.macroCompetencyCode = $macroCompetencyCode,
                     s.status = $status,
                     s.updatedAt = datetime($updatedAt)
@@ -142,7 +146,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         params.put("organizationId", organizationId);
 
         if (query != null && !query.isBlank()) {
-            cypher.append(" AND (toLower(s.name) CONTAINS toLower($query) OR toLower(s.code) CONTAINS toLower($query))");
+            cypher.append(" AND (toLower(s.name) CONTAINS toLower($query) OR toLower(coalesce(s.code, s.id)) CONTAINS toLower($query))");
             params.put("query", query.trim());
         }
 
@@ -152,9 +156,10 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         }
 
         cypher.append("""
+                OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
                 OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                WITH s, collect(macro.code) AS macroCodes
-                WITH s, coalesce(macroCodes[0], s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+                WITH s, collect(DISTINCT c.name) AS compNames, collect(DISTINCT macro.code) AS macroCodes
+                WITH s, coalesce(macroCodes[0], s.macroCompetencyCode, compNames[0], 'KNOWLEDGE') AS macroCode
                 """);
 
         if (macroCode != null && !macroCode.isBlank()) {
@@ -162,7 +167,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
             params.put("macroCode", macroCode.trim().toUpperCase());
         }
 
-        cypher.append(" RETURN s, macroCode ORDER BY s.code ASC");
+        cypher.append(" RETURN s, macroCode ORDER BY coalesce(s.code, s.id) ASC");
 
         try (var session = driver.session()) {
             var result = session.run(cypher.toString(), params);
@@ -182,8 +187,8 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         String cypher = """
                 MATCH (s:MicroSkill {id: $id})
                 OPTIONAL MATCH (role:TargetRole)-[r:REQUIRES_SKILL]->(s)
-                OPTIONAL MATCH (s)-[p1:PREREQUISITE_OF]->()
-                OPTIONAL MATCH ()-[p2:PREREQUISITE_OF]->(s)
+                OPTIONAL MATCH (s)-[p1:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->()
+                OPTIONAL MATCH ()-[p2:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(s)
                 OPTIONAL MATCH (:LearningModule)-[t:TEACHES]->(s)
                 RETURN count(r) + count(p1) + count(p2) + count(t) AS totalDeps
                 """;
@@ -215,11 +220,17 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         String orgId = node.containsKey("organizationId") && !node.get("organizationId").isNull()
                 ? node.get("organizationId").asString()
                 : defaultOrgId;
-        String code = node.get("code").asString();
-        String name = node.get("name").asString();
+        String code = node.containsKey("code") && !node.get("code").isNull()
+                ? node.get("code").asString()
+                : idStr;
+        String name = node.containsKey("name") && !node.get("name").isNull()
+                ? node.get("name").asString()
+                : idStr;
         String desc = node.containsKey("description") && !node.get("description").isNull()
                 ? node.get("description").asString()
-                : "";
+                : (node.containsKey("definition") && !node.get("definition").isNull()
+                        ? node.get("definition").asString()
+                        : "");
         String macroCode = explicitMacroCode != null && !explicitMacroCode.isBlank()
                 ? explicitMacroCode
                 : (node.containsKey("macroCompetencyCode") && !node.get("macroCompetencyCode").isNull()
@@ -229,12 +240,26 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 ? node.get("status").asString()
                 : "ACTIVE";
 
-        Instant createdAt = node.containsKey("createdAt") && !node.get("createdAt").isNull()
-                ? node.get("createdAt").asZonedDateTime().toInstant()
-                : Instant.now();
-        Instant updatedAt = node.containsKey("updatedAt") && !node.get("updatedAt").isNull()
-                ? node.get("updatedAt").asZonedDateTime().toInstant()
-                : Instant.now();
+        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
+        if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
+            try {
+                createdAt = node.get("createdAt").asZonedDateTime().toInstant();
+            } catch (Exception e1) {
+                try {
+                    createdAt = Instant.parse(node.get("createdAt").asString());
+                } catch (Exception ignored) {}
+            }
+        }
+        Instant updatedAt = createdAt;
+        if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
+            try {
+                updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
+            } catch (Exception e1) {
+                try {
+                    updatedAt = Instant.parse(node.get("updatedAt").asString());
+                } catch (Exception ignored) {}
+            }
+        }
 
         return new MicroSkill(
                 MicroSkillId.fromString(idStr),

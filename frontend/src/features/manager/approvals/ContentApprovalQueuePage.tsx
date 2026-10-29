@@ -61,7 +61,7 @@ const INITIAL_SUBMISSIONS: SubmissionItem[] = [
     title: 'Dynamic Knowledge Tracing Assessment Blueprint',
     type: 'assessment',
     occupation: 'Software Developers',
-    submittedBy: 'Chen Wei',
+    submittedBy: 'Dr. Sarah Chen',
     submittedAt: '2026-10-13 14:15',
     status: 'PENDING_REVIEW',
     microSkillsMapped: ['MS-008 (DKT Modeling)', 'MS-002 (Knowledge State Tracking)'],
