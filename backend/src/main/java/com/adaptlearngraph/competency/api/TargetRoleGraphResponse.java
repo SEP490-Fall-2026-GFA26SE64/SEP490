@@ -19,7 +19,8 @@ public record TargetRoleGraphResponse(
             String skillName,
             String macroCompetencyCode,
             double targetMastery,
-            String status) {}
+            String status,
+            String level) {}
 
     public static TargetRoleGraphResponse fromDomain(TargetRoleGraph graph) {
         List<RoleGraphSkillResponse> skills = graph.requiredSkills().stream()
@@ -29,7 +30,8 @@ public record TargetRoleGraphResponse(
                         s.skillName(),
                         s.macroCompetencyCode(),
                         s.targetMastery(),
-                        s.status().name()))
+                        s.status().name(),
+                        s.level()))
                 .toList();
 
         List<PrerequisiteResponse> edges = graph.prerequisites().stream()

@@ -158,6 +158,8 @@ services:
       REGISTRATION_MAIL_WORKER_ENABLED: "false"
       # This fixture has no SMTP dependency; database/graph health checks remain active.
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:-ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWU=}
+      REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:-aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg=}
       REGISTRATION_COOKIE_SECURE: ${REGISTRATION_COOKIE_SECURE:-false}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}

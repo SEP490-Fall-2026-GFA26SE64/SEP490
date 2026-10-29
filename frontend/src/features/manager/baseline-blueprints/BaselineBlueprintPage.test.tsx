@@ -267,7 +267,7 @@ describe('BaselineBlueprintPage', () => {
     await user.type(total, '8')
 
     await user.click(screen.getByRole('button', { name: 'VI' }))
-    expect(screen.getByRole('heading', { name: 'Cấu hình đề đánh giá đầu vào' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '1. Chọn nghề nghiệp' })).toBeTruthy()
     expect((screen.getByLabelText('Tên cấu hình') as HTMLInputElement).value)
       .toBe('Unsaved custom blueprint')
     expect((within(roleContainer('Java Backend Developer P3'))
@@ -276,7 +276,7 @@ describe('BaselineBlueprintPage', () => {
     expect(vi.mocked(getOccupation)).toHaveBeenCalledTimes(1)
 
     await user.click(screen.getByRole('button', { name: 'EN' }))
-    expect(screen.getByRole('heading', { name: 'Baseline assessment blueprint' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '1. Select Occupation' })).toBeTruthy()
   })
 
   it('keeps multiple role panels open and collapses them independently', async () => {

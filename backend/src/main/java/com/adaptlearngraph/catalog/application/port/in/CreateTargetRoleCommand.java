@@ -19,7 +19,45 @@ public record CreateTargetRoleCommand(
         List<String> responsibilities,
         String version,
         RoleStatus status,
-        String skillTargets) {
+        String skillTargets,
+        List<String> levels,
+        String levelCompetencies,
+        List<String> competencyIds) {
+
+    public CreateTargetRoleCommand(
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            RoleStatus status,
+            String skillTargets,
+            List<String> levels) {
+        this(organizationId, code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, "{}", List.of());
+    }
+
+    public CreateTargetRoleCommand(
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            RoleStatus status,
+            String skillTargets) {
+        this(organizationId, code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Junior", "Middle", "Senior"));
+    }
 
     public CreateTargetRoleCommand(
             String organizationId,

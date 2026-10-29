@@ -59,6 +59,66 @@ public class CatalogConfiguration {
         return new Neo4jTargetRoleCatalogAdapter(driver);
     }
 
+    @Bean
+    public com.adaptlearngraph.catalog.application.port.out.OccupationRepository occupationRepository(ObjectProvider<Driver> driverProvider) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jOccupationRepository(driver);
+        }
+        return new com.adaptlearngraph.catalog.application.port.out.OccupationRepository() {
+            @Override public java.util.List<com.adaptlearngraph.catalog.domain.Occupation> findAllOccupations() { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.Occupation> findByIdOrCode(String idOrCode) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.catalog.domain.Occupation save(com.adaptlearngraph.catalog.domain.Occupation occupation) { return occupation; }
+            @Override public void delete(String idOrCode) {}
+        };
+    }
+
+    @Bean
+    public com.adaptlearngraph.catalog.application.port.in.GetOccupationsUseCase getOccupationsUseCase(
+            com.adaptlearngraph.catalog.application.port.out.OccupationRepository occupationRepository) {
+        return new com.adaptlearngraph.catalog.application.OccupationService(occupationRepository);
+    }
+
+    @Bean
+    public com.adaptlearngraph.catalog.application.port.out.CompetencyRepository competencyRepository(ObjectProvider<Driver> driverProvider) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jCompetencyRepository(driver);
+        }
+        return new com.adaptlearngraph.catalog.application.port.out.CompetencyRepository() {
+            @Override public java.util.List<com.adaptlearngraph.catalog.domain.CompetencyRecord> findAllCompetencies(String search) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.CompetencyRecord> findById(String id) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.catalog.domain.CompetencyRecord save(com.adaptlearngraph.catalog.domain.CompetencyRecord record, java.util.List<String> skillIds, String levelId) { return record; }
+            @Override public void deleteById(String id) {}
+        };
+    }
+
+    @Bean
+    public com.adaptlearngraph.catalog.application.port.in.ManageCompetencyUseCase manageCompetencyUseCase(
+            com.adaptlearngraph.catalog.application.port.out.CompetencyRepository competencyRepository) {
+        return new com.adaptlearngraph.catalog.application.CompetencyService(competencyRepository);
+    }
+
+    @Bean
+    public com.adaptlearngraph.catalog.application.port.out.LearningModuleRepository learningModuleRepository(ObjectProvider<Driver> driverProvider) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jLearningModuleRepository(driver);
+        }
+        return new com.adaptlearngraph.catalog.application.port.out.LearningModuleRepository() {
+            @Override public java.util.List<com.adaptlearngraph.catalog.domain.LearningModuleRecord> findAll(String organizationId) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.LearningModuleRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.catalog.domain.LearningModuleRecord save(String organizationId, com.adaptlearngraph.catalog.domain.LearningModuleRecord module) { return module; }
+            @Override public void delete(String organizationId, String id) {}
+        };
+    }
+
+    @Bean
+    public com.adaptlearngraph.catalog.application.port.in.ManageLearningModuleUseCase manageLearningModuleUseCase(
+            com.adaptlearngraph.catalog.application.port.out.LearningModuleRepository learningModuleRepository) {
+        return new com.adaptlearngraph.catalog.application.LearningModuleService(learningModuleRepository);
+    }
+
     private static class InMemoryFallbackTargetRoleRepository implements TargetRoleRepository {
         private final Map<String, TargetRole> store = new ConcurrentHashMap<>();
 

@@ -21,7 +21,47 @@ public record UpdateTargetRoleCommand(
         RoleStatus status,
         String version,
         String skillTargets,
-        String rejectionReason) {
+        String rejectionReason,
+        List<String> levels,
+        String levelCompetencies,
+        List<String> competencyIds) {
+
+    public UpdateTargetRoleCommand(
+            String organizationId,
+            TargetRoleId roleId,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            String rejectionReason,
+            List<String> levels) {
+        this(organizationId, roleId, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null);
+    }
+
+    public UpdateTargetRoleCommand(
+            String organizationId,
+            TargetRoleId roleId,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            String rejectionReason) {
+        this(organizationId, roleId, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, null);
+    }
 
     public UpdateTargetRoleCommand(
             String organizationId,
