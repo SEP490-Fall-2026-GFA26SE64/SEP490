@@ -244,13 +244,7 @@ export function CompetencyOntologyPage() {
   const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills ?? [])
   const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>(() => getActiveCompany()?.prerequisites ?? [])
 
-  const parentCompetencyComboboxOptions: ComboboxOption[] = React.useMemo(() => {
-    return competencies.map((comp) => ({
-      value: comp.id,
-      label: `${comp.code || comp.id} — ${comp.name}`,
-      description: comp.description || undefined,
-    }))
-  }, [competencies])
+  
 
   const memberSkillComboboxOptions: ComboboxOption[] = React.useMemo(() => {
     const configuredIds = new Set(competencyForm.skillIds)
@@ -461,12 +455,30 @@ export function CompetencyOntologyPage() {
   const [selectedSkill, setSelectedSkill] = React.useState<MicroSkillModel | null>(null)
 
   // Micro-Skill Form (Strictly aligned with neo4j_schema.md)
-  const [skillForm, setSkillForm] = React.useState({
+  const [skillForm, setSkillForm] = React.useState<{
+    code: string
+    name: string
+    description: string
+    competencyIds: string[]
+  }>({
     code: '',
     name: '',
     description: '',
-    competencyId: '',
+    competencyIds: [],
   })
+
+  const [newParentCompetencyId, setNewParentCompetencyId] = React.useState('')
+  const [parentCompSearch, setParentCompSearch] = React.useState('')
+
+  const parentCompetencyComboboxOptions: ComboboxOption[] = React.useMemo(() => {
+    return competencies
+      .filter((c) => !skillForm.competencyIds.includes(c.id) && !skillForm.competencyIds.includes(c.code))
+      .map((c) => ({
+        value: c.id,
+        label: `${c.code} — ${c.name}`,
+        description: c.description || 'Domain Competency',
+      }))
+  }, [competencies, skillForm.competencyIds])
 
   // Prerequisite Form (Strictly aligned with neo4j_schema.md PREREQUISITE_OF { minMastery })
   const [prereqForm, setPrereqForm] = React.useState({
@@ -487,23 +499,27 @@ export function CompetencyOntologyPage() {
       code: `MS-SKILL${pad}`,
       name: '',
       description: '',
-      competencyId: '',
+      competencyIds: [],
     })
     setSelectedSkill(null)
+    setNewParentCompetencyId('')
+    setParentCompSearch('')
     setIsSkillModalOpen(true)
   }
 
   const handleOpenEditSkill = (skill: MicroSkillModel) => {
     setSelectedSkill(skill)
-    const parentComp = competencies.find(
+    const parentComps = competencies.filter(
       (c) => (c.skillIds || []).includes(skill.id) || (c.skillIds || []).includes(skill.code)
     )
     setSkillForm({
       code: skill.code,
       name: skill.name,
       description: skill.description || '',
-      competencyId: parentComp?.id || '',
+      competencyIds: parentComps.map((c) => c.id),
     })
+    setNewParentCompetencyId('')
+    setParentCompSearch('')
     setIsSkillModalOpen(true)
   }
 
@@ -527,33 +543,36 @@ export function CompetencyOntologyPage() {
           macroCompetencyCode: selectedSkill.macroCompetencyCode || 'KNOWLEDGE',
         })
 
-        // Check if competency mapping changed
-        const oldParent = competencies.find(
-          (c) => (c.skillIds || []).includes(selectedSkill.id) || (c.skillIds || []).includes(selectedSkill.code)
-        )
-        if (oldParent?.id !== skillForm.competencyId) {
-          if (oldParent) {
-            const nextSkills = (oldParent.skillIds || []).filter(
-              (id) => id !== selectedSkill.id && id !== selectedSkill.code
-            )
-            await updateCompetency(orgId, oldParent.id, {
-              name: oldParent.name,
-              description: oldParent.description,
+        // Sync competency mapping for selectedSkill (HAS_SKILL edges)
+        const skillId = selectedSkill.id
+        const skillCode = selectedSkill.code
+        const targetCompIds = new Set(skillForm.competencyIds)
+
+        const updatedCompetencies = [...competencies]
+        for (const comp of updatedCompetencies) {
+          const hasSkill = (comp.skillIds || []).includes(skillId) || (comp.skillIds || []).includes(skillCode)
+          const shouldHaveSkill = targetCompIds.has(comp.id) || targetCompIds.has(comp.code)
+
+          if (hasSkill && !shouldHaveSkill) {
+            const nextSkills = (comp.skillIds || []).filter((id) => id !== skillId && id !== skillCode)
+            await updateCompetency(orgId, comp.id, {
+              name: comp.name,
+              description: comp.description,
               skillIds: nextSkills,
             }).catch(() => {})
-          }
-          if (skillForm.competencyId) {
-            const newParent = competencies.find((c) => c.id === skillForm.competencyId)
-            if (newParent) {
-              const nextSkills = Array.from(new Set([...(newParent.skillIds || []), selectedSkill.id]))
-              await updateCompetency(orgId, newParent.id, {
-                name: newParent.name,
-                description: newParent.description,
-                skillIds: nextSkills,
-              }).catch(() => {})
-            }
+            comp.skillIds = nextSkills
+          } else if (!hasSkill && shouldHaveSkill) {
+            const nextSkills = Array.from(new Set([...(comp.skillIds || []), skillId]))
+            await updateCompetency(orgId, comp.id, {
+              name: comp.name,
+              description: comp.description,
+              skillIds: nextSkills,
+            }).catch(() => {})
+            comp.skillIds = nextSkills
           }
         }
+        setCompetencies([...updatedCompetencies])
+        updateActiveCompany((c) => ({ ...c, competencies: updatedCompetencies }))
 
         saveAndSetMicroSkills((prev) =>
           prev.map((s) =>
@@ -597,18 +616,22 @@ export function CompetencyOntologyPage() {
           description: skillForm.description.trim(),
         })
 
-        // If competency selected, map HAS_SKILL
-        if (skillForm.competencyId) {
-          const parentComp = competencies.find((c) => c.id === skillForm.competencyId)
-          if (parentComp) {
-            const nextSkills = Array.from(new Set([...(parentComp.skillIds || []), created.id]))
-            await updateCompetency(orgId, parentComp.id, {
-              name: parentComp.name,
-              description: parentComp.description,
+        // Map all selected parent competencies to the newly created skill
+        const updatedCompetencies = [...competencies]
+        for (const compId of skillForm.competencyIds) {
+          const comp = updatedCompetencies.find((c) => c.id === compId || c.code === compId)
+          if (comp) {
+            const nextSkills = Array.from(new Set([...(comp.skillIds || []), created.id]))
+            await updateCompetency(orgId, comp.id, {
+              name: comp.name,
+              description: comp.description,
               skillIds: nextSkills,
             }).catch(() => {})
+            comp.skillIds = nextSkills
           }
         }
+        setCompetencies([...updatedCompetencies])
+        updateActiveCompany((c) => ({ ...c, competencies: updatedCompetencies }))
 
         const newSkill: MicroSkillModel = {
           id: created.id,
@@ -1780,25 +1803,132 @@ export function CompetencyOntologyPage() {
               </div>
             </div>
 
-            {/* Parent Competency Selection */}
-            <div>
-              <label className="font-semibold text-foreground flex items-center justify-between mb-1.5">
-                <span>Parent Competency</span>
-                <span className="text-[10px] font-normal text-muted-foreground">Optional (HAS_SKILL edge)</span>
-              </label>
-              <Combobox
-                size="sm"
-                clearable={true}
-                options={parentCompetencyComboboxOptions}
-                value={skillForm.competencyId}
-                onChange={(val) => setSkillForm({ ...skillForm, competencyId: val })}
-                placeholder="Search & select parent competency..."
-                searchPlaceholder="Search by competency code or title..."
-                emptyMessage="No matching competencies found."
-              />
-              <span className="text-[10px] text-muted-foreground mt-1 block">
-                Associates this micro-skill to its domain competency according to the system ontology.
-              </span>
+            {/* Configured Parent Competencies (Matching Picture 2) */}
+            <div className="space-y-3 pt-2 border-t border-border/80">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-xs font-bold text-foreground">
+                    Required Competencies for {skillForm.name || selectedSkill?.name || 'Micro-skill'} ({skillForm.competencyIds.length})
+                  </span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
+                  HAS_SKILL relationships
+                </Badge>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground leading-relaxed">
+                Macro knowledge &amp; functional capability clusters containing this micro-skill.
+              </div>
+
+              {/* Add Competency Row */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-muted/30 p-3 rounded-lg border border-border relative z-20">
+                <div className="flex-1">
+                  <Combobox
+                    size="sm"
+                    clearable={false}
+                    options={parentCompetencyComboboxOptions}
+                    value={newParentCompetencyId}
+                    onChange={(val) => setNewParentCompetencyId(val)}
+                    placeholder="Search & select competency..."
+                    searchPlaceholder="Search by competency code or title..."
+                    emptyMessage="All domain competencies are already added."
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  disabled={!newParentCompetencyId}
+                  onClick={() => {
+                    if (newParentCompetencyId && !skillForm.competencyIds.includes(newParentCompetencyId)) {
+                      setSkillForm((prev) => ({
+                        ...prev,
+                        competencyIds: [...prev.competencyIds, newParentCompetencyId],
+                      }))
+                      setNewParentCompetencyId('')
+                    }
+                  }}
+                  className="whitespace-nowrap font-semibold shadow-2xs text-xs px-3"
+                  leftIcon={<Plus className="h-3.5 w-3.5" />}
+                >
+                  Add Competency
+                </Button>
+              </div>
+
+              {/* Search filter for configured competencies */}
+              {skillForm.competencyIds.length > 2 && (
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Filter configured competencies by code or name..."
+                    value={parentCompSearch}
+                    onChange={(e) => setParentCompSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              )}
+
+              {/* Configured Competencies Table */}
+              {skillForm.competencyIds.length === 0 ? (
+                <div className="p-6 rounded-lg border border-dashed border-border text-center text-muted-foreground space-y-1.5 min-h-[140px] flex flex-col items-center justify-center">
+                  <AlertCircle className="h-5 w-5 mx-auto text-warning" />
+                  <p className="font-semibold text-foreground text-xs">No Parent Competencies Configured</p>
+                  <p className="text-[11px]">Select and add competencies from the catalog above to associate them with this micro-skill.</p>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-border overflow-hidden max-h-56 overflow-y-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-muted/50 border-b border-border text-[10.5px] uppercase font-bold text-muted-foreground sticky top-0 bg-background/95 backdrop-blur-xs">
+                      <tr>
+                        <th className="py-2 px-3">Competency Code &amp; Name</th>
+                        <th className="py-2 px-3">Description</th>
+                        <th className="py-2 px-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {skillForm.competencyIds
+                        .map((cid) => competencies.find((c) => c.id === cid || c.code === cid) || { id: cid, code: cid, name: 'Competency', description: '', status: 'ACTIVE' as const, skillIds: [] })
+                        .filter((c) => {
+                          if (!parentCompSearch.trim()) return true
+                          const q = parentCompSearch.toLowerCase()
+                          return c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q)
+                        })
+                        .map((comp) => (
+                          <tr key={comp.id} className="hover:bg-muted/30 transition-colors">
+                            <td className="py-2 px-3 align-top whitespace-nowrap">
+                              <div className="font-semibold text-foreground flex flex-col gap-0.5">
+                                <span className="text-primary font-mono text-[11px] font-bold">{comp.code}</span>
+                                <span className="text-xs">{comp.name}</span>
+                              </div>
+                            </td>
+                            <td className="py-2 px-3 text-muted-foreground text-[11px] leading-relaxed align-top">
+                              {comp.description || 'No description provided.'}
+                            </td>
+                            <td className="py-2 px-3 text-right align-top">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSkillForm((prev) => ({
+                                    ...prev,
+                                    competencyIds: prev.competencyIds.filter((id) => id !== comp.id && id !== comp.code),
+                                  }))
+                                }}
+                                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                title="Remove parent competency"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {/* Description Textarea */}
