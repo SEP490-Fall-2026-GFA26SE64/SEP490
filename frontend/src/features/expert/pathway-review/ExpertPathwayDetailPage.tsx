@@ -144,7 +144,7 @@ function Review({ scope, id }: { scope: string; id: string }) {
         {blocked && <Text role="status">{tr('savingMembership')}</Text>}
         {error && <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4" role="alert"><Text>{tr(pending ? 'uncertain' : 'reviewFlow.checkFailed')}</Text><Text variant="body-sm">{error.code === 'MODULE_NOT_ELIGIBLE' ? tr('moduleNotEligible') : pathwayMessage(error, t)}</Text></div>}
         {!error && checked === 'STALE' && <Text role="status">{tr('stale')}</Text>}
-        {d && !error && checked !== 'STALE' && <ReviewValidation detail={d} diagnostics={issues} disabled={blocked} onInclude={moduleId => { void submit(prepareReviewCommand(id, d, 'inclusions', moduleId, reason)) }} />}
+        {d && !error && checked !== 'STALE' && <ReviewValidation detail={d} diagnostics={issues} disabled={blocked || !editable || approval !== null} onInclude={moduleId => { void submit(prepareReviewCommand(id, d, 'inclusions', moduleId, reason)) }} />}
       </DialogBody>
       <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setValidationOpen(false)}>{tr('display.close')}</Button>{pending ? <Button disabled={busy} onClick={() => void submit(pending)}>{tr('retryExact')}</Button> : <Button disabled={blocked} onClick={() => void validate()}>{tr('check')}</Button>}</DialogFooter>
     </Dialog>
