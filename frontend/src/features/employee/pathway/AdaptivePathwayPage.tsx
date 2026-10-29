@@ -6,7 +6,7 @@ import {
   Lock,
   RefreshCw,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
@@ -17,8 +17,14 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { AdaptivePathwayTimeline } from '../components/AdaptivePathwayTimeline'
 import { InteractiveRoleRoadmap } from '../components/InteractiveRoleRoadmap'
+import { InitialEmployeePathway } from './InitialEmployeePathway'
 
 export function AdaptivePathwayPage() {
+  const { profile } = useEmployeeLearningState()
+  const [params] = useSearchParams()
+  return params.get('view') !== 'role' && profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
+}
+function IndependentSkillPathwayPage() {
   const [activeTab, setActiveTab] = React.useState('roadmap')
   const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
   const { t } = useTranslation()

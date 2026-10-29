@@ -6,6 +6,10 @@
 
 The [Product Overview](../PRODUCT_OVERVIEW.md) provides the complete product-scope directory. Each source bullet has exactly one authoritative nine-field record in the domain documents below. Each domain also includes a separate, source-inspected implementation snapshot dated 2026-10-28.
 
+**Initial gap/pathway integration:** the [retained shared contract](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) defines REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. [Workspace integration](../technical/Workspace%20Adaptive%20Integration.md) preserves those confirmed rules under the domain structure below. The branch contains persisted baseline/gap/generation/review/approved-view source; the new real-auth shared-development composition still needs runtime verification. Historical checkpoint results are not new executable evidence.
+
+## Current Reading Rules
+
 ## Reading Rules
 
 - Only section 3.2(c) defines the functional requirements in this catalog. Requirement names and descriptions retain the source wording; Markdown escaping is normalized for display.
@@ -42,7 +46,7 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | [Assessment workflows](Assessment%20workflows/README.md#current-implementation) | Real-session baseline configuration, attempts/scoring/results with tenant resource/readiness guards. Module/RIASEC slices and content/model provisioning remain incomplete. |
 | [Role guidance](Role%20guidance/README.md#current-implementation) | Authenticated organization-scoped role selection connected to baseline readiness/results; AI-generated guidance remains unimplemented. |
 | [Employee experience](Employee%20experience/README.md#current-implementation) | Real skill browsing mixed with local profile, tracking, gaps, progress and pathway demonstrations. |
-| [Pathway review](Pathway%20review/README.md#current-implementation) | Expert include/exclude/confirm interactions operate on sample pathways, not persisted learning plans. |
+| [Pathway review](Pathway%20review/README.md#current-implementation) | Assigned Expert review uses persisted draft membership, adjacent order, Check/preview and exact approval commands. Production dependencies and remaining verification gaps are recorded separately. |
 | [Adaptive engine](Adaptive%20engine/README.md#current-implementation) | Schema, graph and selection-event foundations; no implemented mastery-update or pathway-generation/recalculation service. |
 | [Development reporting](Development%20reporting/README.md#current-implementation) | Sample/derived reporting screens; no connected training-cost/benefit ledger or actual ROI aggregation. |
 | [Notifications and audit](Notifications%20and%20audit/README.md#current-implementation) | Durable verification/activation/paid-confirmation mail and selected audit events; learning-workflow events and administrator audit read APIs remain incomplete. |
