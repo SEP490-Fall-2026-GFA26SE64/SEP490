@@ -3200,3 +3200,4 @@ export function TargetRolesPage() {
     </WorkspaceLayout>
   )
 }
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'

@@ -9,7 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /** Route authentication substitute only. Every use case separately enforces trusted actor/tenant/assignment. */
 @Configuration(proxyBeanMethods=false)
-@Profile("local-baseline-demo & !prod")
+@Profile("local-baseline-demo & !workspace-baseline & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name={"pathway.initial.enabled","pathway.local-auth-bypass.enabled","assessment.baseline.local-demo.enabled"},havingValue="true")
 public class InitialPathwaySecurity {

@@ -27,7 +27,7 @@ function selection(value: unknown): CurrentSelection {
 }
 async function request<T>(path: string, init: RequestInit, parse: (v: unknown) => T): Promise<T> {
   let response: Response
-  try { response = await fetch('/api/v1/employee/' + path, { credentials: 'same-origin', cache: 'no-store', ...init }) }
+  try { response = await workspaceFetch('/api/v1/employee/' + path, init) }
   catch (cause) { if (init.signal?.aborted) throw cause; throw new RoleFlowError('NETWORK_ERROR') }
   let value: unknown
   try { value = await response.json() } catch { throw new RoleFlowError('INVALID_RESPONSE', response.status) }
@@ -51,3 +51,4 @@ export const readMyMastery = (signal?: AbortSignal) => request('target-role-sele
 }))
 export const prepareRoleChoice = (id: string, expected: string | null, levelId?: string): RoleChoiceCommand => ({ body: JSON.stringify({ roleId: id, ...(levelId ? { levelId } : {}), expectedCurrentSelectionId: expected }), key: crypto.randomUUID() })
 export const chooseCurrentRole = (command: RoleChoiceCommand) => request('target-role-selection', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: command.body }, selection)
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'

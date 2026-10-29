@@ -68,6 +68,8 @@ export function CurrentRolePanel() {
     {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr('requestError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
     {view.data && !view.isError && <CurrentRoleSummary view={view.data} disabled={blocked} onReviewGaps={() => { if (view.data?.selection?.available) setGapRole(view.data.selection.role) }} />}
+    {roles.isSuccess && roles.data.length === 0 &&
+      <Text role="status" variant="body-sm">{t('baselineIntegration.readiness')}</Text>}
     {assessmentActive && <Text variant="body-sm" role="status">{tr('errors.ASSESSMENT_IN_PROGRESS')}</Text>}
     <Card><CardContent className="flex flex-col gap-3 p-3 lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">

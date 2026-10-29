@@ -68,7 +68,9 @@ describe('targetRoleSelectionApi', () => {
   })
 
   it('sends the prepared idempotency key and expected selection on PUT', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(response(VALID_SELECTION))
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(response({ headerName: 'X-CSRF-TOKEN', token: 'test-token' }))
+      .mockResolvedValueOnce(response(VALID_SELECTION))
     vi.stubGlobal('fetch', fetchMock)
 
     await chooseTargetRole({
@@ -82,14 +84,18 @@ describe('targetRoleSelectionApi', () => {
       expect.objectContaining({
         method: 'PUT',
         credentials: 'same-origin',
-        headers: expect.objectContaining({ 'Idempotency-Key': IDEMPOTENCY_KEY }),
+        headers: expect.any(Headers),
         body: JSON.stringify({ roleId: ROLE_ID, expectedCurrentSelectionId: SELECTION_ID }),
       }),
     )
+    const headers = fetchMock.mock.calls[1][1].headers
+    expect(headers.get('Idempotency-Key')).toBe(IDEMPOTENCY_KEY)
+    expect(headers.get('X-CSRF-TOKEN')).toBe('test-token')
   })
 
   it('preserves public errors and synthesizes malformed error responses', async () => {
     vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(response({ headerName: 'X-CSRF-TOKEN', token: 'test-token' }))
       .mockResolvedValueOnce(response({ code: 'STALE_SELECTION', message: 'stale' }, 409))
       .mockResolvedValueOnce(new Response('not-json', { status: 503 })))
 

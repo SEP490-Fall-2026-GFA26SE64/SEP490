@@ -11,7 +11,7 @@ import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
+import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
@@ -19,6 +19,8 @@ import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronUp, GripVertical
 import { InitialTeachingDetails } from '../../../shared/components/InitialTeachingDetails'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Combobox } from '../../../shared/components/ui/Combobox'
+import { ReviewValidation } from './ReviewValidation'
+import { ReviewPathwayPreview } from './ReviewPathwayPreview'
 
 export function ExpertPathwayDetailPage() {
   const session = useInitialPathwaySession(), { pathwayId = '' } = useParams<{ pathwayId: string }>(), { t } = useTranslation()
@@ -27,34 +29,68 @@ export function ExpertPathwayDetailPage() {
 function Review({ scope, id }: { scope: string; id: string }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('reviewUi.' + key), client = useQueryClient()
   const detail = useQuery({ queryKey: ['initialPathway', scope, 'review', id], queryFn: ({ signal }) => readReviewDetail(id, signal), retry: false, gcTime: 0, refetchOnWindowFocus: false })
-  const [pending, setPending] = useState<PendingPathwayCommand | null>(null), [approval, setApproval] = useState<PendingPathwayCommand | null>(null)
+  const [pending, setPending] = useState<PendingPathwayCommand | null>(null), [approval, setApproval] = useState<{ command: PendingPathwayCommand; detail: ReviewDetail } | null>(null)
+  const [validationOpen, setValidationOpen] = useState(false)
   const [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null), [reason, setReason] = useState('')
   const [checkResult, setCheckResult] = useState<{ hash: string; status: string; diagnostics: string[] } | null>(null)
   const lock = useRef(false), committed = useRef(false), d = detail.data
   const checked = checkResult?.hash === d?.summary.contentHash ? checkResult?.status : null
   const blocked = busy || pending !== null, editable = d?.summary.reviewStatus === 'AWAITING_EXPERT_REVIEW'
   async function reconcile() { const latest = await readReviewDetail(id); client.setQueryData(['initialPathway', scope, 'review', id], latest); return latest }
+  function acceptCheck(snapshot: ReviewDetail, result: Awaited<ReturnType<typeof checkReview>>, showIssues: boolean) {
+    const status = result.revisionContentHash === snapshot.summary.contentHash ? result.validationStatus : 'STALE'
+    setCheckResult({ hash: snapshot.summary.contentHash, status, diagnostics: result.diagnostics })
+    if (showIssues) setValidationOpen(status !== 'VALID')
+    return status === 'VALID'
+  }
   async function submit(command: PendingPathwayCommand) {
     if (lock.current) return
-    lock.current = true; setBusy(true); setPending(command); setError(null)
+    lock.current = true; setBusy(true); setPending(command); setError(null); setCheckResult(null)
     try {
       if (!committed.current) { await sendPathwayCommand(command); committed.current = true }
-      await reconcile(); await client.invalidateQueries({ queryKey: ['initialPathway', scope, 'reviewQueue'] })
+      const latest = await reconcile()
+      void client.invalidateQueries({ queryKey: ['initialPathway', scope, 'reviewQueue'] })
       setPending(null); setApproval(null); setCheckResult(null); committed.current = false
+      if (latest.summary.reviewStatus === 'AWAITING_EXPERT_REVIEW') {
+        // A failed check must not turn a committed Include into an uncertain command/replay.
+        try { acceptCheck(latest, await checkReview(id), true) }
+        catch (cause) { setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')); setValidationOpen(true) }
+      }
     } catch (cause) {
       const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure)
       if (!failure.ambiguous && !committed.current) { setPending(null); setApproval(null); void detail.refetch() }
     } finally { lock.current = false; setBusy(false) }
   }
   async function validate() {
-    if (lock.current) return
+    if (lock.current || !d) return
+    lock.current = true; setBusy(true); setError(null); setCheckResult(null)
+    try {
+      const result = await checkReview(id)
+      // The server checks its current revision. Reload the large detail only on a hash change.
+      const snapshot = result.revisionContentHash === d.summary.contentHash ? d : await reconcile()
+      acceptCheck(snapshot, result, true)
+    }
+    catch (cause) { setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')); setValidationOpen(true) }
+    finally { lock.current = false; setBusy(false) }
+  }
+  async function preview() {
+    if (lock.current || checked !== 'VALID' || !d) return
     lock.current = true; setBusy(true); setError(null)
-    try { const result = await checkReview(id); if (d) setCheckResult({ hash: d.summary.contentHash, status: result.revisionContentHash === d.summary.contentHash ? result.validationStatus : 'STALE', diagnostics: result.diagnostics }) }
-    catch (cause) { setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')) }
+    try {
+      const latest = await reconcile()
+      const unchanged = latest.summary.contentHash === d.summary.contentHash && latest.summary.revision === d.summary.revision
+      const valid = acceptCheck(latest, await checkReview(id), true)
+      if (!unchanged) { setError(new PathwayError('STALE_REVISION', 409)); return }
+      if (valid && latest.summary.reviewStatus === 'AWAITING_EXPERT_REVIEW') setApproval({ command: prepareReviewCommand(id, latest, 'confirmation'), detail: latest })
+    } catch (cause) { setCheckResult(null); setError(cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR')); setValidationOpen(true) }
     finally { lock.current = false; setBusy(false) }
   }
   const totals = d?.revision.plan.quality
   const issues = checked !== null ? checkResult?.diagnostics ?? [] : d?.revision.plan.diagnostics ?? []
+  const issueMessages = [...new Set(issues.map(issue => {
+    const labels = issue.split(':').slice(1).map(ref => d?.gaps.skills.find(skill => skill.skillId === ref)?.name ?? ref)
+    return [pathwayDiagnostic(issue, t), ...labels].join(' · ')
+  }))]
   return <div className="min-w-0 space-y-5 pb-8">
     <h1 className="sr-only">{tr('reviewTitle')}</h1>
     {detail.isPending && <LoadingCard label={tr('loading')} />}
@@ -69,25 +105,42 @@ function Review({ scope, id }: { scope: string; id: string }) {
         <div><Text variant="caption">{tr('reviewRevision')}</Text><Text className="font-semibold">{d.summary.revision}</Text></div>
       </CardContent></Card>
       <PathwayModules detail={d} disabled={blocked || !editable || approval !== null} onEdit={(action, moduleId) => { void submit(prepareReviewCommand(id, d, action, moduleId, reason)) }} />
-      <Card><CardContent className="flex flex-wrap items-end justify-between gap-4 p-4">
+      <Card className="border-primary/40"><CardContent className="space-y-4 p-4" aria-busy={busy}>
+        {editable && <div aria-live="polite" role="status" className={`space-y-1 rounded-lg border-l-4 p-3 ${blocked ? 'border-primary bg-secondary/40' : error || checked && checked !== 'VALID' ? 'border-destructive bg-destructive/5' : checked === 'VALID' ? 'border-success bg-success/5' : 'border-primary bg-secondary/40'}`}>
+          <Text className="font-semibold">{pending && !busy ? tr('uncertain') : tr('reviewFlow.' + (busy ? 'checking' : error ? 'checkFailed' : checked === 'VALID' ? 'valid' : checked ? 'invalid' : 'checkNeeded'))}</Text>
+          {!blocked && issueMessages.map(message => <Text key={message} variant="body-sm">{message}</Text>)}
+          {checked === 'STALE' && <Text variant="body-sm">{tr('stale')}</Text>}
+          {checked === 'VALID' && <Text variant="caption">{tr('reviewFlow.readyHelp')}</Text>}
+        </div>}
+        <div className="flex flex-wrap items-end justify-between gap-4">
         <label className="min-w-0 flex-1 basis-72 space-y-1"><Text as="span" variant="caption">{tr('reason')}</Text><Input value={reason} maxLength={2000} disabled={blocked || !editable || approval !== null} onChange={e => setReason(e.target.value)} /></label>
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant={d.summary.reviewStatus === 'APPROVED' ? 'success' : 'warning'} className="w-max shrink-0 whitespace-nowrap px-3 py-1 text-[length:var(--text-caption)] leading-normal">{d.summary.reviewStatus === 'APPROVED' ? tr('approved') : tr('awaiting')}</Badge>
           <Link to="/expert/pathway-review" className={buttonVariants({ variant: 'ghost', size: 'sm' })}><ArrowLeft className="mr-1.5 size-4" />{tr('back')}</Link>
           <Button className="h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal sm:min-h-8" variant="outline" size="sm" disabled={blocked || approval !== null} isLoading={busy && !pending} onClick={() => void validate()}><RefreshCw className="size-4 shrink-0" />{tr('check')}</Button>
-          <Button className="h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal sm:min-h-8" size="sm" disabled={blocked || !editable || approval !== null || (checked ?? d.summary.validationStatus) !== 'VALID'} onClick={() => setApproval(prepareReviewCommand(id, d, 'confirmation'))}><CheckCircle2 className="size-4 shrink-0" />{tr('approve')}</Button>
+          <Button className="h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal sm:min-h-8" size="sm" disabled={blocked || !editable || approval !== null || checked !== 'VALID' || error !== null} onClick={() => void preview()}><CheckCircle2 className="size-4 shrink-0" />{tr('approve')}</Button>
+        </div>
         </div>
       </CardContent></Card>
       <details className="rounded-lg border border-border bg-card p-4"><summary className="cursor-pointer text-body-sm font-semibold">{ui('reviewDetails')}</summary><div className="mt-4 space-y-4">
         {totals && <div className="flex flex-wrap gap-6"><Text variant="body-sm">{tr('moduleCount')}: {totals.moduleCount}</Text><Text variant="body-sm">{tr('totalDuration')}: {totals.durationMinutes.toLocaleString(language)} {tr('duration')}</Text><Text variant="body-sm">{tr('totalPrice')}: {totals.priceVnd.toLocaleString(language)} {tr('price')}</Text></div>}
         <InitialGapTable result={d.gaps} />
       </div></details>
-      {issues.length > 0 && <Card><CardContent className="space-y-2 p-4" role="status">{[...new Set(issues.map(issue => pathwayDiagnostic(issue, t)))].map(message => <Text key={message}>{message}</Text>)}</CardContent></Card>}
     </>}
-    <Dialog open={approval !== null} onOpenChange={open => { if (!open && !blocked) setApproval(null) }} ariaLabel={tr('approveTitle')} closeLabel={tr('cancel')}>
-      <DialogHeader><DialogTitle>{tr('approveTitle')}</DialogTitle><DialogDescription>{tr('approveDescription')}</DialogDescription></DialogHeader>
-      {error && <Text role="alert">{pathwayMessage(error, t)}</Text>}
-      <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setApproval(null)}>{tr('cancel')}</Button><Button isLoading={busy} onClick={() => { const command = pending ?? approval; if (command) void submit(command) }}>{tr(pending ? 'retryExact' : 'approve')}</Button></DialogFooter>
+    <Dialog open={validationOpen} size="wide" className="border-2 border-primary/40" onOpenChange={open => { if (!blocked) setValidationOpen(open) }} ariaLabel={tr('reviewFlow.checkTitle')} closeLabel={tr('display.close')}>
+      <DialogHeader><DialogTitle>{tr('reviewFlow.checkTitle')}</DialogTitle><DialogDescription>{d?.summary.roleName} · {d?.summary.levelName} · {tr('reviewRevision')} {d?.summary.revision}</DialogDescription></DialogHeader>
+      <DialogBody className="space-y-4">
+        {blocked && <Text role="status">{tr('savingMembership')}</Text>}
+        {error && <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4" role="alert"><Text>{tr(pending ? 'uncertain' : 'reviewFlow.checkFailed')}</Text><Text variant="body-sm">{error.code === 'MODULE_NOT_ELIGIBLE' ? tr('moduleNotEligible') : pathwayMessage(error, t)}</Text></div>}
+        {!error && checked === 'STALE' && <Text role="status">{tr('stale')}</Text>}
+        {d && !error && checked !== 'STALE' && <ReviewValidation detail={d} diagnostics={issues} disabled={blocked} onInclude={moduleId => { void submit(prepareReviewCommand(id, d, 'inclusions', moduleId, reason)) }} />}
+      </DialogBody>
+      <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setValidationOpen(false)}>{tr('display.close')}</Button>{pending ? <Button disabled={busy} onClick={() => void submit(pending)}>{tr('retryExact')}</Button> : <Button disabled={blocked} onClick={() => void validate()}>{tr('check')}</Button>}</DialogFooter>
+    </Dialog>
+    <Dialog open={approval !== null} size="wide" className="border-2 border-primary/40" onOpenChange={open => { if (!open && !blocked) setApproval(null) }} ariaLabel={tr('reviewFlow.previewTitle')} closeLabel={tr('reviewFlow.backToEdit')}>
+      <DialogHeader><DialogTitle>{tr('reviewFlow.previewTitle')}</DialogTitle><DialogDescription>{tr('approveDescription')}</DialogDescription></DialogHeader>
+      <DialogBody className="space-y-4">{error && <Text role="alert">{pathwayMessage(error, t)}</Text>}{approval && <ReviewPathwayPreview detail={approval.detail} />}</DialogBody>
+      <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setApproval(null)}>{tr('reviewFlow.backToEdit')}</Button><Button isLoading={busy} onClick={() => { const command = pending ?? approval?.command; if (command) void submit(command) }}>{tr(pending ? 'retryExact' : 'reviewFlow.finalConfirm')}</Button></DialogFooter>
     </Dialog>
   </div>
 }

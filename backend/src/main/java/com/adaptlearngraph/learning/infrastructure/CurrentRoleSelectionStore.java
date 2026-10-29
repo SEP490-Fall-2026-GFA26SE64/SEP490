@@ -18,6 +18,11 @@ public final class CurrentRoleSelectionStore implements Store {
     private MapSqlParameterSource key(Actor a) { return new MapSqlParameterSource("org",a.organizationId()).addValue("learner",a.learnerId()); }
     @Override public <T> T transaction(Actor a, java.util.function.Supplier<T> work) {
         return tx.execute(status -> {
+            jdbc.update("""
+                    INSERT INTO platform.learner_state(learner_id)
+                    SELECT account_id FROM platform.account WHERE account_id=:learner AND organization_id=:org AND active
+                    ON CONFLICT(learner_id) DO NOTHING
+                    """, key(a));
             jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended(:coordination,0))",
                     Map.of("coordination","AB-ATTEMPT-ACTOR-V1\n"+a.organizationId()+"\n"+a.learnerId()),(rs,n)->true);
             var found=jdbc.query("""
@@ -38,6 +43,13 @@ public final class CurrentRoleSelectionStore implements Store {
                     return new Selection(rs.getObject("selection_id",UUID.class),snapshot.role(),rs.getLong("target_revision"),rs.getTimestamp("selected_at").toInstant(),true,snapshot.levelId());
                 })
                 .stream().findFirst();
+    }
+    @Override public boolean hasLegacySelection(Actor a) {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM platform.target_selection s
+                JOIN platform.account a ON a.account_id=s.learner_id
+                WHERE s.learner_id=:learner AND a.organization_id=:org AND s.ended_at IS NULL)
+                """, key(a), Boolean.class));
     }
     @Override public Optional<Selection> replay(Actor a,String retry,String hash) {
         var rows=jdbc.query("""

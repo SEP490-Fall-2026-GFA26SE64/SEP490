@@ -4,6 +4,8 @@ import { AdminDashboardPage } from '../features/administration/dashboard/AdminDa
 import { DesignSystemShowcasePage } from '../features/administration/design-system/DesignSystemShowcasePage'
 import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/KnowledgeGraphPage'
 import { LoginPage } from '../features/auth/LoginPage'
+import { MemberActivationPage } from '../features/subscription/WorkspaceLoginPage'
+import { WorkspaceBoundary } from '../features/subscription/WorkspaceBoundary'
 import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
 import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
 import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
@@ -24,14 +26,16 @@ import { ContentApprovalQueuePage } from '../features/manager/approvals/ContentA
 import { Dashboard } from '../features/manager/learning-outcomes/Dashboard'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
-import { UserManagementPage } from '../features/manager/user-management/UserManagementPage'
+import { UserManagementPage } from '../features/administration/user-management/UserManagementPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
 import { SystemStatusPage } from '../features/system/SystemStatusPage'
 import { GuestRegisterPage } from '../features/guest/GuestRegisterPage'
 import { SubscriptionPlansPage } from '../features/guest/SubscriptionPlansPage'
 import { PayOsCheckoutPage } from '../features/guest/PayOsCheckoutPage'
+import { GuestSubscriptionPage } from '../features/subscription/GuestSubscriptionPage'
+import { AdminPaymentResultPage } from '../features/subscription/AdminPaymentResultPage'
 import { WorkspaceProvisioningPage } from '../features/guest/WorkspaceProvisioningPage'
-import { PlatformOrganizationsPage } from '../features/platform-admin/PlatformOrganizationsPage'
+import { PlatformWorkspacePage } from '../features/subscription/PlatformWorkspaceControls'
 import { PlatformSubscriptionsConfigPage } from '../features/platform-admin/PlatformSubscriptionsConfigPage'
 import { PlatformActivityMonitoringPage } from '../features/platform-admin/PlatformActivityMonitoringPage'
 import { DepartmentsManagementPage } from '../features/administration/departments/DepartmentsManagementPage'
@@ -46,27 +50,33 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
 })
 
+const GuestLandingPage = lazy(() => import('../features/guest/GuestLandingPage').then(module => ({ default: module.GuestLandingPage })))
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <LanguageProvider>
           <BrowserRouter>
-          <Routes>
+          <WorkspaceBoundary><Routes>
             {/* Auth routes */}
-            <Route path="/" element={<Navigate to={import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true' ? '/ld-manager/baseline-assessments' : '/login'} replace />} />
-            <Route path="/home" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><GuestLandingPage /></Suspense>} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/activate" element={<MemberActivationPage />} />
+            <Route path="/active" element={<MemberActivationPage />} />
 
             {/* Guest Self-Service Onboarding & Subscription */}
             <Route path="/register" element={<GuestRegisterPage />} />
             <Route path="/guest/register" element={<GuestRegisterPage />} />
+            <Route path="/guest/resume" element={<GuestRegisterPage mode="resume" />} />
             <Route path="/packages" element={<SubscriptionPlansPage />} />
             <Route path="/guest/packages" element={<Navigate to="/packages" replace />} />
             <Route path="/guest/plans" element={<SubscriptionPlansPage />} />
             <Route path="/guest/checkout" element={<PayOsCheckoutPage />} />
+            <Route path="/guest/payment-result" element={<GuestSubscriptionPage mode="result" />} />
             <Route path="/guest/onboarding-status" element={<WorkspaceProvisioningPage />} />
-            <Route path="/guest" element={<Navigate to="/guest/register" replace />} />
+            <Route path="/guest" element={<Navigate to="/" replace />} />
 
             {/* 1. Employee routes (Primary) */}
             <Route path="/employee" element={<Navigate to="/employee/overview" replace />} />
@@ -129,7 +139,7 @@ export default function App() {
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/ld-manager/learning-outcomes" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-config" element={<Navigate to="/ld-manager/baseline-assessments" replace />} />
-            <Route path="/ld-manager/users" element={<UserManagementPage />} />
+            <Route path="/ld-manager/users" element={<Navigate to="/admin/users" replace />} />
             <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
             <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
 
@@ -153,6 +163,8 @@ export default function App() {
             <Route path="/admin/departments" element={<DepartmentsManagementPage />} />
             <Route path="/admin/organization-settings" element={<OrganizationSettingsPage />} />
             <Route path="/admin/subscription" element={<OrganizationSubscriptionPage />} />
+            <Route path="/admin/subscription/payment-result" element={<AdminPaymentResultPage />} />
+            <Route path="/admin/user" element={<Navigate to="/admin/users" replace />} />
             <Route path="/admin/billing" element={<Navigate to="/admin/subscription" replace />} />
             <Route path="/admin/knowledge-graph" element={<KnowledgeGraphPage />} />
             <Route path="/knowledge-graph" element={<Navigate to="/admin/knowledge-graph" replace />} />
@@ -162,7 +174,7 @@ export default function App() {
 
             {/* 5. Platform Administrator routes (Multi-Tenant Organizations, Subscriptions, Platform Telemetry) */}
             <Route path="/platform-admin" element={<Navigate to="/platform-admin/organizations" replace />} />
-            <Route path="/platform-admin/organizations" element={<PlatformOrganizationsPage />} />
+            <Route path="/platform-admin/organizations" element={<PlatformWorkspacePage />} />
             <Route path="/platform-admin/subscriptions" element={<PlatformSubscriptionsConfigPage />} />
             <Route path="/platform-admin/activity" element={<PlatformActivityMonitoringPage />} />
 
@@ -171,7 +183,7 @@ export default function App() {
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/employee/overview" replace />} />
-          </Routes>
+          </Routes></WorkspaceBoundary>
           <Toaster />
         </BrowserRouter>
         </LanguageProvider>
@@ -179,3 +191,4 @@ export default function App() {
     </QueryClientProvider>
   )
 }
+import { lazy, Suspense } from 'react'

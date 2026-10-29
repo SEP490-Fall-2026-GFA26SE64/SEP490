@@ -2,359 +2,642 @@
 !pragma layout smetana
 top to bottom direction
 skinparam shadowing false
-hide circle
-skinparam classAttributeIconSize 0
-skinparam defaultFontName SansSerif
-skinparam defaultFontSize 12
-title PostgreSQL 17.6 / platform / V1-V26\nLegacy assessment and shared learning (32 tables)
-legend top left
-PK = primary key; FK = foreign-key column; ? = nullable
-Arrows: referenced parent -> referencing child; no cardinality inference.
-External tables are reference stubs. Full constraints/indexes/triggers: schema catalog.
-endlegend
+title PostgreSQL - Assessment and learning
 class evidence_policy_version {
-  policy_version_id : uuid [PK]
-  policy_name : text
-  version : integer
-  configuration : jsonb
-  configuration_hash : platform.content_hash
-  approved_by? : uuid [FK]
-  approved_at? : timestamp with time zone
+    policy_version_id : uuid [PK]
+    policy_name : text
+    version : integer
+    configuration : jsonb
+    configuration_hash : platform.content_hash
+    approved_by? : uuid [FK]
+    approved_at? : timestamp with time zone
 }
 class model_version {
-  model_version_id : uuid [PK]
-  algorithm : text
-  version : text
-  parameter_hash : platform.content_hash
-  configuration : jsonb
-  artifact_ref : text
-  approved_by? : uuid [FK]
-  approved_at? : timestamp with time zone
+    model_version_id : uuid [PK]
+    algorithm : text
+    version : text
+    parameter_hash : platform.content_hash
+    configuration : jsonb
+    artifact_ref : text
+    approved_by? : uuid [FK]
+    approved_at? : timestamp with time zone
 }
 class question_bank {
-  question_bank_id : uuid [PK]
-  name : text
-  created_by : uuid [FK]
-  created_at : timestamp with time zone
+    question_bank_id : uuid [PK]
+    name : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
 }
 class item_version {
-  item_version_id : uuid [PK]
-  item_id : uuid
-  version : integer
-  question_bank_id : uuid [FK]
-  prompt : text
-  response_schema : jsonb
-  protected_key : jsonb
-  publication_state : text
-  content_hash : platform.content_hash
-  micro_skill_id? : text
-  micro_skill_name_snapshot? : text
-  difficulty? : text
+    item_version_id : uuid [PK]
+    item_id : uuid
+    version : integer
+    question_bank_id : uuid [FK]
+    prompt : text
+    response_schema : jsonb
+    protected_key : jsonb
+    publication_state : text
+    content_hash : platform.content_hash
+    micro_skill_id? : text
+    micro_skill_name_snapshot? : text
+    difficulty? : text
 }
 class assessment_version {
-  assessment_version_id : uuid [PK]
-  assessment_id : uuid
-  version : integer
-  title : text
-  purpose : text
-  pass_threshold? : platform.unit_interval
-  scoring_version : text
-  publication_state : text
-  content_hash : platform.content_hash
-  blueprint_id? : uuid [FK]
-  blueprint_version? : integer [FK]
-  generation_seed? : bigint
-  created_by? : uuid [FK]
-  created_at? : timestamp with time zone
-  generation_idempotency_key? : text
-  generation_request_hash? : platform.content_hash
-  reviewed_by? : uuid [FK]
-  reviewed_at? : timestamp with time zone
-  reviewed_content_hash? : platform.content_hash
-  draft_revision : bigint
-  baseline_candidate_state? : text
+    assessment_version_id : uuid [PK]
+    assessment_id : uuid
+    version : integer
+    title : text
+    purpose : text
+    pass_threshold? : platform.unit_interval
+    scoring_version : text
+    publication_state : text
+    content_hash : platform.content_hash
+    blueprint_id? : uuid [FK]
+    blueprint_version? : integer [FK]
+    generation_seed? : bigint
+    created_by? : uuid [FK]
+    created_at? : timestamp with time zone
+    generation_idempotency_key? : text
+    generation_request_hash? : platform.content_hash
+    reviewed_by? : uuid [FK]
+    reviewed_at? : timestamp with time zone
+    reviewed_content_hash? : platform.content_hash
+    draft_revision : bigint
+    baseline_candidate_state? : text
 }
 class assessment_availability {
-  assessment_version_id : uuid [PK, FK]
-  revision : bigint [PK]
-  available : boolean
-  decided_by : uuid [FK]
-  decided_at : timestamp with time zone
+    assessment_version_id : uuid [PK, FK]
+    revision : bigint [PK]
+    available : boolean
+    decided_by : uuid [FK]
+    decided_at : timestamp with time zone
 }
 class assessment_item {
-  assessment_version_id : uuid [PK, FK]
-  item_position : integer [PK]
-  item_version_id : uuid [FK]
-  required : boolean
-  scoring_weight : numeric
-  role_id? : text
-  role_name_snapshot? : text
+    assessment_version_id : uuid [PK, FK]
+    item_position : integer [PK]
+    item_version_id : uuid [FK]
+    required : boolean
+    scoring_weight : numeric
+    role_id? : text
+    role_name_snapshot? : text
 }
 class item_skill_mapping {
-  mapping_version_id : uuid [PK]
-  item_version_id : uuid [FK]
-  skill_ref_id : uuid [FK]
-  skill_kind : text [FK]
-  evidence_weight : platform.positive_weight
-}
-class baseline_blueprint {
-  blueprint_id : uuid [PK]
-  occupation_id? : text
-  created_by : uuid [FK]
-  created_at : timestamp with time zone
-  organization_id? : uuid [FK]
-}
-class baseline_blueprint_version {
-  blueprint_id : uuid [PK, FK]
-  version : integer [PK]
-  name : text
-  occupation_id? : text
-  occupation_name_snapshot? : text
-  created_by : uuid [FK]
-  created_at : timestamp with time zone
-  idempotency_key : text
-  request_hash : platform.content_hash
-}
-class baseline_blueprint_role {
-  blueprint_id : uuid [PK, FK]
-  blueprint_version : integer [PK, FK]
-  role_id : text [PK]
-  role_name_snapshot : text
-  enabled : boolean
-  total_question_count : integer
-  easy_score_weight : platform.unit_interval
-  medium_score_weight : platform.unit_interval
-  hard_score_weight : platform.unit_interval
-}
-class baseline_blueprint_skill {
-  blueprint_id : uuid [PK, FK]
-  blueprint_version : integer [PK, FK]
-  role_id : text [PK, FK]
-  micro_skill_id : text [PK]
-  micro_skill_name_snapshot : text
-  easy_question_count : integer
-  medium_question_count : integer
-  hard_question_count : integer
-}
-class baseline_assessment_series {
-  organization_id : uuid [PK, FK]
-  occupation_id : text [PK, FK]
-  blueprint_id : uuid [FK]
-  series_revision : bigint
-  working_revision_id? : uuid [FK]
-  pending_blueprint_version? : integer [FK]
-  open_assessment_version_id? : uuid [FK]
-  active_assessment_version_id? : uuid [FK]
-  created_at : timestamp with time zone
-  updated_at : timestamp with time zone
-}
-class baseline_blueprint_working_revision {
-  working_revision_id : uuid [PK]
-  organization_id : uuid [FK]
-  occupation_id : text [FK]
-  blueprint_id : uuid [FK]
-  base_version? : integer [FK]
-  revision : bigint
-  name : text
-  occupation_name_snapshot : text
-  roles : jsonb
-  state : text
-  created_by : uuid [FK]
-  created_at : timestamp with time zone
-  updated_by : uuid [FK]
-  updated_at : timestamp with time zone
-  closed_at? : timestamp with time zone
-}
-class baseline_assessment_transition {
-  transition_id : uuid [PK]
-  organization_id : uuid [FK]
-  occupation_id : text [FK]
-  series_revision : bigint
-  transition : text
-  actor_id : uuid [FK]
-  occurred_at : timestamp with time zone
-  reason? : text
-  previous_working_revision_id? : uuid [FK]
-  previous_pending_blueprint_id? : uuid [FK]
-  previous_pending_blueprint_version? : integer [FK]
-  previous_open_assessment_version_id? : uuid [FK]
-  previous_active_assessment_version_id? : uuid [FK]
-  working_revision_id? : uuid [FK]
-  pending_blueprint_id? : uuid [FK]
-  pending_blueprint_version? : integer [FK]
-  open_assessment_version_id? : uuid [FK]
-  active_assessment_version_id? : uuid [FK]
-}
-class baseline_management_command {
-  actor_id : uuid [PK, FK]
-  idempotency_key : text [PK]
-  organization_id : uuid [FK]
-  occupation_id : text [FK]
-  operation : text
-  request_hash : platform.content_hash
-  response_json : jsonb
-  created_at : timestamp with time zone
-}
-class baseline_answer_reveal_audit {
-  answer_reveal_audit_id : uuid [PK]
-  organization_id : uuid [FK]
-  assessment_version_id : uuid [FK]
-  actor_id : uuid [FK]
-  revealed_at : timestamp with time zone
-  item_count : integer
+    mapping_version_id : uuid [PK]
+    item_version_id : uuid [FK]
+    skill_ref_id : uuid [FK]
+    skill_kind : text [FK]
+    evidence_weight : platform.positive_weight
 }
 class module_assessment_binding {
-  module_ref_id : uuid [PK, FK]
-  module_kind : text [FK]
-  assessment_version_id : uuid [PK, FK]
-  assessment_purpose : text [FK]
-  required : boolean
-  manifest_hash : platform.content_hash
+    module_ref_id : uuid [PK, FK]
+    module_kind : text [FK]
+    assessment_version_id : uuid [PK, FK]
+    assessment_purpose : text [FK]
+    required : boolean
+    manifest_hash : platform.content_hash
 }
 class learning_activity {
-  activity_id : uuid [PK]
-  learner_id : uuid [FK]
-  module_ref_id : uuid [FK]
-  module_kind : text [FK]
-  kind : text
-  required_assessment_set_hash : platform.content_hash
-  created_at : timestamp with time zone
+    activity_id : uuid [PK]
+    learner_id : uuid [FK]
+    module_ref_id : uuid [FK]
+    module_kind : text [FK]
+    kind : text
+    required_assessment_set_hash : platform.content_hash
+    created_at : timestamp with time zone
 }
 class activity_requirement {
-  activity_id : uuid [PK, FK]
-  module_ref_id : uuid [FK]
-  assessment_version_id : uuid [PK, FK]
-  required : boolean [FK]
-  manifest_hash : platform.content_hash [FK]
+    activity_id : uuid [PK, FK]
+    module_ref_id : uuid [FK]
+    assessment_version_id : uuid [PK, FK]
+    required : boolean [FK]
+    manifest_hash : platform.content_hash [FK]
 }
 class assessment_assignment {
-  assignment_id : uuid [PK]
-  learner_id : uuid [FK]
-  assessment_version_id : uuid [FK]
-  purpose : text [FK]
-  activity_id? : uuid [FK]
-  activity_context? : uuid
-  available_from : timestamp with time zone
-  available_until? : timestamp with time zone
-  attempt_limit : integer
-  status : text
+    assignment_id : uuid [PK]
+    learner_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    purpose : text [FK]
+    activity_id? : uuid [FK]
+    activity_context? : uuid
+    available_from : timestamp with time zone
+    available_until? : timestamp with time zone
+    attempt_limit : integer
+    status : text
 }
 class assessment_attempt {
-  attempt_id : uuid [PK]
-  assignment_id : uuid [FK]
-  learner_id : uuid [FK]
-  assessment_version_id : uuid [FK]
-  activity_id? : uuid
-  activity_context? : uuid [FK]
-  operation : text
-  idempotency_key : text
-  request_hash : platform.content_hash
-  frozen_context : jsonb
-  submission_sequence : bigint
-  attempt_number : integer
-  accepted_at : timestamp with time zone
+    attempt_id : uuid [PK]
+    assignment_id : uuid [FK]
+    learner_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    activity_id? : uuid
+    activity_context? : uuid [FK]
+    operation : text
+    idempotency_key : text
+    request_hash : platform.content_hash
+    frozen_context : jsonb
+    submission_sequence : bigint
+    attempt_number : integer
+    accepted_at : timestamp with time zone
 }
 class item_response {
-  attempt_id : uuid [PK, FK]
-  item_position : integer [PK, FK]
-  assessment_version_id : uuid [FK]
-  item_version_id : uuid [FK]
-  response_payload : jsonb
+    attempt_id : uuid [PK, FK]
+    item_position : integer [PK, FK]
+    assessment_version_id : uuid [FK]
+    item_version_id : uuid [FK]
+    response_payload : jsonb
 }
 class assessment_result {
-  attempt_id : uuid [PK, FK]
-  learner_id : uuid [FK]
-  assessment_version_id : uuid [FK]
-  activity_id? : uuid
-  activity_context? : uuid [FK]
-  score : platform.unit_interval
-  pass_threshold : platform.unit_interval
-  passed? : boolean
-  scoring_version : text
-  scored_at : timestamp with time zone
+    attempt_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    activity_id? : uuid
+    activity_context? : uuid [FK]
+    score : platform.unit_interval
+    pass_threshold : platform.unit_interval
+    passed? : boolean
+    scoring_version : text
+    scored_at : timestamp with time zone
 }
 class evidence_observation {
-  observation_id : uuid [PK]
-  attempt_id : uuid [FK]
-  learner_id : uuid [FK]
-  item_position : integer [FK]
-  item_version_id : uuid [FK]
-  mapping_version_id : uuid [FK]
-  skill_ref_id : uuid [FK]
-  outcome : boolean
-  weight : platform.positive_weight [FK]
-  source_kind : text
+    observation_id : uuid [PK]
+    attempt_id : uuid [FK]
+    learner_id : uuid [FK]
+    item_position : integer [FK]
+    item_version_id : uuid [FK]
+    mapping_version_id : uuid [FK]
+    skill_ref_id : uuid [FK]
+    outcome : boolean
+    weight : platform.positive_weight [FK]
+    source_kind : text
 }
 class processing_stream {
-  processing_stream_id : uuid [PK]
-  learner_id : uuid [FK]
-  model_version_id : uuid [FK]
-  policy_version_id : uuid [FK]
-  created_at : timestamp with time zone
+    processing_stream_id : uuid [PK]
+    learner_id : uuid [FK]
+    model_version_id : uuid [FK]
+    policy_version_id : uuid [FK]
+    created_at : timestamp with time zone
 }
 class profile_revision {
-  profile_revision_id : uuid [PK]
-  learner_id : uuid [FK]
-  processing_stream_id : uuid [FK]
-  model_version_id : uuid [FK]
-  policy_version_id : uuid [FK]
-  revision_number : bigint
-  evidence_watermark : bigint
-  status : text
-  created_at : timestamp with time zone
+    profile_revision_id : uuid [PK]
+    learner_id : uuid [FK]
+    processing_stream_id : uuid [FK]
+    model_version_id : uuid [FK]
+    policy_version_id : uuid [FK]
+    revision_number : bigint
+    evidence_watermark : bigint
+    status : text
+    created_at : timestamp with time zone
 }
 class mastery_estimate {
-  profile_revision_id : uuid [PK, FK]
-  skill_ref_id : uuid [PK, FK]
-  skill_kind : text [FK]
-  objective_value? : platform.unit_interval
-  provisional_value? : platform.unit_interval
-  effective_value? : platform.unit_interval
-  evidence_status : text
+    profile_revision_id : uuid [PK, FK]
+    skill_ref_id : uuid [PK, FK]
+    skill_kind : text [FK]
+    objective_value? : platform.unit_interval
+    provisional_value? : platform.unit_interval
+    effective_value? : platform.unit_interval
+    evidence_status : text
 }
 class evidence_application {
-  processing_stream_id : uuid [PK, FK]
-  observation_id : uuid [PK, FK]
-  learner_id : uuid [FK]
-  profile_revision_id : uuid [FK]
-  applied_at : timestamp with time zone
+    processing_stream_id : uuid [PK, FK]
+    observation_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    profile_revision_id : uuid [FK]
+    applied_at : timestamp with time zone
 }
 class progress_revision {
-  progress_revision_id : uuid [PK]
-  learner_id : uuid [FK]
-  revision_number : bigint
-  activity_snapshot : jsonb
-  snapshot_hash : platform.content_hash
-  created_at : timestamp with time zone
+    progress_revision_id : uuid [PK]
+    learner_id : uuid [FK]
+    revision_number : bigint
+    activity_snapshot : jsonb
+    snapshot_hash : platform.content_hash
+    created_at : timestamp with time zone
 }
 class module_completion {
-  activity_id : uuid [PK, FK]
-  learner_id : uuid [FK]
-  progress_revision_id : uuid [FK]
-  completed_at : timestamp with time zone
+    activity_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    progress_revision_id : uuid [FK]
+    completed_at : timestamp with time zone
 }
 class completion_pass {
-  activity_id : uuid [PK, FK]
-  assessment_version_id : uuid [PK, FK]
-  learner_id : uuid [FK]
-  attempt_id : uuid [FK]
-  passed : boolean [FK]
+    activity_id : uuid [PK, FK]
+    assessment_version_id : uuid [PK, FK]
+    learner_id : uuid [FK]
+    attempt_id : uuid [FK]
+    passed : boolean [FK]
 }
-class account <<external>> #F1F5F9
-class catalog_reference <<external>> #F1F5F9
-class learner_state <<external>> #F1F5F9
-class organization <<external>> #F1F5F9
-account --> assessment_availability
-account --> assessment_version
-account --> baseline_answer_reveal_audit
-account --> baseline_assessment_transition
-account --> baseline_blueprint
-account --> baseline_blueprint_version
-account --> baseline_blueprint_working_revision
-account --> baseline_management_command
-account --> evidence_policy_version
-account --> model_version
-account --> question_bank
+class mastery_mapping_version {
+    mastery_mapping_version_id : uuid [PK]
+    mapping_type : text
+    configuration : jsonb
+    configuration_hash : platform.content_hash
+    created_at : timestamp with time zone
+}
+class workspace_baseline_resource {
+    organization_id : uuid [PK, FK]
+    occupation_reference_id : uuid [FK]
+    graph_occupation_id : text [PK]
+    question_bank_id? : uuid [FK]
+    model_version_id? : uuid [FK]
+    mastery_mapping_version_id? : uuid [FK]
+}
+class baseline_adaptive_attempt {
+    attempt_id : uuid [PK]
+    organization_id : uuid [FK]
+    learner_id : uuid [FK]
+    occupation_id : text [FK]
+    attempt_purpose : text
+    target_role_id? : text [FK]
+    target_selection_revision? : bigint
+    blueprint_id : uuid [FK]
+    blueprint_version : integer [FK]
+    model_version_id : uuid
+    mastery_mapping_version_id : uuid
+    parameter_set_id : uuid
+    catalog_fingerprint : text
+    max_questions : integer
+    time_limit_seconds : integer
+    state : text
+    revision : bigint
+    started_at : timestamp with time zone
+    deadline_at : timestamp with time zone
+    finished_at? : timestamp with time zone
+    completion_reason? : text
+    replaces_attempt_id? : uuid [FK]
+    scope_policy? : text
+}
+class baseline_adaptive_blueprint_role {
+    blueprint_id : uuid [PK, FK]
+    blueprint_version : integer [PK, FK]
+    role_id : text [PK]
+    role_name_snapshot : text
+    catalog_version : text
+    max_questions? : integer
+    time_limit_seconds? : integer
+}
+class baseline_adaptive_blueprint_skill {
+    blueprint_id : uuid [PK, FK]
+    blueprint_version : integer [PK, FK]
+    role_id : text [PK, FK]
+    micro_skill_id : text [PK]
+    micro_skill_name_snapshot : text
+    catalog_version : text
+}
+class baseline_adaptive_blueprint_version {
+    blueprint_id : uuid [PK, FK]
+    version : integer [PK]
+    organization_id : uuid [FK]
+    occupation_id : text [FK]
+    name : text
+    occupation_name_snapshot : text
+    catalog_fingerprint : text
+    exploration_max_questions? : integer
+    exploration_time_limit_seconds? : integer
+    model_version_id : uuid [FK]
+    mastery_mapping_version_id : uuid [FK]
+    parameter_set_id : uuid [FK]
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+    scope_policy? : text
+    occupation_max_questions? : integer
+    occupation_time_limit_seconds? : integer
+}
+class baseline_adaptive_blueprint_working_revision {
+    working_revision_id : uuid [PK]
+    organization_id : uuid [FK]
+    occupation_id : text [FK]
+    blueprint_id : uuid [FK]
+    revision : bigint
+    configuration : jsonb
+    state : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+    updated_by : uuid [FK]
+    updated_at : timestamp with time zone
+    closed_at? : timestamp with time zone
+}
+class baseline_answer_reveal_audit {
+    answer_reveal_audit_id : uuid [PK]
+    organization_id : uuid [FK]
+    assessment_version_id : uuid [FK]
+    actor_id : uuid [FK]
+    revealed_at : timestamp with time zone
+    item_count : integer
+}
+class baseline_assessment_series {
+    organization_id : uuid [PK, FK]
+    occupation_id : text [PK, FK]
+    blueprint_id : uuid [FK]
+    series_revision : bigint
+    working_revision_id? : uuid [FK]
+    pending_blueprint_version? : integer [FK]
+    open_assessment_version_id? : uuid [FK]
+    active_assessment_version_id? : uuid [FK]
+    created_at : timestamp with time zone
+    updated_at : timestamp with time zone
+}
+class baseline_assessment_transition {
+    transition_id : uuid [PK]
+    organization_id : uuid [FK]
+    occupation_id : text [FK]
+    series_revision : bigint
+    transition : text
+    actor_id : uuid [FK]
+    occurred_at : timestamp with time zone
+    reason? : text
+    previous_working_revision_id? : uuid [FK]
+    previous_pending_blueprint_id? : uuid [FK]
+    previous_pending_blueprint_version? : integer [FK]
+    previous_open_assessment_version_id? : uuid [FK]
+    previous_active_assessment_version_id? : uuid [FK]
+    working_revision_id? : uuid [FK]
+    pending_blueprint_id? : uuid [FK]
+    pending_blueprint_version? : integer [FK]
+    open_assessment_version_id? : uuid [FK]
+    active_assessment_version_id? : uuid [FK]
+}
+class baseline_attempt_command {
+    organization_id : uuid [PK, FK]
+    actor_id : uuid [PK, FK]
+    idempotency_key : text [PK]
+    attempt_id : uuid [FK]
+    occupation_id : text [FK]
+    operation : text
+    request_hash : platform.content_hash
+    response_payload : jsonb
+    created_at : timestamp with time zone
+}
+class baseline_attempt_item {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    position : integer [PK]
+    item_version_id : uuid [FK]
+    micro_skill_id : text [FK]
+    option_order : jsonb
+    selection_trace : jsonb
+    presented_at : timestamp with time zone
+}
+class baseline_attempt_pool_item {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    parameter_set_id : uuid [FK]
+    item_version_id : uuid [PK, FK]
+    micro_skill_id : text [FK]
+}
+class baseline_attempt_response {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    position : integer [PK, FK]
+    response_payload : jsonb
+    is_correct : boolean
+    accepted_at : timestamp with time zone
+    request_id : uuid
+}
+class baseline_attempt_result {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    answered_count : integer
+    correct_count : integer
+    raw_score? : numeric
+    result_status : text
+    scored_at : timestamp with time zone
+    mastery_event_id : uuid [FK]
+}
+class baseline_attempt_skill_result {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    micro_skill_id : text [PK, FK]
+    theta : numeric
+    standard_error : numeric
+    estimated_mastery : platform.unit_interval
+    mastery : platform.unit_interval
+    confidence_label : text
+    mastery_mapping_version_id : uuid [FK]
+    finalized_at : timestamp with time zone
+}
+class baseline_attempt_skill_state {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    micro_skill_id : text [PK]
+    theta : numeric
+    standard_error : numeric
+    test_information : numeric
+    answered_count : integer
+    revision : bigint
+    updated_at : timestamp with time zone
+}
+class baseline_blueprint {
+    blueprint_id : uuid [PK]
+    occupation_id? : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+    organization_id? : uuid [FK]
+}
+class baseline_blueprint_activation {
+    organization_id : uuid [PK, FK]
+    occupation_id : text [PK, FK]
+    blueprint_id : uuid [FK]
+    blueprint_version? : integer [FK]
+    activation_revision : bigint
+    state? : text
+    activated_by : uuid [FK]
+    activated_at : timestamp with time zone
+}
+class baseline_blueprint_activation_event {
+    activation_event_id : uuid [PK]
+    organization_id : uuid [FK]
+    occupation_id : text [FK]
+    activation_revision : bigint
+    blueprint_id : uuid [FK]
+    blueprint_version? : integer [FK]
+    operation : text
+    actor_id : uuid [FK]
+    reason? : text
+    occurred_at : timestamp with time zone
+}
+class baseline_blueprint_command {
+    organization_id : uuid [PK, FK]
+    actor_id : uuid [PK, FK]
+    idempotency_key : text [PK]
+    occupation_id : text [FK]
+    blueprint_id : uuid [FK]
+    operation : text
+    request_hash : platform.content_hash
+    response_payload : jsonb
+    created_at : timestamp with time zone
+}
+class baseline_blueprint_role {
+    blueprint_id : uuid [PK, FK]
+    blueprint_version : integer [PK, FK]
+    role_id : text [PK]
+    role_name_snapshot : text
+    enabled : boolean
+    total_question_count : integer
+    easy_score_weight : platform.unit_interval
+    medium_score_weight : platform.unit_interval
+    hard_score_weight : platform.unit_interval
+}
+class baseline_blueprint_skill {
+    blueprint_id : uuid [PK, FK]
+    blueprint_version : integer [PK, FK]
+    role_id : text [PK, FK]
+    micro_skill_id : text [PK]
+    micro_skill_name_snapshot : text
+    easy_question_count : integer
+    medium_question_count : integer
+    hard_question_count : integer
+}
+class baseline_blueprint_version {
+    blueprint_id : uuid [PK, FK]
+    version : integer [PK]
+    name : text
+    occupation_id? : text
+    occupation_name_snapshot? : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+    idempotency_key : text
+    request_hash : platform.content_hash
+}
+class baseline_blueprint_version_registry {
+    blueprint_id : uuid [PK, FK]
+    version : integer [PK]
+    contract_family : text
+}
+class baseline_blueprint_working_registry {
+    blueprint_id : uuid [PK, FK]
+    working_revision_id : uuid
+    contract_family : text
+}
+class baseline_blueprint_working_revision {
+    working_revision_id : uuid [PK]
+    organization_id : uuid [FK]
+    occupation_id : text [FK]
+    blueprint_id : uuid [FK]
+    base_version? : integer [FK]
+    revision : bigint
+    name : text
+    occupation_name_snapshot : text
+    roles : jsonb
+    state : text
+    created_by : uuid [FK]
+    created_at : timestamp with time zone
+    updated_by : uuid [FK]
+    updated_at : timestamp with time zone
+    closed_at? : timestamp with time zone
+}
+class baseline_management_command {
+    actor_id : uuid [PK, FK]
+    idempotency_key : text [PK]
+    organization_id : uuid [FK]
+    occupation_id : text [FK]
+    operation : text
+    request_hash : platform.content_hash
+    response_json : jsonb
+    created_at : timestamp with time zone
+}
+class baseline_mastery_evidence {
+    attempt_id : uuid [PK, FK]
+    organization_id : uuid [FK]
+    learner_id : uuid [FK]
+    occupation_id : text [FK]
+    micro_skill_id : text [PK, FK]
+    model_version_id : uuid [FK]
+    mastery_mapping_version_id : uuid [FK]
+    parameter_set_id : uuid [FK]
+    theta : numeric
+    standard_error : numeric
+    estimated_mastery : platform.unit_interval
+    mastery : platform.unit_interval
+    confidence_label : text
+    mastery_event_id : uuid [FK]
+    emitted_at : timestamp with time zone
+}
+class employee_occupation_profile {
+    organization_id : uuid [PK, FK]
+    learner_id : uuid [PK, FK]
+    occupation_id : text [PK, FK]
+    attempt_id : uuid [FK]
+    blueprint_id : uuid [FK]
+    blueprint_version : integer [FK]
+    catalog_fingerprint : text
+    required_skills : jsonb
+    mastery : jsonb
+    initialized_at : timestamp with time zone
+}
+class employee_role_selection {
+    selection_id : uuid [PK]
+    organization_id : uuid
+    learner_id : uuid [FK]
+    role_id : text
+    occupation_id : text
+    role_snapshot : jsonb
+    target_revision : bigint
+    selected_at : timestamp with time zone
+    ended_at? : timestamp with time zone
+}
+class employee_role_selection_request {
+    organization_id : uuid [PK]
+    learner_id : uuid [PK]
+    retry_key : text [PK]
+    request_hash : platform.content_hash
+    selection_id : uuid [FK]
+    response : jsonb
+    created_at : timestamp with time zone
+}
+class irt_calibration_run {
+    calibration_run_id : uuid [PK]
+    model_version_id : uuid [FK]
+    input_dataset_ref : text
+    configuration : jsonb
+    status : text
+    output_parameter_set_id? : uuid [FK]
+    diagnostics : jsonb
+    created_at : timestamp with time zone
+    started_at? : timestamp with time zone
+    completed_at? : timestamp with time zone
+}
+class irt_effective_parameter_selection {
+    organization_id : uuid [PK, FK]
+    question_bank_id : uuid [PK, FK]
+    model_version_id : uuid [PK, FK]
+    parameter_set_id : uuid [FK]
+    selection_revision : bigint
+    selected_by : uuid [FK]
+    selected_at : timestamp with time zone
+}
+class irt_item_parameter {
+    parameter_set_id : uuid [PK, FK]
+    item_version_id : uuid [PK, FK]
+    micro_skill_id : text [PK, FK]
+    discrimination_a : numeric
+    difficulty_b : numeric
+    guessing_c : numeric
+    fit_diagnostics : jsonb
+}
+class irt_parameter_promotion_command {
+    organization_id : uuid [PK, FK]
+    actor_id : uuid [PK, FK]
+    idempotency_key : text [PK]
+    question_bank_id : uuid [FK]
+    model_version_id : uuid [FK]
+    request_hash : platform.content_hash
+    parameter_set_id : uuid [FK]
+    parameter_hash : platform.content_hash
+    expected_revision : bigint
+    expected_parameter_set_id? : uuid [FK]
+    selection_revision : bigint
+    reason : text
+    occurred_at : timestamp with time zone
+}
+class irt_parameter_set {
+    parameter_set_id : uuid [PK]
+    model_version_id : uuid [FK]
+    source : text
+    status : text
+    parameter_hash : platform.content_hash
+    created_at : timestamp with time zone
+    activated_by? : uuid [FK]
+    activated_at? : timestamp with time zone
+}
 activity_requirement --> assessment_assignment
 activity_requirement --> completion_pass
 assessment_assignment --> assessment_attempt
@@ -370,11 +653,39 @@ assessment_version --> baseline_answer_reveal_audit
 assessment_version --> baseline_assessment_series
 assessment_version --> baseline_assessment_transition
 assessment_version --> module_assessment_binding
+baseline_adaptive_attempt --> baseline_adaptive_attempt
+baseline_adaptive_attempt --> baseline_attempt_command
+baseline_adaptive_attempt --> baseline_attempt_pool_item
+baseline_adaptive_attempt --> baseline_attempt_result
+baseline_adaptive_attempt --> baseline_attempt_skill_state
+baseline_adaptive_attempt --> baseline_mastery_evidence
+baseline_adaptive_attempt --> employee_occupation_profile
+baseline_adaptive_blueprint_role --> baseline_adaptive_attempt
+baseline_adaptive_blueprint_role --> baseline_adaptive_blueprint_skill
+baseline_adaptive_blueprint_version --> baseline_adaptive_attempt
+baseline_adaptive_blueprint_version --> baseline_adaptive_blueprint_role
+baseline_adaptive_blueprint_version --> baseline_blueprint_activation
+baseline_adaptive_blueprint_version --> baseline_blueprint_activation_event
+baseline_adaptive_blueprint_version --> employee_occupation_profile
 baseline_assessment_series --> baseline_assessment_transition
 baseline_assessment_series --> baseline_blueprint_working_revision
 baseline_assessment_series --> baseline_management_command
+baseline_attempt_item --> baseline_attempt_response
+baseline_attempt_pool_item --> baseline_attempt_item
+baseline_attempt_result --> baseline_mastery_evidence
+baseline_attempt_skill_result --> baseline_mastery_evidence
+baseline_attempt_skill_state --> baseline_attempt_pool_item
+baseline_attempt_skill_state --> baseline_attempt_skill_result
+baseline_blueprint --> baseline_adaptive_blueprint_version
+baseline_blueprint --> baseline_adaptive_blueprint_working_revision
 baseline_blueprint --> baseline_assessment_series
+baseline_blueprint --> baseline_blueprint_activation
+baseline_blueprint --> baseline_blueprint_activation_event
+baseline_blueprint --> baseline_blueprint_command
 baseline_blueprint --> baseline_blueprint_version
+baseline_blueprint --> baseline_blueprint_version_registry
+baseline_blueprint --> baseline_blueprint_working_registry
+baseline_blueprint_activation --> baseline_blueprint_activation_event
 baseline_blueprint_role --> baseline_blueprint_skill
 baseline_blueprint_version --> assessment_version
 baseline_blueprint_version --> baseline_assessment_series
@@ -383,32 +694,43 @@ baseline_blueprint_version --> baseline_blueprint_role
 baseline_blueprint_version --> baseline_blueprint_working_revision
 baseline_blueprint_working_revision --> baseline_assessment_series
 baseline_blueprint_working_revision --> baseline_assessment_transition
-catalog_reference --> item_skill_mapping
-catalog_reference --> learning_activity
-catalog_reference --> mastery_estimate
-catalog_reference --> module_assessment_binding
+employee_role_selection --> employee_role_selection_request
 evidence_observation --> evidence_application
 evidence_policy_version --> processing_stream
+irt_effective_parameter_selection --> irt_parameter_promotion_command
+irt_item_parameter --> baseline_attempt_pool_item
+irt_parameter_set --> baseline_adaptive_blueprint_version
+irt_parameter_set --> baseline_mastery_evidence
+irt_parameter_set --> irt_calibration_run
+irt_parameter_set --> irt_effective_parameter_selection
+irt_parameter_set --> irt_item_parameter
+irt_parameter_set --> irt_parameter_promotion_command
 item_response --> evidence_observation
 item_skill_mapping --> evidence_observation
 item_version --> assessment_item
+item_version --> irt_item_parameter
 item_version --> item_skill_mapping
-learner_state --> assessment_assignment
-learner_state --> learning_activity
-learner_state --> processing_stream
-learner_state --> progress_revision
 learning_activity --> activity_requirement
 learning_activity --> assessment_assignment
 learning_activity --> module_completion
+mastery_mapping_version --> baseline_adaptive_blueprint_version
+mastery_mapping_version --> baseline_attempt_skill_result
+mastery_mapping_version --> baseline_mastery_evidence
+mastery_mapping_version --> workspace_baseline_resource
+model_version --> baseline_adaptive_blueprint_version
+model_version --> baseline_mastery_evidence
+model_version --> irt_calibration_run
+model_version --> irt_effective_parameter_selection
+model_version --> irt_parameter_set
 model_version --> processing_stream
+model_version --> workspace_baseline_resource
 module_assessment_binding --> activity_requirement
 module_completion --> completion_pass
-organization --> baseline_answer_reveal_audit
-organization --> baseline_assessment_series
-organization --> baseline_blueprint
 processing_stream --> profile_revision
 profile_revision --> evidence_application
 profile_revision --> mastery_estimate
 progress_revision --> module_completion
+question_bank --> irt_effective_parameter_selection
 question_bank --> item_version
+question_bank --> workspace_baseline_resource
 @enduml

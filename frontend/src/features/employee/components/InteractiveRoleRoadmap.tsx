@@ -75,7 +75,7 @@ function ApprovedRoleRoadmap({ pathway, search }: { pathway: PathwayView; search
             <div className={cn('approved-roadmap-row', query && !matches && 'opacity-40')}>
               <div className="approved-roadmap-skills is-left">{targets.filter((_, i) => (i + index) % 2 === 0).map(target => skillNode(target.skillId))}</div>
               <Button className="roadmap-module-box h-auto w-full whitespace-normal [&>span]:block [&>span]:w-full [&>span]:whitespace-normal" onClick={() => setSelection({ kind: 'module', id: module.id })}>
-                <span className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-primary-foreground/25 pb-2 text-[length:var(--text-caption)]"><span className="break-all font-mono">{module.id}</span><span className={badgeVariants({ variant: 'outline', className: 'whitespace-normal border-primary-foreground/40 bg-primary-hover text-primary-foreground' })}>{tr('state.' + accessState)}</span></span>
+                <span className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-primary-foreground/25 pb-2 text-[length:var(--text-caption)]"><span className="break-all font-mono">{module.id}</span><span className={badgeVariants({ variant: 'outline', className: 'whitespace-normal border-primary-foreground/40 bg-primary-hover text-primary-foreground' })}>{accessState === 'PREVIEW' ? tr('reviewFlow.draft') : tr('state.' + accessState)}</span></span>
                 <span className="block break-words">{module.title}</span>
               </Button>
               <div className="approved-roadmap-skills is-right">{targets.filter((_, i) => (i + index) % 2 !== 0).map(target => skillNode(target.skillId))}</div>
@@ -84,7 +84,7 @@ function ApprovedRoleRoadmap({ pathway, search }: { pathway: PathwayView; search
           </React.Fragment>
         })}
         <div className="roadmap-spine-segment h-12" aria-hidden="true" />
-        <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-5 py-3 text-[length:var(--text-body-sm)]"><CheckCircle2 className="size-4 text-primary" /><span>{ui(pathway.archived ? 'archivedPlan' : 'approvedPlan')} · {pathway.modules.length} {tr('moduleCount')}</span></div>
+        <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-5 py-3 text-[length:var(--text-body-sm)]"><CheckCircle2 className="size-4 text-primary" /><span>{pathway.status?.displayState === 'PREVIEW' ? tr('reviewFlow.draft') : ui(pathway.archived ? 'archivedPlan' : 'approvedPlan')} · {pathway.modules.length} {tr('moduleCount')}</span></div>
       </div>
     </section>
     <InitialPathwayDetails pathway={pathway} selection={selection} onClose={() => setSelection(null)} />

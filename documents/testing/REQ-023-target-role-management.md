@@ -8,11 +8,11 @@ Follow [current test criteria](README.md#current-scope-alignment). Revalidate L&
 **Status:** Unit, Controller/Security, Neo4j Testcontainers Integration, and System API tests passed; manual browser verification checklist completed.  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-023-target-role-management.md) | [Integration Test](integration/REQ-023-target-role-management.md) | [System Test](system/REQ-023-target-role-management.md)  
 **Feature contracts:**
-- [REQ-023-F01 Create Target Role](../features/Target%20role%20management/Create%20Target%20Role.md)
-- [REQ-023-F02 View Organization Target Roles](../features/Target%20role%20management/View%20Organization%20Target%20Roles.md)
-- [REQ-023-F03 Update Target Role](../features/Target%20role%20management/Update%20Target%20Role.md)
-- [REQ-023-F04 Delete Target Role](../features/Target%20role%20management/Delete%20Target%20Role.md)
-- [REQ-023-F05 Expert Assigned Roles & Isolation](../features/Target%20role%20management/Expert%20Assigned%20Target%20Roles.md)
+- [REQ-023-F01 Create Target Role](../features/Role%20catalog/README.md#req-023-f01)
+- [REQ-023-F02 View Organization Target Roles](../features/Role%20catalog/README.md#req-023-f02)
+- [REQ-023-F03 Update Target Role](../features/Role%20catalog/README.md#req-023-f03)
+- [REQ-023-F04 Delete Target Role](../features/README.md#removed-scope)
+- [REQ-023-F05 Expert Assigned Roles & Isolation](../features/README.md#removed-scope)
 
 Under [ARCHITECTURE.md](../ARCHITECTURE.md) and [neo4j_schema.md](../neo4j_schema.md), the catalog graph (`JobDomain`, `TargetRole`, `MacroCompetency`, `MicroSkill`, `LearningModule` and the 7 directed relationships) is stored exclusively in **Neo4j 5.26 Community** via `Neo4jTargetRoleRepository`. PostgreSQL maintains strictly forward-only Flyway migrations V1–V6 without relational target-role tables.
 

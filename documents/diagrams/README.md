@@ -1,56 +1,58 @@
-# Architecture diagrams
+# Architecture Diagrams
+
+## Current Scope Alignment
 
 ## Planned initial gap/pathway — 2026-10-27
 
-[Mermaid flow/sequence/state/logical-data source and rendered Markdown view](gap-pathway-initial-flow.md) accompanies the [Cluster1 design](../features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). It is **Planned**, not DB inventory, deployed topology or runtime evidence. It does not replace the verified V26 metadata images or member-owned Neo4j diagram. A supporting Mermaid viewer is required to render the inline diagrams.
+[Mermaid flow/sequence/state/logical-data source and rendered Markdown view](gap-pathway-initial-flow.md) accompanies the [Cluster1 design](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). It is **Planned**, not DB inventory, deployed topology or runtime evidence. It does not replace the verified V26 metadata images or member-owned Neo4j diagram. A supporting Mermaid viewer is required to render the inline diagrams.
 
 ## Verified inventory — 2026-10-23
 
-Current PostgreSQL17.6 inventory is **V1–V26,89 platform tables/729 columns**, captured in a repeatable-read READ ONLY transaction. All26 Flyway source checksums match successful applied history. There are628 constraints/189 FKs (176 parent-child table pairs),213 indexes,99 user triggers and39 functions. [Metadata catalog](postgresql-schema-catalog.json) and [all FK definitions](postgresql-foreign-keys.md) retain exact fields/defaults/checks/indexes/triggers/functions. Public Flyway metadata is outside the89 platform tables.
+[Version 2](../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md) controls product scope; [architecture](../ARCHITECTURE.md) separates the required target from the recorded technical baseline. These diagrams inventory existing storage, not a completed multi-organization subscription/learning implementation.
+Tenant isolation, departments/occupations/assignments, subscription/provisioning/entitlements, many-to-many learning coverage, private content, L&D publication/approval, direct AI guidance, independent progress and ROI need agreed physical mappings before regeneration. Documentation alignment does not change migrations or generated images.
 
-| Detail group | Owned tables | Source | SVG |
-| --- | ---: | --- | --- |
-| Identity, catalog and processing | 17 | [source](postgresql.puml) | [image](postgresql.svg) |
-| Legacy assessment and shared learning | 32 | [source](postgresql-assessment.puml) | [image](postgresql-assessment.svg) |
-| Recommendation, analytics and evaluation | 13 | [source](postgresql-pathway.puml) | [image](postgresql-pathway.svg) |
-| Adaptive baseline configuration | 9 | [source](postgresql-adaptive-blueprint.puml) | [image](postgresql-adaptive-blueprint.svg) |
-| Adaptive baseline attempts and evidence | 9 | [source](postgresql-adaptive-attempt.puml) | [image](postgresql-adaptive-attempt.svg) |
-| IRT calibration and scoped selection | 6 | [source](postgresql-irt.puml) | [image](postgresql-irt.svg) |
-| Current Role selection and initial Occupation profile | 3 | [source](postgresql-role-profile.puml) | [image](postgresql-role-profile.svg) |
+## Technical Baseline Snapshot
 
-[Overview source](postgresql-overview.puml) / [SVG](postgresql-overview.svg) lists all89 tables and cross-group FK counts. Every table/column is drawn once in its owning group; external parents are reference stubs. Arrows mean referenced parent → referencing child, not mandatory/one-to-one cardinality or proof of authorization. The V25 selection/profile group is new; V24/V26 are constraint changes visible in the metadata catalog, not new tables.
+**2026-10-28 V32 integration:** PostgreSQL sources and SVGs are regenerated from the migrated dev schema (113 tables: 24 identity/catalog, 16 subscription, 60 assessment/learning, 13 pathway/reporting). Runtime topology now includes trusted workspace baseline adapters and V1-V32 migration without graph reseeding. Rendering uses the installed local PlantUML JAR; all five SVGs were XML-validated. Prior dated entries remain historical.
 
-## Runtime, conceptual and historical views
+**2026-10-28 V12 update:** The subscription diagram now records the unique/exactly-one membership role, pending invitation rule and platform/organization exclusivity. Runtime topology references V1-V12. Both affected SVGs were rendered using the installed local PlantUML JAR and XML-validated; there are no new tables or Neo4j schema changes.
 
-| View | Source / export | Status |
+These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE.md). The SVGs alongside them are generated for Markdown viewers, which do not render PlantUML code blocks directly. PostgreSQL source files now include all 76 tables through V11, generated from the isolated subscription-test database on 2026-10-23.
+
+| Diagram | Source | Rendered image |
 | --- | --- | --- |
-| Development startup | [source](runtime-topology.puml) / [SVG](runtime-topology.svg) | Current observed migration → catalog/content initialization → API; V26 and actual engine versions |
-| Role-to-baseline | [source](role-baseline-flow.puml) / [SVG](role-baseline-flow.svg) | Current confirmed business flow; replaces inline Mermaid |
-| Adaptive ownership flow | [source](adaptive-baseline-data-flow.puml) / [SVG](adaptive-baseline-data-flow.svg) | Current conceptual store/processing flow; replaces inline Mermaid |
-| Ontology | [source](neo4j.puml) / [SVG](neo4j.svg) / [PNG](neo4j.png) | Current0.11.0 review field/relationship drawing; many-to-many Module–Skill teaching |
-| 20 October adaptive target | [source](postgresql-adaptive-baseline-target.puml) / [SVG](postgresql-adaptive-baseline-target.svg) | Intentionally superseded historical design; unchanged content, not V26 schema |
+| Runtime topology | [runtime-topology.puml](runtime-topology.puml) | [runtime-topology.svg](runtime-topology.svg) |
+| PostgreSQL identity, catalog, processing | [postgresql.puml](postgresql.puml) | [postgresql.svg](postgresql.svg) |
+| PostgreSQL subscriptions, payments, memberships | [postgresql-subscription.puml](postgresql-subscription.puml) | [postgresql-subscription.svg](postgresql-subscription.svg) |
+| PostgreSQL assessment and learning | [postgresql-assessment.puml](postgresql-assessment.puml) | [postgresql-assessment.svg](postgresql-assessment.svg) |
+| PostgreSQL pathway, analytics, evaluation | [postgresql-pathway.puml](postgresql-pathway.puml) | [postgresql-pathway.svg](postgresql-pathway.svg) |
+| Neo4j occupation-based ontology 0.7.0 | [neo4j.puml](neo4j.puml) | [neo4j.svg](neo4j.svg) |
 
-All13 source/SVG pairs were rendered locally with the existing PlantUML1.2025.10/Smetana JAR. PNG companions for all13 were opened for visual review; no blank/error/clipped table was found. The32-table legacy/shared view is dense and requires zoom. All729 column labels/types/nullability/PK/FK markers are checked structurally against captured metadata; visual readability is not a database/business acceptance test. Ontology PNG matches its regenerated source/SVG. The schema document's duplicate inline ontology drawing now refers to this same canonical export. [Evidence, source hashes and limits](../testing/system/REQ-001-002-final-synchronization-review.md).
+After editing PostgreSQL migrations, start the development stack, regenerate the PostgreSQL sources from `pg_catalog`, then render the SVGs with PlantUML 1.2025.10 or newer:
 
-## Reproduce
-
-From the product repository with existing PostgreSQL running:
+**2026-10-26 runtime-only update:** The runtime diagram now shows the shared transactional HTML/text template, verification/activation/payment mail jobs and atomic payment-confirmed outbox event. Source was rendered locally with the installed VS Code PlantUML JAR and the SVG parsed successfully as XML. No database schema changed; database diagrams were not regenerated.
 
 ```powershell
-python documents/diagrams/Generate-PostgresqlDiagrams.py
-python documents/diagrams/Generate-PostgresqlDiagrams.py --snapshot documents/diagrams/postgresql-schema-catalog.json
-$sources = Get-ChildItem documents/diagrams -Filter '*.puml' | Where-Object Name -ne 'postgresql-adaptive-baseline-target.puml'
-java -jar path/to/plantuml-1.2025.10.jar -failfast2 -tsvg $sources.FullName
+docker compose -f compose.dev.yml up --build -d
+.\documents\diagrams\Generate-PostgresqlDiagrams.ps1
+java -jar path\to\plantuml.jar -tsvg documents/diagrams
 ```
 
-The generator and PowerShell wrapper do not start containers, migrate, seed or reset data. Unknown/missing/duplicate groups and migration/source drift stop generation. A saved snapshot is dated evidence, not a fresh live verification. Rendering is local; no schema is uploaded to a third-party service. PostgreSQL source capture V23 and all prior artifacts remain recoverable in the synchronization backup; dated evidence is not relabeled.
+Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
 
-Historical 2026-10-26 export: ontology source/SVG/PNG used matching v0.9.0 exports with many-to-many TEACHES. The current v0.10 export supersedes that drawing. Dated V26 metadata/rendering verification above remains historical evidence, not a new live database verification.
+On 2026-10-21 the V8 sources were regenerated from the isolated registration-test stack (24 identity/catalog/processing, 23 assessment/learning, 13 pathway/analytics tables). `postgresql.svg` and `runtime-topology.svg` were rendered locally with PlantUML 1.2025.10 and XML-validated. Registration adds seven PostgreSQL tables and the SMTP worker path; it does not change Neo4j.
 
-2026-10-27: ontology v0.10 source/SVG/PNG adds TEACHES.outcomeCoverage (OC), LearningModule.duration/price and removes Level.context. Runtime remains pinned to v0.9.
+To generate from that isolated stack instead of the shared development project, retain its fixture-key environment and run:
 
-2026-10-27 follow-up: current Neo4j drawing uses TEACHES.instructionLevel as a text enum (FOUNDATIONAL/INTERMEDIATE/ADVANCED), replacing numeric coverage. Legacy mapping rounds HALF_UP to one decimal before classification; see [conversion details](../dataset/INSTRUCTION_LEVELS.md).
+```powershell
+.\documents\diagrams\Generate-PostgresqlDiagrams.ps1 -ComposeOverride .\compose.registration-test.yml
+java -DPLANTUML_LIMIT_SIZE=16384 -jar path\to\plantuml.jar -tsvg documents\diagrams\postgresql.puml documents\diagrams\runtime-topology.puml
+```
 
-2026-10-28: current ontology v0.11 replaces instructionLevel with independent TEACHES.teachingFocus/difficultyLevel; 237 modules/637 pairs. Earlier dated v0.10 exports above are superseded historical descriptions. [Authoring and verification](../dataset/TEACHING_FOCUS_DIFFICULTY.md).
+The default generator invocation still targets development Compose. Do not upload private diagrams or schema content to an external renderer.
 
-Single-primary follow-up: current v0.11 review dataset has 246 Modules/664 pairs and requires exactly one PRIMARY skill per Module. New Module Checks workbook view validates the count; former co-primary scope is superseded.
+Latest lifecycle regeneration used `-ComposeOverride .\compose.subscription-test.yml`, not the retained development database. Groups contain 24 identity/catalog, 16 lifecycle/member-reference, 23 assessment and 13 pathway tables. Identity/subscription/runtime SVGs were rendered with existing local PlantUML 1.2025.10 and XML-validated. Neo4j schema and ontology are unchanged by this feature.
+
+## Workspace integration source
+
+Active shared development uses db/workspace-migration V1?V34; retained db/migration V1?V28 is the old demo lineage, never a combined Flyway location. See [integration ownership and compatibility](../technical/Workspace%20Adaptive%20Integration.md). Existing rendered diagrams retain their dated scope; no live DB capture or diagram regeneration was performed in this source/build task.

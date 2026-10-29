@@ -12,9 +12,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration(proxyBeanMethods=false)
-@Profile("local-baseline-demo & !prod")
+@Profile("((local-baseline-demo & !workspace-baseline) | (local & workspace-baseline & !local-baseline-demo)) & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnProperty(name={"pathway.initial.enabled","pathway.local-auth-bypass.enabled","assessment.baseline.local-demo.enabled","pathway.initial.worker.enabled"},havingValue="true")
+@ConditionalOnProperty(name={"pathway.initial.enabled","pathway.initial.worker.enabled"},havingValue="true")
+@org.springframework.boot.autoconfigure.condition.ConditionalOnExpression("${assessment.baseline.workspace.enabled:false} or (${pathway.local-auth-bypass.enabled:false} and ${assessment.baseline.local-demo.enabled:false})")
 public class InitialPathwayWorkerConfiguration {
     @Bean InitialPathwayDispatch initialDispatch(InitialPathwayStore store,Coordination coordination,Bindings bindings,InitialProblemBuilder builder,Environment env) {
         var settings=new InitialPathwayDispatch.Settings(InitialPathwayConfiguration.required(env,"worker.version"),InitialPathwayConfiguration.limits(env),

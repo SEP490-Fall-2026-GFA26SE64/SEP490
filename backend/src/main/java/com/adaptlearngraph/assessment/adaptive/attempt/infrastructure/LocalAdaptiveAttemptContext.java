@@ -21,6 +21,7 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
     private com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveSelectedRolePort currentRoles;
     private com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveAttemptStore priorAttempts;
     private java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists;
+    private java.util.function.Supplier<Employee> authenticatedEmployee;
     public LocalAdaptiveAttemptContext(NamedParameterJdbcTemplate jdbc, UUID actorId, UUID organizationId,
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
         this(() -> actorId, jdbc, organizationId, occupations, catalog, snapshots);
@@ -40,6 +41,11 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         this.profileExists=Objects.requireNonNull(profileExists);
     }
     @Override public Employee requireEmployee() {
+        if (authenticatedEmployee != null) {
+            var employee = authenticatedEmployee.get();
+            if (!organizationId.equals(employee.organizationId())) throw new Failure(Code.FORBIDDEN);
+            return employee;
+        }
         UUID actorId = actor.get();
         if (actorId == null) throw new Failure(Code.UNAUTHENTICATED);
         var accounts = jdbc.query("SELECT organization_id,active FROM platform.account WHERE account_id=:actor", Map.of("actor", actorId),
@@ -50,6 +56,17 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
                 Map.of("actor", actorId), Boolean.class));
         if (!Boolean.TRUE.equals(account[1]) || !organizationId.equals(account[0]) || !employee) throw new Failure(Code.FORBIDDEN);
         return new Employee(organizationId, actorId);
+    }
+    public static LocalAdaptiveAttemptContext authenticated(java.util.function.Supplier<Employee> identity,
+            NamedParameterJdbcTemplate jdbc, UUID organization, Set<String> occupations,
+            AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
+            com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveSelectedRolePort roles,
+            com.adaptlearngraph.assessment.adaptive.attempt.application.port.out.AdaptiveAttemptStore attempts,
+            java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists) {
+        var context = new LocalAdaptiveAttemptContext(() -> identity.get().learnerId(), jdbc, organization,
+                occupations, catalog, snapshots, roles, attempts, profileExists);
+        context.authenticatedEmployee = Objects.requireNonNull(identity);
+        return context;
     }
     @Override public void authorizeScope(Employee employee, AdaptiveAttempt.Scope scope) {
         if (!organizationId.equals(employee.organizationId()) || !employee.organizationId().equals(scope.organizationId())

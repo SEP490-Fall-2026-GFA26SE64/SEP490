@@ -4,6 +4,8 @@ documents/dataset/import/ontology_seed.json text eol=lf
 documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json text eol=lf
 documents/dataset/question-bank/15-1212.00/release-manifest-v09.json text eol=lf
 backend/src/main/resources/db/seed/question-bank-15-1212.00-v1-ontology-v09.json text eol=lf
+# The synthetic development parameter artifact is also byte-pinned; keep its original LF hash.
+backend/src/main/resources/demo/synthetic-fitted-v1.json text eol=lf
 # Original Windows byte snapshots retain the exact hashes used by historical calibration.
 documents/dataset/question-bank/15-1212.00/historical/*.json -text
 # These releases were byte-pinned from CRLF snapshots; preserve the exact hashes

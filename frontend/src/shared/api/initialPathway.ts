@@ -1,3 +1,6 @@
+import { workspaceFetch } from './workspaceFetch'
+
+const demoSession = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true'
 export class PathwayError extends Error {
   readonly code: string
   readonly status: number
@@ -12,7 +15,7 @@ const list = <T>(v: unknown, parse: (v: unknown) => T): T[] => { if (!Array.isAr
 const nullable = <T>(v: unknown, parse: (v: unknown) => T): T | null => v === null ? null : parse(v)
 async function request<T>(path: string, parse: (v: unknown) => T, init: RequestInit = {}): Promise<T> {
   let response: Response
-  try { response = await fetch('/api/v1/' + path, { credentials: 'same-origin', cache: 'no-store', ...init }) }
+  try { response = await (demoSession ? fetch : workspaceFetch)('/api/v1/' + path, { credentials: 'same-origin', cache: 'no-store', ...init }) }
   catch (cause) { if (init.signal?.aborted) throw cause; throw new PathwayError('NETWORK_ERROR') }
   let value: unknown
   try { value = await response.json() } catch { throw new PathwayError(response.ok ? 'INVALID_RESPONSE' : response.status === 401 ? 'UNAUTHENTICATED' : response.status === 403 ? 'FORBIDDEN' : 'UNAVAILABLE', response.status) }
@@ -20,8 +23,11 @@ async function request<T>(path: string, parse: (v: unknown) => T, init: RequestI
   try { return parse(value) } catch { throw new PathwayError('INVALID_RESPONSE', response.status) }
 }
 export interface InitialSession { actorId: string; organizationId: string; persona: string; role: string }
-export const initialSession = (signal?: AbortSignal) => request('local-baseline-demo/session', v => {
-  const s = obj(v); return { actorId: str(s.actorId), organizationId: str(s.organizationId), persona: str(s.persona), role: str(s.role) } satisfies InitialSession
+export const initialSession = (signal?: AbortSignal) => request(demoSession ? 'local-baseline-demo/session' : 'workspace-auth/current', v => {
+  const s = obj(v)
+  if (demoSession) return { actorId: str(s.actorId), organizationId: str(s.organizationId), persona: str(s.persona), role: str(s.role) } satisfies InitialSession
+  if (s.stage !== 'COMPLETE' || !Array.isArray(s.roles) || s.roles.length !== 1) throw Error('Incomplete workspace identity')
+  return { actorId: str(s.accountId), organizationId: str(s.organizationId), persona: 'workspace', role: str(s.roles[0]) } satisfies InitialSession
 }, { signal })
 export interface GapRow { skillId: string; name: string; requiredScore: number; mandatory: boolean; mastery: number | null; confidence: string | null; gap: number | null; evidenceState: string; unknownReason: string | null }
 export interface GapResult { skills: GapRow[]; need: string }

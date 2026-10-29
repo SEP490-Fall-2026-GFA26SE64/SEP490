@@ -24,7 +24,7 @@ Final executed assertion identities: **168 pass,4 fail** across BE unit/API, FE 
 
 ## Acceptance → executable delta
 
-Contract/plans: [Role baseline](../REQ-001-002-role-baseline-flow-test-plan.md), [adaptive baseline](../REQ-002-adaptive-baseline-test-plan.md), [feature contract](../../features/Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md). Each report retains exact file/method/title. Mappings below describe asserted branches, not blanket completion of all acceptance rows.
+Contract/plans: [Role baseline](../REQ-001-002-role-baseline-flow-test-plan.md), [adaptive baseline](../REQ-002-adaptive-baseline-test-plan.md), [feature contract](../../technical/baseline/Role%20Selection%20and%20Occupation%20Baseline.md). Each report retains exact file/method/title. Mappings below describe asserted branches, not blanket completion of all acceptance rows.
 
 | Function / acceptance | Keep, update or add; actor/fixture → trigger → expected assertion |
 | --- | --- |

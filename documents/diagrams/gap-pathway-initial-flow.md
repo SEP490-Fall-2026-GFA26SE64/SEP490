@@ -1,6 +1,6 @@
 # Planned initial gap/pathway flow, states and data
 
-Updated2026-10-28. **Confirmed design; scoped C2 source/build exists, not deployed/runtime-verified schema.** Mermaid requires a supporting viewer; no live DB image/rendering/runtime success claimed. [Canonical policy/design](../features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#14-confirmed-catalog011-policy-and-implementation-contract--2026-10-28) and [source/build receipt](../testing/system/REQ-041-042-v011-source-build.md).
+Updated2026-10-28. **Confirmed design; scoped C2 source/build exists, not deployed/runtime-verified schema.** Mermaid requires a supporting viewer; no live DB image/rendering/runtime success claimed. [Canonical policy/design](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#14-confirmed-catalog011-policy-and-implementation-contract--2026-10-28) and [source/build receipt](../testing/system/REQ-041-042-v011-source-build.md).
 
 ## Product and algorithm flow
 

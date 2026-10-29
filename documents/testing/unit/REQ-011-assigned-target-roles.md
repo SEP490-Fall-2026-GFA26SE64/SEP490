@@ -5,7 +5,7 @@ Follow [current unit criteria](README.md#current-scope-alignment). Revalidate as
 
 ## Historical Test Plan and Evidence
 
-**Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Assigned%20target%20roles/View%20Assigned%20Target%20Roles.md)  
+**Feature Contract:** [REQ-011-F01 View Assigned Target Roles](../../features/Role%20catalog/README.md#req-011-f01)<br>
 **Level:** Unit (Domain Invariants, Application Services, Controller Contracts & Security RBAC)  
 **Status:** PASSED (2026-10-01)
 

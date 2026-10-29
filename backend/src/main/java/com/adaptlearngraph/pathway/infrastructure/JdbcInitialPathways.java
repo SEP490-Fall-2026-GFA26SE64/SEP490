@@ -11,9 +11,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 public final class JdbcInitialPathways implements InitialPathwayStore {
     private final NamedParameterJdbcTemplate jdbc;
+    private final boolean workspaceIdentity;
     private final JdbcInitialRequests requests;private final JdbcInitialRevisions revisions;private final JdbcInitialWorker worker;
     public JdbcInitialPathways(NamedParameterJdbcTemplate jdbc,Codec codec,TransactionTemplate tx) {
-        this.jdbc=jdbc;
+        this(jdbc,codec,tx,false);
+    }
+    public JdbcInitialPathways(NamedParameterJdbcTemplate jdbc,Codec codec,TransactionTemplate tx,boolean workspaceIdentity) {
+        this.jdbc=jdbc;this.workspaceIdentity=workspaceIdentity;
         var db=new InitialJdbc(jdbc,codec);requests=new JdbcInitialRequests(db);revisions=new JdbcInitialRevisions(db);worker=new JdbcInitialWorker(db,requests,revisions,tx);
     }
     @Override public Optional<Request> request(Scope scope,UUID id) { return requests.request(scope,id); }
@@ -32,6 +36,13 @@ public final class JdbcInitialPathways implements InitialPathwayStore {
     @Override public List<Request> assigned(UUID org,Set<UUID> ids,int offset,int limit) { return requests.assigned(org,ids,offset,limit); }
     @Override public Optional<Scope> assignedScope(UUID org,UUID id) { return requests.assignedScope(org,id); }
     @Override public Optional<String> learnerLabel(Scope scope) {
+        if(workspaceIdentity) {
+            // In the real workspace account.identifier is an email, not a safe review label.
+            return jdbc.query("""
+                    SELECT p.full_name FROM platform.account a JOIN platform.workspace_account_profile p USING(account_id)
+                    WHERE a.organization_id=:org AND a.account_id=:learner
+                    """,InitialJdbc.key(scope),(rs,n)->rs.getString("full_name")).stream().findFirst();
+        }
         return jdbc.query("SELECT identifier FROM platform.account WHERE organization_id=:org AND account_id=:learner",
                 InitialJdbc.key(scope),(rs,n)->rs.getString("identifier")).stream().findFirst();
     }

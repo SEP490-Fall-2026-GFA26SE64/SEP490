@@ -26,6 +26,7 @@ public final class RoleBaselineFlow {
     public interface Store {
         <T> T transaction(Actor actor, java.util.function.Supplier<T> work);
         Optional<Selection> current(Actor actor);
+        default boolean hasLegacySelection(Actor actor) { return false; }
         Optional<Selection> replay(Actor actor, String key, String hash);
         boolean assessmentActive(Actor actor);
         Selection select(Actor actor, Role role, String key, String hash);
@@ -56,7 +57,8 @@ public final class RoleBaselineFlow {
     }
     public View view() {
         var actor=identity.requireEmployee(); var selected=store.current(actor);
-        if (selected.isEmpty()) return new View(null,baseline.active(actor).orElseGet(()->new Progress("SELECT_ROLE",0,0,null,null)));
+        if (selected.isEmpty()) return new View(null,baseline.active(actor).orElseGet(()->new Progress(
+                store.hasLegacySelection(actor) ? "LEGACY_SELECTION_REQUIRES_RESELECTION" : "SELECT_ROLE",0,0,null,null)));
         var old=selected.get();
         var roles=catalog.roles(actor.organizationId());
         var current=roles.stream().filter(r -> r.id().equals(old.role().id())).findFirst();

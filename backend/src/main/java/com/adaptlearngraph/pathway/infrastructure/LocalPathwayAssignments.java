@@ -12,14 +12,28 @@ final class LocalPathwayAssignments implements ReviewAssignments {
     private final Set<String> roles;
     private final int maximum;
     private final String version;
+    private final boolean workspaceIdentity;
     LocalPathwayAssignments(NamedParameterJdbcTemplate jdbc,UUID organization,UUID expert,Set<String> roles,int maximum) {
+        this(jdbc,organization,expert,roles,maximum,false);
+    }
+    LocalPathwayAssignments(NamedParameterJdbcTemplate jdbc,UUID organization,UUID expert,Set<String> roles,int maximum,boolean workspaceIdentity) {
         if(maximum<1 || maximum==Integer.MAX_VALUE)throw new IllegalArgumentException("Explicit assignment query bound required");
         this.jdbc=jdbc;this.organization=organization;this.expert=expert;this.roles=Set.copyOf(roles);this.maximum=maximum;
-        version="local-assignment-v1:"+InitialIdentity.hash("local-review-scope",List.of(organization,expert,new TreeSet<>(roles).stream().toList()));
+        this.workspaceIdentity=workspaceIdentity;
+        version=(workspaceIdentity?"workspace-development-assignment-v1:":"local-assignment-v1:")+InitialIdentity.hash("local-review-scope",List.of(organization,expert,new TreeSet<>(roles).stream().toList()));
     }
     private Map<String,Object> parameters(){return Map.of("org",organization,"expert",expert,"roles",roles,"maximum",(long)maximum+1);}
     private String roleFilter(){return roles.isEmpty()?"":" AND r.frozen_input #>> '{input,binding,roleId}' IN (:roles) ";}
     private void activeExpert() {
+        if(workspaceIdentity) {
+            if(!Boolean.TRUE.equals(jdbc.queryForObject("""
+                    SELECT EXISTS(SELECT 1 FROM platform.account a
+                      JOIN platform.organization_membership m ON m.account_id=a.account_id AND m.organization_id=a.organization_id
+                      JOIN platform.organization_membership_role g USING(membership_id)
+                      WHERE a.organization_id=:org AND a.account_id=:expert AND a.active AND m.active AND g.role_code='DOMAIN_EXPERT')
+                    """,parameters(),Boolean.class)))throw new Failure(403,"FORBIDDEN",false);
+            return;
+        }
         if(!Boolean.TRUE.equals(jdbc.queryForObject("""
                 SELECT EXISTS(SELECT 1 FROM platform.account a JOIN platform.account_role g USING(account_id)
                     WHERE a.organization_id=:org AND a.account_id=:expert AND a.active AND g.role_code='DOMAIN_EXPERT')

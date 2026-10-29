@@ -9,7 +9,7 @@ This is evidence of the recorded contract, not revised scope. [Current test crit
 
 **Status:** Cluster 2 executable tests passed; full-stack catalog/detail browser flow passed through the shared REQ-001 Playwright suite; broader F01-only browser coverage remains partial  
 **Dedicated Level Evidence:** [Unit Test](unit/REQ-001-F01-view-target-roles.md) | [Integration Test](integration/REQ-001-F01-view-target-roles.md) | [System Test](system/REQ-001-F01-view-target-roles.md)
-**Feature contract:** [View Target Roles](../features/Target%20role%20selection/View%20Target%20Roles.md)
+**Feature contract:** [View Target Roles](../features/Role%20catalog/README.md#req-001-f01)
 
 The development seed is not a production oracle. Tests must create deterministic organization-scoped fixtures and must not use real employee data or shared Compose volumes.
 

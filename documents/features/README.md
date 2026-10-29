@@ -1,209 +1,170 @@
-# Feature and Function Documentation
+# Functional Requirements Catalog
 
-**REQ-001/002:** [Role-to-baseline contract](Target%20role%20selection/Role%20Selection%20and%20Occupation%20Baseline.md) defines selected-Role entry, profile-authoritative coverage, retained learner versions and exact settings identity. [Implementation/evidence](../testing/system/REQ-001-002-final-synchronization-review.md) is reported separately.
+**Source:** [Capstone Register Version 2](../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
-**Current source:** [System Overview](../adapt_learn_graph_system_overview.md), with requirement mapping in [Product Overview](../PRODUCT_OVERVIEW.md).
-**Aligned:** 2026-10-20. This catalog supersedes the historical SaaS index and interview queue below.
+**Aligned:** 2026-10-28. **Coverage:** 48 source requirements, six human actors and the automated System, across 14 domains.
 
-**2026-10-27 initial gap/pathway:** [shared design](Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) aligns REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. Product rules confirmed, implementation Planned, new executable evidence Not run. Member-owned instructionLevel0.10 review source is not deployed/publication evidence. No Cluster2 implementation plan in this document set.
+The [Product Overview](../PRODUCT_OVERVIEW.md) provides the complete product-scope directory. Each source bullet has exactly one authoritative nine-field record in the domain documents below. Each domain also includes a separate, source-inspected implementation snapshot dated 2026-10-28.
+
+**Initial gap/pathway integration:** the [retained shared contract](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) defines REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. [Workspace integration](../technical/Workspace%20Adaptive%20Integration.md) preserves those confirmed rules under the domain structure below. The branch contains persisted baseline/gap/generation/review/approved-view source; the new real-auth shared-development composition still needs runtime verification. Historical checkpoint results are not new executable evidence.
 
 ## Current Reading Rules
 
-- The four actors are System Administrator, L&D Manager, Expert, and Employee. Services and algorithms are automated performers.
-- This is one organization's internal system. Billing, PayOS, multi-organization registration, and platform subscription administration are excluded.
-- Existing requirement/function IDs and file paths remain stable for traceability. Legacy filenames do not establish current business scope.
-- A **Current Scope Alignment** section in an existing feature/function document controls over its retained historical description, decisions, status, and acceptance rules. Old test results do not certify revised scope.
-- New feature READMEs contain function-level IDs, inputs/outcomes, acceptance scenarios, and open decisions. They are scope drafts, not implementation-ready approved contracts.
-- REQ-002 uses full-Occupation scope, one bounds pair and profile coverage after Role selection; historical pins/allowance remain preserved.
-- Architecture/schema documents describe existing technical fields separately from product design gaps; do not fabricate fields, scoring formulas, or implementation evidence.
+## Reading Rules
 
-## Current Feature Index
+- Only section 3.2(c) defines the functional requirements in this catalog. Requirement names and descriptions retain the source wording; Markdown escaping is normalized for display.
+- FR-AA.NN is the source-level identifier: AA identifies the source actor group (01 Guest, 02 Platform Administrator, 03 System Administrator, 04 L&D Manager, 05 Expert, 06 Employee, 07 System); NN identifies the bullet assigned during this reconciliation. Keep these IDs stable in future revisions; do not renumber or reuse retired IDs.
+- Requirement ID, Requirement Name, Description and Actor are populated from the source. It does not specify complete precondition, ordered-flow, exception-flow, postcondition or acceptance contracts. Those five fields are deliberately empty for later design; blanks do not mean that no rules or tests will be needed.
+- Do not infer policies from old implementation notes, prototype fields or generic defaults. Details such as validation limits, timing, pricing, MFA, scoring formulas and retry behavior require later design; this catalog does not change application behavior or invalidate historical decisions outside its source-only scope.
+- Existing REQ-nnn and REQ-nnn-Fnn anchors remain in the owning domains as legacy traceability references. They are not additional active requirements and do not make every old subfunction a Version 2 obligation. Historical test IDs and results remain unchanged.
+- Implementation snapshots describe current behavior, inputs and limitations; they do not fill unspecified acceptance contracts with assumptions or redefine the source requirements. A mismatch between code and Version 2 is a gap, not an approved scope change.
+- Non-functional requirements, architecture, research deliverables, implementation briefs, delivery reports and test evidence are not functional records. The Version 2 source remains unchanged; technical documentation and dated [test evidence](../testing/README.md) remain separate.
+- System identifies the automated performer, not a seventh human actor. No requirement or empty field implies implementation completion or approved schema changes.
 
-| ID | Feature | Current actor or performer | Contract status |
+## Current Implementation Overview
+
+The 2026-10-28 main/workspace integration updates the role-selection and baseline slices below. They now use real workspace sessions and tenant readiness guards; legacy local adapters elsewhere are not evidence of this slice's active authorization. The domain/FR distribution is unchanged.
+
+**Inspection date:** 2026-10-28. This snapshot covers the current working tree, including uncommitted changes, rather than only the last commit. Backend handlers/services/persistence, frontend route wiring/data sources, migrations and existing verification references were inspected. No application, payment, email or browser tests were rerun for this documentation update.
+
+| Status | Meaning |
+| --- | --- |
+| API-backed slice | UI or automated processing is connected to backend behavior and persistence for the described slice. This is not a claim that the entire source requirement is accepted or production-ready. |
+| Partial | Some real backend behavior exists, but required workflow, field, authorization or UI integration remains incomplete. |
+| Prototype | The described interaction uses component state, browser storage or fixed/demo data rather than an end-to-end business API. |
+| Foundation only | Relevant schema, package boundaries or supporting code exists, but the required automated use case is not implemented. |
+
+| Domain | Current implementation and principal boundary |
+| --- | --- |
+| [Organization onboarding](Organization%20onboarding/README.md#current-implementation) | API-backed registration, email verification, administrator MFA, resumable onboarding, payment-driven provisioning and workspace handoff. Live external delivery is not certified here. |
+| [Subscription lifecycle](Subscription%20lifecycle/README.md#current-implementation) | API-backed plan selection/versioning, purchase, renewal, payment processing, periods and seats. Currency is currently VND-only. |
+| [Platform administration](Platform%20administration/README.md#current-implementation) | Real workspace listing/suspension; full organization administration and activity monitoring remain incomplete/prototype. |
+| [Workspace administration](Workspace%20administration/README.md#current-implementation) | Real account activation, member edits, single-role identity and billing access controls; settings/audit screens remain prototypes and catalog authorization is not fully integrated. |
+| [Departments and occupations](Departments%20and%20occupations/README.md#current-implementation) | Real member assignment to stored references; department CRUD, occupation management and occupation Expert assignments remain browser-only. |
+| [Role catalog](Role%20catalog/README.md#current-implementation) | Neo4j-backed roles and skill requirements with partial UI integration. Existing Expert publication conflicts with the required Expert-submit/L&D-publish workflow. |
+| [Learning catalog](Learning%20catalog/README.md#current-implementation) | Real micro-skill/prerequisite operations; assigned-occupation boundaries are incomplete. Modules/content/approval are prototypes. |
+| [Assessment workflows](Assessment%20workflows/README.md#current-implementation) | Real-session baseline configuration, attempts/scoring/results with tenant resource/readiness guards. Module/RIASEC slices and content/model provisioning remain incomplete. |
+| [Role guidance](Role%20guidance/README.md#current-implementation) | Authenticated organization-scoped role selection connected to baseline readiness/results; AI-generated guidance remains unimplemented. |
+| [Employee experience](Employee%20experience/README.md#current-implementation) | Real skill browsing mixed with local profile, tracking, gaps, progress and pathway demonstrations. |
+| [Pathway review](Pathway%20review/README.md#current-implementation) | Expert include/exclude/confirm interactions operate on sample pathways, not persisted learning plans. |
+| [Adaptive engine](Adaptive%20engine/README.md#current-implementation) | Schema, graph and selection-event foundations; no implemented mastery-update or pathway-generation/recalculation service. |
+| [Development reporting](Development%20reporting/README.md#current-implementation) | Sample/derived reporting screens; no connected training-cost/benefit ledger or actual ROI aggregation. |
+| [Notifications and audit](Notifications%20and%20audit/README.md#current-implementation) | Durable verification/activation/paid-confirmation mail and selected audit events; learning-workflow events and administrator audit read APIs remain incomplete. |
+
+### Cross-Domain Boundaries
+
+- The [active router](../../frontend/src/app/App.tsx) determines which screens are actually reachable. Older page files are not proof that their workflows are in use. In particular, platform organization navigation uses the real workspace controls, and Employee guidance/RIASEC/skills routes redirect into consolidated pages.
+- [Workspace access checks](../../frontend/src/features/subscription/WorkspaceBoundary.tsx) and [authentication](../../backend/src/main/java/com/adaptlearngraph/identity/application/WorkspaceAuthenticationService.java) are real. However, the [local catalog security configuration](../../backend/src/main/java/com/adaptlearngraph/identity/infrastructure/LocalCatalogSecurityConfiguration.java), configured Employee context, client-selected company and legacy actor headers remain in catalog/learning slices. Authenticated layouts alone do not establish trusted organization or Expert-assignment enforcement for those APIs.
+- [Company data](../../frontend/src/shared/stores/companyStore.ts) and [Employee learning state](../../frontend/src/shared/hooks/useEmployeeLearningState.ts) still supply many runtime demonstrations. Local success messages, AI labels, reviewer names, progress values and generated durations must not be treated as server records.
+- [Database migrations](../../backend/src/main/resources/db/migration/) contain assessment, mastery, recommendation, pathway and analytics structures ahead of executable services. Tables, seed data, graph relationships and package placeholders do not establish completion.
+- Existing local verification and manual procedures remain in the [testing documentation](../testing/README.md). Historical results retain their original scope; live payOS/email acceptance, current runtime behavior and full Version 2 completion are not asserted by this snapshot.
+
+## Required Record Structure
+
+| Field | Description |
+| --- | --- |
+| 1. Requirement ID | A unique, stable identifier. |
+| 2. Requirement Name | The name of the functionality. |
+| 3. Description | What the system shall do. |
+| 4. Actor | The initiating user role or responsible automated/external performer. |
+| 5. Preconditions | Conditions required before execution. |
+| 6. Main Flow | The ordered normal-execution steps. |
+| 7. Alternative / Exception Flows | Alternative scenarios, validation failures and error handling. |
+| 8. Postconditions | The expected system state after execution. |
+| 9. Acceptance Criteria | Verifiable conditions for acceptance. |
+
+## Domain Distribution
+
+| Domain | Source requirements |
+| --- | --- |
+| [Organization onboarding](Organization%20onboarding/README.md) | 3 |
+| [Subscription lifecycle](Subscription%20lifecycle/README.md) | 6 |
+| [Platform administration](Platform%20administration/README.md) | 2 |
+| [Workspace administration](Workspace%20administration/README.md) | 5 |
+| [Departments and occupations](Departments%20and%20occupations/README.md) | 3 |
+| [Role catalog](Role%20catalog/README.md) | 4 |
+| [Learning catalog](Learning%20catalog/README.md) | 5 |
+| [Assessment workflows](Assessment%20workflows/README.md) | 6 |
+| [Role guidance](Role%20guidance/README.md) | 2 |
+| [Employee experience](Employee%20experience/README.md) | 5 |
+| [Pathway review](Pathway%20review/README.md) | 1 |
+| [Adaptive engine](Adaptive%20engine/README.md) | 2 |
+| [Development reporting](Development%20reporting/README.md) | 2 |
+| [Notifications and audit](Notifications%20and%20audit/README.md) | 2 |
+| **Total** | **48** |
+
+## Source Coverage
+
+| Requirement ID | Actor | Version 2 requirement | Owning domain |
 | --- | --- | --- | --- |
-| REQ-001 | [Target role selection](Target%20role%20selection/README.md) | Employee | Reclarify reviewed-guidance/publication gates |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Confirmed contract; implementation/evidence reported separately |
-| REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | Employee | Initial Expert confirmation required |
-| REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | Employee | Retained; detail draft |
-| REQ-006 | [Competency graph](Competency%20graph/README.md) | Employee | Retained; detail draft |
-| REQ-007 | [Learning modules](Dummy%20learning%20modules/README.md) | Employee | Dummy-only limit removed |
-| REQ-008 | [Module assessment](Module%20assessment/README.md) | Employee; Expert configures | Approval and independent learning need detail |
-| REQ-009 | [Assessment results](Assessment%20results/README.md) | Employee | Baseline/RIASEC/module history |
-| REQ-010 | [Recalculation visibility](Recalculation%20visibility/README.md) | Employee | New-evidence adaptation |
-| REQ-011 | [Assigned target roles](Assigned%20target%20roles/README.md) | Expert | L&D assignment; revalidate access |
-| REQ-012 | [Micro-skill management](Micro-skill%20management/README.md) | Expert | Assigned-discipline scope |
-| REQ-013 | [Learning module management](Learning%20module%20management/README.md) | Expert | Author/organize/submit for approval |
-| REQ-014 | [Question management](Question%20management/README.md) | Expert | Module assessment configuration |
-| REQ-015 | [Role requirements](Role%20requirements/README.md) | Expert | Competencies/skills/proficiency/importance |
-| REQ-016 | [Module outcomes](Module%20outcomes/README.md) | Expert | Assigned-discipline mappings |
-| REQ-017 | [Question mapping](Question%20mapping/README.md) | Expert | Skill and difficulty classification |
-| REQ-018 | [Target-role graph editing](Target-role%20graph%20editing/README.md) | Expert | Assigned scope; L&D publishes |
-| REQ-019 | [Initial pathway review](Initial%20pathway%20review/README.md) | Expert | Confirm before Employee starts |
-| REQ-020 | [Pathway adjustment](Pathway%20adjustment/README.md) | Expert | Include/exclude during review |
-| REQ-022 | [Account management](Account%20management/README.md) | System Administrator | Create/update/activate/deactivate/access roles |
-| REQ-023 | [Target role management](Target%20role%20management/README.md) | L&D Manager; Expert configures | Creation is distinct from publication |
-| REQ-024 | [Target role Expert assignment](Expert%20assignment/README.md) | L&D Manager | Separate from discipline assignments |
-| REQ-025 | [Employee progress](Employee%20progress/README.md) | L&D Manager | Profiles/gaps/results/learning progress |
-| REQ-026 | [Learning statistics](Organizational%20statistics/README.md) | L&D Manager | Supporting monitoring; metrics open |
-| REQ-037 | [Access control](Access%20control/README.md) | System enforcement | Four actors; assignment/review boundaries |
-| REQ-038 | [First-time password](First-time%20password/README.md) | Employee; system | Supporting policy pending |
-| REQ-039 | [Email notifications](Email%20notifications/README.md) | System | Supporting events pending; no billing |
-| REQ-040 | [Sensitive data protection](Sensitive%20data%20protection/README.md) | System | Supporting security requirements |
-| REQ-041 | [Competency profiling and gap analysis](Competency%20profiling%20and%20gap%20analysis/README.md) | System | Evidence-based estimates |
-| REQ-042 | [Initial pathway generation](Initial%20pathway%20generation/README.md) | System | Propose for mandatory Expert review |
-| REQ-043 | [Pathway recalculation](Conditional%20pathway%20recalculation/README.md) | System | New evidence changes learning needs |
-| REQ-046 | [Consistent learning state](Consistent%20learning%20state/README.md) | System | Evidence/progress/pathway consistency |
-| REQ-047 | [RIASEC assessment](RIASEC%20assessment/README.md) | Employee | New scope draft |
-| REQ-048 | [Target role guidance](Target%20role%20guidance/README.md) | System; Employee | New scope draft |
-| REQ-049 | [AI role guidance review](AI%20role%20guidance%20review/README.md) | Expert | Confirm/revise/reject |
-| REQ-050 | [Discipline management](Discipline%20management/README.md) | L&D Manager | New scope draft |
-| REQ-051 | [Discipline Expert assignment](Discipline%20Expert%20assignment/README.md) | L&D Manager | New scope draft |
-| REQ-052 | [Target role publication](Target%20role%20publication/README.md) | L&D Manager | New scope draft |
-| REQ-053 | [Learning offering approval](Learning%20offering%20approval/README.md) | Expert submits; L&D decides | New scope draft |
-| REQ-054 | [Learning content](Courses%20and%20learning%20content/README.md) | Expert | New scope draft |
-| REQ-055 | [Individual skill learning](Individual%20skill%20learning/README.md) | Employee; system | New scope draft |
-| REQ-056 | [Personal profile](Personal%20profile/README.md) | Employee | New scope draft |
-| REQ-057 | [System configuration](System%20configuration/README.md) | System Administrator | New scope draft |
-| REQ-058 | [System activity monitoring](System%20activity%20monitoring/README.md) | System Administrator | New scope draft |
-| REQ-059 | [Knowledge tracing](Knowledge%20tracing/README.md) | System | New scope draft |
+| [FR-01.01](Organization%20onboarding/README.md#fr-01-01) | Guest | Register an organization | Organization onboarding |
+| [FR-01.02](Subscription%20lifecycle/README.md#fr-01-02) | Guest | Select a subscription | Subscription lifecycle |
+| [FR-01.03](Subscription%20lifecycle/README.md#fr-01-03) | Guest | Pay for a subscription | Subscription lifecycle |
+| [FR-01.04](Organization%20onboarding/README.md#fr-01-04) | Guest | Track onboarding and access the workspace | Organization onboarding |
+| [FR-02.01](Platform%20administration/README.md#fr-02-01) | Platform Administrator | Manage organizations | Platform administration |
+| [FR-02.02](Subscription%20lifecycle/README.md#fr-02-02) | Platform Administrator | Configure subscriptions | Subscription lifecycle |
+| [FR-02.03](Platform%20administration/README.md#fr-02-03) | Platform Administrator | Monitor platform activity | Platform administration |
+| [FR-03.01](Workspace%20administration/README.md#fr-03-01) | System Administrator | Manage user accounts | Workspace administration |
+| [FR-03.02](Departments%20and%20occupations/README.md#fr-03-02) | System Administrator | Manage departments | Departments and occupations |
+| [FR-03.03](Workspace%20administration/README.md#fr-03-03) | System Administrator | Manage roles and permissions | Workspace administration |
+| [FR-03.04](Workspace%20administration/README.md#fr-03-04) | System Administrator | Manage system configuration | Workspace administration |
+| [FR-03.05](Workspace%20administration/README.md#fr-03-05) | System Administrator | Monitor system activity | Workspace administration |
+| [FR-03.06](Subscription%20lifecycle/README.md#fr-03-06) | System Administrator | Manage organization subscription | Subscription lifecycle |
+| [FR-04.01](Departments%20and%20occupations/README.md#fr-04-01) | L&D Manager | Manage occupations | Departments and occupations |
+| [FR-04.02](Departments%20and%20occupations/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and occupations |
+| [FR-04.03](Role%20catalog/README.md#fr-04-03) | L&D Manager | Manage target roles | Role catalog |
+| [FR-04.04](Role%20catalog/README.md#fr-04-04) | L&D Manager | Manage target role publication | Role catalog |
+| [FR-04.05](Assessment%20workflows/README.md#fr-04-05) | L&D Manager | Manage baseline assessment configuration | Assessment workflows |
+| [FR-04.06](Learning%20catalog/README.md#fr-04-06) | L&D Manager | Approve learning offerings | Learning catalog |
+| [FR-04.07](Development%20reporting/README.md#fr-04-07) | L&D Manager | Monitor employee development | Development reporting |
+| [FR-05.01](Learning%20catalog/README.md#fr-05-01) | Expert | Manage micro-skills | Learning catalog |
+| [FR-05.02](Role%20catalog/README.md#fr-05-02) | Expert | Manage role competency requirements | Role catalog |
+| [FR-05.03](Role%20catalog/README.md#fr-05-03) | Expert | Submit completed target role configurations | Role catalog |
+| [FR-05.04](Learning%20catalog/README.md#fr-05-04) | Expert | Manage skill prerequisites | Learning catalog |
+| [FR-05.05](Learning%20catalog/README.md#fr-05-05) | Expert | Manage learning modules | Learning catalog |
+| [FR-05.06](Assessment%20workflows/README.md#fr-05-06) | Expert | Manage module assessments | Assessment workflows |
+| [FR-05.07](Pathway%20review/README.md#fr-05-07) | Expert | Review initial learning pathways | Pathway review |
+| [FR-05.08](Learning%20catalog/README.md#fr-05-08) | Expert | Submit content for approval | Learning catalog |
+| [FR-06.01](Employee%20experience/README.md#fr-06-01) | Employee | Manage personal profile | Employee experience |
+| [FR-06.02](Assessment%20workflows/README.md#fr-06-02) | Employee | Complete baseline assessment | Assessment workflows |
+| [FR-06.03](Assessment%20workflows/README.md#fr-06-03) | Employee | Complete RIASEC assessment | Assessment workflows |
+| [FR-06.04](Role%20guidance/README.md#fr-06-04) | Employee | Review target role guidance | Role guidance |
+| [FR-06.05](Employee%20experience/README.md#fr-06-05) | Employee | Review competency profile and gaps | Employee experience |
+| [FR-06.06](Employee%20experience/README.md#fr-06-06) | Employee | Follow a learning pathway | Employee experience |
+| [FR-06.07](Employee%20experience/README.md#fr-06-07) | Employee | Learn an individual skill | Employee experience |
+| [FR-06.08](Assessment%20workflows/README.md#fr-06-08) | Employee | Complete learning and assessments | Assessment workflows |
+| [FR-06.09](Employee%20experience/README.md#fr-06-09) | Employee | Track learning progress | Employee experience |
+| [FR-07.01](Workspace%20administration/README.md#fr-07-01) | System | Authenticate users and authorize access | Workspace administration |
+| [FR-07.02](Subscription%20lifecycle/README.md#fr-07-02) | System | Process subscription payments | Subscription lifecycle |
+| [FR-07.03](Organization%20onboarding/README.md#fr-07-03) | System | Provision organization workspaces | Organization onboarding |
+| [FR-07.04](Subscription%20lifecycle/README.md#fr-07-04) | System | Maintain subscription entitlements | Subscription lifecycle |
+| [FR-07.05](Assessment%20workflows/README.md#fr-07-05) | System | Generate and evaluate assessments | Assessment workflows |
+| [FR-07.06](Adaptive%20engine/README.md#fr-07-06) | System | Update competency profiles and gaps | Adaptive engine |
+| [FR-07.07](Role%20guidance/README.md#fr-07-07) | System | Generate target role guidance | Role guidance |
+| [FR-07.08](Adaptive%20engine/README.md#fr-07-08) | System | Generate and adapt learning pathways | Adaptive engine |
+| [FR-07.09](Development%20reporting/README.md#fr-07-09) | System | Generate development summaries and ROI | Development reporting |
+| [FR-07.10](Notifications%20and%20audit/README.md#fr-07-10) | System | Send email notifications | Notifications and audit |
+| [FR-07.11](Notifications%20and%20audit/README.md#fr-07-11) | System | Record system activity | Notifications and audit |
 
-## Retired and Deferred Index
+## Reconciliation Result
 
-| ID | Historical feature | Disposition |
-| --- | --- | --- |
-| REQ-003 | [Soft skill assessment](Soft%20skill%20assessment/README.md) | Superseded by REQ-047; not equivalent evidence |
-| REQ-021 | [AI soft-skill review](AI%20soft-skill%20review/README.md) | Superseded by REQ-049 |
-| REQ-027 | [Report export](Report%20export/README.md) | Deferred, not specified by current overview |
-| REQ-028 | [Subscription payment](Subscription%20payment/README.md) | Retired, out of scope |
-| REQ-029 | [Subscription cancellation](Subscription%20cancellation/README.md) | Retired, out of scope |
-| REQ-030 | [Payment statistics](Payment%20statistics/README.md) | Retired, out of scope |
-| REQ-031 | [Organization statistics](Organization%20statistics/README.md) | Retired platform/multi-organization scope |
-| REQ-032 | [Subscription configuration](Subscription%20configuration/README.md) | Retired, out of scope |
-| REQ-033 | [Benchmark dataset creation](Benchmark%20dataset%20creation/README.md) | Historical research, not committed product |
-| REQ-034 | [Benchmark execution](Benchmark%20execution/README.md) | Historical research, not committed product |
-| REQ-035 | [Benchmark results](Benchmark%20results/README.md) | Historical research, not committed product |
-| REQ-036 | [Benchmark comparison](Benchmark%20comparison/README.md) | Historical research, not committed product |
-| REQ-044 | [Soft-skill AI comments](Soft-skill%20AI%20comments/README.md) | Superseded by REQ-048 |
-| REQ-045 | [Payment confirmation](Payment%20confirmation/README.md) | Retired PayOS scope |
+The previous index already referenced all 48 source bullets, but the documents mixed them with 59 legacy groups, 146 decomposed functions, non-functional safeguards, assumed policies, implementation briefs and delivery history. They did not use the requested nine-field structure. This revision redistributes those same 48 source bullets into 48 authoritative records; it does not claim that previously missing product capabilities were discovered or implemented. All 205 existing group/function anchors are retained as references, not additional requirements.
 
-## Clarification and Verification
+## Removed Scope
 
-The historical interview queue is superseded wherever it conflicts with the approved adaptive baseline. REQ-001 owns immediate target-role selection; REQ-002 then owns the required Occupation baseline when no mastery-producing baseline exists. Existing historical decisions outside this confirmed boundary remain reference candidates, not automatically reapproved contracts.
+The following historical identifiers remain reserved, not available for reuse. Listing them here records exclusion, not active product scope.
 
-Record future decisions in the owning function. Maintain per-REQ unit/integration/system evidence when implemented; do not rewrite old passed runs as proof of new acceptance. See [testing/README.md](../testing/README.md) for revised verification scope.
-
-## Historical Catalog and Decision Log
-
-<details>
-<summary>Superseded 46-feature SaaS catalog, counts, implementation claims, and interview history</summary>
-
-All statuses, counts, actor names, and confirmed rules below describe the earlier scope. Use the current index and each document's alignment section for present requirements.
-
-**Source:** [Product Overview](../PRODUCT_OVERVIEW.md)
-**Created:** 2026-09-26
-**Scope:** 46 feature folders and 84 function documents. Each feature uses the name from the overview and includes its own README. CRUD functions and distinct user operations are documented separately.
-
-## How to Read the Documents
-
-- A feature README describes the capability and links to its functions.
-- Each function filename is its function name; its stable ID is `REQ-nnn-Fnn`, linked to the overview requirement through its feature README.
-- Each function records the responsible actor or automated performer, description, inputs, outcome, open decisions, and an acceptance baseline.
-- Automated performers and external services are not additional human actors. The current four human actors are System Administrator, L&D Manager, Expert and Employee.
-- Each file states whether its contract is approved, proposed or historical. An approved document is still not proof that runtime or tests implement it.
-- One function can require several questions. A function becomes **Clarified** only when its important behavior, access, inputs, outputs, validation, exceptional states, and acceptance criteria are agreed and documented.
-
-## Clarification Tracker
-
-**Clarified selection function (2026-10-01):** [Choose Target Role](Target%20role%20selection/Choose%20Target%20Role.md), REQ-001-F02, owns only the selection transaction. Baseline/gap/pathway generation and soft-skill reuse remain in their owning functions.
-
-**Superseded visibility history (2026-09-27):** The earlier proposal to hide roles based on assessment readiness was superseded for F01 on 2026-09-29. Browse visibility now uses organization, `ACTIVE` status and catalog validity; question coverage belongs to assessment-start.
-
-**Confirmed request-time availability (2026-09-27):** Option A: Recheck on list/detail requests, including loading, refreshing, searching, changing filters, and opening details; no background updates. Always recheck before initial selection or confirmed role change. Idle pages may remain outdated but cannot authorize an unavailable selection. Existing-selection behavior after readiness loss and concurrent-edit consistency remain open; function counts are unchanged.
-
-**Current browsing contract (updated 2026-09-29):** Employees browse same-organization, `ACTIVE`, catalog-valid roles. Details include role name, description and responsibilities, seniority, competency requirements, and required proficiency per micro-skill; assigned expert name was not selected. Publication and baseline readiness are not part of the current browsing gate.
-
-**Latest discovery decision (2026-09-26):** Option B: Search by role name and filter by seniority; no required-micro-skill filter.
-
-**Current empty-results behavior:** Empty search/filter results show "No matching roles" with a **Clear filters** action. When the organization has no permitted catalog-valid role, show "No roles available. Please contact your Organization Administrator." No automatic administrator notification is introduced.
-
-**Latest clarified function (2026-09-26; final local review 2026-10-02):** View Target Roles (REQ-001-F01). Its confirmed behavior is to replace unavailable role details with "This role is no longer available" and a **Back to roles** action, without automatically redirecting. Executable suites and full-stack catalog/detail browser evidence pass; production Identity/Catalog integration remains pending.
-
-**Confirmed selection limit (2026-09-26):** Option A: One active target role per employee at a time.
-
-**Confirmed initial selection approval (2026-09-26):** Option A: Initial target-role selection takes effect immediately without approval, allowing the employee to proceed to baseline assessment. This does not remove expert review of the generated initial pathway.
-
-**Confirmed role-change timing (2026-09-26):** Option B: Employees may change their active target role anytime except while an assessment is in progress.
-
-**Confirmed role-change approval (2026-09-26):** Option A: Eligible role changes require no approval. The selected role becomes the employee's sole active target role.
-
-**Confirmed previous pathway (2026-09-26):** Option A: Archive the previous pathway as read-only history when the target role changes; it cannot be resumed. Existing mastery evidence remains available under the agreed reuse rules.
-
-**Deferred product decision (2026-09-26):** Reuse existing soft-skill results and generate new AI comments relative to the new role. This policy remains provisional and must be revisited before it is treated as finalized.
-
-**Confirmed revalidation meaning (2026-09-26):** Option A: Revalidation means revisiting the soft-skill reuse product decision later, not operational validation of reused results. Continue the interview while preserving this deferred item.
-
-**Confirmed assessment history (2026-09-27):** Option A: Retain all previous assessment attempts in the employee's read-only history after a role change, labeled with their original role, date, and results.
-
-**Latest selection decision (2026-09-27):** Option A: Show a role-change confirmation explaining previous-pathway archival and evaluation of the new role's baseline requirement, with **Confirm change** and **Cancel**. Cancel leaves the role and pathway unchanged.
-
-### Interview Protocol
-
-1. Ask one question at a time about the current function, providing selectable options and allowing a custom answer.
-2. Record each answer in that function's decision log with its date; update confirmed rules, outcomes, and acceptance criteria as needed.
-3. Remove only the resolved open question. Do not treat one answered question as clarification of the entire function.
-4. Carry shared decisions to affected documents and reconcile material scope changes with the overview. Ask about conflicts rather than silently overriding established constraints.
-5. Once all material decisions for the current function are resolved, mark it Clarified, update this tracker, and continue in the order below and then the order of links in each feature README.
-6. If a decision is deferred or the interview is paused, retain its pending state and the exact next question here. Never invent an answer to finish the queue.
-
-## Feature Index
-
-| Requirement | Feature folder | Function count | Clarified |
-| --- | --- | --- | --- |
-| REQ-001 | [Target role selection](Target%20role%20selection/README.md) | 2 | 2 |
-| REQ-002 | [Baseline knowledge assessment](Baseline%20knowledge%20assessment/README.md) | Employee; L&D configures | Confirmed contract; implementation/evidence reported separately |
-| REQ-003 | [Soft skill assessment](Soft%20skill%20assessment/README.md) | 1 | 0 |
-| REQ-004 | [Adaptive pathway](Adaptive%20pathway/README.md) | 1 | 0 |
-| REQ-005 | [Recommendation explanation](Recommendation%20explanation/README.md) | 1 | 0 |
-| REQ-006 | [Competency graph](Competency%20graph/README.md) | 1 | 0 |
-| REQ-007 | [Dummy learning modules](Dummy%20learning%20modules/README.md) | 1 | 0 |
-| REQ-008 | [Module assessment](Module%20assessment/README.md) | 1 | 0 |
-| REQ-009 | [Assessment results](Assessment%20results/README.md) | 2 | 0 |
-| REQ-010 | [Recalculation visibility](Recalculation%20visibility/README.md) | 1 | 0 |
-| REQ-011 | [Assigned target roles](Assigned%20target%20roles/README.md) | 1 | 1 |
-| REQ-012 | [Micro-skill management](Micro-skill%20management/README.md) | 4 | 1 |
-| REQ-013 | [Learning module management](Learning%20module%20management/README.md) | 4 | 0 |
-| REQ-014 | [Question management](Question%20management/README.md) | 4 | 0 |
-| REQ-015 | [Role requirements](Role%20requirements/README.md) | 3 | 3 |
-| REQ-016 | [Module outcomes](Module%20outcomes/README.md) | 2 | 0 |
-| REQ-017 | [Question mapping](Question%20mapping/README.md) | 2 | 0 |
-| REQ-018 | [Target-role graph editing](Target-role%20graph%20editing/README.md) | 2 | 0 |
-| REQ-019 | [Initial pathway review](Initial%20pathway%20review/README.md) | 1 | 0 |
-| REQ-020 | [Pathway adjustment](Pathway%20adjustment/README.md) | 2 | 0 |
-| REQ-021 | [AI soft-skill review](AI%20soft-skill%20review/README.md) | 1 | 0 |
-| REQ-022 | [Account management](Account%20management/README.md) | 5 | 0 |
-| REQ-023 | [Target role management](Target%20role%20management/README.md) | 5 | 5 |
-| REQ-024 | [Expert assignment](Expert%20assignment/README.md) | 2 | 2 |
-| REQ-025 | [Employee progress](Employee%20progress/README.md) | 1 | 0 |
-| REQ-026 | [Organizational statistics](Organizational%20statistics/README.md) | 1 | 0 |
-| REQ-027 | [Report export](Report%20export/README.md) | 1 | 0 |
-| REQ-028 | [Subscription payment](Subscription%20payment/README.md) | 3 | 0 |
-| REQ-029 | [Subscription cancellation](Subscription%20cancellation/README.md) | 2 | 0 |
-| REQ-030 | [Payment statistics](Payment%20statistics/README.md) | 1 | 0 |
-| REQ-031 | [Organization statistics](Organization%20statistics/README.md) | 1 | 0 |
-| REQ-032 | [Subscription configuration](Subscription%20configuration/README.md) | 1 | 0 |
-| REQ-033 | [Benchmark dataset creation](Benchmark%20dataset%20creation/README.md) | 3 | 0 |
-| REQ-034 | [Benchmark execution](Benchmark%20execution/README.md) | 2 | 0 |
-| REQ-035 | [Benchmark results](Benchmark%20results/README.md) | 1 | 0 |
-| REQ-036 | [Benchmark comparison](Benchmark%20comparison/README.md) | 1 | 0 |
-| REQ-037 | [Access control](Access%20control/README.md) | 2 | 0 |
-| REQ-038 | [First-time password](First-time%20password/README.md) | 1 | 0 |
-| REQ-039 | [Email notifications](Email%20notifications/README.md) | 1 | 0 |
-| REQ-040 | [Sensitive data protection](Sensitive%20data%20protection/README.md) | 2 | 0 |
-| REQ-041 | [Competency profiling and gap analysis](Competency%20profiling%20and%20gap%20analysis/README.md) | 2 | 0 |
-| REQ-042 | [Initial pathway generation](Initial%20pathway%20generation/README.md) | 1 | 0 |
-| REQ-043 | [Conditional pathway recalculation](Conditional%20pathway%20recalculation/README.md) | 2 | 0 |
-| REQ-044 | [Soft-skill AI comments](Soft-skill%20AI%20comments/README.md) | 1 | 0 |
-| REQ-045 | [Payment confirmation](Payment%20confirmation/README.md) | 2 | 0 |
-| REQ-046 | [Consistent learning state](Consistent%20learning%20state/README.md) | 2 | 0 |
-
-</details>
+| Legacy IDs / material | Disposition |
+| --- | --- |
+| REQ-003, REQ-021, REQ-044 | Separate soft-skill assessment, comments and review are not specified in section 3.2(c). |
+| REQ-049 | Expert approval of AI role guidance is not specified; initial pathway review remains FR-05.07. |
+| REQ-027 | Report export is not specified. |
+| REQ-029 | Subscription cancellation/refunds are not specified. |
+| REQ-033 through REQ-036 | Benchmark-management product screens are not functional requirements; research deliverables remain in Version 2. |
+| REQ-038 | A mandatory temporary-password first-login flow is not specified. |
+| REQ-012-F04, REQ-022-F04 | Skill/account hard deletion is not specified; micro-skill deactivation and membership activation/deactivation remain. |
+| REQ-013-F04, REQ-014-F04, REQ-023-F04 | Whole-module, question and target-role deletion are not specified. |
+| REQ-023-F05 | Duplicate Expert workspace description is not a separate source requirement. |
+| REQ-005; graph-view subfunctions | Recommendation explanations and graph presentation are not separate section 3.2(c) functions; related source records remain linked from their old anchors. |
+| REQ-040, REQ-046; recovery subfunctions | Security and integrity/recovery safeguards are outside this functional catalog, not removed from Version 2 or the application. |
+| Historical briefs, interviews, UI prescriptions, API/schema details, commercial defaults and delivery claims | Removed from the current requirements records; not promoted into source requirements or fabricated acceptance criteria. Dated testing evidence is unchanged. |

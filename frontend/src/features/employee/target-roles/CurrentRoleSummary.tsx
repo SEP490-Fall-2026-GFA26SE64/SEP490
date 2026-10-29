@@ -11,6 +11,9 @@ import type { RoleFlowView } from './currentRoleFlowApi'
 export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { view: RoleFlowView; onReviewGaps: () => void; disabled?: boolean }) {
   const { t } = useTranslation()
   const selection = view.selection
+  if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
+    return <Card className="p-5"><Text role="status">{t('roleFlow.legacySelection')}</Text></Card>
+  }
   if (!selection && view.progress.state !== 'RESUME') return null
   return <Card className="min-w-0 overflow-hidden">
     <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">

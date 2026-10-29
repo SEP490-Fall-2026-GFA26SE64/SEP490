@@ -10,9 +10,9 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Profile("local-baseline-demo & !prod")
+@Profile("(local-baseline-demo | workspace-baseline) & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
+@ConditionalOnExpression("${assessment.baseline.local-demo.enabled:false} or ${assessment.baseline.workspace.enabled:false}")
 @RequestMapping("/api/v1/employee")
 public final class CurrentRoleFlowController {
     private final RoleBaselineFlow flow;private final ObjectMapper json;
