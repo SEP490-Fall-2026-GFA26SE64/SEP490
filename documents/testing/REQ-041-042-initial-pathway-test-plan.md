@@ -1,6 +1,6 @@
 # Initial gap/pathway acceptance-to-test plan
 
-**Current planning scope reconciled:** 2026-10-29. Functions REQ-019-F01, REQ-020-F01/F02 and direct REQ-042-F01/REQ-004-F01 dependencies. Existing G/P/R/E rule IDs are retained. All new executable cases are Planned/Not run; filenames/methods/commands below are proposed C3 destinations, not proof of existing tests or passing results.
+**Current evidence synchronized:** 2026-10-29, Cluster4. Functions REQ-019-F01, REQ-020-F01/F02 and direct REQ-042-F01/REQ-004-F01 review/read dependencies. Existing G/P/R/E rule IDs and acceptance intent are retained. C3-REVIEW-r1 is complete within this selected scope: BE160/FE49/real-system2 Passed, with no final failure/error/skip. [Current receipt and actual acceptance→method→command→fixture mapping](system/REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29) distinguish unit/mock, API/security,29 real integration and2 real browser cases. The proposed destinations below retain planning history; they are not the actual executed command list. Broader G/P rules and owner execution remain unconfirmed by this run.
 
 Business requirements: [Expert review](../features/Pathway%20review/README.md#fr-05-07). Current technical contracts: [shared](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md), [review](../technical/initial-pathway/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md), [Include](../technical/initial-pathway/Pathway%20adjustment/Include%20Pathway%20Module.md), [Exclude](../technical/initial-pathway/Pathway%20adjustment/Exclude%20Pathway%20Module.md), [Employee view](../technical/initial-pathway/Adaptive%20pathway/View%20Adaptive%20Pathway.md). [Testing guidance](README.md) applies.
 
@@ -16,7 +16,18 @@ Business requirements: [Expert review](../features/Pathway%20review/README.md#fr
 
 The [workspace integration receipt](system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29) preserves dated BE428/FE2507/lint, V35 row preservation and bounded HTTP observations. The user confirms Move Up/Down and Remove UI happy cases. These are separate manual/build evidence, not executable-test passes, agent browser verification, benchmarks or full security/concurrency proof. Subsequent user edits mean revision11/18 cannot be treated as current.
 
-Existing `frontend/system-tests/REQ-019-F01-expert-pathway-review-flow.spec.ts` still expects Regenerate and prototype feedback. It is incompatible with the confirmed bounded flow and must be reconciled in a separately approved C3 scope; it was only inspected, not changed/run. Historical evidence remains in its original receipts. This documentation task performs no executable tests, runtime mutation, stack restart or cluster transition.
+At the earlier document reconciliation, `frontend/system-tests/REQ-019-F01-expert-pathway-review-flow.spec.ts` still expected Regenerate/prototype feedback. Approved C3 reconciled that file in place with the real review flow; final2-case system evidence now passes. The original archived/unresolved equal-hash Include-disabled assertion initially failed; the user separately approved exactly one C2 guard `blocked || !editable || approval !== null`, followed by successful component and real-system retest. [Failure/repair history](system/REQ-002-041-042-workspace-integration.md#preserved-failure-and-repair-history) remains retained. C4 performs document checks only, no executable rerun/runtime mutation/stack startup or automatic C5.
+
+### C3-REVIEW-r1 executed disposition
+
+| Acceptance / Function scope | Actual evidence disposition | Limit |
+| --- | --- | --- |
+| R01–R14, REQ-019-F01/REQ-020-F01/F02 | Passed for selected review rules across unit/API/component, real adapters and real system as individually mapped in the receipt | Assignment/owner positives use named local/test policies; no production owner certification. Native browser drag Not run; cross-list intent is component evidence |
+| E01–E03/E07–E09, direct REQ-004-F01 | Passed for mapped own/approved/archive/no-draft/no-write projection and fail-closed hooks; same revision5/hash/order14 rendered by Employee in real browser | Protected content/start/segment portions of E08/E09 and E04–E06 Deferred/Not run; no execution/PASS/completion claim |
+| Direct G11/G12/P12/P13 and P07–P11/P18–P20 dependencies | Only exercised selection/receipt/fencing/provider/gate/identity/retention/budget branches mapped to actual methods | Do not mark whole G/P rows or full optimizer/whole-baseline acceptance Passed from a dependency subset |
+| Remaining G/P baseline/generation, production assignment and management CRUD | Outside C3-REVIEW-r1; retained planning/historical evidence only | No new result inferred; no scope expansion |
+
+Exact current files/invocations replace proposed destinations **for executed subsets only** via the [unit/API/component mapping](system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping), [real integration mapping](system/REQ-002-041-042-workspace-integration.md#real-integration-mapping), [real system mapping](system/REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) and [recorded commands](system/REQ-002-041-042-workspace-integration.md#recorded-commands). No rerun totals are added to final counts.
 
 ## Retained dependent acceptance planning
 
@@ -59,7 +70,7 @@ Package/file names are Proposed until implementation structure exists; later evi
 | REQ-004-F01 read | E01–E03/E07–E09; E04–E06 additionally verify actual content/start/segment owner gates; P19 history |
 | REQ-046 limited consistency/recovery | G11/G12/P12/P13/R10/R11 only for this flow; no full REQ-046 delivery claim |
 
-All mappings are planned acceptance, not implemented methods. Read-only cases compare before/after learner state, receipts/outbox, selection, baseline pins and pathway pointers in their isolated fixtures; operational request logging is permitted. Identity/assignment unavailability and protected response-cache scope are failure variants, never permissive defaults. Proposal-dependent wire/hash choices require final contract disposition before executable assertions are fixed.
+The tables here define acceptance/planned suite ownership; actual executed methods/results are only those in the dated C4 mapping above. Read-only cases compare before/after learner state, receipts/outbox, selection, baseline pins and pathway pointers in their isolated fixtures; operational request logging is permitted. Identity/assignment unavailability and protected response-cache scope are failure variants, never permissive defaults. Unexecuted proposal-dependent choices retain their planning status.
 
 ## F02 and confirmation — G01–G13
 
@@ -141,7 +152,7 @@ Baseline allowance/admission remains existing evidence scope plus new regression
 
 ## Retained manual procedure — results are recorded separately
 
-This procedure was originally planned before the shared workspace journey. Actual later HTTP/manual results are recorded in the workspace receipt, with their own fixture/date; this procedure is not a new pending-operation instruction or an executable pass. A new-order approval→Employee run and broader browser/negative coverage remain unverified. Reuse existing Target Roles, /expert/pathway-review, /expert/pathway-review/:pathwayId and /employee/pathway only within a separately authorized runtime scope. C3 real-adapter tests require separately approved disposable Testcontainers environments, not preserved development DBs.
+This procedure was originally planned before the shared workspace journey. Later HTTP/manual results retain their own fixture/date; the dated C4 receipt separately records actual C3 new-order approval→Employee and scoped negative/browser evidence. This procedure itself is not an executable pass or a new pending-operation instruction. Reuse existing Target Roles, /expert/pathway-review, /expert/pathway-review/:pathwayId and /employee/pathway only within an authorized runtime scope; never target preserved development DBs for disposable tests. No manual steps or executable cases were rerun in C4.
 
 1. LD authors/reviews/publishes a genuine baseline for the scoped fixture; Employee-A completes it and views persisted mastery, then authorized exact Role+Level gaps. Retain pair if selected earlier; verify skill explanations, optional skills and no selection mutation from preview.
 2. Confirm Role with retained retry identity; see generating, then awaiting review only after persisted valid proposal.
@@ -151,7 +162,7 @@ This procedure was originally planned before the shared workspace journey. Actua
 
 Deferred owner scope: direct protected Module/start/segment denial and real versioned readiness PASS/unlock observations remain in E04–E06 for separately approved integration; never manufacture progress/PASS. Automated variants of all manual cases remain C3-only.
 
-Later receipt must supply actual date/environment/commit, exact fixture IDs, commands/test file/method, counts/results, failures and limits. Static source/JSON/document review in Cluster1 is not execution of these cases.
+The current C4 receipt supplies actual C3 date/environment/HEAD, fixture IDs, commands/files/methods, counts/results, failures and limits for the selected subset. Remaining cases still require their own execution evidence. Static source/JSON/document review is not executable acceptance.
 
 ## Cluster1 document amendment receipt — 2026-10-28
 
@@ -169,8 +180,8 @@ Only documents changed, all unstaged; no runtime/migration/frontend implementati
 
 ## Numerical/performance and open dependencies
 
-No numerical scoring validation/latency SLA/planner caps certified. Later separately approved measurement should report graph size/degree, candidates/prerequisite closure, query database hits/degree, query/rank/select/sort timings, concurrency, cache state, p50/p95/p99 and memory/error rates with agreed thresholds. Do not substitute a successful small seed request for benchmark or real-pilot acceptance.
+No numerical scoring validation, latency SLA or production planner capacity is certified. [C3 bounded measurements](system/REQ-002-041-042-workspace-integration.md#bounded-measurements-and-remaining-limits) record real Check3 needs/4 offers/3 selected/1 edge/budget10000,3 warmups+30 sequential samples/1 thread/330 JDBC prepares, p50=284.120ms/p95=314.969ms. Graph queries/DB hits/cold costs are excluded. Separate in-memory validator samples and post-system resource snapshots have different scopes. Correctness/no-write assertions pass; timing/resource observations are descriptive, without SLA/p99/production benchmark claims.
 
-Confirmed policy/binding/local substitute design does not prove adapter implementation. Owner production publication/semantic/assignment/revocation plus planner readiness definitions/evidence/Availability remain integration dependencies. Current source consumes0.11 per-pair focus/difficulty and retains legacy readers; V28 applied only on the recorded fresh native DB, with no format/hash round-trip or positive proposal/approval proof. Job/search/lease budgets require explicit versioned operational settings before activation. Learning-content/start/segment execution is deferred from the current view-only manual milestone. Any seed, including0.11, is only a named fixture/source, never a production oracle. All new executable rules remain Planned/Not run.
+Owner production publication/semantic/assignment/revocation and live readiness/content remain integration dependencies. Historical V28/native observations below do not limit the new real-adapter C3 evidence: the workspace V34→V35 suite now proves full aggregate/checksum retention, persisted legacy/new-format identity, approval and concurrency/recovery for its fixtures. This does not certify production migration rollout or owner policies. Job/search/lease settings are explicit test inputs; operational production settings remain separate. Learning-content/start/segment execution remains deferred. Any seed is only a named fixture/source, never a production oracle. Unmapped G/P/owner cases retain Planned/Not run status.
 
-Confirmed acceptance intent | Planned: file/method/commands | Open: real owner adapters/measurement thresholds | All new executable results: Not run.
+Confirmed acceptance intent | Selected C3 review/read evidence: Passed as mapped | C4 documentation: synchronized | Open: production owners, native browser drag, deferred execution and broader G/P evidence | C5: not started.

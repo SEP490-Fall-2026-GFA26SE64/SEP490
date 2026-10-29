@@ -2,6 +2,7 @@
 
 ## Dated adaptive checkpoint evidence
 
+2026-10-29 selected review/read C4: [real system evidence](REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) records **2/2 Passed**,0 failed/skipped/flaky, real session/CSRF/baseline/API/worker/persistence, isolated final4 stack on38088. Expert repair/order/Check/preview/final approval → same Employee revision5/hash/order14; real archived unresolved equal-hash repair locked after separately approved C2 guard. [Counts/failures/limits](REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29). Native browser drag Not run, E04–E06/protected execution deferred, production owners Open; old build/manual evidence below remains historical. C4 did not start services or rerun tests; generic shared8088 commands below are not this run's harness.
 
 2026-10-28 final handoff: [static reconciliation and next-machine gates](REQ-041-042-v011-handoff-review.md). Requested journey ends at Employee's own approved pathway display; planner inputs/fresh Compose/manual flow remain incomplete. Next session reports first, waits for OK; no automatic executable tests/C3.
 
@@ -35,6 +36,7 @@ System testing validates complete end-to-end integration across all system tiers
 
 | Requirement ID | Feature Name | Workflows Covered | System Test Document | Manual Procedure | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Review and own approved read | Repair/order/exact approval→Employee; archived equal-hash repair lock | [Actual system cases/isolation](REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) | [Current procedure / history](REQ-019-REQ-020-manual-browser-check.md) | **2 Passed; native drag/learning execution not passed** |
 | **REQ-060-F01-F03** | Registration, email and MFA/resume | Real API/SMTP, desktop/mobile, recovery, restart and expiry | [REQ-060-registration.md](REQ-060-registration.md) | [Manual/Gmail checklist](REQ-060-registration-manual-check.md) | **Local Passed / Live Gmail Blocked** |
 | **REQ-001-F01** | View Target Roles | Learner Role Catalog Browse | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | [REQ-001-F01-manual-browser-check.md](REQ-001-F01-manual-browser-check.md) | **PASSED** (API) / Manual Available |
 | **REQ-001-F02** | Choose Target Role | Target Role Selection Flow | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | [Playwright Spec](../../../frontend/system-tests/REQ-001-F02-target-role-selection.spec.ts) | **PASSED** (Compose API & Playwright) |

@@ -1,5 +1,6 @@
 # Test Documentation
 
+**2026-10-29 C4, selected pathway review/read:** [current evidence and acceptance mapping](system/REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29), [plan disposition](REQ-041-042-initial-pathway-test-plan.md#c3-review-r1-executed-disposition). REQ-019-F01/REQ-020-F01/F02 plus direct REQ-042-F01/REQ-004-F01 only: final **BE160/FE49/real-system2 Passed**,0 final failures/errors/skips; BE includes29 real integration and39 regression, FE includes5 regression. Unit/mock and API/security evidence are separated from real adapters/browser; reruns are not added. Original guard failure, separately approved C2 one-line repair and passing retest are retained. E04–E06/protected learning execution deferred, production owners Open, native browser drag Not run. C4 ran document checks only; C5 not started.
 
 **2026-10-28 transfer review:** [baseline→own approved pathway view reconciliation](system/REQ-041-042-v011-handoff-review.md) records source/doc alignment, remaining planner/Compose/fixture/session blockers and next-session read/report/OK gate. Learning execution is outside this milestone; a manual walkthrough document/setup follows OK, executable tests require separate C3. No new execution/pass claim.
 
@@ -9,7 +10,7 @@
 
 Current REQ-002 slice2–3 compile/manual observations: [dedicated evidence and procedures](system/REQ-002-F01-F02-occupation-admission-management.md). Revised executable acceptance remains Planned/Not run; no tests were created or executed.
 
-**2026-10-28 initial gap/pathway Cluster1 amendment:** [acceptance plan](REQ-041-042-initial-pathway-test-plan.md) maps G01–G13/P01–P20/R01–R14/E01–E09 for Role+Level/history, per-pair focus/difficulty/mastery policy, proven whole-path objective/search limits, forward format compatibility, scoped local assignment/exact approval and protected Employee access. All executable files/commands remain **Planned/Not run**. Native code/build work and deferred user manual/UI verification are separate; no DB/runtime or historical baseline certification is inferred.
+**2026-10-28 initial gap/pathway Cluster1 amendment (historical planning):** [acceptance plan](REQ-041-042-initial-pathway-test-plan.md) maps G01–G13/P01–P20/R01–R14/E01–E09. Executable files/commands were Planned/Not run at that date. The29 October C4 receipt above supersedes that status only for selected review/read evidence; broader baseline/generation/learning-owner acceptance is not inferred. Native code/build/manual observations remain separate.
 
 **2026-10-28 C2:** [source/build receipt](system/REQ-041-042-v011-source-build.md) and later [native DB/manual receipt](system/REQ-041-042-v011-native-cutover.md): BE package with tests skipped, FE build/scoped lint; fresh native PG V1–V28/Neo4j0.11 import/seal, API/FE/proxy and empty/fresh-baseline-required reads observed. Mandatory readiness/content owner integration, positive full flow, interactive UI and executable acceptance remain pending. No full C2/test-pass claim.
 
@@ -89,6 +90,7 @@ All runnable test code is kept next to its source code (`backend/src/test/java` 
 
 | Requirement | Feature Name | Unit Test Evidence | Integration Test Evidence | System Test Evidence | Manual Procedure |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Initial pathway review and own approved read | [Unit/API/component](system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping) | [Real integration](system/REQ-002-041-042-workspace-integration.md#real-integration-mapping) | [Real system](system/REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) | [Current procedure / retained history](system/REQ-019-REQ-020-manual-browser-check.md) |
 | **REQ-060-F01-F03** | Registration, email, MFA and secure resume | [unit/REQ-060](unit/REQ-060-registration.md) | [integration/REQ-060](integration/REQ-060-registration.md) | [system/REQ-060](system/REQ-060-registration.md) | [Manual/Gmail checklist](system/REQ-060-registration-manual-check.md) |
 | **REQ-001-F01** | View Target Roles | [unit/REQ-001-F01](unit/REQ-001-F01-view-target-roles.md) | [integration/REQ-001-F01](integration/REQ-001-F01-view-target-roles.md) | [system/REQ-001-F01](system/REQ-001-F01-view-target-roles.md) | [Manual Check](system/REQ-001-F01-manual-browser-check.md) |
 | **REQ-001-F02** | Choose Target Role | [Master Plan](REQ-001-F02-choose-target-role.md#t1-t3-unit--mvc) | [Master Plan](REQ-001-F02-choose-target-role.md#t4-postgresql-integration) | [Master Plan](REQ-001-F02-choose-target-role.md#t6-full-stack-system) | [Playwright Spec](../../frontend/system-tests/REQ-001-F02-target-role-selection.spec.ts) |
