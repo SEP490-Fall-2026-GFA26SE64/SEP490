@@ -28,7 +28,7 @@ test.describe('REQ-017-F02 Explore Graph Playground Verification', () => {
     await expect(page.getByTitle('Fit to Viewport')).toBeVisible()
 
     // 4. Verify initial state: Clean empty canvas by default (0 nodes)
-    await expect(page.getByText('0 nodes on canvas')).toBeVisible()
+    await expect(page.getByText('0 nodes on canvas', { exact: true })).toBeVisible()
     await expect(page.getByText('Playground Canvas is Ready')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Quick Sample (5 Competencies)' })).toBeVisible()
 
@@ -41,14 +41,14 @@ test.describe('REQ-017-F02 Explore Graph Playground Verification', () => {
     await quickSampleBtn.click()
 
     // Canvas should now have nodes and the drag hint overlay is hidden
-    await expect(page.getByText('0 nodes on canvas')).not.toBeVisible()
+    await expect(page.getByText('0 nodes on canvas', { exact: true })).not.toBeVisible()
     await expect(page.getByText('nodes on canvas')).toBeVisible()
     await expect(page.getByText('Playground Canvas is Ready')).not.toBeVisible()
 
     // 7. Verify Clear Canvas button resets to 0 nodes
     const clearBtn = page.getByTitle('Clear Canvas')
     await clearBtn.click()
-    await expect(page.getByText('0 nodes on canvas')).toBeVisible()
+    await expect(page.getByText('0 nodes on canvas', { exact: true })).toBeVisible()
     await expect(page.getByText('Playground Canvas is Ready')).toBeVisible()
 
     // 8. Test adding a node from palette

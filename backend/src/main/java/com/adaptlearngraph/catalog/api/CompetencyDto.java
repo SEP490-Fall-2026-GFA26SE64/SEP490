@@ -6,6 +6,7 @@ import java.util.List;
 public class CompetencyDto {
     public record CompetencyResponse(
             String id,
+            String code,
             String name,
             String description,
             String attainmentRule,
@@ -20,6 +21,7 @@ public class CompetencyDto {
         public static CompetencyResponse fromDomain(CompetencyRecord record) {
             return new CompetencyResponse(
                     record.id(),
+                    record.code(),
                     record.name(),
                     record.description(),
                     record.attainmentRule(),
@@ -35,6 +37,7 @@ public class CompetencyDto {
     }
 
     public record CreateCompetencyRequest(
+            String code,
             String name,
             String description,
             String levelId,
@@ -42,6 +45,7 @@ public class CompetencyDto {
     ) {}
 
     public record UpdateCompetencyRequest(
+            String code,
             String name,
             String description,
             List<String> skillIds

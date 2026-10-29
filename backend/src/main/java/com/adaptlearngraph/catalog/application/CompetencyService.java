@@ -21,15 +21,20 @@ public class CompetencyService implements ManageCompetencyUseCase {
     }
 
     @Override
-    public CompetencyRecord createCompetency(String name, String description, List<String> skillIds, String levelId) {
-        String id = "CP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    public CompetencyRecord createCompetency(String code, String name, String description, List<String> skillIds, String levelId) {
+        String id = UUID.randomUUID().toString();
+        String finalCode = (code != null && !code.isBlank())
+                ? code.trim().toUpperCase()
+                : generateDefaultCode();
+
         CompetencyRecord newRecord = new CompetencyRecord(
                 id,
+                finalCode,
                 name != null ? name.trim() : "New Competency",
                 description != null ? description.trim() : "",
                 "ALL_MEMBER_SKILLS_AT_OWNING_LEVEL",
                 "ACTIVE",
-                "0.9.0",
+                "0.11.0",
                 levelId,
                 "",
                 "",
@@ -39,23 +44,29 @@ public class CompetencyService implements ManageCompetencyUseCase {
     }
 
     @Override
-    public CompetencyRecord updateCompetency(String id, String name, String description, List<String> skillIds) {
+    public CompetencyRecord updateCompetency(String id, String code, String name, String description, List<String> skillIds) {
         var existingOpt = repository.findById(id);
         CompetencyRecord existing = existingOpt.orElseGet(() -> new CompetencyRecord(
                 id,
+                code != null && !code.isBlank() ? code.trim().toUpperCase() : generateDefaultCode(),
                 name != null ? name.trim() : "",
                 description != null ? description.trim() : "",
                 "ALL_MEMBER_SKILLS_AT_OWNING_LEVEL",
                 "ACTIVE",
-                "0.9.0",
+                "0.11.0",
                 null,
                 "",
                 "",
                 List.of()
         ));
 
+        String finalCode = (code != null && !code.isBlank())
+                ? code.trim().toUpperCase()
+                : (existing.code() != null && !existing.code().isBlank() ? existing.code() : generateDefaultCode());
+
         CompetencyRecord updated = new CompetencyRecord(
                 existing.id(),
+                finalCode,
                 name != null && !name.isBlank() ? name.trim() : existing.name(),
                 description != null ? description.trim() : existing.description(),
                 existing.attainmentRule(),
@@ -72,5 +83,9 @@ public class CompetencyService implements ManageCompetencyUseCase {
     @Override
     public void deleteCompetency(String id) {
         repository.deleteById(id);
+    }
+
+    private String generateDefaultCode() {
+        return "COMP-GEN-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
     }
 }

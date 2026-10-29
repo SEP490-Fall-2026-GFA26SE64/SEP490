@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface ManageCompetencyUseCase {
     List<CompetencyRecord> listCompetencies(String search);
-    CompetencyRecord createCompetency(String name, String description, List<String> skillIds, String levelId);
-    CompetencyRecord updateCompetency(String id, String name, String description, List<String> skillIds);
+    CompetencyRecord createCompetency(String code, String name, String description, List<String> skillIds, String levelId);
+    CompetencyRecord updateCompetency(String id, String code, String name, String description, List<String> skillIds);
     void deleteCompetency(String id);
 }

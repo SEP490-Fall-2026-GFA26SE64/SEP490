@@ -23,6 +23,8 @@ Display the assigned role's knowledge graph for inspection, prerequisite analysi
 
 - **Authorized Scope:** Returns the target role subgraph containing:
   - Role node: `id`, `code`, `title`, `track`, `seniority`, `status`.
+  - Seniority Level nodes: `id`, `code`, `rank`, `title`.
+  - Competency group nodes: `id` (auto-generated UUID), `code` (e.g. `COMP-DEV-J01`), `name`, `status`, `attainmentRule`.
   - Required micro-skills: `id`, `code`, `name`, `macroCompetencyCode`, `targetMastery`.
   - Internal prerequisite dependencies: `sourceSkillId`, `sourceSkillCode`, `targetSkillId`, `targetSkillCode`, `minMastery`, `status`.
 - **Visualization:** Interactive vis-network canvas with dual layout modes (Hierarchical top-down and Organic force-directed), zoom/pan, and Element Inspector drawer.

@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  ArrowLeftRight,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -7,7 +8,6 @@ import {
   GripVertical,
   Layers,
   Link as LinkIcon,
-  Lock,
   Maximize2,
   Minimize2,
   Network as NetworkIcon,
@@ -15,7 +15,6 @@ import {
   Search,
   Sparkles,
   Trash2,
-  Unlock,
   X,
   ZoomIn,
   ZoomOut,
@@ -113,6 +112,14 @@ function OntologyGraphPlaygroundInner({
   const containerRef = React.useRef<HTMLDivElement>(null)
   const networkRef = React.useRef<Network | null>(null)
 
+  // Stable prop refs to prevent vis-network re-instantiation on prop refreshes
+  const microSkillsRef = React.useRef(microSkills)
+  const competenciesRef = React.useRef(competencies)
+  const prerequisitesRef = React.useRef(prerequisites)
+  microSkillsRef.current = microSkills
+  competenciesRef.current = competencies
+  prerequisitesRef.current = prerequisites
+
   // Fast vis-data DataSets for 60fps graph manipulation
   const nodesDataSetRef = React.useRef<DataSet<PlaygroundCustomNode>>(new DataSet<PlaygroundCustomNode>([]))
   const edgesDataSetRef = React.useRef<DataSet<Edge>>(new DataSet<Edge>([]))
@@ -130,12 +137,17 @@ function OntologyGraphPlaygroundInner({
   const [selectedNode, setSelectedNode] = React.useState<PlaygroundCustomNode | null>(null)
   const [selectedEdge, setSelectedEdge] = React.useState<Edge | null>(null)
   const [isFullscreen, setIsFullscreen] = React.useState(false)
-  const [isPhysicsFrozen, setIsPhysicsFrozen] = React.useState(true)
   const isCompactViewRef = React.useRef(false)
 
   // Direct Interactive Connection Mode
   const [isConnectMode, setIsConnectMode] = React.useState(false)
   const [connectSourceNode, setConnectSourceNode] = React.useState<PlaygroundCustomNode | null>(null)
+  const isConnectModeRef = React.useRef(false)
+  const connectSourceNodeRef = React.useRef<PlaygroundCustomNode | null>(null)
+  isConnectModeRef.current = isConnectMode
+  connectSourceNodeRef.current = connectSourceNode
+
+  const handleNodeClickForConnectRef = React.useRef<(targetNode: PlaygroundCustomNode) => Promise<void>>(async () => {})
 
   // Prerequisite creation threshold dialog
   const [isPrereqModalOpen, setIsPrereqModalOpen] = React.useState(false)
@@ -401,6 +413,112 @@ function OntologyGraphPlaygroundInner({
     edgesDataSetRef.current.update(edgeUpdates)
   }, [])
 
+  // Anti-collision: Ensure nodes cannot overlap each other
+  const resolveNoOverlap = React.useCallback(
+    (
+      targetId: string,
+      targetPos: { x: number; y: number },
+      allPositions?: Record<string, { x: number; y: number }>
+    ): { x: number; y: number } => {
+      const positions = allPositions || (networkRef.current ? networkRef.current.getPositions() : {})
+      const nodes = canvasNodesRef.current
+      const targetNode = nodes.find((n) => n.id === targetId)
+      const targetIsComp = targetNode?.nodeType === 'competency'
+
+      let currentX = targetPos.x
+      let currentY = targetPos.y
+
+      // Run relaxation passes to resolve collisions against all neighboring nodes
+      for (let pass = 0; pass < 6; pass++) {
+        let hadCollision = false
+
+        for (const otherNode of nodes) {
+          if (otherNode.id === targetId) continue
+          const otherPos = positions[otherNode.id]
+          if (!otherPos) continue
+
+          const otherIsComp = otherNode.nodeType === 'competency'
+          // Elliptical safe clearance: width & height based on node bounding box
+          const safeW = targetIsComp && otherIsComp ? 230 : targetIsComp || otherIsComp ? 200 : 180
+          const safeH = targetIsComp && otherIsComp ? 85 : targetIsComp || otherIsComp ? 75 : 65
+
+          let dx = currentX - otherPos.x
+          let dy = currentY - otherPos.y
+
+          if (dx === 0 && dy === 0) {
+            dx = 15
+            dy = 15
+          }
+
+          const normDistSq = (dx * dx) / (safeW * safeW) + (dy * dy) / (safeH * safeH)
+
+          if (normDistSq < 1.0) {
+            hadCollision = true
+            const normDist = Math.sqrt(normDistSq)
+            const penetration = Math.max(1.06 / Math.max(normDist, 0.05), 1.06)
+            currentX = Math.round(otherPos.x + dx * penetration)
+            currentY = Math.round(otherPos.y + dy * penetration)
+          }
+        }
+
+        if (!hadCollision) break
+      }
+
+      return { x: currentX, y: currentY }
+    },
+    []
+  )
+
+  // Find nearest clear slot on canvas that does not overlap any existing node
+  const findClearSlot = React.useCallback(
+    (
+      basePos: { x: number; y: number },
+      nodeType: 'competency' | 'skill'
+    ): { x: number; y: number } => {
+      const positions = networkRef.current ? networkRef.current.getPositions() : {}
+      const existing = canvasNodesRef.current
+      if (existing.length === 0) return basePos
+
+      const isComp = nodeType === 'competency'
+
+      const isCollisionFree = (candidate: { x: number; y: number }) => {
+        for (const other of existing) {
+          const otherPos = positions[other.id] || { x: other.x ?? 0, y: other.y ?? 0 }
+          const otherIsComp = other.nodeType === 'competency'
+          const safeW = isComp && otherIsComp ? 230 : isComp || otherIsComp ? 200 : 180
+          const safeH = isComp && otherIsComp ? 85 : isComp || otherIsComp ? 75 : 65
+
+          const dx = candidate.x - otherPos.x
+          const dy = candidate.y - otherPos.y
+          const normDistSq = (dx * dx) / (safeW * safeW) + (dy * dy) / (safeH * safeH)
+          if (normDistSq < 1.0) return false
+        }
+        return true
+      }
+
+      if (isCollisionFree(basePos)) return basePos
+
+      // Spiral outward to find the nearest non-overlapping slot
+      for (let ring = 1; ring <= 15; ring++) {
+        const stepRadius = ring * 140
+        const steps = Math.max(6 * ring, 8)
+        for (let i = 0; i < steps; i++) {
+          const angle = (i / steps) * 2 * Math.PI
+          const candidate = {
+            x: Math.round(basePos.x + stepRadius * 1.4 * Math.cos(angle)),
+            y: Math.round(basePos.y + stepRadius * 0.7 * Math.sin(angle)),
+          }
+          if (isCollisionFree(candidate)) {
+            return candidate
+          }
+        }
+      }
+
+      return basePos
+    },
+    []
+  )
+
   // Expand Neighbors of a given node
   const handleExpandNeighbors = React.useCallback((nodeId: string) => {
     const current = canvasNodesRef.current.find((n) => n.id === nodeId)
@@ -413,33 +531,34 @@ function OntologyGraphPlaygroundInner({
     const edgesToAdd: Edge[] = []
 
     if (current.nodeType === 'competency') {
-      const comp = competencies.find((c) => c.id === current.id)
+      const comp = competenciesRef.current.find((c) => c.id === current.id)
       if (comp) {
         const memberSkillIds = comp.skillIds || []
-        const missingSkills = microSkills.filter(
+        const missingSkills = microSkillsRef.current.filter(
           (s) => (memberSkillIds.includes(s.id) || memberSkillIds.includes(s.code)) && !existingNodeIds.has(s.id)
         )
 
-        const radius = 170
+        const radius = Math.max(220, Math.round(missingSkills.length * 35))
         missingSkills.forEach((s, idx) => {
           const angle = (idx / Math.max(missingSkills.length, 1)) * 2 * Math.PI
-          const pos = {
+          const rawPos = {
             x: Math.round(centerPos.x + radius * Math.cos(angle)),
             y: Math.round(centerPos.y + radius * Math.sin(angle)),
           }
+          const pos = findClearSlot(rawPos, 'skill')
           nodesToAdd.push(buildSkillNode(s, pos))
           existingNodeIds.add(s.id)
         })
       }
     } else {
       // MicroSkill: find parent competencies & prerequisite skills
-      const parentComps = competencies.filter(
+      const parentComps = competenciesRef.current.filter(
         (c) => (c.skillIds || []).includes(current.id) || (c.skillIds || []).includes(current.code)
       )
       const missingComps = parentComps.filter((c) => !existingNodeIds.has(c.id))
 
       const prereqSkillIds = new Set<string>()
-      prerequisites.forEach((p) => {
+      prerequisitesRef.current.forEach((p) => {
         if (p.sourceSkillId === current.id || p.sourceSkillCode === current.code) {
           if (p.targetSkillId && !existingNodeIds.has(p.targetSkillId)) prereqSkillIds.add(p.targetSkillId)
         }
@@ -447,19 +566,20 @@ function OntologyGraphPlaygroundInner({
           if (p.sourceSkillId && !existingNodeIds.has(p.sourceSkillId)) prereqSkillIds.add(p.sourceSkillId)
         }
       })
-      const missingPrereqSkills = microSkills.filter((s) => prereqSkillIds.has(s.id) && !existingNodeIds.has(s.id))
+      const missingPrereqSkills = microSkillsRef.current.filter((s) => prereqSkillIds.has(s.id) && !existingNodeIds.has(s.id))
 
       const totalMissing = missingComps.length + missingPrereqSkills.length
       let count = 0
-      const radius = 180
+      const radius = Math.max(240, Math.round(totalMissing * 35))
 
       missingComps.forEach((c) => {
         const angle = (count / Math.max(totalMissing, 1)) * 2 * Math.PI
         count++
-        const pos = {
+        const rawPos = {
           x: Math.round(centerPos.x + radius * Math.cos(angle)),
           y: Math.round(centerPos.y + radius * Math.sin(angle)),
         }
+        const pos = findClearSlot(rawPos, 'competency')
         nodesToAdd.push(buildCompetencyNode(c, pos))
         existingNodeIds.add(c.id)
       })
@@ -467,10 +587,11 @@ function OntologyGraphPlaygroundInner({
       missingPrereqSkills.forEach((s) => {
         const angle = (count / Math.max(totalMissing, 1)) * 2 * Math.PI
         count++
-        const pos = {
+        const rawPos = {
           x: Math.round(centerPos.x + radius * Math.cos(angle)),
           y: Math.round(centerPos.y + radius * Math.sin(angle)),
         }
+        const pos = findClearSlot(rawPos, 'skill')
         nodesToAdd.push(buildSkillNode(s, pos))
         existingNodeIds.add(s.id)
       })
@@ -480,10 +601,10 @@ function OntologyGraphPlaygroundInner({
     const allFutureNodeIds = existingNodeIds
     const existingEdgeIds = new Set(canvasEdgesRef.current.map((e) => e.id))
 
-    competencies.forEach((c) => {
+    competenciesRef.current.forEach((c) => {
       if (allFutureNodeIds.has(c.id)) {
         ;(c.skillIds || []).forEach((sId) => {
-          const target = microSkills.find((s) => s.id === sId || s.code === sId)
+          const target = microSkillsRef.current.find((s) => s.id === sId || s.code === sId)
           if (target && allFutureNodeIds.has(target.id)) {
             const edgeId = `has-skill-${c.id}-${target.id}`
             if (!existingEdgeIds.has(edgeId)) {
@@ -495,7 +616,7 @@ function OntologyGraphPlaygroundInner({
       }
     })
 
-    prerequisites.forEach((p) => {
+    prerequisitesRef.current.forEach((p) => {
       if (allFutureNodeIds.has(p.sourceSkillId) && allFutureNodeIds.has(p.targetSkillId)) {
         const edgeId = `prereq-${p.sourceSkillId}-${p.targetSkillId}`
         if (!existingEdgeIds.has(edgeId)) {
@@ -525,9 +646,20 @@ function OntologyGraphPlaygroundInner({
       description: `Added ${nodesToAdd.length} connected node${nodesToAdd.length === 1 ? '' : 's'} around ${current.code}.`,
       variant: 'success',
     })
-  }, [competencies, microSkills, prerequisites, toast])
+  }, [findClearSlot, toast])
 
-  // Initialize vis-network once
+  const applyLODRef = React.useRef(applyLOD)
+  applyLODRef.current = applyLOD
+  const applyNeighborDimmingRef = React.useRef(applyNeighborDimming)
+  applyNeighborDimmingRef.current = applyNeighborDimming
+  const clearNeighborDimmingRef = React.useRef(clearNeighborDimming)
+  clearNeighborDimmingRef.current = clearNeighborDimming
+  const handleExpandNeighborsRef = React.useRef(handleExpandNeighbors)
+  handleExpandNeighborsRef.current = handleExpandNeighbors
+  const resolveNoOverlapRef = React.useRef(resolveNoOverlap)
+  resolveNoOverlapRef.current = resolveNoOverlap
+
+  // Initialize vis-network once on mount
   React.useEffect(() => {
     if (!containerRef.current) return
 
@@ -535,28 +667,14 @@ function OntologyGraphPlaygroundInner({
       layout: { improvedLayout: false },
       nodes: {
         borderWidth: 2,
-        shadow: { enabled: true, color: 'rgba(0,0,0,0.06)', size: 4, x: 0, y: 2 },
+        shadow: { enabled: false },
       },
       edges: {
         width: 1.5,
         smooth: { enabled: true, type: 'continuous', roundness: 0.35 },
       },
       physics: {
-        enabled: true,
-        solver: 'barnesHut',
-        barnesHut: {
-          gravitationalConstant: -3500,
-          centralGravity: 0.15,
-          springLength: 170,
-          springConstant: 0.04,
-          damping: 0.12,
-          avoidOverlap: 0.85,
-        },
-        stabilization: {
-          enabled: true,
-          iterations: 120,
-          updateInterval: 25,
-        },
+        enabled: false,
       },
       interaction: {
         hover: true,
@@ -574,54 +692,93 @@ function OntologyGraphPlaygroundInner({
     )
     networkRef.current = network
 
-    // Freeze physics once stabilized to keep playground responsive and calm
-    network.on('stabilized', () => {
-      network.setOptions({ physics: { enabled: false } })
-      setIsPhysicsFrozen(true)
-    })
-
     // Level-of-Detail (LOD): Semantic Zooming
     network.on('zoom', (params) => {
       const scale = params.scale
       const isCompact = scale < 0.6
       if (isCompact !== isCompactViewRef.current) {
         isCompactViewRef.current = isCompact
-        applyLOD(isCompact)
+        applyLODRef.current(isCompact)
       }
     })
 
-    // Selection listener
+    // Selection & Connection Click Listener
     network.on('click', (params) => {
+      // 1. If Connecting Mode is active, clicking any node on canvas links it as target!
+      if (isConnectModeRef.current && connectSourceNodeRef.current) {
+        if (params.nodes && params.nodes.length > 0) {
+          const targetId = String(params.nodes[0])
+          const targetNode = canvasNodesRef.current.find((n) => n.id === targetId)
+          if (targetNode) {
+            handleNodeClickForConnectRef.current(targetNode)
+            return
+          }
+        }
+        // Clicking empty space cancels connect mode
+        setIsConnectMode(false)
+        setConnectSourceNode(null)
+        isConnectModeRef.current = false
+        connectSourceNodeRef.current = null
+        return
+      }
+
+      // 2. Normal Node Selection
       if (params.nodes && params.nodes.length > 0) {
         const nodeId = String(params.nodes[0])
         const node = canvasNodesRef.current.find((n) => n.id === nodeId)
         if (node) {
           setSelectedNode(node)
           setSelectedEdge(null)
-          applyNeighborDimming(node.id)
+          applyNeighborDimmingRef.current(node.id)
           return
         }
       }
+
+      // 3. Normal Edge Selection
       if (params.edges && params.edges.length > 0) {
         const edgeId = String(params.edges[0])
         const edge = canvasEdgesRef.current.find((e) => e.id === edgeId)
         if (edge) {
           setSelectedEdge(edge)
           setSelectedNode(null)
-          clearNeighborDimming()
+          clearNeighborDimmingRef.current()
           return
         }
       }
+
+      // 4. Click empty canvas -> deselect
       setSelectedNode(null)
       setSelectedEdge(null)
-      clearNeighborDimming()
+      clearNeighborDimmingRef.current()
     })
 
     // Double-click to expand neighbors
     network.on('doubleClick', (params) => {
       if (params.nodes && params.nodes.length > 0) {
         const nodeId = String(params.nodes[0])
-        handleExpandNeighbors(nodeId)
+        handleExpandNeighborsRef.current(nodeId)
+      }
+    })
+
+    // Anti-collision & location persistence: prevent node overlap and keep dragged location permanent
+    network.on('dragEnd', (params) => {
+      if (params.nodes && params.nodes.length > 0) {
+        const allPositions = network.getPositions()
+        params.nodes.forEach((nodeId: string | number) => {
+          const idStr = String(nodeId)
+          const currentPos = allPositions[idStr]
+          if (currentPos) {
+            const resolvedPos = resolveNoOverlapRef.current(idStr, currentPos, allPositions)
+            if (resolvedPos.x !== currentPos.x || resolvedPos.y !== currentPos.y) {
+              network.moveNode(idStr, resolvedPos.x, resolvedPos.y)
+              allPositions[idStr] = resolvedPos
+            }
+            nodesDataSetRef.current.update({ id: idStr, x: resolvedPos.x, y: resolvedPos.y })
+            canvasNodesRef.current = canvasNodesRef.current.map((n) =>
+              n.id === idStr ? { ...n, x: resolvedPos.x, y: resolvedPos.y } : n
+            )
+          }
+        })
       }
     })
 
@@ -629,9 +786,10 @@ function OntologyGraphPlaygroundInner({
       try { network.destroy() } catch {}
       networkRef.current = null
     }
-  }, [applyLOD, applyNeighborDimming, clearNeighborDimming, handleExpandNeighbors])
+  }, [])
 
-  // Resize and fit network when the activeTab becomes 'graph'
+  // Resize network when the activeTab becomes 'graph'
+  const hasFittedGraphRef = React.useRef(false)
   React.useEffect(() => {
     if (activeTab === 'graph') {
       const timer = setTimeout(() => {
@@ -640,7 +798,8 @@ function OntologyGraphPlaygroundInner({
           const h = containerRef.current.clientHeight || 650
           networkRef.current.setSize(`${w}px`, `${h}px`)
           networkRef.current.redraw()
-          if (canvasNodesRef.current.length > 0) {
+          if (!hasFittedGraphRef.current && canvasNodesRef.current.length > 0) {
+            hasFittedGraphRef.current = true
             networkRef.current.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } })
           }
         }
@@ -675,16 +834,32 @@ function OntologyGraphPlaygroundInner({
     const seenNodeIds = new Set<string>()
     const seenEdgeIds = new Set<string>()
 
-    topComps.forEach((c) => {
+    const clusterCenters = [
+      { x: 0, y: 0 },
+      { x: -750, y: -450 },
+      { x: 750, y: -450 },
+      { x: -750, y: 450 },
+      { x: 750, y: 450 },
+    ]
+
+    topComps.forEach((c, cIdx) => {
+      const center = topComps.length === 1 ? { x: 0, y: 0 } : clusterCenters[cIdx % clusterCenters.length]
       if (!seenNodeIds.has(c.id)) {
         seenNodeIds.add(c.id)
-        sampleNodes.push(buildCompetencyNode(c))
+        sampleNodes.push(buildCompetencyNode(c, center))
       }
-      ;(c.skillIds || []).forEach((sId) => {
+      const memberSkillIds = c.skillIds || []
+      const radius = Math.max(220, Math.round(memberSkillIds.length * 35))
+      memberSkillIds.forEach((sId, sIdx) => {
         const s = microSkills.find((ms) => ms.id === sId || ms.code === sId)
         if (s && !seenNodeIds.has(s.id)) {
           seenNodeIds.add(s.id)
-          sampleNodes.push(buildSkillNode(s))
+          const angle = (sIdx / Math.max(memberSkillIds.length, 1)) * 2 * Math.PI
+          const skillPos = {
+            x: Math.round(center.x + radius * Math.cos(angle)),
+            y: Math.round(center.y + radius * Math.sin(angle)),
+          }
+          sampleNodes.push(buildSkillNode(s, skillPos))
         }
         if (s) {
           const edgeId = `has-skill-${c.id}-${s.id}`
@@ -707,9 +882,6 @@ function OntologyGraphPlaygroundInner({
       }
     })
 
-    setIsPhysicsFrozen(false)
-    networkRef.current?.setOptions({ physics: { enabled: true } })
-
     nodesDataSetRef.current.add(sampleNodes)
     edgesDataSetRef.current.add(sampleEdges)
 
@@ -729,7 +901,7 @@ function OntologyGraphPlaygroundInner({
     })
   }
 
-  // Load Full Catalog on Demand (with stabilization freeze)
+  // Load Full Catalog on Demand (with structured layout)
   const handleLoadFullCatalog = () => {
     nodesDataSetRef.current.clear()
     edgesDataSetRef.current.clear()
@@ -739,17 +911,29 @@ function OntologyGraphPlaygroundInner({
     const seenNodeIds = new Set<string>()
     const seenEdgeIds = new Set<string>()
 
-    microSkills.forEach((s) => {
+    const SKILL_COLS = 8
+    microSkills.forEach((s, idx) => {
       if (!seenNodeIds.has(s.id)) {
         seenNodeIds.add(s.id)
-        fullNodes.push(buildSkillNode(s))
+        const col = idx % SKILL_COLS
+        const row = Math.floor(idx / SKILL_COLS)
+        fullNodes.push(buildSkillNode(s, {
+          x: Math.round((col - (SKILL_COLS - 1) / 2) * 230),
+          y: Math.round(-650 - (row * 100)),
+        }))
       }
     })
 
-    competencies.forEach((c) => {
+    const COMP_COLS = 12
+    competencies.forEach((c, idx) => {
       if (!seenNodeIds.has(c.id)) {
         seenNodeIds.add(c.id)
-        fullNodes.push(buildCompetencyNode(c))
+        const col = idx % COMP_COLS
+        const row = Math.floor(idx / COMP_COLS)
+        fullNodes.push(buildCompetencyNode(c, {
+          x: Math.round((col - (COMP_COLS - 1) / 2) * 250),
+          y: Math.round(150 + (row * 110)),
+        }))
       }
       ;(c.skillIds || []).forEach((sId) => {
         const target = microSkills.find((s) => s.id === sId || s.code === sId)
@@ -773,9 +957,6 @@ function OntologyGraphPlaygroundInner({
       }
     })
 
-    setIsPhysicsFrozen(false)
-    networkRef.current?.setOptions({ physics: { enabled: true } })
-
     nodesDataSetRef.current.add(fullNodes)
     edgesDataSetRef.current.add(fullEdges)
 
@@ -790,7 +971,7 @@ function OntologyGraphPlaygroundInner({
 
     toast({
       title: 'Full Catalog Loaded',
-      description: `Loaded all ${fullNodes.length} nodes and ${fullEdges.length} edges. Physics will freeze automatically once calm.`,
+      description: `Loaded all ${fullNodes.length} nodes and ${fullEdges.length} edges in structured catalog layout.`,
       variant: 'default',
     })
   }
@@ -817,9 +998,9 @@ function OntologyGraphPlaygroundInner({
     let pos = specificPos
     if (!pos) {
       const viewPos = networkRef.current?.getViewPosition() || { x: 0, y: 0 }
-      const jitterX = Math.round((Math.random() - 0.5) * 80)
-      const jitterY = Math.round((Math.random() - 0.5) * 80)
-      pos = { x: viewPos.x + jitterX, y: viewPos.y + jitterY }
+      pos = findClearSlot(viewPos, item.type)
+    } else {
+      pos = findClearSlot(pos, item.type)
     }
 
     let newNode: PlaygroundCustomNode
@@ -925,62 +1106,72 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
+  const handleCancelConnect = React.useCallback(() => {
+    setIsConnectMode(false)
+    setConnectSourceNode(null)
+    isConnectModeRef.current = false
+    connectSourceNodeRef.current = null
+  }, [])
+
   // Interactive Connection Mode: Click source, then click target
   const handleStartConnect = (sourceNode: PlaygroundCustomNode) => {
     setIsConnectMode(true)
     setConnectSourceNode(sourceNode)
+    isConnectModeRef.current = true
+    connectSourceNodeRef.current = sourceNode
+    // Restore all nodes to full opacity so every potential target is crisp and clearly visible
+    clearNeighborDimming()
     toast({
       title: 'Connecting Mode Active',
-      description: `Selected ${sourceNode.code}. Now click another node to create a relationship.`,
+      description: `Step 1/2: Selected ${sourceNode.code}. Now click another node on the canvas to link them!`,
       variant: 'default',
     })
   }
 
   const handleNodeClickForConnect = async (targetNode: PlaygroundCustomNode) => {
-    if (!connectSourceNode) return
+    const sourceNode = connectSourceNodeRef.current || connectSourceNode
+    if (!sourceNode) return
 
-    if (connectSourceNode.id === targetNode.id) {
+    if (sourceNode.id === targetNode.id) {
       toast({
         title: 'Self-Loop Disallowed',
         description: 'A node cannot form a prerequisite or membership relationship with itself.',
         variant: 'destructive',
       })
-      setIsConnectMode(false)
-      setConnectSourceNode(null)
+      handleCancelConnect()
       return
     }
 
     // Branch 1: Competency + MicroSkill (HAS_SKILL)
     if (
-      (connectSourceNode.nodeType === 'competency' && targetNode.nodeType === 'skill') ||
-      (connectSourceNode.nodeType === 'skill' && targetNode.nodeType === 'competency')
+      (sourceNode.nodeType === 'competency' && targetNode.nodeType === 'skill') ||
+      (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'competency')
     ) {
-      const compNode = connectSourceNode.nodeType === 'competency' ? connectSourceNode : targetNode
-      const skillNode = connectSourceNode.nodeType === 'skill' ? connectSourceNode : targetNode
+      const compNode = sourceNode.nodeType === 'competency' ? sourceNode : targetNode
+      const skillNode = sourceNode.nodeType === 'skill' ? sourceNode : targetNode
 
+      handleCancelConnect()
       await handleLinkSkillToCompetency(compNode, skillNode)
-      setIsConnectMode(false)
-      setConnectSourceNode(null)
       return
     }
 
     // Branch 2: MicroSkill + MicroSkill (HAS_SKILL_PREREQUISITE)
-    if (connectSourceNode.nodeType === 'skill' && targetNode.nodeType === 'skill') {
-      setPendingPrereq({ source: connectSourceNode, target: targetNode })
+    if (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'skill') {
+      setPendingPrereq({ source: sourceNode, target: targetNode })
       setIsPrereqModalOpen(true)
-      setIsConnectMode(false)
-      setConnectSourceNode(null)
+      handleCancelConnect()
       return
     }
 
     toast({
       title: 'Invalid Relationship',
-      description: 'Competency-to-Competency links are not modeled in the ontology schema.',
+      description: 'Competency-to-Competency links are not modeled in ontology schema. You can link Competency ↔ Micro-skill (HAS_SKILL) or Micro-skill ↔ Micro-skill (PREREQUISITE).',
       variant: 'destructive',
     })
-    setIsConnectMode(false)
-    setConnectSourceNode(null)
+    handleCancelConnect()
   }
+
+  handleNodeClickForConnectRef.current = handleNodeClickForConnect
 
   const handleLinkSkillToCompetency = async (compNode: PlaygroundCustomNode, skillNode: PlaygroundCustomNode) => {
     const active = competencies.find((c) => c.id === compNode.id)
@@ -1056,6 +1247,64 @@ function OntologyGraphPlaygroundInner({
     } finally {
       setIsPrereqModalOpen(false)
       setPendingPrereq(null)
+    }
+  }
+
+  // Switch Edge Direction (Reverse arrow between nodes)
+  const handleSwitchEdgeDirection = async (edge: Edge) => {
+    if (!edge.from || !edge.to || edge.id === undefined) return
+    const edgeId = edge.id
+    const fromStr = String(edge.from)
+    const toStr = String(edge.to)
+
+    try {
+      if (String(edgeId).startsWith('prereq-')) {
+        const existingPrereq = prerequisitesRef.current.find(
+          (p) =>
+            (p.sourceSkillId === fromStr && p.targetSkillId === toStr) ||
+            (p.sourceSkillCode === fromStr && p.targetSkillCode === toStr)
+        )
+        const currentMastery = existingPrereq?.minMastery ?? 0.75
+
+        // Delete old prerequisite (from -> to)
+        await deletePrerequisite(organizationId, fromStr, toStr)
+
+        // Create reversed prerequisite (to -> from)
+        await createPrerequisite(organizationId, {
+          sourceSkillId: toStr,
+          targetSkillId: fromStr,
+          minMastery: currentMastery,
+        })
+
+        // Update edge in DataSet without shifting any nodes
+        edgesDataSetRef.current.remove(edgeId)
+        const reversedEdge = buildPrereqEdge(toStr, fromStr, currentMastery)
+        edgesDataSetRef.current.add(reversedEdge)
+
+        setCanvasEdges((prev) => [...prev.filter((e) => e.id !== edgeId), reversedEdge])
+        setSelectedEdge(reversedEdge)
+
+        if (onRefreshData) await onRefreshData()
+
+        toast({
+          title: 'Direction Switched',
+          description: `Reversed prerequisite flow: now requires ${toStr} before ${fromStr}.`,
+          variant: 'success',
+        })
+      } else {
+        toast({
+          title: 'Cannot Reverse Containment',
+          description: 'Competency-to-skill membership is directional in ontology schema.',
+          variant: 'default',
+        })
+      }
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: 'Switch Failed',
+        description: 'Unable to reverse relationship direction.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -1198,10 +1447,7 @@ function OntologyGraphPlaygroundInner({
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 text-primary hover:bg-primary/20"
-                onClick={() => {
-                  setIsConnectMode(false)
-                  setConnectSourceNode(null)
-                }}
+                onClick={handleCancelConnect}
               >
                 <X className="h-3.5 w-3.5" />
               </Button>
@@ -1246,28 +1492,6 @@ function OntologyGraphPlaygroundInner({
             </Button>
           )}
 
-          {/* Physics Freeze / Dynamic Toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const next = !isPhysicsFrozen
-              setIsPhysicsFrozen(next)
-              networkRef.current?.setOptions({ physics: { enabled: !next } })
-              toast({
-                title: next ? 'Physics Layout Frozen' : 'Dynamic Physics Enabled',
-                description: next
-                  ? 'Nodes are pinned in place for precise repositioning.'
-                  : 'Barnes-Hut simulation is actively repelling overlapping nodes.',
-                variant: 'default',
-              })
-            }}
-            className={cn("gap-1.5 text-xs font-semibold", !isPhysicsFrozen && "border-primary text-primary bg-primary/5")}
-            title={isPhysicsFrozen ? "Unfreeze Physics (Auto-spread nodes)" : "Freeze Physics (Pin layout)"}
-          >
-            {isPhysicsFrozen ? <Lock className="h-3.5 w-3.5 text-muted-foreground" /> : <Unlock className="h-3.5 w-3.5 text-primary" />}
-            <span className="hidden lg:inline">{isPhysicsFrozen ? 'Frozen' : 'Dynamic'}</span>
-          </Button>
 
           <Button
             variant="outline"
@@ -1473,6 +1697,25 @@ function OntologyGraphPlaygroundInner({
             }}
           />
 
+          {/* Floating Connecting Mode Instructional Banner */}
+          {isConnectMode && connectSourceNode && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-2 border border-white/20 select-none">
+              <div className="flex items-center gap-2">
+                <LinkIcon className="h-4 w-4 animate-spin text-white" />
+                <span>
+                  Connecting from <strong>{connectSourceNode.code}</strong>. Click target node to link!
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancelConnect}
+                className="ml-1 bg-white/20 hover:bg-white/30 text-white rounded-full px-2.5 py-0.5 text-[11px] font-bold cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
           {/* Canvas Drag Hint Overlay (Interactive Starting Points) */}
           <div
             className={cn(
@@ -1607,7 +1850,19 @@ function OntologyGraphPlaygroundInner({
                 </Button>
               </div>
 
-              <div className="pt-2 border-t border-border flex items-center justify-end">
+              <div className="pt-2 border-t border-border flex items-center justify-end gap-2">
+                {String(selectedEdge.id).startsWith('prereq-') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSwitchEdgeDirection(selectedEdge)}
+                    className="gap-1.5 text-xs font-semibold h-7 px-2.5"
+                    title="Switch arrow direction (Reverse prerequisite dependency)"
+                  >
+                    <ArrowLeftRight className="h-3 w-3" />
+                    <span>Switch Direction</span>
+                  </Button>
+                )}
                 <Button
                   variant="destructive"
                   size="sm"
@@ -1629,7 +1884,7 @@ function OntologyGraphPlaygroundInner({
           <div className="p-6 space-y-4 max-w-md w-full bg-card rounded-xl border border-border shadow-xl">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">
-                Set Prerequisite Mastery Score
+                Set Prerequisite Target Mastery
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 Establish the minimum proficiency required on <strong>{pendingPrereq.source.code}</strong> before
@@ -1639,7 +1894,7 @@ function OntologyGraphPlaygroundInner({
 
             <div className="space-y-3 py-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-foreground">Required Score:</span>
+                <span className="font-semibold text-foreground">Minimum Target Mastery:</span>
                 <span className="font-mono font-bold text-primary text-sm">{prereqThreshold}%</span>
               </div>
               <input

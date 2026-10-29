@@ -4,6 +4,7 @@ import java.util.List;
 
 public record CompetencyRecord(
         String id,
+        String code,
         String name,
         String description,
         String attainmentRule,

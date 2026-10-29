@@ -35,11 +35,10 @@ To solve the dense 556-node (474 competencies + 82 micro-skills, 1,891 edges) "h
 - **Zoomed Out (`scale < 0.6x`)**: Node labels collapse into compact single-line code pills (e.g. `MS-CORE01`, `C-APP-J`) with font size 9, completely eliminating text overlap.
 - **Zoomed In (`scale >= 0.6x`)**: Nodes expand to display their bold code, full title, and definition.
 
-### E. Physics Stabilization & Freeze
-- Barnes-Hut repulsive physics simulation runs for 120 iterations on layout.
-- Upon stabilization (`network.on('stabilized')`), physics **automatically freezes** (`physics: { enabled: false }`).
-- Nodes stay pinned where placed; dragging any node is silky smooth at 60 FPS without disturbing or jiggling the rest of the graph.
-- A **Frozen / Dynamic** toggle in the top bar allows users to re-run or pause physics at will.
+### E. Static Non-Spinning Physics & Deterministic Anti-Collision
+- **Zero Motion Physics**: Continuous dynamic physics simulation is completely disabled (`physics: { enabled: false }`), ensuring the canvas never spins, wobbles, or oscillates.
+- **Anti-Collision Clearance (`resolveNoOverlap` & `findClearSlot`)**: Nodes are guarded by elliptical clearance boundaries ($W_{safe} = 180\text{px} - 230\text{px}$, $H_{safe} = 65\text{px} - 85\text{px}$). If a dragged node is dropped near or over another node, relaxation passes immediately nudge it to the nearest non-overlapping slot.
+- **Permanent Node Location Persistence**: On `dragEnd`, the exact canvas positions are committed to `DataSet<PlaygroundCustomNode>` and React state. The `vis-network` instance is maintained continuously without destruction across prop synchronizations, ensuring that **deleting a relationship NEVER resets the location of current nodes or the canvas viewport**.
 
 ### F. High-Performance `vis-data` DataSets
 - Node and edge states are managed through `DataSet<PlaygroundCustomNode>` and `DataSet<Edge>`, allowing direct, zero-lag updates without re-mounting or re-rendering React DOM trees.
@@ -88,4 +87,7 @@ Running 3 tests using 1 worker
 | **5. Semantic LOD Zooming** | Zoom out below 0.6x using mouse scroll or zoom buttons. | Node labels switch from full multi-line cards to compact short code badges (`MS-CORE01`, `C-APP-J`) to eliminate text overlap. |
 | **6. Palette Placement** | 1. Search `MS-CORE01` in the palette.<br>2. Click the item card or drag it onto canvas. | Item is placed at the specified canvas coordinates with real-time relationship wiring. |
 | **7. Clear Canvas** | Click the **Clear Canvas** button (trash icon). | Canvas resets to 0 nodes; empty state prompt reappears cleanly. |
-| **8. Load Full Catalog** | Click **Load Full Catalog (556 Nodes)**. | Loads the entire ontology catalog with Barnes-Hut repulsion and auto-freezes once stabilized. |
+| **8. Load Full Catalog** | Click **Load Full Catalog (556 Nodes)**. | Loads the entire ontology catalog in structured non-overlapping matrix grid tiers. |
+| **9. Anti-Collision Drag** | Drag any node and drop it directly over another node. | Node smoothly snaps to the nearest non-overlapping clearance position without collision. |
+| **10. Delete Relationship (Zero Location Reset)** | Select an edge $\rightarrow$ click **Delete Relationship**. | Edge is removed; all nodes on canvas remain at their exact dragged coordinates without resetting or jumping. |
+| **11. Switch Edge Direction** | Click a prerequisite relationship edge on canvas $\rightarrow$ click **[ Switch Direction ]** in the floating inspector. | Arrow direction reverses (`A -> B` becomes `B -> A`), persists to backend via prerequisite API, and preserves all node positions. |

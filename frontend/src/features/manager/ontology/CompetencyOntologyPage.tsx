@@ -673,7 +673,7 @@ export function CompetencyOntologyPage() {
     // 2. Threshold validation
     if (minMasteryPercent < 1 || minMasteryPercent > 100) {
       toast({
-        title: 'Invalid Mastery Threshold',
+        title: 'Invalid Target Mastery',
         description: 'Minimum required mastery must be between 1% and 100%.',
         variant: 'destructive',
       })
@@ -896,6 +896,7 @@ export function CompetencyOntologyPage() {
     try {
       if (selectedCompetency) {
         const updated = await updateCompetency(orgId, selectedCompetency.id, {
+          code: competencyForm.code.trim().toUpperCase() || selectedCompetency.code,
           name: competencyForm.name.trim(),
           description: competencyForm.description.trim(),
           status: competencyForm.status,
@@ -903,6 +904,7 @@ export function CompetencyOntologyPage() {
         })
         const updatedComp: CompetencyModel = {
           ...selectedCompetency,
+          code: updated.code || competencyForm.code.trim().toUpperCase() || selectedCompetency.code,
           name: updated.name,
           description: updated.description || '',
           status: (updated.status as CompetencyModel['status']) || 'ACTIVE',
@@ -2400,7 +2402,7 @@ export function CompetencyOntologyPage() {
                     </div>
                     <Progress value={masteryPct} max={100} variant="primary" className="h-2" />
                     <span className="text-[10.5px] text-muted-foreground block">
-                      Learners must score at or above this proficiency threshold.
+                      Learners must score at or above this target mastery level.
                     </span>
                   </div>
 
@@ -2615,12 +2617,12 @@ export function CompetencyOntologyPage() {
                   </span>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
-                  attainmentRule: ALL_MEMBER_SKILLS_AT_OWNING_LEVEL
+                  Rule: All Member Skills Required
                 </Badge>
               </div>
 
               <div className="text-[11px] text-muted-foreground leading-relaxed">
-                In the ontology schema, competencies have no independent score threshold. A competency is achieved automatically when all member skills pass at the owning Level requirement.
+                Competencies represent composite capabilities. A learner attains this competency when all associated micro-skills meet their target mastery at the designated seniority level.
               </div>
 
               {/* Add Member Skill Row */}

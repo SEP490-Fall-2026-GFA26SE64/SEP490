@@ -7,7 +7,7 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     await page.waitForLoadState('networkidle');
 
     // Verify page loads with roles
-    await expect(page.locator('h1')).toContainText('Assigned Target Roles');
+    await expect(page.getByText('Active Expert:')).toBeVisible();
 
     // Verify StatCards: Rejected Roles card is present with destructive styling
     await expect(page.getByText('Rejected Roles')).toBeVisible();
@@ -91,6 +91,9 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     await expect(page.locator('span:has-text("Competency")').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('span:has-text("Required Skill")').first()).toBeVisible();
 
+    // Verify role code does NOT display company or version suffix (no #comp- or #v)
+    await expect(page.getByText(/#comp-/i)).toHaveCount(0);
+
     // Close graph modal
     const closeGraphBtn = page.locator('button[aria-label="Close Modal"]').or(page.getByRole('button', { name: 'Close', exact: true }));
     await closeGraphBtn.first().click();
@@ -101,7 +104,7 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     await page.goto('/manager/target-roles');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('h1')).toContainText('Target Roles Catalog');
+    await expect(page.getByPlaceholder('Search roles...')).toBeVisible();
 
     // Verify "Review Submitted" button is NOT present in any action column
     await expect(page.locator('button:has-text("Review Submitted")')).toHaveCount(0);
@@ -119,5 +122,101 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     // Close details dialog
     await page.getByRole('button', { name: 'Close', exact: true }).last().click();
   });
-});
 
+  test('Domain Expert and L&D Manager can view Version Changes (Diff) and verify human-centric Target Mastery semantics', async ({ page }) => {
+    // 1. Manager Target Roles Catalog -> Details Modal -> Version Diff Toggle
+    await page.goto('/manager/target-roles');
+    await page.waitForLoadState('networkidle');
+
+    const detailsBtn = page.locator('button[title="View Details"]').first();
+    await expect(detailsBtn).toBeVisible({ timeout: 10000 });
+    await detailsBtn.click();
+
+    // Verify view mode toggle buttons exist
+    const specsToggle = page.getByRole('button', { name: 'Architecture Specifications' });
+    const diffToggle = page.getByRole('button', { name: /Version Changes \(Diff\)/i });
+    await expect(specsToggle).toBeVisible({ timeout: 5000 });
+    await expect(diffToggle).toBeVisible();
+
+    // Verify 'Target Mastery' replaces 'Threshold' in specs view
+    await expect(page.locator('th:has-text("Target Mastery")').first()).toBeVisible();
+
+    // Click 'Version Changes (Diff)'
+    await diffToggle.click();
+
+    // Verify Diff view rendered (either baseline message or diff metrics/table)
+    const isBaseline = await page.getByText(/Initial Baseline Version/i).isVisible().catch(() => false);
+    const hasDiffBanner = await page.getByText(/Previous: v/i).isVisible().catch(() => false);
+    expect(isBaseline || hasDiffBanner).toBeTruthy();
+
+    if (hasDiffBanner) {
+      // Verify Level filter button exists
+      await expect(page.locator('button:has-text("All Levels")').first()).toBeVisible();
+
+      // Verify clickable change metric badges exist and clicking filters view
+      const addedSkillsBadge = page.locator('button:has-text("Skills Added")').first();
+      if (await addedSkillsBadge.isVisible().catch(() => false)) {
+        await addedSkillsBadge.click();
+        await expect(page.getByText(/Viewing filtered changes/i)).toBeVisible();
+        // Toggle back
+        await addedSkillsBadge.click();
+      }
+    }
+
+    // Close manager details dialog
+    await page.getByRole('button', { name: 'Close', exact: true }).last().click();
+
+    // 2. Expert Assigned Roles Catalog -> Details Modal -> Version Diff Toggle
+    await page.goto('/expert/target-roles');
+    await page.waitForLoadState('networkidle');
+
+    const expertDetailsBtn = page.locator('button[title="View Details"]').first();
+    await expect(expertDetailsBtn).toBeVisible({ timeout: 10000 });
+    await expertDetailsBtn.click();
+
+    const expertSpecsToggle = page.getByRole('button', { name: 'Architecture Specifications' });
+    const expertDiffToggle = page.getByRole('button', { name: /Version Changes \(Diff\)/i });
+    await expect(expertSpecsToggle).toBeVisible({ timeout: 5000 });
+    await expect(expertDiffToggle).toBeVisible();
+
+    // Click 'Version Changes (Diff)' in expert view
+    await expertDiffToggle.click();
+    const expertIsBaseline = await page.getByText(/Initial Baseline Version/i).isVisible().catch(() => false);
+    const expertHasDiffBanner = await page.getByText(/Previous: v/i).isVisible().catch(() => false);
+    expect(expertIsBaseline || expertHasDiffBanner).toBeTruthy();
+
+    // Close expert details dialog
+    await page.getByRole('button', { name: 'Close', exact: true }).last().click();
+
+    // 3. Open Configure Skills dialog in Expert view and verify max-w-5xl & Target Mastery (%) label
+    const editBtn = page.locator('button[title*="Micro-skills"]').first();
+    if (await editBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await editBtn.click();
+      const configModal = page.locator('div[role="dialog"].max-w-5xl');
+      await expect(configModal).toBeVisible({ timeout: 5000 });
+
+      // Verify human-centric label Target Mastery (%)
+      await expect(page.getByText('Target Mastery (%)')).toBeVisible();
+
+      // Verify 'Active Editing: All Levels' text is removed
+      await expect(page.getByText(/Active Editing: All Levels/i)).toHaveCount(0);
+
+      // Verify Edit Target Mastery button in Configured Micro-skills table
+      const editMasteryBtn = page.locator('button[title="Edit Target Mastery"]').first();
+      if (await editMasteryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await editMasteryBtn.click();
+        const masteryInput = page.locator('input[type="number"]').last();
+        await expect(masteryInput).toBeVisible();
+        await masteryInput.fill('85');
+        const saveMasteryBtn = page.locator('button[title="Save target mastery"]').first();
+        await saveMasteryBtn.click();
+        await expect(page.getByText('Target Mastery Updated')).toBeVisible({ timeout: 5000 });
+        await expect(page.getByText('85%').first()).toBeVisible();
+      }
+
+      // Close modal
+      await page.getByRole('button', { name: 'Close', exact: true }).click();
+    }
+  });
+
+});

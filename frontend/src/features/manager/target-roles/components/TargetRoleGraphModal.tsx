@@ -131,6 +131,12 @@ class GraphModalErrorBoundary extends React.Component<
   }
 }
 
+export const extractCleanRoleCode = (raw?: string | null): string => {
+  if (!raw) return ''
+  const trimmed = String(raw).trim()
+  return trimmed.split('#')[0].trim() || trimmed
+}
+
 export function TargetRoleGraphModal({
   open,
   onOpenChange,
@@ -250,9 +256,10 @@ export function TargetRoleGraphModal({
         requiredSkills = backendData.requiredSkills
       }
 
+      const resolvedRoleCode = extractCleanRoleCode(backendData?.roleCode || currentRole?.code || roleId)
       setGraphData({
         roleId: backendData?.roleId || currentRole?.id || roleId,
-        roleCode: backendData?.roleCode || currentRole?.code || roleId,
+        roleCode: resolvedRoleCode,
         roleName: backendData?.roleName || currentRole?.title || roleTitle || 'Target Role',
         track: backendData?.track || currentRole?.track || 'PROFESSIONAL',
         seniority: backendData?.seniority || currentRole?.seniority || 'P3',
@@ -305,10 +312,10 @@ export function TargetRoleGraphModal({
     const reqSkills = Array.isArray(graphData.requiredSkills) ? graphData.requiredSkills : []
     const prereqs = Array.isArray(graphData.prerequisites) ? graphData.prerequisites : []
 
-    // 1. Role root node
+    // 1. Role root node - only show the role code (no organization or version)
     addNodeSafely({
       id: `role-${graphData.roleId}`,
-      label: `<b>${graphData.roleCode}</b>\n${graphData.roleName}`,
+      label: `<b>${extractCleanRoleCode(graphData.roleCode)}</b>`,
       shape: 'box',
       shapeProperties: { borderRadius: 8 },
       margin: { top: 12, right: 16, bottom: 12, left: 16 },
@@ -367,7 +374,7 @@ export function TargetRoleGraphModal({
 
       addNodeSafely({
         id: lvlId,
-        label: `<b>Rank ${rankIdx}</b>\n${lvlName}`,
+        label: `<b>${lvlName}</b>`,
         shape: 'box',
         shapeProperties: { borderRadius: 10 },
         margin: { top: 8, right: 14, bottom: 8, left: 14 },
@@ -541,7 +548,7 @@ export function TargetRoleGraphModal({
 
       addNodeSafely({
         id: skill.skillId,
-        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\nTarget: ${Math.round(skill.targetMastery * 100)}%`,
+        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\nTarget Mastery: ${Math.round(skill.targetMastery * 100)}%`,
         shape: 'box',
         shapeProperties: { borderRadius: 14 },
         margin: { top: 8, right: 14, bottom: 8, left: 14 },
@@ -613,7 +620,7 @@ export function TargetRoleGraphModal({
           id: `requires-skill-${targetLevelNodeId}-${skill.skillId}`,
           from: targetLevelNodeId,
           to: skill.skillId,
-          title: `Level Requirement: REQUIRES_SKILL (Threshold: ${Math.round(skill.targetMastery * 100)}%)`,
+          title: `Level Requirement: REQUIRES_SKILL (Target Mastery: ${Math.round(skill.targetMastery * 100)}%)`,
           label: 'REQUIRES_SKILL',
           font: { size: 7, color: '#64748B', align: 'horizontal' },
           color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
@@ -834,7 +841,7 @@ export function TargetRoleGraphModal({
                 </h3>
                 {graphData?.roleCode && (
                   <Badge variant="outline" className="font-mono text-[9px] px-1 py-0 text-primary border-primary/30">
-                    {graphData.roleCode}
+                    {extractCleanRoleCode(graphData.roleCode)}
                   </Badge>
                 )}
               </div>
@@ -1063,7 +1070,7 @@ export function TargetRoleGraphModal({
                   <>
                     <div>
                       <span className="font-mono text-primary font-bold text-sm block">
-                        {selectedNode.code}
+                        {extractCleanRoleCode(selectedNode.code)}
                       </span>
                       <span className="font-semibold text-foreground text-sm block mt-0.5">
                         {selectedNode.title}
@@ -1106,8 +1113,8 @@ export function TargetRoleGraphModal({
                     </div>
                     <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-muted/30 border border-border">
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Level Rank</span>
-                        <strong className="text-foreground">Rank {selectedNode.rank || 1}</strong>
+                        <span className="text-[10px] text-muted-foreground block">Proficiency Level</span>
+                        <strong className="text-foreground">{selectedNode.title}</strong>
                       </div>
                       <div>
                         <span className="text-[10px] text-muted-foreground block">Status</span>

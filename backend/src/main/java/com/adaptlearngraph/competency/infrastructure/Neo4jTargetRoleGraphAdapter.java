@@ -40,7 +40,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
                 OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
-                WITH s, req, collect(coalesce(c.id, c.code)) AS compCodes
+                WITH s, req, collect(coalesce(c.code, c.id)) AS compCodes
                 RETURN s, req, CASE WHEN size(compCodes) > 0 THEN head(compCodes) ELSE 'KNOWLEDGE' END AS macroCode
                 ORDER BY coalesce(s.code, s.id) ASC
                 """;
@@ -63,7 +63,8 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
             }
             Node roleNode = roleResult.next().get("r").asNode();
             String id = roleNode.get("id").asString();
-            String code = roleNode.get("code").asString();
+            String rawCode = roleNode.get("code").asString();
+            String code = rawCode != null && rawCode.contains("#") ? rawCode.split("#")[0].trim() : rawCode;
             String name = roleNode.get("name").asString();
             String track = roleNode.containsKey("track") && !roleNode.get("track").isNull()
                     ? roleNode.get("track").asString()

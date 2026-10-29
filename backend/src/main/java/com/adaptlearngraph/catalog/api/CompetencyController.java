@@ -45,6 +45,7 @@ public class CompetencyController {
             @PathVariable("organizationId") String organizationId,
             @RequestBody CreateCompetencyRequest request) {
         CompetencyRecord created = manageCompetencyUseCase.createCompetency(
+                request.code(),
                 request.name(),
                 request.description(),
                 request.skillIds(),
@@ -60,6 +61,7 @@ public class CompetencyController {
             @RequestBody UpdateCompetencyRequest request) {
         CompetencyRecord updated = manageCompetencyUseCase.updateCompetency(
                 id,
+                request.code(),
                 request.name(),
                 request.description(),
                 request.skillIds()

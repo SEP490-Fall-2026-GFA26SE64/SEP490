@@ -105,7 +105,7 @@ const INITIAL_OCCUPATIONS: OccupationRecord[] = [
     code: '15-1243.00',
     name: 'Database Architects',
     jobZone: 4,
-    description: 'Design enterprise data models, Neo4j transactional knowledge graphs, graph neural networks, and semantic ontologies.',
+    description: 'Design enterprise data models, transactional knowledge graphs, graph neural networks, and semantic ontologies.',
     status: 'active',
     assignedExperts: [
       {
@@ -540,7 +540,7 @@ export function OccupationsManagementPage() {
         )
         toast({
           title: 'Occupation Updated',
-          description: `Successfully modified ${occName} in Neo4j.`,
+          description: `Successfully modified ${occName}.`,
           variant: 'success',
         })
       } catch (err: unknown) {
@@ -583,13 +583,13 @@ export function OccupationsManagementPage() {
         setAndSaveOccupations((prev) => [newOcc, ...prev])
         toast({
           title: 'Occupation Created',
-          description: `Added ${newOcc.name} (${newOcc.code}) to Neo4j catalog.`,
+          description: `Added ${newOcc.name} (${newOcc.code}) to the occupation catalog.`,
           variant: 'success',
         })
       } catch (err: unknown) {
         toast({
           title: 'Creation Failed',
-          description: err instanceof Error ? err.message : 'Failed to save occupation to Neo4j.',
+          description: err instanceof Error ? err.message : 'Failed to save occupation.',
           variant: 'destructive',
         })
         return
@@ -614,13 +614,13 @@ export function OccupationsManagementPage() {
       )
       toast({
         title: nextStatus === 'active' ? 'Occupation Activated' : 'Occupation Deactivated',
-        description: `${occ.name} is now ${nextStatus.toUpperCase()} in Neo4j.`,
+        description: `${occ.name} status updated to ${nextStatus}.`,
         variant: 'info',
       })
     } catch (err: unknown) {
       toast({
         title: 'Status Update Failed',
-        description: err instanceof Error ? err.message : 'Failed to update occupation status in Neo4j.',
+        description: err instanceof Error ? err.message : 'Failed to update occupation status.',
         variant: 'destructive',
       })
     }
