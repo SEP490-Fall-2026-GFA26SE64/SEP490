@@ -1418,6 +1418,13 @@ export function ExpertAssignedRolesPage() {
     )
   }, [authoringRoleMissingPrereqs, selectedAuthoringLevels])
 
+  // Automatically clear missing prerequisites filter if the selected levels have no missing prerequisites
+  React.useEffect(() => {
+    if (missingPrereqCodesForSelectedLevels.size === 0 && filterOnlyPrereqUnlocks) {
+      setFilterOnlyPrereqUnlocks(false)
+    }
+  }, [missingPrereqCodesForSelectedLevels.size, filterOnlyPrereqUnlocks])
+
   // Count how many available competencies unlock at least one missing prerequisite
   const missingPrereqCompetenciesCount = React.useMemo(() => {
     if (missingPrereqCodesForSelectedLevels.size === 0) return 0
@@ -1733,6 +1740,8 @@ export function ExpertAssignedRolesPage() {
     setConfiguredSkillSearch('')
 
     setConfiguredCompetencySearch('')
+
+    setFilterOnlyPrereqUnlocks(false)
 
     setIsAuthoringModalOpen(true)
 
@@ -3543,13 +3552,13 @@ export function ExpertAssignedRolesPage() {
                           searchPlaceholder="Search by competency code or title..."
                           emptyMessage={
                             filterOnlyPrereqUnlocks
-                              ? 'No available competencies unlock the missing prerequisites.'
+                              ? 'No available competencies unlock the missing prerequisites. Click the filter button to show all.'
                               : `All competencies are already assigned to ${selectedLevelNamesLabel}`
                           }
                         />
                       </div>
 
-                      {missingPrereqCodesForSelectedLevels.size > 0 && (
+                      {(missingPrereqCodesForSelectedLevels.size > 0 || filterOnlyPrereqUnlocks) && (
                         <Button
                           type="button"
                           variant={filterOnlyPrereqUnlocks ? 'secondary' : 'outline'}
@@ -3583,6 +3592,21 @@ export function ExpertAssignedRolesPage() {
                         Add Competency
                       </Button>
                     </div>
+
+                    {filterOnlyPrereqUnlocks && (
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 px-0.5">
+                        <span>
+                          Filtering {missingPrereqCompetenciesCount} {missingPrereqCompetenciesCount === 1 ? 'competency' : 'competencies'} that unlock missing prerequisites
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFilterOnlyPrereqUnlocks(false)}
+                          className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                        >
+                          <X className="h-3 w-3" /> Clear Filter
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                 )}
