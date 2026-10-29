@@ -22,6 +22,7 @@
 
   --card: 0 0% 100%;                /* #FFFFFF - Pure clean elevated surface */
   --card-foreground: 222 47% 11%;
+  --overlay: 222 47% 11%;            /* Existing deep slate for modal backdrops. */
 
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;

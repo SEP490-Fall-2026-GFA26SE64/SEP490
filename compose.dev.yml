@@ -11,7 +11,8 @@ x-backend-environment: &backend-environment
   NEO4J_USER: neo4j
   NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
   TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS: ${TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS:-false}
-  # Main startup never restores retired graph/bank/model seeds or fixed authoring.
+  # This shared dev deployment uses an independent main-lineage DB; old demo volumes are retained.
+  SPRING_FLYWAY_LOCATIONS: classpath:db/workspace-migration
   CATALOG_SEED_ENABLED: "false"
   ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED: "false"
   BASELINE_ANSWER_REVIEW_ENABLED: "false"
@@ -27,7 +28,7 @@ services:
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_workspace_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U adapt_learn_graph -d adapt_learn_graph"]
       interval: 10s
@@ -36,13 +37,19 @@ services:
 
   neo4j:
     image: neo4j:5.26-community
+    entrypoint: ["tini", "-g", "--", "/bin/bash", "/catalog-bootstrap/start-catalog.sh"]
+    stop_grace_period: 120s
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-local-only-neo4j}
+      # Bootstrap imports writable once, then gracefully restarts sealed read-only.
     ports:
       - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
       - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
     volumes:
-      - neo4j_data:/data
+      # The pre-cutover neo4j_data volume remains intact; never down -v to upgrade.
+      - neo4j_workspace_v011_data:/data
+      - workspace_catalog_v011_bootstrap:/catalog-state
+      - ./docker/dev/start-catalog.sh:/catalog-bootstrap/start-catalog.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
       interval: 10s
@@ -66,19 +73,74 @@ services:
     restart: "no"
 
   seed:
-    profiles: ["tools"]
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    entrypoint: ["/bin/sh", "-ec", "java -jar /app/app.jar; touch /catalog-state/imported-v011"]
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,local-demo-seed,workspace-development
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+    volumes:
+      - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
+      - workspace_catalog_v011_bootstrap:/catalog-state
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  workspace-keys:
+    image: alpine:3.22
+    entrypoint: ["/bin/sh", "/initialize-workspace-keys.sh"]
+    volumes:
+      - workspace_security:/config
+      - ./docker/dev/initialize-workspace-keys.sh:/initialize-workspace-keys.sh:ro
+    restart: "no"
+
+  workspace-seed:
     image: adapt-learn-graph-backend:dev
     build: *backend-build
     environment:
       <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,local-demo-seed
+      SPRING_PROFILES_ACTIVE: local,workspace-development,workspace-seed
       SPRING_MAIN_WEB_APPLICATION_TYPE: none
-      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
-    volumes:
-      - ./documents/dataset/import/ontology_seed.json:/seed/ontology_seed.json:ro
-      - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:-Workspace-Development-490!}
     depends_on:
-      migrate:
+      seed:
+        condition: service_completed_successfully
+    restart: "no"
+
+  se-seed:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,workspace-development,software-development-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:-Workspace-Development-490!}
+    volumes:
+      - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
+    depends_on:
+      workspace-seed:
+        condition: service_completed_successfully
+      catalog-ready:
+        condition: service_completed_successfully
+    restart: "no"
+
+  catalog-ready:
+    image: neo4j:5.26-community
+    entrypoint: ["/bin/bash", "/catalog-bootstrap/wait-catalog.sh"]
+    environment:
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-local-only-neo4j}
+    volumes:
+      - workspace_catalog_v011_bootstrap:/catalog-state:ro
+      - ./docker/dev/wait-catalog.sh:/catalog-bootstrap/wait-catalog.sh:ro
+    depends_on:
+      seed:
         condition: service_completed_successfully
     restart: "no"
 
@@ -87,9 +149,15 @@ services:
     build: *backend-build
     environment:
       <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,workspace-baseline
-      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:-}
-      REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:-}
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline,workspace-development
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "false"
+      PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: "false"
+      SPRING_CONFIG_IMPORT: optional:file:/workspace-config/security.properties
+      SUBSCRIPTION_WORKER_ENABLED: "false"
+      REGISTRATION_MAIL_WORKER_ENABLED: "false"
+      # This fixture has no SMTP dependency; database/graph health checks remain active.
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
       REGISTRATION_COOKIE_SECURE: ${REGISTRATION_COOKIE_SECURE:-false}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -102,9 +170,41 @@ services:
       PAYOS_API_KEY: ${PAYOS_API_KEY:-}
       PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
       SUBSCRIPTION_PUBLIC_URL: ${SUBSCRIPTION_PUBLIC_URL:-http://127.0.0.1:8088}
-      SUBSCRIPTION_WORKER_ENABLED: ${SUBSCRIPTION_WORKER_ENABLED:-true}
+      PATHWAY_INITIAL_ENABLED: ${PATHWAY_INITIAL_ENABLED:-true}
+      PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: ${PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED:-true}
+      PATHWAY_INITIAL_CATALOG_MAX_REQUIREMENT_ROWS: "1891"
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED:-true}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS:-}
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS: ${PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS:-5000}
+      PATHWAY_INITIAL_LOCAL_PLANNING_ENABLED: ${PATHWAY_INITIAL_LOCAL_PLANNING_ENABLED:-true}
+      PATHWAY_INITIAL_READINESS_VERSION: ${PATHWAY_INITIAL_READINESS_VERSION:-local-baseline-prerequisite-v1}
+      PATHWAY_INITIAL_SEARCH_VERSION: ${PATHWAY_INITIAL_SEARCH_VERSION:-compose-v011-bounded-v1}
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES:-128}
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES: ${PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES:-256}
+      PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS: ${PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS:-2048}
+      PATHWAY_INITIAL_SEARCH_BATCH_SIZE: ${PATHWAY_INITIAL_SEARCH_BATCH_SIZE:-32}
+      PATHWAY_INITIAL_SEARCH_MAX_STATES: ${PATHWAY_INITIAL_SEARCH_MAX_STATES:-250000}
+      PATHWAY_INITIAL_WORKER_ENABLED: ${PATHWAY_INITIAL_WORKER_ENABLED:-true}
+      PATHWAY_INITIAL_WORKER_VERSION: ${PATHWAY_INITIAL_WORKER_VERSION:-compose-worker-v1}
+      PATHWAY_INITIAL_WORKER_LEASE_MS: ${PATHWAY_INITIAL_WORKER_LEASE_MS:-300000}
+      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: ${PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS:-3}
+      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS:-2000}
+      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS:-30000}
+      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: ${PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS:-2000}
+    volumes:
+      - ./documents/dataset/import/ontology_seed-v011.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-v010.json:/seed/baseline-history-v010.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
+      - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
+      - workspace_security:/workspace-config:ro
     depends_on:
-      migrate:
+      se-seed:
+        condition: service_completed_successfully
+      workspace-keys:
+        condition: service_completed_successfully
+      workspace-seed:
+        condition: service_completed_successfully
+      catalog-ready:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${API_PORT:-18080}:8080"
@@ -133,6 +233,7 @@ services:
       target: dev
     environment:
       API_PROXY_TARGET: http://api:8080
+      DEV_WATCH_POLLING: "true"
       VITE_LOCAL_BASELINE_DEMO_ENABLED: "false"
       # Visibility gates only; these grant no backend identity, publication or model readiness.
       VITE_ADAPTIVE_BASELINE_ENABLED: ${VITE_ADAPTIVE_BASELINE_ENABLED:-true}
@@ -149,3 +250,10 @@ services:
 volumes:
   postgres_data:
   neo4j_data:
+  neo4j_catalog_v010_data:
+  neo4j_catalog_v011_data:
+  catalog_v011_bootstrap:
+  postgres_workspace_data:
+  neo4j_workspace_v011_data:
+  workspace_catalog_v011_bootstrap:
+  workspace_security:

@@ -1,4 +1,24 @@
-# Manual Browser Verification: REQ-019 / REQ-020 & REQ-011 Expert Portal
+# Manual browser reference: REQ-019 / REQ-020 review pathway
+
+## Current procedure and evidence boundary — 2026-10-29
+
+Current scope is REQ-019-F01/REQ-020-F01/F02 and direct REQ-042-F01/REQ-004-F01 review/read dependencies. [C4 evidence](REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29) records the actual C3 real-system2/2 pass, unit/component/API and real integration results separately. No new manual/executable run occurred in C4. The prototype Regenerate flow, identities, counts and REQ-011 search steps retained below are **historical**, not the current oracle, credentials or instructions for shared8088.
+
+For a later separately authorized manual review, use a disposable scoped workspace with trusted same-tenant L&D/Employee/assigned Expert sessions and actual CSRF, real baseline configuration/responses and current Role+member Level. Never reuse or reset preserved development learner histories. The final C3 environment was isolated38088/final4; services are stopped and history volumes retained, so this document does not instruct restarting them.
+
+| Step / acceptance | Action and expected observation | Existing C3 evidence / remaining limit |
+| --- | --- | --- |
+| R01/R02 | Assigned Expert opens bounded queue/detail; inspect safe learner/Role/Level/gaps, Included/Excluded/Catalog, totals and dependencies | API/component and real system; foreign/revocation variants in real integration, not a two-browser-tenant claim |
+| R03/R05–R08/R14 | Exclude provider, Remove to neutral Catalog, Check unresolved, Include eligible repair; history retained and unresolved cannot approve | Real system repair path plus broader unit/integration variants |
+| R03/R14 | Move adjacent independent module by keyboard; reload retains ordinal; prerequisite inversion denies without writes | Keyboard system pass; inversion/no-write integration pass. Native cross-list browser drag **Not run**; intent/payload matrix component-only |
+| R09 | Every Check fresh; equal hash avoids redundant detail; preview Roadmap/Timeline has exact saved order, focus/Escape/footer; closing preview sends0 approvals | Component request counts and actual system observations |
+| R09/R11/E03 | Only final confirm approves captured revision/hash; uncertain post200 response retries same key/body without duplicate edit; same Employee reloads exact approved order/dependencies | Actual final system revision5/hash/order14; no content/start execution required |
+| R12/R14/E07 | Real selection transition archives unresolved revision; equal-hash repair suggestions disabled in EN/VI/narrow; no UI edit; direct stale edit409; history unchanged | Actual final system revision2/6 disabled suggestions/0 UI edits; original failed guard assertion retained and passes after separately approved C2 fix |
+| E04–E06 and protected E08/E09 | Content/start/segment/readiness owner execution requires separate approval/integration | **Deferred/Not run**, never infer PASS or completion from displayed approval/unavailable entry |
+
+Commands, dates, actors/tenant/fixtures, expected/actual, counts and artifacts are in the linked C4 receipt; this manual procedure is not itself a Passed result. Production assignment/publication/semantic/readiness/content remain Open/provisional. No management CRUD or full-baseline scope is introduced.
+
+## Historical prototype procedure — retained without current acceptance claim
 
 ## Scope
 1. **Dedicated Pathway Audit Page** (`/expert/pathway-review/:pathwayId`): Full-page review experience instead of modal dialog.

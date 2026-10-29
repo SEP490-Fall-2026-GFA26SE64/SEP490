@@ -4,9 +4,11 @@
 
 Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.8.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
-![Sơ đồ ontology](diagrams/neo4j.svg)
+![Sơ đồ ontology0.9.0](diagrams/neo4j.svg)
 
-[File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
+[PlantUML](diagrams/neo4j.puml) · [Nguồn dataset](dataset/ONTOLOGY.md) · [Import guide](dataset/NEO4J_IMPORT_GUIDE.md)
+
+Catalog uses stable string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection, profiles, assessment evidence and pathway state; Neo4j owns catalog only. Existing attempts retain their original catalog/model pins. The source v0.9 release does not prove an existing database has been upgraded.
 
 ## 1. Cấu trúc tổng quát
 
@@ -83,7 +85,6 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 | `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
 | `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
 | `scope` | String | Phạm vi công việc của role: làm gì, phụ trách phần nào. Đây là mô tả do nhóm tổng hợp theo nguồn và cần chuyên gia xác nhận. |
-
 
 `occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
 

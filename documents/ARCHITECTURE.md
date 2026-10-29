@@ -1,5 +1,9 @@
 # Current Project Architecture
 
+## Shared workspace adaptive integration
+
+Real workspace identity/CSRF now composes the retained initial-pathway source. The [integration contract](technical/Workspace%20Adaptive%20Integration.md) records actor/tenant boundaries, portable development seed gates, separate migration lineage/volumes and view-only limits. Detailed Function rules are retained in [technical contracts](technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md); domain REQ/FR anchors remain reserved. Current Role-first entry resolves the full-Occupation baseline before gap/confirmation; SRS discussion of another ordering does not silently change this accepted flow. Source/build checks are distinct from [new runtime verification still Not run](testing/system/REQ-002-041-042-workspace-integration.md).
+
 ## Workspace Baseline Integration (2026-10-28)
 
 The combined main/local development runtime uses `local,workspace-baseline`. It retains real workspace login, single membership roles, entitlement checks and existing onboarding/billing. L&D baseline configuration and Employee role/attempt/result APIs reuse the incoming adaptive engine through trusted workspace adapters; demo personas are not enabled by default.

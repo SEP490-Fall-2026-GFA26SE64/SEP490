@@ -1,4 +1,27 @@
 /* Interactive Role Roadmap using strict design system tokens */
+.approved-roadmap.roadmap-container { min-height: 0; overflow: visible; padding: 2rem 1.5rem; container-type: inline-size; }
+.approved-roadmap .roadmap-canvas { min-width: 0; gap: 0; }
+.approved-roadmap-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem) minmax(0, 1fr); align-items: center; gap: 2rem; width: 100%; max-width: 74rem; }
+.approved-roadmap-skills { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.approved-roadmap .roadmap-skill-box { position: relative; max-width: none; font-size: var(--text-caption); font-weight: 500; padding: 0.625rem; }
+.approved-roadmap .roadmap-skill-box::after { content: ''; position: absolute; top: 50%; width: 2rem; border-top: 1px solid hsl(var(--border)); pointer-events: none; }
+.approved-roadmap-skills.is-left .roadmap-skill-box::after { left: 100%; }
+.approved-roadmap-skills.is-right .roadmap-skill-box::after { right: 100%; }
+.approved-roadmap .roadmap-module-box { min-width: 0; max-width: none; font-size: var(--text-body-sm); }
+.approved-roadmap .roadmap-skill-box.is-unknown { color: hsl(var(--muted-foreground)); background: hsl(var(--muted)); border-color: hsl(var(--border)); }
+@container (max-width: 60rem) {
+  .approved-roadmap-row { gap: 1rem; grid-template-columns: minmax(0, 1fr) minmax(13rem, 18rem) minmax(0, 1fr); }
+  .approved-roadmap .roadmap-skill-box::after { width: 1rem; }
+  .approved-roadmap .roadmap-skill-box > span { flex-wrap: wrap; }
+}
+@container (max-width: 43rem) {
+  .approved-roadmap-row { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .approved-roadmap .roadmap-module-box { grid-row: 1; }
+  .approved-roadmap-skills { width: 100%; }
+  .approved-roadmap .roadmap-skill-box::after { display: none; }
+  .approved-roadmap .roadmap-target-role-node { padding: 1rem; }
+}
+
 .roadmap-container {
   position: relative;
   width: 100%;

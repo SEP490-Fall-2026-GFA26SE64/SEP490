@@ -20,7 +20,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
 public class LocalDemoConfiguration {
-    @Bean LocalDemoIdentity localDemoIdentity() { return new LocalDemoIdentity(); }
+    @Bean LocalDemoIdentity localDemoIdentity(org.springframework.core.env.Environment environment) {
+        var expert=environment.getProperty("pathway.local-auth-bypass.expert-account-id",UUID.class);
+        boolean enabled=environment.getProperty("pathway.local-auth-bypass.enabled",Boolean.class,false);
+        return new LocalDemoIdentity(enabled && expert!=null ? Map.of("expert",expert) : Map.of());
+    }
     @Bean LocalDemoProvisioning localDemoProvisioning(DataSource source, ObjectMapper json) { return new LocalDemoProvisioning(source,json); }
     @Bean @Primary AdaptiveBlueprintActorPort demoBlueprintActor(LocalDemoIdentity identity) {
         return new AdaptiveBlueprintActorPort() {

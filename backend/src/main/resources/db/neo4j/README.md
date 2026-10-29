@@ -1,4 +1,12 @@
-# Neo4j ontology 0.9.0 — many-to-many teaching
+# Neo4j ontology 0.10.0 — many-to-many teaching
+
+Current local cutover (2026-10-27): Compose/bootstrap now pin `documents/dataset/import/ontology_seed-v010.json` (SHA256 `fb4b308402e5413a246de65621f97df464d3538ad36264f40e827be005728b25`),833 nodes/4638 relationships and181 text InstructionLevel teaching mappings. The workstation runtime was0.8.0 before this update. The old volume is retained;0.10 uses `neo4j_catalog_v010_data`. Never use `down -v` or overwrite a different nonempty graph to upgrade.
+
+`LocalCatalogBootstrap` imports only the exact source into an empty graph or verifies an already-identical graph. The baseline question bank retains its original v0.9 manifest/scope/hash and historical attempts/results remain pinned; local compatibility checks compare assessment semantics instead of relabeling old data. Source review metadata is unchanged. User-authorized `pathway.initial.catalog.allow-review-seed=true` is a local/demo-only exception, not Expert approval or production publication. Strict readers remain the default.
+
+For an empty local setup: set `CATALOG_READ_ONLY=false`, start postgres/neo4j, run migrate and seed, then set `CATALOG_READ_ONLY=true` and recreate neo4j before enabling pathway API. After this one-time bootstrap, ordinary `docker compose up -d` verifies the exact sealed catalog. Keep API/worker stopped during any unseal/cutover. API uses the same0.10 file read-only; the local release adapter verifies full graph parity and actual read-only access. Authentication/Expert mapping remains server-owned; assignment/readiness/suitability/content are separate contracts. [Current scope](../../../../../../documents/features/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#13-authorized-latest-local-catalogdatabase-integration--2026-10-27).
+
+The entries below are historical evidence and must not be read as the current source/runtime version.
 
 User-authorized local cutover on 2026-10-22 replaced the backed-up Backend P3/Platform P4 fixture with the official documents/dataset/import/ontology_seed.json:827 nodes/4536 relationships. Six official node-ID uniqueness constraints are created by that package's importer. No SchemaMigration/JobDomain/MacroCompetency/Course seed is active.
 

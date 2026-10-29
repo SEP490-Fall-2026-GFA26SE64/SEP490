@@ -45,7 +45,7 @@ public final class CurrentRoleCatalog implements Catalog {
                 for(var row:rows) {
                     var o=row.get("o");var r=row.get("r");var l=row.get("l");String occ=o.get("id").asString(),id=r.get("id").asString();
                     var snapshot=validated.get(occ); if(snapshot==null || !snapshot.roles().containsKey(id)) continue;
-                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(),v.get("name").asString(),v.get("requiredScore").asDouble(),v.get("mandatory").asBoolean()));
+                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredScore").asDouble(),v.get("mandatory").asBoolean()));
                     var level=new Level(l.get("id").asString(),l.get("code").asString(),l.get("name").asString(),l.get("rank").asInt(),
                             l.get("context").asString(""),l.get("attainmentRule").asString(""),skills);
                     var existing=result.get(id); var levels=new ArrayList<Level>(existing==null?List.of():existing.levels());levels.add(level);

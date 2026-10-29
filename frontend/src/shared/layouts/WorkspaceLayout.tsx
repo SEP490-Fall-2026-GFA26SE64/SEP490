@@ -716,7 +716,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
 
                         {/* 2. Expert */}
                         <Link
-                          to="/expert/assigned-roles"
+                          to="/expert/pathway-review"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isExpert
@@ -725,7 +725,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
                           }`}
                         >
                           <span className="flex items-center gap-1.5">
-                            <Sparkles size={13} className="text-success" />
+                            <Sparkles size={13} className="text-primary" />
                             <span>{t('roles.expert')}</span>
                           </span>
                           {isExpert && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
@@ -733,7 +733,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
 
                         {/* 3. L&D Manager */}
                         <Link
-                          to="/ld-manager/learning-outcomes"
+                          to="/ld-manager/baseline-assessments"
                           onClick={() => setIsUserMenuOpen(false)}
                           className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
                             isLdManager

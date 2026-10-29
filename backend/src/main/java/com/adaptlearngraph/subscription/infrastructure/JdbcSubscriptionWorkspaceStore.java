@@ -21,10 +21,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 public final class JdbcSubscriptionWorkspaceStore implements SubscriptionWorkspaceStore {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
+    private final boolean developmentFixtures;
 
     public JdbcSubscriptionWorkspaceStore(JdbcTemplate jdbc, TransactionTemplate transactions) {
+        this(jdbc,transactions,false);
+    }
+    public JdbcSubscriptionWorkspaceStore(JdbcTemplate jdbc, TransactionTemplate transactions,boolean developmentFixtures) {
         this.jdbc = jdbc;
         this.transactions = transactions;
+        this.developmentFixtures=developmentFixtures;
     }
 
     @Override
@@ -44,7 +49,12 @@ public final class JdbcSubscriptionWorkspaceStore implements SubscriptionWorkspa
                 time(now), time(now), organizationId);
         if (states.isEmpty()) throw forbidden();
         var state = states.getFirst();
-        if (!SubscriptionAccessPolicy.permits(actual, action, organizationId, state.ready(), state.suspended(), state.paid())) throw forbidden();
+        // Explicit development grant, never a fabricated paid order/period or a billing privilege.
+        boolean developmentGrant=developmentFixtures && action==Action.WORKSPACE
+                && com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.ORGANIZATION.equals(organizationId)
+                && Set.of("employee","employee-se","expert","ld").stream().map(com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace::id)
+                    .anyMatch(actual.accountId()::equals);
+        if (!SubscriptionAccessPolicy.permits(actual, action, organizationId, state.ready(), state.suspended(), state.paid() || developmentGrant)) throw forbidden();
     }
 
     private Actor currentActor(Actor actor) {

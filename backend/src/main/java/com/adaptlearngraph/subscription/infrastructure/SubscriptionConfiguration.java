@@ -58,8 +58,9 @@ public class SubscriptionConfiguration {
         return new JdbcPaymentProcessingStore(jdbc,new TransactionTemplate(manager),orders);
     }
     @Bean
-    SubscriptionWorkspaceStore subscriptionWorkspaces(JdbcTemplate jdbc,PlatformTransactionManager manager) {
-        return new JdbcSubscriptionWorkspaceStore(jdbc,new TransactionTemplate(manager));
+    SubscriptionWorkspaceStore subscriptionWorkspaces(JdbcTemplate jdbc,PlatformTransactionManager manager,org.springframework.core.env.Environment environment) {
+        return new JdbcSubscriptionWorkspaceStore(jdbc,new TransactionTemplate(manager),
+                com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(environment));
     }
     @Bean(destroyMethod="close")
     @ConditionalOnMissingBean(PaymentGateway.class)

@@ -26,9 +26,9 @@ public final class CurrentRoleFlowController {
         try{command=json.readerFor(Choose.class).with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(body);}
         catch(Exception e){throw new Failure(400,"INVALID_REQUEST");}
         if(command==null)throw new Failure(400,"INVALID_REQUEST");
-        return ok(flow.choose(command.roleId(),command.expectedCurrentSelectionId(),key));
+        return ok(flow.choose(command.roleId(),command.levelId(),command.expectedCurrentSelectionId(),key));
     }
-    record Choose(String roleId,UUID expectedCurrentSelectionId){}
+    record Choose(String roleId,String levelId,UUID expectedCurrentSelectionId){}
     @GetMapping("/target-role-selection/mastery") ResponseEntity<List<MasteryProfile>> mastery(){return ok(flow.mastery());}
     @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure e){return ResponseEntity.status(e.status).cacheControl(CacheControl.noStore()).body(Map.of("code",e.code));}
     @ExceptionHandler(com.adaptlearngraph.assessment.adaptive.attempt.application.port.in.AdaptiveAttemptUseCase.Failure.class)

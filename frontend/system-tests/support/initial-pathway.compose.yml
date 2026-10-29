@@ -1,0 +1,56 @@
+# C3-only overlay; start exclusively through initial-pathway-stack.ps1 after resource validation.
+services:
+  postgres:
+    ports: !override ["127.0.0.1:35432:5432"]
+  neo4j:
+    ports: !override ["127.0.0.1:38474:7474", "127.0.0.1:38687:7687"]
+    volumes:
+      - c3_neo4j_logs:/logs
+  migrate:
+    image: ${C3_BACKEND_IMAGE:?dedicated test image required}
+  seed:
+    image: ${C3_BACKEND_IMAGE:?dedicated test image required}
+  workspace-seed:
+    image: ${C3_BACKEND_IMAGE:?dedicated test image required}
+  se-seed:
+    image: ${C3_BACKEND_IMAGE:?dedicated test image required}
+  platform-seed:
+    image: ${C3_BACKEND_IMAGE:?dedicated test image required}
+  catalog-ready:
+    volumes:
+      - c3_catalog_ready_data:/data
+      - c3_catalog_ready_logs:/logs
+  api:
+    image: ${C3_BACKEND_IMAGE:?dedicated test image required}
+    ports: !override ["127.0.0.1:38080:8080"]
+    environment:
+      SUBSCRIPTION_PUBLIC_URL: http://127.0.0.1:38088
+      SMTP_HOST: ""
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      PAYOS_CLIENT_ID: ""
+      PAYOS_API_KEY: ""
+      PAYOS_CHECKSUM_KEY: ""
+  web:
+    image: ${C3_FRONTEND_IMAGE:?dedicated test image required}
+    ports: !override ["127.0.0.1:38088:5173"]
+    volumes: !override
+      - ./frontend:/workspace:ro
+      - c3_frontend_node_modules:/workspace/node_modules
+volumes:
+  c3_catalog_ready_data:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_catalog_ready_data
+  c3_catalog_ready_logs:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_catalog_ready_logs
+  c3_neo4j_logs:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_neo4j_logs
+  c3_frontend_node_modules:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_node_modules
+  postgres_workspace_data:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_postgres
+  neo4j_workspace_v011_data:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_neo4j
+  workspace_catalog_v011_bootstrap:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_catalog_bootstrap
+  workspace_security:
+    name: ${C3_COMPOSE_PROJECT:?dedicated project required}_security

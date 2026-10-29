@@ -27,7 +27,7 @@ Java 21.0.6, Docker 28.1.1, PostgreSQL 17.6-alpine in disposable Testcontainers.
 
 - [RegistrationPostgresIntegrationTest.java](../../../backend/src/test/java/com/adaptlearngraph/identity/infrastructure/RegistrationPostgresIntegrationTest.java): **17 passed** in the final focused rerun.
 - [RegistrationApiIntegrationTest.java](../../../backend/src/test/java/com/adaptlearngraph/identity/api/RegistrationApiIntegrationTest.java): **4 passed** in the final API/profile regression rerun.
-- [V8 migration](../../../backend/src/main/resources/db/migration/V8__organization_registration.sql): applied successfully to disposable containers and isolated Compose.
+- [V8 migration](../../../backend/src/main/resources/db/workspace-migration/V8__organization_registration.sql): applied successfully to disposable containers and isolated Compose.
 
 From `backend`:
 

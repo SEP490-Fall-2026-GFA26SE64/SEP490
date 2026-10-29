@@ -35,6 +35,7 @@
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
+  --color-overlay: hsl(var(--overlay));
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);

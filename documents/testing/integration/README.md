@@ -1,5 +1,6 @@
 # Integration Testing Directory & Standards
 
+2026-10-29 selected review/read C4: [29 real-adapter cases and fixtures](../system/REQ-002-041-042-workspace-integration.md#real-integration-mapping) passed within final B160 (not an additional29). Disposable PostgreSQL17.6-alpine/Neo4j5.26-community cover full review aggregate, V34→V35/checksum/legacy preservation, CAS/replay/fault recovery, drift/fencing and read/no-write behavior. Versioned owner policies are test fixtures; production owner integration remains Open. [Commands/counts/history](../system/REQ-002-041-042-workspace-integration.md#evidence-identities-and-count-accounting); no C4 test or stack rerun.
 2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
 
 **Latest, 2026-10-24 REQ-001/002/009:** [Integration execution/blocker](REQ-001-002-009-20261024-execution.md): three selected real-adapter suites **Blocked**,0 business passes; raw2 setup errors/6 existing assumption skips because Docker Linux engine was unavailable. [Current gate audit](../system/REQ-001-002-009-cluster4-20261024-evidence.md): Cluster 3/4 incomplete. [23 October integration/131P aggregate](../system/REQ-001-002-cluster4-evidence.md) is historical; no current integration pass is carried forward.
@@ -24,6 +25,7 @@ Integration testing validates real database round-trips, graph relationships, or
 
 | Requirement ID | Feature Name | Storage Engine | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
+| **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Review persistence/concurrency/compatibility and read | PostgreSQL17.6 / Neo4j5.26 Testcontainers | [Actual methods, actors and fixtures](../system/REQ-002-041-042-workspace-integration.md#real-integration-mapping) | **29 Passed for mapped scope; production owners Open** |
 | **REQ-060-F01-F03** | Registration, MFA, sessions and email jobs | PostgreSQL Testcontainers / real HTTP | [REQ-060-registration.md](REQ-060-registration.md) | **PASSED locally; live gate separate** |
 | **REQ-001-F01** | View Target Roles | Neo4j Testcontainers | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
 | **REQ-001-F02** | Choose Target Role | PostgreSQL Testcontainers | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |

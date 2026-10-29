@@ -32,34 +32,54 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.core.env.Environment;
+import static com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.*;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("workspace-baseline & local & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class WorkspaceBaselineConfiguration {
+    @Bean SmartInitializingSingleton verifyWorkspaceDevelopmentCatalog(Driver driver,Environment environment) {
+        return () -> {
+            if(!enabled(environment)) return;
+            try {
+                var seed=java.nio.file.Files.readAllBytes(java.nio.file.Path.of(environment.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
+                com.adaptlearngraph.assessment.infrastructure.LocalCatalogBootstrap.forExistingDevelopment(driver,seed);
+            } catch(java.io.IOException invalid) { throw new IllegalStateException("Exact sealed development catalog required",invalid); }
+        };
+    }
+    private static boolean developmentBank(Environment environment,UUID organization,String occupation,UUID bank) {
+        return catalog(enabled(environment),organization,occupation)
+                && (OCCUPATION.equals(occupation) && com.adaptlearngraph.assessment.adaptive.demo.LocalDemoIdentity.BANK.equals(bank)
+                    || com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION.equals(occupation)
+                    && com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.id("bank").equals(bank));
+    }
     @Bean WorkspaceBaselineResources workspaceBaselineResources(DataSource source) {
         return new WorkspaceBaselineResources(new NamedParameterJdbcTemplate(source));
     }
     @Bean AdaptiveBlueprintStore workspaceBlueprintStore(DataSource source, ObjectMapper json, PlatformTransactionManager transactions) {
-        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(source), json, transactions);
+        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(source), json, transactions, true);
     }
-    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source) {
-        return new JdbcAdaptiveTechnicalVersionStore(new NamedParameterJdbcTemplate(source));
+    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,Environment environment,ObjectMapper json) {
+        var delegate=new JdbcAdaptiveTechnicalVersionStore(new NamedParameterJdbcTemplate(source));
+        return enabled(environment)?new DevelopmentTechnicalVersions(new SoftwareDevelopmentTechnicalVersions(source,json,delegate)):delegate;
     }
-    @Bean AdaptiveBaselineCatalogPort workspaceBaselineCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources) {
+    @Bean AdaptiveBaselineCatalogPort workspaceBaselineCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment) {
         return scope -> {
             var occupations = resources.occupations(scope.organizationId());
             if (!occupations.contains(scope.occupationId())) return Optional.empty();
-            return new Neo4jAdaptiveBaselineCatalogAdapter(driver, json, scope.organizationId(), occupations).findAvailable(scope);
+            return new Neo4jAdaptiveBaselineCatalogAdapter(driver, json, scope.organizationId(), occupations,
+                    catalog(enabled(environment),scope.organizationId(),scope.occupationId())).findAvailable(scope);
         };
     }
     @Bean AdaptiveBlueprintEligibilityPort workspaceBlueprintEligibility(DataSource source, ObjectMapper json,
-            WorkspaceBaselineResources resources, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical) {
+            WorkspaceBaselineResources resources, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical,Environment environment) {
         var jdbc = new NamedParameterJdbcTemplate(source);
         return new AdaptiveBlueprintEligibilityPort() {
             private Optional<JdbcAdaptiveBlueprintEligibilityAdapter> adapter(AdaptiveBlueprint.Scope scope) {
                 return resources.find(scope.organizationId(), scope.occupationId()).filter(WorkspaceBaselineResources.Binding::ready)
-                        .map(binding -> new JdbcAdaptiveBlueprintEligibilityAdapter(jdbc, catalog, technical, json, binding.settings()));
+                        .map(binding -> new JdbcAdaptiveBlueprintEligibilityAdapter(jdbc, catalog, technical, json, binding.settings(),
+                                developmentBank(environment,scope.organizationId(),scope.occupationId(),binding.bankId())));
             }
             public Optional<Snapshot> resolve(AdaptiveBlueprint.Scope scope) {
                 return adapter(scope).flatMap(value -> value.resolve(scope));
@@ -96,11 +116,12 @@ public class WorkspaceBaselineConfiguration {
         return () -> resources.list(identity.currentActor().orElseThrow().organizationId()).stream()
                 .map(binding -> new WorkspaceBaselineCatalogUseCase.Occupation(binding.occupationId(), binding.name())).toList();
     }
-    @Bean AdaptiveBlueprintPreviewPort workspaceBlueprintPreview(DataSource source, ObjectMapper json, WorkspaceBaselineResources resources) {
+    @Bean AdaptiveBlueprintPreviewPort workspaceBlueprintPreview(DataSource source, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment) {
         return (scope, items) -> {
             var binding = resources.find(scope.organizationId(), scope.occupationId()).filter(WorkspaceBaselineResources.Binding::ready)
                     .orElseThrow(() -> new AdaptiveBlueprintEligibilityPort.DependencyUnavailable("Baseline resources are not configured", null));
-            return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(source), json, binding.bankId()).read(scope, items);
+            return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(source), json, binding.bankId(),
+                    developmentBank(environment,scope.organizationId(),scope.occupationId(),binding.bankId())).read(scope, items);
         };
     }
     @Bean AdaptiveBlueprintUseCase workspaceBlueprintUseCase(AdaptiveBlueprintActorPort actor, AdaptiveBlueprintStore store,
@@ -114,22 +135,29 @@ public class WorkspaceBaselineConfiguration {
     @Bean AdaptiveAttemptPolicyPort workspaceAttemptPolicy(AdaptiveTechnicalVersionPort technical) {
         return new PinnedAdaptiveAttemptPolicyAdapter(technical);
     }
-    @Bean AdaptiveAttemptContentPort workspaceAttemptContent(DataSource source, WorkspaceBaselineResources resources) {
-        return (scope, item) -> new JdbcAdaptiveAttemptContent(new NamedParameterJdbcTemplate(source),
-                resources.itemBank(scope.organizationId(), item)).read(scope, item);
+    @Bean AdaptiveAttemptContentPort workspaceAttemptContent(DataSource source, WorkspaceBaselineResources resources,Environment environment) {
+        return (scope, item) -> {
+            var bank=resources.itemBank(scope.organizationId(),item);
+            return new JdbcAdaptiveAttemptContent(new NamedParameterJdbcTemplate(source),bank,
+                    developmentBank(environment,scope.organizationId(),scope.occupationId(),bank)).read(scope,item);
+        };
     }
-    @Bean AdaptiveAttemptScoringPort workspaceAttemptScoring(DataSource source, WorkspaceBaselineResources resources) {
-        return (scope, item, option, presented) -> new JdbcAdaptiveAttemptScoring(new NamedParameterJdbcTemplate(source),
-                resources.itemBank(scope.organizationId(), item)).correct(scope, item, option, presented);
+    @Bean AdaptiveAttemptScoringPort workspaceAttemptScoring(DataSource source, WorkspaceBaselineResources resources,Environment environment) {
+        return (scope, item, option, presented) -> {
+            var bank=resources.itemBank(scope.organizationId(),item);
+            return new JdbcAdaptiveAttemptScoring(new NamedParameterJdbcTemplate(source),bank,
+                    developmentBank(environment,scope.organizationId(),scope.occupationId(),bank)).correct(scope,item,option,presented);
+        };
     }
     @Bean CurrentRoleSelectionStore workspaceRoleSelections(DataSource source, ObjectMapper json, PlatformTransactionManager transactions) {
         return new CurrentRoleSelectionStore(new NamedParameterJdbcTemplate(source), json, new TransactionTemplate(transactions));
     }
-    @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources) {
+    @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment) {
         return organization -> {
             var occupations = resources.occupations(organization);
             if (occupations.isEmpty()) return List.of();
-            return new CurrentRoleCatalog(driver, json, organization, occupations, false).roles(organization);
+            boolean development=enabled(environment) && ORGANIZATION.equals(organization) && Set.of(OCCUPATION,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION).containsAll(occupations);
+            return new CurrentRoleCatalog(driver, json, organization, occupations, development).roles(organization);
         };
     }
     @Bean CurrentOccupationProfile workspaceOccupationProfiles(DataSource source, ObjectMapper json,

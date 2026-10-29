@@ -32,7 +32,7 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
       if (!identity.data?.organizationId) throw new Error('An authenticated organization is required.')
       return getSummary(identity.data.organizationId)
     }, enabled: authenticated && permitted && users, staleTime: 0, refetchInterval: 5000 })
-  if (authenticated && permitted && (billing || platform || (!users && access.isSuccess) ||
+  if (identity.isSuccess && authenticated && permitted && (billing || platform || (!users && access.isSuccess) ||
     (users && memberAccess.isSuccess && memberAccess.data.workspaceStatus !== 'SUSPENDED')) && identity.data) {
     return <WorkspaceSessionContext.Provider value={{
       identity: { fullName: identity.data.fullName, email: identity.data.email, organizationId: identity.data.organizationId,
@@ -41,12 +41,6 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
     }}><WorkspaceQueryScope key={`${identity.data.accountId}:${identity.data.organizationId}:${roles.join(',')}`}>{children}</WorkspaceQueryScope></WorkspaceSessionContext.Provider>
   }
 
-  function WorkspaceQueryScope({ children }: { children: ReactNode }) {
-    const parent = useQueryClient()
-    const [client] = useState(() => new QueryClient({ defaultOptions: parent.getDefaultOptions() }))
-    useEffect(() => () => client.clear(), [client])
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  }
   return <SubscriptionShell title={c('Workspace access', 'Truy cập không gian')}>
     {identity.isPending || (authenticated && permitted && (users ? memberAccess.isPending : access.isPending)) ? <Loading /> :
       identity.isError || access.isError || memberAccess.isError ? <Failure error={identity.error ?? access.error ?? memberAccess.error} /> :
@@ -54,4 +48,12 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
     <Link className="text-primary underline" to="/login">{c('Sign in', 'Đăng nhập')}</Link>
     {roles.includes('ORGANIZATION_ADMINISTRATOR') && <Link className="ml-4 text-primary underline" to="/admin/subscription">{c('Subscription and recovery', 'Gói đăng ký và khôi phục')}</Link>}
   </SubscriptionShell>
+}
+
+// Stable component identity preserves forms/retry commands across entitlement polling.
+function WorkspaceQueryScope({ children }: { children: ReactNode }) {
+  const parent = useQueryClient()
+  const [client] = useState(() => new QueryClient({ defaultOptions: parent.getDefaultOptions() }))
+  useEffect(() => () => { void client.cancelQueries(); client.clear() }, [client])
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
