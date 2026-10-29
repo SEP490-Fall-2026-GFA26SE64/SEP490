@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,6 +94,19 @@ public class OrganizationTargetRoleController {
             } catch (Exception ignored) {}
         }
 
+        String levelCompetenciesJson = null;
+        if (request.levelCompetencies() != null && !request.levelCompetencies().isEmpty()) {
+            try {
+                levelCompetenciesJson = OBJECT_MAPPER.writeValueAsString(request.levelCompetencies());
+            } catch (Exception ignored) {}
+        }
+
+        List<String> competencyIds = request.competencyIds() != null ? new ArrayList<>(request.competencyIds()) : new ArrayList<>();
+        if (competencyIds.isEmpty() && request.levelCompetencies() != null) {
+            request.levelCompetencies().values().forEach(competencyIds::addAll);
+            competencyIds = competencyIds.stream().distinct().toList();
+        }
+
         CreateTargetRoleCommand command = new CreateTargetRoleCommand(
                 organizationId,
                 effectiveCode,
@@ -107,7 +121,9 @@ public class OrganizationTargetRoleController {
                 request.version() != null && !request.version().isBlank() ? request.version().trim() : "1.0",
                 status,
                 skillTargetsJson,
-                request.levels());
+                request.levels(),
+                levelCompetenciesJson != null ? levelCompetenciesJson : "{}",
+                competencyIds);
 
         TargetRole created = createTargetRoleUseCase.createTargetRole(command);
         TargetRoleResponse response = TargetRoleResponse.fromDomain(created);
@@ -246,6 +262,20 @@ public class OrganizationTargetRoleController {
             return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Seniority " + seniority + " does not match track " + track));
         }
 
+        String levelCompetenciesJson = null;
+        if (request.levelCompetencies() != null) {
+            try {
+                levelCompetenciesJson = OBJECT_MAPPER.writeValueAsString(request.levelCompetencies());
+            } catch (Exception ignored) {}
+        }
+
+        List<String> competencyIds = request.competencyIds() != null ? new ArrayList<>(request.competencyIds()) : null;
+        if ((competencyIds == null || competencyIds.isEmpty()) && request.levelCompetencies() != null) {
+            List<String> derived = new ArrayList<>();
+            request.levelCompetencies().values().forEach(derived::addAll);
+            competencyIds = derived.stream().distinct().toList();
+        }
+
         UpdateTargetRoleCommand command = new UpdateTargetRoleCommand(
                 organizationId,
                 targetRoleId,
@@ -261,7 +291,9 @@ public class OrganizationTargetRoleController {
                 request.version(),
                 skillTargetsJson,
                 request.rejectionReason(),
-                request.levels());
+                request.levels(),
+                levelCompetenciesJson,
+                competencyIds);
 
         return manageTargetRoleUseCase.updateTargetRole(command)
                 .map(updated -> ResponseEntity.ok(TargetRoleResponse.fromDomain(updated)))

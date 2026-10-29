@@ -95,6 +95,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.version = $version,
                     r.skillTargets = $skillTargets,
                     r.levels = $levels,
+                    r.levelCompetencies = $levelCompetencies,
+                    r.competencyIds = $competencyIds,
                     r.createdAt = datetime($createdAt),
                     r.updatedAt = datetime($updatedAt),
                     r.rejectionReason = $rejectionReason
@@ -113,6 +115,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.version = $version,
                     r.skillTargets = $skillTargets,
                     r.levels = $levels,
+                    r.levelCompetencies = $levelCompetencies,
+                    r.competencyIds = $competencyIds,
                     r.updatedAt = datetime($updatedAt),
                     r.rejectionReason = $rejectionReason
                 WITH r
@@ -142,6 +146,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         params.put("version", version);
         params.put("skillTargets", targetRole.getSkillTargets());
         params.put("levels", targetRole.getLevels());
+        params.put("levelCompetencies", targetRole.getLevelCompetencies());
+        params.put("competencyIds", targetRole.getCompetencyIds() != null ? targetRole.getCompetencyIds() : List.of());
         params.put("createdAt", targetRole.getCreatedAt().toString());
         params.put("updatedAt", targetRole.getUpdatedAt().toString());
         params.put("rejectionReason", targetRole.getRejectionReason());
@@ -463,6 +469,14 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 ? node.get("levels").asList(org.neo4j.driver.Value::asString)
                 : List.of("Junior", "Middle", "Senior");
 
+        String levelCompetencies = node.containsKey("levelCompetencies") && !node.get("levelCompetencies").isNull()
+                ? node.get("levelCompetencies").asString().trim()
+                : "{}";
+
+        List<String> competencyIds = node.containsKey("competencyIds") && !node.get("competencyIds").isNull()
+                ? node.get("competencyIds").asList(org.neo4j.driver.Value::asString)
+                : List.of();
+
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
                 orgId,
@@ -481,7 +495,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 createdAt,
                 updatedAt,
                 rejectionReason,
-                levels);
+                levels,
+                levelCompetencies,
+                competencyIds);
     }
 
     private List<Map<String, Object>> parseSkillTargetsJson(String json) {

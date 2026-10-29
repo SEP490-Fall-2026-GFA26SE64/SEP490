@@ -23,6 +23,8 @@ public final class TargetRole {
     private final Instant updatedAt;
     private final String rejectionReason;
     private final List<String> levels;
+    private final String levelCompetencies;
+    private final List<String> competencyIds;
 
     public TargetRole(
             TargetRoleId id,
@@ -42,7 +44,9 @@ public final class TargetRole {
             Instant createdAt,
             Instant updatedAt,
             String rejectionReason,
-            List<String> levels) {
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds) {
         this.id = Objects.requireNonNull(id, "TargetRole id cannot be null");
         this.organizationId = requireNonBlank(organizationId, "organizationId cannot be blank");
         this.code = normalizeCode(code);
@@ -64,6 +68,31 @@ public final class TargetRole {
         this.updatedAt = Objects.requireNonNullElseGet(updatedAt, Instant::now);
         this.rejectionReason = (rejectionReason != null && !rejectionReason.isBlank()) ? rejectionReason.trim() : null;
         this.levels = (levels != null && !levels.isEmpty()) ? List.copyOf(levels) : List.of("Junior", "Middle", "Senior");
+        this.levelCompetencies = (levelCompetencies != null && !levelCompetencies.isBlank()) ? levelCompetencies.trim() : "{}";
+        this.competencyIds = (competencyIds != null && !competencyIds.isEmpty()) ? List.copyOf(competencyIds) : List.of();
+    }
+
+    // Backward-compatible constructor with 18 parameters
+    public TargetRole(
+            TargetRoleId id,
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            Instant createdAt,
+            Instant updatedAt,
+            String rejectionReason,
+            List<String> levels) {
+        this(id, organizationId, code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, "{}", List.of());
     }
 
     // Backward-compatible constructor with 17 parameters
@@ -173,7 +202,9 @@ public final class TargetRole {
             String version,
             RoleStatus status,
             String skillTargets,
-            List<String> levels) {
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds) {
         Instant now = Instant.now();
         return new TargetRole(
                 TargetRoleId.generate(),
@@ -193,7 +224,27 @@ public final class TargetRole {
                 now,
                 now,
                 null,
-                levels);
+                levels,
+                levelCompetencies,
+                competencyIds);
+    }
+
+    public static TargetRole createNew(
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            RoleStatus status,
+            String skillTargets,
+            List<String> levels) {
+        return createNew(organizationId, code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, "{}", List.of());
     }
 
     public static TargetRole createNew(
@@ -263,7 +314,9 @@ public final class TargetRole {
             String version,
             String skillTargets,
             String rejectionReason,
-            List<String> levels) {
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds) {
         RoleTrack targetTrack = track != null ? track : this.track;
         Seniority targetSeniority = seniority != null ? seniority : this.seniority;
         if (targetSeniority != null && !targetSeniority.supportsTrack(targetTrack)) {
@@ -287,7 +340,26 @@ public final class TargetRole {
                 this.createdAt,
                 Instant.now(),
                 rejectionReason != null ? rejectionReason.trim() : this.rejectionReason,
-                levels != null && !levels.isEmpty() ? levels : this.levels);
+                levels != null && !levels.isEmpty() ? levels : this.levels,
+                levelCompetencies != null ? levelCompetencies : this.levelCompetencies,
+                competencyIds != null ? competencyIds : this.competencyIds);
+    }
+
+    public TargetRole updateDetails(
+            String name,
+            String domainCode,
+            String familyCode,
+            RoleTrack track,
+            Seniority seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            String rejectionReason,
+            List<String> levels) {
+        return updateDetails(name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, this.levelCompetencies, this.competencyIds);
     }
 
     public TargetRole updateDetails(
@@ -373,7 +445,9 @@ public final class TargetRole {
                 this.createdAt,
                 Instant.now(),
                 this.rejectionReason,
-                this.levels);
+                this.levels,
+                this.levelCompetencies,
+                this.competencyIds);
     }
 
     public TargetRole reject(String reason) {
@@ -395,7 +469,9 @@ public final class TargetRole {
                 this.createdAt,
                 Instant.now(),
                 reason,
-                this.levels);
+                this.levels,
+                this.levelCompetencies,
+                this.competencyIds);
     }
 
     public TargetRole reject() {
@@ -421,7 +497,9 @@ public final class TargetRole {
                 this.createdAt,
                 Instant.now(),
                 this.rejectionReason,
-                this.levels);
+                this.levels,
+                this.levelCompetencies,
+                this.competencyIds);
     }
 
     private static String requireNonBlank(String value, String message) {
@@ -506,6 +584,14 @@ public final class TargetRole {
 
     public List<String> getLevels() {
         return levels != null && !levels.isEmpty() ? levels : List.of("Junior", "Middle", "Senior");
+    }
+
+    public String getLevelCompetencies() {
+        return levelCompetencies != null && !levelCompetencies.isBlank() ? levelCompetencies : "{}";
+    }
+
+    public List<String> getCompetencyIds() {
+        return competencyIds != null ? competencyIds : List.of();
     }
 }
 

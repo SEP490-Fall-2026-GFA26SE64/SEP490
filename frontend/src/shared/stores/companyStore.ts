@@ -295,7 +295,11 @@ export function getActiveCompany(): CompanyRecord {
 export function updateActiveCompany(updater: (company: CompanyRecord) => CompanyRecord) {
   const companies = loadCompanies()
   const activeId = getActiveCompanyId()
-  const updated = companies.map((c) => (c.id === activeId ? updater(c) : c))
+  const updated = companies.map((c) =>
+    (c.id === activeId || (activeId === SEED_COMPANY_TECHNOVA.id && c.id === 'comp-technova'))
+      ? updater(c)
+      : c
+  )
   saveCompanies(updated)
 }
 

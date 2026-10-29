@@ -38,7 +38,28 @@ public record UpdateTargetRoleRequest(
         @Size(max = 2000, message = "Rejection reason cannot exceed 2000 characters")
         String rejectionReason,
 
-        List<String> levels) {
+        List<String> levels,
+
+        Map<String, List<String>> levelCompetencies,
+
+        List<String> competencyIds) {
+
+    public UpdateTargetRoleRequest(
+            String name,
+            String domainCode,
+            String familyCode,
+            String track,
+            String seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String status,
+            String version,
+            List<Map<String, Object>> skillTargets,
+            String rejectionReason,
+            List<String> levels) {
+        this(name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null);
+    }
 
     public UpdateTargetRoleRequest(
             String name,

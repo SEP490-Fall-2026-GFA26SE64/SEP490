@@ -26,7 +26,31 @@ public record TargetRoleResponse(
         Instant createdAt,
         Instant updatedAt,
         String rejectionReason,
-        List<String> levels) {
+        List<String> levels,
+        Map<String, List<String>> levelCompetencies,
+        List<String> competencyIds) {
+
+    public TargetRoleResponse(
+            String id,
+            String organizationId,
+            String code,
+            String name,
+            String domainCode,
+            String familyCode,
+            String track,
+            String seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String status,
+            String version,
+            List<Map<String, Object>> skillTargets,
+            Instant createdAt,
+            Instant updatedAt,
+            String rejectionReason,
+            List<String> levels) {
+        this(id, organizationId, code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, Map.of(), List.of());
+    }
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -39,6 +63,16 @@ public record TargetRoleResponse(
                 skills = List.of();
             }
         }
+
+        Map<String, List<String>> levelComps = Map.of();
+        if (role.getLevelCompetencies() != null && !role.getLevelCompetencies().isBlank() && !role.getLevelCompetencies().equals("{}")) {
+            try {
+                levelComps = OBJECT_MAPPER.readValue(role.getLevelCompetencies(), new TypeReference<Map<String, List<String>>>() {});
+            } catch (Exception ignored) {
+                levelComps = Map.of();
+            }
+        }
+        List<String> compIds = role.getCompetencyIds() != null ? role.getCompetencyIds() : List.of();
 
         return new TargetRoleResponse(
                 role.getId().toString(),
@@ -58,7 +92,9 @@ public record TargetRoleResponse(
                 role.getCreatedAt(),
                 role.getUpdatedAt(),
                 role.getRejectionReason(),
-                role.getLevels() != null && !role.getLevels().isEmpty() ? role.getLevels() : List.of("Junior", "Middle", "Senior"));
+                role.getLevels() != null && !role.getLevels().isEmpty() ? role.getLevels() : List.of("Junior", "Middle", "Senior"),
+                levelComps,
+                compIds);
     }
 }
 

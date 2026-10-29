@@ -39,7 +39,28 @@ public record CreateTargetRoleRequest(
         @Pattern(regexp = "^(DRAFT|SENT|REJECTED|ACTIVE|PUBLISHED|RETIRED)?$", message = "Status must be valid")
         String status,
 
-        List<Map<String, Object>> skillTargets) {
+        List<Map<String, Object>> skillTargets,
+
+        Map<String, List<String>> levelCompetencies,
+
+        List<String> competencyIds) {
+
+    public CreateTargetRoleRequest(
+            String code,
+            String name,
+            List<String> levels,
+            String domainCode,
+            String familyCode,
+            String track,
+            String seniority,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            String status,
+            List<Map<String, Object>> skillTargets) {
+        this(code, name, levels, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, version, status, skillTargets, Map.of(), List.of());
+    }
 
     public CreateTargetRoleRequest(
             String code,

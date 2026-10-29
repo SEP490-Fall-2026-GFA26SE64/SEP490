@@ -638,19 +638,15 @@ export function TargetRolesPage() {
 
 
 
-            levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || (tr.code === String(r.code || '') && tr.version === String(r.version || '1.0')))?.levelCompetencies || {}),
+            levelCompetencies: (r.levelCompetencies && Object.keys(r.levelCompetencies).length > 0)
+              ? (r.levelCompetencies as Record<string, string[]>)
+              : ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || (tr.code === String(r.code || '') && tr.version === String(r.version || '1.0')))?.levelCompetencies || {}),
 
-
-
-            competencyIds: Array.isArray(r.competencyIds) && (r.competencyIds as string[]).length > 0
-
-
-
-              ? (r.competencyIds as string[])
-
-
-
-              : ((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || (tr.code === String(r.code || '') && tr.version === String(r.version || '1.0')))?.competencyIds || []),
+            competencyIds: Array.from(new Set([
+              ...(Array.isArray(r.competencyIds) ? (r.competencyIds as string[]) : []),
+              ...(((activeComp?.targetRoles || []).find((tr) => tr.id === String(r.id || '') || (tr.code === String(r.code || '') && tr.version === String(r.version || '1.0')))?.competencyIds) || []),
+              ...Object.values((r.levelCompetencies as Record<string, string[]>) || {}).flat()
+            ])),
 
 
 
@@ -714,31 +710,12 @@ export function TargetRolesPage() {
 
 
 
-            const prevCompetencyIds = (m.competencyIds && m.competencyIds.length > 0)
-
-
-
-              ? m.competencyIds
-
-
-
-              : (prev?.competencyIds && prev.competencyIds.length > 0)
-
-
-
-              ? prev.competencyIds
-
-
-
-              : (storeRole?.competencyIds && storeRole.competencyIds.length > 0
-
-
-
-                  ? storeRole.competencyIds
-
-
-
-                  : Array.from(new Set(Object.values(prevLevelComps).flat())))
+            const prevCompetencyIds = Array.from(new Set([
+              ...(m.competencyIds || []),
+              ...(prev?.competencyIds || []),
+              ...(storeRole?.competencyIds || []),
+              ...Object.values(prevLevelComps).flat()
+            ]))
 
 
 
@@ -847,14 +824,13 @@ export function TargetRolesPage() {
 
 
     window.addEventListener('active_company_changed', handleSync)
-
-
+    window.addEventListener('companies_updated', handleSync)
+    window.addEventListener('storage', handleSync)
 
     return () => {
-
-
-
       window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('companies_updated', handleSync)
+      window.removeEventListener('storage', handleSync)
 
 
 

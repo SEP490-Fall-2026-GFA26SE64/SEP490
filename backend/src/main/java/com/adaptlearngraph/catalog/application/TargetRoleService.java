@@ -45,7 +45,9 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 version,
                 command.status(),
                 command.skillTargets(),
-                command.levels());
+                command.levels(),
+                command.levelCompetencies(),
+                command.competencyIds());
 
         return targetRoleRepository.save(targetRole);
     }
@@ -86,7 +88,9 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.version(),
                 command.skillTargets(),
                 command.rejectionReason(),
-                command.levels());
+                command.levels(),
+                command.levelCompetencies(),
+                command.competencyIds());
 
         return Optional.of(targetRoleRepository.save(updated));
     }
