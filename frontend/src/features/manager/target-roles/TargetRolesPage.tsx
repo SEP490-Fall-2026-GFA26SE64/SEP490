@@ -1377,13 +1377,13 @@ export function TargetRolesPage() {
 
 
   const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = orgExperts.length > 0 ? orgExperts : getEligibleExpertsForOccupation(roleForm.occupationCode, orgId)
+    const list = getEligibleExpertsForOccupation(roleForm.occupationCode, orgId)
     return list.map((exp) => ({
       value: exp.id,
       label: exp.name,
       description: exp.title,
     }))
-  }, [orgExperts, roleForm.occupationCode, orgId])
+  }, [roleForm.occupationCode, orgId])
 
 
 
@@ -1392,13 +1392,13 @@ export function TargetRolesPage() {
 
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = orgExperts.length > 0 ? orgExperts : getEligibleExpertsForOccupation(editRoleForm.occupationCode, orgId)
+    const list = getEligibleExpertsForOccupation(editRoleForm.occupationCode, orgId)
     return list.map((exp) => ({
       value: exp.id,
       label: exp.name,
       description: exp.title,
     }))
-  }, [orgExperts, editRoleForm.occupationCode, orgId])
+  }, [editRoleForm.occupationCode, orgId])
 
 
 
@@ -1734,7 +1734,7 @@ export function TargetRolesPage() {
       track: 'PROFESSIONAL',
       seniority: 'P3',
       levelNames: ['Junior', 'Middle', 'Senior'],
-      assignedExpertId: (orgExperts[0]?.id || eligibleExperts[0]?.id || ''),
+      assignedExpertId: (eligibleExperts[0]?.id || orgExperts[0]?.id || ''),
 
 
 

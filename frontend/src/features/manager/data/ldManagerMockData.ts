@@ -424,11 +424,15 @@ export function getAvailableOccupations(organizationId?: string): OnetOccupation
 
   const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
     ? organizationId
-    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || '00000000-0000-0000-0000-000000000001' : '00000000-0000-0000-0000-000000000001');
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
+
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
 
   try {
     if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem('adaptlearn_occupations_v2_' + effectiveOrg);
+      const raw = localStorage.getItem('adaptlearn_occupations_v2_' + effectiveOrg) ||
+        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_e0000000-0000-0000-0000-000000000001') : null) ||
+        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_comp-technova') : null);
       if (raw) {
         const stored = JSON.parse(raw);
         if (Array.isArray(stored)) {
