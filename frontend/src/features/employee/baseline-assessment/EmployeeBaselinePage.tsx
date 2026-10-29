@@ -35,7 +35,7 @@ function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
       <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/employee/my-mastery">{t('baselineUi.myMastery')}</Link>
       <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/employee/assessment?tab=baseline">{tr('otherAssessments')}</Link>
     </div>
-    {state.busy && <LoadingCard label={tr('loading')} />}
+    {state.busy && state.attempt?.state !== 'IN_PROGRESS' && <LoadingCard label={tr('loading')} />}
     {state.error && <div role="alert" className="space-y-2 rounded-md border border-border p-4">
       <Text variant="body-sm">{t(`employeeBaseline.errors.${state.error.code}`, tr('requestError'))}</Text>
       {state.pending ? <><Text variant="body-sm">{tr('retryNotice')}</Text><Button disabled={state.busy} onClick={() => void state.run(state.pending!)}>{tr('retry')}</Button></>
@@ -45,7 +45,7 @@ function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
       <Text variant="body-sm">{t('roleFlow.selectFirst')}</Text>
       <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/employee/upskilling?tab=roles">{t('upskillingUi.roles')}</Link>
     </CardContent></Card>}
-    {state.attempt?.state === 'IN_PROGRESS' && <BaselineAttemptPanel key={`${state.attempt.id}:${state.attempt.revision}`} attempt={state.attempt} seconds={state.seconds} locked={state.locked} run={state.run} />}
+    {state.attempt?.state === 'IN_PROGRESS' && <BaselineAttemptPanel key={state.attempt.id} attempt={state.attempt} seconds={state.seconds} locked={state.locked} busy={state.busy} run={state.run} />}
     {state.result && <BaselineResultPanel result={state.result} locked={state.locked} run={state.run} />}
     {attemptId && <Button variant="outline" disabled={state.busy || Boolean(state.pending)} onClick={() => void state.refresh()}>{tr('refresh')}</Button>}
     {!attemptId && <BaselineHistory />}

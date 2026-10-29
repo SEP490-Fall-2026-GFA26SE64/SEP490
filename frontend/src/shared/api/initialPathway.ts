@@ -4,7 +4,8 @@ const demoSession = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED === 'true'
 export class PathwayError extends Error {
   readonly code: string
   readonly status: number
-  constructor(code: string, status = 0) { super(code); this.code = code; this.status = status }
+  readonly diagnostics: string[]
+  constructor(code: string, status = 0, diagnostics: string[] = []) { super(code); this.code = code; this.status = status; this.diagnostics = diagnostics }
   get ambiguous() { return this.status === 0 || this.status >= 500 || this.code === 'INVALID_RESPONSE' }
 }
 const obj = (v: unknown): Record<string, unknown> => { if (!v || typeof v !== 'object' || Array.isArray(v)) throw Error(); return v as Record<string, unknown> }
@@ -19,7 +20,7 @@ async function request<T>(path: string, parse: (v: unknown) => T, init: RequestI
   catch (cause) { if (init.signal?.aborted) throw cause; throw new PathwayError('NETWORK_ERROR') }
   let value: unknown
   try { value = await response.json() } catch { throw new PathwayError(response.ok ? 'INVALID_RESPONSE' : response.status === 401 ? 'UNAUTHENTICATED' : response.status === 403 ? 'FORBIDDEN' : 'UNAVAILABLE', response.status) }
-  if (!response.ok) { const body = obj(value); throw new PathwayError(typeof body.code === 'string' ? body.code : 'UNAVAILABLE', response.status) }
+  if (!response.ok) { const body = obj(value); throw new PathwayError(typeof body.code === 'string' ? body.code : 'UNAVAILABLE', response.status, Array.isArray(body.diagnostics) ? body.diagnostics.filter((v): v is string => typeof v === 'string') : []) }
   try { return parse(value) } catch { throw new PathwayError('INVALID_RESPONSE', response.status) }
 }
 export interface InitialSession { actorId: string; organizationId: string; persona: string; role: string }
@@ -85,10 +86,10 @@ function quality(v: unknown): PathwayQuality | null {
   if (v == null) return null
   const q = obj(v); return { supportingFallbacks: num(q.supportingFallbacks), secondFallbacks: num(q.secondFallbacks), firstFallbacks: num(q.firstFallbacks), durationMinutes: num(q.durationMinutes), priceVnd: num(q.priceVnd), supportingBeneficiaries: list(q.supportingBeneficiaries, str), moduleCount: num(q.moduleCount) }
 }
-export interface ReviewOverride { action: 'INCLUDE' | 'EXCLUDE'; moduleId: string; reason: string }
+export interface ReviewOverride { action: 'INCLUDE' | 'EXCLUDE' | 'MOVE_UP' | 'MOVE_DOWN' | 'REMOVE'; moduleId: string; reason: string }
 function override(v: unknown): ReviewOverride {
   const row = list(v, str)
-  if (row.length !== 3 || !['INCLUDE', 'EXCLUDE'].includes(row[0] ?? '') || !row[1]) throw Error()
+  if (row.length !== 3 || !['INCLUDE', 'EXCLUDE', 'MOVE_UP', 'MOVE_DOWN', 'REMOVE'].includes(row[0] ?? '') || !row[1]) throw Error()
   return { action: row[0] as ReviewOverride['action'], moduleId: row[1], reason: row[2]! }
 }
 export interface ReviewDetail { summary: ReviewSummary; gaps: GapResult; revision: { revision: number; contentHash: string; selectedModules: string[]; overrides: ReviewOverride[]; plan: { modules: PathwayModule[]; diagnostics: string[]; warnings: string[]; quality: PathwayQuality | null; dependencies: { moduleId: string; dependentSkillId: string; prerequisiteSkillId: string; providerModuleId: string | null; internalGateId: string | null }[] } }; candidates: Candidate[] }
@@ -98,7 +99,9 @@ export const readReviewDetail = (id: string, signal?: AbortSignal) => request('e
   return { summary: summary(d.summary), gaps: gapResult(d.gaps), revision: { revision: num(r.revision), contentHash: str(r.contentHash), selectedModules: list(r.selectedModules, str), overrides: list(r.overrides ?? [], override), plan: { modules: list(p.modules, module), diagnostics: list(p.diagnostics, str), warnings: list(p.warnings ?? [], str), quality: quality(p.quality), dependencies: list(p.dependencies, v => { const g = obj(v); return { moduleId: str(g.moduleId), dependentSkillId: str(g.dependentSkillId), prerequisiteSkillId: str(g.prerequisiteSkillId), providerModuleId: nullable(g.providerModuleId, str), internalGateId: nullable(g.internalGateId, str) } }) } }, candidates: list(d.candidates, v => { const c = obj(v), preferred = c.preferredDifficulty == null ? null : str(c.preferredDifficulty); if (preferred !== null && !['LOW', 'MEDIUM', 'HIGH'].includes(preferred)) throw Error(); return { ...teaching(c), moduleId: str(c.moduleId), title: str(c.title), durationMinutes: num(c.durationMinutes), priceVnd: num(c.priceVnd), reason: str(c.reason), preferredDifficulty: preferred as DifficultyLevel | null, preference: num(c.preference) } }) } satisfies ReviewDetail
 }, { signal })
 export const checkReview = (id: string) => request('expert/initial-pathways/' + encodeURIComponent(id) + '/validation', v => { const r = obj(v); return { validationStatus: str(r.validationStatus), diagnostics: list(r.diagnostics, str), revisionContentHash: str(r.revisionContentHash), warnings: list(r.warnings ?? [], str) } })
-export function prepareReviewCommand(id: string, detail: ReviewDetail, action: 'inclusions' | 'exclusions' | 'confirmation', moduleId?: string, reason?: string): PendingPathwayCommand {
+export type ReviewAction = 'inclusions' | 'exclusions' | 'confirmation' | 'move-up' | 'move-down' | 'removals'
+export function prepareReviewCommand(id: string, detail: ReviewDetail, action: ReviewAction, moduleId?: string, reason?: string): PendingPathwayCommand {
   const expected = { expectedRevision: detail.summary.revision, expectedContentHash: detail.summary.contentHash }
-  return { path: `expert/initial-pathways/${encodeURIComponent(id)}/${action}`, key: crypto.randomUUID(), body: JSON.stringify(action === 'confirmation' ? expected : { ...expected, moduleId, reason: reason || null }) }
+  const move = action === 'move-up' || action === 'move-down'
+  return { path: `expert/initial-pathways/${encodeURIComponent(id)}/${move ? 'moves' : action}`, key: crypto.randomUUID(), body: JSON.stringify(action === 'confirmation' ? expected : { ...expected, moduleId, reason: reason || null, ...(move ? { direction: action === 'move-up' ? 'UP' : 'DOWN' } : {}) }) }
 }

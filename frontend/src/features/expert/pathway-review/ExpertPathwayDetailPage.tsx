@@ -1,7 +1,7 @@
 import { useId, useRef, useState, type DragEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { checkReview, prepareReviewCommand, readReviewDetail, sendPathwayCommand, PathwayError, type PendingPathwayCommand, type ReviewDetail, type TeachingTarget } from '../../../shared/api/initialPathway'
+import { checkReview, prepareReviewCommand, readReviewDetail, sendPathwayCommand, PathwayError, type PendingPathwayCommand, type ReviewDetail, type ReviewAction, type TeachingTarget } from '../../../shared/api/initialPathway'
 import { useInitialPathwaySession } from '../../../shared/hooks/useInitialPathwaySession'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { InitialGapTable } from '../../../shared/components/InitialGapTable'
@@ -27,6 +27,7 @@ export function ExpertPathwayDetailPage() {
   return <WorkspaceLayout>{session.scope && session.data?.role === 'DOMAIN_EXPERT' ? <Review key={session.scope + pathwayId} scope={session.scope} id={pathwayId} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
 }
 function Review({ scope, id }: { scope: string; id: string }) {
+  const [orderWarningOpen, setOrderWarningOpen] = useState(false)
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('reviewUi.' + key), client = useQueryClient()
   const detail = useQuery({ queryKey: ['initialPathway', scope, 'review', id], queryFn: ({ signal }) => readReviewDetail(id, signal), retry: false, gcTime: 0, refetchOnWindowFocus: false })
   const [pending, setPending] = useState<PendingPathwayCommand | null>(null), [approval, setApproval] = useState<{ command: PendingPathwayCommand; detail: ReviewDetail } | null>(null)
@@ -58,6 +59,7 @@ function Review({ scope, id }: { scope: string; id: string }) {
       }
     } catch (cause) {
       const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure)
+      if (failure.code === 'PREREQUISITE_ORDER_VIOLATION') setOrderWarningOpen(true)
       if (!failure.ambiguous && !committed.current) { setPending(null); setApproval(null); void detail.refetch() }
     } finally { lock.current = false; setBusy(false) }
   }
@@ -95,7 +97,7 @@ function Review({ scope, id }: { scope: string; id: string }) {
     <h1 className="sr-only">{tr('reviewTitle')}</h1>
     {detail.isPending && <LoadingCard label={tr('loading')} />}
     {detail.isError && <InitialPathwayFeedback error={detail.error} onRetry={() => void detail.refetch()} busy={detail.isFetching} />}
-    {error && <InitialPathwayFeedback error={error} onRetry={() => { if (pending) void submit(pending); else void detail.refetch() }} busy={busy} />}
+    {error && error.code !== 'PREREQUISITE_ORDER_VIOLATION' && <InitialPathwayFeedback error={error} onRetry={() => { if (pending) void submit(pending); else void detail.refetch() }} busy={busy} />}
     {pending && <Text role="status">{tr(busy ? 'savingMembership' : 'uncertain')}</Text>}
     {d && !detail.isError && <>
       <Card><CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -127,6 +129,15 @@ function Review({ scope, id }: { scope: string; id: string }) {
         <InitialGapTable result={d.gaps} />
       </div></details>
     </>}
+    <Dialog open={orderWarningOpen} onOpenChange={setOrderWarningOpen} ariaLabel={ui('orderBlocked')} closeLabel={tr('display.close')}>
+      <DialogHeader><DialogTitle>{ui('orderBlocked')}</DialogTitle><DialogDescription>{ui('orderUnchanged')}</DialogDescription></DialogHeader>
+      <DialogBody><ul className="space-y-3">{error?.diagnostics.map(diagnostic => {
+        const [, provider, dependent, skill] = diagnostic.split(':')
+        const title = (id: string | undefined) => d?.revision.plan.modules.find(m => m.id === id)?.title ?? id ?? '—'
+        return <li key={diagnostic}><Text variant="body-sm">{ui('orderRequired').replace('{before}', title(provider)).replace('{after}', title(dependent)).replace('{skill}', d?.gaps.skills.find(s => s.skillId === skill)?.name ?? skill ?? '—')}</Text></li>
+      })}</ul></DialogBody>
+      <DialogFooter><Button onClick={() => setOrderWarningOpen(false)}>{tr('display.close')}</Button></DialogFooter>
+    </Dialog>
     <Dialog open={validationOpen} size="wide" className="border-2 border-primary/40" onOpenChange={open => { if (!blocked) setValidationOpen(open) }} ariaLabel={tr('reviewFlow.checkTitle')} closeLabel={tr('display.close')}>
       <DialogHeader><DialogTitle>{tr('reviewFlow.checkTitle')}</DialogTitle><DialogDescription>{d?.summary.roleName} · {d?.summary.levelName} · {tr('reviewRevision')} {d?.summary.revision}</DialogDescription></DialogHeader>
       <DialogBody className="space-y-4">
@@ -148,7 +159,7 @@ function Review({ scope, id }: { scope: string; id: string }) {
 
 type Zone = 'catalog' | 'included' | 'excluded'
 type Row = { id: string; title: string; durationMinutes?: number; priceVnd?: number; targets: TeachingTarget[]; eligible: boolean; ordinal?: number; reason?: string }
-type Props = { detail: ReviewDetail; disabled: boolean; onEdit: (action: 'inclusions' | 'exclusions', moduleId: string) => void }
+type Props = { detail: ReviewDetail; disabled: boolean; onEdit: (action: Exclude<ReviewAction, 'confirmation'>, moduleId: string) => void }
 
 /** Gestures express membership intent. Persisted order and every saved move come from the server. */
 function PathwayModules({ detail, disabled, onEdit }: Props) {
@@ -211,7 +222,10 @@ function PathwayModules({ detail, disabled, onEdit }: Props) {
   function moduleRow(row: Row, zone: Zone, index: number) {
     const movable = !disabled && (zone === 'included' || row.eligible)
     return <li key={row.id} draggable={movable} onDragStart={event => start(event, row, zone)} onDragEnd={() => { setDragged(null); setOver(null) }} className={currentDrag?.id === row.id ? 'opacity-40' : undefined}>
-      <ReviewModuleRow row={row} zone={zone} step={index + 1} skillNames={skillNames} movable={movable} disabled={disabled || zone !== 'included' && !row.eligible} onAction={() => onEdit(zone === 'included' ? 'exclusions' : 'inclusions', row.id)} />
+      <ReviewModuleRow row={row} zone={zone} step={index + 1} skillNames={skillNames} movable={movable} disabled={disabled || zone !== 'included' && !row.eligible} onAction={() => onEdit(zone === 'included' ? 'exclusions' : 'inclusions', row.id)}
+        onMoveUp={!disabled && import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true' && index > 0 ? () => onEdit('move-up', row.id) : undefined}
+        onMoveDown={!disabled && import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true' && index < included.length - 1 ? () => onEdit('move-down', row.id) : undefined}
+        onRemove={!disabled && import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true' ? () => onEdit('removals', row.id) : undefined} />
     </li>
   }
   return <div className="min-w-0 space-y-6">
@@ -229,14 +243,14 @@ function PathwayModules({ detail, disabled, onEdit }: Props) {
   </div>
 }
 
-/** Original horizontal module row; unavailable mock commands keep their original control positions. */
-function ReviewModuleRow({ row, zone, step, skillNames, movable, disabled, onAction }: { row: Row; zone: Zone; step: number; skillNames: ReadonlyMap<string, string>; movable: boolean; disabled: boolean; onAction: () => void }) {
+/** Existing row composition, with server-persisted membership and adjacent-order commands. */
+function ReviewModuleRow({ row, zone, step, skillNames, movable, disabled, onAction, onMoveUp, onMoveDown, onRemove }: { row: Row; zone: Zone; step: number; skillNames: ReadonlyMap<string, string>; movable: boolean; disabled: boolean; onAction: () => void; onMoveUp?: () => void; onMoveDown?: () => void; onRemove?: () => void }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('reviewUi.' + key)
   const [expanded, setExpanded] = useState(false), detailsId = useId(), primary = row.targets.find(pair => pair.teachingFocus === 'PRIMARY') ?? row.targets[0]
   return <div className={`@container group min-w-0 rounded-lg px-3 py-4 transition-colors ${zone === 'excluded' ? 'bg-muted/30' : 'hover:bg-muted/20'} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}>
     <div className="flex flex-wrap items-center gap-3 @lg:flex-nowrap">
       <GripVertical aria-hidden="true" className={`size-4 shrink-0 text-muted-foreground ${movable ? 'group-hover:text-primary' : 'opacity-40'}`} />
-      {zone === 'included' && <div className="flex shrink-0 flex-col" title={ui('serverOrder')}><Button variant="ghost" size="icon" className="size-6" disabled aria-label={ui('moveUp')}><ChevronUp className="size-4" /></Button><Button variant="ghost" size="icon" className="size-6" disabled aria-label={ui('moveDown')}><ChevronDown className="size-4" /></Button></div>}
+      {zone === 'included' && <div className="flex shrink-0 flex-col" title={ui('serverOrder')}><Button variant="ghost" size="icon" className="size-6" disabled={!onMoveUp} onClick={onMoveUp} aria-label={ui('moveUp')}><ChevronUp className="size-4" /></Button><Button variant="ghost" size="icon" className="size-6" disabled={!onMoveDown} onClick={onMoveDown} aria-label={ui('moveDown')}><ChevronDown className="size-4" /></Button></div>}
       <div className="min-w-0 flex-1 basis-40 space-y-2 @lg:basis-0">
         {zone !== 'catalog' && <Badge variant={zone === 'excluded' ? 'destructive' : 'secondary'}>{zone === 'excluded' ? ui('excludedBadge') : `${ui('step')} ${step}`}</Badge>}
         <div className="flex min-w-0 flex-wrap items-center gap-2"><button type="button" className={`min-w-0 max-w-full whitespace-normal break-words rounded text-left text-[length:var(--text-card)] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @lg:truncate ${zone === 'excluded' ? 'text-muted-foreground line-through' : 'text-foreground hover:text-primary'}`} title={row.title} aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded(value => !value)}>{row.title}</button>
@@ -249,7 +263,7 @@ function ReviewModuleRow({ row, zone, step, skillNames, movable, disabled, onAct
       </div>
       <div className="ml-auto flex w-full min-w-0 flex-wrap items-center justify-end gap-2 @lg:w-auto @lg:shrink-0 @lg:flex-nowrap">
         <Button variant="outline" size="sm" className={`h-auto min-h-10 max-w-full whitespace-normal [&>span]:whitespace-normal @lg:min-h-8 ${zone === 'included' ? 'text-muted-foreground' : 'border-primary/30 text-primary hover:bg-secondary'}`} disabled={disabled} onClick={onAction}>{zone === 'included' ? <MinusCircle className="size-4 shrink-0 text-destructive" /> : <Plus className="size-4 shrink-0" />}{zone === 'catalog' ? ui('addToPathway') : tr(zone === 'included' ? 'exclude' : 'include')}</Button>
-        {zone === 'catalog' ? <span className="min-w-0 max-w-full" title={ui('preemptiveUnavailable')}><Button variant="outline" size="sm" className="h-auto min-h-10 max-w-full whitespace-normal text-muted-foreground [&>span]:whitespace-normal @lg:min-h-8" disabled><MinusCircle className="size-4 shrink-0" />{ui('addToExclude')}</Button></span> : <span title={ui('deleteUnavailable')}><Button variant="ghost" size="icon" className="size-8 text-muted-foreground" disabled aria-label={ui('removeModule')}><Trash2 className="size-4" /></Button></span>}
+        {zone === 'catalog' ? <span className="min-w-0 max-w-full" title={ui('preemptiveUnavailable')}><Button variant="outline" size="sm" className="h-auto min-h-10 max-w-full whitespace-normal text-muted-foreground [&>span]:whitespace-normal @lg:min-h-8" disabled><MinusCircle className="size-4 shrink-0" />{ui('addToExclude')}</Button></span> : <span title={ui('returnCatalog')}><Button variant="ghost" size="icon" className="size-8 text-muted-foreground" disabled={!onRemove} onClick={onRemove} aria-label={ui('removeModule')}><Trash2 className="size-4" /></Button></span>}
       </div>
     </div>
     {expanded && <div id={detailsId} className="ml-7 mt-4 space-y-3 border-t border-border pt-3"><Heading level={3} size="card" className="break-words">{row.title}</Heading>
