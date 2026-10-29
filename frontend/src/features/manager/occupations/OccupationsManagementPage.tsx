@@ -35,11 +35,13 @@ import {
 } from '../../../shared/components/import/QuickConfigImportModal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { ELIGIBLE_EXPERTS } from '../data/ldManagerMockData'
 import {
   createOccupation,
   updateOccupation,
+  fetchOccupations,
 } from '../../../shared/api/occupationApi'
 
 export interface RiasecProfile {
@@ -288,8 +290,9 @@ const setStoredOccupations = (organizationId: string, data: OccupationRecord[]) 
 
 export function OccupationsManagementPage() {
   const { toast } = useToast()
+  const session = React.useContext(WorkspaceSessionContext)
   const activeCompany = getActiveCompany()
-  const orgId = activeCompany?.id || 'comp-technova'
+  const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
   const [occupations, setOccupations] = React.useState<OccupationRecord[]>(() => {
     return getStoredOccupations(orgId) || INITIAL_OCCUPATIONS
@@ -313,9 +316,8 @@ export function OccupationsManagementPage() {
   // Live database fetching from Neo4j merged with local state
   const fetchLiveOccupations = React.useCallback(async () => {
     try {
-      const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/occupations`)
-      if (res.ok) {
-        const data = await res.json()
+      const data = await fetchOccupations(orgId)
+      if (Array.isArray(data) && data.length > 0) {
         if (Array.isArray(data) && data.length > 0) {
           const currentStored = getStoredOccupations(orgId) || INITIAL_OCCUPATIONS
           const storedByCode = new Map(currentStored.map((o) => [o.code, o]))
@@ -508,8 +510,7 @@ export function OccupationsManagementPage() {
     e.preventDefault()
     if (!occName.trim() || !occCode.trim()) return
 
-    const active = getActiveCompany()
-    const orgId = active?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
     if (editingOccupation) {
       try {
@@ -601,8 +602,7 @@ export function OccupationsManagementPage() {
   // Toggle Occupation Active Status
   const handleToggleStatus = async (occ: OccupationRecord) => {
     const nextStatus = occ.status === 'active' ? 'inactive' : 'active'
-    const active = getActiveCompany()
-    const orgId = active?.id || 'comp-technova'
+    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
     try {
       await updateOccupation(orgId, occ.id, {
         code: occ.code,

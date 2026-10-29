@@ -16,6 +16,11 @@ export interface UserProfileData {
 }
 
 export const EXPERT_DIRECTORY: Record<string, { name: string; email: string; roleTitle: string }> = {
+  'a0000000-0000-0000-0000-000000000002': {
+    name: 'Dr. Sarah Chen',
+    email: 'expert@technova.com',
+    roleTitle: 'Senior AI & Knowledge Architect',
+  },
   'expert-chen': {
     name: 'Dr. Sarah Chen',
     email: 'expert-chen@adaptlearn.internal',

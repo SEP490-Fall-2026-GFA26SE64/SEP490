@@ -303,14 +303,28 @@ export const CAREER_FAMILIES = [
   { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust', domain: 'ICT' },
 ] as const
 
+export const EXPERT_SARAH_CHEN_ID = 'a0000000-0000-0000-0000-000000000002'
+
 export const ELIGIBLE_EXPERTS = [
-  { id: 'expert-chen', name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
-  { id: 'expert-vance', name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
-  { id: 'expert-rivera', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
-  { id: 'expert-nguyen', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
+  { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect' },
+  { id: 'a0000000-0000-0000-0000-000000000005', name: 'Marcus Vance', title: 'Principal Graph Database Architect' },
+  { id: 'a0000000-0000-0000-0000-000000000006', name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer' },
+  { id: 'a0000000-0000-0000-0000-000000000007', name: 'Linh Nguyen', title: 'Lead Data Systems Specialist' },
 ] as const
 
 export type EligibleExpert = typeof ELIGIBLE_EXPERTS[number]
+
+export function normalizeExpertId(id?: string | null): string {
+  if (!id) return EXPERT_SARAH_CHEN_ID
+  if (id === 'expert-chen') return EXPERT_SARAH_CHEN_ID
+  return id
+}
+
+export function findEligibleExpert(id?: string | null): EligibleExpert | undefined {
+  if (!id) return undefined
+  const normalized = normalizeExpertId(id)
+  return ELIGIBLE_EXPERTS.find((e) => (e.id as string) === normalized || (normalized === EXPERT_SARAH_CHEN_ID && (e.id as string) === 'expert-chen'))
+}
 
 /**
  * Returns domain experts who are specifically assigned and certified for a given O*NET occupation.

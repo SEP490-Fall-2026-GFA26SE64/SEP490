@@ -1,3 +1,5 @@
+import { workspaceFetch as fetch } from './workspaceFetch'
+
 export interface OccupationDto {
   id: string
   code: string
@@ -30,8 +32,18 @@ export interface SaveOccupationPayload {
   version?: string
 }
 
-export async function fetchOccupations(orgId: string = 'comp-technova'): Promise<OccupationDto[]> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/occupations`, {
+const DEFAULT_ORG_ID = 'e0000000-0000-0000-0000-000000000001'
+
+function normalizeOrg(orgId?: string): string {
+  if (!orgId || orgId === 'comp-technova' || orgId === 'default-org') {
+    return DEFAULT_ORG_ID
+  }
+  return orgId
+}
+
+export async function fetchOccupations(orgId: string = DEFAULT_ORG_ID): Promise<OccupationDto[]> {
+  const effectiveOrg = normalizeOrg(orgId)
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/occupations`, {
     headers: { Accept: 'application/json' },
   })
   if (!res.ok) {
@@ -41,10 +53,11 @@ export async function fetchOccupations(orgId: string = 'comp-technova'): Promise
 }
 
 export async function createOccupation(
-  orgId: string = 'comp-technova',
+  orgId: string = DEFAULT_ORG_ID,
   payload: SaveOccupationPayload
 ): Promise<OccupationDto> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/occupations`, {
+  const effectiveOrg = normalizeOrg(orgId)
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/occupations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,11 +72,12 @@ export async function createOccupation(
 }
 
 export async function updateOccupation(
-  orgId: string = 'comp-technova',
+  orgId: string = DEFAULT_ORG_ID,
   id: string,
   payload: SaveOccupationPayload
 ): Promise<OccupationDto> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/occupations/${encodeURIComponent(id)}`, {
+  const effectiveOrg = normalizeOrg(orgId)
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/occupations/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -77,8 +91,9 @@ export async function updateOccupation(
   return res.json()
 }
 
-export async function deleteOccupation(orgId: string = 'comp-technova', id: string): Promise<void> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/occupations/${encodeURIComponent(id)}`, {
+export async function deleteOccupation(orgId: string = DEFAULT_ORG_ID, id: string): Promise<void> {
+  const effectiveOrg = normalizeOrg(orgId)
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/occupations/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   })
   if (!res.ok) {

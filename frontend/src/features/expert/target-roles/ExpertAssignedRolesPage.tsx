@@ -82,10 +82,13 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 
 import { getActiveCompany, updateActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
 
 import {
 
   ELIGIBLE_EXPERTS,
+  normalizeExpertId,
+  findEligibleExpert,
 
   JOB_DOMAINS,
 
@@ -249,15 +252,13 @@ export function ExpertAssignedRolesPage() {
 
   })
 
-
-
   const [roles, setRoles] = React.useState<TargetRoleModel[]>([])
 
   const [isLoading, setIsLoading] = React.useState(true)
 
 
 
-  const activeExpert = ELIGIBLE_EXPERTS.find((e) => e.id === selectedExpertId) || ELIGIBLE_EXPERTS[0]
+  const activeExpert = findEligibleExpert(selectedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === selectedExpertId) || ELIGIBLE_EXPERTS[0]
 
 
 
@@ -266,10 +267,11 @@ export function ExpertAssignedRolesPage() {
     try {
 
       const currentCompany = getActiveCompany()
+      const effectiveExpert = selectedExpertId || ELIGIBLE_EXPERTS[0].id
 
       const res = await fetch(
 
-        `/api/v1/organizations/${orgId}/target-roles?assignedExpertId=${encodeURIComponent(selectedExpertId)}`,
+        `/api/v1/organizations/${orgId}/target-roles?assignedExpertId=${encodeURIComponent(effectiveExpert)}`,
 
         {
 
@@ -277,7 +279,7 @@ export function ExpertAssignedRolesPage() {
 
             'X-User-Role': 'DOMAIN_EXPERT',
 
-            'X-User-Id': selectedExpertId,
+            'X-User-Id': effectiveExpert,
 
           },
 
@@ -325,7 +327,7 @@ export function ExpertAssignedRolesPage() {
 
             assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
 
-            assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
+            assignedExpertName: findEligibleExpert(r.assignedExpertId as string | null | undefined)?.name || ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
 
             department: JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name || String(r.domainCode || 'Information Technology'),
 
@@ -553,7 +555,11 @@ export function ExpertAssignedRolesPage() {
 
   const assignedRoles = React.useMemo(() => {
 
-    const expertRoles = roles.filter((r) => r.assignedExpertId === selectedExpertId)
+    const curExp = normalizeExpertId(selectedExpertId)
+    const expertRoles = roles.filter((r) => {
+      const rExp = normalizeExpertId(r.assignedExpertId)
+      return rExp === curExp || r.assignedExpertId === selectedExpertId
+    })
 
     return sortTargetRolesWithDraftsBelowPublished(expertRoles, sortBy)
 

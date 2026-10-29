@@ -214,6 +214,7 @@ import {
 
 
   ELIGIBLE_EXPERTS,
+  findEligibleExpert,
 
 
 
@@ -609,7 +610,7 @@ export function TargetRolesPage() {
 
 
 
-            assignedExpertName: ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
+            assignedExpertName: findEligibleExpert(r.assignedExpertId as string | null | undefined)?.name || ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name || String(r.assignedExpertId || ''),
 
 
 
@@ -1289,7 +1290,7 @@ export function TargetRolesPage() {
 
 
 
-    assignedExpertId: 'expert-chen',
+    assignedExpertId: ELIGIBLE_EXPERTS[0].id as string,
 
 
 
@@ -1761,7 +1762,7 @@ export function TargetRolesPage() {
 
 
 
-      assignedExpertId: eligibleExperts[0]?.id || 'expert-chen',
+      assignedExpertId: eligibleExperts[0]?.id || ELIGIBLE_EXPERTS[0].id,
 
 
 
@@ -1885,7 +1886,7 @@ export function TargetRolesPage() {
 
 
 
-    const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
+    const assignedExpert = findEligibleExpert(roleForm.assignedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
 
 
 
@@ -2529,7 +2530,7 @@ export function TargetRolesPage() {
 
 
 
-    const assignedExpert = ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
+    const assignedExpert = findEligibleExpert(editRoleForm.assignedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
 
 
 
@@ -4502,7 +4503,7 @@ export function TargetRolesPage() {
 
 
 
-                      const expert = ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
+                      const expert = findEligibleExpert(role.assignedExpertId) || ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId)
 
 
 
@@ -9766,7 +9767,7 @@ export function TargetRolesPage() {
 
 
 
-                  {viewingDetailsRole.assignedExpertName || ELIGIBLE_EXPERTS.find((e) => e.id === viewingDetailsRole.assignedExpertId)?.name || 'Unassigned'}
+                  {viewingDetailsRole.assignedExpertName || findEligibleExpert(viewingDetailsRole.assignedExpertId)?.name || ELIGIBLE_EXPERTS.find((e) => e.id === viewingDetailsRole.assignedExpertId)?.name || 'Unassigned'}
 
 
 
