@@ -1,3 +1,5 @@
+> **Historical implementation record — retained during merge on 2026-10-29.** The current product contract is the [consolidated domain README](../Role%20catalog/README.md). This record preserves the previously implemented local slice, user decisions and dated evidence; it does not override Version 2 or the authenticated workspace integration. V27/V28 below refer to the historical Module migration lineage; merged source uses V33/V34.
+
 # Expert Assigned Target Roles & Micro-skill Authoring
 
 ## Current Scope Alignment

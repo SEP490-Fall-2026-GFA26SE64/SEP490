@@ -15,6 +15,7 @@ import java.util.Map;
 public class ModuleAuthoringController {
     private final ModuleAuthoringService service;
     public ModuleAuthoringController(ModuleAuthoringService service) { this.service = service; }
+    // Occupation hints from legacy clients are ignored for new content.
     public record ContentInput(String title, String markdown, List<String> occupationIds) {}
     public record GrantInput(String expertId, String occupationId, boolean active) {}
     public record UpdateInput(long expectedVersion, Save value) {}
@@ -29,6 +30,10 @@ public class ModuleAuthoringController {
     @PostMapping("/contents") public ResponseEntity<Content> content(@RequestBody ContentInput input) {
         return ResponseEntity.status(201).body(service.content(input.title(), input.markdown(), input.occupationIds()));
     }
+    public record LessonsInput(String title, List<com.adaptlearngraph.catalog.domain.LearningContent.Lesson> lessons, List<String> occupationIds) {}
+    @PostMapping("/contents/lessons") public ResponseEntity<Content> lessons(@RequestBody LessonsInput input) {
+        return ResponseEntity.status(201).body(service.lessons(input.title(), input.lessons(), input.occupationIds()));
+    }
     @GetMapping("/modules") public Page list(@RequestParam(defaultValue="") String search,
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
             @RequestParam(defaultValue="") String type, @RequestParam(defaultValue="") String skill,
@@ -38,9 +43,9 @@ public class ModuleAuthoringController {
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
             @RequestParam(defaultValue="") String type, @RequestParam(defaultValue="") String skill,
             @RequestParam(defaultValue="1") int page) { return service.catalogList(search, status, review, type, skill, page); }
-    public record IntakeInput(List<String> occupationIds, String expectedAssignedAt) {}
+    public record IntakeInput(List<String> occupationIds, String expectedAssignedAt, String expertId) {}
     @PostMapping("/catalog-modules/{id}/assignment") public ResponseEntity<Intake> assign(@PathVariable String id, @RequestBody IntakeInput input) {
-        return ResponseEntity.status(201).body(service.assignIntake(id, input.occupationIds(), input.expectedAssignedAt()));
+        return ResponseEntity.status(201).body(service.assignIntake(id, input.occupationIds(), input.expectedAssignedAt(), input.expertId()));
     }
     @PostMapping("/catalog-modules/{id}/accept") public ResponseEntity<Document> accept(@PathVariable String id) {
         return ResponseEntity.status(201).body(service.acceptIntake(id));

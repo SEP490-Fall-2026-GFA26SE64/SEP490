@@ -2,7 +2,7 @@
 
 **Dated manual history, not current executable certification.** [24 October REQ-001/002/009 evidence](REQ-001-002-009-cluster4-20261024-evidence.md) records scoped unit/component/browser-fixture results, four current L&D mobile failures and blocked/not-run real integration/system gates. The observations below retain their original dates and main-stack fixture; they are not rerun here or replaced by intercepted browser input. Current Role-entry/session boundaries are in that evidence and TMP-REQ002-12/13.
 
-2026-10-22, Asia/Bangkok. Explicit user approval: implement the proposed temporary local bypass to prioritize UI/full baseline operations, then update the existing walkthrough. This supersedes Session3's unavailable-only boundary **inside this demo only**. [Contract](../../features/Baseline%20knowledge%20assessment/Local%20Demo%20Flow.md); TMP-REQ002-12 records activation/consumers/owner/replacement.
+2026-10-22, Asia/Bangkok. Explicit user approval: implement the proposed temporary local bypass to prioritize UI/full baseline operations, then update the existing walkthrough. This supersedes Session3's unavailable-only boundary **inside this demo only**. [Contract](../../technical/baseline/Local%20Demo%20Flow.md); TMP-REQ002-12 records activation/consumers/owner/replacement.
 
 ## What now runs
 

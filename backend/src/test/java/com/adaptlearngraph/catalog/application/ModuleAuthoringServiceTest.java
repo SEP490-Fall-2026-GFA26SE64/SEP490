@@ -26,6 +26,7 @@ class ModuleAuthoringServiceTest {
         when(port.actor()).thenAnswer(call -> actor);
         when(port.transaction(any())).thenAnswer(call -> call.<Supplier<?>>getArgument(0).get());
         when(port.occupations(any())).thenReturn(List.of("occ"));
+        when(port.catalog("Expert")).thenReturn(List.of(new Choice("expert-a", "Expert A")));
         when(port.catalog("Occupation")).thenReturn(List.of(new Choice("occ", "Occupation")));
         when(port.catalog("MicroSkill")).thenReturn(List.of(new Choice("skill", "Skill"), new Choice("support", "Supporting skill")));
         when(port.contents("org")).thenReturn(List.of(content));
@@ -54,14 +55,14 @@ class ModuleAuthoringServiceTest {
         when(port.importedMarkdown(anyString())).thenReturn("# Imported lesson\nReal source Markdown.");
         return intakes;
     }
-    @Test void intakePreservesIdentitySourceAndUnknownCreatorUntilReviewedRelease() {
+    @Test void intakePreservesIdentitySourceAndAssignsOneResponsibleCreator() {
         intakeFixtures(); manager();
         Intake assigned = service.assignIntake("legacy", List.of("occ"));
         assertEquals("ld-reviewer", assigned.assignedBy()); assertNull(assigned.acceptedBy());
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
         actor = new Actor("expert-a", "org", Set.of("EXPERT"));
         Document doc = service.acceptIntake("legacy");
-        assertEquals("legacy", doc.id()); assertNull(doc.createdBy()); assertEquals("expert-a", doc.intake().acceptedBy());
+        assertEquals("legacy", doc.id()); assertEquals("expert-a", doc.createdBy()); assertEquals("expert-a", doc.intake().acceptedBy());
         assertEquals(assigned.source(), doc.intake().source()); assertEquals("INTAKE", doc.history().getLast().action());
         assertEquals("edge-legacy", doc.current().payload().teachings().getFirst().metadata().id());
         assertEquals(assigned.source().contentUri(), doc.current().payload().contentUri());
@@ -71,7 +72,7 @@ class ModuleAuthoringServiceTest {
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
         final Document accepted = doc;
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.delete(accepted.id(), accepted.lockVersion()));
-        doc = release(doc); assertEquals("RELEASED", doc.current().state()); assertNull(doc.createdBy());
+        doc = release(doc); assertEquals("RELEASED", doc.current().state()); assertEquals("expert-a", doc.createdBy());
         assertEquals(assigned.source(), doc.intake().source()); verify(port).project(any(), any(), eq(false));
     }
     @Test void intakeRejectsUnassignedForeignDuplicateAndDriftWithoutWrites() {
@@ -81,9 +82,10 @@ class ModuleAuthoringServiceTest {
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ")));
         actor = new Actor("foreign", "foreign-org", Set.of("LD_MANAGER"));
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ")));
-        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
+        actor = new Actor("expert-b", "org", Set.of("EXPERT"));
         when(port.occupations(any())).thenReturn(List.of());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
+        assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy")).status());
+        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
         when(port.occupations(any())).thenReturn(List.of("occ"));
         when(port.graphModules("org")).thenReturn(List.of(graph("legacy", "Changed externally")));
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
@@ -127,7 +129,10 @@ class ModuleAuthoringServiceTest {
         CatalogPage result = service.catalogList("", "", "", "", "", 2);
         assertEquals(23, result.total()); assertEquals(10, result.items().size()); assertEquals("Lesson 10", result.items().getFirst().module().title());
         assertEquals(3, service.catalogList("", "", "", "", "", 999).page());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.create(input("Unauthorized")));
+        Save base = input("No occupation");
+        Document independent = service.create(new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), null, base.teachings()));
+        assertTrue(independent.occupationIds().isEmpty());
+        assertTrue(service.content("Independent content", "# Existing body", null).occupationIds().isEmpty());
         actor = new Actor("learner", "org", Set.of("EMPLOYEE"));
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.catalogList("", "", "", "", "", 1));
     }
@@ -136,11 +141,11 @@ class ModuleAuthoringServiceTest {
         doc = service.action(doc.id(), doc.lockVersion(), "submit", null); manager();
         return service.action(doc.id(), doc.lockVersion(), "approve", null);
     }
-    @Test void persistsAllFieldsAndTracksCreatorAndDifferentEditorWithoutChangingPriorPayload() {
+    @Test void persistsAllFieldsAndTracksResponsibleCreatorWithoutChangingPriorPayload() {
         Document first = service.create(input("First"));
-        actor = new Actor("expert-b", "org", Set.of("EXPERT"));
+        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
         Document second = service.update(first.id(), first.lockVersion(), input("Second"));
-        assertEquals("expert-a", second.createdBy()); assertEquals("expert-b", second.current().editedBy());
+        assertEquals("expert-a", second.createdBy()); assertEquals("expert-a", second.current().editedBy());
         assertEquals("First", second.revisions().getFirst().payload().title());
         assertEquals("Second", second.current().payload().title()); assertEquals(2, second.revisions().size());
         var p = second.current().payload(); assertEquals(90, p.duration()); assertEquals(new BigDecimal("200000"), p.price());
@@ -153,7 +158,7 @@ class ModuleAuthoringServiceTest {
             assertNull(t.metadata().reviewedBy()); assertNull(t.metadata().reviewedAt()); assertFalse(t.skillName().isBlank());
             assertEquals(first.current().payload().teachings().stream().filter(old -> old.skillId().equals(t.skillId())).findFirst().orElseThrow().metadata().id(), t.metadata().id());
         }
-        assertEquals("expert-b", second.history().getLast().actorId());
+        assertEquals("expert-a", second.history().getLast().actorId());
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.update(first.id(), first.lockVersion(), input("Stale")));
     }
     @Test void rejectsMissingMultipleAndDuplicatePrimaryAndNonpositivePrice() {
@@ -165,7 +170,7 @@ class ModuleAuthoringServiceTest {
         }
         assertThrows(IllegalArgumentException.class, () -> service.create(new Save("T", valid.moduleType(), valid.contentId(), 1, BigDecimal.ZERO, valid.occupationIds(), valid.teachings())));
     }
-    @Test void anyOwningOccupationGrantAllowsSharedEditsButCannotChangeScopeMembership() {
+    @Test void sameOccupationDoesNotGrantWriteAccessToAnotherExpert() {
         content = new Content("content", "Shared lesson", "# Shared", "text/markdown", "1.0", List.of("occ", "other"), "expert-a", ModuleAuthoring.now());
         when(port.contents("org")).thenReturn(List.of(content));
         when(port.catalog("Occupation")).thenReturn(List.of(new Choice("occ", "First occupation"), new Choice("other", "Other occupation")));
@@ -175,17 +180,25 @@ class ModuleAuthoringServiceTest {
         Document doc = service.create(shared);
         actor = new Actor("expert-b", "org", Set.of("EXPERT"));
         when(port.occupations(any())).thenReturn(List.of("other"));
+        assertEquals(doc, service.detail(doc.id()));
+        assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.update(doc.id(), doc.lockVersion(), shared)).status());
+        assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.action(doc.id(), doc.lockVersion(), "submit", null)).status());
+        assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.delete(doc.id(), doc.lockVersion())).status());
+        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
         Document updated = service.update(doc.id(), doc.lockVersion(), shared);
-        assertEquals("expert-a", updated.createdBy()); assertEquals("expert-b", updated.current().editedBy());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.update(updated.id(), updated.lockVersion(), base));
+        assertEquals("expert-a", updated.createdBy()); assertEquals("expert-a", updated.current().editedBy());
+        assertEquals(updated.occupationIds(), service.update(updated.id(), updated.lockVersion(), base).occupationIds());
     }
-    @Test void deniesUnassignedExpertsAndManagerAuthoringAndExpertApproval() {
+    @Test void expertCreationNeedsNoOccupationGrantButManagerAuthoringAndExpertApprovalAreDenied() {
         Document doc = service.create(input("Test"));
         String id = doc.id();
         when(port.occupations(any())).thenReturn(List.of());
-        assertEquals(0, service.list("", "", "", "", "", 1).total());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.detail(id));
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.create(input("Unauthorized")));
+        assertEquals(1, service.list("", "", "", "", "", 1).total());
+        assertEquals(id, service.detail(id).id());
+        Save base = input("No occupation");
+        Document independent = service.create(new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), null, base.teachings()));
+        assertTrue(independent.occupationIds().isEmpty());
+        assertTrue(service.content("Independent content", "# Existing body", null).occupationIds().isEmpty());
         when(port.occupations(any())).thenReturn(List.of("occ"));
         doc = service.action(doc.id(), doc.lockVersion(), "submit", null);
         Document submitted = doc;
@@ -193,6 +206,19 @@ class ModuleAuthoringServiceTest {
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.action(submitted.id(), submitted.lockVersion(), "approve", null));
         manager(); assertThrows(ModuleAuthoringService.Failure.class, () -> service.create(input("Manager cannot author")));
     }
+    @Test void historicalOccupationsAreRetainedButDoNotRestrictContentReuseOrOwnerEdits() {
+        Document created = service.create(input("Legacy"));
+        Document legacy = new Document(created.id(), created.organizationId(), List.of("old-occupation"), created.createdBy(), created.createdAt(), created.lockVersion(), created.everReleased(), created.archived(), created.releasedRevision(), created.revisions(), created.history(), created.intake());
+        documents.put(legacy.id(), legacy);
+        when(port.occupations(any())).thenReturn(List.of());
+        Save base = input("Updated without occupation");
+        Document updated = service.update(legacy.id(), legacy.lockVersion(), new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), null, base.teachings()));
+        assertEquals(List.of("old-occupation"), updated.occupationIds());
+        assertEquals(legacy.revisions().getFirst(), updated.revisions().getFirst());
+        assertEquals("content", updated.current().payload().content().id());
+        verify(port, never()).occupations(any());
+    }
+
     @Test void releasesRevisionsPinsOldLearningAndRequiresReapprovalAfterRestore() {
         Document doc = release(service.create(input("Original")));
         assertEquals("ld-reviewer", doc.current().payload().metadata().reviewedBy());
@@ -200,7 +226,7 @@ class ModuleAuthoringServiceTest {
         assertEquals("ACTIVE", doc.current().payload().metadata().status());
         actor = new Actor("learner", "org", Set.of("EMPLOYEE"));
         assertEquals("Original", service.learning(doc.id(), true).payload().title());
-        actor = new Actor("expert-b", "org", Set.of("EXPERT"));
+        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
         doc = release(service.update(doc.id(), doc.lockVersion(), input("New")));
         actor = new Actor("learner", "org", Set.of("EMPLOYEE"));
         assertEquals("Original", service.learning(doc.id(), true).payload().title());

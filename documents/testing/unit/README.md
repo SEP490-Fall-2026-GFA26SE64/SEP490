@@ -1,5 +1,11 @@
 # Unit Testing Directory & Standards
 
+2026-10-29 one responsible Expert per Module: [ownership verification](REQ-013-single-expert.md).
+
+2026-10-29 five local dev roles: [seed/login verification](REQ-037-dev-accounts.md).
+
+2026-10-29 Module/main merge repair: [dedicated verification and compatibility boundary](REQ-013-main-merge-resolution.md).
+
 REQ-013/016 user-authorized v0.11 local import: [dedicated evidence and preservation checks](REQ-013-016-v011-import.md).
 
 REQ-013/016 local Module authoring: [dedicated unit/component evidence](REQ-013-module-management.md), separate from review-dataset and legacy runtime acceptance.
@@ -10,7 +16,7 @@ REQ-013/016 local Module authoring: [dedicated unit/component evidence](REQ-013-
 
 ## Current Scope Alignment
 
-Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Revised unit/API contracts must cover the four actors, discipline/role assignments, L&D adaptive Blueprint/Test Blueprint, Expert content/guidance, initial confirmation, and independent learning/evidence. Existing PASSED labels and runtime actor codes below are historical evidence, not revised-scope acceptance.
+Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). Revised unit/API contracts cover six actors, organization/occupation/role permissions, registration/payment/renewal/seat policies, L&D baseline/publication/approval, direct AI guidance, Expert initial confirmation, independent evidence and ROI edge cases. Existing PASSED labels and runtime actor codes below remain historical evidence, not Version 2 acceptance.
 New feature specs keep open scoring/state/field choices open until agreed. Use per-REQ documents for real future runs; documentation checks do not replace runtime tests.
 
 ## Existing Execution Guides and Historical Evidence
@@ -28,9 +34,9 @@ Unit testing in this workspace validates pure domain invariants, application ser
 
 | Requirement ID | Feature Name | Primary Actor | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
+| **REQ-060-F01-F03** | Registration, email and MFA/resume | Guest | [REQ-060-registration.md](REQ-060-registration.md) | **PASSED locally; live gate separate** |
 | **REQ-001-F01** | View Target Roles | `LEARNER` | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
 | **REQ-001-F02** | Choose Target Role | `LEARNER` | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |
-| **REQ-002-F02 historical V17** | Fixed Baseline Blueprint Authoring | `LD_MANAGER` | [REQ-002-F02-baseline-authoring.md](REQ-002-F02-baseline-authoring.md) | **PASSED for superseded contract** |
 | **REQ-011** | Assigned Target Roles | `DOMAIN_EXPERT` | [REQ-011-assigned-target-roles.md](REQ-011-assigned-target-roles.md) | **PASSED** |
 | **REQ-012** | Micro-Skill Management | `DOMAIN_EXPERT` | [REQ-012-micro-skill-management.md](REQ-012-micro-skill-management.md) | **PASSED** |
 | **REQ-015** | Role Requirements | `DOMAIN_EXPERT` | [REQ-015-role-requirements.md](REQ-015-role-requirements.md) | **PASSED** |
@@ -45,7 +51,7 @@ Unit testing in this workspace validates pure domain invariants, application ser
 
 - The executable-test cluster for `REQ-001-F01` was approved and its domain/application, API/security and frontend component suites passed on 2026-09-30; cases and evidence are tracked in [../REQ-001-F01-view-target-roles.md](../REQ-001-F01-view-target-roles.md).
 - `REQ-001-F02` Cluster 2 completed on 2026-10-02: T1 domain/command/hash passed 8 tests, T2 application policy/replay passed 15 tests, T3 HTTP/security passed 16 tests, and T5 frontend selection plus F01 regression passed 30 tests across eight files. Cases, deterministic fake boundaries, MVC/security slices, frontend fetch/hook fakes, and commands are tracked in [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md).
-- Vitest is scoped to `src/**/*.test.{ts,tsx}`. Playwright specs under `system-tests/` are system evidence only when they execute the real stack; intercepted HTTP/component fixtures are FE browser evidence. The latest REQ-002 baseline assertions and remaining gates are linked above; unrelated REQ-015/041 scope remains separately planned.
+- Vitest is scoped to `src/**/*.test.{ts,tsx}`; Playwright specs live under `system-tests/` and are system evidence, not unit evidence. Other targets such as REQ-002 baseline allowance, REQ-015 required mastery and REQ-041 gap calculation remain plans only until their own scope is approved.
 
 ---
 

@@ -54,4 +54,11 @@ class CurrentRoleFlowControllerTest {
    .withPropertyValues("spring.profiles.active=local-baseline-demo","assessment.baseline.local-demo.enabled=true")
    .run(c->assertThat(c).hasSingleBean(CurrentRoleFlowController.class));
  }
+ @Test void workspaceGateRegistersWithoutEnablingDemoIdentity() {
+  new WebApplicationContextRunner().withUserConfiguration(CurrentRoleFlowController.class)
+   .withBean(RoleBaselineFlow.class,()->flow).withBean(ObjectMapper.class,ObjectMapper::new)
+   .withPropertyValues("spring.profiles.active=local,workspace-baseline",
+     "assessment.baseline.workspace.enabled=true","assessment.baseline.local-demo.enabled=false")
+   .run(c->assertThat(c).hasSingleBean(CurrentRoleFlowController.class));
+ }
 }

@@ -32,14 +32,24 @@ public final class ModuleAuthoring {
         }
     }
     public record Content(String id, String title, String markdown, String contentType,
-                          String contentVersion, List<String> occupationIds, String createdBy, String createdAt) {
+                          String contentVersion, List<String> occupationIds, String createdBy, String createdAt,
+                          List<LearningContent.Lesson> lessons) {
+        public Content(String id, String title, String markdown, String contentType, String contentVersion,
+                       List<String> occupationIds, String createdBy, String createdAt) {
+            this(id, title, markdown, contentType, contentVersion, occupationIds, createdBy, createdAt, null);
+        }
         public Content {
-            text(title, "title", 240); text(markdown, "markdown", 200_000);
+            text(title, "title", 240);
             occupationIds = List.copyOf(occupationIds);
-            // Allow linked HTTPS videos, never executable markdown links or raw HTML embeds.
-            if (markdown.matches("(?is).*(javascript\\s*:|data\\s*:|<\\s*(script|iframe|object)\\b).*")) {
-                throw new IllegalArgumentException("Content contains an unsafe embed");
-            }
+            if (lessons == null) {
+                text(markdown, "markdown", 200_000);
+                if (markdown.matches("(?is).*(javascript\\s*:|data\\s*:|<\\s*(script|iframe|object)\\b).*"))
+                    throw new IllegalArgumentException("Content contains an unsafe embed");
+                int seconds = Math.max(60, (int) Math.ceil(markdown.split("\\s+").length / 200.0) * 60);
+                lessons = List.of(new LearningContent.Lesson(id + "-text", title, "TEXT", markdown, "MARKDOWN",
+                        seconds, "ESTIMATED", null, null, null));
+            } else lessons = LearningContent.lessons(lessons);
+            if (markdown == null) markdown = "";
         }
     }
     public record Package(Metadata metadata, String title, String moduleType, String contentUri,
@@ -49,7 +59,7 @@ public final class ModuleAuthoring {
             text(title, "title", 240);
             oneOf(moduleType, Set.of("LESSON_AND_PRACTICE", "RESOURCE_GUIDED_PRACTICE"), "moduleType");
             text(contentUri, "contentUri", 500); text(contentVersion, "contentVersion", 100);
-            if (!"text/markdown".equals(contentType)) throw new IllegalArgumentException("Only Markdown packages are supported");
+            if (!Set.of("text/markdown", LearningContent.MANIFEST_TYPE).contains(contentType)) throw new IllegalArgumentException("Only Markdown packages are supported");
             if (duration <= 0 || price == null || price.signum() <= 0 || price.scale() > 2 || !Double.isFinite(price.doubleValue())) {
                 throw new IllegalArgumentException("Duration and VND price must be positive; price accepts at most two decimals");
             }
@@ -91,6 +101,7 @@ public final class ModuleAuthoring {
         }
     }
     public record TeachingInput(String skillId, String teachingFocus, String difficultyLevel) {}
+    // occupationIds is accepted for legacy clients only; new authoring is skill-based.
     public record Save(String title, String moduleType, String contentId, int duration, BigDecimal price,
                        List<String> occupationIds, List<TeachingInput> teachings) {}
     public record Page(List<Document> items, int total, int page, int pageSize) {}
@@ -103,7 +114,11 @@ public final class ModuleAuthoring {
         public CatalogModule { teachings = List.copyOf(teachings); }
     }
     public record Intake(String moduleId, String organizationId, List<String> occupationIds, String assignedBy,
-                         String assignedAt, CatalogModule source, String acceptedBy, String acceptedAt, List<Event> history) {
+                         String assignedAt, CatalogModule source, String acceptedBy, String acceptedAt, List<Event> history, String expertId) {
+        public Intake(String moduleId, String organizationId, List<String> occupationIds, String assignedBy,
+                      String assignedAt, CatalogModule source, String acceptedBy, String acceptedAt, List<Event> history) {
+            this(moduleId, organizationId, occupationIds, assignedBy, assignedAt, source, acceptedBy, acceptedAt, history, null);
+        }
         public Intake { occupationIds = List.copyOf(occupationIds); history = List.copyOf(history); }
     }
     public record CatalogItem(CatalogModule module, Document authoring, Intake intake) {

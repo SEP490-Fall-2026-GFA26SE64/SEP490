@@ -1,3 +1,5 @@
+> **Historical implementation record — retained during merge on 2026-10-29.** The current product contract is the [consolidated domain README](../Learning%20catalog/README.md). This record preserves the previously implemented local slice, user decisions and dated evidence; it does not override Version 2 or the authenticated workspace integration. V27/V28 below refer to the historical Module migration lineage; merged source uses V33/V34.
+
 # Module Outcomes
 
 **Local REQ-013 integration — 2026-10-28:** The new Module editor/API saves complete many-to-many mapping snapshots, exactly one PRIMARY, per-pair teachingFocus/difficultyLevel and all six metadata fields. Duplicate pairs/invalid endpoints are rejected; retained pairs preserve their relationship ID, and released changes require a new reviewed Module revision. Catalog version is separate from revision history. Legacy graph mappings are not silently migrated. [Workflow scope](../Learning%20module%20management/README.md), [real-store evidence](../../testing/integration/REQ-013-module-management.md).

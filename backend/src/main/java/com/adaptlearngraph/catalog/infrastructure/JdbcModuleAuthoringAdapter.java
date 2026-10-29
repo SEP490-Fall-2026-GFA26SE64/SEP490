@@ -32,7 +32,7 @@ public final class JdbcModuleAuthoringAdapter implements ModuleAuthoringPort {
     @Override public <T> T transaction(Supplier<T> work) {
         return transactions.execute(status -> {
             // Serialize coverage/grant/publication checks for the organization across API instances.
-            jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", organizationId + ":module-authoring");
+            jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", actor().organizationId() + ":module-authoring");
             return work.get();
         });
     }
@@ -122,10 +122,31 @@ public final class JdbcModuleAuthoringAdapter implements ModuleAuthoringPort {
     }
     @Override public void saveContent(String org, Content content) { jdbc.update("INSERT INTO platform.module_authoring_content VALUES (?,?,?::jsonb)", org, content.id(), json(content)); }
     @Override public List<Choice> catalog(String kind) {
+        if (kind.equals("ReleasedModule")) return jdbc.query("""
+                SELECT m.module_id,r.payload->>'title' FROM platform.module_authoring m
+                CROSS JOIN LATERAL (SELECT value->'payload' AS payload FROM jsonb_array_elements(m.document->'revisions')
+                    WHERE (value->>'number')::integer=(m.document->>'releasedRevision')::integer) r
+                WHERE m.organization_id=? AND coalesce((m.document->>'archived')::boolean,false)=false
+                ORDER BY r.payload->>'title'
+                """, (rs,n)->new Choice(rs.getString(1),rs.getString(2)), actor().organizationId());
+        if (kind.equals("Staff")) return jdbc.query("""
+                SELECT a.account_id::text, coalesce(p.full_name,a.identifier) FROM platform.account a
+                LEFT JOIN platform.workspace_account_profile p ON p.account_id=a.account_id
+                WHERE a.organization_id::text=? ORDER BY a.identifier
+                """, (rs,n) -> new Choice(rs.getString(1),rs.getString(2)), actor().organizationId());
+        if (kind.equals("Employee")) return jdbc.query("""
+                SELECT a.account_id::text, coalesce(p.full_name,a.identifier) FROM platform.account a
+                JOIN platform.organization_membership m ON m.account_id=a.account_id
+                JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id
+                LEFT JOIN platform.workspace_account_profile p ON p.account_id=a.account_id
+                WHERE a.organization_id::text=? AND a.active AND m.active AND r.role_code='EMPLOYEE'
+                ORDER BY a.identifier
+                """, (rs,n)->new Choice(rs.getString(1),rs.getString(2)), actor().organizationId());
         if (kind.equals("Expert")) return jdbc.query("""
                 SELECT a.account_id::text, a.identifier FROM platform.account a
-                JOIN platform.account_role r ON r.account_id=a.account_id
-                WHERE a.organization_id::text=? AND a.active AND r.role_code='DOMAIN_EXPERT'
+                JOIN platform.organization_membership m ON m.account_id=a.account_id AND m.organization_id=a.organization_id
+                JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id
+                WHERE a.organization_id::text=? AND a.active AND m.active AND r.role_code='DOMAIN_EXPERT'
                 ORDER BY a.identifier
                 """, (rs, n) -> new Choice(rs.getString(1), rs.getString(2)), actor().organizationId());
         if (!Set.of("Occupation", "MicroSkill").contains(kind)) throw new IllegalArgumentException("Unknown catalog");

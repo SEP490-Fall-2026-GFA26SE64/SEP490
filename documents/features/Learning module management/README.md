@@ -1,3 +1,9 @@
+> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Occupation selection/grant. Historical occupation tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
+
+> **Current Learning Content runtime (2026-10-29):** ordered Text/Video, private uploads, Excel/ZIP import, full revision preview and persisted learner progress are described in the [current catalog delivery record](../Learning%20catalog/README.md#learning-content-local-delivery--2026-10-29). See [verification limits and manual checklist](../../testing/system/REQ-013-learning-content.md), including the Vimeo provider blocker. The dated historical details below remain for traceability.
+
+> **Historical implementation record — retained during merge on 2026-10-29.** The current product contract is the [consolidated domain README](../Learning%20catalog/README.md). This record preserves the previously implemented local slice, user decisions and dated evidence; it does not override Version 2 or the authenticated workspace integration. V27/V28 below refer to the historical Module migration lineage; merged source uses V33/V34.
+
 # Learning Module Management
 
 ## Current Scope Alignment
@@ -160,3 +166,7 @@ The user's requested v0.11 import is executed. The shared catalog has 246 Module
 ### Per-module catalog intake — 2026-10-28
 
 Option A is now the implementation scope: explicit L&D Occupation assignment → assigned Expert acceptance → draft/edit/submit → L&D decision → existing graph publication. See [intake contract](../Learning%20module%20management/Receive%20Imported%20Module.md). Earlier statements that imported entries remain permanently read-only are superseded by this explicit intake route; listing alone never creates history.
+
+## Current single-Expert responsibility
+
+The current [Learning Catalog contract](../Learning%20catalog/README.md#module-responsibility-and-peer-visibility) supersedes historical shared-occupation editing rules: one creator/responsible Expert manages each Module; peer Experts can view content and history within the organization, and L&D retains review decisions. Existing development modules are handed to expert@example.test with an audit trail; earlier revisions/reviewers are preserved.

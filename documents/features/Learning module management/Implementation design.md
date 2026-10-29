@@ -1,3 +1,7 @@
+> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Occupation selection/grant. Historical occupation tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
+
+> **Historical local implementation:** Current source requirements are in [Learning Catalog](../Learning%20catalog/README.md). Pre-merge V27/V28 references describe the old database; combined-source migrations are V33/V34. See [architecture](../../ARCHITECTURE.md#merge-migration-boundary--2026-10-29).
+
 # REQ-013 implementation design
 
 **Status:** Follow-up choices 1A/2A/3A confirmed. Local backend/frontend implemented; verification is recorded in the dedicated REQ-013 evidence documents, not inferred from this design.

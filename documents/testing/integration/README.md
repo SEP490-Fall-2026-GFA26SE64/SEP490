@@ -1,5 +1,11 @@
 # Integration Testing Directory & Standards
 
+2026-10-29 one responsible Expert per Module: [ownership verification](REQ-013-single-expert.md).
+
+2026-10-29 five local dev roles: [seed/login verification](REQ-037-dev-accounts.md).
+
+2026-10-29 Module/main merge repair: [dedicated verification and compatibility boundary](REQ-013-main-merge-resolution.md).
+
 REQ-013/016 user-authorized v0.11 local import: [dedicated evidence and preservation checks](REQ-013-016-v011-import.md).
 
 REQ-013/016 local Module authoring: [dedicated PostgreSQL/Neo4j integration evidence](REQ-013-module-management.md), separate from review-dataset and legacy runtime acceptance.
@@ -10,14 +16,14 @@ REQ-013/016 local Module authoring: [dedicated PostgreSQL/Neo4j integration evid
 
 ## Current Scope Alignment
 
-Follow [current test scope](../README.md#current-scope-alignment) and the [System Overview](../../adapt_learn_graph_system_overview.md). Test agreed discipline/role assignment, L&D publication/approval, reviewed guidance, independent progress/evidence, retained versions and idempotent tracing/pathways against disposable stores. Assert every agreed architectural field after round-trip; do not invent new fields from preview datasets.
-Existing organization isolation fixtures and legacy actor-code checks remain technical baseline evidence. They do not require multi-organization registration or certify new actor permissions. PASSED labels below refer to prior contracts only.
+Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). Test organization/department/occupation/role boundaries, purchased plan versions and seat accounting, recoverable provisioning, L&D publication/approval, many-to-many learning coverage, private-content metadata, direct guidance, independent evidence, ROI inputs and idempotent processing against disposable stores. Assert every agreed architectural field after round-trip; do not invent fields from preview datasets.
+Existing isolation fixtures and legacy actor checks remain baseline evidence; new registration, entitlement and access contracts need their own tests. PASSED labels below refer to prior contracts only.
 
 ## Existing Execution Guides and Historical Evidence
 
 **Location:** `backend/src/test/java/com/adaptlearngraph/`
 
-Integration testing validates real database round-trips, graph relationships, authorized organization/assignment scope, and constraints using disposable Testcontainers (PostgreSQL 16/17 and Neo4j 5.26-community), independent of shared development Compose volumes. Historical cross-organization fixtures remain defense-in-depth, not a SaaS registration workflow.
+Integration testing validates real database round-trips, graph relationships, organization/assignment scope and constraints using disposable Testcontainers (PostgreSQL 16/17 and Neo4j 5.26-community), independent of shared development Compose volumes. Historical cross-organization fixtures do not by themselves prove the required onboarding workflow.
 
 > [!NOTE]
 > Detailed test cases, database fixtures, and execution evidence are maintained in **dedicated markdown files per requirement (REQ)** below. This README serves as the index and execution guide, not the central registry.
@@ -28,6 +34,7 @@ Integration testing validates real database round-trips, graph relationships, au
 
 | Requirement ID | Feature Name | Storage Engine | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
+| **REQ-060-F01-F03** | Registration, MFA, sessions and email jobs | PostgreSQL Testcontainers / real HTTP | [REQ-060-registration.md](REQ-060-registration.md) | **PASSED locally; live gate separate** |
 | **REQ-001-F01** | View Target Roles | Neo4j Testcontainers | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |
 | **REQ-001-F02** | Choose Target Role | PostgreSQL Testcontainers | [../REQ-001-F02-choose-target-role.md](../REQ-001-F02-choose-target-role.md) | **PASSED** |
 | **REQ-002-F02 historical V17** | Fixed Baseline Blueprint Authoring | PostgreSQL 17.6 + Neo4j 5.26 Testcontainers | [REQ-002-F02-baseline-authoring.md](REQ-002-F02-baseline-authoring.md) | **PASSED for superseded contract** |

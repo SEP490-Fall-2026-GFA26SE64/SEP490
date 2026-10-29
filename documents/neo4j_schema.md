@@ -1,6 +1,8 @@
 # Schema Neo4j — Ontology v0.11.0
 
-Đây là khung ontology mới cho nền tảng phục vụ một organization. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.11.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
+> **Merged Version 2 boundary (2026-10-29):** This inventories ontology v0.11.0 and its actual many-to-many TEACHES fields. Organization/department authorization, real workspace identity and private-content storage remain separate product responsibilities. Catalog review metadata is not a submission state. Module workflow data is PostgreSQL-owned; see [architecture](ARCHITECTURE.md). No graph data is changed by this reconciliation.
+
+Đây là khung ontology catalog; phạm vi organization và quyền truy cập được quản lý riêng ở PostgreSQL. Tên node, relationship và field giữ bằng tiếng Anh để khớp với dữ liệu; phần giải thích dùng tiếng Việt. Tài liệu này mô tả đúng property được xuất sang Neo4j từ dataset v0.11.0. Trạng thái triển khai backend và database được ghi trong [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ![Sơ đồ ontology](diagrams/neo4j.svg)
 
@@ -8,7 +10,7 @@
 
 ## 1. Cấu trúc tổng quát
 
-**Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](features/Baseline%20knowledge%20assessment/Adaptive%20Baseline%20Data%20Architecture.md).
+**Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](technical/baseline/Adaptive%20Baseline%20Data%20Architecture.md).
 
 Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.11.0.
 
@@ -309,3 +311,29 @@ Content Approval stays at `/ld-manager/approvals`; Modules and Learning content 
 ### Explicit module intake — 2026-10-28
 
 L&D assignment and Expert acceptance are PostgreSQL V28/V27 workflow records; no creator, receiver, Occupation membership or authoring revision property is added to Neo4j. Intake preserves the exact 13-property LearningModule / 8-property TEACHES source plus endpoints in PostgreSQL. Draft/submit leave graph unchanged. Approved publication reuses Module and mapping IDs for retained skills, applies existing review metadata, and checks original graph source before replacing the first imported release. The UI distinguishes graph review metadata from workflow submission. [Contract](features/Learning%20module%20management/Receive%20Imported%20Module.md).
+
+## Local account development environment (2026-10-29)
+
+The optional [five-role account seed](../tools/dev-accounts/README.md) writes identity/organization/subscription fixtures only to a separate PostgreSQL database. It adds no Neo4j node, relationship or property and does not copy the legacy graph. A PostgreSQL occupation activation reference is not proof of an imported ontology Occupation.
+
+## Single-Expert Module governance (2026-10-29)
+
+The Module creator/responsible account remains PostgreSQL-owned (`module_authoring.document.createdBy`); intake assignment adds `expertId` inside the existing JSONB workflow document. Neither field is added to Neo4j. The thirteen LearningModule and eight TEACHES properties remain unchanged. The local development graph received an exact snapshot of1013 nodes and5142 relationships from the previous runtime; reviewed test modules may subsequently add catalog records through the existing publication workflow. Multi-occupation skill coverage does not confer Module editing rights. Historical actor IDs/reviewer fields are not replaced by the responsible-account backfill. [Architecture](ARCHITECTURE.md#single-responsible-expert-and-canonical-local-entry--2026-10-29).
+
+### Ordered Learning Content integration (V35–V38 PostgreSQL)
+
+The existing 13 LearningModule properties and eight TEACHES properties remain unchanged. Ordered lessons, rich text bodies, uploaded binaries, creator/editor workflow, progress and notifications are not Neo4j properties. `contentUri` may identify an immutable `module-content:<content-id>` manifest, `contentType` is `application/vnd.adapt-learning.lessons+json` for mixed lesson packages, and `contentVersion` refers to that content snapshot. Legacy `text/markdown` references remain readable and are mapped to one Text lesson in PostgreSQL.
+
+Lesson order is local to one Module content version. It is distinct from the learner's pathway module order; it does not introduce a global Module order or an exclusive Occupation owner. L&D approval publishes the existing complete Module/TEACHES projection only after the versioned PostgreSQL lesson package is valid. Binary assets remain private in MinIO; no object bytes, learner watch intervals or completion state are projected into this graph. See `ARCHITECTURE.md` for the manual confirmed-pathway integration and private delivery ownership; runtime test evidence is separate.
+
+### R4 — skill-based authoring and lesson review (2026-10-29)
+
+Module creation/content reuse/import no longer requires an Occupation. Existing LearningModule→MicroSkill TEACHES mappings remain the learning-coverage relationship; no LearningModule→Occupation relationship or new property is introduced. Old occupationIds in PostgreSQL workflow snapshots remain historical compatibility data; they are not a new Neo4j field and do not authorize Module edits. Numbered lesson cards in L&D revision details read the existing immutable content snapshot; no lesson review flag is projected into Neo4j. Legacy catalog intake is unchanged. [Runtime rules and verification boundary](ARCHITECTURE.md#skill-based-module-authoring-and-numbered-lesson-review--r4-2026-10-29).
+
+### Assigned Module roadmap/timeline presentation — R5 (2026-10-29)
+
+The restored Employee pathway surface uses the already approved Module snapshot and its TEACHES skill mappings. Manual assignments, learning pins and lesson progress remain PostgreSQL-owned; the diagram's connecting spine expresses the Expert-confirmed display order, not new prerequisite edges or generated recommendations. R5 adds no graph label, relationship, property or migration. Read-before-start returns an authorized released/pinned snapshot through the existing Learning View response without writing a pin. [Runtime ownership and verification](ARCHITECTURE.md#employee-roadmaptimeline-with-assigned-content--r5-2026-10-29).
+
+### Original Employee presentation — R6 (2026-10-29)
+
+R6 restores the original pathway and lesson layouts using existing authorized Module snapshots and TEACHES mappings. Selecting one pathway reads only its Module snapshots; no graph label, relationship, property or migration changes. Assignments, version pins and lesson/video progress remain PostgreSQL-owned. Empty assignment results produce a blank pathway body. [Runtime presentation boundary](ARCHITECTURE.md#original-employee-pathway-and-lesson-presentation--r6-2026-10-29).

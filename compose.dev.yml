@@ -66,6 +66,7 @@ services:
     restart: "no"
 
   seed:
+    profiles: ["tools"]
     image: adapt-learn-graph-backend:dev
     build: *backend-build
     environment:
@@ -86,10 +87,24 @@ services:
     build: *backend-build
     environment:
       <<: *backend-environment
-      SPRING_PROFILES_ACTIVE: local,local-baseline-demo
-      ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "true"
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline
+      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:-}
+      REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:-}
+      REGISTRATION_COOKIE_SECURE: ${REGISTRATION_COOKIE_SECURE:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      SUBSCRIPTION_PUBLIC_URL: ${SUBSCRIPTION_PUBLIC_URL:-http://127.0.0.1:8088}
+      SUBSCRIPTION_WORKER_ENABLED: ${SUBSCRIPTION_WORKER_ENABLED:-true}
     depends_on:
-      seed:
+      migrate:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${API_PORT:-18080}:8080"
@@ -100,13 +115,25 @@ services:
       retries: 12
       start_period: 30s
 
+  platform-seed:
+    profiles: ["tools"]
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,platform-bootstrap
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      CATALOG_SEED_ENABLED: "false"
+      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-}
+      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-}
+
   web:
     build:
       context: ./frontend
       target: dev
     environment:
       API_PROXY_TARGET: http://api:8080
-      VITE_LOCAL_BASELINE_DEMO_ENABLED: "true"
+      VITE_LOCAL_BASELINE_DEMO_ENABLED: "false"
       # Visibility gates only; these grant no backend identity, publication or model readiness.
       VITE_ADAPTIVE_BASELINE_ENABLED: ${VITE_ADAPTIVE_BASELINE_ENABLED:-true}
       VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED: ${VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED:-true}

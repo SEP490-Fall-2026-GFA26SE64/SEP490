@@ -44,7 +44,7 @@ export const readResult = (id: string, signal?: AbortSignal) => request(`/${enco
 export const readHistory = (signal?: AbortSignal) => request('/history', value => list(value, parseResult), { signal })
 async function request<T>(path: string, parse: (value: unknown) => T, init: RequestInit = {}): Promise<T> {
   let response: Response
-  try { response = await fetch(base + path, { ...init, credentials: 'same-origin', cache: 'no-store' }) }
+  try { response = await workspaceFetch(base + path, init) }
   catch (cause) { if (init.signal?.aborted) throw cause; throw new BaselineError('NETWORK_ERROR') }
   const payload: unknown = await response.json().catch(() => null)
   if (!response.ok) {
@@ -97,3 +97,4 @@ function parseResult(value: unknown): BaselineResult {
   if (new Set(result.skills.map(skill => skill.microSkillId)).size !== result.skills.length) throw new Error('Duplicate result skill')
   return result
 }
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'

@@ -26,6 +26,7 @@ class ModuleAuthoringIntegrationTest {
     }
     @Test void readsGraphCatalogWithoutAuthoringHistoryAndMapsEverySchemaField() {
         try (var pg = new PostgreSQLContainer<>("postgres:17.6-alpine"); var graph = new Neo4jContainer<>("neo4j:5.26-community")
+                .withEnv("JAVA_TOOL_OPTIONS", "-XX:ActiveProcessorCount=2 -Xms64m -Xmx256m")
                 .withEnv("NEO4J_server_memory_heap_initial__size", "128m")
                 .withEnv("NEO4J_server_memory_heap_max__size", "384m")
                 .withEnv("NEO4J_server_memory_pagecache_size", "128m")
@@ -35,7 +36,13 @@ class ModuleAuthoringIntegrationTest {
             pg.start(); graph.start();
             var ds = new DriverManagerDataSource(pg.getJdbcUrl(), pg.getUsername(), pg.getPassword());
             var jdbc = new JdbcTemplate(ds); jdbc.execute("CREATE SCHEMA platform");
-            new ResourceDatabasePopulator(new ClassPathResource("db/migration/V27__module_authoring.sql"), new ClassPathResource("db/migration/V28__module_catalog_intake.sql")).execute(ds);
+            jdbc.execute("CREATE TABLE platform.account(account_id text,identifier text,organization_id text,active boolean)");
+            jdbc.execute("CREATE TABLE platform.organization_membership(membership_id text,account_id text,organization_id text,active boolean)");
+            jdbc.execute("CREATE TABLE platform.organization_membership_role(membership_id text,role_code text)");
+            jdbc.execute("INSERT INTO platform.account VALUES ('expert-a','Expert A','org',true)");
+            jdbc.execute("INSERT INTO platform.organization_membership VALUES ('expert-a','expert-a','org',true)");
+            jdbc.execute("INSERT INTO platform.organization_membership_role VALUES ('expert-a','DOMAIN_EXPERT')");
+            new ResourceDatabasePopulator(new ClassPathResource("db/migration/V33__module_authoring.sql"), new ClassPathResource("db/migration/V34__module_catalog_intake.sql")).execute(ds);
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()))) {
                 try (var session = driver.session()) {
                     session.run("""
@@ -74,13 +81,13 @@ class ModuleAuthoringIntegrationTest {
                     session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.contentUri='content/modules/MOD-FOCUS-SEC01-HIGH.md'").consume();
                 }
                 actor("reviewer", "LD_MANAGER");
-                Intake assigned = service.assignIntake("legacy", List.of("occ"));
+                Intake assigned = service.assignIntake("legacy", List.of("occ"), null, "expert-a");
                 adapter.grant("org", "expert-a", "occ", true);
                 actor("unassigned", "EXPERT");
                 assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
                 actor("expert-a", "EXPERT");
                 Document received = service.acceptIntake("legacy");
-                assertEquals(received, service.detail("legacy")); assertNull(received.createdBy());
+                assertEquals(received, service.detail("legacy")); assertEquals("expert-a", received.createdBy());
                 assertEquals(assigned.source(), received.intake().source());
                 assertEquals("expert-a", received.intake().acceptedBy()); assertNotNull(received.intake().acceptedAt());
                 assertTrue(received.current().payload().content().markdown().contains("Primary task"));
@@ -117,6 +124,7 @@ class ModuleAuthoringIntegrationTest {
     }
     @Test void roundTripsAllFieldsRevisionsGrantsAuditPinsAndRetriesAcrossRealStores() {
         try (var pg = new PostgreSQLContainer<>("postgres:17.6-alpine"); var graph = new Neo4jContainer<>("neo4j:5.26-community")
+                .withEnv("JAVA_TOOL_OPTIONS", "-XX:ActiveProcessorCount=2 -Xms64m -Xmx256m")
                 .withEnv("NEO4J_server_memory_heap_initial__size", "128m")
                 .withEnv("NEO4J_server_memory_heap_max__size", "384m")
                 .withEnv("NEO4J_server_memory_pagecache_size", "128m")
@@ -127,10 +135,12 @@ class ModuleAuthoringIntegrationTest {
             var ds = new DriverManagerDataSource(pg.getJdbcUrl(), pg.getUsername(), pg.getPassword());
             var jdbc = new JdbcTemplate(ds); jdbc.execute("CREATE SCHEMA platform");
             jdbc.execute("CREATE TABLE platform.account(account_id text, identifier text, organization_id text, active boolean)");
-            jdbc.execute("CREATE TABLE platform.account_role(account_id text, role_code text)");
+            jdbc.execute("CREATE TABLE platform.organization_membership(membership_id text, account_id text, organization_id text, active boolean)");
+            jdbc.execute("CREATE TABLE platform.organization_membership_role(membership_id text, role_code text)");
             jdbc.execute("INSERT INTO platform.account VALUES ('expert-a','Expert A','org',true),('expert-b','Expert B','org',true),('foreign-expert','Foreign','foreign-org',true),('inactive-expert','Inactive','org',false)");
-            jdbc.execute("INSERT INTO platform.account_role VALUES ('expert-a','DOMAIN_EXPERT'),('expert-b','DOMAIN_EXPERT'),('foreign-expert','DOMAIN_EXPERT'),('inactive-expert','DOMAIN_EXPERT')");
-            new ResourceDatabasePopulator(new ClassPathResource("db/migration/V27__module_authoring.sql"), new ClassPathResource("db/migration/V28__module_catalog_intake.sql")).execute(ds);
+            jdbc.execute("INSERT INTO platform.organization_membership SELECT account_id,account_id,organization_id,true FROM platform.account");
+            jdbc.execute("INSERT INTO platform.organization_membership_role VALUES ('expert-a','DOMAIN_EXPERT'),('expert-b','DOMAIN_EXPERT'),('foreign-expert','DOMAIN_EXPERT'),('inactive-expert','DOMAIN_EXPERT')");
+            new ResourceDatabasePopulator(new ClassPathResource("db/migration/V33__module_authoring.sql"), new ClassPathResource("db/migration/V34__module_catalog_intake.sql")).execute(ds);
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()))) {
                 try (var session = driver.session()) {
                     session.run("CREATE (:Occupation {id:'occ',name:'Occupation',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE'})").consume();
@@ -139,13 +149,21 @@ class ModuleAuthoringIntegrationTest {
                 var service = new ModuleAuthoringService(adapter);
                 actor("reviewer", "LD_MANAGER"); assertEquals(Set.of("expert-a", "expert-b"), new HashSet<>(adapter.catalog("Expert").stream().map(Choice::id).toList())); service.grant("expert-a", "occ", true); service.grant("expert-b", "occ", true);
                 actor("expert-a", "EXPERT");
-                Content content = service.content("Lesson", "# A lesson\n[video](https://example.org/lesson.mp4)", List.of("occ"));
-                Save input = new Save("Module", "LESSON_AND_PRACTICE", content.id(), 120, new BigDecimal("150000"), List.of("occ"), List.of(
+                Content content = service.content("Lesson", "# A lesson\n[video](https://example.org/lesson.mp4)", null);
+                assertTrue(content.occupationIds().isEmpty());
+                Save input = new Save("Module", "LESSON_AND_PRACTICE", content.id(), 120, new BigDecimal("150000"), null, List.of(
                         new TeachingInput("skill", "PRIMARY", "HIGH"), new TeachingInput("support", "SUPPORTING", "LOW")));
                 Document doc = service.create(input);
+                assertTrue(doc.occupationIds().isEmpty());
                 assertEquals(doc, service.detail(doc.id()));
-                actor("expert-b", "EXPERT"); doc = service.update(doc.id(), doc.lockVersion(), input);
-                assertEquals("expert-a", doc.createdBy()); assertEquals("expert-b", doc.current().editedBy());
+                actor("expert-b", "EXPERT");
+                Document protectedDoc = doc;
+                assertEquals(doc, service.detail(doc.id()));
+                assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.update(protectedDoc.id(), protectedDoc.lockVersion(), input)).status());
+                assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.delete(protectedDoc.id(), protectedDoc.lockVersion())).status());
+                assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.action(protectedDoc.id(), protectedDoc.lockVersion(), "submit", null)).status());
+                actor("expert-a", "EXPERT"); doc = service.update(doc.id(), doc.lockVersion(), input);
+                assertEquals("expert-a", doc.createdBy()); assertEquals("expert-a", doc.current().editedBy());
                 doc = service.action(doc.id(), doc.lockVersion(), "submit", null);
                 actor("reviewer", "LD_MANAGER"); doc = service.action(doc.id(), doc.lockVersion(), "approve", null);
                 Document released = service.detail(doc.id()); assertEquals(doc, released); assertEquals("RELEASED", released.current().state());
@@ -181,7 +199,7 @@ class ModuleAuthoringIntegrationTest {
                 actor("expert-a", "EXPERT"); doc = service.action(doc.id(), doc.lockVersion(), "restore", null);
                 assertEquals("DRAFT", doc.current().state()); assertEquals(3, doc.revisions().size());
                 actor("reviewer", "LD_MANAGER"); service.grant("expert-b", "occ", false);
-                actor("expert-b", "EXPERT"); assertThrows(ModuleAuthoringService.Failure.class, () -> service.detail(id));
+                actor("expert-b", "EXPERT"); assertEquals(id, service.detail(id).id());
                 assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM platform.module_grant_audit", Integer.class));
                 var foreign = new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(new DataSourceTransactionManager(ds)), new ObjectMapper(), driver, "foreign-org");
                 assertTrue(foreign.documents("foreign-org").isEmpty());

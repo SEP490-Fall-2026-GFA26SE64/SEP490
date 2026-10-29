@@ -1,3 +1,5 @@
+> **Historical local implementation:** Current source requirements are in [Learning Catalog](../Learning%20catalog/README.md). Pre-merge V27/V28 references describe the old database; combined-source migrations are V33/V34. See [architecture](../../ARCHITECTURE.md#merge-migration-boundary--2026-10-29).
+
 # Tiếp nhận module từ danh mục Neo4j
 
 REQ-013-F01/F02 và REQ-053-F01–F04. User approved option A on 2026-10-28.

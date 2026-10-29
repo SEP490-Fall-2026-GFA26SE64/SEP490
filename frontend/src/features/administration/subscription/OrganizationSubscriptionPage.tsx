@@ -1,419 +1,130 @@
-import * as React from 'react'
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle2,
-  CreditCard,
-  Download,
-  RefreshCw,
-  RotateCcw,
-  Users,
-} from 'lucide-react'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { Progress } from '../../../shared/components/ui/Progress'
+import { useState } from 'react'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { CalendarDays, CreditCard, Users } from 'lucide-react'
+import { AdminPageLayout } from '../AdminPageLayout'
 import { StatCard } from '../../../shared/components/ui/StatCard'
-import { useToast } from '../../../shared/hooks/useToast'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import {
-  getActiveCompany,
-  updateActiveCompany,
-  type CompanyRecord,
-  type PackageTier,
-} from '../../../shared/stores/companyStore'
-import {
-  loadPlatformPlans,
-  logPlatformEvent,
-  type PlatformSubscriptionPlan,
-} from '../../platform-admin/platformAdminStore'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../shared/components/ui/Card'
+import { Button, buttonVariants } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { getIdentity, getStatus, getSummary, type Identity } from '../../subscription/subscriptionApi'
+import { Failure, Loading, StateLabel, useCopy } from '../../subscription/SubscriptionFeedback'
+import { PlanCatalog } from '../../subscription/PlanCatalog'
+import { PaymentStatusPanel } from '../../subscription/PaymentStatusPanel'
 
-interface PaymentHistoryItem {
-  id: string
-  invoiceNumber: string
-  date: string
-  tier: PackageTier
-  period: string
-  amount: string
-  method: string
-  status: 'PAID' | 'PENDING' | 'REFUNDED'
-}
+const date = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
 
 export function OrganizationSubscriptionPage() {
-  const { toast } = useToast()
-  const [activeCompany, setActiveCompany] = React.useState<CompanyRecord>(getActiveCompany)
-  const [plans] = React.useState<PlatformSubscriptionPlan[]>(loadPlatformPlans)
-
-  // Renewal / Upgrade Modal state
-  const [isRenewModalOpen, setIsRenewModalOpen] = React.useState(false)
-  const [selectedPlanTier, setSelectedPlanTier] = React.useState<PackageTier>(activeCompany.packageTier || 'Growth')
-  const [renewalBillingCycle, setRenewalBillingCycle] = React.useState<'monthly' | 'annual'>('annual')
-  const [isProcessingRenewal, setIsProcessingRenewal] = React.useState(false)
-
-  const reloadData = React.useCallback(() => {
-    setActiveCompany(getActiveCompany())
-  }, [])
-
-  React.useEffect(() => {
-    window.addEventListener('companies_updated', reloadData)
-    window.addEventListener('active_company_changed', reloadData)
-    return () => {
-      window.removeEventListener('companies_updated', reloadData)
-      window.removeEventListener('active_company_changed', reloadData)
-    }
-  }, [reloadData])
-
-  // Initial payment records
-  const [paymentHistory] = React.useState<PaymentHistoryItem[]>([
-    {
-      id: 'pay-01',
-      invoiceNumber: 'INV-2026-9041',
-      date: '2026-01-15',
-      tier: activeCompany.packageTier || 'Growth',
-      period: 'Annual Subscription (2026 - 2027)',
-      amount: '$4,788 USD (117,300,000 ₫)',
-      method: 'PayOS VietQR (MB Bank)',
-      status: 'PAID',
-    },
-    {
-      id: 'pay-02',
-      invoiceNumber: 'INV-2025-4120',
-      date: '2025-01-15',
-      tier: 'Starter',
-      period: 'Annual Subscription (2025 - 2026)',
-      amount: '$1,908 USD (46,750,000 ₫)',
-      method: 'PayOS VietQR (VietinBank)',
-      status: 'PAID',
-    },
-  ])
-
-  const usedSeats = activeCompany.users.length
-  const maxSeats = activeCompany.maxUsers || 50
-  const seatPercentage = Math.round((usedSeats / maxSeats) * 100)
-
-  const handleOpenRenew = () => {
-    setSelectedPlanTier(activeCompany.packageTier || 'Growth')
-    setIsRenewModalOpen(true)
+  const c = useCopy()
+  const [search] = useSearchParams()
+  const identity = useQuery({ queryKey: ['workspace-identity'], queryFn: getIdentity, staleTime: 0 })
+  const returnedOrder = search.get('order')
+  if (returnedOrder) return <Navigate to={`/admin/subscription/payment-result?order=${encodeURIComponent(returnedOrder)}`} replace />
+  if (identity.isPending) return <Loading />
+  if (identity.isError) return <Failure error={identity.error} />
+  if (!identity.data?.accountId || !identity.data.organizationId || identity.data.stage !== 'COMPLETE' ||
+    !identity.data.roles.includes('ORGANIZATION_ADMINISTRATOR')) {
+    return <Failure error={new Error(c('System Administrator authentication is required.', 'Cần xác thực Quản trị hệ thống.'))} />
   }
+  return <SubscriptionContent identity={identity.data} organization={identity.data.organizationId} principal={identity.data.accountId} />
+}
 
-  const handleExecuteRenewal = () => {
-    setIsProcessingRenewal(true)
-    setTimeout(() => {
-      const selectedPlan = plans.find((p) => p.tier === selectedPlanTier)
-      const newMaxUsers = selectedPlan?.seatLimit || (selectedPlanTier === 'Enterprise' ? 200 : selectedPlanTier === 'Growth' ? 50 : 20)
-
-      updateActiveCompany((c) => ({
-        ...c,
-        packageTier: selectedPlanTier,
-        maxUsers: newMaxUsers,
-      }))
-
-      logPlatformEvent({
-        organizationId: activeCompany.id,
-        organizationName: activeCompany.name,
-        actor: activeCompany.ownerEmail,
-        action: 'SUBSCRIPTION_RENEWED',
-        details: `Organization renewed/upgraded to ${selectedPlanTier} Tier (${newMaxUsers} seats) via PayOS simulation.`,
-        severity: 'success',
-      })
-
-      setIsProcessingRenewal(false)
-      setIsRenewModalOpen(false)
-      reloadData()
-
-      toast({
-        title: 'Subscription Successfully Renewed',
-        description: `Your workspace is now on the ${selectedPlanTier} plan with ${newMaxUsers} employee seats.`,
-        variant: 'success',
-      })
-    }, 1000)
-  }
-
-  const handleDownloadInvoice = (inv: PaymentHistoryItem) => {
-    toast({
-      title: 'Invoice Downloaded',
-      description: `Tax Invoice ${inv.invoiceNumber} downloaded as PDF.`,
-      variant: 'info',
-    })
-  }
-
-  return (
-    <WorkspaceLayout>
-      <div className="space-y-6 pb-16">
-        {/* Actions Bar */}
-        <PageHeader
-          actions={
-            <Button variant="primary" size="sm" onClick={handleOpenRenew} className="flex items-center gap-1.5 shadow-xs">
-              <RotateCcw size={14} />
-              <span>Renew or Upgrade Subscription</span>
-            </Button>
-          }
-        />
-
-        {/* Top KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard
-            title="Current Subscription Tier"
-            value={activeCompany.packageTier || 'Growth Tier'}
-            icon={<CreditCard size={18} className="text-primary" />}
-            description="Active billing cycle on PayOS"
-          />
-          <StatCard
-            title="Valid Period"
-            value="Valid thru Jan 2027"
-            icon={<Calendar size={18} className="text-success" />}
-            description="89 days remaining in current period"
-          />
-          <StatCard
-            title="Employee Seat Quota"
-            value={`${usedSeats} / ${maxSeats} Seats`}
-            icon={<Users size={18} className="text-primary" />}
-            description={`${maxSeats - usedSeats} seats available for assignment`}
-          />
+function SubscriptionContent({ identity, organization, principal }: { identity: Identity; organization: string; principal: string }) {
+  const c = useCopy()
+  const base = `/api/v1/organizations/${organization}/subscription`
+  const summary = useQuery({ queryKey: ['subscription-summary', principal, organization], queryFn: () => getSummary(organization), refetchInterval: 3000 })
+  const order = useQuery({ queryKey: ['renewal-order', principal, organization], queryFn: () => getStatus(base), refetchInterval: 3000 })
+  const [renew, setRenew] = useState(false)
+  const value = summary.data
+  const unresolved = !!order.data?.order && order.data.applicationState !== 'APPLIED'
+  const canRenew = !!value && value.workspaceStatus !== 'SUSPENDED' && !value.scheduled && !unresolved && order.isSuccess
+  const refresh = () => { void order.refetch(); void summary.refetch() }
+  return <AdminPageLayout identity={identity} organizationName={value?.organizationName}
+    title={c('Organization subscription', 'Gói đăng ký tổ chức')}
+    description={c('Review your purchased plan, paid periods and billing history.', 'Xem gói đã mua, kỳ trả phí và lịch sử thanh toán.')}
+    actions={<Link className={buttonVariants({ variant: 'outline' })} to="/admin/users">
+      <Users size={16} className="mr-2" aria-hidden="true" />{c('Manage users', 'Quản lý người dùng')}
+    </Link>}>
+    {summary.isPending ? <Loading /> : summary.isError ? <Failure error={summary.error} retry={() => void summary.refetch()} /> : value && <>
+      {value.workspaceStatus === 'SUSPENDED' && <div role="status" className="rounded-lg border border-destructive/30 bg-card p-4">
+        <Badge variant="destructive" className="mb-2"><StateLabel value="SUSPENDED" /></Badge>
+        <br />
+        {c('Workspace suspended. Billing is available, but renewal and workspace access remain blocked.', 'Không gian bị tạm ngưng. Có thể xem thanh toán nhưng không thể gia hạn hoặc truy cập chức năng làm việc.')}
+      </div>}
+      {value.subscriptionStatus === 'EXPIRED' && <div role="status" className="rounded-lg border border-warning/40 bg-card p-4">
+        {c('Your paid period has ended. Renew to restore eligible access; manage seat reductions in User Accounts.', 'Kỳ trả phí đã kết thúc. Gia hạn để khôi phục truy cập; giảm số ghế tại trang Người dùng.')}
+      </div>}
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <Card className="overflow-hidden border-primary/20">
+          <CardHeader className="border-b border-border bg-secondary/30">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1">
+                <CardDescription className="flex items-center gap-2"><CreditCard size={16} aria-hidden="true" />{c('Current plan', 'Gói hiện tại')}</CardDescription>
+                <Heading level={2} size="section">{value.current?.terms.name ?? c('No active paid period', 'Chưa có kỳ trả phí đang hoạt động')}</Heading>
+              </div>
+              <Badge variant={value.subscriptionStatus === 'ACTIVE' ? 'success' : 'warning'}><StateLabel value={value.subscriptionStatus} /></Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-5 pt-5">
+            {value.current && <>
+              <p className="text-muted-foreground">{value.current.terms.description}</p>
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <Heading level={3} size="page">{value.current.terms.priceVnd.toLocaleString('vi-VN')} VND</Heading>
+                <span className="text-body-sm text-muted-foreground">/ {value.current.terms.durationMonths} {c('calendar month(s)', 'tháng theo lịch')}</span>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-4">
+                <h2 className="mb-2 flex items-center gap-2 font-semibold"><CalendarDays size={16} aria-hidden="true" />{c('Current paid period', 'Kỳ đã trả hiện tại')}</h2>
+                <p className="text-body-sm">{date(value.current.startsAt)} → {date(value.current.endsAt)}</p>
+                <p className="mt-2 text-caption text-muted-foreground">Asia/Ho_Chi_Minh · {c('Access ends at the exact end time. No grace period.', 'Truy cập kết thúc đúng hạn. Không có thời gian gia hạn miễn phí.')}</p>
+              </div>
+            </>}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+              <p className="text-caption text-muted-foreground">{c('Keep your team’s workspace available.', 'Duy trì không gian làm việc cho đội ngũ.')}</p>
+              <Button disabled={!canRenew} onClick={() => setRenew(!renew)}>{c('Renew subscription', 'Gia hạn gói')}</Button>
+            </div>
+            {!canRenew && <p className="text-caption text-muted-foreground">{c('Renewal is unavailable while suspended, a future period is scheduled, or a payment is unresolved.', 'Không thể gia hạn khi tạm ngưng, đã có kỳ tiếp theo hoặc thanh toán chưa hoàn tất.')}</p>}
+          </CardContent>
+        </Card>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+          <StatCard title={c('Used / allocated Employee seats', 'Chỗ Nhân viên đang dùng / được cấp')} value={`${value.usedSeats} / ${value.allocatedSeats}`}
+            icon={<Users size={16} aria-hidden="true" />} description={c('Only active Employee accounts and memberships count. Manage people in User Accounts.', 'Chỉ tính tài khoản và membership Nhân viên đang hoạt động. Quản lý người dùng tại trang riêng.')} />
+          <StatCard title={c('Admission limit', 'Giới hạn tiếp nhận')} value={value.admissionLimit}
+            description={c('Includes pending and scheduled lower-seat commitments; it does not remove existing users.', 'Bao gồm cam kết giảm chỗ đang chờ hoặc đã đặt lịch; không tự xóa người dùng.')} />
         </div>
-
-        {/* Seat Utilization Bar */}
-        <Card className="shadow-xs border-border bg-card">
-          <CardHeader className="pb-3 border-b border-border/70">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-bold flex items-center gap-2">
-                <Users size={16} className="text-primary" />
-                Employee Seat Capacity
-              </CardTitle>
-              <Badge variant={seatPercentage >= 90 ? 'warning' : 'secondary'} className="font-mono text-xs font-bold">
-                {seatPercentage}% Utilized
-              </Badge>
-            </div>
-            <CardDescription className="text-xs text-muted-foreground">
-              Allocated seats govern the maximum concurrent employees, L&D managers, and experts in your workspace.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="pt-4 space-y-3 text-xs">
-            <div className="flex items-center justify-between font-semibold">
-              <span className="text-foreground">{usedSeats} occupied seats</span>
-              <span className="text-muted-foreground">{maxSeats} total quota</span>
-            </div>
-            <Progress value={seatPercentage} className="h-2.5" />
-            {seatPercentage >= 90 && (
-              <p className="text-warning text-[11px] font-medium flex items-center gap-1">
-                <AlertCircle size={13} />
-                You are approaching your employee seat quota. Upgrade to Enterprise to support up to 200 members.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Payment History & Invoice Table */}
-        <Card className="shadow-xs border-border bg-card">
-          <CardHeader className="pb-3 border-b border-border/70">
-            <CardTitle className="text-base font-bold">Payment History & Tax Invoices</CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Historical PayOS transactions with verified HMAC signatures.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 text-muted-foreground border-b border-border font-semibold uppercase text-[10px] tracking-wider">
-                  <tr>
-                    <th className="py-3 px-4">Invoice #</th>
-                    <th className="py-3 px-4">Billing Date</th>
-                    <th className="py-3 px-4">Subscription Period</th>
-                    <th className="py-3 px-4">Amount Charged</th>
-                    <th className="py-3 px-4">Payment Method</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Receipt</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {paymentHistory.map((item) => (
-                    <tr key={item.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-foreground">{item.invoiceNumber}</td>
-                      <td className="py-3 px-4 font-mono text-muted-foreground">{item.date}</td>
-                      <td className="py-3 px-4 font-medium text-foreground">{item.period}</td>
-                      <td className="py-3 px-4 font-mono font-bold text-primary">{item.amount}</td>
-                      <td className="py-3 px-4 text-muted-foreground">{item.method}</td>
-                      <td className="py-3 px-4">
-                        <Badge variant="success" className="text-[10px] py-0 font-bold">
-                          <CheckCircle2 size={10} className="mr-1" /> {item.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDownloadInvoice(item)}
-                          className="h-7 text-xs flex items-center gap-1 text-primary hover:bg-primary/10"
-                        >
-                          <Download size={12} />
-                          <span>PDF</span>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Renewal / Upgrade Modal */}
-        <Dialog open={isRenewModalOpen} onOpenChange={setIsRenewModalOpen} className="max-w-xl">
-          <DialogHeader>
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
-              <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-                <CreditCard className="h-5 w-5 text-primary shrink-0" />
-                <span>Renew or Upgrade Workspace Subscription</span>
-              </DialogTitle>
-              <Badge variant="primary" className="text-[10px] font-bold uppercase tracking-wider">
-                PAYOS VIETQR
-              </Badge>
-            </div>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Select your target plan tier and billing duration. Changes take effect immediately via automated PayOS webhook settlement.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2 text-xs">
-            {/* Current Workspace Metadata Panel */}
-            <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl bg-muted/40 border border-border text-xs">
-              <div>
-                <span className="text-muted-foreground block text-[11px] font-medium">Current Tier</span>
-                <strong className="font-bold text-foreground text-xs">{activeCompany.packageTier || 'Growth'}</strong>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[11px] font-medium">Allocated Seats</span>
-                <strong className="font-mono text-foreground font-bold text-xs">
-                  {activeCompany.users.length} / {activeCompany.maxUsers}
-                </strong>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[11px] font-medium">Billing Cycle</span>
-                <strong className="text-foreground font-bold text-xs uppercase">{renewalBillingCycle}</strong>
-              </div>
-            </div>
-
-            {/* Tier selection cards */}
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-2">
-                Select Subscription Plan Tier
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {(['Starter', 'Growth', 'Enterprise'] as const).map((tier) => {
-                  const plan = plans.find((p) => p.tier === tier)
-                  const isSelected = selectedPlanTier === tier
-                  return (
-                    <div
-                      key={tier}
-                      onClick={() => setSelectedPlanTier(tier)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                        isSelected
-                          ? 'border-primary bg-secondary/60 text-foreground ring-2 ring-primary/20 shadow-xs'
-                          : 'border-border bg-card text-muted-foreground hover:border-primary/40'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-foreground text-xs">{tier}</span>
-                          {tier === 'Growth' && (
-                            <Badge variant="primary" className="text-[9px] py-0 px-1">Popular</Badge>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-1">
-                          {tier === 'Starter' ? '20 Seats' : tier === 'Growth' ? '50 Seats' : '200 Seats'}
-                        </p>
-                      </div>
-                      <div className="mt-3 pt-2 border-t border-border/60">
-                        <span className="text-sm font-bold text-foreground">
-                          ${plan ? (renewalBillingCycle === 'annual' ? plan.priceUsdAnnual : plan.priceUsdMonthly) : tier === 'Enterprise' ? 799 : 399}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground"> /mo</span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Annual vs monthly toggle */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-              <div>
-                <span className="font-semibold text-foreground text-xs block">Billing Duration</span>
-                <span className="text-[11px] text-muted-foreground">Annual billing saves 20% compared to monthly</span>
-              </div>
-              <div className="flex items-center gap-1.5 p-1 rounded-lg bg-background border border-border">
-                <button
-                  type="button"
-                  onClick={() => setRenewalBillingCycle('monthly')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    renewalBillingCycle === 'monthly' ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRenewalBillingCycle('annual')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    renewalBillingCycle === 'annual' ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Annual (20% Off)
-                </button>
-              </div>
-            </div>
-
-            {/* Total summary */}
-            <div className="p-3.5 rounded-xl bg-secondary/50 border border-primary/20 text-xs text-foreground flex items-center justify-between">
-              <div>
-                <p className="font-bold text-foreground">PayOS Total Settlement Amount</p>
-                <p className="text-muted-foreground text-[11px]">Instant activation via automated PayOS VietQR hook</p>
-              </div>
-              <span className="text-base font-extrabold text-primary">
-                {selectedPlanTier === 'Enterprise'
-                  ? renewalBillingCycle === 'annual' ? '$9,588 USD' : '$999 USD'
-                  : selectedPlanTier === 'Growth'
-                  ? renewalBillingCycle === 'annual' ? '$4,788 USD' : '$499 USD'
-                  : renewalBillingCycle === 'annual' ? '$1,908 USD' : '$199 USD'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-border mt-4 shrink-0">
-            <Button variant="outline" size="sm" onClick={() => setIsRenewModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              disabled={isProcessingRenewal}
-              onClick={handleExecuteRenewal}
-              className="flex items-center gap-1.5"
-            >
-              {isProcessingRenewal ? (
-                <>
-                  <RefreshCw size={13} className="animate-spin" />
-                  <span>Processing PayOS Webhook...</span>
-                </>
-              ) : (
-                <>
-                  <CreditCard size={13} />
-                  <span>Confirm PayOS Renewal</span>
-                </>
-              )}
-            </Button>
-          </div>
-        </Dialog>
       </div>
-    </WorkspaceLayout>
-  )
+      {value.scheduled && <Card><CardHeader><CardTitle>{c('Scheduled paid period', 'Kỳ đã trả tiếp theo')}</CardTitle></CardHeader>
+        <CardContent><p className="font-semibold">{value.scheduled.terms.name} · {value.scheduled.terms.employeeSeats} {c('Employee seats', 'chỗ Nhân viên')}</p>
+          <p className="mt-2 text-body-sm">{date(value.scheduled.startsAt)} → {date(value.scheduled.endsAt)} (Asia/Ho_Chi_Minh)</p></CardContent></Card>}
+      {renew && canRenew && <PlanCatalog base={base} principal={principal} onCreated={() => { setRenew(false); refresh() }} />}
+      {order.isError && <Failure error={order.error} retry={() => void order.refetch()} />}
+      {order.data?.order && <section aria-label={c('Latest payment', 'Thanh toán mới nhất')} className="space-y-3">
+        <h2 className="text-section font-semibold">{c('Latest payment', 'Thanh toán mới nhất')}</h2>
+        <PaymentStatusPanel status={order.data} guest={false} principal={principal} base={base} refresh={refresh} />
+      </section>}
+      <Card>
+        <CardHeader><CardTitle>{c('Payment history', 'Lịch sử thanh toán')}</CardTitle>
+          <CardDescription>{c('Recorded orders, including pending and unsuccessful outcomes. Order totals are not proof of received funds.', 'Các đơn đã ghi nhận, gồm đang chờ và chưa thành công. Tổng đơn không phải bằng chứng đã nhận tiền.')}</CardDescription></CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto" role="region" aria-label={c('Payment history', 'Lịch sử thanh toán')} tabIndex={0}>
+            <table className="w-full min-w-[640px] text-left text-body-sm">
+              <thead className="border-y border-border bg-muted/50 text-muted-foreground"><tr>
+                <th className="p-4">{c('Plan / order', 'Gói / đơn')}</th><th className="p-4">{c('Created', 'Đã tạo')}</th>
+                <th className="p-4">{c('Order total', 'Tổng đơn')}</th><th className="p-4">{c('Verified received', 'Đã nhận xác minh')}</th><th className="p-4">{c('Status', 'Trạng thái')}</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border">
+                {value.paymentHistory.map(item => <tr key={item.orderId} className="transition-colors hover:bg-muted/30">
+                  <td className="p-4"><Link to={`/admin/subscription/payment-result?order=${item.orderId}`} className="font-semibold text-primary underline-offset-4 hover:underline">{item.terms.name}</Link><p className="mt-1 font-mono text-caption text-muted-foreground">#{item.providerOrderCode}</p></td>
+                  <td className="p-4">{date(item.createdAt)}</td><td className="p-4 whitespace-nowrap">{item.terms.priceVnd.toLocaleString('vi-VN')} VND</td>
+                  <td className="p-4 whitespace-nowrap">{item.observedPaidAmount === null ? c('Not yet known', 'Chưa xác định') : `${item.observedPaidAmount.toLocaleString('vi-VN')} VND`}</td>
+                  <td className="p-4"><Badge variant={item.paymentStatus === 'PAID' ? 'success' : item.paymentStatus === 'EXCEPTION' ? 'destructive' : 'warning'}><StateLabel value={item.paymentStatus} /></Badge></td>
+                </tr>)}
+                {value.paymentHistory.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">{c('No payment records.', 'Chưa có thanh toán.')}</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </>}
+  </AdminPageLayout>
 }

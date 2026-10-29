@@ -1,3 +1,5 @@
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+
 import type {
   ChooseTargetRoleCommand,
   ChooseTargetRoleInput,
