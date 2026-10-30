@@ -257,3 +257,45 @@ Production publishes HTTP on `127.0.0.1:${WEB_PORT:-8088}`. Place a separately m
 5. **Assessment and adaptation:** Define baseline/module/RIASEC rules, mastery and gap calculations, local-LLM inputs/failures, initial Expert confirmation, recalculation and override preservation. No mandatory Expert AI-guidance review or failure-only adaptation.
 6. **Reporting and audit:** Define employee/department aggregation, costs/benefits attribution, ROI calculation, zero-cost/mixed-currency behavior, event retention and notification delivery policies.
 7. **Deployment and verification:** Implement the Nginx/GitHub Actions target and external integrations; choose HTTPS/domain, secret handling, backups and monitoring. Test complete workflows and isolation with at least two demo organizations. Preserve historical evidence; new requirements need new unit/integration/system evidence rather than relabeled passing runs.
+
+## Question Bank authoring — R2 (2026-10-30)
+
+Implementation targets the approved Question Bank subset of FR-05.06. Runtime acceptance is recorded separately in `testing/system/REQ-014-question-bank.md`; source implementation is not a production-readiness receipt. Expert `/expert/assessment-bank` and L&D `/ld-manager/question-bank` share the question directory, four statistics cards, MicroSkill grouping, filters and authoring/details/import dialogs. Browser company storage and mock presets are not part of these routed flows; module Blueprint authoring/Employee exams remain separate.
+
+The bank owns working content in PostgreSQL; Neo4j supplies currently ACTIVE/APPROVED MicroSkill identity and name. New MCQs contain four distinct plain-text choices, one correct choice, one skill and EASY/MEDIUM/HARD editorial difficulty. Editorial difficulty does not create/calibrate IRT parameters. Draft save requires only stable code/prompt/skill. Draft options, key, difficulty and explanation may legitimately be incomplete; submission validates all fields including explanation.
+
+### Persisted ownership and fields
+
+| Store | Fields and responsibility |
+|---|---|
+| `question_bank_workspace` | Organization PK, unique existing `question_bank_id`, staff-only JSON aggregate. Reuse sole existing bank or create one; ambiguous legacy multiple banks return409 without merging/rebinding. |
+| Aggregate bank | `id`, `organization`, `name`, `questions`, `history`, private per-actor `imports`, recipient-scoped `notices`. |
+| Question | Stable `id`, normalized immutable `code`, nullable historical `createdBy/createdAt`, `owner`, optimistic `revision`, `retired`, pending RETIRE/REACTIVATE `request`, ordered `versions`. Missing legacy owner is not fabricated. |
+| Working version | `id`, integer `number`, DRAFT/SUBMITTED/PUBLISHED state; `content`; editor/time, submitter/time, reviewer/time, return reason, exact-version `viewed` acknowledgements. Nullable facts remain absent until the actual event occurs. |
+| Content | Plain `prompt`, `options`, nullable draft `correctAnswer`, required `skillId`, server-resolved `skillName`, nullable draft `difficulty/explanation`. No caller-selected reviewer or author. |
+| Audit | Event UUID, stable question/version, action, trusted actor, timestamp, reason and content snapshot. Transfers retain original creators/submitters/reviewers. |
+| Import receipt | UUID/actor/expiry/committed flag, normalized rows, per-row errors/warnings, expected question revisions and matching-content identities. Preview is not publication. |
+| `question_bank_identity` | Stable question PK, bank FK, unique code within bank, retired flag used by future candidate selection. No deletion or published-history rewrite. |
+| Notice | UUID, recipient, title/body without automatic answer content, created/read timestamps. Staff read only their own notices. |
+| `question_bank_mail` | Notice PK, organization/recipient, title/body/time, status/attempts/next attempt, lease owner/expiry, safe error code. Independent fenced at-least-once SMTP retry. |
+
+Canonical lineage adds V29; `workspace-baseline` adds V36. Historical migrations are untouched. Do not deploy this main-based lineage into learning-module-manage's populated V41 workspace database: V36 there has a different applied meaning. Use the isolated Question Bank test stack or explicitly reconcile future deployment lineage.
+
+### Commands and consistency
+
+Trusted session/membership/workspace entitlement resolves actors; only same-organization DOMAIN_EXPERT/LD_MANAGER may use the bank API. Commands recheck active membership/role under transaction locks. Per-organization advisory serialization plus expected question revision prevents competing writes. Only responsible Expert edits/submits/withdraws; peers read. L&D assigns/transfers with reason, reviews/returns, confirms retirement/reactivation. Submitted content is immutable; returning/withdrawing invalidates review acknowledgement. Transfer retains exact submitted content and original submitter.
+
+L&D acknowledgement is tied to the submitted version. Approval atomically publishes that complete version; bulk approval validates all selected versions first and rolls back every decision on any failure. New complete versions project into existing `item_version` using protected A–D key/response schema and content hash; existing legacy DRAFT rows can publish only after authorized repair/review. Existing PUBLISHED rows remain immutable. Explanations/audits remain staff-only authoring data; no change to Employee answer-release policy.
+
+A successor is a new candidate version; old published content remains eligible while it is draft/submitted. Approval does not replace pins or promote model parameters. Confirmed retirement disables the stable question across versions for future selection; pinned historical assessment/attempt definitions remain intact. Reactivation is explicit, validates current eligible published content and never publishes a draft.
+
+Import uses .xlsx/JSON template columns. The existing frontend XLSX parser produces rows; the server treats every row as untrusted, enforces configured request/row limits, applies the same code/prompt/skill minimum for incomplete drafts, validates and persists preview before confirm. Default limits10MiB/500 rows are exposed in session and configurable by `question-bank.import.max-bytes/max-rows`. Any invalid row blocks the batch. Own published code requires explicit successor confirmation; foreign/unassigned codes or active candidate block all writes. Normalized prompt plus four choices yields an acknowledgement warning for different codes. Confirm rechecks ownership, expected revisions, current MicroSkill eligibility and changed duplicate-content conditions; one transaction commits the entire batch.
+
+Notifications are persisted with question mutation; email jobs are independent. SMTP failure does not roll back question decisions. Worker locks/leases jobs, checks current same-organization active staff recipient, retries then records failure, uses stable Message-ID; exactly-once email delivery is not claimed. Acceptance sends only to the isolated local Mailpit.
+
+Catalog reads use `Neo4jQuestionBankSkillReader` with asynchronous Bolt I/O, a server transaction timeout and a bounded caller deadline (`question-bank.catalog.timeout-ms`, default10000, positive and at most30000). Timeout returns503 and starts nonblocking session cleanup. A disconnected graph response cannot indefinitely retain the caller's PostgreSQL transaction/advisory lock; a real PostgreSQL regression verifies rollback and a subsequent bank read. Query filters remain ACTIVE/APPROVED; unavailability never creates substitute skills.
+
+The repeatable local acceptance harness may run the same packaged API artifact on host JDK21 with PostgreSQL/Neo4j/Mailpit in the dedicated Compose project. `backend/src/test/run-question-bank-api.sh` fixes fixture-only database/ports and bounds/refreshes local database connections. This host-API topology is recorded explicitly in the system evidence and is not a container performance or production deployment claim. The existing development stack/database remains separate.
+
+
+Local8088 deployment note (2026-10-30): the preserved accounts/module/content database uses a different historical migration lineage from this branch. Its compatibility runtime retains existing module/content code and dependencies, aligns existing V33–V41 SQL resources with unchanged database history, and appends Question Bank tables as V42. Branch canonical V29/workspace V36 remain unchanged. A plain branch artifact is not interchangeable with this local database; reconcile lineage before a future full deployment. Backup and actual smoke results are recorded in [Question Bank system evidence](testing/system/REQ-014-question-bank.md#existing-8088-deployment--2026-10-30).

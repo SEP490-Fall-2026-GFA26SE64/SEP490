@@ -53,7 +53,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
                 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(item.response_schema->'options')='array'
                     THEN item.response_schema->'options' ELSE '[]'::jsonb END) option
             ) options
-            WHERE item.question_bank_id=:bank AND item.publication_state='PUBLISHED'
+            WHERE item.question_bank_id=:bank AND item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired)
                 AND item.micro_skill_id IN (:skills) AND btrim(item.prompt)<>''
                 AND btrim(item.micro_skill_name_snapshot)<>'' AND item.difficulty IN ('EASY','MEDIUM','HARD')
                 AND item.response_schema->>'type'='SINGLE_CHOICE'
@@ -124,7 +124,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
             var parameterRows = technical.findParameters(selected, skills);
             var parameters = parameterRows.stream().collect(Collectors.toMap(
                     AdaptiveTechnicalVersionPort.ItemParameter::itemVersionId, AdaptiveTechnicalVersionPort.ItemParameter::microSkillId));
-            List<Item> items = skills.isEmpty() ? List.of() : jdbc.query(demoDraft ? ITEMS.replace("item.publication_state='PUBLISHED'", "item.publication_state IN ('DRAFT','PUBLISHED')") : ITEMS, params.addValue("skills", skills),
+            List<Item> items = skills.isEmpty() ? List.of() : jdbc.query(demoDraft ? ITEMS.replace("item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired)", "item.publication_state IN ('DRAFT','PUBLISHED')") : ITEMS, params.addValue("skills", skills),
                     (rs, row) -> new Item(rs.getObject("item_version_id", UUID.class), rs.getString("micro_skill_id"), rs.getString("content_hash")));
             Set<UUID> published = items.stream().map(Item::id).collect(Collectors.toSet());
             parameterRows.stream().filter(item -> published.contains(item.itemVersionId())).forEach(item -> model.validate(

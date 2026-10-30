@@ -284,9 +284,9 @@
 @media (max-width: 768px) {
   .workspace--authenticated-admin .workspace-sidebar.expanded {
     position: fixed;
-    top: 54px;
+    top: var(--workspace-header-height);
     bottom: 0;
-    height: calc(100dvh - 54px);
+    height: calc(100dvh - var(--workspace-header-height));
     background: hsl(var(--card));
     box-shadow: 8px 0 24px hsl(var(--foreground) / 0.08);
   }

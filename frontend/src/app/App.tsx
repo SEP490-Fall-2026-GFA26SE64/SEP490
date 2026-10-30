@@ -136,6 +136,7 @@ export default function App() {
             <Route path="/ld-manager/dashboard" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />
             <Route path="/ld-manager/baseline-assessments/:occupationId/*" element={<AdaptiveBaselineRoute />} />
+            <Route path="/ld-manager/question-bank" element={<AssessmentBankPage />} />
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/ld-manager/learning-outcomes" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-config" element={<Navigate to="/ld-manager/baseline-assessments" replace />} />
