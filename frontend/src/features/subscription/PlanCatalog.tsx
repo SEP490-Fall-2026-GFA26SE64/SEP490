@@ -32,7 +32,7 @@ export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disab
   if (plans.isError) return <Failure error={plans.error} retry={() => void plans.refetch()} />
   return <section className="space-y-4" aria-label={c('Subscription plans', 'Các gói đăng ký')}>
     {plans.data.length === 0 && <p>{c('No plans are available. Contact the platform administrator.', 'Chưa có gói. Liên hệ quản trị viên nền tảng.')}</p>}
-    <p className="max-w-3xl text-body-sm leading-relaxed text-muted-foreground">{c('Choose the capacity that fits your team. The displayed price covers the full purchased period. Your workspace is prepared after payment is verified.', 'Chọn quy mô phù hợp với đội ngũ. Giá hiển thị áp dụng cho toàn bộ kỳ đã mua. Không gian được chuẩn bị sau khi xác minh thanh toán.')}</p>
+    <p className="max-w-3xl text-body-sm leading-relaxed text-muted-foreground">{c('Choose the capacity that fits your team. The displayed price covers the full selected period. Complete the required steps to prepare your workspace.', 'Chọn quy mô phù hợp với đội ngũ. Giá hiển thị áp dụng cho toàn bộ kỳ đã chọn. Hoàn thành các bước được yêu cầu để chuẩn bị không gian làm việc.')}</p>
     <div className="grid gap-5 md:grid-cols-3">
       {plans.data.map(plan => <Card key={plan.planId} className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md">
         <CardHeader className="border-b border-border bg-muted/20"><CardTitle>{plan.terms.name}</CardTitle>
@@ -54,7 +54,7 @@ export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disab
     </div>
     <Dialog open={selection !== null} ariaLabel={c('Confirm purchase terms', 'Xác nhận điều khoản mua')} onOpenChange={open => { if (!open && !create.isPending) setSelection(null) }}>
         <DialogHeader><DialogTitle>{c('Confirm purchase terms', 'Xác nhận điều khoản mua')}</DialogTitle>
-          <DialogDescription>{c('Review your plan and total. Next, you will receive a secure payOS checkout link. Creating an order does not charge your account.', 'Kiểm tra gói và tổng tiền. Tiếp theo, bạn sẽ nhận liên kết thanh toán payOS. Tạo đơn hàng chưa trừ tiền tài khoản.')}</DialogDescription>
+          <DialogDescription>{c('Review your plan and total. Creating an order does not charge your account. Follow the next page to complete any required payment.', 'Kiểm tra gói và tổng tiền. Tạo đơn hàng chưa trừ tiền tài khoản. Làm theo trang tiếp theo để hoàn thành thanh toán nếu được yêu cầu.')}</DialogDescription>
         </DialogHeader>
         {selection && <div className="space-y-3">
           <div className="space-y-2 rounded-xl border border-border bg-muted/30 p-4">
@@ -62,7 +62,7 @@ export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disab
             <p className="text-body-sm text-muted-foreground">{selection.plan.terms.durationMonths} {c('month(s)', 'tháng')} · {selection.plan.terms.employeeSeats} {c('Employee seats', 'chỗ Nhân viên')}</p>
             <Heading level={3} size="section" className="border-t border-border pt-3">{selection.plan.terms.priceVnd.toLocaleString('vi-VN')} VND</Heading>
           </div>
-          <p>{c('Checkout expires in 30 minutes. A bank transfer is required through payOS.', 'Đơn thanh toán hết hạn sau 30 phút. Cần chuyển khoản qua payOS.')}</p>
+          <p>{c('If payment is required, the payOS checkout expires in 30 minutes. Follow its bank transfer instructions.', 'Nếu cần thanh toán, đơn payOS hết hạn sau 30 phút. Làm theo hướng dẫn chuyển khoản tại trang thanh toán.')}</p>
           {create.isError && <Failure error={create.error} retry={() => { setSelection(null); create.reset(); void plans.refetch() }} />}
           <Button className="w-full" isLoading={create.isPending} onClick={() => create.mutate()}>{c('Create payment order', 'Tạo đơn thanh toán')}</Button>
         </div>}

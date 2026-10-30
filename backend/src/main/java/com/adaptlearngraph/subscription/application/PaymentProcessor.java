@@ -10,15 +10,26 @@ public final class PaymentProcessor {
     private final PaymentGateway gateway;
     private final Clock clock;
     private final String publicUrl;
+    private final com.adaptlearngraph.shared.domain.IntegrationPolicy policy;
 
     public PaymentProcessor(PaymentProcessingStore store, PaymentGateway gateway, Clock clock, String publicUrl) {
+        this(store, gateway, clock, publicUrl, com.adaptlearngraph.shared.domain.IntegrationPolicy.ENABLED);
+    }
+
+    public PaymentProcessor(PaymentProcessingStore store, PaymentGateway gateway, Clock clock, String publicUrl,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
         this.store = store;
         this.gateway = gateway;
         this.clock = clock;
         this.publicUrl = publicUrl.replaceAll("/+$", "");
+        this.policy = policy;
     }
 
-    public void webhook(String payload) { store.record(gateway.verifyWebhook(payload), clock.instant()); }
+    public void webhook(String payload) {
+        if (!policy.payosEnabled()) throw new SubscriptionFailure(SubscriptionFailure.Code.PROVIDER_UNAVAILABLE,
+                "PayOS is disabled in this development environment.");
+        store.record(gateway.verifyWebhook(payload), clock.instant());
+    }
 
     public boolean processNext() {
         var next = store.claim(clock.instant());
@@ -27,6 +38,11 @@ public final class PaymentProcessor {
         var order = work.order();
         try {
             if ("PAYMENT_APPLY".equals(work.handler())) {
+                store.apply(order.orderId(), clock.instant());
+            } else if ("DEV_BYPASSED".equals(order.paymentStatus())) {
+                store.apply(order.orderId(), clock.instant());
+            } else if (!policy.payosEnabled() && !"PAID".equals(order.paymentStatus())) {
+                store.bypassForDevelopment(order.orderId(), clock.instant());
                 store.apply(order.orderId(), clock.instant());
             } else if (!"PAID".equals(order.paymentStatus())) {
                 var observed = gateway.query(order.providerOrderCode(), order.paymentLinkId(),

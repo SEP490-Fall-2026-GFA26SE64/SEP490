@@ -38,6 +38,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest(classes = RegistrationApiIntegrationTest.TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
                 "spring.profiles.active=registration-test", "spring.flyway.enabled=true",
+                "spring.flyway.locations=classpath:db/workspace-migration",
                 "spring.session.jdbc.initialize-schema=never",
                 "spring.session.jdbc.table-name=platform.registration_session",
                 "spring.mail.host=127.0.0.1", "registration.mail-from=no-reply@example.test",
