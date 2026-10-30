@@ -281,10 +281,8 @@ export function ExpertAssignedRolesPage() {
 
   // Active Expert identity
 
-  const [selectedExpertId, setSelectedExpertId] = React.useState<string>(() => {
-
+  const [selectedExpertId] = React.useState<string>(() => {
     return localStorage.getItem('expert_active_id') || ELIGIBLE_EXPERTS[0].id
-
   })
 
   const [roles, setRoles] = React.useState<TargetRoleModel[]>([])
@@ -761,10 +759,48 @@ export function ExpertAssignedRolesPage() {
   const [selectedDetailLevelTab, setSelectedDetailLevelTab] = React.useState<string>('ALL')
 
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
+  const [deletingRole, setDeletingRole] = React.useState<TargetRoleModel | null>(null)
+  const [isDeleting, setIsDeleting] = React.useState(false)
 
 
 
   // Successor draft handler for Published roles (Domain Expert creates subsequent drafts)
+
+  // Delete Draft or Published Role for Domain Expert
+  const handleDeleteRole = async (role: TargetRoleModel) => {
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
+        method: 'DELETE',
+        headers: {
+          'X-User-Role': 'DOMAIN_EXPERT',
+          'X-User-Id': effectiveExpert,
+        },
+      })
+      if (!res.ok) {
+        throw new Error('Failed to delete target role')
+      }
+      await fetchAssignedRoles()
+      saveAndSetRoles((prev) => prev.filter((r) => r.id !== role.id))
+      setDeletingRole(null)
+      if (viewingDetailsRole?.id === role.id) {
+        setViewingDetailsRole(null)
+      }
+      toast({
+        title: role.status === 'published' ? 'Target Role Deleted' : 'Draft Role Discarded',
+        description: `${role.title} (${role.code} v${role.version}) has been permanently deleted.`,
+        variant: 'info',
+      })
+    } catch {
+      toast({
+        title: 'Delete Failed',
+        description: 'Unable to delete target role. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const handleDraftNewVersion = async (role: TargetRoleModel) => {
 
@@ -2253,43 +2289,8 @@ export function ExpertAssignedRolesPage() {
       <div className="space-y-6 pb-16">
 
         <PageHeader
-          actions={
-
-            <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shadow-2xs">
-
-              <span className="text-xs text-muted-foreground font-medium">Active Expert:</span>
-
-              <select
-
-                value={selectedExpertId}
-
-                onChange={(e) => {
-
-                  const newId = e.target.value
-
-                  setSelectedExpertId(newId)
-
-                  localStorage.setItem('expert_active_id', newId)
-
-                  window.dispatchEvent(new CustomEvent('user_profile_updated'))
-
-                }}
-
-                className="text-xs font-semibold bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
-
-              >
-
-                {(orgExperts.length > 0 ? orgExperts : ELIGIBLE_EXPERTS).map((exp) => (
-                  <option key={exp.id} value={exp.id}>
-                    {exp.name} ({exp.title})
-                  </option>
-                ))}
-              </select>
-
-            </div>
-
-          }
-
+          title="Assigned Target Roles"
+          description="Review assigned job roles, configure level-isolated competencies, and set benchmark proficiency thresholds."
         />
 
 
@@ -3003,29 +3004,17 @@ export function ExpertAssignedRolesPage() {
                                 {isPublished && isNewestPublished && !hasActiveSuccessor && (
 
                                   <Button
-
                                     variant="outline"
-
                                     size="sm"
-
-                                    className="h-8 px-2.5 text-xs font-semibold text-primary hover:bg-primary/10 border-primary/30"
-
+                                    className="h-8 w-8 p-0 text-primary hover:bg-primary/10 border-primary/30"
                                     onClick={(e) => {
-
                                       e.stopPropagation()
-
                                       handleDraftNewVersion(role)
-
                                     }}
-
                                     title="Create Next Version Draft"
-
+                                    aria-label="Create Next Version Draft"
                                   >
-
-                                    <Plus className="h-3.5 w-3.5 mr-1" />
-
-                                    New Draft
-
+                                    <Plus className="h-4 w-4" />
                                   </Button>
 
                                 )}
@@ -3062,6 +3051,23 @@ export function ExpertAssignedRolesPage() {
 
                                   </Button>
 
+                                )}
+
+                                {/* Delete Role (Draft or Published for Domain Expert) */}
+                                {(isDraft || isPublished) && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setDeletingRole(role)
+                                    }}
+                                    title={isPublished ? "Delete Published Role" : "Delete Draft"}
+                                    aria-label={isPublished ? "Delete Published Role" : "Delete Draft"}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 )}
 
 
@@ -5385,42 +5391,42 @@ export function ExpertAssignedRolesPage() {
 
 
 
-          <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-end gap-2 w-full">
-
-            <Button variant="outline" size="sm" onClick={() => setViewingDetailsRole(null)}>
-
-              Close
-
-            </Button>
-
-            {viewingDetailsRole.status !== 'published' && (
-
+          <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
+            {(viewingDetailsRole.status === 'draft' || viewingDetailsRole.status === 'published') ? (
               <Button
-
-                variant="primary"
-
+                variant="destructive"
                 size="sm"
-
                 onClick={() => {
-
                   const r = viewingDetailsRole
-
                   setViewingDetailsRole(null)
-
-                  handleOpenAuthoring(r)
-
+                  setDeletingRole(r)
                 }}
-
-                leftIcon={<Sliders className="h-3.5 w-3.5" />}
-
+                leftIcon={<Trash2 className="h-3.5 w-3.5" />}
               >
-
-                Configure Micro-skills
-
+                {viewingDetailsRole.status === 'published' ? 'Delete Published Role' : 'Delete Draft'}
               </Button>
-
+            ) : (
+              <div />
             )}
-
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setViewingDetailsRole(null)}>
+                Close
+              </Button>
+              {viewingDetailsRole.status !== 'published' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    setViewingDetailsRole(null)
+                    handleOpenAuthoring(r)
+                  }}
+                  leftIcon={<Sliders className="h-3.5 w-3.5" />}
+                >
+                  Configure Micro-skills
+                </Button>
+              )}
+            </div>
           </DialogFooter>
 
         </Dialog>
@@ -5428,6 +5434,90 @@ export function ExpertAssignedRolesPage() {
       )}
 
 
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={Boolean(deletingRole)}
+        onOpenChange={(open) => !open && setDeletingRole(null)}
+        className="max-w-md"
+      >
+        {deletingRole && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <Trash2 className="h-5 w-5 text-destructive shrink-0" />
+                <span>
+                  {deletingRole.status === 'published' ? 'Delete Published Role' : 'Discard Draft'}: {deletingRole.title}
+                </span>
+              </DialogTitle>
+              <DialogDescription>
+                {deletingRole.status === 'published'
+                  ? 'Are you sure you want to delete this published target role?'
+                  : 'Are you sure you want to discard this draft target role?'}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 my-2 text-xs">
+              <div className="p-3 rounded-lg bg-card border border-border space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-foreground font-mono">{deletingRole.code}</span>
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    v{deletingRole.version}
+                  </Badge>
+                </div>
+                <div className="text-muted-foreground text-xs">{deletingRole.title}</div>
+                <div className="text-[11px] text-muted-foreground pt-1 flex items-center gap-2">
+                  <span>{deletingRole.department}</span>
+                  <span>•</span>
+                  <span>{deletingRole.skillTargets?.length || 0} Skills</span>
+                  <span>•</span>
+                  <span>{deletingRole.competencyIds?.length || 0} Competencies</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
+                <div className="text-[11.5px] leading-relaxed text-foreground">
+                  <strong className="text-destructive font-semibold">
+                    {deletingRole.status === 'published' ? 'Active Role Impact:' : 'Draft Removal Impact:'}
+                  </strong>{' '}
+                  {deletingRole.status === 'published'
+                    ? 'Deleting this published role will detach all micro-skill targets and remove it from active employee career pathways immediately. This action cannot be undone.'
+                    : 'All uncommitted micro-skill benchmark thresholds, responsibilities, and configuration changes for this draft will be permanently deleted from the database.'}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeletingRole(null)}
+                disabled={isDeleting}
+              >
+                Keep Role
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (deletingRole) {
+                    handleDeleteRole(deletingRole)
+                  }
+                }}
+                disabled={isDeleting}
+                leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+              >
+                {isDeleting
+                  ? 'Deleting...'
+                  : deletingRole.status === 'published'
+                  ? 'Delete Published Role'
+                  : 'Delete Draft Role'}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </Dialog>
 
       {/* Target-Role Knowledge Graph View Modal (REQ-018-F01) */}
 

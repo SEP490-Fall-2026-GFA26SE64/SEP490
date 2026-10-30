@@ -2928,24 +2928,39 @@ export function CompetencyOntologyPage() {
 
 
               <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
-                <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-2">
-                  Member Micro-skills ({viewingCompetencyDetails.skillIds?.length || 0})
-                </span>
-                {(!viewingCompetencyDetails.skillIds || viewingCompetencyDetails.skillIds.length === 0) ? (
-                  <p className="text-muted-foreground italic">No micro-skills mapped yet.</p>
-                ) : (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                    {viewingCompetencyDetails.skillIds.map((sId) => {
-                      const skill = microSkills.find((s) => s.id === sId || s.code === sId)
-                      return (
-                        <div key={sId} className="flex items-center gap-2 p-1.5 rounded bg-muted/40 border border-border/60">
-                          <span className="font-mono text-primary font-bold text-xs">{skill?.code || sId}</span>
-                          <span className="text-foreground text-xs truncate">{skill?.name || 'Micro-skill'}</span>
+                {(() => {
+                  const uniqueMemberSkills = Array.from(new Set((viewingCompetencyDetails.skillIds || []).map((sId) => {
+                    const skill = microSkills.find((s) => s.id === sId || s.code === sId)
+                    return skill ? skill.id : sId
+                  }))).map((resolvedId) => {
+                    const skill = microSkills.find((s) => s.id === resolvedId || s.code === resolvedId)
+                    return {
+                      id: resolvedId,
+                      code: skill?.code || resolvedId,
+                      name: skill?.name || 'Micro-skill',
+                    }
+                  })
+
+                  return (
+                    <>
+                      <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-2">
+                        Member Micro-skills ({uniqueMemberSkills.length})
+                      </span>
+                      {uniqueMemberSkills.length === 0 ? (
+                        <p className="text-muted-foreground italic">No micro-skills mapped yet.</p>
+                      ) : (
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                          {uniqueMemberSkills.map((item) => (
+                            <div key={item.id} className="flex items-center gap-2 p-1.5 rounded bg-muted/40 border border-border/60">
+                              <span className="font-mono text-primary font-bold text-xs">{item.code}</span>
+                              <span className="text-foreground text-xs truncate">{item.name}</span>
+                            </div>
+                          ))}
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                      )}
+                    </>
+                  )
+                })()}
               </div>
             </div>
 

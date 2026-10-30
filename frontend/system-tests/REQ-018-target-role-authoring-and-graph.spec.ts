@@ -7,7 +7,7 @@ test.describe('Target Roles Modification Sorting, Level-Isolated Competencies, C
     await page.waitForLoadState('networkidle');
 
     // Verify page loads with roles
-    await expect(page.getByText('Active Expert:')).toBeVisible();
+    await expect(page.getByText('Assigned Target Roles')).toBeVisible();
 
     // Verify StatCards: Rejected Roles card is present with destructive styling
     await expect(page.getByText('Rejected Roles')).toBeVisible();

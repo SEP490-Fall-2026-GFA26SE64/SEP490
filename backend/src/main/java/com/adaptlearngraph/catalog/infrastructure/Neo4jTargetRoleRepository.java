@@ -78,7 +78,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         String matchedId = roleIdStr;
         String findExistingCypher = """
                 MATCH (existing:TargetRole)
-                WHERE (existing.organizationId = $organizationId OR existing.organizationId IS NULL)
+                WHERE existing.organizationId = $organizationId
                   AND (existing.id = $id OR existing.code = $id OR (existing.baseCode = $rawCode AND coalesce(existing.version, '1.0') = $version))
                   AND coalesce(existing.status, 'ACTIVE') <> 'SUPERSEDED'
                 RETURN existing.id AS existingId LIMIT 1
@@ -179,7 +179,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             if (targetRole.getStatus() == RoleStatus.PUBLISHED || targetRole.getStatus() == RoleStatus.ACTIVE) {
                 String supersedeCypher = """
                         MATCH (old:TargetRole)
-                        WHERE (old.organizationId = $organizationId OR old.organizationId IS NULL)
+                        WHERE old.organizationId = $organizationId
                           AND old.id <> $id
                           AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
                         SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
@@ -287,7 +287,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
         StringBuilder cypher = new StringBuilder("""
                 MATCH (r:TargetRole)
-                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                WHERE r.organizationId = $organizationId
                   AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
                 """);
         Map<String, Object> params = new HashMap<>();
@@ -343,7 +343,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         String rawId = id.toString();
         String cypher = """
                 MATCH (r:TargetRole)
-                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                WHERE r.organizationId = $organizationId
                   AND (r.id = $id
                        OR r.code = $id
                        OR r.baseCode = $id

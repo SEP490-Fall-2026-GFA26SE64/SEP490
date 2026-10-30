@@ -67,9 +67,13 @@ public class CatalogConfiguration {
         }
         return new com.adaptlearngraph.catalog.application.port.out.OccupationRepository() {
             @Override public java.util.List<com.adaptlearngraph.catalog.domain.Occupation> findAllOccupations() { return java.util.List.of(); }
+            @Override public java.util.List<com.adaptlearngraph.catalog.domain.Occupation> findAllOccupations(String organizationId) { return java.util.List.of(); }
             @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.Occupation> findByIdOrCode(String idOrCode) { return java.util.Optional.empty(); }
+            @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.Occupation> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
             @Override public com.adaptlearngraph.catalog.domain.Occupation save(com.adaptlearngraph.catalog.domain.Occupation occupation) { return occupation; }
+            @Override public com.adaptlearngraph.catalog.domain.Occupation save(String organizationId, com.adaptlearngraph.catalog.domain.Occupation occupation) { return occupation; }
             @Override public void delete(String idOrCode) {}
+            @Override public void delete(String organizationId, String idOrCode) {}
         };
     }
 
@@ -86,10 +90,10 @@ public class CatalogConfiguration {
             return new Neo4jCompetencyRepository(driver);
         }
         return new com.adaptlearngraph.catalog.application.port.out.CompetencyRepository() {
-            @Override public java.util.List<com.adaptlearngraph.catalog.domain.CompetencyRecord> findAllCompetencies(String search) { return java.util.List.of(); }
-            @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.CompetencyRecord> findById(String id) { return java.util.Optional.empty(); }
-            @Override public com.adaptlearngraph.catalog.domain.CompetencyRecord save(com.adaptlearngraph.catalog.domain.CompetencyRecord record, java.util.List<String> skillIds, String levelId) { return record; }
-            @Override public void deleteById(String id) {}
+            @Override public java.util.List<com.adaptlearngraph.catalog.domain.CompetencyRecord> findAllCompetencies(String organizationId, String search) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.catalog.domain.CompetencyRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.catalog.domain.CompetencyRecord save(String organizationId, com.adaptlearngraph.catalog.domain.CompetencyRecord record, java.util.List<String> skillIds, String levelId) { return record; }
+            @Override public void deleteById(String organizationId, String id) {}
         };
     }
 

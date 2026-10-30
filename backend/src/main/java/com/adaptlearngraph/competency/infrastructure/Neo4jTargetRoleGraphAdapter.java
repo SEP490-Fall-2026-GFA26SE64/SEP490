@@ -29,14 +29,14 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
     public Optional<TargetRoleGraph> findTargetRoleGraph(String organizationId, String roleId) {
         String roleCypher = """
                 MATCH (r:TargetRole)
-                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
                 RETURN r
                 """;
 
         String skillsCypher = """
                 MATCH (r:TargetRole)
-                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
                 OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
@@ -47,7 +47,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
 
         String prereqCypher = """
                 MATCH (r:TargetRole)
-                WHERE (r.organizationId = $organizationId OR r.organizationId IS NULL)
+                WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[:REQUIRES_SKILL]->(s1:MicroSkill)
                 MATCH (r)-[:REQUIRES_SKILL]->(s2:MicroSkill)

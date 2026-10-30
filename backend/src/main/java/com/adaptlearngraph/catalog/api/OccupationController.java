@@ -20,7 +20,7 @@ public class OccupationController {
     @GetMapping("/api/v1/organizations/{organizationId}/occupations")
     public ResponseEntity<List<OccupationResponse>> listOccupationsForOrganization(
             @PathVariable("organizationId") String organizationId) {
-        List<OccupationResponse> response = getOccupationsUseCase.listOccupations()
+        List<OccupationResponse> response = getOccupationsUseCase.listOccupations(organizationId)
                 .stream()
                 .map(OccupationResponse::fromDomain)
                 .toList();
@@ -73,7 +73,7 @@ public class OccupationController {
                 0,
                 0
         );
-        Occupation saved = getOccupationsUseCase.saveOccupation(occ);
+        Occupation saved = getOccupationsUseCase.saveOccupation(organizationId, occ);
         return ResponseEntity.status(HttpStatus.CREATED).body(OccupationResponse.fromDomain(saved));
     }
 
@@ -99,7 +99,7 @@ public class OccupationController {
                 0,
                 0
         );
-        Occupation saved = getOccupationsUseCase.saveOccupation(occ);
+        Occupation saved = getOccupationsUseCase.saveOccupation(organizationId, occ);
         return ResponseEntity.ok(OccupationResponse.fromDomain(saved));
     }
 
@@ -107,7 +107,7 @@ public class OccupationController {
     public ResponseEntity<Void> deleteOccupation(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {
-        getOccupationsUseCase.deleteOccupation(id);
+        getOccupationsUseCase.deleteOccupation(organizationId, id);
         return ResponseEntity.noContent().build();
     }
 }

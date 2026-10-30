@@ -76,7 +76,7 @@ export async function fetchCompetencies(orgId: string = DEFAULT_ORG_UUID, search
     code: item.code || item.id,
 
     skillIds: item.memberSkills
-      ? Array.from(new Set([...item.memberSkills.map((s) => s.id), ...item.memberSkills.map((s) => s.code)].filter(Boolean)))
+      ? Array.from(new Set(item.memberSkills.map((s) => s.id || s.code).filter(Boolean)))
       : (item.skillIds || []),
     memberSkills: item.memberSkills || [],
 
@@ -133,7 +133,7 @@ export async function createCompetency(
     code: item.code || payload.code || item.id,
 
     skillIds: item.memberSkills
-      ? Array.from(new Set([...item.memberSkills.map((s) => s.id), ...item.memberSkills.map((s) => s.code)].filter(Boolean)))
+      ? Array.from(new Set(item.memberSkills.map((s) => s.id || s.code).filter(Boolean)))
       : (payload.skillIds || []),
     memberSkills: item.memberSkills || [],
 
@@ -188,7 +188,7 @@ export async function updateCompetency(
     code: item.code || payload.code || item.id,
 
     skillIds: item.memberSkills
-      ? Array.from(new Set([...item.memberSkills.map((s) => s.id), ...item.memberSkills.map((s) => s.code)].filter(Boolean)))
+      ? Array.from(new Set(item.memberSkills.map((s) => s.id || s.code).filter(Boolean)))
       : (payload.skillIds || []),
     memberSkills: item.memberSkills || [],
 

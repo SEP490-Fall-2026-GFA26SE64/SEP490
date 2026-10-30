@@ -2242,30 +2242,21 @@ export function TargetRolesPage() {
 
 
 
-      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
-
-
-
+      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
         method: 'DELETE',
-
-
-
         headers: {
-
-
-
           'X-User-Role': 'LD_MANAGER',
-
-
-
         },
-
-
-
       })
-
-
-
+      if (!res.ok && res.status === 403) {
+        toast({
+          title: 'Action Not Permitted',
+          description: 'L&D Managers can only delete target roles in draft status.',
+          variant: 'destructive',
+        })
+        setDeletingRole(null)
+        return
+      }
       await fetchRoles()
 
 
@@ -5277,55 +5268,21 @@ export function TargetRolesPage() {
 
 
 
-                              <Button
-
-
-
-                                variant="outline"
-
-
-
-                                size="sm"
-
-
-
-                                className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-
-
-
-                                onClick={(e) => {
-
-
-
-                                  e.stopPropagation()
-
-
-
-                                  setDeletingRole(role)
-
-
-
-                                }}
-
-
-
-                                title={isPublished ? "Delete Published Role" : "Delete Draft"}
-
-
-
-                                aria-label={isPublished ? "Delete Published Role" : "Delete Draft"}
-
-
-
-                              >
-
-
-
-                                <Trash2 className="h-4 w-4" />
-
-
-
-                              </Button>
+                              {isDraft && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setDeletingRole(role)
+                                  }}
+                                  title="Delete Draft"
+                                  aria-label="Delete Draft"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
 
 
 
@@ -8429,205 +8386,65 @@ export function TargetRolesPage() {
 
 
 
-            ) : isDraftRole || isSentRole ? (
-
-
-
+            ) : isDraftRole ? (
               <>
-
-
-
                 <Button
-
-
-
                   variant="destructive"
-
-
-
                   size="sm"
-
-
-
                   leftIcon={<Trash2 className="h-4 w-4" />}
-
-
-
                   onClick={() => {
-
-
-
                     const r = selectedRole
-
-
-
                     setIsSkillTargetsModalOpen(false)
-
-
-
                     setDeletingRole(r)
-
-
-
                   }}
-
-
-
                 >
-
-
-
-                  {isDraftRole ? 'Delete Draft Role' : 'Delete Role'}
-
-
-
+                  Delete Draft Role
                 </Button>
-
-
-
                 <div className="flex items-center gap-2">
-
-
-
                   <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
-
-
-
                     Cancel
-
-
-
                   </Button>
-
-
-
                   <Button variant="outline" size="sm" onClick={() => handleSaveEditRole('draft')}>
-
-
-
                     Save Changes
-
-
-
                   </Button>
-
-
-
                   <Button
-
-
-
                     variant="primary"
-
-
-
                     size="sm"
-
-
-
                     leftIcon={<Send className="h-4 w-4" />}
-
-
-
                     onClick={() => handleSaveEditRole('sent')}
-
-
-
                   >
-
-
-
                     {isSentRole || isFeedbackRole ? 'Save & Re-dispatch to Expert' : selectedRole.rejectionReason ? 'Save & Re-send to Expert' : 'Save & Send to Expert'}
-
-
-
                   </Button>
-
-
-
                 </div>
-
-
-
               </>
-
-
-
-            ) : (
-
-
-
+            ) : isSentRole ? (
               <>
-
-
-
-                <Button
-
-
-
-                  variant="destructive"
-
-
-
-                  size="sm"
-
-
-
-                  leftIcon={<Trash2 className="h-4 w-4" />}
-
-
-
-                  onClick={() => {
-
-
-
-                    const r = selectedRole
-
-
-
-                    setIsSkillTargetsModalOpen(false)
-
-
-
-                    setDeletingRole(r)
-
-
-
-                  }}
-
-
-
-                >
-
-
-
-                  Delete Role
-
-
-
-                </Button>
-
-
-
-                <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
-
-
-
-                  Close
-
-
-
-                </Button>
-
-
-
+                <div />
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleSaveEditRole('draft')}>
+                    Save Changes
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Send className="h-4 w-4" />}
+                    onClick={() => handleSaveEditRole('sent')}
+                  >
+                    Save & Re-dispatch to Expert
+                  </Button>
+                </div>
               </>
-
-
-
+            ) : (
+              <>
+                <div />
+                <Button variant="outline" size="sm" onClick={() => setIsSkillTargetsModalOpen(false)}>
+                  Close
+                </Button>
+              </>
             )}
-
-
 
           </DialogFooter>
 
@@ -10793,51 +10610,22 @@ export function TargetRolesPage() {
 
 
 
-            <Button
-
-
-
-              variant="destructive"
-
-
-
-              size="sm"
-
-
-
-              onClick={() => {
-
-
-
-                const r = viewingDetailsRole
-
-
-
-                setViewingDetailsRole(null)
-
-
-
-                setDeletingRole(r)
-
-
-
-              }}
-
-
-
-              leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-
-
-
-            >
-
-
-
-              Delete Role
-
-
-
-            </Button>
+            {viewingDetailsRole?.status?.toLowerCase() === 'draft' ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  const r = viewingDetailsRole
+                  setViewingDetailsRole(null)
+                  setDeletingRole(r)
+                }}
+                leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+              >
+                Delete Draft Role
+              </Button>
+            ) : (
+              <div />
+            )}
 
 
 
@@ -11074,237 +10862,61 @@ export function TargetRolesPage() {
 
 
             <DialogHeader>
-
-
-
               <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
-
-
-
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-
-
-
-                {deletingRole.status === 'published' ? 'Delete Published Target Role?' : 'Delete Draft Target Role?'}
-
-
-
+                <Trash2 className="h-5 w-5 text-destructive" />
+                Discard Draft Target Role?
               </DialogTitle>
-
-
-
               <DialogDescription className="text-xs text-muted-foreground">
-
-
-
-                Are you sure you want to delete <strong className="text-foreground">{deletingRole.title}</strong>?
-
-
-
+                Are you sure you want to discard <strong className="text-foreground">{deletingRole.title}</strong>?
               </DialogDescription>
-
-
-
             </DialogHeader>
 
-
-
-
-
-
-
             <div className="space-y-3 py-2 text-xs">
-
-
-
               <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
-
-
-
                 <div className="font-semibold text-foreground">
-
-
-
                   {deletingRole.title}
-
-
-
                 </div>
-
-
-
                 <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-
-
-
                   <span>{deletingRole.track || 'PROFESSIONAL'}</span>
-
-
-
                   <span>•</span>
-
-
-
                   <span>v{deletingRole.version}</span>
-
-
-
                   <span>•</span>
-
-
-
                   <span>{deletingRole.skillTargets?.length || 0} Skills</span>
-
-
-
                   <span>•</span>
-
-
-
                   <span>{deletingRole.competencyIds?.length || 0} Competencies</span>
-
-
-
                 </div>
-
-
-
               </div>
-
-
-
-
-
-
 
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
-
-
-
                 <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
-
-
-
                 <div className="text-[11.5px] leading-relaxed text-foreground">
-
-
-
                   <strong className="text-destructive font-semibold">
-
-
-
-                    {deletingRole.status === 'published' ? 'Active Role Impact:' : 'Draft Removal Impact:'}
-
-
-
+                    Draft Removal Impact:
                   </strong>{' '}
-
-
-
-                  {deletingRole.status === 'published'
-
-
-
-                    ? 'Deleting this published role will detach all micro-skill targets and remove it from active employee career pathways immediately. This action cannot be undone.'
-
-
-
-                    : 'All uncommitted micro-skill benchmark thresholds, responsibilities, and configuration changes for this draft will be permanently deleted from the database.'}
-
-
-
+                  All uncommitted micro-skill benchmark thresholds, responsibilities, and configuration changes for this draft will be permanently deleted from the database.
                 </div>
-
-
-
               </div>
-
-
-
             </div>
 
-
-
-
-
-
-
             <DialogFooter className="pt-2">
-
-
-
               <Button
-
-
-
                 variant="outline"
-
-
-
                 size="sm"
-
-
-
                 onClick={() => setDeletingRole(null)}
-
-
-
               >
-
-
-
                 Keep Role
-
-
-
               </Button>
-
-
-
               <Button
-
-
-
                 variant="destructive"
-
-
-
                 size="sm"
-
-
-
                 onClick={() => {
-
-
-
                   if (deletingRole) {
-
-
-
                     handleDeleteRole(deletingRole)
-
-
-
                   }
-
-
-
                 }}
-
-
-
                 leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-
-
-
               >
-
-
-
-                {deletingRole.status === 'published' ? 'Delete Published Role' : 'Delete Draft Role'}
-
-
-
+                Delete Draft Role
               </Button>
 
 

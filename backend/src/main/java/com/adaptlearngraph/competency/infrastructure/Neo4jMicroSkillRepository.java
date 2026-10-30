@@ -26,7 +26,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
         String cypher = """
                 MATCH (s:MicroSkill)
-                WHERE (s.organizationId = $organizationId OR s.organizationId IS NULL) AND s.code = $code
+                WHERE s.organizationId = $organizationId AND s.code = $code
                 RETURN count(s) > 0 AS exists
                 """;
         try (var session = driver.session()) {
@@ -94,7 +94,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public Optional<MicroSkill> findById(String organizationId, MicroSkillId id) {
         String cypher = """
                 MATCH (s:MicroSkill {id: $id})
-                WHERE s.organizationId = $organizationId OR s.organizationId IS NULL
+                WHERE s.organizationId = $organizationId
                 OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
                 RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
                 """;
@@ -114,7 +114,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public Optional<MicroSkill> findByCode(String organizationId, String code) {
         String cypher = """
                 MATCH (s:MicroSkill)
-                WHERE (s.organizationId = $organizationId OR s.organizationId IS NULL) AND s.code = $code
+                WHERE s.organizationId = $organizationId AND s.code = $code
                 OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
                 RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
                 """;
@@ -139,7 +139,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
         StringBuilder cypher = new StringBuilder("""
                 MATCH (s:MicroSkill)
-                WHERE (s.organizationId = $organizationId OR s.organizationId IS NULL)
+                WHERE s.organizationId = $organizationId
                 """);
 
         Map<String, Object> params = new HashMap<>();
