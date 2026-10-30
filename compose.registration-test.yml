@@ -1,0 +1,51 @@
+name: adapt-learn-graph-registration-test
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: registration-test-only
+    ports: !override
+      - "127.0.0.1:15433:5432"
+
+  neo4j:
+    environment:
+      NEO4J_AUTH: neo4j/registration-test-only
+    ports: !override
+      - "127.0.0.1:7475:7474"
+      - "127.0.0.1:7688:7687"
+
+  migrate:
+    image: adapt-learn-graph-backend:registration-test
+    environment:
+      DB_PASSWORD: registration-test-only
+      NEO4J_PASSWORD: registration-test-only
+
+  api:
+    image: adapt-learn-graph-backend:registration-test
+    environment:
+      DB_PASSWORD: registration-test-only
+      NEO4J_PASSWORD: registration-test-only
+      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_TEST_ENCRYPTION_KEY:?Set an isolated test encryption key}
+      REGISTRATION_HMAC_KEY: ${REGISTRATION_TEST_HMAC_KEY:?Set an isolated test HMAC key}
+      REGISTRATION_COOKIE_SECURE: "false"
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: registration@example.test
+      SMTP_AUTH: "false"
+      SMTP_STARTTLS: "false"
+    ports: !override
+      - "127.0.0.1:18081:8080"
+    depends_on:
+      mailpit:
+        condition: service_started
+
+  web:
+    ports: !override
+      - "127.0.0.1:8089:5173"
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:8026:8025"

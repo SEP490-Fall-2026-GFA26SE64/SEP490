@@ -1,0 +1,1106 @@
+{
+  "catalogVersion": "0.10.0",
+  "reviewStatus": "NEEDS_EXPERT_REVIEW",
+  "basis": "Explicit illustrative values per existing Module–Skill teaching pair. Not calibrated measurements or an implemented OC scoring rule. Do not infer OC from price, duration, Level, or another provider.",
+  "sameSkillExample": {
+    "skillId": "MS-DE06",
+    "providers": [
+      {
+        "moduleId": "MOD-DE-J-MODEL-01",
+        "outcomeCoverage": 0.2
+      },
+      {
+        "moduleId": "MOD-DE-J-QUAL-01",
+        "outcomeCoverage": 0.5
+      }
+    ]
+  },
+  "teachingOutcomes": [
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-MODEL-01-MS-DE01",
+      "moduleId": "MOD-DE-J-MODEL-01",
+      "skillId": "MS-DE01",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-MODEL-01-MS-DE03",
+      "moduleId": "MOD-DE-J-MODEL-01",
+      "skillId": "MS-DE03",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-MODEL-01-MS-DE06",
+      "moduleId": "MOD-DE-J-MODEL-01",
+      "skillId": "MS-DE06",
+      "outcomeCoverage": 0.2
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-MODEL-02-MS-DE13",
+      "moduleId": "MOD-DE-J-MODEL-02",
+      "skillId": "MS-DE13",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-MODEL-02-MS-DE16",
+      "moduleId": "MOD-DE-J-MODEL-02",
+      "skillId": "MS-DE16",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-PIPE-01-MS-DE02",
+      "moduleId": "MOD-DE-J-PIPE-01",
+      "skillId": "MS-DE02",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-PIPE-01-MS-DE04",
+      "moduleId": "MOD-DE-J-PIPE-01",
+      "skillId": "MS-DE04",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-PIPE-01-MS-DE08",
+      "moduleId": "MOD-DE-J-PIPE-01",
+      "skillId": "MS-DE08",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-PIPE-02-MS-DE10",
+      "moduleId": "MOD-DE-J-PIPE-02",
+      "skillId": "MS-DE10",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-PIPE-02-MS-DE11",
+      "moduleId": "MOD-DE-J-PIPE-02",
+      "skillId": "MS-DE11",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-PIPE-02-MS-DE12",
+      "moduleId": "MOD-DE-J-PIPE-02",
+      "skillId": "MS-DE12",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-QUAL-01-MS-DE05",
+      "moduleId": "MOD-DE-J-QUAL-01",
+      "skillId": "MS-DE05",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-QUAL-01-MS-DE06",
+      "moduleId": "MOD-DE-J-QUAL-01",
+      "skillId": "MS-DE06",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-QUAL-01-MS-DE07",
+      "moduleId": "MOD-DE-J-QUAL-01",
+      "skillId": "MS-DE07",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-QUAL-02-MS-DE09",
+      "moduleId": "MOD-DE-J-QUAL-02",
+      "skillId": "MS-DE09",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-QUAL-02-MS-DE14",
+      "moduleId": "MOD-DE-J-QUAL-02",
+      "skillId": "MS-DE14",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-J-QUAL-02-MS-DE15",
+      "moduleId": "MOD-DE-J-QUAL-02",
+      "skillId": "MS-DE15",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-MODEL-01-MS-DE01",
+      "moduleId": "MOD-DE-M-MODEL-01",
+      "skillId": "MS-DE01",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-MODEL-01-MS-DE03",
+      "moduleId": "MOD-DE-M-MODEL-01",
+      "skillId": "MS-DE03",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-MODEL-01-MS-DE06",
+      "moduleId": "MOD-DE-M-MODEL-01",
+      "skillId": "MS-DE06",
+      "outcomeCoverage": 0.35
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-MODEL-02-MS-DE13",
+      "moduleId": "MOD-DE-M-MODEL-02",
+      "skillId": "MS-DE13",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-MODEL-02-MS-DE16",
+      "moduleId": "MOD-DE-M-MODEL-02",
+      "skillId": "MS-DE16",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-PIPE-01-MS-DE02",
+      "moduleId": "MOD-DE-M-PIPE-01",
+      "skillId": "MS-DE02",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-PIPE-01-MS-DE04",
+      "moduleId": "MOD-DE-M-PIPE-01",
+      "skillId": "MS-DE04",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-PIPE-01-MS-DE08",
+      "moduleId": "MOD-DE-M-PIPE-01",
+      "skillId": "MS-DE08",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-PIPE-02-MS-DE10",
+      "moduleId": "MOD-DE-M-PIPE-02",
+      "skillId": "MS-DE10",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-PIPE-02-MS-DE11",
+      "moduleId": "MOD-DE-M-PIPE-02",
+      "skillId": "MS-DE11",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-PIPE-02-MS-DE12",
+      "moduleId": "MOD-DE-M-PIPE-02",
+      "skillId": "MS-DE12",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-QUAL-01-MS-DE05",
+      "moduleId": "MOD-DE-M-QUAL-01",
+      "skillId": "MS-DE05",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-QUAL-01-MS-DE06",
+      "moduleId": "MOD-DE-M-QUAL-01",
+      "skillId": "MS-DE06",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-QUAL-01-MS-DE07",
+      "moduleId": "MOD-DE-M-QUAL-01",
+      "skillId": "MS-DE07",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-QUAL-02-MS-DE09",
+      "moduleId": "MOD-DE-M-QUAL-02",
+      "skillId": "MS-DE09",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-QUAL-02-MS-DE14",
+      "moduleId": "MOD-DE-M-QUAL-02",
+      "skillId": "MS-DE14",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-M-QUAL-02-MS-DE15",
+      "moduleId": "MOD-DE-M-QUAL-02",
+      "skillId": "MS-DE15",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-MODEL-01-MS-DE01",
+      "moduleId": "MOD-DE-S-MODEL-01",
+      "skillId": "MS-DE01",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-MODEL-01-MS-DE03",
+      "moduleId": "MOD-DE-S-MODEL-01",
+      "skillId": "MS-DE03",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-MODEL-01-MS-DE06",
+      "moduleId": "MOD-DE-S-MODEL-01",
+      "skillId": "MS-DE06",
+      "outcomeCoverage": 0.55
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-MODEL-02-MS-DE13",
+      "moduleId": "MOD-DE-S-MODEL-02",
+      "skillId": "MS-DE13",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-MODEL-02-MS-DE16",
+      "moduleId": "MOD-DE-S-MODEL-02",
+      "skillId": "MS-DE16",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-PIPE-01-MS-DE02",
+      "moduleId": "MOD-DE-S-PIPE-01",
+      "skillId": "MS-DE02",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-PIPE-01-MS-DE04",
+      "moduleId": "MOD-DE-S-PIPE-01",
+      "skillId": "MS-DE04",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-PIPE-01-MS-DE08",
+      "moduleId": "MOD-DE-S-PIPE-01",
+      "skillId": "MS-DE08",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-PIPE-02-MS-DE10",
+      "moduleId": "MOD-DE-S-PIPE-02",
+      "skillId": "MS-DE10",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-PIPE-02-MS-DE11",
+      "moduleId": "MOD-DE-S-PIPE-02",
+      "skillId": "MS-DE11",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-PIPE-02-MS-DE12",
+      "moduleId": "MOD-DE-S-PIPE-02",
+      "skillId": "MS-DE12",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-QUAL-01-MS-DE05",
+      "moduleId": "MOD-DE-S-QUAL-01",
+      "skillId": "MS-DE05",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-QUAL-01-MS-DE06",
+      "moduleId": "MOD-DE-S-QUAL-01",
+      "skillId": "MS-DE06",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-QUAL-01-MS-DE07",
+      "moduleId": "MOD-DE-S-QUAL-01",
+      "skillId": "MS-DE07",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-QUAL-02-MS-DE09",
+      "moduleId": "MOD-DE-S-QUAL-02",
+      "skillId": "MS-DE09",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-QUAL-02-MS-DE14",
+      "moduleId": "MOD-DE-S-QUAL-02",
+      "skillId": "MS-DE14",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-DE-S-QUAL-02-MS-DE15",
+      "moduleId": "MOD-DE-S-QUAL-02",
+      "skillId": "MS-DE15",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-UI-01-MS-FS01",
+      "moduleId": "MOD-FS-J-UI-01",
+      "skillId": "MS-FS01",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-UI-01-MS-FS02",
+      "moduleId": "MOD-FS-J-UI-01",
+      "skillId": "MS-FS02",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-UI-01-MS-FS09",
+      "moduleId": "MOD-FS-J-UI-01",
+      "skillId": "MS-FS09",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-UI-02-MS-FS10",
+      "moduleId": "MOD-FS-J-UI-02",
+      "skillId": "MS-FS10",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-UI-02-MS-FS11",
+      "moduleId": "MOD-FS-J-UI-02",
+      "skillId": "MS-FS11",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-SERVICE-01-MS-FS03",
+      "moduleId": "MOD-FS-J-SERVICE-01",
+      "skillId": "MS-FS03",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-SERVICE-01-MS-FS04",
+      "moduleId": "MOD-FS-J-SERVICE-01",
+      "skillId": "MS-FS04",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-SERVICE-01-MS-FS05",
+      "moduleId": "MOD-FS-J-SERVICE-01",
+      "skillId": "MS-FS05",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-SERVICE-02-MS-FS12",
+      "moduleId": "MOD-FS-J-SERVICE-02",
+      "skillId": "MS-FS12",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-SERVICE-02-MS-FS13",
+      "moduleId": "MOD-FS-J-SERVICE-02",
+      "skillId": "MS-FS13",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-SERVICE-02-MS-FS14",
+      "moduleId": "MOD-FS-J-SERVICE-02",
+      "skillId": "MS-FS14",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-QUALITY-01-MS-FS06",
+      "moduleId": "MOD-FS-J-QUALITY-01",
+      "skillId": "MS-FS06",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-QUALITY-01-MS-FS07",
+      "moduleId": "MOD-FS-J-QUALITY-01",
+      "skillId": "MS-FS07",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-QUALITY-01-MS-FS08",
+      "moduleId": "MOD-FS-J-QUALITY-01",
+      "skillId": "MS-FS08",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-QUALITY-02-MS-FS15",
+      "moduleId": "MOD-FS-J-QUALITY-02",
+      "skillId": "MS-FS15",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-J-QUALITY-02-MS-FS16",
+      "moduleId": "MOD-FS-J-QUALITY-02",
+      "skillId": "MS-FS16",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-UI-01-MS-FS01",
+      "moduleId": "MOD-FS-M-UI-01",
+      "skillId": "MS-FS01",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-UI-01-MS-FS02",
+      "moduleId": "MOD-FS-M-UI-01",
+      "skillId": "MS-FS02",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-UI-01-MS-FS09",
+      "moduleId": "MOD-FS-M-UI-01",
+      "skillId": "MS-FS09",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-UI-02-MS-FS10",
+      "moduleId": "MOD-FS-M-UI-02",
+      "skillId": "MS-FS10",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-UI-02-MS-FS11",
+      "moduleId": "MOD-FS-M-UI-02",
+      "skillId": "MS-FS11",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-SERVICE-01-MS-FS03",
+      "moduleId": "MOD-FS-M-SERVICE-01",
+      "skillId": "MS-FS03",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-SERVICE-01-MS-FS04",
+      "moduleId": "MOD-FS-M-SERVICE-01",
+      "skillId": "MS-FS04",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-SERVICE-01-MS-FS05",
+      "moduleId": "MOD-FS-M-SERVICE-01",
+      "skillId": "MS-FS05",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-SERVICE-02-MS-FS12",
+      "moduleId": "MOD-FS-M-SERVICE-02",
+      "skillId": "MS-FS12",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-SERVICE-02-MS-FS13",
+      "moduleId": "MOD-FS-M-SERVICE-02",
+      "skillId": "MS-FS13",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-SERVICE-02-MS-FS14",
+      "moduleId": "MOD-FS-M-SERVICE-02",
+      "skillId": "MS-FS14",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-QUALITY-01-MS-FS06",
+      "moduleId": "MOD-FS-M-QUALITY-01",
+      "skillId": "MS-FS06",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-QUALITY-01-MS-FS07",
+      "moduleId": "MOD-FS-M-QUALITY-01",
+      "skillId": "MS-FS07",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-QUALITY-01-MS-FS08",
+      "moduleId": "MOD-FS-M-QUALITY-01",
+      "skillId": "MS-FS08",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-QUALITY-02-MS-FS15",
+      "moduleId": "MOD-FS-M-QUALITY-02",
+      "skillId": "MS-FS15",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-M-QUALITY-02-MS-FS16",
+      "moduleId": "MOD-FS-M-QUALITY-02",
+      "skillId": "MS-FS16",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-UI-01-MS-FS01",
+      "moduleId": "MOD-FS-S-UI-01",
+      "skillId": "MS-FS01",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-UI-01-MS-FS02",
+      "moduleId": "MOD-FS-S-UI-01",
+      "skillId": "MS-FS02",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-UI-01-MS-FS09",
+      "moduleId": "MOD-FS-S-UI-01",
+      "skillId": "MS-FS09",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-UI-02-MS-FS10",
+      "moduleId": "MOD-FS-S-UI-02",
+      "skillId": "MS-FS10",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-UI-02-MS-FS11",
+      "moduleId": "MOD-FS-S-UI-02",
+      "skillId": "MS-FS11",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-SERVICE-01-MS-FS03",
+      "moduleId": "MOD-FS-S-SERVICE-01",
+      "skillId": "MS-FS03",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-SERVICE-01-MS-FS04",
+      "moduleId": "MOD-FS-S-SERVICE-01",
+      "skillId": "MS-FS04",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-SERVICE-01-MS-FS05",
+      "moduleId": "MOD-FS-S-SERVICE-01",
+      "skillId": "MS-FS05",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-SERVICE-02-MS-FS12",
+      "moduleId": "MOD-FS-S-SERVICE-02",
+      "skillId": "MS-FS12",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-SERVICE-02-MS-FS13",
+      "moduleId": "MOD-FS-S-SERVICE-02",
+      "skillId": "MS-FS13",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-SERVICE-02-MS-FS14",
+      "moduleId": "MOD-FS-S-SERVICE-02",
+      "skillId": "MS-FS14",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-QUALITY-01-MS-FS06",
+      "moduleId": "MOD-FS-S-QUALITY-01",
+      "skillId": "MS-FS06",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-QUALITY-01-MS-FS07",
+      "moduleId": "MOD-FS-S-QUALITY-01",
+      "skillId": "MS-FS07",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-QUALITY-01-MS-FS08",
+      "moduleId": "MOD-FS-S-QUALITY-01",
+      "skillId": "MS-FS08",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-QUALITY-02-MS-FS15",
+      "moduleId": "MOD-FS-S-QUALITY-02",
+      "skillId": "MS-FS15",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-FS-S-QUALITY-02-MS-FS16",
+      "moduleId": "MOD-FS-S-QUALITY-02",
+      "skillId": "MS-FS16",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-DESIGN-01-MS-QA01",
+      "moduleId": "MOD-QA-J-DESIGN-01",
+      "skillId": "MS-QA01",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-DESIGN-01-MS-QA02",
+      "moduleId": "MOD-QA-J-DESIGN-01",
+      "skillId": "MS-QA02",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-DESIGN-01-MS-QA08",
+      "moduleId": "MOD-QA-J-DESIGN-01",
+      "skillId": "MS-QA08",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-DESIGN-02-MS-QA09",
+      "moduleId": "MOD-QA-J-DESIGN-02",
+      "skillId": "MS-QA09",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-DESIGN-02-MS-QA10",
+      "moduleId": "MOD-QA-J-DESIGN-02",
+      "skillId": "MS-QA10",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-DESIGN-02-MS-QA11",
+      "moduleId": "MOD-QA-J-DESIGN-02",
+      "skillId": "MS-QA11",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-EXEC-01-MS-QA03",
+      "moduleId": "MOD-QA-J-EXEC-01",
+      "skillId": "MS-QA03",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-EXEC-01-MS-QA04",
+      "moduleId": "MOD-QA-J-EXEC-01",
+      "skillId": "MS-QA04",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-EXEC-01-MS-QA05",
+      "moduleId": "MOD-QA-J-EXEC-01",
+      "skillId": "MS-QA05",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-EXEC-02-MS-QA12",
+      "moduleId": "MOD-QA-J-EXEC-02",
+      "skillId": "MS-QA12",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-EXEC-02-MS-QA13",
+      "moduleId": "MOD-QA-J-EXEC-02",
+      "skillId": "MS-QA13",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-EXEC-02-MS-QA14",
+      "moduleId": "MOD-QA-J-EXEC-02",
+      "skillId": "MS-QA14",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-AUTO-01-MS-FS07",
+      "moduleId": "MOD-QA-J-AUTO-01",
+      "skillId": "MS-FS07",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-AUTO-01-MS-QA06",
+      "moduleId": "MOD-QA-J-AUTO-01",
+      "skillId": "MS-QA06",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-AUTO-01-MS-QA07",
+      "moduleId": "MOD-QA-J-AUTO-01",
+      "skillId": "MS-QA07",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-AUTO-02-MS-QA15",
+      "moduleId": "MOD-QA-J-AUTO-02",
+      "skillId": "MS-QA15",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-J-AUTO-02-MS-QA16",
+      "moduleId": "MOD-QA-J-AUTO-02",
+      "skillId": "MS-QA16",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-DESIGN-01-MS-QA01",
+      "moduleId": "MOD-QA-M-DESIGN-01",
+      "skillId": "MS-QA01",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-DESIGN-01-MS-QA02",
+      "moduleId": "MOD-QA-M-DESIGN-01",
+      "skillId": "MS-QA02",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-DESIGN-01-MS-QA08",
+      "moduleId": "MOD-QA-M-DESIGN-01",
+      "skillId": "MS-QA08",
+      "outcomeCoverage": 0.6
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-DESIGN-02-MS-QA09",
+      "moduleId": "MOD-QA-M-DESIGN-02",
+      "skillId": "MS-QA09",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-DESIGN-02-MS-QA10",
+      "moduleId": "MOD-QA-M-DESIGN-02",
+      "skillId": "MS-QA10",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-DESIGN-02-MS-QA11",
+      "moduleId": "MOD-QA-M-DESIGN-02",
+      "skillId": "MS-QA11",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-EXEC-01-MS-QA03",
+      "moduleId": "MOD-QA-M-EXEC-01",
+      "skillId": "MS-QA03",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-EXEC-01-MS-QA04",
+      "moduleId": "MOD-QA-M-EXEC-01",
+      "skillId": "MS-QA04",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-EXEC-01-MS-QA05",
+      "moduleId": "MOD-QA-M-EXEC-01",
+      "skillId": "MS-QA05",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-EXEC-02-MS-QA12",
+      "moduleId": "MOD-QA-M-EXEC-02",
+      "skillId": "MS-QA12",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-EXEC-02-MS-QA13",
+      "moduleId": "MOD-QA-M-EXEC-02",
+      "skillId": "MS-QA13",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-EXEC-02-MS-QA14",
+      "moduleId": "MOD-QA-M-EXEC-02",
+      "skillId": "MS-QA14",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-AUTO-01-MS-FS07",
+      "moduleId": "MOD-QA-M-AUTO-01",
+      "skillId": "MS-FS07",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-AUTO-01-MS-QA06",
+      "moduleId": "MOD-QA-M-AUTO-01",
+      "skillId": "MS-QA06",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-AUTO-01-MS-QA07",
+      "moduleId": "MOD-QA-M-AUTO-01",
+      "skillId": "MS-QA07",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-AUTO-02-MS-QA15",
+      "moduleId": "MOD-QA-M-AUTO-02",
+      "skillId": "MS-QA15",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-M-AUTO-02-MS-QA16",
+      "moduleId": "MOD-QA-M-AUTO-02",
+      "skillId": "MS-QA16",
+      "outcomeCoverage": 0.65
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-DESIGN-01-MS-QA01",
+      "moduleId": "MOD-QA-S-DESIGN-01",
+      "skillId": "MS-QA01",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-DESIGN-01-MS-QA02",
+      "moduleId": "MOD-QA-S-DESIGN-01",
+      "skillId": "MS-QA02",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-DESIGN-01-MS-QA08",
+      "moduleId": "MOD-QA-S-DESIGN-01",
+      "skillId": "MS-QA08",
+      "outcomeCoverage": 0.75
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-DESIGN-02-MS-QA09",
+      "moduleId": "MOD-QA-S-DESIGN-02",
+      "skillId": "MS-QA09",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-DESIGN-02-MS-QA10",
+      "moduleId": "MOD-QA-S-DESIGN-02",
+      "skillId": "MS-QA10",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-DESIGN-02-MS-QA11",
+      "moduleId": "MOD-QA-S-DESIGN-02",
+      "skillId": "MS-QA11",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-EXEC-01-MS-QA03",
+      "moduleId": "MOD-QA-S-EXEC-01",
+      "skillId": "MS-QA03",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-EXEC-01-MS-QA04",
+      "moduleId": "MOD-QA-S-EXEC-01",
+      "skillId": "MS-QA04",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-EXEC-01-MS-QA05",
+      "moduleId": "MOD-QA-S-EXEC-01",
+      "skillId": "MS-QA05",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-EXEC-02-MS-QA12",
+      "moduleId": "MOD-QA-S-EXEC-02",
+      "skillId": "MS-QA12",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-EXEC-02-MS-QA13",
+      "moduleId": "MOD-QA-S-EXEC-02",
+      "skillId": "MS-QA13",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-EXEC-02-MS-QA14",
+      "moduleId": "MOD-QA-S-EXEC-02",
+      "skillId": "MS-QA14",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-AUTO-01-MS-FS07",
+      "moduleId": "MOD-QA-S-AUTO-01",
+      "skillId": "MS-FS07",
+      "outcomeCoverage": 0.7
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-AUTO-01-MS-QA06",
+      "moduleId": "MOD-QA-S-AUTO-01",
+      "skillId": "MS-QA06",
+      "outcomeCoverage": 0.9
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-AUTO-01-MS-QA07",
+      "moduleId": "MOD-QA-S-AUTO-01",
+      "skillId": "MS-QA07",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-AUTO-02-MS-QA15",
+      "moduleId": "MOD-QA-S-AUTO-02",
+      "skillId": "MS-QA15",
+      "outcomeCoverage": 0.85
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-QA-S-AUTO-02-MS-QA16",
+      "moduleId": "MOD-QA-S-AUTO-02",
+      "skillId": "MS-QA16",
+      "outcomeCoverage": 0.8
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-ARC01-MS-ARC01",
+      "moduleId": "MOD-READ-ARC01",
+      "skillId": "MS-ARC01",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-ARC02-MS-ARC02",
+      "moduleId": "MOD-READ-ARC02",
+      "skillId": "MS-ARC02",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-ARC03-MS-ARC03",
+      "moduleId": "MOD-READ-ARC03",
+      "skillId": "MS-ARC03",
+      "outcomeCoverage": 0.35
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-ARC04-MS-ARC04",
+      "moduleId": "MOD-READ-ARC04",
+      "skillId": "MS-ARC04",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-ARC05-MS-ARC05",
+      "moduleId": "MOD-READ-ARC05",
+      "skillId": "MS-ARC05",
+      "outcomeCoverage": 0.25
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-ARC06-MS-ARC06",
+      "moduleId": "MOD-READ-ARC06",
+      "skillId": "MS-ARC06",
+      "outcomeCoverage": 0.45
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-CORE01-MS-CORE01",
+      "moduleId": "MOD-READ-CORE01",
+      "skillId": "MS-CORE01",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-CORE02-MS-CORE02",
+      "moduleId": "MOD-READ-CORE02",
+      "skillId": "MS-CORE02",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-CORE03-MS-CORE03",
+      "moduleId": "MOD-READ-CORE03",
+      "skillId": "MS-CORE03",
+      "outcomeCoverage": 0.35
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-CORE04-MS-CORE04",
+      "moduleId": "MOD-READ-CORE04",
+      "skillId": "MS-CORE04",
+      "outcomeCoverage": 0.45
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-GOV01-MS-GOV01",
+      "moduleId": "MOD-READ-GOV01",
+      "skillId": "MS-GOV01",
+      "outcomeCoverage": 0.25
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-GOV02-MS-GOV02",
+      "moduleId": "MOD-READ-GOV02",
+      "skillId": "MS-GOV02",
+      "outcomeCoverage": 0.35
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-GOV03-MS-GOV03",
+      "moduleId": "MOD-READ-GOV03",
+      "skillId": "MS-GOV03",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF01-MS-INF01",
+      "moduleId": "MOD-READ-INF01",
+      "skillId": "MS-INF01",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF02-MS-INF02",
+      "moduleId": "MOD-READ-INF02",
+      "skillId": "MS-INF02",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF03-MS-INF03",
+      "moduleId": "MOD-READ-INF03",
+      "skillId": "MS-INF03",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF04-MS-INF04",
+      "moduleId": "MOD-READ-INF04",
+      "skillId": "MS-INF04",
+      "outcomeCoverage": 0.2
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF05-MS-INF05",
+      "moduleId": "MOD-READ-INF05",
+      "skillId": "MS-INF05",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF06-MS-INF06",
+      "moduleId": "MOD-READ-INF06",
+      "skillId": "MS-INF06",
+      "outcomeCoverage": 0.45
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF07-MS-INF07",
+      "moduleId": "MOD-READ-INF07",
+      "skillId": "MS-INF07",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-INF08-MS-INF08",
+      "moduleId": "MOD-READ-INF08",
+      "skillId": "MS-INF08",
+      "outcomeCoverage": 0.35
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC01-MS-SEC01",
+      "moduleId": "MOD-READ-SEC01",
+      "skillId": "MS-SEC01",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC02-MS-SEC02",
+      "moduleId": "MOD-READ-SEC02",
+      "skillId": "MS-SEC02",
+      "outcomeCoverage": 0.35
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC03-MS-SEC03",
+      "moduleId": "MOD-READ-SEC03",
+      "skillId": "MS-SEC03",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC04-MS-SEC04",
+      "moduleId": "MOD-READ-SEC04",
+      "skillId": "MS-SEC04",
+      "outcomeCoverage": 0.45
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC05-MS-SEC05",
+      "moduleId": "MOD-READ-SEC05",
+      "skillId": "MS-SEC05",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC06-MS-SEC06",
+      "moduleId": "MOD-READ-SEC06",
+      "skillId": "MS-SEC06",
+      "outcomeCoverage": 0.5
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC07-MS-SEC07",
+      "moduleId": "MOD-READ-SEC07",
+      "skillId": "MS-SEC07",
+      "outcomeCoverage": 0.4
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC08-MS-SEC08",
+      "moduleId": "MOD-READ-SEC08",
+      "skillId": "MS-SEC08",
+      "outcomeCoverage": 0.3
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC09-MS-SEC09",
+      "moduleId": "MOD-READ-SEC09",
+      "skillId": "MS-SEC09",
+      "outcomeCoverage": 0.25
+    },
+    {
+      "relationshipId": "REL-TEACHES-MOD-READ-SEC10-MS-SEC10",
+      "moduleId": "MOD-READ-SEC10",
+      "skillId": "MS-SEC10",
+      "outcomeCoverage": 0.35
+    }
+  ]
+}

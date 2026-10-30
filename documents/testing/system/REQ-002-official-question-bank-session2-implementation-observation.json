@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Bangkok",
+  "kind": "Main compilation, explicit file-only synthetic operation and bounded READ ONLY observations; not executable tests",
+  "authorization": {
+    "syntheticOrigin": "Explicitly allowed by user; operational promotion ineligible",
+    "numericalAndSchemaChoices": "Agent selected under explicit user delegation",
+    "mainMigrationOrModelWrites": false
+  },
+  "compile": {
+    "command": "mvnw.cmd -B -ntp '-Dmaven.test.skip=true' compile",
+    "java": "21.0.12",
+    "sources": 290,
+    "migrationAndSeedResources": 25,
+    "result": "BUILD SUCCESS",
+    "finishedAt": "2026-10-22T21:44:06+07:00",
+    "testCompilationOrRunner": false
+  },
+  "offlineOperation": {
+    "algorithmHash": "ae57a57dac0742d45bf6821ef8f65b0994223b1474df97c36da6525faa1cd4a3",
+    "datasetHash": "9a60c1e73423a70ea811201dd36a6762c28b3af286ec0e8c00ff7f41d4bc6e2e",
+    "elapsedMillis": 1047,
+    "fittedArtifactHash": "089ecd096815fe6e41fce47bfed53ec655f774132ddf486c811cc90bf55bf70e",
+    "generatingHash": "ca1ca4582b05b0a0ffefbbdb2b78fb155dbfc0f0b8b7abeef6b7990552218920",
+    "itemCount": 135,
+    "kind": "BOUNDED_MANUAL_OFFLINE_OPERATION_NOT_TEST_EVIDENCE",
+    "objectiveEvaluations": 26572,
+    "origin": "SYNTHETIC",
+    "status": "SUCCEEDED"
+  },
+  "artifactSha256": {
+    "fitted.json": "089ecd096815fe6e41fce47bfed53ec655f774132ddf486c811cc90bf55bf70e",
+    "generating.json": "ca1ca4582b05b0a0ffefbbdb2b78fb155dbfc0f0b8b7abeef6b7990552218920",
+    "observation.json": "6b828b26c2ec455e10881a5297e4161a642ed8ab285ba6cbbc6f3720c5b37a15",
+    "policy.json": "ae57a57dac0742d45bf6821ef8f65b0994223b1474df97c36da6525faa1cd4a3",
+    "responses.json": "9a60c1e73423a70ea811201dd36a6762c28b3af286ec0e8c00ff7f41d4bc6e2e"
+  },
+  "syntheticDescriptiveRecoveryOnly": {
+    "a": {
+      "rmse": 0.22660642866328556,
+      "bias": 0.02378901788547947,
+      "maxAbsoluteError": 0.974508621921514
+    },
+    "b": {
+      "rmse": 0.14059339548191757,
+      "bias": -0.01843335910238365,
+      "maxAbsoluteError": 0.4399758014036428
+    },
+    "c": {
+      "rmse": 0,
+      "bias": 0,
+      "maxAbsoluteError": 0
+    }
+  },
+  "iterationsRange": [
+    15,
+    48
+  ],
+  "newMainJavaFiles": 24,
+  "sourceSha256": {
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/api/IrtAdministrationController.java": "f4a7e102a3a288bfe60079152871bfe594cde36bbe4cc1aed273ced792d805ca",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/application/CalibrationEnginePort.java": "a0593e5d3275627120b733966d3203e22f045a7ebcf983db785246050ee20cae",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/application/CalibrationPorts.java": "fbe7513f3fb4982645bfc634b2c625872749ae7bede4b20d398ac953e0df2389",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/application/CalibrationService.java": "a9a3a253f38dd8c6234aa0cd75943a7698ca01f4eb4d026a8c7e1388977d2149",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/application/PromotionPorts.java": "225fc32e9a81a42cb333905b8a712ad6c4617b0cbf04d39e2adf7e34bd578017",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/application/PromotionService.java": "7e7ef0d39a912040a53341f124c798e6ec71408da8c6bf7bd4bdf42d2cdaf41d",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/Calibration.java": "828e24295aff87f63cdb70442ac88d5edd98ff7ad7bda8d312d9f1f85a2345c2",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/CalibrationAdmission.java": "484fe026cc7ce7b4340694bbebe54ad2ab70ea742d48cb1d0041afaeb3f77930",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/CalibrationBudget.java": "5e540bd3baa7ba1f956cf3e277e3da2332d27c287f6869149c76fd9897f1df63",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/CalibrationExpectation.java": "05074a5356df3fd187139bf3a5ad988b40fce2e919d4ec8cd0441acf3c9d11b4",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/CalibrationMaximization.java": "2986f82f2de36c2592782523fd25d908b11b417fef0e624ab4a88b861508c072",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/CalibrationPolicy.java": "622837644a715ba49ffa27a59ec514b226de46a780d5a4041e550fea066ddb5e",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/domain/MmlCalibrationEngine.java": "34dc3d8c5a2632a3d895c60b85968a46ff5d2a0f538b4aba3fc51eab09b27364",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/CalibrationJson.java": "91994d52f8cb30056b27767274f4371366f6ed2ee5e45f94aa933d7c05d2a6d3",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/FileCalibrationDatasetSource.java": "93963973824e5979eb583b050579a091b5242d4571d1059d4c442a2a232d4ac3",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/IrtAdministrationConfiguration.java": "6ce50ea6e3aa02b303190c6b58453829f2e6c1538b294c7d12dac17a15905887",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/JdbcCalibrationCandidates.java": "6d4df83808ec6c7e82555af0fd14e6806713b2c8fdba2a296fea5610550a91b5",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/JdbcCalibrationInputSource.java": "3d8c49acc5360ed78c8bae571469a7dca987b25170d33cf0082ef12fbc70ba30",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/JdbcCalibrationStore.java": "cc7c0beab5b87bf042bf59130a45f83b21c184b5fe955124bcc7d396ed3aaef3",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/JdbcCalibrationWorker.java": "79b5a9e2b2fd63df98f88ef10793cab6dde33008306a1a51b8eebd76a8ac55b0",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/JdbcParameterPromotionStore.java": "3eeed657f65d5eb14c280f24bb2407322da6b5f837938b0266e2569eb9e8a77c",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/SyntheticCalibrationCommand.java": "f75e225119c3506bcab7b1e098c7afc18d53b0787813d68bcb92cef979edaba7",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/calibration/infrastructure/SyntheticResponseGenerator.java": "82970e0e229164e143758e83cf1d53a1ee1d0d76abcb8bdf34e8539a407cf596",
+    "backend/src/main/java/com/adaptlearngraph/assessment/infrastructure/OfficialCalibrationBankSource.java": "6b7abda2e9f679384494976ce1f75cdb08b15e8e5164657562857e9104bfa3c5",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/application/port/out/AdaptiveTechnicalVersionPort.java": "b424c9a20f2fbe663b8d12d00989b7eedfff16aed13874bebd9a9d9d73319e72",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/JdbcAdaptiveTechnicalVersionStore.java": "35e3370ef4e868c4c1e86f45e01a38045e592b2b5259ffe6976c14c45bdec35c",
+    "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/JdbcAdaptiveBlueprintEligibilityAdapter.java": "b36a7f8ec418ca40da372f8ed62ffc71a0cf2a540c8b3c87c00acf19c466076e",
+    "backend/src/main/resources/db/migration/V23__irt_scoped_parameter_promotion.sql": "404d77227e59d2d0da2d473198c597ae614275bf8aa58fa085cc16638bd37362"
+  },
+  "preservation": {
+    "head": "70679bb43e1798f1235a17d6a9a843701e76a796",
+    "stash": "3a8b19d1ea11fdb8592adb89518b85baeea1fac7",
+    "indexEmpty": true,
+    "releaseSidecarHashMismatches": [],
+    "v1ThroughV22ByteMismatches": [],
+    "ontologyUnchanged": true,
+    "workbookUnchanged": true,
+    "all135FittedItemPinsMatchRelease": true,
+    "session1RecoveryCopiesIntact": true,
+    "session2RecoveryCopies": {
+      "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/application/port/out/AdaptiveTechnicalVersionPort.java": "c91872faac2f9d52836e21a1f3a27122f52f310f1a92c0bfe8d84b5742770c62",
+      "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/JdbcAdaptiveTechnicalVersionStore.java": "6160bd51d13db131614e6487bbaaed699d3a4bbb9bfecee3d7d7d1d5203d716b",
+      "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/JdbcAdaptiveBlueprintEligibilityAdapter.java": "1fd73ad2f4769147e8b6499f4ffbdbe686809ea4257aa148be5bf0b5acad92e7"
+    }
+  },
+  "postgresAfterReadOnly": {
+    "baseline": "workspace .tools/official-data-cutover/20261022/postgres-after-digests.json",
+    "comparedTables": 84,
+    "changedTables": [],
+    "transaction": "READ ONLY,statement_timeout=5s",
+    "flywayCount": 22,
+    "maxVersion": 22,
+    "allSuccessful": true,
+    "modelVersions": 0,
+    "calibrationRuns": 0,
+    "parameterSets": 0,
+    "adaptiveResponses": 0,
+    "v23Applied": false
+  },
+  "unverified": [
+    "No V18 persistence/rollback/recovery/cancel/unknown commit observations",
+    "No V23 application or trigger/FK/SQL race execution",
+    "No trusted Admin/foreign role HTTP or enabled-wiring observation",
+    "No actual-pilot policy/data or approved model provided",
+    "No independent numerical validation/SE/DIF/production calibration claim",
+    "No executable tests/test compilation/runner or automatic D"
+  ]
+}

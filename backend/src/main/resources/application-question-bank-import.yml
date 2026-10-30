@@ -1,0 +1,12 @@
+spring:
+  main:
+    web-application-type: none
+  flyway:
+    enabled: false
+    local-seed: false
+    # Explicit local/demo only: an existing creator FK is enough; no Admin account is manufactured.
+
+question-bank:
+  import:
+    enabled: false
+    # Supply every pin/owner/target explicitly; see the official bank IMPORT_CONTRACT.md.

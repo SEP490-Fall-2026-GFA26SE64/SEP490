@@ -1,0 +1,575 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F561c2525-5bd8-4d86-8f45-820f4be7db93&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93",
+    "title": "report test findings",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "rapportere testfunn",
+      "de": "Testergebnisse melden",
+      "fi": "raportoida testilöydöksistä",
+      "pt": "comunicar resultados de ensaios",
+      "bg": "докладване на резултатите от изпитване",
+      "lt": "pateikti ataskaitą apie bandymo rezultatus",
+      "hr": "izvješćivati o rezultatima ispitivanja",
+      "lv": "paziņot testēšanas rezultātus",
+      "fr": "rédiger les conclusions d’un test",
+      "hu": "beszámol a teszteredményekről",
+      "uk": "складати звіти про результати випробувань",
+      "sk": "oznámiť nálezy testov",
+      "sl": "poročati o rezultatih testa",
+      "ga": "torthaí tástála a thuairisciú",
+      "sv": "rapportera testresultat",
+      "mt": "irrapportar tas-sejbiet tat-testijiet",
+      "el": "κοινοποίηση των πορισμάτων των δοκιμών",
+      "en": "report test findings",
+      "is": "segir frá niðurstöðum prófana",
+      "it": "comunicare i risultati delle prove",
+      "es": "informar sobre resultados de pruebas",
+      "et": "katseleidudest teatama",
+      "cs": "oznamovat nálezy ze zkoušek",
+      "ar": "إعداد  تقريرًا عن نتائج الاختبار",
+      "pl": "przedstawiać wyniki testów",
+      "da": "rapportere testresultater",
+      "ro": "prezintă rapoarte privind rezultatele testelor",
+      "nl": "verslag doen van testresultaten"
+    },
+    "alternativeLabel": {
+      "en": [
+        "describe test findings: record test findings",
+        "summarise test findings",
+        "note test findings",
+        "report a test finding"
+      ],
+      "es": [
+        "describir resultados de pruebas",
+        "entregar informes de resultados de pruebas",
+        "registrar resultados de pruebas",
+        "resumir resultados de pruebas"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Rapportere testresultater med fokus på funn og anbefalinger, skille mellom nivåer av alvorlighetsgrad. Inkludere relevante opplysninger fra testplanen, og beskrive forsøksmetodene ved bruk av målinger, tabeller og visuelle metoder for å tydeliggjøre ved behov.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Berichterstattung von Testergebnissen mit Schwerpunkt auf Feststellungen und Empfehlungen, wobei die Ergebnisse nach Schweregrad zu differenzieren sind. Beifügen einschlägiger Informationen aus dem Prüfplan und Beschreibung der Prüfmethoden anhand von Parametern, Tabellen und visuellen Methoden, um erforderlichenfalls Sachverhalte klarzustellen.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Raportoida testitulokset keskittymällä havaintoihin ja suosituksiin ja erotella tulokset toisistaan vakavuusasteen mukaan. Esittää asiaankuuluvat tiedot testaussuunnitelmasta ja hahmotella testausmenetelmät käyttämällä tarvittaessa selventäviä mittareita, taulukoita ja visuaalisia menetelmiä.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Comunicar resultados de ensaios, com especial incidência em conclusões e recomendações, diferenciando os resultados por níveis de gravidade. Incluir informações pertinentes do plano de ensaio e descrever as metodologias de ensaio, utilizando métricas, tabelas e meios visuais para clarificar elementos, quando necessário.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Докладва резултатите от изпитване с акцент върху откритията и препоръките, като прави разграничение между резултатите по степени на тежест. Включва съответната информация от плана за изпитване и описва методите за изпитване, като използва метрика, таблици и визуални методи, за да изяснят необходимото.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Pateikti ataskaitą apie bandymo rezultatus, daugiausia dėmesio skiriant rezultatams ir rekomendacijoms, atskiriant rezultatus pagal svarbą. Įtraukti atitinkamą informaciją iš bandymų plano ir apibūdinti bandymų metodiką, naudojant parametrus, lenteles ir, jei reikia, vizualinius metodus, kad būtų aiškiau.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izvješćivati o rezultatima ispitivanja s naglaskom na nalaze i preporuke, razlikujući rezultate po razinama ozbiljnosti. Obuhvatiti relevantne informacije iz plana ispitivanja i opisati metodologije ispitivanja, koristeći se metričkim podacima, tablicama i vizualnim metodama radi pojašnjavanja ako je potrebno.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Paziņot testēšanas rezultātus, kuru uzmanības centrā ir iegūtie dati un ieteikumi, diferencējot rezultātus pēc nopietnības pakāpes. Iekļaut attiecīgo informāciju no testa plāna un aprakstīt testēšanas metodikas, izmantojot rādītājus, tabulas un vizuālās metodes, lai vajadzības gadījumā sniegtu precizējumus.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Rédiger les résultats d’un test en mettant l’accent sur les conclusions et les recommandations, en différenciant les résultats par niveaux de sévérité. Inclure les informations pertinentes du plan du test et décrire les méthodologies de test, en utilisant des paramètres, des tableaux et des méthodes visuelles pour expliquer, le cas échéant.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Beszámol a teszteredményekről a megállapításokra és az ajánlásokra összpontosítva, továbbá megkülönbözteti az eredményeket a súlyossági szint alapján. Belefoglalja a teszttervből származó releváns információkat, és felvázolja a tesztelési módszertant szükség esetén mutatók, táblázatok és vizuális módszerek használatával.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Складати звіти про результати випробувань з акцентом на висновках і рекомендаціях, диференціюючи результати за рівнями серйозності. Включати відповідну інформацію з плану випробувань та описувати методологію випробувань, використовуючи метрики, таблиці та візуальні методи для пояснення, де це необхідно.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Oznamovanie nálezov testov so zameraním na zistenie a odporúčanie, diferenciáciu výsledkov podľa úrovne závažnosti. Zahrnutie príslušnej informácie zo skúšobného plánu a načrtnutie metodiky testovania pomocou metrík, tabuliek a vizuálnych metód na objasnenie tam, kde je to potrebné.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Poročati o rezultatih testa s poudarkom na ugotovitvah in priporočilih, pri tem pa razlikovati med rezultati glede na resnost razmer. Vključiti ustrezne informacije iz načrta testa in opisati testne metodologije z uporabo metrik, preglednic in vizualnih metod za potrebna pojasnila.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Torthaí tástála a thuairisciú agus béim á leagan ar thorthaí agus ar mholtaí, agus idirdhealú á dhéanamh idir torthaí de réir leibhéil déine. Faisnéis ábhartha ón bplean tástála a áireamh agus na modheolaíochtaí tástála a leagan amach, agus úsáid á baint as méadracht, as táblaí agus as modhanna físe chun soiléiriú a thabhairt nuair is gá.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Rapportera testresultat med fokus på rön och rekommendationer, skilja på resultaten efter allvarsnivå. Inkludera relevant information från testplanen och ange testmetodikerna med hjälp av mått, tabeller och visuella metoder för att förtydliga dem vid behov.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Κοινοποίηση των πορισμάτων των δοκιμών με έμφαση στα πορίσματα και τις συστάσεις, με διαφοροποίηση των αποτελεσμάτων ανά επίπεδο σοβαρότητας. Περίληψη συναφών πληροφοριών από το σχέδιο δοκιμών και συνοπτική περιγραφή των μεθόδων δοκιμών, με τη χρήση συστημάτων μέτρησης, πινάκων και οπτικών μεθόδων, για μεγαλύτερη σαφήνεια όπου χρειάζεται.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Irrapportar tar-riżultati tat-testijiet b’enfasi fuq is-sejbiet u r-rakkomandazzjonijiet, filwaqt li ssir distinzjoni bejn ir-riżultati skont il-livelli ta’ severità. Inklużjoni tal-informazzjoni rilevanti mill-pjan tal-ittestjar u spjegazzjoni tal-metodoloġiji tat-test, bl-użu ta’ metriċi, ta’ tabelli, u ta’ metodi viżwali għall-iċċarar fejn ikun meħtieġ.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Report test results with a focus on findings and recommendations, differentiating results by levels of severity. Include relevant information from the test plan and outline the test methodologies, using metrics, tables, and visual methods to clarify where needed.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Tilkynna um árangur prófana með áherslu á niðurstöður og ráðleggingar og þær aðgreindar eftir alvarleika. Láta viðeigandi upplýsingar fylgja með prufuáætluninni og gera grein fyrir aðferðafræði prófsins með tölum, töflum og sjónrænum aðferðum til að skýra betur þegar þess er þörf.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Comunicare i risultati delle prove con particolare attenzione agli esiti e alle raccomandazioni, differenziando i risultati in base a livelli di gravità. Includere informazioni pertinenti tratte dal piano del test e definire le metodologie del test, utilizzando parametri, tabelle e metodi visivi per chiarire, se necessario.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Informar sobre los resultados de las pruebas haciendo hincapié en los hallazgos y las recomendaciones y diferenciando los resultados por niveles de gravedad. Incluir información pertinente del plan de ensayo y describa las metodologías de ensayo, utilizando métricas, tablas y métodos visuales a título aclaratorio en caso necesario.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Katsetulemustest teatamine, keskendudes järeldustele ja soovitustele, eristades tulemusi raskusastme järgi. Katseplaanist saadud asjakohase teabe kaasamine ja katsemeetodite ülevaate esitamine, kasutades vajaduse korral selgituste andmiseks meetrikat, tabeleid ja visuaalseid meetodeid.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Oznamovat nálezy ze zkoušek se zaměřením na zjištění a doporučení, diferenciaci výsledků podle úrovní závažnosti. Zahrnout příslušné informace ze zkušebního plánu a nastínit metodiky testování pomocí metrik, tabulek a vizuálních metod k objasnění v případě potřeby.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إعداد تقرير عن نتائج الاختبار مع التركيز على الاكتشافات والتوصيات، وإجراء مفاضلة للنتائج من حيث مستويات الشدة. دمج المعلومات الملائمة من خطة الاختبار وتحديد منهجية الاختبار باستخدام المقاييس والجداول والطرق المرئية للتوضيح حسب الحاجة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Przedstawiać wyniki testów z naciskiem na wnioski i zalecenia, różnicując wyniki według stopnia istotności. Załączać odpowiednie informacje z planu badań i przedstawiać metody badań, stosując wskaźniki, tabele i metody wizualne, jeśli potrzebne są dodatkowe wyjaśnienia.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Prezintă rapoarte privind rezultatele testelor, axându-se pe constatări și recomandări și diferențiind rezultatele pe niveluri de gravitate. Include informațiile relevante din planul de testare și prezentă metodologiile de testare, utilizând metrici, tabele și metode vizuale pentru clarificare, dacă este necesar.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Rapportere testresultater med fokus på resultater og anbefalinger, idet der skelnes mellem alvorlighedsgrader. Medtage relevante oplysninger fra prøvningsplanen og gennemgå testmetoderne ved hjælp af parametre, tabeller og visuelle metoder til forklaring, hvor det er nødvendigt.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "De testresultaten rapporteren met de nadruk op bevindingen en aanbevelingen, waarbij de resultaten ingedeeld moeten worden op basis van intensiteit. Neem hierin relevante informatie op uit het testplan en zet de testmethoden uiteen, waarbij gebruik wordt gemaakt van metriek, tabellen en visuele methoden om waar nodig te verduidelijken.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93&language=en",
+        "uri": "http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93",
+        "title": "report test findings"
+      },
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/cross-sector&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/cross-sector",
+          "title": "cross-sector skills and competences",
+          "code": "Level 2"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/95bf4552-6d5b-41dc-b990-53ace372f705&language=en",
+          "uri": "http://data.europa.eu/esco/skill/95bf4552-6d5b-41dc-b990-53ace372f705",
+          "title": "documenting technical designs, procedures, problems or activities",
+          "code": "S2.2.6"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be6ab363-3de1-427f-a8ef-85d5b0250822&language=en",
+          "uri": "http://data.europa.eu/esco/skill/be6ab363-3de1-427f-a8ef-85d5b0250822",
+          "title": "report facts",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "narrowerSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d494454c-7317-430a-9346-0d55a667c6d1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d494454c-7317-430a-9346-0d55a667c6d1",
+          "title": "write reports on neurological tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8dcc1c68-1ebe-412b-b437-cab3c26da509&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8dcc1c68-1ebe-412b-b437-cab3c26da509",
+          "title": "record data from biomedical tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3594efa8-cd69-411e-a345-d88ba756b758&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3594efa8-cd69-411e-a345-d88ba756b758",
+          "title": "pulp grader"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/82d75f3b-644a-4582-ad6b-a2a1833e44cb&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/82d75f3b-644a-4582-ad6b-a2a1833e44cb",
+          "title": "non-destructive testing specialist"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ad7bbc92-d5cb-4b64-a1a3-efc593afd437&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ad7bbc92-d5cb-4b64-a1a3-efc593afd437",
+          "title": "lumber grader"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3027abf6-bc54-4709-8dc1-4f20b772ac70&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3027abf6-bc54-4709-8dc1-4f20b772ac70",
+          "title": "engineered wood board grader"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/30c0943c-caa1-411d-b273-26f475971273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/30c0943c-caa1-411d-b273-26f475971273",
+          "title": "quality engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33fe4c90-c4fd-4860-bdc5-24fcab16f45a&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33fe4c90-c4fd-4860-bdc5-24fcab16f45a",
+          "title": "food analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b9c80d74-97b6-4a4b-849e-a3908ba57ae1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b9c80d74-97b6-4a4b-849e-a3908ba57ae1",
+          "title": "veneer grader"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/998a0bf4-b1be-42ab-aee5-0096c9be3319&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/998a0bf4-b1be-42ab-aee5-0096c9be3319",
+          "title": "quality engineering technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d99e2022-cbe1-4aaa-8f9d-7db129d61f0c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/d99e2022-cbe1-4aaa-8f9d-7db129d61f0c",
+          "title": "wastewater treatment technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/eb00745b-9abb-4bd8-8291-aade48af029d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/eb00745b-9abb-4bd8-8291-aade48af029d",
+          "title": "material testing technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "title": "embedded systems security engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ba490796-46f7-45b7-827b-db6882fca3e1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ba490796-46f7-45b7-827b-db6882fca3e1",
+          "title": "onshore wind energy engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/adf9257e-78cb-467d-b259-59ed65bd7aed&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/adf9257e-78cb-467d-b259-59ed65bd7aed",
+          "title": "fire safety tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ec5a067f-6278-4e35-990f-c9b7205a9ff4&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ec5a067f-6278-4e35-990f-c9b7205a9ff4",
+          "title": "homologation engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/757da94f-d1f3-48ad-ac61-74e22bc18cca&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/757da94f-d1f3-48ad-ac61-74e22bc18cca",
+          "title": "graphologist"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c44c37a2-88c3-4ac2-9cf9-959f42deb02b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c44c37a2-88c3-4ac2-9cf9-959f42deb02b",
+          "title": "offshore renewable energy engineer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c262bb96-03bb-4c97-a45b-0cf36db5b048&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c262bb96-03bb-4c97-a45b-0cf36db5b048",
+          "title": "assistant lecturer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/28742973-c452-4996-b070-440e437306dc&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/28742973-c452-4996-b070-440e437306dc",
+          "title": "water quality analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/7af81505-6681-49b5-b65e-401884a71f1f&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/7af81505-6681-49b5-b65e-401884a71f1f",
+          "title": "groundwater monitoring technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/237e21f1-a7fa-4273-91eb-28e7b5d72f60&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/237e21f1-a7fa-4273-91eb-28e7b5d72f60",
+          "title": "lacquer maker"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ab4dd4f9-ee6c-41cc-8b72-42ad0b13d1e2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ab4dd4f9-ee6c-41cc-8b72-42ad0b13d1e2",
+          "title": "waste treatment engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b0c6f284-f3ed-4820-a62e-4e87869f5a3e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b0c6f284-f3ed-4820-a62e-4e87869f5a3e",
+          "title": "rubber products machine operator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/86da9311-1f7a-40bb-af65-ed2a7178fcae&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/86da9311-1f7a-40bb-af65-ed2a7178fcae",
+          "title": "concrete products machine operator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/574f3232-1d07-4034-8cac-c57ddbfff192&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/574f3232-1d07-4034-8cac-c57ddbfff192",
+          "title": "analytical chemist"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/555235ce-8c45-409b-a6c9-83e69c2d2bce&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/555235ce-8c45-409b-a6c9-83e69c2d2bce",
+          "title": "military engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8",
+          "title": "offshore renewable energy technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/4fef1907-cf82-413b-841a-02ef57e299a6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/4fef1907-cf82-413b-841a-02ef57e299a6",
+          "title": "scientific laboratory technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5979893a-0a30-447b-8f33-1ea405600583&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5979893a-0a30-447b-8f33-1ea405600583",
+          "title": "powertrain engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/55167849-82cf-484e-b818-fa702a4e69e9&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/55167849-82cf-484e-b818-fa702a4e69e9",
+          "title": "hydrologist"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0e99c929-364f-4b0a-8a64-2aab42420f00&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0e99c929-364f-4b0a-8a64-2aab42420f00",
+          "title": "renewable energy engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5ac65daa-0896-4193-9f0e-8b00746b78a1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5ac65daa-0896-4193-9f0e-8b00746b78a1",
+          "title": "university research assistant"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/40260ee8-c94a-4dc8-a562-f9fbc2fe13b1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/40260ee8-c94a-4dc8-a562-f9fbc2fe13b1",
+          "title": "sewerage maintenance technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a32187fa-bc37-4fc2-8e89-296632bfc271&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a32187fa-bc37-4fc2-8e89-296632bfc271",
+          "title": "onshore wind farm technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/afbe50b0-6634-4677-a3e7-0aada10cb9a7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/afbe50b0-6634-4677-a3e7-0aada10cb9a7",
+          "title": "thermal engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/58c30193-d29f-4d22-8bf0-fd87346b91dd&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/58c30193-d29f-4d22-8bf0-fd87346b91dd",
+          "title": "installation engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/cb60beab-7afb-4e99-8162-221abea68e6d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/cb60beab-7afb-4e99-8162-221abea68e6d",
+          "title": "consumer rights advisor"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c76566f1-97a1-43e9-a7d8-155db0e56987&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c76566f1-97a1-43e9-a7d8-155db0e56987",
+          "title": "varnish maker"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/808b5940-8092-4f08-bc37-9b60ee5761d8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/808b5940-8092-4f08-bc37-9b60ee5761d8",
+          "title": "assayer"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "report test findings",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93&language=en",
+              "uri": "http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/95bf4552-6d5b-41dc-b990-53ace372f705",
+            "http://data.europa.eu/esco/skill/be6ab363-3de1-427f-a8ef-85d5b0250822"
+          ]
+        },
+        {
+          "title": "documenting technical designs, procedures, problems or activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/95bf4552-6d5b-41dc-b990-53ace372f705&language=en",
+              "uri": "http://data.europa.eu/esco/skill/95bf4552-6d5b-41dc-b990-53ace372f705"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/325a3d29-a235-4182-9128-782c0f4b2dcc"
+          ]
+        },
+        {
+          "title": "documenting and recording information",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/325a3d29-a235-4182-9128-782c0f4b2dcc&language=en",
+              "uri": "http://data.europa.eu/esco/skill/325a3d29-a235-4182-9128-782c0f4b2dcc"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+          ]
+        },
+        {
+          "title": "information skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "report facts",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be6ab363-3de1-427f-a8ef-85d5b0250822&language=en",
+              "uri": "http://data.europa.eu/esco/skill/be6ab363-3de1-427f-a8ef-85d5b0250822"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6f142deb-03a9-4cd7-94ce-e0f023ae2169"
+          ]
+        },
+        {
+          "title": "communicating",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6f142deb-03a9-4cd7-94ce-e0f023ae2169&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6f142deb-03a9-4cd7-94ce-e0f023ae2169"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/552c4f35-a2d1-49c2-8fda-afe26695c44a"
+          ]
+        },
+        {
+          "title": "social and communication skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/552c4f35-a2d1-49c2-8fda-afe26695c44a&language=en",
+              "uri": "http://data.europa.eu/esco/skill/552c4f35-a2d1-49c2-8fda-afe26695c44a"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+          ]
+        },
+        {
+          "title": "transversal skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

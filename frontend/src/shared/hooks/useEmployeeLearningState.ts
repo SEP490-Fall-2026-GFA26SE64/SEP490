@@ -11,6 +11,15 @@ export interface NotificationItem {
   actionLabel?: string
 }
 
+export interface HistoricalSkill {
+  skillKey: string
+  skillName: string
+  macroCode?: string
+  completedAt: string
+  masteryScore: number
+  status: 'completed' | 'superseded'
+}
+
 export interface HistoricalTargetRole {
   roleKey: string
   roleTitle: string
@@ -22,12 +31,24 @@ export interface HistoricalTargetRole {
   description: string
 }
 
+export interface TrackedSkillItem {
+  skillName: string
+  macroCode?: string | null
+  level?: string | null
+  assignedAt?: string | null
+}
+
 export interface LearnerLearningProfile {
   learnerId: string
   learnerName: string
   currentRole: string
   targetRole: string | null
   targetRoleVersion: string | null
+  targetSkill?: string | null
+  targetSkillMacroCode?: string | null
+  targetSkillLevel?: string | null
+  targetSkillAssignedAt?: string | null
+  trackedSkills?: TrackedSkillItem[]
   deadline: string | null
   assignedByManager: string | null
   assignedAt: string | null
@@ -36,8 +57,11 @@ export interface LearnerLearningProfile {
   diagnosticScore: number | null
   diagnosticCompletedAt: string | null
   managerNotes?: string
+  selectedViewType?: 'role' | 'skill'
   selectedViewRoleKey: string // 'active' or key of historical role
+  selectedViewSkillKey?: string // 'active' or key of historical skill
   previousRoles: HistoricalTargetRole[]
+  previousSkills?: HistoricalSkill[]
 }
 
 // Backwards compatibility alias
@@ -55,6 +79,18 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   currentRole: 'Junior Graph Developer',
   targetRole: 'AI Knowledge Architect',
   targetRoleVersion: 'v2.4 (Latest - Published 2026-06)',
+  targetSkill: 'Google Gemini & LLM Orchestration',
+  targetSkillMacroCode: 'GEN_AI',
+  targetSkillLevel: 'Advanced',
+  targetSkillAssignedAt: '2026-09-25',
+  trackedSkills: [
+    {
+      skillName: 'Google Gemini & LLM Orchestration',
+      macroCode: 'GEN_AI',
+      level: 'Advanced',
+      assignedAt: '2026-09-25',
+    },
+  ],
   deadline: '2026-12-31',
   assignedByManager: 'Self-Selected (Learner)',
   assignedAt: '2026-09-21 09:30',
@@ -63,7 +99,9 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   diagnosticScore: null,
   diagnosticCompletedAt: null,
   managerNotes: 'Targeting Q4 2026 promotion. Complete diagnostic assessment to calibrate GNN and ontology pathway.',
+  selectedViewType: 'role',
   selectedViewRoleKey: 'active',
+  selectedViewSkillKey: 'active',
   previousRoles: [
     {
       roleKey: 'junior-graph-developer',
@@ -86,6 +124,24 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
       description: 'Distributed persistence, transactional CQRS, and Kafka outbox synchronizations.',
     },
   ],
+  previousSkills: [
+    {
+      skillKey: 'python-core',
+      skillName: 'Python Core & Async Semantics',
+      macroCode: 'PROGRAMMING_LANGUAGES',
+      completedAt: '2026-06-15',
+      masteryScore: 95,
+      status: 'completed',
+    },
+    {
+      skillKey: 'cypher-basics',
+      skillName: 'Neo4j Cypher Fundamentals',
+      macroCode: 'GRAPH_DATABASE',
+      completedAt: '2026-08-10',
+      masteryScore: 92,
+      status: 'completed',
+    },
+  ],
 }
 
 const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
@@ -104,6 +160,11 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
     currentRole: employee ? (employee.department || 'Associate') : 'Associate',
     targetRole,
     targetRoleVersion,
+    targetSkill: null,
+    targetSkillMacroCode: null,
+    targetSkillLevel: null,
+    targetSkillAssignedAt: null,
+    trackedSkills: [],
     deadline: targetRole ? '2026-12-31' : null,
     assignedByManager: 'Self-Selected (Learner)',
     assignedAt: new Date().toISOString().slice(0, 10),
@@ -112,8 +173,11 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
     diagnosticScore: null,
     diagnosticCompletedAt: null,
     managerNotes: targetRole ? `Calibrate your competency pathway for ${targetRole}.` : 'Select a target role to begin learning.',
+    selectedViewType: 'role',
     selectedViewRoleKey: 'active',
+    selectedViewSkillKey: 'active',
     previousRoles: [],
+    previousSkills: [],
   }
 }
 
@@ -221,8 +285,46 @@ export function useEmployeeLearningState() {
     }
   }, [])
 
+  const isSkillCompleted = React.useCallback(
+    (skillNameOrKey: string, code?: string): boolean => {
+      const prevSkills = profile.previousSkills || []
+      const norm = skillNameOrKey.toLowerCase().trim()
+      const normCode = (code || '').toLowerCase().trim()
+      return prevSkills.some(
+        (ps) =>
+          (ps.status === 'completed' || ps.masteryScore >= 85) &&
+          (ps.skillName.toLowerCase().trim() === norm ||
+            ps.skillKey.toLowerCase().trim() === norm ||
+            (normCode && ps.skillKey.toLowerCase().trim() === normCode) ||
+            (normCode && ps.skillName.toLowerCase().trim() === normCode))
+      )
+    },
+    [profile.previousSkills]
+  )
+
+  const isTargetRoleCompleted = React.useCallback(
+    (roleTitleOrKey: string, code?: string): boolean => {
+      const prevRoles = profile.previousRoles || []
+      const norm = roleTitleOrKey.toLowerCase().trim()
+      const normCode = (code || '').toLowerCase().trim()
+      return prevRoles.some(
+        (pr) =>
+          pr.status === 'completed' &&
+          (pr.roleTitle.toLowerCase().trim() === norm ||
+            pr.roleKey.toLowerCase().trim() === norm ||
+            (normCode && pr.roleKey.toLowerCase().trim() === normCode) ||
+            (normCode && pr.roleTitle.toLowerCase().trim() === normCode))
+      )
+    },
+    [profile.previousRoles]
+  )
+
   // Check if current view is active role or historical completed role
-  const isViewingActiveRole = profile.selectedViewRoleKey === 'active'
+  const isCurrentTargetRoleCompleted = profile.targetRole
+    ? isTargetRoleCompleted(profile.targetRole, profile.targetRoleVersion || undefined)
+    : false
+
+  const isViewingActiveRole = profile.selectedViewRoleKey === 'active' && !isCurrentTargetRoleCompleted
 
   // If viewing active role, check if diagnostic is pending
   const isLearningLocked = isViewingActiveRole
@@ -419,18 +521,145 @@ export function useEmployeeLearningState() {
     saveProfile(updatedProfile)
   }, [profile, saveProfile])
 
+  const setSelectedViewType = React.useCallback(
+    (type: 'role' | 'skill') => {
+      saveProfile({
+        ...profile,
+        selectedViewType: type,
+      })
+    },
+    [profile, saveProfile]
+  )
+
+  const setSelectedViewSkillKey = React.useCallback(
+    (skillKey: string) => {
+      saveProfile({
+        ...profile,
+        selectedViewSkillKey: skillKey,
+      })
+    },
+    [profile, saveProfile]
+  )
+
+  const getTrackedSkills = React.useCallback((): TrackedSkillItem[] => {
+    let rawList: TrackedSkillItem[] = []
+    if (profile.trackedSkills && profile.trackedSkills.length > 0) {
+      rawList = profile.trackedSkills
+    } else if (profile.targetSkill) {
+      rawList = [
+        {
+          skillName: profile.targetSkill,
+          macroCode: profile.targetSkillMacroCode || null,
+          level: profile.targetSkillLevel || 'Intermediate',
+          assignedAt: profile.targetSkillAssignedAt || new Date().toISOString().split('T')[0],
+        },
+      ]
+    }
+    // Completed skills are NO LONGER tracked so employees don't misunderstand their active learning goals
+    return rawList.filter((item) => !isSkillCompleted(item.skillName, item.macroCode || undefined))
+  }, [profile, isSkillCompleted])
+
+  const trackedSkills = getTrackedSkills()
+
+  const isSkillTracked = React.useCallback(
+    (skillName: string): boolean => {
+      return getTrackedSkills().some(
+        (s) => s.skillName.toLowerCase() === skillName.toLowerCase()
+      )
+    },
+    [getTrackedSkills]
+  )
+
+  const trackSkill = React.useCallback(
+    (skillName: string, macroCode?: string, level = 'Intermediate') => {
+      // Completed skills cannot be tracked
+      if (isSkillCompleted(skillName, macroCode)) {
+        return
+      }
+      const currentList = getTrackedSkills()
+      if (currentList.some((s) => s.skillName.toLowerCase() === skillName.toLowerCase())) {
+        return
+      }
+      const newItem: TrackedSkillItem = {
+        skillName,
+        macroCode: macroCode || null,
+        level,
+        assignedAt: new Date().toISOString().split('T')[0],
+      }
+      const updatedList = [newItem, ...currentList]
+      saveProfile({
+        ...profile,
+        targetSkill: skillName,
+        targetSkillMacroCode: macroCode || null,
+        targetSkillLevel: level,
+        targetSkillAssignedAt: newItem.assignedAt,
+        trackedSkills: updatedList,
+      })
+    },
+    [profile, getTrackedSkills, isSkillCompleted, saveProfile]
+  )
+
+  const untrackSkill = React.useCallback(
+    (skillName: string) => {
+      const currentList = getTrackedSkills()
+      const updatedList = currentList.filter(
+        (s) => s.skillName.toLowerCase() !== skillName.toLowerCase()
+      )
+      const nextActive = updatedList[0]
+      saveProfile({
+        ...profile,
+        targetSkill: nextActive ? nextActive.skillName : null,
+        targetSkillMacroCode: nextActive ? nextActive.macroCode : null,
+        targetSkillLevel: nextActive ? nextActive.level : null,
+        targetSkillAssignedAt: nextActive ? nextActive.assignedAt : null,
+        trackedSkills: updatedList,
+      })
+    },
+    [profile, getTrackedSkills, saveProfile]
+  )
+
+  const clearTargetSkill = React.useCallback(() => {
+    saveProfile({
+      ...profile,
+      targetSkill: null,
+      targetSkillMacroCode: null,
+      targetSkillLevel: null,
+      targetSkillAssignedAt: null,
+      trackedSkills: [],
+      selectedViewSkillKey: 'active',
+    })
+  }, [profile, saveProfile])
+
+  const selectTargetSkill = React.useCallback(
+    (skillName: string, macroCode?: string, level = 'Intermediate') => {
+      trackSkill(skillName, macroCode, level)
+    },
+    [trackSkill]
+  )
+
   const clearNotifications = React.useCallback(() => {
     saveNotifications([])
   }, [saveNotifications])
 
   return {
     profile,
+    trackedSkills,
+    isSkillTracked,
+    isSkillCompleted,
+    isTargetRoleCompleted,
+    trackSkill,
+    untrackSkill,
+    clearTrackedSkills: clearTargetSkill,
     isViewingActiveRole,
     isLearningLocked,
     unreadNotificationCount,
     notifications,
     setSelectedViewRoleKey,
+    setSelectedViewType,
+    setSelectedViewSkillKey,
     selectTargetRole,
+    selectTargetSkill,
+    clearTargetSkill,
     assignInitialTargetRole,
     replaceTargetRole,
     reviseAssignmentDeadline,

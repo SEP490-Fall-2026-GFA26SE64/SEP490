@@ -1,0 +1,426 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F75f839c2-fd9a-4ad3-8921-6e734608568d&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d",
+    "title": "use query languages",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "bruke spørringsspråk",
+      "de": "Abfragesprachen verwenden",
+      "fi": "käyttää kyselykieliä",
+      "pt": "utilizar linguagens de interrogação",
+      "bg": "използване на езици за запитвания",
+      "lt": "vartoti kompiuterines užklausų (SQL) kalbas",
+      "lv": "lietot vaicājumu valodas",
+      "hr": "upotrebljavati jezike za pretraživanje",
+      "fr": "utiliser des langages de requête",
+      "hu": "lekérdező nyelveket használ",
+      "uk": "використовувати мови запитів",
+      "sk": "používať dopytovacie jazyky",
+      "sl": "uporabljati jezike za poizvedovanje",
+      "ga": "teangacha iarratais a úsáid",
+      "sv": "använda frågespråk",
+      "mt": "użu tal-lingwi tal-kompjuter",
+      "el": "χρήση γλωσσών ερωτημάτων",
+      "en": "use query languages",
+      "is": "notar fyrirspurnarmál",
+      "it": "utilizzare linguaggi di interrogazione",
+      "es": "utilizar lenguajes de consulta",
+      "et": "päringukeeli kasutama",
+      "cs": "používat dotazovací jazyk",
+      "ar": "استخدام لغات الاستفسار",
+      "pl": "posługiwać się językami zapytań",
+      "da": "bruge forespørgselssprog",
+      "ro": "utilizează limbaje de interogare",
+      "nl": "querytalen gebruiken"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Retrievalsprachen verwenden"
+      ],
+      "en": [
+        "retrieve data using a structured query language",
+        "data retrieving using a query language",
+        "data retrieving using a structured query language",
+        "use information retrieval query language",
+        "query language using",
+        "use structured query language",
+        "using query language",
+        "use database query language",
+        "retrieve data using a query language",
+        "using information retrieval query language",
+        "using database query language",
+        "using structured query language",
+        "retrieving data using a query language",
+        "retrieving data using a structured query language"
+      ],
+      "es": [
+        "utilizar lenguajes de búsqueda"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Hente informasjon fra en database eller et informasjonssystem ved hjelp av datamaskinspråk som er utformet for å hente ut data.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Abrufen von Informationen aus einer Datenbank oder einem Informationssystem mithilfe von Computersprachen für die Abfrage von Daten.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Hakea tietoja tietokannasta tai tietojärjestelmästä käyttäen ohjelmointikieliä, jotka on tarkoitettu tietojen hakuun.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Obter informações a partir de uma base de dados ou de um sistema de informação utilizando uma linguagem informática concebida para a recuperação de dados.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Извлича информация от база данни или информационна система чрез използване на компютърни езици, предназначени за извличане на данни.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Gauti informaciją iš duomenų bazės arba informacinės sistemos vartojant kompiuterines kalbas, skirtas duomenims gauti.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Dohvaćati informacije iz baze podataka ili informacijskog sustava upotrebom računalnih jezika namijenjenima za dohvat podataka.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izgūt informāciju no datubāzes vai informācijas sistēmas, izmantojot datorvalodas, kas paredzētas datu izgūšanai.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Extraire des informations à partir d’une base de données ou d’un système d’information utilisant des langages informatiques conçus pour la récupération de données.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Adatbázisból vagy információs rendszerből az adatok lekérdezése céljára szolgáló számítógépes nyelv alkalmazása.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Отримувати інформацію з бази даних або інформаційної системи за допомогою комп’ютерних мов, призначених для отримання даних.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Získavať informácie z databázy alebo informačného systému použitím počítačových jazykov určených na vyhľadávanie údajov.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Pridobiti informacije iz zbirke podatkov ali informacijskega sistema z uporabo računalniških jezikov, zasnovanih za pridobivanje podatkov.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Faisnéis a aisghabháil ó bhunachar sonraí nó ó chóras faisnéise, agus úsáid á baint as teangacha ríomhaire atá ceaptha chun sonraí a aisghabháil.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Hämta information från en databas eller ett informationssystem med hjälp av datorspråk avsett för hämtning av data.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Ανάκτηση πληροφοριών από βάση δεδομένων ή σύστημα πληροφοριών με τη χρήση ηλεκτρονικών γλωσσών που έχουν σχεδιαστεί για την ανάκτηση δεδομένων.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ikseb informazzjoni minn bażi tad-data jew sistema ta’ informazzjoni bl-użu ta’ lingwi tal-kompjuter maħsuba għall-kisba tad-data.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Retrieve information from a database or information system using computer languages designed for the retrieval of data.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Sækir upplýsingar úr gagnagrunni eða upplýsingakerfi, þar sem tölvuforrit eru notuð til gagnaöflunar.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Recuperare informazioni da una banca dati o da un sistema informativo utilizzando linguaggi informatici usati per reperire i dati.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Recuperar información de una base de datos o sistema de información utilizando lenguajes informáticos diseñados para la recuperación de datos.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Teabe hankimine andmebaasist või infosüsteemist, kasutades andmeotsinguks kavandatud arvutikeeli.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Získávat informace z databáze nebo informačního systému za použití počítačových jazyků určených k vyhledávání dat.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "استرجاع المعلومات من قاعدة البيانات أو نظام المعلومات باستخدام لغات الحاسب الآلي المصممة لاسترجاع البيانات.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Pobierać informacje z bazy danych lub systemu informacyjnego z wykorzystaniem języków komputerowych przeznaczonych do pobierania danych.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Hente oplysninger fra en database eller et informationssystem ved hjælp af computersprog, der er udviklet til at hente data.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Extrage informații dintr-o bază de date sau un sistem de informații utilizând limbaje informatice destinate extragerii datelor.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Informatie opvragen uit een databank of informatiesysteem met behulp van computertalen die zijn ontworpen voor het opvragen van gegevens.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d&language=en",
+        "uri": "http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d",
+        "title": "use query languages"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bf4d884f-c848-402a-b130-69c266b04164&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bf4d884f-c848-402a-b130-69c266b04164",
+          "title": "apply basic programming skills",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d",
+          "title": "database developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d",
+          "title": "web developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7",
+          "title": "ICT application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c",
+          "title": "user interface developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+          "title": "software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c",
+          "title": "mobile application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d0aa0792-4345-474b-9365-686cf4869d2e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/d0aa0792-4345-474b-9365-686cf4869d2e",
+          "title": "software architect"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
+          "title": "data warehouse designer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/349ee6f6-c295-4c38-9b98-48765b55280e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/349ee6f6-c295-4c38-9b98-48765b55280e",
+          "title": "cloud engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a6a0b60f-08da-4faa-bf54-942987efb471&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a6a0b60f-08da-4faa-bf54-942987efb471",
+          "title": "ICT system analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135",
+          "title": "ICT system developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/96e20037-0a25-4bf6-a25e-808d1605d890&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/96e20037-0a25-4bf6-a25e-808d1605d890",
+          "title": "user interface designer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/812c217d-32b7-4f6a-9faf-993d3577ac7f&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/812c217d-32b7-4f6a-9faf-993d3577ac7f",
+          "title": "knowledge engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/e3229e40-f571-4b26-baca-29edc8fe313e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/e3229e40-f571-4b26-baca-29edc8fe313e",
+          "title": "computer scientist"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "use query languages",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d&language=en",
+              "uri": "http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+            "http://data.europa.eu/esco/skill/bf4d884f-c848-402a-b130-69c266b04164"
+          ]
+        },
+        {
+          "title": "apply basic programming skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bf4d884f-c848-402a-b130-69c266b04164&language=en",
+              "uri": "http://data.europa.eu/esco/skill/bf4d884f-c848-402a-b130-69c266b04164"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/3399045f-8078-4066-8b46-475b49b260ab"
+          ]
+        },
+        {
+          "title": "working with digital devices and applications",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3399045f-8078-4066-8b46-475b49b260ab&language=en",
+              "uri": "http://data.europa.eu/esco/skill/3399045f-8078-4066-8b46-475b49b260ab"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e"
+          ]
+        },
+        {
+          "title": "core skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+          ]
+        },
+        {
+          "title": "transversal skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

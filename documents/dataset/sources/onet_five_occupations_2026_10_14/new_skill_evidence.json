@@ -1,0 +1,250 @@
+[
+  {
+    "skillId": "MS-CORE01",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+    "sourceLocator": "Programming and build",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-CORE02",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control",
+    "sourceLocator": "About Version Control",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-CORE03",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+    "sourceLocator": "User focus; systems design",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-CORE04",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/development-operations-devops-engineer/",
+    "sourceLocator": "Service support; programming and build",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-ARC01",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+    "sourceLocator": "Solution architecture",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-ARC02",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+    "sourceLocator": "Solution architecture",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-ARC03",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build",
+    "sourceLocator": "Systems integration and build",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-ARC04",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+    "sourceLocator": "Technical design throughout the life cycle; making architectural decisions",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-ARC05",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/",
+    "sourceLocator": "Architecture communication",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-ARC06",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/solution-architecture",
+    "sourceLocator": "Solution architecture",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF01",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/network-support",
+    "sourceLocator": "Network support",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF02",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+    "sourceLocator": "Infrastructure operations",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF03",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+    "sourceLocator": "Coding and scripting",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF04",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/configuration-management",
+    "sourceLocator": "Configuration management",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF05",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+    "sourceLocator": "Infrastructure operations",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF06",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/",
+    "sourceLocator": "Problem management; IT infrastructure",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF07",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/storage-management",
+    "sourceLocator": "Storage management",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-INF08",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/infrastructure-operations",
+    "sourceLocator": "Infrastructure operations",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC01",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/information-security",
+    "sourceLocator": "Information security",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC02",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+    "sourceLocator": "Designing secure systems; enabling and informing risk-based decisions",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC03",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/identity-and-access-management",
+    "sourceLocator": "Identity and access management",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC04",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/security-operations",
+    "sourceLocator": "Security operations",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC05",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/security-operations",
+    "sourceLocator": "Security operations",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC06",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/vulnerability-assessment",
+    "sourceLocator": "Vulnerability assessment",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC07",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/security-operations",
+    "sourceLocator": "Security operations",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC08",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/information-security",
+    "sourceLocator": "Information security",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC09",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/security-architect/",
+    "sourceLocator": "Communication (security architect)",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-SEC10",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://sfia-online.org/en/sfia-9/skills/information-security",
+    "sourceLocator": "Information security",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-GOV01",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+    "sourceLocator": "Data governance",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-GOV02",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+    "sourceLocator": "Data governance",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  },
+  {
+    "skillId": "MS-GOV03",
+    "derivationType": "LOCALLY_DERIVED_MICRO_OUTCOME",
+    "sourceUrl": "https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/",
+    "sourceLocator": "Data governance; data compliance",
+    "sourceVerification": "SOURCE_REVIEWED",
+    "note": "Local measurable outcome supported by the referenced work/skill scope; not an official verbatim SFIA/UK skill definition."
+  }
+]

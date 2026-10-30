@@ -1,0 +1,96 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+hide circle
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+title PostgreSQL 17.6 / platform / V1-V26\nIRT calibration and scoped selection (6 tables)
+legend top left
+PK = primary key; FK = foreign-key column; ? = nullable
+Arrows: referenced parent -> referencing child; no cardinality inference.
+External tables are reference stubs. Full constraints/indexes/triggers: schema catalog.
+endlegend
+class mastery_mapping_version {
+  mastery_mapping_version_id : uuid [PK]
+  mapping_type : text
+  configuration : jsonb
+  configuration_hash : platform.content_hash
+  created_at : timestamp with time zone
+}
+class irt_calibration_run {
+  calibration_run_id : uuid [PK]
+  model_version_id : uuid [FK]
+  input_dataset_ref : text
+  configuration : jsonb
+  status : text
+  output_parameter_set_id? : uuid [FK]
+  diagnostics : jsonb
+  created_at : timestamp with time zone
+  started_at? : timestamp with time zone
+  completed_at? : timestamp with time zone
+}
+class irt_parameter_set {
+  parameter_set_id : uuid [PK]
+  model_version_id : uuid [FK]
+  source : text
+  status : text
+  parameter_hash : platform.content_hash
+  created_at : timestamp with time zone
+  activated_by? : uuid [FK]
+  activated_at? : timestamp with time zone
+}
+class irt_item_parameter {
+  parameter_set_id : uuid [PK, FK]
+  item_version_id : uuid [PK, FK]
+  micro_skill_id : text [PK, FK]
+  discrimination_a : numeric
+  difficulty_b : numeric
+  guessing_c : numeric
+  fit_diagnostics : jsonb
+}
+class irt_effective_parameter_selection {
+  organization_id : uuid [PK, FK]
+  question_bank_id : uuid [PK, FK]
+  model_version_id : uuid [PK, FK]
+  parameter_set_id : uuid [FK]
+  selection_revision : bigint
+  selected_by : uuid [FK]
+  selected_at : timestamp with time zone
+}
+class irt_parameter_promotion_command {
+  organization_id : uuid [PK, FK]
+  actor_id : uuid [PK, FK]
+  idempotency_key : text [PK]
+  question_bank_id : uuid [FK]
+  model_version_id : uuid [FK]
+  request_hash : platform.content_hash
+  parameter_set_id : uuid [FK]
+  parameter_hash : platform.content_hash
+  expected_revision : bigint
+  expected_parameter_set_id? : uuid [FK]
+  selection_revision : bigint
+  reason : text
+  occurred_at : timestamp with time zone
+}
+class account <<external>> #F1F5F9
+class item_version <<external>> #F1F5F9
+class model_version <<external>> #F1F5F9
+class organization <<external>> #F1F5F9
+class question_bank <<external>> #F1F5F9
+account --> irt_effective_parameter_selection
+account --> irt_parameter_promotion_command
+account --> irt_parameter_set
+irt_effective_parameter_selection --> irt_parameter_promotion_command
+irt_parameter_set --> irt_calibration_run
+irt_parameter_set --> irt_effective_parameter_selection
+irt_parameter_set --> irt_item_parameter
+irt_parameter_set --> irt_parameter_promotion_command
+item_version --> irt_item_parameter
+model_version --> irt_calibration_run
+model_version --> irt_effective_parameter_selection
+model_version --> irt_parameter_set
+organization --> irt_effective_parameter_selection
+question_bank --> irt_effective_parameter_selection
+@enduml

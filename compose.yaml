@@ -1,0 +1,4 @@
+# Default local entry point: docker compose up -d
+name: adapt-learn-graph-dev
+include:
+  - compose.dev.yml

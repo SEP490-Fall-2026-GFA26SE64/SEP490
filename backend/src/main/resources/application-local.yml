@@ -1,3 +1,38 @@
+management:
+  health:
+    mail:
+      enabled: false
+
 spring:
   flyway:
     enabled: false
+
+registration:
+  encryption-key: ${REGISTRATION_ENCRYPTION_KEY:ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWU=}
+  hmac-key: ${REGISTRATION_HMAC_KEY:aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg=}
+  cookie-secure: ${REGISTRATION_COOKIE_SECURE:false}
+
+catalog:
+  local-actor:
+    enabled: ${CATALOG_LOCAL_ACTOR_ENABLED:true}
+    account-id: ${CATALOG_LOCAL_ACTOR_ACCOUNT_ID:00000000-0000-0000-0000-000000000001}
+    organization-id: ${CATALOG_LOCAL_ACTOR_ORGANIZATION_ID:00000000-0000-0000-0000-000000000001}
+    active: ${CATALOG_LOCAL_ACTOR_ACTIVE:true}
+    role: ${CATALOG_LOCAL_ACTOR_ROLE:EMPLOYEE}
+
+learning:
+  target-selection:
+    local-dependencies:
+      enabled: ${TARGET_SELECTION_LOCAL_DEPENDENCIES_ENABLED:true}
+
+assessment:
+  baseline:
+    legacy-authoring:
+      # Historical fixed Generate/Review/Publish wiring; never the official baseline fallback.
+      enabled: false
+    answer-review:
+      # Temporary local/demo reveal boundary. Production has no matching bean/controller.
+      enabled: ${BASELINE_ANSWER_REVIEW_ENABLED:false}
+    occupation-catalog:
+      # Opt-in only: ontology 0.9 currently has no production tenant/publication mapping.
+      enabled: ${BASELINE_OCCUPATION_CATALOG_ENABLED:false}

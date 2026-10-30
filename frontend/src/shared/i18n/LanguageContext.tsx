@@ -191,12 +191,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       // Check hierarchical key path if it has dots (e.g. 'nav.overview')
       if (keyOrPhrase.includes('.')) {
         const keys = keyOrPhrase.split('.')
-        let current: any = translations[language]
+        let current: unknown = translations[language]
 
         let found = true
         for (const k of keys) {
-          if (current && typeof current === 'object' && k in current) {
-            current = current[k]
+          if (current && typeof current === 'object' && k in (current as Record<string, unknown>)) {
+            current = (current as Record<string, unknown>)[k]
           } else {
             found = false
             break
@@ -205,11 +205,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         if (found && typeof current === 'string') return current
 
         // Fallback to English key
-        let engCurrent: any = translations.en
+        let engCurrent: unknown = translations.en
         let engFound = true
         for (const ek of keys) {
-          if (engCurrent && typeof engCurrent === 'object' && ek in engCurrent) {
-            engCurrent = engCurrent[ek]
+          if (engCurrent && typeof engCurrent === 'object' && ek in (engCurrent as Record<string, unknown>)) {
+            engCurrent = (engCurrent as Record<string, unknown>)[ek]
           } else {
             engFound = false
             break

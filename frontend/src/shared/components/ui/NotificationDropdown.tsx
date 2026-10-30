@@ -88,7 +88,7 @@ export function NotificationDropdown() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-border bg-card shadow-lg z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100">
+        <div className="notification-dropdown-panel absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-border bg-card shadow-lg z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
             <div className="flex items-center gap-2">

@@ -2,6 +2,18 @@
 
 This document provides system-wide design rules, color tokens, typography scales, and component placement guidelines for developers and AI code generation.
 
+## Onboarding and Billing Surfaces
+
+Guest onboarding uses one `GuestLayout` frame for organization, account, email, security, plan, payment and workspace stages. Keep the same brand, footer, gutters and responsive progress treatment across those stages; do not switch payment pages to the standalone platform-administration shell.
+
+Registration forms show separate organization/account steps, inline errors and a linked error summary. Keep Back navigation lossless within the unsubmitted form, preserve optional nulls and never persist passwords/proofs in browser storage. Administrator Users and Subscription retain `WorkspaceLayout`, `PageHeader`, `StatCard` and existing real identity/authorization behavior. Billing is separate from user management.
+
+Payment screens show the purchased snapshot and verified server state. A successful redirect is not proof of payment or workspace readiness. Use the same receipt component in Guest and Administrator contexts, keeping unknown amounts/timestamps explicitly unavailable. Use `text-[length:var(--text-card)]` for the card typography token when necessary: `text-card` is also a surface-color utility and is not a safe font-size alias.
+
+Transactional email HTML is rendered by the backend's shared mail template with inline styles and a plaintext alternative. It follows the same brand palette without relying on web CSS variables being supported by email clients.
+
+Member activation and workspace sign-in reuse `WorkspaceAuthLayout`: the same brand header, language switcher, two responsive illustrations, central card, rounded controls and footer. `/activate` remains canonical; `/active` is an alias that preserves the activation fragment. No organization-onboarding progress is shown. Role choice belongs to the Administrator's single-selection form, not activation. Authenticated role layouts use trusted identity; browser demo navigation does not change authority. Email branding embeds the supplied system icon/wordmark through a MIME CID image so recipients do not need a remote asset request.
+
 ## 1. Color Palette System (Refined Orange with Cool Slate Neutrals)
 
 The team has selected a **Refined Brand Orange** paired with an **eye-friendly Cool Slate Canvas** and a **distinct Vivid Yellow** for pending/in-progress states:
@@ -22,6 +34,8 @@ The team has selected a **Refined Brand Orange** paired with an **eye-friendly C
 
 > **Rule for AI & Code Generation:** Never hardcode hex colors (e.g. `#EA580C` or `#EAB308`) inside React JSX. Always use semantic Tailwind utility classes like `bg-primary`, `text-muted-foreground`, `border-border`, `bg-warning`.
 
+Confirmed Employee refinement2026-10-28: selected Role/Level and active portal use the primary/secondary brand family, not success green; success still represents actual completed/approved outcomes. Text selection uses primary tint and foreground, keyboard focus uses ring, and dialog scrims use the overlay token (existing deep slate). Use shared Dialog size=wide and DialogBody for viewport-bounded Role/Level/gap/detail popups. Header/footer stay outside the content scroller; scrollbar-hidden hides chrome while retaining pointer/touch/keyboard scrolling. Never hide long content with overflow clipping or introduce another font/color scale.
+
 ---
 
 ## 2. Typography & Fonts System
@@ -30,22 +44,23 @@ All wording across the application must strictly adhere to the unified typograph
 
 - **Font Family:** `IBM Plex Sans`, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif (imported in `main.tsx`).
 - **Heading Primitives:** Use `src/shared/components/typography/Heading.tsx`
-  - `Display / Hero (32px)`: `<Heading level={1} size="display" />` (font-bold, tracking-tight, leading-tight)
-  - `Page Title / H1 (26px)`: `<Heading level={1} size="page" />` (font-bold, tracking-tight)
-  - `Section Heading / H2 (20px)`: `<Heading level={2} size="section" />` (font-semibold, tracking-tight)
-  - `Subsection Heading / H3 (16px)`: `<Heading level={3} size="subsection" />` (font-semibold)
-  - `Card Header / H4 (15px)`: `<Heading level={4} size="card" />` (font-semibold)
+  - `Display / Hero (36px)`: `<Heading level={1} size="display" />` (font-bold, tracking-tight, leading-tight)
+  - `Page Title / H1 (28px)`: `<Heading level={1} size="page" />` (font-bold, tracking-tight)
+  - `Section Heading / H2 (22px)`: `<Heading level={2} size="section" />` (font-semibold, tracking-tight)
+  - `Subsection Heading / H3 (18px)`: `<Heading level={3} size="subsection" />` (font-semibold)
+  - `Card Header / H4 (16px)`: `<Heading level={4} size="card" />` (font-semibold)
 - **Text Primitives:** Use `src/shared/components/typography/Text.tsx`
-  - `Lead / Subtitle (15px)`: `<Text variant="lead" />` or `<Text variant="subtitle" />` (font-normal, leading-relaxed, text-muted-foreground)
-  - `Body Default (14px)`: `<Text variant="body" />` (font-normal, leading-normal, text-foreground)
-  - `Body Small (13px)`: `<Text variant="body-sm" />` (font-normal, text-muted-foreground)
-  - `Caption (12px)`: `<Text variant="caption" />` (font-medium, text-muted-foreground)
-  - `Eyebrow / Overline (11px)`: `<Text variant="eyebrow" />` (font-bold, uppercase, tracking-wider, text-primary)
+  - `Lead / Subtitle (16.5px)`: `<Text variant="lead" />` or `<Text variant="subtitle" />` (font-normal, leading-relaxed, text-muted-foreground)
+  - `Body Default (15.5px)`: `<Text variant="body" />` (font-normal, leading-normal, text-foreground)
+  - `Body Small (14px)`: `<Text variant="body-sm" />` (font-normal, text-muted-foreground)
+  - `Caption (13px)`: `<Text variant="caption" />` (font-medium, text-muted-foreground)
+  - `Eyebrow / Overline (12px)`: `<Text variant="eyebrow" />` (font-bold, uppercase, tracking-wider, text-primary)
 
 ---
 
 ## 3. Workspace Layout & Sidebar Alignment Rules
 
+- Confirmed screenshot correction2026-10-28: preserve the existing page composition; do not insert a standalone title/description header into Expert queue/detail or Employee Role pathway. Use titles/actions inside their existing cards, shared navigation and screen-reader page headings. This current user decision supersedes the original Expert detail audit header. Review skill gap actions use primary orange. Expert catalog uses horizontal rows above parallel membership lists, not a new grid of nested module cards.
 - The layout is provided by `src/shared/layouts/WorkspaceLayout.tsx`.
 - The main content area sits directly adjacent to the sidebar without awkward auto-centering dead space (`margin: 0`, `padding: 24px 32px`).
 - On wide displays, content flows smoothly and maintains visual continuity with the navigation panel.

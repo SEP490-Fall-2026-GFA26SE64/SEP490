@@ -1,0 +1,240 @@
+{
+  "table_id": "scales_reference",
+  "title": "Scales Reference",
+  "description": "Provide a reference to the scale names and values.",
+  "data_dictionary": "https://www.onetcenter.org/dictionary/31.0/json/scales_reference.html",
+  "column": [
+    {
+      "column_id": "scale_id",
+      "optional": false,
+      "title": "Scale ID",
+      "description": "Scale ID",
+      "type": "Text",
+      "format": "Character Varying(3)"
+    },
+    {
+      "column_id": "scale_name",
+      "optional": false,
+      "title": "Scale Name",
+      "description": "Scale Name",
+      "type": "Text",
+      "format": "Character Varying(50)"
+    },
+    {
+      "column_id": "minimum",
+      "optional": false,
+      "title": "Minimum",
+      "description": "Scale Minimum",
+      "type": "Number",
+      "format": "Integer(1)"
+    },
+    {
+      "column_id": "maximum",
+      "optional": false,
+      "title": "Maximum",
+      "description": "Scale Maximum",
+      "type": "Number",
+      "format": "Integer(3)"
+    }
+  ],
+  "row": [
+    {
+      "scale_id": "AO",
+      "scale_name": "Automation",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "CF",
+      "scale_name": "Frequency",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "CN",
+      "scale_name": "Amount of Contact",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "CT",
+      "scale_name": "Context",
+      "minimum": 1,
+      "maximum": 3
+    },
+    {
+      "scale_id": "CTP",
+      "scale_name": "Context (Categories 1-3)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "CX",
+      "scale_name": "Context",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "CXP",
+      "scale_name": "Context (Categories 1-5)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "DR",
+      "scale_name": "Distinctiveness Rank",
+      "minimum": 0,
+      "maximum": 10
+    },
+    {
+      "scale_id": "DS",
+      "scale_name": "Summary Display Rank",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "EX",
+      "scale_name": "Extent",
+      "minimum": 1,
+      "maximum": 7
+    },
+    {
+      "scale_id": "FM",
+      "scale_name": "Amount of Freedom",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "FT",
+      "scale_name": "Frequency of Task (Categories 1-7)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "HW",
+      "scale_name": "Hours Per Week",
+      "minimum": 1,
+      "maximum": 3
+    },
+    {
+      "scale_id": "IH",
+      "scale_name": "Occupational Interest High-Point",
+      "minimum": 0,
+      "maximum": 6
+    },
+    {
+      "scale_id": "IJ",
+      "scale_name": "Importance",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "IM",
+      "scale_name": "Importance",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "IP",
+      "scale_name": "Impact of Decisions",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "LC",
+      "scale_name": "Level of Competition",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "LV",
+      "scale_name": "Level",
+      "minimum": 0,
+      "maximum": 7
+    },
+    {
+      "scale_id": "OI",
+      "scale_name": "Occupational Interests",
+      "minimum": 1,
+      "maximum": 7
+    },
+    {
+      "scale_id": "OJ",
+      "scale_name": "On-The-Job Training (Categories 1-9)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "PT",
+      "scale_name": "On-Site Or In-Plant Training (Categories 1-9)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "PX",
+      "scale_name": "Proximity",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "RE",
+      "scale_name": "Responsibility",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "RL",
+      "scale_name": "Required Level Of Education (Categories 1-12)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "RQ",
+      "scale_name": "Required Level Of Education (Categories 1-12)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "RT",
+      "scale_name": "Relevance of Task",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "RW",
+      "scale_name": "Related Work Experience (Categories 1-11)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "scale_id": "SR",
+      "scale_name": "How Serious",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "TI",
+      "scale_name": "% Time",
+      "minimum": 1,
+      "maximum": 5
+    },
+    {
+      "scale_id": "VH",
+      "scale_name": "Work Value High-Point",
+      "minimum": 1,
+      "maximum": 6
+    },
+    {
+      "scale_id": "WI",
+      "scale_name": "Work Styles Impact",
+      "minimum": -3,
+      "maximum": 3
+    },
+    {
+      "scale_id": "WS",
+      "scale_name": "Work Schedule",
+      "minimum": 1,
+      "maximum": 3
+    }
+  ]
+}

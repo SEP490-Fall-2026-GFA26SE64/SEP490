@@ -1,0 +1,465 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+    "title": "debug software",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "feilrette programvare",
+      "de": "Softwareprobleme identifizieren und beheben",
+      "fi": "etsiä ja poistaa virheet ohjelmistosta",
+      "pt": "depurar software",
+      "bg": "отстраняване на грешки в софтуер",
+      "lt": "derinti programinę įrangą",
+      "lv": "atkļūdot programmatūru",
+      "hr": "ispraviti grešku softvera",
+      "fr": "déboguer un logiciel",
+      "hu": "szoftver-hibakeresést végez",
+      "uk": "налагоджувати програмне забезпечення",
+      "sk": "odstraňovať chyby v softvéri",
+      "sl": "odpravljati programske napake",
+      "ga": "bogearraí a dhífhabhtú",
+      "sv": "felsöka programvara",
+      "el": "αποσφαλμάτωση λογισμικού",
+      "mt": "twettaq debugging tas-softwer",
+      "en": "debug software",
+      "is": "villuleitarhugbúnaður",
+      "it": "eseguire il debug di un software",
+      "es": "depurar software",
+      "et": "tarkvara siluma",
+      "cs": "ladit software",
+      "ar": "تشخيص أخطاء البرامج",
+      "pl": "debugować oprogramowanie",
+      "da": "finde fejl i software",
+      "ro": "remediază erorile din software",
+      "nl": "software voor het oplossen van softwarefouten"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "vyladit software",
+        "vyladění softwaru",
+        "vyhledávat a odstraňovat závady programů",
+        "opravovat počítačový kód",
+        "ladit programy",
+        "vyhledávat a odstraňovat závady software"
+      ],
+      "el": [
+        "διόρθωση λαθών λογισμικού",
+        "διόρθωση σφαλμάτων λογισμικού"
+      ],
+      "mt": [
+        "issewwi l-kodiċi tal-kompjuter permezz ta' debugging",
+        "twettaq debugging tas-software",
+        "twettaq debugging ta' software"
+      ],
+      "en": [
+        "locate defects causing unexpected software output",
+        "analyse testing results for incorrect software output",
+        "repair computer code for software",
+        "fix computer code for software"
+      ],
+      "nl": [
+        "software verbeteren",
+        "computercode repareren op basis van foutanalyses",
+        "debugging-software",
+        "softwarefouten oplossen",
+        "onverwachte fouten in software oplossen"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Reparere datamaskinkode ved å analysere resultater av testing, finne feilene som gjør at programvaren avgir feil eller uventede resultater, og fjerne disse feilene.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Durch Analyse von Testergebnissen Computercodes reparieren. Zu diesem Zweck Fehler finden, die die Software dazu veranlassen, ein falsches oder unerwartetes Resultat auszugeben, und diese Fehler beheben.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Tietokonekoodin korjaaminen testituloksia analysoimalla, paikallistamalla ohjelmistossa ongelmia aiheuttavan viallisen koodin ja näiden virheiden poistaminen.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Reparar o código informático através da análise dos resultados dos ensaios, localizar as falhas que provocam o software a produzir um resultado incorreto ou inesperado e eliminar essas falhas.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Поправя компютърен код чрез анализиране на резултатите от изпитванията, локализирайки дефектите, които карат софтуера да изкарва неточен или неочакван резултат, и отстранява тези дефекти.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Pataisyti kompiuterio kodą, analizuojant bandymo rezultatus, kad būtų galima nustatyti trūkumus, dėl kurių programinė įranga pasiekia neteisingą ar netikėtą rezultatą, ir pašalinti šiuos gedimus.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Popraviti računalni kôd analizom rezultata testiranja, lociranjem nedostataka zbog kojih softver generira neispravan ili neočekivan rezultat i ukloniti te greške.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Labot datora kodu, analizējot testēšanas rezultātus, konstatējot kļūmes, kuru dēļ programmatūra izdod nepareizu vai negaidītu rezultātu, un novērst šīs kļūmes.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Réparer un code informatique par l’analyse des résultats de tests, la localisation des défauts à l’origine du résultat incorrect ou inattendu du logiciel et l’élimination de ces défauts.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Számítógépes kódok javítása a tesztelési eredmények elemzésével, majd a szoftver hibás vagy váratlan működését okozó hibák felderítése és kiküszöbölése.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Відновлювати комп’ютерний код, аналізуючи результати тестування, виявляти дефекти, із-за яких програмне забезпечення дає неправильний або неочікуваний результат, а також усувати ці помилки.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Opraviť počítačový kód analyzovaním výsledkov testovania, vyhľadaním chýb, ktoré spôsobujú, že softvér poskytuje nesprávne alebo neočakávané výsledky, a odstrániť tieto chyby.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Popravljati računalniško kodo z analizo rezultatov testiranja, ugotavljanjem, kje so napake, ki povzročajo nepravilen ali nepričakovan rezultat, in odstraniti te napake.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Cód ríomhaireachta a dheisiú trí anailís a dhéanamh ar thorthaí tástála, teacht ar na lochtanna is cúis leis na bogearraí a bheith as aschur toradh mícheart nó gan coinne, agus na lochtanna sin a bhaint.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Reparera datorkod genom att analysera testresultat, lokalisera felen som gör att programvaran ger felaktiga eller oväntade resultat och avhjälpa dessa fel.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Sewwi l-kodiċi tal-kompjuter bl-analiżi tar-riżultati tal-ittestjar, il-lokalizzazzjoni tad-difetti li jwasslu biex is-softwer jipproduċi riżultat inkorrett jew mhux mistenni u neħħi dawn il-ħsarat.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Επισκευή του κώδικα με ανάλυση των αποτελεσμάτων των δοκιμών, εντοπισμό των ελαττωμάτων που οδηγούν το λογισμικό στην παραγωγή λανθασμένου ή απροσδόκητου αποτελέσματος και αφαίρεση αυτών των ελαττωμάτων.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Repair computer code by analysing testing results, locating the defects causing the software to output an incorrect or unexpected result and remove these faults.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Lagar tölvukóða með því að greina niðurstöður úr prófunum, staðsetur galla í hugbúnaði sem veldur röngum niðurstöðum eða óvæntum og fjarlægir þessa galla.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Riparare il codice informatico analizzando i risultati dei test e localizzando i difetti che causano risultati errati o inaspettati prodotti dal software ed eliminare tali errori.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Reparar códigos informáticos analizando los resultados de las pruebas, localizando los defectos que causan que el software produzca un resultado incorrecto e inesperado y eliminar estos fallos.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Arvutikoodi parandamine, analüüsides testitulemusi, lokaliseerides defektid, mis põhjustavad tarkvara valet või ootamatut väljundit, ning nimetatud rikete kõrvaldamine.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Opravit počítačový kód pomocí analýzy výsledků zkoušek a zjištění chyb, které vedou k nesprávnému nebo neočekávanému chování softwaru, a odstraňovat tyto chyby.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إصلاح كود الحاسب عن طريق تحليل نتائج الفحص وتحديد مكان العيوب التي تجعل البرنامج يُخرِج نتيجة غير صحيحة أو غير متوقعة وإزالة هذه العيوب.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Naprawiać kod komputerowy, analizując wyniki badania, lokalizując usterki powodujące wprowadzanie niepoprawnego lub niechcianego wyniku w oprogramowaniu oraz usuwać te usterki.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Repară codul informatic analizând rezultatele testării, localizând defectele care determină apariția unui rezultat incorect sau neașteptat al software-ului și eliminând aceste defecte.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Reparere computerkode ved at analysere testresultater, lokalisere de fejl, der har fået softwaren til at give et ukorrekt eller uventet resultat og fjerne disse fejl.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Computercode herstellen door de testresultaten te analyseren, de defecten te lokaliseren waardoor de software een onjuist of onverwacht resultaat geeft en deze fouten te verwijderen.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1&language=en",
+        "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+        "title": "debug software"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/438ff259-d086-4004-acda-1ec3e1631bc6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/438ff259-d086-4004-acda-1ec3e1631bc6",
+          "title": "software anomalies",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6014921e-1d25-4039-adc2-04852d61880e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6014921e-1d25-4039-adc2-04852d61880e",
+          "title": "ICT debugging tools",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7",
+          "title": "ICT application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/349ee6f6-c295-4c38-9b98-48765b55280e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/349ee6f6-c295-4c38-9b98-48765b55280e",
+          "title": "cloud engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
+          "title": "industrial mobile devices software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f49d893a-ac89-4f3b-b547-1cbdf4d69fde&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/f49d893a-ac89-4f3b-b547-1cbdf4d69fde",
+          "title": "forestry machinery technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+          "title": "software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2",
+          "title": "blockchain developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02",
+          "title": "embedded systems software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/cf2b03cd-feb7-4f47-90f6-ff1ed6016d3d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/cf2b03cd-feb7-4f47-90f6-ff1ed6016d3d",
+          "title": "ICT network engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/456ed487-02f2-45c9-9213-d0fd8e9a069d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/456ed487-02f2-45c9-9213-d0fd8e9a069d",
+          "title": "ICT application configurator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c",
+          "title": "mobile application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81",
+          "title": "digital games developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135",
+          "title": "ICT system developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d",
+          "title": "web developer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0022f466-426c-41a4-ac96-a235c945cf97&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0022f466-426c-41a4-ac96-a235c945cf97",
+          "title": "air traffic safety technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/78faf623-2543-43a5-acb2-3c43a22d36e4&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/78faf623-2543-43a5-acb2-3c43a22d36e4",
+          "title": "blockchain architect"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7",
+          "title": "application engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c",
+          "title": "user interface developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "title": "embedded systems security engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341",
+          "title": "computer vision engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/551a6797-3ca9-41fc-9dca-9a982a8fd8a6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/551a6797-3ca9-41fc-9dca-9a982a8fd8a6",
+          "title": "robotics engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "debug software",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

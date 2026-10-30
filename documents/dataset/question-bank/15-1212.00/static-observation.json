@@ -1,0 +1,50 @@
+{
+  "observedOn": "2026-10-22",
+  "kind": "Static preservation/content/source observation; not executable test evidence",
+  "checks": {
+    "manifestByteHash": true,
+    "scopeByteHash": true,
+    "allItemContentHashes": true,
+    "sourcePreserved": {
+      "documents/neo4j_schema.md": true,
+      "documents/dataset/ONTOLOGY.md": true,
+      "documents/dataset/ontology_dataset.xlsx": true,
+      "documents/dataset/import/ontology_seed.json": true
+    },
+    "migrationsPreserved": true,
+    "fullCoverage135": true,
+    "draftOnly": true,
+    "sidecarExact135": true,
+    "noOfficialBundlePayload": {
+      "bankIdAbsent": true,
+      "all135ItemUUIDsAbsent": true,
+      "all135ContentHashesAbsent": true,
+      "all135PromptsAbsent": true,
+      "all540RationalesAbsent": true,
+      "devCatalogTokenAbsent": true
+    },
+    "newDocumentLocalLinks": {
+      "count": 24,
+      "broken": []
+    },
+    "git": {
+      "headPreserved": true,
+      "branchPreserved": true,
+      "stashPreserved": true,
+      "indexEmpty": true,
+      "executableSourcesChanged": ""
+    },
+    "changedFileCount": 34,
+    "trailingWhitespace": [],
+    "removedRuntimeSourcesAbsent": true,
+    "staleGeneratedDevBankAbsent": true,
+    "recoveryCopiesIntact": {
+      "backend/src/main/java/com/adaptlearngraph/platform/infrastructure/DatabaseInitialization.java": true,
+      "backend/src/main/java/com/adaptlearngraph/assessment/infrastructure/DevelopmentQuestionBankImporter.java": true,
+      "backend/src/main/resources/db/seed/baseline-question-bank-dev-v1.json": true,
+      "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/LocalAdaptiveBlueprintConfiguration.java": true,
+      "compose.dev.yml": true
+    }
+  },
+  "observedPhase": "Original Session1 artifact/source preparation before subsequent authorized local graph replacement/V22 migration/import; current evidence is local-readback.json"
+}

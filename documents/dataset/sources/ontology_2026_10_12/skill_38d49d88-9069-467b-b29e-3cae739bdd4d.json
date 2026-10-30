@@ -1,0 +1,367 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F38d49d88-9069-467b-b29e-3cae739bdd4d&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d",
+    "title": "build predictive models",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Vorhersagemodelle entwickeln",
+      "no": "lage prediktive modeller",
+      "fi": "kehittää ennustavia malleja",
+      "pt": "criar modelos preditivos",
+      "bg": "изграждане на прогнозни модели",
+      "lt": "rengti prognozinius modelius",
+      "lv": "veidot prognožu modeļus",
+      "hr": "graditi modele predviđanja",
+      "fr": "construire des modèles prédictifs",
+      "hu": "előrejelzési modelleket állít fel",
+      "uk": "створювати передбачувальні моделі",
+      "sk": "vytvárať predikčné modely",
+      "sl": "izdelovati napovedne modele",
+      "ga": "samhlacha tuarthacha a thógáil",
+      "sv": "skapa prediktiva modeller",
+      "el": "ανάπτυξη μοντέλων πρόβλεψης",
+      "mt": "bini ta’ mudelli tat-tbassir",
+      "en": "build predictive models",
+      "is": "býr til spálíkön",
+      "it": "costruire modelli predittivi",
+      "es": "construir modelos predictivos",
+      "et": "prognoosimudeleid esitama",
+      "cs": "vytvářet prediktivní modely",
+      "ar": "وضع أنظمة التنبؤ",
+      "pl": "opracowywać modele prognostyczne",
+      "ro": "construiește modele predictive",
+      "da": "opbygge prognosemodeller",
+      "nl": "voorspellende modellen bouwen"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "vytvořit prediktivní model",
+        "sestavení prediktivního modelu",
+        "navrhnout prediktivní model"
+      ],
+      "el": [
+        "δημιουργία μοντέλων πρόβλεψης"
+      ],
+      "en": [
+        "devise predictive models",
+        "assemble predictive models",
+        "produce predictive models",
+        "building a predictive model",
+        "building predictive models",
+        "construct predictive models",
+        "build a predictive model"
+      ],
+      "ro": [
+        "susține utilizatorii din domeniul sănătății să obțină autonomie în activitatea de zi cu zi",
+        "ajută utilizatorii din domeniul sănătății să atingă autonomia în activitatea de zi cu zi",
+        "sprijină utilizatorii din domeniul sănătății să obțină autonomie în activitățile de zi cu zi"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Opprette modeller for å forutsi sannsynligheten for et utfall.\n\t",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Erstellen von Modellen zur Vorhersage der Wahrscheinlichkeit eines Ergebnisses.\n   ",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Luoda malleja, jotka ennustavat lopputuloksen todennäköisyyden.\n   ",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar modelos para prever a probabilidade de um resultado.\n   ",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава модели за предвиждане на вероятността от даден резултат.\n   ",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Kurti modelius, kurie padėtų geriausiai nuspėti rezultato tikimybę.\n   ",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izrađivati modele za predviđanje vjerojatnosti ishoda.\n   ",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izveidot modeļus, lai prognozētu iznākuma varbūtību.\n   ",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer des modèles permettant de prédire la probabilité d’un résultat.\n   ",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Modelleket készít az eredmény valószínűségének előrejelzésére.\n   ",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати моделі для прогнозування ймовірності того чи іншого результату.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvárať modely na odhad pravdepodobnosti výsledku.\n   ",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Ustvarjati modele za napovedovanje verjetnosti izida.\n   ",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Samhlacha a chruthú chun an dóchúlacht go dtarlóidh toradh a thuar.\n   ",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Skapa modeller för att beräkna sannolikheten för ett resultat.\n   ",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ħolqien ta’ mudelli għat-tbassir tal-probabbiltà ta’ eżitu.\n   ",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία μοντέλων για την πρόβλεψη της πιθανότητας ενός αποτελέσματος.\n\t",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create models to predict the probability of an outcome.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Búa til líkön til að spá fyrir um líkur á útkomu.\n   ",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Creare modelli per prevedere la probabilità di un risultato.\n   ",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear modelos para predecir la probabilidad de un resultado.\n\t",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Mudelite loomine tulemuste tõenäosuse prognoosimiseks.\n   ",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet modely, aby co nejlépe předpověděly pravděpodobnost výsledku.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "تصميم نماذج للتنبؤ باحتمال نتيجة ما.\n   ",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Opracowywać modele służące do przewidywania prawdopodobieństwa określonych rezultatów.\n   ",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Skabe modeller til at forudsige sandsynligheden for et resultat.\n   ",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Creează modele pentru a prezice probabilitatea unui rezultat.\n\t",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Modellen opzetten om de waarschijnlijkheid van een resultaat te voorspellen.\n   ",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d&language=en",
+        "uri": "http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d",
+        "title": "build predictive models"
+      },
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/47b0d855-ea3c-45e9-8dcf-0e12e62261c4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/47b0d855-ea3c-45e9-8dcf-0e12e62261c4",
+          "title": "calculating and estimating",
+          "code": "S2.6.0"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1dabb413-18e8-48ed-a963-44978e67ad32&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1dabb413-18e8-48ed-a963-44978e67ad32",
+          "title": "calculate probabilities",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "narrowerSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c71e5209-dfb8-456d-a1ad-5ac657a92812&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c71e5209-dfb8-456d-a1ad-5ac657a92812",
+          "title": "use agronomic modelling",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+          "title": "artificial intelligence engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ac8b3cd1-a127-4e6a-8208-5cfcf7111955&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ac8b3cd1-a127-4e6a-8208-5cfcf7111955",
+          "title": "statistician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/66fb9704-0d56-4673-8e69-7823816b73e1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/66fb9704-0d56-4673-8e69-7823816b73e1",
+          "title": "market research analyst"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "build predictive models",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d&language=en",
+              "uri": "http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/1dabb413-18e8-48ed-a963-44978e67ad32",
+            "http://data.europa.eu/esco/skill/47b0d855-ea3c-45e9-8dcf-0e12e62261c4"
+          ]
+        },
+        {
+          "title": "calculate probabilities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1dabb413-18e8-48ed-a963-44978e67ad32&language=en",
+              "uri": "http://data.europa.eu/esco/skill/1dabb413-18e8-48ed-a963-44978e67ad32"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/edc72cfe-78a8-4531-b00f-92992a0bb8cb"
+          ]
+        },
+        {
+          "title": "working with numbers and measures",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/edc72cfe-78a8-4531-b00f-92992a0bb8cb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/edc72cfe-78a8-4531-b00f-92992a0bb8cb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e"
+          ]
+        },
+        {
+          "title": "core skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+          ]
+        },
+        {
+          "title": "transversal skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "calculating and estimating",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/47b0d855-ea3c-45e9-8dcf-0e12e62261c4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/47b0d855-ea3c-45e9-8dcf-0e12e62261c4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e173eaf8-c99b-405a-b0ac-0e02ce3c268d"
+          ]
+        },
+        {
+          "title": "calculating and estimating",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e173eaf8-c99b-405a-b0ac-0e02ce3c268d&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e173eaf8-c99b-405a-b0ac-0e02ce3c268d"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+          ]
+        },
+        {
+          "title": "information skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

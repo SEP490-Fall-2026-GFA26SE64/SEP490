@@ -1,6 +1,5 @@
 export * from './overview/EmployeeOverviewPage'
 export * from './target-roles/EmployeeTargetRolesPage'
 export * from './pathway/AdaptivePathwayPage'
-export * from './gap-analysis/CompetencyGapAnalysisPage'
 export * from './assessment/AssessmentPage'
 export * from './data/employeeOverviewData'

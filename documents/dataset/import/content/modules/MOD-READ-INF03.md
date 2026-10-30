@@ -1,0 +1,25 @@
+# Automate infrastructure procedures
+
+Module ID: MOD-READ-INF03. Content version: 1.2. Review: NEEDS_EXPERT_REVIEW.
+
+## Skill focus
+
+- **MS-INF03: Automate infrastructure procedures** — Implement and verify scripts for repeatable infrastructure tasks.
+
+## Guided reading
+
+Read the official resource [Coding and scripting](https://understand-digital-data-roles-skills.service.gov.uk/role/infrastructure-engineer/). Locate the cited capability and explain the behaviours and constraints described there in your own words. The resource provides professional scope, not a complete tool-specific tutorial.
+
+## Learning outcome
+
+Implement and verify scripts for repeatable infrastructure tasks.
+
+## Local practice
+
+Choose a small synthetic system or the sandbox supplied by the organization. State its inputs, intended outputs, constraints and stakeholders. Demonstrate the outcome above with an artifact appropriate to the action (for example a script, configuration, model, change record or reasoned decision). Keep an expected-versus-observed check and explain one limitation. Do not perform exercises against production systems.
+
+## Evidence and Level context
+
+Use the external assessment configuration for the selected Level and skill to identify the approved task, evidence rules and rubric version. Junior uses supplied procedures and review; Middle resolves a defined task independently; Senior justifies complex decisions and reviews their impact. Submit the artifact, checks, assumptions and a brief explanation of your own decisions. Reading or completing this module alone does not prove skill mastery.
+
+This module is a locally authored reading/practice scaffold supported by the cited framework. It is not an official course or an approved full lesson. Detailed lessons and reviewed labs remain to be authored.

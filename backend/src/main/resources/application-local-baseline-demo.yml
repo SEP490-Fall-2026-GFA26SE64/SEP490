@@ -1,0 +1,23 @@
+assessment:
+  baseline:
+    local-demo:
+      enabled: true
+    adaptive:
+      enabled: true
+      persistence:
+        enabled: true
+      eligibility:
+        enabled: true
+        organization-id: 00000000-0000-0000-0000-000000000001
+        occupation-ids: [OCC-15-1212.00]
+        question-bank-id: 2f79de6b-dc62-51a1-982d-0be9d6f588dc
+        model-version-id: 8f18ca82-cb9a-3452-95d9-6b52b10904c8
+        mastery-mapping-version-id: 891b1dc7-13b8-3f8a-ad0d-6d8eb1747274
+      attempts:
+        enabled: true
+        answers:
+          enabled: true
+        finalization:
+          enabled: true
+        deadline-worker:
+          enabled: true

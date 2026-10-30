@@ -1,0 +1,1 @@
+DROP CONSTRAINT course_id IF EXISTS;

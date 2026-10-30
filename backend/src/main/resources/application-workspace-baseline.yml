@@ -1,0 +1,20 @@
+spring:
+  flyway:
+    locations: classpath:db/workspace-migration
+
+assessment:
+  baseline:
+    workspace:
+      enabled: true
+    adaptive:
+      enabled: true
+      persistence:
+        enabled: true
+      eligibility:
+        enabled: true
+      attempts:
+        enabled: true
+        answers:
+          enabled: true
+        finalization:
+          enabled: true

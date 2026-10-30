@@ -96,3 +96,9 @@ body, h1, h2, h3, h4, h5, h6, p, span, a, label, button, input, textarea, select
   .heading--page { font-size: 22px; }
   .heading--section { font-size: 18px; }
 }
+/* Opt-in semantic tone overrides variant defaults; existing consumers retain their colors. */
+[data-text-tone='foreground'] { color: hsl(var(--foreground)); }
+[data-text-tone='muted'] { color: hsl(var(--muted-foreground)); }
+[data-text-tone='primary'] { color: hsl(var(--primary)); }
+[data-text-tone='success'] { color: hsl(var(--success)); }
+[data-text-tone='destructive'] { color: hsl(var(--destructive)); }

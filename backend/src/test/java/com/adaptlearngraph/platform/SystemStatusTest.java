@@ -33,6 +33,7 @@ class SystemStatusTest {
     @Test
     void deniesUnimplementedBusinessEndpoints() throws Exception {
         mvc.perform(get("/api/v1/me/profile")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/registration/csrf")).andExpect(status().isUnauthorized());
     }
 
     @Test

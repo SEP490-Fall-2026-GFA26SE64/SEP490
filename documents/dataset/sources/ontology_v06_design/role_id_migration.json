@@ -1,0 +1,290 @@
+[
+  {
+    "oldRoleId": "ROLE-F72E5464F9B3",
+    "newRoleId": "ROLE-F72E5464F9B3",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Application Developer"
+  },
+  {
+    "oldRoleId": "ROLE-58B047D9053E",
+    "newRoleId": "ROLE-58B047D9053E",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Application Integration Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-88FA0D759F84",
+    "newRoleId": "ROLE-88FA0D759F84",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Developer"
+  },
+  {
+    "oldRoleId": "ROLE-2F3EE4DCB9A3",
+    "newRoleId": "ROLE-2F3EE4DCB9A3",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "DevOps Engineer (Development Operations Engineer)"
+  },
+  {
+    "oldRoleId": "ROLE-8C851BC1DBAC",
+    "newRoleId": "ROLE-8C851BC1DBAC-15125200",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Infrastructure Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-8C851BC1DBAC",
+    "newRoleId": "ROLE-8C851BC1DBAC-15129908",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Infrastructure Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-DC8BCD8CC9FA",
+    "newRoleId": "ROLE-DC8BCD8CC9FA",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Software Architect"
+  },
+  {
+    "oldRoleId": "ROLE-15F02B2EC48A",
+    "newRoleId": "ROLE-15F02B2EC48A",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Software Developer"
+  },
+  {
+    "oldRoleId": "ROLE-7838A77B1320",
+    "newRoleId": "ROLE-7838A77B1320",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Software Development Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-CBAF88DF6DE7",
+    "newRoleId": "ROLE-CBAF88DF6DE7",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Software Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-6B89F39CA50C",
+    "newRoleId": "ROLE-6B89F39CA50C-15125200",
+    "occupationId": "OCC-15-1252.00",
+    "reportedTitle": "Systems Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-6B89F39CA50C",
+    "newRoleId": "ROLE-6B89F39CA50C-15129908",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Systems Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-84156EF4FF37",
+    "newRoleId": "ROLE-84156EF4FF37",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Data Architect"
+  },
+  {
+    "oldRoleId": "ROLE-DE",
+    "newRoleId": "ROLE-DE",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Data Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-677AE5E25939",
+    "newRoleId": "ROLE-677AE5E25939",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Data Officer"
+  },
+  {
+    "oldRoleId": "ROLE-262E99D33528",
+    "newRoleId": "ROLE-262E99D33528",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Database Analyst"
+  },
+  {
+    "oldRoleId": "ROLE-5A07C8E3F89B",
+    "newRoleId": "ROLE-5A07C8E3F89B",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Database Architect"
+  },
+  {
+    "oldRoleId": "ROLE-683035F817DC",
+    "newRoleId": "ROLE-683035F817DC",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Database Consultant"
+  },
+  {
+    "oldRoleId": "ROLE-826EF8FFB24A",
+    "newRoleId": "ROLE-826EF8FFB24A",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Database Developer"
+  },
+  {
+    "oldRoleId": "ROLE-6C905B8EE52A",
+    "newRoleId": "ROLE-6C905B8EE52A",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Database Programmer"
+  },
+  {
+    "oldRoleId": "ROLE-B0C017CA7D49",
+    "newRoleId": "ROLE-B0C017CA7D49",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Enterprise Architect"
+  },
+  {
+    "oldRoleId": "ROLE-D4665145D9A0",
+    "newRoleId": "ROLE-D4665145D9A0",
+    "occupationId": "OCC-15-1243.00",
+    "reportedTitle": "Information Architect"
+  },
+  {
+    "oldRoleId": "ROLE-3594A031F678",
+    "newRoleId": "ROLE-3594A031F678",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Automation Tester"
+  },
+  {
+    "oldRoleId": "ROLE-39F74565946B",
+    "newRoleId": "ROLE-39F74565946B",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Information Technology Analyst (IT Analyst)"
+  },
+  {
+    "oldRoleId": "ROLE-B94440938DCB",
+    "newRoleId": "ROLE-B94440938DCB",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Quality Assurance Analyst (QA Analyst)"
+  },
+  {
+    "oldRoleId": "ROLE-1947F95DA9EB",
+    "newRoleId": "ROLE-1947F95DA9EB",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Quality Assurance Engineer (QA Engineer)"
+  },
+  {
+    "oldRoleId": "ROLE-140C2EA5BCFA",
+    "newRoleId": "ROLE-140C2EA5BCFA",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Quality Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-600114606368",
+    "newRoleId": "ROLE-600114606368",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Software Quality Assurance Analyst (SQA Analyst)"
+  },
+  {
+    "oldRoleId": "ROLE-6E51A03B5F7F",
+    "newRoleId": "ROLE-6E51A03B5F7F",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Software Quality Assurance Engineer (SQA Engineer)"
+  },
+  {
+    "oldRoleId": "ROLE-B2B4EB364379",
+    "newRoleId": "ROLE-B2B4EB364379",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Software Quality Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-B0E1A3444426",
+    "newRoleId": "ROLE-B0E1A3444426",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Software Test Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-6A2A26EB8380",
+    "newRoleId": "ROLE-6A2A26EB8380",
+    "occupationId": "OCC-15-1253.00",
+    "reportedTitle": "Test Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-56B826705119",
+    "newRoleId": "ROLE-56B826705119",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "IT Architect (Information Technology Architect)"
+  },
+  {
+    "oldRoleId": "ROLE-BE3E290AD0CA",
+    "newRoleId": "ROLE-BE3E290AD0CA",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "IT Engineer (Information Technology Engineer)"
+  },
+  {
+    "oldRoleId": "ROLE-919BDC0216B4",
+    "newRoleId": "ROLE-919BDC0216B4",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Network and Infrastructure Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-B01510AF5F34",
+    "newRoleId": "ROLE-B01510AF5F34",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Solutions Architect"
+  },
+  {
+    "oldRoleId": "ROLE-D047DF7D12BA",
+    "newRoleId": "ROLE-D047DF7D12BA",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Systems Application Engineer"
+  },
+  {
+    "oldRoleId": "ROLE-7A06376BE513",
+    "newRoleId": "ROLE-7A06376BE513",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Systems Architect"
+  },
+  {
+    "oldRoleId": "ROLE-4C23110A9ACE",
+    "newRoleId": "ROLE-4C23110A9ACE",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Systems Consultant"
+  },
+  {
+    "oldRoleId": "ROLE-E53C178E5BA6",
+    "newRoleId": "ROLE-E53C178E5BA6",
+    "occupationId": "OCC-15-1299.08",
+    "reportedTitle": "Web Architect"
+  },
+  {
+    "oldRoleId": "ROLE-BC681F40F67B",
+    "newRoleId": "ROLE-BC681F40F67B",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Information Security Officer"
+  },
+  {
+    "oldRoleId": "ROLE-9E24DD1E0AE6",
+    "newRoleId": "ROLE-9E24DD1E0AE6",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Information Security Specialist"
+  },
+  {
+    "oldRoleId": "ROLE-AF49BFEFFAE0",
+    "newRoleId": "ROLE-AF49BFEFFAE0",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Information Systems Security Analyst"
+  },
+  {
+    "oldRoleId": "ROLE-AAF660DA34D9",
+    "newRoleId": "ROLE-AAF660DA34D9",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Information Systems Security Officer (ISSO)"
+  },
+  {
+    "oldRoleId": "ROLE-AC875FDD2CC1",
+    "newRoleId": "ROLE-AC875FDD2CC1",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Information Technology Security Analyst (IT Security Analyst)"
+  },
+  {
+    "oldRoleId": "ROLE-39DE5AAEA190",
+    "newRoleId": "ROLE-39DE5AAEA190",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Network Security Analyst"
+  },
+  {
+    "oldRoleId": "ROLE-FE0775936B97",
+    "newRoleId": "ROLE-FE0775936B97",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Security Analyst"
+  },
+  {
+    "oldRoleId": "ROLE-410E150F21A9",
+    "newRoleId": "ROLE-410E150F21A9",
+    "occupationId": "OCC-15-1212.00",
+    "reportedTitle": "Systems Analyst"
+  }
+]

@@ -1,0 +1,2457 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F106f79e4-6264-45f1-9e7a-297435cd684b&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Occupation",
+    "classId": "http://data.europa.eu/esco/model#Occupation",
+    "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+    "title": "software tester",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Softwareprüfer/Softwareprüferin",
+      "no": "programvaretester",
+      "fi": "ohjelmistotestaaja",
+      "pt": "Testador de software/Testadora de software",
+      "bg": "софтуерен изпитател/софтуерна изпитателка",
+      "lt": "programinės įrangos testuotojas",
+      "hr": "ispitivač/ispitivačica softvera",
+      "lv": "programmatūras testētājs",
+      "fr": "testeur de logiciels/testeuse de logiciels",
+      "hu": "szoftvertesztelő",
+      "uk": "тестувальник програмного забезпечення/тестувальниця програмного забезпечення",
+      "sk": "tester/testerka softvéru",
+      "sl": "tester/testerka programske opreme",
+      "ga": "tástálaí bogearraí",
+      "sv": "programvarutestare",
+      "el": "υπεύθυνος ελέγχου λογισμικού/υπεύθυνη ελέγχου λογισμικού",
+      "mt": "tester tas-softwer",
+      "en": "software tester",
+      "is": "hugbúnaðarprófari",
+      "it": "collaudatore di software/collaudatrice di software",
+      "es": "probador de software/probadora de software",
+      "et": "tarkvara testija",
+      "cs": "tester softwaru/testerka softwaru",
+      "ar": "مختبر برمجيات / مختبرة برمجيات",
+      "pl": "tester oprogramowania",
+      "ro": "specialist testare software",
+      "da": "softwaretester",
+      "nl": "software tester"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Software-Prüferin",
+        "Softwareprüferin",
+        "Softwaretesterin",
+        "Softwaretester",
+        "Software-Prüfer",
+        "Softwareprüfer",
+        "Software-Tester",
+        "Software-Testerin"
+      ],
+      "sv": [
+        "modultestare",
+        "programprovare",
+        "enhetstestare",
+        "testare",
+        "applikationstestare",
+        "modulprovare",
+        "programtestare",
+        "applikationsprovare",
+        "enhetsprovare",
+        "provare"
+      ],
+      "fi": [
+        "sovellusohjelmiston testaaja",
+        "moduulitestaaja",
+        "sovellustestaaja"
+      ],
+      "pt": [
+        "Responsável por testes de software",
+        "Testador de módulos",
+        "Testadora de módulos",
+        "Testadora de software",
+        "Responsável pelos testes de software",
+        "Testador de software",
+        "Testador de software de aplicações",
+        "Testadora de software de aplicações"
+      ],
+      "bg": [
+        "изпитателка на приложен софтуер",
+        "изпитател на модул",
+        "софтуерен изпитател",
+        "изпитателка на модул",
+        "софтуерна изпитателка",
+        "софтуерна инженерка",
+        "софтуерен инженер",
+        "изпитател на приложен софтуер",
+        "софтуерни изпитатели"
+      ],
+      "mt": [
+        "tester tas-software",
+        "tester ta' softwer",
+        "tester ta' applikazzjonijiet tas-softwer",
+        "tester ta' applikazzjonijiet",
+        "evalwatur tas-softwer"
+      ],
+      "el": [
+        "υπεύθυνος δοκιμών λογισμικού",
+        "υπεύθυνος ελέγχων λογισμικού",
+        "υπεύθυνος ελέγχου λογισμικού",
+        "υπεύθυνος δοκιμής λογισμικού",
+        "υπεύθυνος δοκιμής λογισμικών",
+        "υπεύθυνη έλεγχου λογισμικών",
+        "υπεύθυνος έλεγχου λογισμικών",
+        "υπεύθυνη ελέγχων λογισμικού",
+        "υπεύθυνη ελέγχου λογισμικού",
+        "υπεύθυνη δοκιμής λογισμικών",
+        "υπεύθυνη δοκιμής λογισμικού",
+        "υπεύθυνη δοκιμών λογισμικού"
+      ],
+      "lt": [
+        "programinės įrangos tikrintojas",
+        "programinės įrangos testuotoja",
+        "programinės įrangos bandytojas"
+      ],
+      "en": [
+        "application software tester",
+        "unit tester",
+        "application tester",
+        "software application tester",
+        "tester",
+        "module tester",
+        "software testers",
+        "software testing specialist",
+        "soft tester"
+      ],
+      "hr": [
+        "ispitivačica softvera",
+        "ispitivačica programske podrške",
+        "ispitivač programske podrške",
+        "ispitivačica softwarea",
+        "ispitivač softvera",
+        "ispitivač softwarea",
+        "testerica softvera",
+        "tester softvera"
+      ],
+      "lv": [
+        "moduļu testētājs",
+        "lietojumprogrammu testētājs",
+        "moduļu testētāja",
+        "lietojumprogrammu testētāja",
+        "testētājs",
+        "testētāja",
+        "programmatūras testētāja",
+        "lietotņu testētāja",
+        "lietotņu testētājs"
+      ],
+      "is": [
+        "prófari",
+        "hugbúnaðarprófara",
+        "sérfræðingur á sviði hugbúnaðarprófana",
+        "einingaprófari"
+      ],
+      "it": [
+        "addetto al controllo dei programmi",
+        "collaudatrice di software",
+        "collaudatrice di unità",
+        "collaudatore di software",
+        "collaudatore di unità",
+        "addetta al controllo dei programmi"
+      ],
+      "fr": [
+        "testeuse de logiciels",
+        "testeur d'applications",
+        "testeuse d'applications",
+        "testeuse de logiciels d'application",
+        "testeur de logiciels",
+        "testeur de logiciels d'application"
+      ],
+      "hu": [
+        "szoftveralkalmazás tesztelő",
+        "tesztelő",
+        "modultesztelő",
+        "szoftvertesztelők",
+        "alkalmazástesztelő"
+      ],
+      "es": [
+        "comprobadora de software",
+        "comprobador de software",
+        "probadora de software",
+        "probadora de aplicaciones",
+        "tester de software",
+        "probador de aplicaciones",
+        "probador de software",
+        "probadora",
+        "probador",
+        "probador de software de aplicaciones",
+        "probadora de software de aplicaciones"
+      ],
+      "et": [
+        "tarkvara katsetajad",
+        "tarkvara katsetaja",
+        "tarkvaraprogrammide katsetaja",
+        "tarkvara testijad",
+        "tarkvaraprogrammide katsetajad",
+        "tarkvaraprogrammide testija",
+        "tarkvaraprogrammide testijad"
+      ],
+      "cs": [
+        "tester programů",
+        "tester aplikací",
+        "testerka programů",
+        "testerka aplikací",
+        "testerka softwaru",
+        "tester softwaru"
+      ],
+      "sk": [
+        "testerka programov",
+        "softvérová testerka",
+        "testerka modulov",
+        "testerka softvéru",
+        "tester softvéru",
+        "tester programov",
+        "testerka softvéru aplikácií",
+        "tester jednotiek",
+        "testerka jednotiek",
+        "tester modulov",
+        "tester softvéru aplikácií",
+        "softvérový tester"
+      ],
+      "sl": [
+        "testerka programja",
+        "testerka PO",
+        "preizkuševalec gramske opreme",
+        "tester programske opreme",
+        "preizkuševalka programske opreme",
+        "testerka programske opreme",
+        "tester PO",
+        "testatorka programske opreme",
+        "tester programja",
+        "testerka softvera",
+        "tester softvera",
+        "testator programske opreme"
+      ],
+      "pl": [
+        "tester programów",
+        "tester",
+        "tester aplikacji",
+        "testerzy oprogramowania"
+      ],
+      "da": [
+        "softwaretestere",
+        "programtester",
+        "tester af software"
+      ],
+      "ro": [
+        "tester de aplicații",
+        "tester de module",
+        "tester de aplicații software",
+        "tester",
+        "tester de unitate",
+        "tester software"
+      ],
+      "nl": [
+        "application software tester",
+        "unit tester",
+        "application tester",
+        "tester",
+        "app tester",
+        "module tester",
+        "systeem tester"
+      ]
+    },
+    "preferredTerm": {
+      "de": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "Softwareprüfer/Softwareprüferin"
+      },
+      "uk": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "тестувальник програмного забезпечення/тестувальниця програмного забезпечення"
+      },
+      "fr": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "testeur de logiciels/testeuse de logiciels"
+      },
+      "hr": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "ispitivač/ispitivačica softvera"
+      },
+      "sl": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "tester/testerka programske opreme"
+      },
+      "no": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "programvaretester"
+      },
+      "es": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "probador de software/probadora de software"
+      },
+      "pl": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "tester oprogramowania"
+      },
+      "sv": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "programvarutestare"
+      },
+      "da": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "softwaretester"
+      },
+      "et": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "tarkvara testija"
+      },
+      "bg": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "софтуерен изпитател/софтуерна изпитателка"
+      },
+      "pt": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "Testador de software/Testadora de software"
+      },
+      "ar": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "مختبر برمجيات / مختبرة برمجيات"
+      },
+      "el": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "υπεύθυνος ελέγχου λογισμικού/υπεύθυνη ελέγχου λογισμικού"
+      },
+      "sk": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "tester/testerka softvéru"
+      },
+      "lv": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "programmatūras testētājs"
+      },
+      "fi": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "ohjelmistotestaaja"
+      },
+      "cs": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "tester softwaru/testerka softwaru"
+      },
+      "lt": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male"
+        ],
+        "label": "programinės įrangos testuotojas"
+      },
+      "hu": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "szoftvertesztelő"
+      },
+      "nl": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "software tester"
+      },
+      "is": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "hugbúnaðarprófari"
+      },
+      "mt": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "tester tas-softwer"
+      },
+      "ro": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "specialist testare software"
+      },
+      "ga": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "tástálaí bogearraí"
+      },
+      "en": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "software tester"
+      },
+      "it": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "collaudatore di software/collaudatrice di software"
+      }
+    },
+    "alternativeTerms": {
+      "sk": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka softvéru aplikácií"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka modulov"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "softvérový tester"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "testerka softvéru"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka jednotiek"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka programov"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester jednotiek"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester programov"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "tester softvéru"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "softvérová testerka"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester modulov"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester softvéru aplikácií"
+        }
+      ],
+      "hu": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tesztelő"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "szoftveralkalmazás tesztelő"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "alkalmazástesztelő"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "modultesztelő"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "szoftvertesztelők"
+        }
+      ],
+      "ro": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tester de module"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tester de unitate"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tester de aplicații"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tester"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tester software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tester de aplicații software"
+        }
+      ],
+      "cs": [
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "tester softwaru"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester programů"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka programů"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester aplikací"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka aplikací"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "testerka softwaru"
+        }
+      ],
+      "sl": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka programja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester PO"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester softvera"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "preizkuševalec gramske opreme"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka PO"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerka softvera"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testatorka programske opreme"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester programja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "preizkuševalka programske opreme"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "tester programske opreme"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "testator programske opreme"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "testerka programske opreme"
+        }
+      ],
+      "pt": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Testadora de software de aplicações"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "Responsável pelos testes de software"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Testadora de módulos"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Testador de módulos"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "Testador de software"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "Testadora de software"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Testador de software de aplicações"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "Responsável por testes de software"
+        }
+      ],
+      "nl": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "module tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "systeem tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application software tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "unit tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "app tester"
+        }
+      ],
+      "lv": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "lietotņu testētājs"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "lietojumprogrammu testētāja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testētāja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "lietojumprogrammu testētājs"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "testētājs"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "programmatūras testētāja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "moduļu testētāja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "lietotņu testētāja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "moduļu testētājs"
+        }
+      ],
+      "hr": [
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "ispitivač softvera"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testerica softvera"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "ispitivačica programske podrške"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "ispitivačica softvera"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tester softvera"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "ispitivač softwarea"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "ispitivač programske podrške"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "ispitivačica softwarea"
+        }
+      ],
+      "it": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "addetto al controllo dei programmi"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "collaudatore di unità"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "addetta al controllo dei programmi"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "collaudatrice di software"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "collaudatore di software"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "collaudatrice di unità"
+        }
+      ],
+      "el": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "υπεύθυνη έλεγχου λογισμικών"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "υπεύθυνος ελέγχων λογισμικού"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "υπεύθυνη δοκιμής λογισμικού"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "υπεύθυνος έλεγχου λογισμικών"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "υπεύθυνη ελέγχου λογισμικού"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "υπεύθυνος ελέγχου λογισμικού"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "υπεύθυνη δοκιμής λογισμικών"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "υπεύθυνη ελέγχων λογισμικού"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "υπεύθυνη δοκιμών λογισμικού"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "υπεύθυνος δοκιμών λογισμικού"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "υπεύθυνος δοκιμής λογισμικών"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "υπεύθυνος δοκιμής λογισμικού"
+        }
+      ],
+      "en": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "software testers"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software application tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application software tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "module tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "soft tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software testing specialist"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "unit tester"
+        }
+      ],
+      "es": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "comprobador de software"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "comprobadora de software"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "probador de software de aplicaciones"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "probadora de aplicaciones"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "probadora de software de aplicaciones"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "probadora"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "probador de software"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester de software"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "probador"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "probador de aplicaciones"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "probadora de software"
+        }
+      ],
+      "lt": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programinės įrangos tikrintojas"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "programinės įrangos testuotoja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programinės įrangos bandytojas"
+        }
+      ],
+      "bg": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "софтуерни изпитатели"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "изпитателка на приложен софтуер"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "софтуерен инженер"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "софтуерна изпитателка"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "софтуерен изпитател"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "изпитателка на модул"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "изпитател на модул"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "софтуерна инженерка"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "изпитател на приложен софтуер"
+        }
+      ],
+      "pl": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester programów"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester aplikacji"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "testerzy oprogramowania"
+        }
+      ],
+      "et": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tarkvara katsetaja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tarkvara testijad"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tarkvaraprogrammide testija"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tarkvaraprogrammide testijad"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tarkvara katsetajad"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tarkvaraprogrammide katsetajad"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tarkvaraprogrammide katsetaja"
+        }
+      ],
+      "fi": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "moduulitestaaja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "sovellusohjelmiston testaaja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "sovellustestaaja"
+        }
+      ],
+      "sv": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "modultestare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "programtestare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "provare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "modulprovare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "enhetsprovare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applikationstestare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "enhetstestare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applikationsprovare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "programprovare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "testare"
+        }
+      ],
+      "da": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "softwaretestere"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "programtester"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester af software"
+        }
+      ],
+      "fr": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "testeur de logiciels d'application"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "testeuse de logiciels"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testeuse de logiciels d'application"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "testeur d'applications"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "testeuse d'applications"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "testeur de logiciels"
+        }
+      ],
+      "de": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Softwaretesterin"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Software-Prüferin"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Software-Prüfer"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Softwaretester"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Software-Tester"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "Softwareprüfer"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "Softwareprüferin"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Software-Testerin"
+        }
+      ],
+      "mt": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "evalwatur tas-softwer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester ta' applikazzjonijiet tas-softwer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester tas-software"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester ta' softwer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tester ta' applikazzjonijiet"
+        }
+      ],
+      "is": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "einingaprófari"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "sérfræðingur á sviði hugbúnaðarprófana"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hugbúnaðarprófara"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "prófari"
+        }
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Softwareprüfer prüfen Software. Bisweilen planen und konzipieren sie diese auch. Außerdem können sie Softwarefehler beheben und Software reparieren, obgleich diese Aufgaben hauptsächlich von Designern und Entwicklern übernommen werden. Softwareprüfer stellen sicher, dass die Anwendungen ordnungsgemäß funktionieren, bevor sie internen und externen Kunden übergeben werden.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Programvaretestere utfører programvaretester. De kan også planlegge og designe dem. De kan også feilsøke og reparere programvare, selv om denne oppgaven hovedsakelig tilligger designere og utviklere. De sikrer at programmane fungerer slik de skal, før de leverer dem til interne og eksterne kunder.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Ohjelmistotestaajat testaavat ohjelmistoja. He myös suunnittelevat ohjelmistotestejä. He voivat myös korjata ohjelmavirheitä ja ohjelmistoja, vaikka tästä vastaavatkin lähinnä suunnittelijat ja kehittäjät. Ohjelmistotestaajat varmistavat, että sovellukset toimivat asianmukaisesti, ennen kuin ne toimitetaan sisäisille ja ulkoisille asiakkaille.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Os testadores de software realizam testes de software. Podem igualmente proceder ao seu planeamento e conceção. Além disso, podem realizar a depuração de erros e a reparação de software, embora estas funções sejam sobretudo da responsabilidade de designers e programadores. Asseguram o correto funcionamento das aplicações antes de as entregarem a clientes internos e externos.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Софтуерните изпитатели извършват софтуерни тестове. Те могат и да ги планират и проектират. Освен това могат да доведат до отстраняване на грешки и поправяне на софтуера, въпреки че това основно съответства на проектантите и разработчиците. Те гарантират, че приложенията функционират правилно, преди да ги доставят на вътрешни и външни клиенти.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Programinės įrangos testuotojai atlieka programinės įrangos testavimus. Jie taip pat planuoja ir kuria šiuos testavimus. Jie taip pat gali derinti ir taisyti programinę įrangą, nors šias užduotis dažniausiai atlieka projektuotojai ir kūrėjai. Jie užtikrina, kad taikomosios programos tinkamai veiktų prieš jas perduodant vidaus ir išorės klientams.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Programmatūras testētāji veic programmatūras testus. Viņi arī var tos plānot un izstrādāt. Viņi arī var atkļūdot un labot programmatūru, lai gan parasti tas ietilpst projektētāju un izstrādātāju darbības jomā. Viņi nodrošina, ka lietotnes darbojas pareizi, pirms tās tiek piegādātas iekšējiem un ārējiem klientiem.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Ispitivači softvera provode ispitivanja softvera. Također ih mogu planirati i oblikovati. Mogu uklanjati pogreške i popravljati softver, iako to uglavnom rade dizajneri i programeri. Osiguravaju pravilno funkcioniranje aplikacija prije nego što ih dostave unutarnjim i vanjskim klijentima.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Les testeurs de logiciels effectuent des essais de logiciels. Ils peuvent également les planifier et les concevoir. Ils peuvent aussi déboiser et réparer les logiciels, bien que cela soit principalement le cas pour les concepteurs et les développeurs. Ils veillent à ce que les applications fonctionnent correctement avant de les mettre à la disposition des clients internes et externes.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "A szoftvertesztelők szoftverteszteket végeznek. Meg is tervezhetik azokat. Bár ez a feladat elsősorban a tervezőké és a fejlesztőké, hibakeresést és -javítást végeznek a szoftverben. Az alkalmazások a belső és külső ügyfelek felé történő szállítása előtt meggyőződnek arról, hogy azok megfelelően működnek.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Тестувальники програмного забезпечення проводять тестування програмного забезпечення. Вони також можуть планувати та проєктувати таке тестування. Крім того, вони можуть усувати несправності та вносити зміни до програмного забезпечення, хоча цим в основному займаються проєктувальники й розробники. Вони забезпечують, щоб додатки працювали належним чином, перш ніж здавати їх внутрішнім і зовнішнім клієнтам.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Testeri softvéru vykonávajú softvérové testy. Môžu ich aj plánovať a navrhovať. Okrem toho môžu ladiť a opravovať softvér, hoci to prislúcha hlavne dizajnérom a vývojárom. Zabezpečujú riadne fungovanie aplikácií pred ich poskytnutím interným a externým klientom.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Testerji programske opreme izvajajo testiranja programske opreme. Lahko jih tudi načrtujejo in oblikujejo. Prav tako lahko tudi odpravljajo napake in popravljajo programsko opremo, čeprav to večinoma spada na področje oblikovalcev in razvijalcev. Zagotavljajo, da aplikacije pravilno delujejo, preden jih posredujejo notranjim in zunanjim strankam.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Déanann tástálaithe bogearraí tástálacha ar bhogearraí. Féadfaidh siad iad a phleanáil agus a dhearadh freisin. Ina theannta sin, féadfaidh siad bogearraí a dhífhabhtú agus bogearraí a dheisiú cé go mbaineann méid sin le dearthóirí agus forbróirí den chuid is mó. Cinntíonn siad go bhfeidhmíonn na feidhmchláir i gceart sula ndéanann siad iad a sheachadadh go cliaint inmheánacha agus sheachtracha.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Programvarutestare testar programvara. De kan även planera och utforma test. De kan dessutom avlusa och reparera programvara, även om detta främst avser designer och utvecklare. De säkerställer att program fungerar korrekt innan de levereras till interna och externa kunder.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Dawk li jittestjaw is-softwer iwettqu testijiet tas-softwer. Huma jistgħu wkoll jippjanawhom u jiddisinjawhom. Huma jistgħu wkoll inaddfu u jsewwu s-softwer għalkemm dan jikkorrispondi l-aktar mad-disinjaturi u l-iżviluppaturi. Dawn jiżguraw li l-applikazzjonijiet jiffunzjonaw tajjeb qabel ma jgħadduhom lill-klijenti interni u esterni.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Οι υπεύθυνοι ελέγχου λογισμικού πραγματοποιούν δοκιμές λογισμικού, τις οποίες μπορεί επίσης να προγραμματίζουν και να σχεδιάζουν. Μπορεί ακόμη να επισκευάζουν το λογισμικό και να εντοπίζουν και να αφαιρούν τα σφάλματα, μολονότι αυτή η εργασία ανήκει κυρίως στους υπεύθυνους σχεδιασμού και ανάπτυξης λογισμικού. Διασφαλίζουν την ορθή λειτουργία των εφαρμογών πριν από την παράδοσή τους σε εσωτερικούς και εξωτερικούς πελάτες.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Software testers perform software tests. They may also plan and design them. They may also debug and repair software although this mainly corresponds to designers and developers. They ensure that applications function properly before delivering them to internal and external clients.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Hugbúnaðarprófarar framkvæma prófanir á hugbúnaði. Þeir geta einnig skipulagt og hannað þær. Þeir geta einnig hreinsað og lagfært hugbúnað þó svo að það eigi frekar við starfsemi hönnuða og þróunaraðila. Þeir tryggja að forrit vinni eðlilega áður en þau eru gefin út til innri og ytri viðskiptavina.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "I collaudatori di software eseguono test sul software. Possono anche pianificarli e progettarli. Possono anche effettuare il debug e riparare i software, sebbene ciò corrisponda principalmente al lavoro di progettisti e sviluppatori. Garantiscono che le applicazioni funzionino adeguatamente prima di consegnarle ai clienti interni ed esterni.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Los probadores de software llevan a cabo pruebas de software. También pueden planearlas y diseñarlas. También pueden eliminar los fallos y reparar los software, aunque ello corresponde principalmente a diseñadores y desarrolladores. Garantizan que las aplicaciones funcionen correctamente antes de entregarlas a los clientes internos y externos.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Tarkvara katsetajad katsetavad tarkvara. Samuti võivad nad katseid kavandada ja arendada. Nad võivad ka tarkvara siluda ja parandada, kuigi seda teevad tavaliselt projekteerijad ja arendajad. Nad tagavad rakenduste nõuetekohase toimimise enne nende esitamist sise- ja välisklientidele.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Testeři softwaru provádějí testy softwaru. Mohou je rovněž plánovat a navrhovat. Mohou také doladit a opravit software, přestože to je práce především projektantů a vývojářů. Zajišťují, aby aplikace řádně fungovaly, dříve než je dodají interním i externím klientům.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "يجري مختبرو البرامج اختبارات البرامج. كما يمكنهم التخطيط لها وتصميمها. وقد يقومون أيضًا بتصحيح أخطاء البرامج وإصلاحها على الرغم من أن ذلك يتوافق بشكل أساسي مع المصممين والمطورين. إذ يضمنون أن التطبيقات تعمل بشكل صحيح قبل تسليمها للعملاء الداخليين والخارجيين.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Testerzy oprogramowania przeprowadzają testy oprogramowania. Mogą je również planować i projektować. Mogą także usuwać usterki i wykonywać naprawy oprogramowania, choć te zadania należą głównie do projektantów i twórców. Zapewniają właściwe funkcjonowanie aplikacji przed ich przekazaniem klientom wewnętrznym i zewnętrznym.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Softwaretestere udfører softwaretests. De kan også planlægge og udforme dem. De kan også få software til fejlretning og reparation, selv om dette hovedsagelig svarer til designere og udviklere. De sikrer, at applikationer fungerer korrekt, inden de leverer dem til interne og eksterne kunder.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Specialiștii în testare de software efectuează teste de software. De asemenea, pot să le planifice și să le proiecteze. Pot, de asemenea, să depaneze și să repare software-ul, deși acest lucru corespunde în principal proiectanților și dezvoltatorilor. Se asigură că aplicațiile funcționează în mod corespunzător înainte de a le furniza clienților interni și externi.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Software testers voeren softwaretests uit. Zij kunnen die ook plannen en ontwerpen. Zij kunnen ook software debuggen en repareren, hoewel dat werk vooral door ontwerpers en ontwikkelaars wordt uitgevoerd. Zij zorgen ervoor dat applicaties goed functioneren voordat ze aan interne en externe klanten worden geleverd.",
+        "mimetype": "plain/text"
+      }
+    },
+    "scopeNote": {
+      "en": {
+        "literal": "Excludes people performing managerial activities.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "code": "2519.7",
+    "codes": [
+      {
+        "datatype": "",
+        "value": "2519.7"
+      }
+    ],
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+        "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+        "title": "software tester"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
+          "title": "ESCO member occupations"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/occupations",
+          "title": "ESCO Occupations"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
+          "title": "ESCO member occupations"
+        }
+      ],
+      "regulatedProfessionNote": {
+        "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/regulated-professions/unregulated&language=en",
+        "uri": "http://data.europa.eu/esco/regulated-professions/unregulated",
+        "title": "To see if and how this occupation is regulated in EU Member States, EEA countries or Switzerland please consult the Regulated Professions Database of the Commission. Regulated Professions Database: http://ec.europa.eu/growth/single-market/services/free-movement-professionals/qualifications-recognition_en"
+      },
+      "broaderIscoGroup": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/isco/C2519&language=en",
+          "uri": "http://data.europa.eu/esco/isco/C2519",
+          "title": "Software and applications developers and analysts not elsewhere classified",
+          "code": "2519"
+        }
+      ],
+      "narrowerOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        }
+      ],
+      "hasEssentialSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b9f16465-56a9-426b-a047-0f9f1f95ec92&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b9f16465-56a9-426b-a047-0f9f1f95ec92",
+          "title": "address problems critically",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93&language=en",
+          "uri": "http://data.europa.eu/esco/skill/561c2525-5bd8-4d86-8f45-820f4be7db93",
+          "title": "report test findings",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/438ff259-d086-4004-acda-1ec3e1631bc6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/438ff259-d086-4004-acda-1ec3e1631bc6",
+          "title": "software anomalies",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+          "title": "execute software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2450c3b3-e78e-435b-b84d-e05d984e71dc&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2450c3b3-e78e-435b-b84d-e05d984e71dc",
+          "title": "software architecture models",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fb7aee4d-f6c6-4a87-8e9d-8e542b3771f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/fb7aee4d-f6c6-4a87-8e9d-8e542b3771f8",
+          "title": "software metrics",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480&language=en",
+          "uri": "http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480",
+          "title": "replicate customer software issues",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/78a74fd1-efc6-49dc-adb1-1b0fbe35c22c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/78a74fd1-efc6-49dc-adb1-1b0fbe35c22c",
+          "title": "provide software testing documentation",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899",
+          "title": "perform software unit testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/993b1e23-f2de-4bd8-b33f-f86dde1c8e9d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/993b1e23-f2de-4bd8-b33f-f86dde1c8e9d",
+          "title": "CoffeeScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/58d7a289-dafd-4363-833f-d1dc4140885e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/58d7a289-dafd-4363-833f-d1dc4140885e",
+          "title": "APL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3cd569a2-4f88-4c1e-9995-8dce8c5e51a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/3cd569a2-4f88-4c1e-9995-8dce8c5e51a7",
+          "title": "JavaScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c4b626c1-e71c-44ec-9f88-042766f37fcc&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c4b626c1-e71c-44ec-9f88-042766f37fcc",
+          "title": "application usability",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3f4dab51-572b-4e2c-85ef-3b4c3f7094e1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/3f4dab51-572b-4e2c-85ef-3b4c3f7094e1",
+          "title": "XQuery",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/000f1d3d-220f-4789-9c0a-cc742521fb02&language=en",
+          "uri": "http://data.europa.eu/esco/skill/000f1d3d-220f-4789-9c0a-cc742521fb02",
+          "title": "Haskell",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/867137fb-ff1b-4ca3-99f3-cb6969aa2c68&language=en",
+          "uri": "http://data.europa.eu/esco/skill/867137fb-ff1b-4ca3-99f3-cb6969aa2c68",
+          "title": "TypeScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639",
+          "title": "develop ICT test suite",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/484df271-bb52-49f1-8f50-f19624bf4df2&language=en",
+          "uri": "http://data.europa.eu/esco/skill/484df271-bb52-49f1-8f50-f19624bf4df2",
+          "title": "software components libraries",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/401eb8d8-6daa-4f8b-90ad-60afc71eb4f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/401eb8d8-6daa-4f8b-90ad-60afc71eb4f8",
+          "title": "Perl",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d56fc2b5-4b0a-4e7e-9bde-a33736f6ff18&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d56fc2b5-4b0a-4e7e-9bde-a33736f6ff18",
+          "title": "Scratch (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0de61385-de6d-4146-ba32-1cc1bc102220&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0de61385-de6d-4146-ba32-1cc1bc102220",
+          "title": "Lisp",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/300d432b-f457-4cd3-9cb1-1858c7d14954&language=en",
+          "uri": "http://data.europa.eu/esco/skill/300d432b-f457-4cd3-9cb1-1858c7d14954",
+          "title": "OpenEdge Advanced Business Language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/47b9bbcf-356c-4782-83a4-7f5a1b2b51a3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/47b9bbcf-356c-4782-83a4-7f5a1b2b51a3",
+          "title": "Assembly (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0ccdfe98-f845-4598-84a1-3dca66e9d9a3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0ccdfe98-f845-4598-84a1-3dca66e9d9a3",
+          "title": "Ruby (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e8b89eb6-51e8-4c3a-babb-88b2e110376b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/e8b89eb6-51e8-4c3a-babb-88b2e110376b",
+          "title": "Pascal (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a57a54b6-2f2e-43e4-9621-b52f4a63cb08&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a57a54b6-2f2e-43e4-9621-b52f4a63cb08",
+          "title": "LDAP",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ff25cbf0-6978-4c4c-887e-d4b185410d74&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ff25cbf0-6978-4c4c-887e-d4b185410d74",
+          "title": "perform software recovery testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/397da142-ab35-48fe-b154-7c38f447adfb&language=en",
+          "uri": "http://data.europa.eu/esco/skill/397da142-ab35-48fe-b154-7c38f447adfb",
+          "title": "digital systems",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f597f772-24d3-4cec-813c-cf5a7027c794&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f597f772-24d3-4cec-813c-cf5a7027c794",
+          "title": "N1QL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ed39edd3-44d0-4a16-9796-bfb99f92baf3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ed39edd3-44d0-4a16-9796-bfb99f92baf3",
+          "title": "ICT performance analysis methods",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bb99af26-71ff-4dca-bde7-1eb1f6194426&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bb99af26-71ff-4dca-bde7-1eb1f6194426",
+          "title": "SAP R3",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a9acb6b-1139-4be9-b431-3a80a959f2f4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0a9acb6b-1139-4be9-b431-3a80a959f2f4",
+          "title": "Agile project management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+          "title": "debug software",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+          "title": "plan software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389&language=en",
+          "uri": "http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389",
+          "title": "Java (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/034c29fa-c3ba-45ea-b8f3-bf8e3705e386&language=en",
+          "uri": "http://data.europa.eu/esco/skill/034c29fa-c3ba-45ea-b8f3-bf8e3705e386",
+          "title": "Erlang",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c3a03c5a-c260-4c26-9b9a-873abb396f4d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c3a03c5a-c260-4c26-9b9a-873abb396f4d",
+          "title": "MATLAB",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c7d24594-0c11-4b27-9039-fe0bb903da8e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c7d24594-0c11-4b27-9039-fe0bb903da8e",
+          "title": "LINQ",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5da8018b-ae85-4cde-ad93-0394369018f3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5da8018b-ae85-4cde-ad93-0394369018f3",
+          "title": "SPARQL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/99207709-d076-4cce-ba38-e90d3bb28806&language=en",
+          "uri": "http://data.europa.eu/esco/skill/99207709-d076-4cce-ba38-e90d3bb28806",
+          "title": "resource description framework query language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4350c38d-0fe9-4ca7-bab9-40ed7f72b04f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4350c38d-0fe9-4ca7-bab9-40ed7f72b04f",
+          "title": "PHP",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+          "title": "develop automated software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9973a5a2-7822-4161-99e9-95c781eb63f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9973a5a2-7822-4161-99e9-95c781eb63f8",
+          "title": "Objective-C",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0e1fe34b-f4e7-4642-8c8b-5a05ac3438e5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0e1fe34b-f4e7-4642-8c8b-5a05ac3438e5",
+          "title": "manage schedule of tasks",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/13bdd41a-2a18-441f-96db-41252c519413&language=en",
+          "uri": "http://data.europa.eu/esco/skill/13bdd41a-2a18-441f-96db-41252c519413",
+          "title": "Visual Basic",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d",
+          "title": "Python (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2bde42ae-e776-41c1-9ded-b07b30bfe985&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2bde42ae-e776-41c1-9ded-b07b30bfe985",
+          "title": "Prolog (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4b51e76e-9e8a-455f-a289-5b48246345c4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4b51e76e-9e8a-455f-a289-5b48246345c4",
+          "title": "hardware components",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/def007fa-5fed-4a5f-91a2-b0d7e3db1be1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/def007fa-5fed-4a5f-91a2-b0d7e3db1be1",
+          "title": "COBOL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369ede5-4200-4a44-be2e-bc60ef959259&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8369ede5-4200-4a44-be2e-bc60ef959259",
+          "title": "Microsoft Visual C++",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/da6393d5-a53c-4863-abc7-51f36281d74e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/da6393d5-a53c-4863-abc7-51f36281d74e",
+          "title": "lean project management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4c016b68-4116-468c-9dc6-42710c239e4a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4c016b68-4116-468c-9dc6-42710c239e4a",
+          "title": "C#",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a536b36-c5c7-4d10-bf67-a4fb0f8549b2&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6a536b36-c5c7-4d10-bf67-a4fb0f8549b2",
+          "title": "audit techniques",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04f1b938-d4d4-4cb1-a863-982af76b9d93&language=en",
+          "uri": "http://data.europa.eu/esco/skill/04f1b938-d4d4-4cb1-a863-982af76b9d93",
+          "title": "SAS language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5ef0c719-5bcb-49f8-b8eb-824388225333&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5ef0c719-5bcb-49f8-b8eb-824388225333",
+          "title": "use scripting programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/51586df8-1c46-4b47-8583-773cb63bf00b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/51586df8-1c46-4b47-8583-773cb63bf00b",
+          "title": "R",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9cf681c7-89ec-470c-b651-7fe03786f586&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9cf681c7-89ec-470c-b651-7fe03786f586",
+          "title": "query languages",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a4d336a6-9ffd-402a-91cc-f359716ba4e0&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a4d336a6-9ffd-402a-91cc-f359716ba4e0",
+          "title": "ML (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/52cf3037-ab53-4806-85ed-7fd21ea7f6a1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/52cf3037-ab53-4806-85ed-7fd21ea7f6a1",
+          "title": "Groovy",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e",
+          "title": "execute integration testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dcdd5ddf-82a6-4ac3-8edc-d4b23cae9a88&language=en",
+          "uri": "http://data.europa.eu/esco/skill/dcdd5ddf-82a6-4ac3-8edc-d4b23cae9a88",
+          "title": "VBScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ba1b0441-a6b8-4e57-8ccc-871012f63e42&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ba1b0441-a6b8-4e57-8ccc-871012f63e42",
+          "title": "trading software",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/56a7f561-1d55-43c9-9cd7-36a0a9bc6c50&language=en",
+          "uri": "http://data.europa.eu/esco/skill/56a7f561-1d55-43c9-9cd7-36a0a9bc6c50",
+          "title": "ASP.NET",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0cd6dcf1-5778-42a5-b685-4d01ae4a4871&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0cd6dcf1-5778-42a5-b685-4d01ae4a4871",
+          "title": "Common Lisp",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ffddfc7c-a9dd-449f-9e96-882dc447c8b6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ffddfc7c-a9dd-449f-9e96-882dc447c8b6",
+          "title": "Scala",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0",
+          "title": "conduct ICT code review",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6014921e-1d25-4039-adc2-04852d61880e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6014921e-1d25-4039-adc2-04852d61880e",
+          "title": "ICT debugging tools",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be0ff6d8-5e61-4021-9c89-e40cf0b75cc6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/be0ff6d8-5e61-4021-9c89-e40cf0b75cc6",
+          "title": "measure software usability",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bec4359e-cb92-468f-a997-8fb28e32fba9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bec4359e-cb92-468f-a997-8fb28e32fba9",
+          "title": "ICT project management methodologies",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/42ed3bfb-1a01-4c8b-9758-fc6438865734&language=en",
+          "uri": "http://data.europa.eu/esco/skill/42ed3bfb-1a01-4c8b-9758-fc6438865734",
+          "title": "Smalltalk (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97&language=en",
+          "uri": "http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97",
+          "title": "computer programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be80acfc-b6f2-4411-9b8d-b19d9cd2556a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/be80acfc-b6f2-4411-9b8d-b19d9cd2556a",
+          "title": "Swift (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1b7c716e-af95-4cda-a42f-6479c8b139f5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1b7c716e-af95-4cda-a42f-6479c8b139f5",
+          "title": "MDX",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b633eb55-8f1f-4ae6-ab4c-2022ffe2cb7f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b633eb55-8f1f-4ae6-ab4c-2022ffe2cb7f",
+          "title": "C++",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666",
+          "title": "unstructured data",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d5a59ca8-2e91-472e-8571-d12ce4478679&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d5a59ca8-2e91-472e-8571-d12ce4478679",
+          "title": "Process-based management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b4dc6e4f-dc7d-445f-8ce2-d7b9d225e282&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b4dc6e4f-dc7d-445f-8ce2-d7b9d225e282",
+          "title": "AJAX",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/eb0e5615-1575-4a86-a1a2-7d39595033c5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/eb0e5615-1575-4a86-a1a2-7d39595033c5",
+          "title": "ABAP",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f",
+          "title": "tools for ICT test automation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "hasNACECode": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/712&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/712",
+          "title": "71.2 Technical testing and analysis",
+          "code": "71.2"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/621&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/621",
+          "title": "62.1 Computer programming activities",
+          "code": "62.1"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "software tester",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+              "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C2519"
+          ]
+        },
+        {
+          "title": "Software and applications developers and analysts not elsewhere classified",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2519&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C2519"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C251"
+          ]
+        },
+        {
+          "title": "Software and applications developers and analysts",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C251&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C251"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C25"
+          ]
+        },
+        {
+          "title": "Information and communications technology professionals",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C25&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C25"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C2"
+          ]
+        },
+        {
+          "title": "Professionals",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C2"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

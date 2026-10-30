@@ -1,0 +1,778 @@
+{
+  "kind": "BOUNDED_MANUAL_HTTP_DEMO_OPERATION_NOT_EXECUTABLE_ACCEPTANCE",
+  "at": "2026-10-22T23:35:27.211182+07:00",
+  "steps": [
+    {
+      "operation": "Save",
+      "result": {
+        "blueprintId": "1844e809-6a04-4bda-bcd8-3f70eff3876b",
+        "workingRevisionId": "a0547eaf-c378-45df-b70a-1d451f3b8cfe",
+        "revision": 1,
+        "configuration": {
+          "name": "Information Security baseline demo",
+          "occupationBounds": {
+            "maxQuestions": 45,
+            "timeLimitSeconds": 2700
+          }
+        },
+        "updatedAt": "2026-10-22T16:35:28.008970Z",
+        "noOp": false
+      }
+    },
+    {
+      "operation": "Preview",
+      "feasible": true,
+      "fields": [
+        "feasible",
+        "shortages",
+        "sample"
+      ],
+      "sampleCount": 0
+    },
+    {
+      "operation": "Activate",
+      "version": {
+        "blueprintId": "1844e809-6a04-4bda-bcd8-3f70eff3876b",
+        "version": 1
+      },
+      "pins": {
+        "modelVersionId": "8f18ca82-cb9a-3452-95d9-6b52b10904c8",
+        "masteryMappingVersionId": "891b1dc7-13b8-3f8a-ad0d-6d8eb1747274",
+        "parameterSetId": "e676b9d9-ecb3-34d5-8a4e-8e695b50c870"
+      }
+    },
+    {
+      "operation": "Start",
+      "actor": "employee-c",
+      "id": "5fb3d1b4-7e0e-4420-bdcd-71b3f0a3c53f",
+      "deadline": "2026-10-22T17:20:29.407768Z",
+      "maxQuestions": 45
+    },
+    {
+      "operation": "Resume after one answer",
+      "sameId": true,
+      "sameDeadline": true,
+      "answeredCount": 1
+    },
+    {
+      "operation": "Answer displayed first option without answer key",
+      "accepted": 45,
+      "state": "AUTO_SUBMITTED"
+    },
+    {
+      "operation": "Own history",
+      "count": 1,
+      "containsAttempt": true
+    },
+    {
+      "operation": "Completed allowance",
+      "response": "409 {\"code\":\"ALLOWANCE_CLOSED\",\"message\":\"Adaptive baseline request: ALLOWANCE_CLOSED\"}"
+    },
+    {
+      "operation": "Foreign result",
+      "actor": "employee-b",
+      "response": "404 {\"code\":\"NOT_FOUND\",\"message\":\"Adaptive baseline request: NOT_FOUND\"}"
+    }
+  ],
+  "attemptId": "5fb3d1b4-7e0e-4420-bdcd-71b3f0a3c53f",
+  "result": {
+    "attemptId": "5fb3d1b4-7e0e-4420-bdcd-71b3f0a3c53f",
+    "occupationId": "OCC-15-1212.00",
+    "occupationName": "Information Security Analysts",
+    "purpose": "OCCUPATION_EXPLORATION",
+    "roleId": null,
+    "roleName": null,
+    "state": "AUTO_SUBMITTED",
+    "completionReason": "ADAPTIVE_STOP",
+    "startedAt": "2026-10-22T16:35:29.407768Z",
+    "completedAt": "2026-10-22T16:35:33.422695Z",
+    "replacesAttemptId": null,
+    "replacementAttemptId": null,
+    "rawScore": 0.24444444444444444,
+    "skills": [
+      {
+        "microSkillId": "MS-FS13",
+        "microSkillName": "Enforce application authorization",
+        "mastery": 0.16936236105665695,
+        "confidence": "MEDIUM"
+      },
+      {
+        "microSkillId": "MS-INF01",
+        "microSkillName": "Configure and verify network connectivity",
+        "mastery": 0.23128846543608347,
+        "confidence": "MEDIUM"
+      },
+      {
+        "microSkillId": "MS-INF04",
+        "microSkillName": "Maintain configuration records",
+        "mastery": 0.09527899770141814,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-INF05",
+        "microSkillName": "Monitor service health",
+        "mastery": 0.13305416295864458,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-INF08",
+        "microSkillName": "Apply infrastructure hardening and updates",
+        "mastery": 0.10520007893211716,
+        "confidence": "MEDIUM"
+      },
+      {
+        "microSkillId": "MS-SEC01",
+        "microSkillName": "Analyse information security risks",
+        "mastery": 0.26470652724310334,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-SEC02",
+        "microSkillName": "Select and verify security controls",
+        "mastery": 0.1650515499610028,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-SEC03",
+        "microSkillName": "Configure identity and access controls",
+        "mastery": 0.16848762936941325,
+        "confidence": "MEDIUM"
+      },
+      {
+        "microSkillId": "MS-SEC04",
+        "microSkillName": "Investigate security alerts",
+        "mastery": 0.15089424232094278,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-SEC05",
+        "microSkillName": "Execute a security incident response procedure",
+        "mastery": 0.1720000543151083,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-SEC06",
+        "microSkillName": "Assess technical vulnerabilities",
+        "mastery": 0.43831869488423425,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-SEC07",
+        "microSkillName": "Verify vulnerability remediation",
+        "mastery": 0.12933065913573213,
+        "confidence": "MEDIUM"
+      },
+      {
+        "microSkillId": "MS-SEC08",
+        "microSkillName": "Document security control assurance",
+        "mastery": 0.15484248395786784,
+        "confidence": "LOW"
+      },
+      {
+        "microSkillId": "MS-SEC09",
+        "microSkillName": "Communicate security recommendations",
+        "mastery": 0.12207435880872983,
+        "confidence": "MEDIUM"
+      },
+      {
+        "microSkillId": "MS-SEC10",
+        "microSkillName": "Maintain security policy procedures",
+        "mastery": 0.0994458763383671,
+        "confidence": "MEDIUM"
+      }
+    ],
+    "assessmentScope": "OCCUPATION"
+  },
+  "userPersonasUntouched": [
+    "employee-a",
+    "employee-b"
+  ],
+  "status": "MANUAL_OPERATION_COMPLETE",
+  "preservation": {
+    "restartAll86TableDigestsUnchanged": true,
+    "officialBankItemsAndOriginalSelectionsUnchanged": true,
+    "operationalV23PointerReceiptUnchangedEmpty": true,
+    "migrationAndReleaseHashesUnchanged": true,
+    "changedTableCountsFromBeforeDemo": [
+      {
+        "table": "account",
+        "before": 1,
+        "after": 6
+      },
+      {
+        "table": "account_role",
+        "before": 1,
+        "after": 6
+      },
+      {
+        "table": "audit_event",
+        "before": 11,
+        "after": 12
+      },
+      {
+        "table": "baseline_adaptive_attempt",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_adaptive_blueprint_role",
+        "before": 0,
+        "after": 8
+      },
+      {
+        "table": "baseline_adaptive_blueprint_skill",
+        "before": 0,
+        "after": 96
+      },
+      {
+        "table": "baseline_adaptive_blueprint_version",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_adaptive_blueprint_working_revision",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_attempt_command",
+        "before": 0,
+        "after": 46
+      },
+      {
+        "table": "baseline_attempt_item",
+        "before": 0,
+        "after": 45
+      },
+      {
+        "table": "baseline_attempt_pool_item",
+        "before": 0,
+        "after": 135
+      },
+      {
+        "table": "baseline_attempt_response",
+        "before": 0,
+        "after": 45
+      },
+      {
+        "table": "baseline_attempt_result",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_attempt_skill_result",
+        "before": 0,
+        "after": 15
+      },
+      {
+        "table": "baseline_attempt_skill_state",
+        "before": 0,
+        "after": 15
+      },
+      {
+        "table": "baseline_blueprint",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_blueprint_activation",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_blueprint_activation_event",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_blueprint_command",
+        "before": 0,
+        "after": 2
+      },
+      {
+        "table": "baseline_blueprint_version_registry",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "baseline_mastery_evidence",
+        "before": 0,
+        "after": 15
+      },
+      {
+        "table": "irt_item_parameter",
+        "before": 0,
+        "after": 135
+      },
+      {
+        "table": "irt_parameter_set",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "learner_state",
+        "before": 1,
+        "after": 4
+      },
+      {
+        "table": "mastery_mapping_version",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "model_version",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "table": "outbox_event",
+        "before": 11,
+        "after": 12
+      }
+    ],
+    "afterTables": [
+      {
+        "count": 6,
+        "table": "account",
+        "digest": "495630a71a4846bd95a9731c87b07bb5"
+      },
+      {
+        "count": 6,
+        "table": "account_role",
+        "digest": "f32449d5ba3db7bd05f862abd88ba8b1"
+      },
+      {
+        "count": 0,
+        "table": "activity_requirement",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "analytics_snapshot",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 7,
+        "table": "application_role",
+        "digest": "c811d532b99eb9ddd5492319e5e6684a"
+      },
+      {
+        "count": 0,
+        "table": "assessment_assignment",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "assessment_attempt",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "assessment_availability",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "assessment_item",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "assessment_result",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "assessment_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 12,
+        "table": "audit_event",
+        "digest": "730179e4aa4d1db7cebea47a7974e9fc"
+      },
+      {
+        "count": 1,
+        "table": "baseline_adaptive_attempt",
+        "digest": "993a1b72df6a943a707722197aeaf6d2"
+      },
+      {
+        "count": 8,
+        "table": "baseline_adaptive_blueprint_role",
+        "digest": "c348b25c1917deb2a69e1e8606ca3ce6"
+      },
+      {
+        "count": 96,
+        "table": "baseline_adaptive_blueprint_skill",
+        "digest": "85c4c2686712e8e333316bbc1bcabefd"
+      },
+      {
+        "count": 1,
+        "table": "baseline_adaptive_blueprint_version",
+        "digest": "424720f1a00be4b426f90bf1f243b96b"
+      },
+      {
+        "count": 1,
+        "table": "baseline_adaptive_blueprint_working_revision",
+        "digest": "2f710df209f6ce995d4c7ec24082e25b"
+      },
+      {
+        "count": 0,
+        "table": "baseline_answer_reveal_audit",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "baseline_assessment_series",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "baseline_assessment_transition",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 46,
+        "table": "baseline_attempt_command",
+        "digest": "4e75881b43349ba64d43f20bc71651c3"
+      },
+      {
+        "count": 45,
+        "table": "baseline_attempt_item",
+        "digest": "b4a52af66f08df33b71b453721bd4a50"
+      },
+      {
+        "count": 135,
+        "table": "baseline_attempt_pool_item",
+        "digest": "a595c17fd98ed8eade1785cea6c9c685"
+      },
+      {
+        "count": 45,
+        "table": "baseline_attempt_response",
+        "digest": "bbd61f06207a4b35af63ea871a7481b4"
+      },
+      {
+        "count": 1,
+        "table": "baseline_attempt_result",
+        "digest": "8a298e0068853b064e0aea7033561967"
+      },
+      {
+        "count": 15,
+        "table": "baseline_attempt_skill_result",
+        "digest": "cd67bf369b1cc8d2d30d457ee18a51d5"
+      },
+      {
+        "count": 15,
+        "table": "baseline_attempt_skill_state",
+        "digest": "63021e34fad17a0d30026fc9778221a2"
+      },
+      {
+        "count": 1,
+        "table": "baseline_blueprint",
+        "digest": "88c7dc503a0e2ddad6375107b7c4f551"
+      },
+      {
+        "count": 1,
+        "table": "baseline_blueprint_activation",
+        "digest": "2954b2e14f08dcf760d8b96718b382aa"
+      },
+      {
+        "count": 1,
+        "table": "baseline_blueprint_activation_event",
+        "digest": "ffb13b455f5962f7413fa48f419a57dc"
+      },
+      {
+        "count": 2,
+        "table": "baseline_blueprint_command",
+        "digest": "72b8b54640d4934408ab20247376ee22"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_role",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_skill",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 1,
+        "table": "baseline_blueprint_version_registry",
+        "digest": "f3c08bcf9b2b11307de51f3740409c73"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_working_registry",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_working_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "baseline_management_command",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 15,
+        "table": "baseline_mastery_evidence",
+        "digest": "6828bce784ccaf8be77b4fc87a86a2a3"
+      },
+      {
+        "count": 1,
+        "table": "catalog_guard",
+        "digest": "96b2e0b6a5128327ca8da02f5f1d5b8e"
+      },
+      {
+        "count": 2,
+        "table": "catalog_reference",
+        "digest": "4620616e065f0351325e973e5df138ed"
+      },
+      {
+        "count": 1,
+        "table": "catalog_release",
+        "digest": "c7f824559f86e214fedcc90646c020ad"
+      },
+      {
+        "count": 0,
+        "table": "cohort_member",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "cohort_snapshot",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "completion_pass",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "evaluation_artifact",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "evaluation_run",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "evidence_application",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "evidence_observation",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "evidence_policy_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "irt_calibration_run",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "irt_effective_parameter_selection",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 135,
+        "table": "irt_item_parameter",
+        "digest": "d69b438ba626ba024b722b38edaee021"
+      },
+      {
+        "count": 0,
+        "table": "irt_parameter_promotion_command",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 1,
+        "table": "irt_parameter_set",
+        "digest": "6b2fbc4572190340f0aba7182f3df5de"
+      },
+      {
+        "count": 0,
+        "table": "item_response",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "item_skill_mapping",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 135,
+        "table": "item_version",
+        "digest": "ebf8a76d1bd261d4b0d7dba291ec37bc"
+      },
+      {
+        "count": 4,
+        "table": "learner_state",
+        "digest": "ce38587ed121b95246a9cb5346f00be9"
+      },
+      {
+        "count": 0,
+        "table": "learning_activity",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "manager_scope",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "mastery_estimate",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 1,
+        "table": "mastery_mapping_version",
+        "digest": "94b9fc1070476e9c40a7c1349ce5fbfa"
+      },
+      {
+        "count": 1,
+        "table": "model_version",
+        "digest": "6ec097b240f3c28b2ba7ecf0dcc0849f"
+      },
+      {
+        "count": 0,
+        "table": "module_assessment_binding",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "module_completion",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 1,
+        "table": "organization",
+        "digest": "fbaed39a7cd669e986c758c4fa753d9c"
+      },
+      {
+        "count": 1,
+        "table": "organizational_unit",
+        "digest": "ab80a630a123d50fdfd26cfd765f6eb8"
+      },
+      {
+        "count": 12,
+        "table": "outbox_event",
+        "digest": "1be16bbb5adbce0aef3019e683907d63"
+      },
+      {
+        "count": 0,
+        "table": "pathway_approval",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "pathway_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "pathway_step",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "processing_job",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "processing_receipt",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "processing_stream",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "profile_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "progress_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "publication_request",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 1,
+        "table": "question_bank",
+        "digest": "328585284d0a0636e66ed72b6fa81fdb"
+      },
+      {
+        "count": 0,
+        "table": "recommendation_candidate",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "recommendation_run",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "recommendation_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "roi_scenario",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 0,
+        "table": "session",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "count": 11,
+        "table": "target_selection",
+        "digest": "34adace4faa1899e15a878fe749ca483"
+      },
+      {
+        "count": 25,
+        "table": "target_selection_request",
+        "digest": "0f1ea472870b3efacfdfb0c6b80f12da"
+      }
+    ],
+    "backupBytes": 478775,
+    "backupSha256": "91a493c2f8eb7fc6d39fe1190b807656d5673e91b2fdcf5c9c6f450e1c74c173"
+  },
+  "verification": {
+    "java": "294 main sources; main-only Docker package success, test resources/compilation/execution skipped",
+    "typescript": "140 production roots,0 diagnostics,0 test imports",
+    "vite": "build exit0, existing bundle-size advisory",
+    "lint": "new demo panel exit0",
+    "browser": "fresh inventory apps/browsers empty; rendered UI/keyboard/responsive NOT RUN",
+    "executableTests": "Not created/compiled/run",
+    "gitHead": "70679bb43e1798f1235a17d6a9a843701e76a796",
+    "indexEmpty": true
+  }
+}

@@ -1,0 +1,3319 @@
+[
+  {
+    "levelId": "LV-F72E5464F9B3-J",
+    "roleId": "ROLE-F72E5464F9B3",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-FS08",
+      "MS-FS15",
+      "MS-FS16"
+    ]
+  },
+  {
+    "levelId": "LV-F72E5464F9B3-M",
+    "roleId": "ROLE-F72E5464F9B3",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-F72E5464F9B3-S",
+    "roleId": "ROLE-F72E5464F9B3",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-58B047D9053E-J",
+    "roleId": "ROLE-58B047D9053E",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC03",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-DE04",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE15",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13"
+    ],
+    "deferredSkills": [
+      "MS-ARC04",
+      "MS-DE08"
+    ]
+  },
+  {
+    "levelId": "LV-58B047D9053E-M",
+    "roleId": "ROLE-58B047D9053E",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-DE04",
+      "MS-DE08",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE15",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-58B047D9053E-S",
+    "roleId": "ROLE-58B047D9053E",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-DE04",
+      "MS-DE08",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE15",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-88FA0D759F84-J",
+    "roleId": "ROLE-88FA0D759F84",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-FS08",
+      "MS-FS15",
+      "MS-FS16"
+    ]
+  },
+  {
+    "levelId": "LV-88FA0D759F84-M",
+    "roleId": "ROLE-88FA0D759F84",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-88FA0D759F84-S",
+    "roleId": "ROLE-88FA0D759F84",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-2F3EE4DCB9A3-J",
+    "roleId": "ROLE-2F3EE4DCB9A3",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE04",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS13",
+      "MS-INF02",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF08"
+    ],
+    "deferredSkills": [
+      "MS-FS08",
+      "MS-FS16",
+      "MS-INF03",
+      "MS-INF07"
+    ]
+  },
+  {
+    "levelId": "LV-2F3EE4DCB9A3-M",
+    "roleId": "ROLE-2F3EE4DCB9A3",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE04",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS13",
+      "MS-FS16",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-2F3EE4DCB9A3-S",
+    "roleId": "ROLE-2F3EE4DCB9A3",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE04",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS13",
+      "MS-FS16",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-8C851BC1DBAC-J-15125200",
+    "roleId": "ROLE-8C851BC1DBAC-15125200",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": [
+      "MS-ARC04",
+      "MS-INF03",
+      "MS-INF07"
+    ]
+  },
+  {
+    "levelId": "LV-8C851BC1DBAC-M-15125200",
+    "roleId": "ROLE-8C851BC1DBAC-15125200",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-8C851BC1DBAC-S-15125200",
+    "roleId": "ROLE-8C851BC1DBAC-15125200",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-8C851BC1DBAC-J-15129908",
+    "roleId": "ROLE-8C851BC1DBAC-15129908",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": [
+      "MS-ARC04",
+      "MS-INF03",
+      "MS-INF07"
+    ]
+  },
+  {
+    "levelId": "LV-8C851BC1DBAC-M-15129908",
+    "roleId": "ROLE-8C851BC1DBAC-15129908",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-8C851BC1DBAC-S-15129908",
+    "roleId": "ROLE-8C851BC1DBAC-15129908",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-DC8BCD8CC9FA-J",
+    "roleId": "ROLE-DC8BCD8CC9FA",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE01",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-FS03",
+      "MS-FS05",
+      "MS-FS13"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-FS08",
+      "MS-FS15"
+    ]
+  },
+  {
+    "levelId": "LV-DC8BCD8CC9FA-M",
+    "roleId": "ROLE-DC8BCD8CC9FA",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE01",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-FS03",
+      "MS-FS05",
+      "MS-FS08",
+      "MS-FS13",
+      "MS-FS15"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-DC8BCD8CC9FA-S",
+    "roleId": "ROLE-DC8BCD8CC9FA",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE01",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-FS03",
+      "MS-FS05",
+      "MS-FS08",
+      "MS-FS13",
+      "MS-FS15"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-15F02B2EC48A-J",
+    "roleId": "ROLE-15F02B2EC48A",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-FS08",
+      "MS-FS15",
+      "MS-FS16"
+    ]
+  },
+  {
+    "levelId": "LV-15F02B2EC48A-M",
+    "roleId": "ROLE-15F02B2EC48A",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-15F02B2EC48A-S",
+    "roleId": "ROLE-15F02B2EC48A",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-7838A77B1320-J",
+    "roleId": "ROLE-7838A77B1320",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-FS08",
+      "MS-FS15",
+      "MS-FS16"
+    ]
+  },
+  {
+    "levelId": "LV-7838A77B1320-M",
+    "roleId": "ROLE-7838A77B1320",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-7838A77B1320-S",
+    "roleId": "ROLE-7838A77B1320",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-CBAF88DF6DE7-J",
+    "roleId": "ROLE-CBAF88DF6DE7",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-FS08",
+      "MS-FS15",
+      "MS-FS16"
+    ]
+  },
+  {
+    "levelId": "LV-CBAF88DF6DE7-M",
+    "roleId": "ROLE-CBAF88DF6DE7",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-CBAF88DF6DE7-S",
+    "roleId": "ROLE-CBAF88DF6DE7",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS12",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS15",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6B89F39CA50C-J-15125200",
+    "roleId": "ROLE-6B89F39CA50C-15125200",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-6B89F39CA50C-M-15125200",
+    "roleId": "ROLE-6B89F39CA50C-15125200",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-6B89F39CA50C-S-15125200",
+    "roleId": "ROLE-6B89F39CA50C-15125200",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6B89F39CA50C-J-15129908",
+    "roleId": "ROLE-6B89F39CA50C-15129908",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-6B89F39CA50C-M-15129908",
+    "roleId": "ROLE-6B89F39CA50C-15129908",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-6B89F39CA50C-S-15129908",
+    "roleId": "ROLE-6B89F39CA50C-15129908",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-84156EF4FF37-J",
+    "roleId": "ROLE-84156EF4FF37",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC05",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-DE13",
+      "MS-GOV01",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-84156EF4FF37-M",
+    "roleId": "ROLE-84156EF4FF37",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-84156EF4FF37-S",
+    "roleId": "ROLE-84156EF4FF37",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-GOV03"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-DE-J",
+    "roleId": "ROLE-DE",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE09",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16"
+    ],
+    "deferredSkills": [
+      "MS-DE08",
+      "MS-DE12",
+      "MS-DE13"
+    ]
+  },
+  {
+    "levelId": "LV-DE-M",
+    "roleId": "ROLE-DE",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE08",
+      "MS-DE09",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE12",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-DE-S",
+    "roleId": "ROLE-DE",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE08",
+      "MS-DE09",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE12",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-677AE5E25939-J",
+    "roleId": "ROLE-677AE5E25939",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-GOV01",
+      "MS-GOV03",
+      "MS-SEC01",
+      "MS-SEC08"
+    ]
+  },
+  {
+    "levelId": "LV-677AE5E25939-M",
+    "roleId": "ROLE-677AE5E25939",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-SEC01",
+      "MS-SEC08"
+    ],
+    "deferredSkills": [
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-677AE5E25939-S",
+    "roleId": "ROLE-677AE5E25939",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-GOV03",
+      "MS-SEC01",
+      "MS-SEC08"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-262E99D33528-J",
+    "roleId": "ROLE-262E99D33528",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-FS04"
+    ],
+    "deferredSkills": [
+      "MS-DE13",
+      "MS-GOV01",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-262E99D33528-M",
+    "roleId": "ROLE-262E99D33528",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-GOV01"
+    ],
+    "deferredSkills": [
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-262E99D33528-S",
+    "roleId": "ROLE-262E99D33528",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-GOV01",
+      "MS-GOV03"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-5A07C8E3F89B-J",
+    "roleId": "ROLE-5A07C8E3F89B",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC05",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-DE13",
+      "MS-GOV01",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-5A07C8E3F89B-M",
+    "roleId": "ROLE-5A07C8E3F89B",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-5A07C8E3F89B-S",
+    "roleId": "ROLE-5A07C8E3F89B",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-GOV03"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-683035F817DC-J",
+    "roleId": "ROLE-683035F817DC",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-FS04"
+    ],
+    "deferredSkills": [
+      "MS-DE13",
+      "MS-GOV01",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-683035F817DC-M",
+    "roleId": "ROLE-683035F817DC",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-GOV01"
+    ],
+    "deferredSkills": [
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-683035F817DC-S",
+    "roleId": "ROLE-683035F817DC",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-DE01",
+      "MS-DE04",
+      "MS-DE05",
+      "MS-DE06",
+      "MS-DE09",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-GOV01",
+      "MS-GOV03"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-826EF8FFB24A-J",
+    "roleId": "ROLE-826EF8FFB24A",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-FS07",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-DE13",
+      "MS-FS08"
+    ]
+  },
+  {
+    "levelId": "LV-826EF8FFB24A-M",
+    "roleId": "ROLE-826EF8FFB24A",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-826EF8FFB24A-S",
+    "roleId": "ROLE-826EF8FFB24A",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6C905B8EE52A-J",
+    "roleId": "ROLE-6C905B8EE52A",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-FS07",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-DE13",
+      "MS-FS08"
+    ]
+  },
+  {
+    "levelId": "LV-6C905B8EE52A-M",
+    "roleId": "ROLE-6C905B8EE52A",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6C905B8EE52A-S",
+    "roleId": "ROLE-6C905B8EE52A",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-DE01",
+      "MS-DE02",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE07",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE15",
+      "MS-DE16",
+      "MS-FS04",
+      "MS-FS07",
+      "MS-FS08",
+      "MS-FS14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B0C017CA7D49-J",
+    "roleId": "ROLE-B0C017CA7D49",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE06",
+      "MS-DE16",
+      "MS-GOV02",
+      "MS-INF02",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-GOV01",
+      "MS-GOV03",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-B0C017CA7D49-M",
+    "roleId": "ROLE-B0C017CA7D49",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE06",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-INF02",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-B0C017CA7D49-S",
+    "roleId": "ROLE-B0C017CA7D49",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE06",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-GOV03",
+      "MS-INF02",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-D4665145D9A0-J",
+    "roleId": "ROLE-D4665145D9A0",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC05",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-DE13",
+      "MS-GOV01",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-D4665145D9A0-M",
+    "roleId": "ROLE-D4665145D9A0",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06",
+      "MS-GOV03"
+    ]
+  },
+  {
+    "levelId": "LV-D4665145D9A0-S",
+    "roleId": "ROLE-D4665145D9A0",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-DE01",
+      "MS-DE03",
+      "MS-DE06",
+      "MS-DE13",
+      "MS-DE14",
+      "MS-DE16",
+      "MS-GOV01",
+      "MS-GOV02",
+      "MS-GOV03"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-3594A031F678-J",
+    "roleId": "ROLE-3594A031F678",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA10",
+      "MS-QA12"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-3594A031F678-M",
+    "roleId": "ROLE-3594A031F678",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-3594A031F678-S",
+    "roleId": "ROLE-3594A031F678",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-39F74565946B-J",
+    "roleId": "ROLE-39F74565946B",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-QA11"
+    ]
+  },
+  {
+    "levelId": "LV-39F74565946B-M",
+    "roleId": "ROLE-39F74565946B",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-39F74565946B-S",
+    "roleId": "ROLE-39F74565946B",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B94440938DCB-J",
+    "roleId": "ROLE-B94440938DCB",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-QA11"
+    ]
+  },
+  {
+    "levelId": "LV-B94440938DCB-M",
+    "roleId": "ROLE-B94440938DCB",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B94440938DCB-S",
+    "roleId": "ROLE-B94440938DCB",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-1947F95DA9EB-J",
+    "roleId": "ROLE-1947F95DA9EB",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-1947F95DA9EB-M",
+    "roleId": "ROLE-1947F95DA9EB",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-1947F95DA9EB-S",
+    "roleId": "ROLE-1947F95DA9EB",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-140C2EA5BCFA-J",
+    "roleId": "ROLE-140C2EA5BCFA",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-140C2EA5BCFA-M",
+    "roleId": "ROLE-140C2EA5BCFA",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-140C2EA5BCFA-S",
+    "roleId": "ROLE-140C2EA5BCFA",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-600114606368-J",
+    "roleId": "ROLE-600114606368",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-QA11"
+    ]
+  },
+  {
+    "levelId": "LV-600114606368-M",
+    "roleId": "ROLE-600114606368",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-600114606368-S",
+    "roleId": "ROLE-600114606368",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6E51A03B5F7F-J",
+    "roleId": "ROLE-6E51A03B5F7F",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-6E51A03B5F7F-M",
+    "roleId": "ROLE-6E51A03B5F7F",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6E51A03B5F7F-S",
+    "roleId": "ROLE-6E51A03B5F7F",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B2B4EB364379-J",
+    "roleId": "ROLE-B2B4EB364379",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-B2B4EB364379-M",
+    "roleId": "ROLE-B2B4EB364379",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B2B4EB364379-S",
+    "roleId": "ROLE-B2B4EB364379",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B0E1A3444426-J",
+    "roleId": "ROLE-B0E1A3444426",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-B0E1A3444426-M",
+    "roleId": "ROLE-B0E1A3444426",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B0E1A3444426-S",
+    "roleId": "ROLE-B0E1A3444426",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6A2A26EB8380-J",
+    "roleId": "ROLE-6A2A26EB8380",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14"
+    ],
+    "deferredSkills": [
+      "MS-FS16",
+      "MS-QA06",
+      "MS-QA11",
+      "MS-QA15",
+      "MS-QA16"
+    ]
+  },
+  {
+    "levelId": "LV-6A2A26EB8380-M",
+    "roleId": "ROLE-6A2A26EB8380",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-6A2A26EB8380-S",
+    "roleId": "ROLE-6A2A26EB8380",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-FS07",
+      "MS-FS16",
+      "MS-QA01",
+      "MS-QA02",
+      "MS-QA03",
+      "MS-QA04",
+      "MS-QA05",
+      "MS-QA06",
+      "MS-QA07",
+      "MS-QA08",
+      "MS-QA09",
+      "MS-QA10",
+      "MS-QA11",
+      "MS-QA12",
+      "MS-QA13",
+      "MS-QA14",
+      "MS-QA15",
+      "MS-QA16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-56B826705119-J",
+    "roleId": "ROLE-56B826705119",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-56B826705119-M",
+    "roleId": "ROLE-56B826705119",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-56B826705119-S",
+    "roleId": "ROLE-56B826705119",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-BE3E290AD0CA-J",
+    "roleId": "ROLE-BE3E290AD0CA",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": [
+      "MS-ARC04",
+      "MS-INF03",
+      "MS-INF07"
+    ]
+  },
+  {
+    "levelId": "LV-BE3E290AD0CA-M",
+    "roleId": "ROLE-BE3E290AD0CA",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-BE3E290AD0CA-S",
+    "roleId": "ROLE-BE3E290AD0CA",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-919BDC0216B4-J",
+    "roleId": "ROLE-919BDC0216B4",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": [
+      "MS-ARC04",
+      "MS-INF03",
+      "MS-INF07"
+    ]
+  },
+  {
+    "levelId": "LV-919BDC0216B4-M",
+    "roleId": "ROLE-919BDC0216B4",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-919BDC0216B4-S",
+    "roleId": "ROLE-919BDC0216B4",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF03",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-INF07",
+      "MS-INF08",
+      "MS-SEC03",
+      "MS-SEC04"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-B01510AF5F34-J",
+    "roleId": "ROLE-B01510AF5F34",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-B01510AF5F34-M",
+    "roleId": "ROLE-B01510AF5F34",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-B01510AF5F34-S",
+    "roleId": "ROLE-B01510AF5F34",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-D047DF7D12BA-J",
+    "roleId": "ROLE-D047DF7D12BA",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC03",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-DE04",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE15",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13"
+    ],
+    "deferredSkills": [
+      "MS-ARC04",
+      "MS-DE08"
+    ]
+  },
+  {
+    "levelId": "LV-D047DF7D12BA-M",
+    "roleId": "ROLE-D047DF7D12BA",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-DE04",
+      "MS-DE08",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE15",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-D047DF7D12BA-S",
+    "roleId": "ROLE-D047DF7D12BA",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-CORE01",
+      "MS-CORE02",
+      "MS-CORE03",
+      "MS-DE04",
+      "MS-DE08",
+      "MS-DE10",
+      "MS-DE11",
+      "MS-DE15",
+      "MS-FS03",
+      "MS-FS04",
+      "MS-FS05",
+      "MS-FS06",
+      "MS-FS07",
+      "MS-FS12",
+      "MS-FS13"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-7A06376BE513-J",
+    "roleId": "ROLE-7A06376BE513",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-7A06376BE513-M",
+    "roleId": "ROLE-7A06376BE513",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-7A06376BE513-S",
+    "roleId": "ROLE-7A06376BE513",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE01",
+      "MS-DE16",
+      "MS-INF01",
+      "MS-INF02",
+      "MS-INF05",
+      "MS-SEC01",
+      "MS-SEC02"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-4C23110A9ACE-J",
+    "roleId": "ROLE-4C23110A9ACE",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE06",
+      "MS-DE16",
+      "MS-INF05",
+      "MS-INF06"
+    ],
+    "deferredSkills": [
+      "MS-ARC06",
+      "MS-FS08",
+      "MS-SEC01"
+    ]
+  },
+  {
+    "levelId": "LV-4C23110A9ACE-M",
+    "roleId": "ROLE-4C23110A9ACE",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC05",
+      "MS-CORE03",
+      "MS-DE06",
+      "MS-DE16",
+      "MS-FS08",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-SEC01"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-4C23110A9ACE-S",
+    "roleId": "ROLE-4C23110A9ACE",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE03",
+      "MS-DE06",
+      "MS-DE16",
+      "MS-FS08",
+      "MS-INF05",
+      "MS-INF06",
+      "MS-SEC01"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-E53C178E5BA6-J",
+    "roleId": "ROLE-E53C178E5BA6",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC03",
+      "MS-ARC05",
+      "MS-CORE01",
+      "MS-CORE03",
+      "MS-FS01",
+      "MS-FS02",
+      "MS-FS09",
+      "MS-FS10",
+      "MS-FS11",
+      "MS-FS13",
+      "MS-FS14"
+    ],
+    "deferredSkills": [
+      "MS-ARC02",
+      "MS-ARC04",
+      "MS-ARC06",
+      "MS-FS16"
+    ]
+  },
+  {
+    "levelId": "LV-E53C178E5BA6-M",
+    "roleId": "ROLE-E53C178E5BA6",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-CORE01",
+      "MS-CORE03",
+      "MS-FS01",
+      "MS-FS02",
+      "MS-FS09",
+      "MS-FS10",
+      "MS-FS11",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS16"
+    ],
+    "deferredSkills": [
+      "MS-ARC06"
+    ]
+  },
+  {
+    "levelId": "LV-E53C178E5BA6-S",
+    "roleId": "ROLE-E53C178E5BA6",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-ARC01",
+      "MS-ARC02",
+      "MS-ARC03",
+      "MS-ARC04",
+      "MS-ARC05",
+      "MS-ARC06",
+      "MS-CORE01",
+      "MS-CORE03",
+      "MS-FS01",
+      "MS-FS02",
+      "MS-FS09",
+      "MS-FS10",
+      "MS-FS11",
+      "MS-FS13",
+      "MS-FS14",
+      "MS-FS16"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-BC681F40F67B-J",
+    "roleId": "ROLE-BC681F40F67B",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-BC681F40F67B-M",
+    "roleId": "ROLE-BC681F40F67B",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-BC681F40F67B-S",
+    "roleId": "ROLE-BC681F40F67B",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-9E24DD1E0AE6-J",
+    "roleId": "ROLE-9E24DD1E0AE6",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC07",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC06",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-9E24DD1E0AE6-M",
+    "roleId": "ROLE-9E24DD1E0AE6",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-9E24DD1E0AE6-S",
+    "roleId": "ROLE-9E24DD1E0AE6",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-AF49BFEFFAE0-J",
+    "roleId": "ROLE-AF49BFEFFAE0",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC07",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC06",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-AF49BFEFFAE0-M",
+    "roleId": "ROLE-AF49BFEFFAE0",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-AF49BFEFFAE0-S",
+    "roleId": "ROLE-AF49BFEFFAE0",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-AAF660DA34D9-J",
+    "roleId": "ROLE-AAF660DA34D9",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-AAF660DA34D9-M",
+    "roleId": "ROLE-AAF660DA34D9",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-AAF660DA34D9-S",
+    "roleId": "ROLE-AAF660DA34D9",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-AC875FDD2CC1-J",
+    "roleId": "ROLE-AC875FDD2CC1",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC07",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC06",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-AC875FDD2CC1-M",
+    "roleId": "ROLE-AC875FDD2CC1",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-AC875FDD2CC1-S",
+    "roleId": "ROLE-AC875FDD2CC1",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-39DE5AAEA190-J",
+    "roleId": "ROLE-39DE5AAEA190",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-INF01",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC07",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC06",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-39DE5AAEA190-M",
+    "roleId": "ROLE-39DE5AAEA190",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-INF01",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-39DE5AAEA190-S",
+    "roleId": "ROLE-39DE5AAEA190",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-INF01",
+      "MS-INF04",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-FE0775936B97-J",
+    "roleId": "ROLE-FE0775936B97",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC07",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC06",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-FE0775936B97-M",
+    "roleId": "ROLE-FE0775936B97",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-FE0775936B97-S",
+    "roleId": "ROLE-FE0775936B97",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  },
+  {
+    "levelId": "LV-410E150F21A9-J",
+    "roleId": "ROLE-410E150F21A9",
+    "level": "Junior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC07",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC01",
+      "MS-SEC06",
+      "MS-SEC08",
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-410E150F21A9-M",
+    "roleId": "ROLE-410E150F21A9",
+    "level": "Middle",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09"
+    ],
+    "deferredSkills": [
+      "MS-SEC10"
+    ]
+  },
+  {
+    "levelId": "LV-410E150F21A9-S",
+    "roleId": "ROLE-410E150F21A9",
+    "level": "Senior",
+    "includedSkills": [
+      "MS-FS13",
+      "MS-INF01",
+      "MS-INF05",
+      "MS-INF08",
+      "MS-SEC01",
+      "MS-SEC02",
+      "MS-SEC03",
+      "MS-SEC04",
+      "MS-SEC05",
+      "MS-SEC06",
+      "MS-SEC07",
+      "MS-SEC08",
+      "MS-SEC09",
+      "MS-SEC10"
+    ],
+    "deferredSkills": []
+  }
+]

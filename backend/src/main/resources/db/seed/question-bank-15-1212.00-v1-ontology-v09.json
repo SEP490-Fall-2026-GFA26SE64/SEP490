@@ -1,0 +1,4739 @@
+{
+  "formatVersion": "official-question-bank-v1",
+  "manifestVersion": "information-security-analysts-en-v1-ontology-v09",
+  "catalogVersion": "0.9.0",
+  "sourceSha256": "6bb30de3dea6afa5aa306246b74ae696c896338991949bb9f392fd79f51a9b02",
+  "scopeSha256": "454b5531a43dba70c29597d866cb29f5e614a02de5e6e596c379bb2712c667a6",
+  "occupationId": "OCC-15-1212.00",
+  "questionBank": {
+    "id": "2f79de6b-dc62-51a1-982d-0be9d6f588dc",
+    "name": "Information Security Analysts - English bank v1"
+  },
+  "items": [
+    {
+      "itemVersionId": "bfd2744f-1b72-5d1b-aef6-131c4796de78",
+      "itemId": "6b2a232f-c1f2-5e0d-8163-12ab086bcbd8",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "EASY",
+      "prompt": "A payroll API receives a valid login token. What must it still check before returning an employee's payslip?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Whether the request used the standard page URL"
+          },
+          {
+            "id": "B",
+            "text": "Whether this actor is authorized to read that payslip"
+          },
+          {
+            "id": "C",
+            "text": "Whether the client hid the payroll menu"
+          },
+          {
+            "id": "D",
+            "text": "Whether the token contains a display name"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "8b63eab45fdfc90b764cb44a934fbda88f1e40d7f1bd4dac7dce4fd246725760"
+    },
+    {
+      "itemVersionId": "3b8b44ee-0e27-5677-8d18-a661cc569a35",
+      "itemId": "48b30ba7-babf-58e4-aca7-941e16df6352",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "EASY",
+      "prompt": "A new API operation has no approved access rule. Under a deny-by-default policy, what is the correct response to a request?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Allow read access and block writes only"
+          },
+          {
+            "id": "B",
+            "text": "Reject access until an applicable authorization permits it"
+          },
+          {
+            "id": "C",
+            "text": "Allow any authenticated account"
+          },
+          {
+            "id": "D",
+            "text": "Let the browser decide whether to send the request"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9141db3af6c315b21beccda2c7ba01750126dc1153573b12920f8e9b0bcff844"
+    },
+    {
+      "itemVersionId": "0c9b07e8-5bb4-50fc-ab25-6a72751d353e",
+      "itemId": "1501603f-43ef-51c5-990c-5669b8461ab1",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "EASY",
+      "prompt": "Employees may read only their own expense reports. Which check enforces this rule for GET /reports/{id}?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Require the caller to know the report UUID"
+          },
+          {
+            "id": "B",
+            "text": "Require an Accept: application/json header"
+          },
+          {
+            "id": "C",
+            "text": "Compare the report owner with the trusted authenticated actor"
+          },
+          {
+            "id": "D",
+            "text": "Compare the owner with a userId query parameter"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "3ce39503d659c3be4cd4eee1979ebf0ea197b85d187a1988d64e8f13d98cacdc"
+    },
+    {
+      "itemVersionId": "1fcceba2-61e8-5b39-ae8f-474f6dfd988b",
+      "itemId": "b3ee8376-ee37-5dca-b921-defe3de812f2",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "MEDIUM",
+      "prompt": "A manager may read reports for assigned units but may edit only their own report. How should the service authorize PATCH on another unit member's report?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Deny all manager reads to avoid separate checks"
+          },
+          {
+            "id": "B",
+            "text": "Allow the edit if the report is already visible on screen"
+          },
+          {
+            "id": "C",
+            "text": "Deny the edit while retaining the permitted read"
+          },
+          {
+            "id": "D",
+            "text": "Allow the edit because the read permission succeeded"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "4b730a1cd36223017bd243ec7fa65e89fdafca7616bf5fb63bb3ad45939f3ddc"
+    },
+    {
+      "itemVersionId": "76173882-0eab-5c8b-b748-f82874eef98d",
+      "itemId": "6da56518-182c-566a-ae24-6d84bbfc7103",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "MEDIUM",
+      "prompt": "An export endpoint queues a worker job. Policy requires both the request and job execution to respect the user's current data access. The user's grant is revoked before the worker starts. What should happen?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reauthorize execution and stop the unauthorized export"
+          },
+          {
+            "id": "B",
+            "text": "Use the worker service account's broad access as user consent"
+          },
+          {
+            "id": "C",
+            "text": "Execute because queue admission succeeded earlier"
+          },
+          {
+            "id": "D",
+            "text": "Export first and mark the audit entry as revoked afterward"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "d224e0421cbf677609b2e6ea9b04e0763498ad6d03e1e4437d8630e6f42d0a53"
+    },
+    {
+      "itemVersionId": "70fca9dd-b4de-5f0f-b165-5ff8339c102b",
+      "itemId": "0f94ac8c-08ed-5dd3-93db-25b49a4c39f6",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "MEDIUM",
+      "prompt": "A tenant-scoped document lookup checks documentId but trusts organizationId supplied by the browser. Which correction enforces tenant isolation?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Return only the document title for other tenants"
+          },
+          {
+            "id": "B",
+            "text": "Compare two browser-supplied organization fields"
+          },
+          {
+            "id": "C",
+            "text": "Bind the query to the actor's trusted organization and authorized document"
+          },
+          {
+            "id": "D",
+            "text": "Encrypt the response using the same API session"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2ab48f3d22977ae5f4727acea67474e63486cd0b91c2911c160a65e07218a762"
+    },
+    {
+      "itemVersionId": "da183ba4-3265-57d3-86da-3901f69d7c05",
+      "itemId": "a25f37c3-4cd7-58c3-9acf-10a5dc3d0bed",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "HARD",
+      "prompt": "A service caches document-read decisions by actorId. The policy depends on actor, document, tenant and current grant revision. What change prevents one allowed read from authorizing unrelated documents?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Include all policy inputs and invalidate decisions when grants change"
+          },
+          {
+            "id": "B",
+            "text": "Cache only denials indefinitely"
+          },
+          {
+            "id": "C",
+            "text": "Keep actorId only and shorten cache lifetime to one hour"
+          },
+          {
+            "id": "D",
+            "text": "Add the document's display title to the actor-only key"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "952de810d91a94e1a063fc0774cec8e9ea85440810213cbfd798bda2af19a191"
+    },
+    {
+      "itemVersionId": "19904543-22b4-5022-9934-1a92e42c9da0",
+      "itemId": "aafd1723-eea7-51c3-9546-897136533c16",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "HARD",
+      "prompt": "A bulk download contains ten documents. Policy requires every requested document to be authorized and the batch to fail without output if any is denied. One document belongs to another tenant. Which implementation meets the rule?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Check permission on the first document only"
+          },
+          {
+            "id": "B",
+            "text": "Stream permitted documents and fail on the first denied one"
+          },
+          {
+            "id": "C",
+            "text": "Drop the foreign document and report success"
+          },
+          {
+            "id": "D",
+            "text": "Authorize the entire set before creating any downloadable output"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "b91e0cbdae85416e61f45c625425ca5c675313d17a01b3c86fe099ec7fa040f3"
+    },
+    {
+      "itemVersionId": "733796a0-b005-5ec2-8f44-6a6056047aca",
+      "itemId": "b6c427ce-60a0-56b4-9e35-8c22f33da551",
+      "version": 1,
+      "microSkillId": "MS-FS13",
+      "microSkillName": "Enforce application authorization",
+      "difficulty": "HARD",
+      "prompt": "An endpoint checks access to invoice A, then loads a download object using an independently supplied storage key. What must change to prevent authorization bypass?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Add another check that invoice A exists"
+          },
+          {
+            "id": "B",
+            "text": "Log both identifiers and continue"
+          },
+          {
+            "id": "C",
+            "text": "Resolve the download object from the authorized invoice association"
+          },
+          {
+            "id": "D",
+            "text": "Validate that the storage key has a UUID shape"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "8d54773d94c826187330abe7e944f804fe5fdda772a31f2136b3eec6c86f7733"
+    },
+    {
+      "itemVersionId": "273496c1-54a8-5ad3-988f-878d9ddde32f",
+      "itemId": "1bfb6fa2-e15f-503c-82c3-41bd81ccd7af",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "EASY",
+      "prompt": "A host sends IPv4 traffic to a destination outside its directly connected subnet and has a valid default route. Which next hop normally handles that traffic?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The configured default gateway"
+          },
+          {
+            "id": "B",
+            "text": "The configured DNS server"
+          },
+          {
+            "id": "C",
+            "text": "Every host on the local subnet"
+          },
+          {
+            "id": "D",
+            "text": "The destination host's local loopback interface"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "a5fdc2069490aa452a831ecd1d61a6bfa17cf9e28f0f87dfc6e4f5bb72ad56fa"
+    },
+    {
+      "itemVersionId": "ee19dcc6-7112-5a63-8b6b-2c3daa5a69f1",
+      "itemId": "287ecc8c-9dc3-5fd3-a7c6-c8557d0ad424",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "EASY",
+      "prompt": "A service is reachable by its known IP address but its host name does not resolve. Which subsystem should be checked first?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "DNS resolution for that host name"
+          },
+          {
+            "id": "B",
+            "text": "The application's account-role table"
+          },
+          {
+            "id": "C",
+            "text": "The service's business data backup schedule"
+          },
+          {
+            "id": "D",
+            "text": "The web page's language setting"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "13a96942919f2fbec14b8ca400ad2ef6b2fa59ecd0aa33819899a66134ac3ef8"
+    },
+    {
+      "itemVersionId": "28a16706-c34c-5cc0-b574-73a93486309b",
+      "itemId": "c29b69ab-3a79-5c06-b8c2-68d1cec6af1d",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "EASY",
+      "prompt": "Which address is in the same IPv4 /24 subnet as 192.0.2.10/24?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "192.0.3.10"
+          },
+          {
+            "id": "B",
+            "text": "192.0.2.200"
+          },
+          {
+            "id": "C",
+            "text": "198.51.100.10"
+          },
+          {
+            "id": "D",
+            "text": "192.0.20.10"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "59601f1b3fd250c2b09c5bb1766739df7c7aaf7642818d9b1398cd0d46bf7a61"
+    },
+    {
+      "itemVersionId": "79982945-b330-5ea9-a48d-ca255092df77",
+      "itemId": "fb72d135-ebde-5005-9fad-f7f9549bb9e2",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "MEDIUM",
+      "prompt": "A router has routes 10.0.0.0/8 via G1 and 10.4.0.0/16 via G2. No policy routing is used. Where does it forward a packet for 10.4.8.9?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Neither gateway because two routes match"
+          },
+          {
+            "id": "B",
+            "text": "Both gateways in round-robin order"
+          },
+          {
+            "id": "C",
+            "text": "G1"
+          },
+          {
+            "id": "D",
+            "text": "G2"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2810d1e2442b7a9652b57c30b1e57ffdbc67038c2f5069b4f03553da2cc7dbcb"
+    },
+    {
+      "itemVersionId": "64a105e9-7bd9-50dd-b449-52d98f4098d2",
+      "itemId": "5892c78f-a9eb-59ee-85a8-03f4edf4cbc1",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "MEDIUM",
+      "prompt": "DNS returns a CNAME for app.example pointing to service.example. To obtain the IPv4 address, what should the resolver do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Request an MX record as the address for every service"
+          },
+          {
+            "id": "B",
+            "text": "Treat the CNAME text itself as an IPv4 address"
+          },
+          {
+            "id": "C",
+            "text": "Resolve the target name's A record"
+          },
+          {
+            "id": "D",
+            "text": "Replace the client's default route with the target name"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ead3222e667efb98371eb1f5bf9e9114fc36537a716dd8d4154fde54576e94aa"
+    },
+    {
+      "itemVersionId": "c013236a-b3bb-5c22-bd78-819693b9ad72",
+      "itemId": "b95aab45-0b2a-53d4-9da4-35c893d175fd",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "MEDIUM",
+      "prompt": "An authoritative A record changes, but a resolver still holds the old positive answer within its TTL. Why can clients still receive the old address?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Changing an A record changes no resolver behavior until a host reboot"
+          },
+          {
+            "id": "B",
+            "text": "Every query must bypass cache after any upstream change"
+          },
+          {
+            "id": "C",
+            "text": "The resolver may use its unexpired cached answer"
+          },
+          {
+            "id": "D",
+            "text": "The authoritative server must keep both IPs permanently"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "b646e1ad792de3a7e26ac52986e0a366cd2229c45ce1db594e17e33a84945f81"
+    },
+    {
+      "itemVersionId": "b17c1aa2-71d3-5c01-b51e-ad71b937cdcc",
+      "itemId": "5c01056a-237c-59d8-af13-89a2058608aa",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "HARD",
+      "prompt": "A host has a working default route through G1 and a stale 203.0.113.0/24 route through unreachable G2. Ordinary longest-prefix forwarding is used and no failover removes routes. Why can 203.0.113.20 fail while other external addresses work?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "DNS always prefers the longer route"
+          },
+          {
+            "id": "B",
+            "text": "A /24 route applies to all IPv4 destinations"
+          },
+          {
+            "id": "C",
+            "text": "The more-specific stale route wins for that destination"
+          },
+          {
+            "id": "D",
+            "text": "The default route overrides every specific route"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "050a7a0507e436f6a516d1ebd2ba060bd023704d91e8199a13eb14e4dded7952"
+    },
+    {
+      "itemVersionId": "53cf0356-ac90-5d90-a361-f976308552b6",
+      "itemId": "59c35aed-07b9-52a9-8a29-1910bdbecd4a",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "HARD",
+      "prompt": "After adding a remote subnet, outbound packets arrive at the server but no reply reaches the client. The server has no matching return route or default route. What should be corrected first?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Change the client's DNS TTL"
+          },
+          {
+            "id": "B",
+            "text": "Duplicate the outbound route on the client only"
+          },
+          {
+            "id": "C",
+            "text": "Increase the application's login timeout indefinitely"
+          },
+          {
+            "id": "D",
+            "text": "Provide an authorized return path to the client's subnet"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "b8d0dff846a35e55888e356589e2af42cc6d0152b6393ea7603977d8fcf65bff"
+    },
+    {
+      "itemVersionId": "04551801-ce59-5886-80db-a9fbbf426b99",
+      "itemId": "aa9114df-90f9-501e-a1bf-2d01c7200d52",
+      "version": 1,
+      "microSkillId": "MS-INF01",
+      "microSkillName": "Configure and verify network connectivity",
+      "difficulty": "HARD",
+      "prompt": "Routes include 198.51.100.0/24 via G1, 198.51.100.128/25 via G2 and 0.0.0.0/0 via G3. With normal prefix selection and equal policy, which pair is correct for destinations .50 and .200?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": ".50 uses G2; .200 uses G1"
+          },
+          {
+            "id": "B",
+            "text": "Both use G2"
+          },
+          {
+            "id": "C",
+            "text": "Both use G3"
+          },
+          {
+            "id": "D",
+            "text": ".50 uses G1; .200 uses G2"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9ce9331aa672c42963535f015ee5505f01e4d520159e84205f7d5fa92745bede"
+    },
+    {
+      "itemVersionId": "66117fab-5eeb-587d-ad3a-ff82371dbdf5",
+      "itemId": "045673c3-856b-5472-a700-1fe4ec479a74",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "EASY",
+      "prompt": "What is the purpose of an approved configuration baseline?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "List only changes proposed but never approved"
+          },
+          {
+            "id": "B",
+            "text": "Record the agreed configuration used to control later changes"
+          },
+          {
+            "id": "C",
+            "text": "Store only the names of system administrators"
+          },
+          {
+            "id": "D",
+            "text": "Replace operational monitoring for every component"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ec4b9b923b137458943ebc5194d3cc6a6981be352cec186669365728c580ae37"
+    },
+    {
+      "itemVersionId": "a041e934-b68e-5f1f-a5af-1f1903990095",
+      "itemId": "b500d35c-970c-519b-96be-0ec98e3d5874",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "EASY",
+      "prompt": "A firewall rule is changed under an approved ticket. Which record update best preserves traceability?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Replace the old record with the words 'network updated'"
+          },
+          {
+            "id": "B",
+            "text": "Change the ticket title without recording the rule"
+          },
+          {
+            "id": "C",
+            "text": "Record the implemented rule, approval and resulting baseline version"
+          },
+          {
+            "id": "D",
+            "text": "Keep the ticket open but omit deployment details"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "978e268b22d7a1739f7a17f8c3fe1f0aea70f6f770dd17f632967d94ae202661"
+    },
+    {
+      "itemVersionId": "405947b9-e430-52da-be0b-3dac521cd4d9",
+      "itemId": "11539e03-3e59-569a-8895-ec2d817fda95",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "EASY",
+      "prompt": "Why retain earlier approved baseline versions after a new baseline is deployed?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "To make every earlier version simultaneously current"
+          },
+          {
+            "id": "B",
+            "text": "To allow administrators to bypass later approval"
+          },
+          {
+            "id": "C",
+            "text": "To support historical trace and controlled rollback"
+          },
+          {
+            "id": "D",
+            "text": "To avoid recording the newly deployed configuration"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "00052451c93cd593158cd90e757d2c6ae709eba8f54e3b27686978767dfe59d5"
+    },
+    {
+      "itemVersionId": "aeafd596-4ace-5fc9-8679-fcf4e9673681",
+      "itemId": "5c8ff97f-c528-523c-995f-f3210dacffcb",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "MEDIUM",
+      "prompt": "A scan finds a production TLS setting different from the approved baseline, with no change ticket. What is the appropriate record-handling action?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mark the old baseline as approved again without investigation"
+          },
+          {
+            "id": "B",
+            "text": "Edit the baseline to match production immediately"
+          },
+          {
+            "id": "C",
+            "text": "Investigate the difference and use change control to resolve and document it"
+          },
+          {
+            "id": "D",
+            "text": "Delete the scan result because the service is healthy"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9bb122257155fa1b4fba96a938ba755b86a3297d847f32ee374d74849831926a"
+    },
+    {
+      "itemVersionId": "7679d595-b025-5317-961b-f74c62cffe2a",
+      "itemId": "25029b70-8c1c-56af-bd8e-4534e1623f44",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "MEDIUM",
+      "prompt": "An emergency change process permits immediate containment followed by documented retrospective review. What should its configuration record contain?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "A fabricated earlier approval time"
+          },
+          {
+            "id": "B",
+            "text": "No record until the next regular release"
+          },
+          {
+            "id": "C",
+            "text": "Only a statement that the normal process was skipped"
+          },
+          {
+            "id": "D",
+            "text": "Actual change, reason, actor, timing and required follow-up review"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "40487be5d97c98f2c0ea18ce5a4d6fe394db2c151f6a31fee1b5f5d7f0505405"
+    },
+    {
+      "itemVersionId": "ad31f33d-7704-57bd-97c7-a3f95821e565",
+      "itemId": "4a4c6a3e-61f0-59f3-979d-b865b1ce1fb9",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "MEDIUM",
+      "prompt": "A server inventory records package version 4.1, while authenticated inspection reports 4.3 after an approved patch. How should the discrepancy be resolved?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Downgrade the recorded version to 4.0 for consistency"
+          },
+          {
+            "id": "B",
+            "text": "Treat every inventory discrepancy as proof of compromise"
+          },
+          {
+            "id": "C",
+            "text": "Close the patch ticket using the old inventory value only"
+          },
+          {
+            "id": "D",
+            "text": "Verify the deployment evidence and update the inventory to the confirmed state"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "49518aa4103200ca8425eff0843f9d34ecfde2f0750146503678d91da88c7151"
+    },
+    {
+      "itemVersionId": "94482980-bc86-53bd-bb58-f1bac1e432e9",
+      "itemId": "7191160f-b3c7-52f1-9936-636b67476981",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "HARD",
+      "prompt": "Two approved changes modify the same configuration file from baseline B7. The second deployment overwrites the first. What record and process correction is most appropriate?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reconcile the deployed state against both changes and issue a reviewed successor baseline"
+          },
+          {
+            "id": "B",
+            "text": "Label both tickets successful because each had approval"
+          },
+          {
+            "id": "C",
+            "text": "Discard the first ticket so the records match the last deployment"
+          },
+          {
+            "id": "D",
+            "text": "Create two different current baselines for the same environment without scope distinction"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2970b17a819475bd354f1f31f4be07cfb0231af2e231757a9b221dcd8f9b6975"
+    },
+    {
+      "itemVersionId": "563b0b7f-84fa-5ca8-9c4c-d677c112d2db",
+      "itemId": "0f9a99be-50f7-5101-866d-96c426e93bf4",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "HARD",
+      "prompt": "A deployment fails and the approved rollback restores B12. The records had already named B13 as current. What is the correct final record?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Leave B13 current because it was the intended release"
+          },
+          {
+            "id": "B",
+            "text": "Delete B13 and its failure details"
+          },
+          {
+            "id": "C",
+            "text": "Rename B12 to B13 without preserving the difference"
+          },
+          {
+            "id": "D",
+            "text": "Show B12 as the restored current state and retain B13's deployment and rollback history"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "24a9b83b7df73228cc280bf65adf348c03344252fd480c4f3a6818c479332ae3"
+    },
+    {
+      "itemVersionId": "d363beed-6a22-5a86-bb26-84854f4b492d",
+      "itemId": "342b7682-e356-5d8a-831b-cad6420644d5",
+      "version": 1,
+      "microSkillId": "MS-INF04",
+      "microSkillName": "Maintain configuration records",
+      "difficulty": "HARD",
+      "prompt": "A fleet report says 100% compliant, but 20 of 100 expected servers supplied no configuration data. What should the configuration record report?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "100 compliant because no drift was received from the missing servers"
+          },
+          {
+            "id": "B",
+            "text": "Remove the unresponsive servers from the expected inventory"
+          },
+          {
+            "id": "C",
+            "text": "20 noncompliant and 80 omitted"
+          },
+          {
+            "id": "D",
+            "text": "80 observed servers with their results and 20 with unverified state"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ef46d48749fc135f54f6aa3f4c2282754fe92ab68e62d1afd31f176750324e45"
+    },
+    {
+      "itemVersionId": "7b8326b8-43bb-509b-a5d4-f9ea0d0fb1eb",
+      "itemId": "2d784b4e-4aaf-5ecb-be8a-8f00d195dc95",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "EASY",
+      "prompt": "A service health objective is availability of successful user requests. Which measurement most directly reflects it?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Number of open feature requests"
+          },
+          {
+            "id": "B",
+            "text": "Size of the source repository"
+          },
+          {
+            "id": "C",
+            "text": "Successful requests divided by all eligible user requests"
+          },
+          {
+            "id": "D",
+            "text": "Total number of deployed servers"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ee083189b17b27fb12e6a0c285b726f22dc9516bb8ce0be6d25ff16b7b10ef28"
+    },
+    {
+      "itemVersionId": "9fd2d88d-7c70-597d-b00e-2fbda4ccd5e8",
+      "itemId": "e25cba97-3449-5847-bac3-124e14e6826e",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "EASY",
+      "prompt": "An agreed alert triggers when error rate exceeds 2% for five minutes. One sample exceeds 2% for ten seconds. What does that observation alone establish?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "A short spike occurred; the five-minute alert condition is not yet established"
+          },
+          {
+            "id": "B",
+            "text": "The service is permanently healthy"
+          },
+          {
+            "id": "C",
+            "text": "A five-minute outage is confirmed"
+          },
+          {
+            "id": "D",
+            "text": "The threshold should be removed"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "51c9213bd6d236810292359b3334a63c084972dac9c450def966030d5e59a0ef"
+    },
+    {
+      "itemVersionId": "e9698125-365c-54ae-8a91-184c148bdf6b",
+      "itemId": "94320724-10ae-5bee-9c91-e4e2fa0f4267",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "EASY",
+      "prompt": "A health dashboard stops receiving data. What should the operator conclude initially?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The service is definitely down"
+          },
+          {
+            "id": "B",
+            "text": "The service has zero errors"
+          },
+          {
+            "id": "C",
+            "text": "Monitoring visibility is unknown and the telemetry gap needs investigation"
+          },
+          {
+            "id": "D",
+            "text": "The last green value remains valid forever"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f904574e950dece7c10b81ca77681134e6051c8c840348eaea25d8c6b2e3abbb"
+    },
+    {
+      "itemVersionId": "34f76cbf-ca3a-5fd4-a187-6ab40da3e1f8",
+      "itemId": "6bde99e5-2758-5e8e-86d1-ddeaf6b46420",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "MEDIUM",
+      "prompt": "A system reports average latency of 80 ms, but users complain about rare multi-second requests. Which added measure best checks the complaint?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The server purchase price"
+          },
+          {
+            "id": "B",
+            "text": "The lowest observed request latency only"
+          },
+          {
+            "id": "C",
+            "text": "A high latency percentile for the affected request population"
+          },
+          {
+            "id": "D",
+            "text": "A weekly count of code commits"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "068cb1fe0f33e1d0a0f62a0f2fed4dbde8b9fbbd249bb0dae97c327296a8963a"
+    },
+    {
+      "itemVersionId": "e4637f62-748a-5aaf-806e-bda4fd06d6fd",
+      "itemId": "1b61e3fb-f664-57f9-9247-1f74eeb9ae42",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "MEDIUM",
+      "prompt": "Error alerts start after a release. Database saturation rises at the same time. What is the best next monitoring action?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Silence all database alerts until users stop complaining"
+          },
+          {
+            "id": "B",
+            "text": "Change the error threshold so the current rate appears healthy"
+          },
+          {
+            "id": "C",
+            "text": "Correlate release timing, request failures and database measurements"
+          },
+          {
+            "id": "D",
+            "text": "Declare the release the confirmed cause solely from timing"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "3f42bf4e126c1e83fd15bb2dea65035bc9249a28e3cc1c74d72bd55ff6357d1f"
+    },
+    {
+      "itemVersionId": "5724557a-6571-5e74-9c1b-b0ca003a57e8",
+      "itemId": "9d3dd6ce-01df-5e3a-a755-f9453fdaee12",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "MEDIUM",
+      "prompt": "A report compares yesterday's 500 errors with today's 700 errors while traffic doubled. Which comparison is needed before concluding reliability worsened?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Exclude all failed requests from today's traffic count"
+          },
+          {
+            "id": "B",
+            "text": "Compare error rates using consistent request scope and time windows"
+          },
+          {
+            "id": "C",
+            "text": "Assume more errors always mean a higher error rate"
+          },
+          {
+            "id": "D",
+            "text": "Compare repository sizes on the two days"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "e9da4c2cf546ed4b5c1ffefee0491e30d0b8aaff2d5aa2ead2bee3c08d437b15"
+    },
+    {
+      "itemVersionId": "fa86edb9-c136-5ac8-a7fd-d2cf472f3665",
+      "itemId": "bd1c431a-2fc8-5be7-91ad-85cf1914fdc9",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "HARD",
+      "prompt": "A service has two routes: 99,000 requests at 0.1% errors and 1,000 requests at 20% errors. The overall alert threshold is 1%. How should monitoring address a critical route's hidden failure?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Remove the low-traffic route from monitoring"
+          },
+          {
+            "id": "B",
+            "text": "Declare both routes healthy because the aggregate is below 1%"
+          },
+          {
+            "id": "C",
+            "text": "Retain the overall view and add scoped route indicators and alerts"
+          },
+          {
+            "id": "D",
+            "text": "Average 0.1% and 20% without traffic weighting as the system rate"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9d34fdd21e8a0892aed9362b642eaf368fe65aecc53dd0ba4ad411ce56b88379"
+    },
+    {
+      "itemVersionId": "f4edfac5-e7bb-5a08-9559-7c74776f79c9",
+      "itemId": "5d9f35b4-770a-5e21-a6fd-2d3a1a41c69f",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "HARD",
+      "prompt": "An alert evaluates a five-minute success rate. A collector outage removes four minutes of samples, leaving one healthy minute. What is the defensible status?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Insufficient telemetry for the full window, with a monitoring-gap signal"
+          },
+          {
+            "id": "B",
+            "text": "Five-minute objective failed at 0%"
+          },
+          {
+            "id": "C",
+            "text": "Automatically lower the objective to the observed minute"
+          },
+          {
+            "id": "D",
+            "text": "Five-minute objective met at 100%"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "cde01ec7cf13ca339db399e14dc31a2bc8ec30cdf7fdbaeaceff0ddaed7ef92d"
+    },
+    {
+      "itemVersionId": "70e8c027-eda4-5dd7-8baa-8a26126a6918",
+      "itemId": "9a5efc6f-001b-5659-99df-cbd90e5dcabf",
+      "version": 1,
+      "microSkillId": "MS-INF05",
+      "microSkillName": "Monitor service health",
+      "difficulty": "HARD",
+      "prompt": "CPU is high, queue depth is growing and throughput is flat. The agreed runbook calls for a controlled capacity adjustment when all three persist. What observation best verifies improvement after the adjustment?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "CPU is lower for one sample, regardless of queue growth"
+          },
+          {
+            "id": "B",
+            "text": "More servers appear in the inventory"
+          },
+          {
+            "id": "C",
+            "text": "Queue depth falls while throughput and error/latency indicators return within agreed limits"
+          },
+          {
+            "id": "D",
+            "text": "The alert was manually acknowledged"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "50e495457230afe3beb62e4ba43e9be4df6feba3c2686ab50bdd7eef64d9813e"
+    },
+    {
+      "itemVersionId": "b0fcadfd-7848-5f7a-8a9b-16d5538c7740",
+      "itemId": "162627bd-cbaa-5f04-86e9-9caa7be8994a",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "EASY",
+      "prompt": "A server's approved hardening baseline disables an unused remote administration service. What should the operator do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Disable every service including required administration"
+          },
+          {
+            "id": "B",
+            "text": "Disable the service and verify required administration still works"
+          },
+          {
+            "id": "C",
+            "text": "Rename the service without changing its configuration"
+          },
+          {
+            "id": "D",
+            "text": "Keep it enabled because unused services cannot be attacked"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f910ea8416edcea0c0a29ac671d2689b53b7ffec9ba68458d7131a4c8499c47f"
+    },
+    {
+      "itemVersionId": "912520c7-7f27-56b6-9826-96f208a679eb",
+      "itemId": "74e12b18-1964-5f81-a0e0-669e0b366565",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "EASY",
+      "prompt": "A patch installer reports success. What should happen before the patch task is treated as verified?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Assume every fleet member received the patch"
+          },
+          {
+            "id": "B",
+            "text": "Check the deployed version and relevant service/security behavior"
+          },
+          {
+            "id": "C",
+            "text": "Delete the change record immediately"
+          },
+          {
+            "id": "D",
+            "text": "Mark unrelated vulnerabilities resolved too"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "e0f65e5b00dd881bbe166120dea5693ea7db91683e0e23c35ce85767a4f01ca9"
+    },
+    {
+      "itemVersionId": "3df7a5c0-29de-5bff-8177-e87eefda43e8",
+      "itemId": "b3237682-2adb-56d0-98c9-bf16c31778a3",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "EASY",
+      "prompt": "An application requires one approved exception to a hardening setting. How should it be handled?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Document and authorize the scoped deviation with its risk and compensating measures"
+          },
+          {
+            "id": "B",
+            "text": "Disable the whole baseline for all servers"
+          },
+          {
+            "id": "C",
+            "text": "Declare the setting unnecessary for every application"
+          },
+          {
+            "id": "D",
+            "text": "Hide the exception from configuration records"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "91a52e5500b0a2029b643d1d7fd0f378df9099e76fab7861629b4803e2141250"
+    },
+    {
+      "itemVersionId": "64539100-09f0-58d4-ab9d-472afdfd5633",
+      "itemId": "90b4f224-6cc5-536f-88fe-b994c5179bf3",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "MEDIUM",
+      "prompt": "A security update requires a reboot, but the old vulnerable process remains running. What is the correct deployment conclusion?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Any later scan must be a false positive"
+          },
+          {
+            "id": "B",
+            "text": "The vulnerability is resolved because the package downloaded"
+          },
+          {
+            "id": "C",
+            "text": "The reboot requirement can be ignored whenever traffic is high"
+          },
+          {
+            "id": "D",
+            "text": "The remediation is not yet verified effective; complete the required activation and checks"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "1e1fa815e8a5a759f6b5907fe640e49766ed75f74ed8cdcc4d7341b26c3e1712"
+    },
+    {
+      "itemVersionId": "db44554f-ecfa-52aa-84b1-9643d579a47d",
+      "itemId": "2aa18cd1-b59a-5654-9e9f-2135d4a73e5a",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "MEDIUM",
+      "prompt": "Policy permits database access only from the application subnet. Which hardening verification best checks the firewall change?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Block the application subnet as well"
+          },
+          {
+            "id": "B",
+            "text": "Verify the application connection succeeds and an unauthorized subnet is blocked"
+          },
+          {
+            "id": "C",
+            "text": "Check only that one authorized client succeeds"
+          },
+          {
+            "id": "D",
+            "text": "Check only that the rule exists in a file"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "fd07b776318a7780ee0144eafaed9e6599129683058db81a02630f170c461ba7"
+    },
+    {
+      "itemVersionId": "41ec8026-3cfd-54c4-80e7-31aa77cb78e9",
+      "itemId": "9315f525-2abf-50c0-917c-8e500f14237e",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "MEDIUM",
+      "prompt": "A vendor patch is available for an actively exposed vulnerability, but a compatibility issue appears in the staged rollout. What is the appropriate next action?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Deploy to every production host without evaluating the issue"
+          },
+          {
+            "id": "B",
+            "text": "Mark the patch complete because staging found the issue"
+          },
+          {
+            "id": "C",
+            "text": "Postpone indefinitely without recording residual risk"
+          },
+          {
+            "id": "D",
+            "text": "Use the approved risk/change process for mitigation or corrected rollout and verify it"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9617d04aacf6544991d075762379d17f1b4a8263cd7879585f105c44d0f819df"
+    },
+    {
+      "itemVersionId": "e534a055-ccff-50e2-8864-4aace435cec4",
+      "itemId": "c622fe0c-9332-51e1-b40b-84af362cb4e8",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "HARD",
+      "prompt": "A fleet patch job reports 100% success, but authenticated checks find the vulnerable version on 12 hosts. What should the remediation record say?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The 12 hosts should be removed from inventory"
+          },
+          {
+            "id": "B",
+            "text": "All findings are closed because the job is green"
+          },
+          {
+            "id": "C",
+            "text": "Verified coverage is incomplete; investigate those hosts and keep their findings open"
+          },
+          {
+            "id": "D",
+            "text": "Every host must be reimaged without assessing cause"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "0ed1e462a8010971b52342cc1f45f3860a2f2901234b19dfeb5e9367a4bce200"
+    },
+    {
+      "itemVersionId": "019aaa78-c74b-5d66-98d5-8feb5198a88f",
+      "itemId": "b3d38118-e1ba-5ee1-937b-d8ea2e048300",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "HARD",
+      "prompt": "A hardening change closes an unauthorized port but also breaks an essential approved health check. Which response best meets both security and operations requirements?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Leave the health check broken because the port is closed"
+          },
+          {
+            "id": "B",
+            "text": "Use change control to restore only the required health-check access and reverify denied access"
+          },
+          {
+            "id": "C",
+            "text": "Allow every network source to use the health-check port"
+          },
+          {
+            "id": "D",
+            "text": "Revert all hardening settings permanently"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ddf3d14bbde3523ab7a6198678292f8f46c3ff2ac07dcee71ced1be36596dd91"
+    },
+    {
+      "itemVersionId": "3d1a873c-8e68-569d-808d-f4235641f311",
+      "itemId": "9662d10e-7a12-509b-b778-f6b8dd57f583",
+      "version": 1,
+      "microSkillId": "MS-INF08",
+      "microSkillName": "Apply infrastructure hardening and updates",
+      "difficulty": "HARD",
+      "prompt": "A critical component has no available patch. An approved temporary rule limits exposure to a trusted gateway. What must the record and verification establish?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The component can never need further updates"
+          },
+          {
+            "id": "B",
+            "text": "The mitigation is verified merely because it was approved"
+          },
+          {
+            "id": "C",
+            "text": "The vulnerability is permanently fixed by definition"
+          },
+          {
+            "id": "D",
+            "text": "The rule is effective, its remaining exposure is documented, and a replacement/review condition exists"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5e1e61f1ac12bb46b879c32dae061c9af88151c107f0599cf125cbfc24da686a"
+    },
+    {
+      "itemVersionId": "fbc171af-8c88-5fdf-83c4-e15464cff78f",
+      "itemId": "0543a4ec-b4aa-525a-9b11-602f320782ae",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "EASY",
+      "prompt": "Which statement describes a security risk rather than only an asset or vulnerability?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "A password setting is configured to six characters"
+          },
+          {
+            "id": "B",
+            "text": "The security team has four analysts"
+          },
+          {
+            "id": "C",
+            "text": "An exposed weak password could enable unauthorized payroll changes with financial impact"
+          },
+          {
+            "id": "D",
+            "text": "The organization owns a payroll database"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "af59cfe5665bc3dfb7f4a05312b5a8ddc5355462d1ca0a530d63cc28eb85d968"
+    },
+    {
+      "itemVersionId": "b3b4adf0-b095-5d66-ae23-012658a15f7c",
+      "itemId": "619e2dac-a8ac-5560-868b-41e3301f4c21",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "EASY",
+      "prompt": "What two dimensions are considered when determining the risk from a threat event?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The count of slides and report length"
+          },
+          {
+            "id": "B",
+            "text": "Its likelihood and resulting adverse impact"
+          },
+          {
+            "id": "C",
+            "text": "The analyst's job title and tenure"
+          },
+          {
+            "id": "D",
+            "text": "The asset's color and physical size"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "fddea98dad9431da40d02ee19ee88fecc689e17593dc03196597718c91778550"
+    },
+    {
+      "itemVersionId": "0a152c30-cb18-5021-b23d-5a23b051b383",
+      "itemId": "0f64b9f6-ee35-565c-b20f-1b08cf49cb10",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "EASY",
+      "prompt": "Before assessing a specific system's risk, why define the assessment scope?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "To replace the need for evidence about threats"
+          },
+          {
+            "id": "B",
+            "text": "To exclude every shared dependency automatically"
+          },
+          {
+            "id": "C",
+            "text": "To guarantee that no unexpected event will occur"
+          },
+          {
+            "id": "D",
+            "text": "To identify the system, boundaries, assumptions and decisions the assessment will support"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "3e842581648e6fa87571b99dbc8cff9f34b687a3a19f44fea3c9e5211d89fb87"
+    },
+    {
+      "itemVersionId": "c3097a00-f601-5e70-9517-d32e1301be7c",
+      "itemId": "6695f284-3cb8-58ae-b526-16605673fe67",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "MEDIUM",
+      "prompt": "Two systems share the same vulnerability. One stores public brochures; the other controls payroll approvals. What should the analyst do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Declare the public-content system risk-free without checking integrity or availability"
+          },
+          {
+            "id": "B",
+            "text": "Assess impact and exposure in each system's business context"
+          },
+          {
+            "id": "C",
+            "text": "Assign identical organizational risk solely from the shared vulnerability"
+          },
+          {
+            "id": "D",
+            "text": "Use server age as the only prioritization criterion"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5721cdb396c8c158b495f47ccaf4ebf6480840c63404111b91b2f82bd481a81b"
+    },
+    {
+      "itemVersionId": "0ea11934-33f0-598a-bdc7-8a27cbec1ba6",
+      "itemId": "fd753e77-142c-5898-976c-c10945fc0525",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "MEDIUM",
+      "prompt": "A team estimates breach likelihood from internet exposure but has not considered an existing effective access control. What is the best refinement?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Increase impact automatically because a control was deployed"
+          },
+          {
+            "id": "B",
+            "text": "Delete the threat scenario because a control exists"
+          },
+          {
+            "id": "C",
+            "text": "Evaluate how the control changes the relevant likelihood or impact and document evidence"
+          },
+          {
+            "id": "D",
+            "text": "Treat the control's presence as proof of zero risk"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2cc96c1cb8a21f36f587ecd611eee205360bd1d39c8296aa2fccf491cd3403d9"
+    },
+    {
+      "itemVersionId": "4f65f833-778a-58bf-be3b-44fe5a23dd04",
+      "itemId": "1c8a1751-784c-592d-933d-4e4fabe87d46",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "MEDIUM",
+      "prompt": "An assessment used an assumption that a storage service was internal-only. It is now internet-accessible. What is the appropriate response?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Erase the earlier report to avoid conflicting assessments"
+          },
+          {
+            "id": "B",
+            "text": "Change every enterprise risk to the highest category"
+          },
+          {
+            "id": "C",
+            "text": "Keep the previous rating until the annual report regardless of change"
+          },
+          {
+            "id": "D",
+            "text": "Reassess the affected scenarios and communicate the changed exposure"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "80d6bf329d02b764a0b7b10a7716f06db1162e463b726e55b383de3e460e5056"
+    },
+    {
+      "itemVersionId": "48336d86-1e05-5ca4-9893-e70d8624e658",
+      "itemId": "3961c40f-c619-5426-901b-b4d6137e8462",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "HARD",
+      "prompt": "An unverified firewall assumption is the main reason a high-impact scenario is rated unlikely. Management must decide on release. What should the analyst communicate?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Only the high impact and omit the likelihood assumption"
+          },
+          {
+            "id": "B",
+            "text": "A precise near-zero probability without qualification"
+          },
+          {
+            "id": "C",
+            "text": "Treat lack of a prior breach as verification of the firewall"
+          },
+          {
+            "id": "D",
+            "text": "The estimate's uncertainty, the unverified dependency and the evidence needed to reduce uncertainty"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "6a3c76b1580e9ee5f9e5fbe2548b6630e9a37839ebddc9325e7d8ef0c6f0c540"
+    },
+    {
+      "itemVersionId": "9654c9d2-93cf-51ad-9182-def3946c40b0",
+      "itemId": "146d81f0-cb89-55f1-afcd-8a6171c68629",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "HARD",
+      "prompt": "A legacy service contains a severe flaw, but its only documented route is through a gateway. Recent inventory suggests an unrecorded alternate route. What is the most defensible risk assessment action?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Validate reachable paths and reassess the scenario with the uncertainty recorded"
+          },
+          {
+            "id": "B",
+            "text": "Delete the service from scope until the network diagram is fixed"
+          },
+          {
+            "id": "C",
+            "text": "Ignore exposure and use the flaw's severity as the whole organizational risk"
+          },
+          {
+            "id": "D",
+            "text": "Use the gateway diagram as conclusive proof no alternate path exists"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "a68ca9603a8610b56c8c1ef79ead5d4fce619cdf8bb8ffc0f3db040d62f2639f"
+    },
+    {
+      "itemVersionId": "532c4e5e-5f79-53cc-a1ac-5a5909299360",
+      "itemId": "822383ac-0937-5ac6-94e2-8f79a659b376",
+      "version": 1,
+      "microSkillId": "MS-SEC01",
+      "microSkillName": "Analyse information security risks",
+      "difficulty": "HARD",
+      "prompt": "A proposed control reduces unauthorized-read likelihood but does not protect availability. The assessed scenario includes both data theft and service interruption. How should the recommendation be framed?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Describe the covered threat path and remaining availability risk separately"
+          },
+          {
+            "id": "B",
+            "text": "Omit availability from the report so the control appears complete"
+          },
+          {
+            "id": "C",
+            "text": "State that all risks are mitigated because one control was selected"
+          },
+          {
+            "id": "D",
+            "text": "Add the two consequences into a single unsupported probability"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "519d27a6b521ad0e765a00729aa95453ae684a09e4a64f045b9e318757da0b92"
+    },
+    {
+      "itemVersionId": "fb6602fc-d952-59f2-85d9-f01fdb54ce15",
+      "itemId": "cc140020-10ca-5b5e-9a9d-5be7e9331359",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "EASY",
+      "prompt": "A batch service needs read access to one directory and no write access. Which access grant best implements least privilege?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Write access to every directory"
+          },
+          {
+            "id": "B",
+            "text": "The same permissions as the most privileged human operator"
+          },
+          {
+            "id": "C",
+            "text": "Read access to that directory only"
+          },
+          {
+            "id": "D",
+            "text": "Administrator access to the whole server"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f98db541672363388744cff8544001d06f5c655a32bc5b063cd38020b77502bb"
+    },
+    {
+      "itemVersionId": "13c88d28-545c-5ad2-bf58-bca166131a80",
+      "itemId": "e13d101d-8865-573b-8e71-d9067ec262e2",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "EASY",
+      "prompt": "The requirement is to detect repeated denied access attempts for analyst review. Which control best addresses it?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Increase the password field's visual length"
+          },
+          {
+            "id": "B",
+            "text": "Display the policy on the login page only"
+          },
+          {
+            "id": "C",
+            "text": "Encrypt a nightly backup only"
+          },
+          {
+            "id": "D",
+            "text": "Record relevant access events and analyze them against the detection rule"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "e25c50d63e2c0f5290da5636044a30e5d912c5ddfc91d606fa8bfcc341e48c33"
+    },
+    {
+      "itemVersionId": "2959b1ae-30bd-5795-94de-ab588834823e",
+      "itemId": "c6ea8a1f-f1c1-5657-92cd-63d7cad693bf",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "EASY",
+      "prompt": "A control is configured to block unauthorized administration. What evidence best verifies its intended protection?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "A screenshot of the control's marketing page"
+          },
+          {
+            "id": "B",
+            "text": "An invoice showing the license is paid"
+          },
+          {
+            "id": "C",
+            "text": "A controlled denied-access check plus a permitted authorized-access check"
+          },
+          {
+            "id": "D",
+            "text": "A statement that no complaints were received"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "601a383ac80cd7cd55670fc0222d01b13db9071608fa795164bf119f4e978a78"
+    },
+    {
+      "itemVersionId": "efb38ff7-2bd4-58fd-aa37-d5e3d2206e96",
+      "itemId": "93bf534c-1177-5385-b12b-6735efda2e2d",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "MEDIUM",
+      "prompt": "A network firewall restricts access to a web service, but authenticated users must also be limited to their own records. Which control combination meets both requirements?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Network boundary restrictions plus server-side resource authorization"
+          },
+          {
+            "id": "B",
+            "text": "Network restrictions alone for all user permissions"
+          },
+          {
+            "id": "C",
+            "text": "A hidden menu item instead of either enforcement point"
+          },
+          {
+            "id": "D",
+            "text": "Resource authorization alone while ignoring the required network restriction"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "1ec4aea41e502c1001de8869eee28c0da22d4a4dc0e07cd29754a9d7244a4b2e"
+    },
+    {
+      "itemVersionId": "8e2e5626-2e99-5c11-978b-33dc7034b690",
+      "itemId": "2585193d-6e30-515d-8208-0b7fedcf6058",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "MEDIUM",
+      "prompt": "Operators must investigate logs but must not alter retained security records. Which permission design fits?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Deny all investigators any log access"
+          },
+          {
+            "id": "B",
+            "text": "Give log investigators unrestricted deletion rights"
+          },
+          {
+            "id": "C",
+            "text": "Grant scoped log-read access and restrict modification separately"
+          },
+          {
+            "id": "D",
+            "text": "Use one shared administrator login for all investigators"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "fc7b57eddda7a2c0ce8a585cbb403f497a7072a7f96065501302ae1858f2e607"
+    },
+    {
+      "itemVersionId": "9f7e939a-6cc6-59f6-9508-f107efff0daa",
+      "itemId": "ddc85a22-a5a0-59c7-a4ae-348a90fe2423",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "MEDIUM",
+      "prompt": "A control passed verification before a major architecture change. What should be done for the changed system?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Delete every unrelated control result immediately"
+          },
+          {
+            "id": "B",
+            "text": "Treat the earlier pass as permanent certification"
+          },
+          {
+            "id": "C",
+            "text": "Reassess the affected control behavior and update supporting evidence"
+          },
+          {
+            "id": "D",
+            "text": "Approve the change solely because the control is still installed"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5595fbb3b7956ee110d769011c4fe8ed370a823c5ecb96df93c44aec8ddea570"
+    },
+    {
+      "itemVersionId": "364e7cbe-daf5-5e5a-bf8c-92a546532933",
+      "itemId": "460bedd8-d721-5e92-b762-834aecc539cb",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "HARD",
+      "prompt": "A rule blocks direct internet access to a database. A review finds an internet-facing proxy that can forward arbitrary database traffic. What verification closes the actual boundary gap?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Rename the proxy to an internal-service label"
+          },
+          {
+            "id": "B",
+            "text": "Repeat only the direct-port check and close the finding"
+          },
+          {
+            "id": "C",
+            "text": "Assess and restrict the proxy path as well as direct connectivity, then check authorized and denied flows"
+          },
+          {
+            "id": "D",
+            "text": "Document that a firewall exists without checking its scope"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f6470043d91b04473258a1b7d1d87457e2dedd23cc14cd69be336621c7bddc59"
+    },
+    {
+      "itemVersionId": "807b96f7-34a1-5bca-9f38-8c8a0aad35b7",
+      "itemId": "9b1d3c51-1ef4-54ae-9e7a-bfc095d1f9a7",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "HARD",
+      "prompt": "A control requires two independent approvals for high-value transfers. The same person can use two role accounts to approve both steps. Which correction best implements the intent?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Use two different button labels"
+          },
+          {
+            "id": "B",
+            "text": "Enforce independence of approvers by person identity as well as role permissions"
+          },
+          {
+            "id": "C",
+            "text": "Remove approval audit records to prevent account comparison"
+          },
+          {
+            "id": "D",
+            "text": "Require two clicks by the same account"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "40b1eccb57d4682ce06d56fa4f60442cc6eb28e45559d2b44e7caa674da1c68b"
+    },
+    {
+      "itemVersionId": "9dcf71f2-2b09-50ea-bb8f-513c8bcc285e",
+      "itemId": "0167bd8d-9cdc-5449-9cb6-f6798a19beac",
+      "version": 1,
+      "microSkillId": "MS-SEC02",
+      "microSkillName": "Select and verify security controls",
+      "difficulty": "HARD",
+      "prompt": "A security control blocks a malicious sample but also blocks every legitimate transaction. The requirement includes protecting the service while allowing approved business use. What is the verification result?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The legitimate failures can be omitted from the evidence"
+          },
+          {
+            "id": "B",
+            "text": "The control does not yet meet the full requirement"
+          },
+          {
+            "id": "C",
+            "text": "The requirement is met if all users stop using the service"
+          },
+          {
+            "id": "D",
+            "text": "The control is fully effective because the malicious sample was blocked"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f52a3fa8be7b20be68a0f2d83ad81d8fde96992222689837d59f3fe2bd75e349"
+    },
+    {
+      "itemVersionId": "7c91abd8-60a0-5452-8944-7134899fbc46",
+      "itemId": "f08d60d9-b4be-59a6-a15c-2b104e4ea7d7",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "EASY",
+      "prompt": "A worker leaves the organization. According to an approved immediate-offboarding policy, what access action is required?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Rename the account but keep its permissions"
+          },
+          {
+            "id": "B",
+            "text": "Delete all audit records referring to the person"
+          },
+          {
+            "id": "C",
+            "text": "Keep access active until the password expires"
+          },
+          {
+            "id": "D",
+            "text": "Disable the person's access and revoke applicable credentials or grants"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "3b3f82532f433b58b1620a45b9b6a6d91ca3b9d90a41a55acc4a06bb28c9fdd9"
+    },
+    {
+      "itemVersionId": "2f6fe8ae-55a4-5464-8d54-7fcf93502d22",
+      "itemId": "9c6218e0-1c5a-54da-9d7a-61097bf95a42",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "EASY",
+      "prompt": "A service account only reads one reporting view. Which assignment is appropriate?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The minimum read privilege required for that view"
+          },
+          {
+            "id": "B",
+            "text": "Write access to application settings as a precaution"
+          },
+          {
+            "id": "C",
+            "text": "All database-owner permissions"
+          },
+          {
+            "id": "D",
+            "text": "The permissions of the account that created the database"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "d4e43cfc85fca09d75f0a47f068529d6e483c43e66b284d1e759800ec64e6487"
+    },
+    {
+      "itemVersionId": "1eb59135-cb50-557f-abab-c60a26df5776",
+      "itemId": "4cda536e-09bb-50db-823d-9da1b6046dac",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "EASY",
+      "prompt": "Why use individual accounts for administrators rather than a single shared login?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "To eliminate the need for authorization rules"
+          },
+          {
+            "id": "B",
+            "text": "To ensure every user gets administrator privilege"
+          },
+          {
+            "id": "C",
+            "text": "To remove the need for access reviews"
+          },
+          {
+            "id": "D",
+            "text": "To support individual authorization and accountability"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "8f29de1585b1c7b89e47bb2b3a2e0f20405f2f21d9ed266e214151494bcbe196"
+    },
+    {
+      "itemVersionId": "1bebd9dd-8609-5885-b79f-8294ac1a474e",
+      "itemId": "2c6730a0-edea-55e7-859f-9ff65297afef",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "MEDIUM",
+      "prompt": "An employee moves from Finance to Sales. Their new role is added but the old payroll-export grant remains. What should the access review do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Keep both sets permanently to avoid future access requests"
+          },
+          {
+            "id": "B",
+            "text": "Review the display name only"
+          },
+          {
+            "id": "C",
+            "text": "Remove obsolete Finance access and verify the new approved assignment"
+          },
+          {
+            "id": "D",
+            "text": "Disable all Sales colleagues' accounts"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "655c8a7485fc821e7d04ac20f05cb4e2a0accb1da95524139901a58c5080d33b"
+    },
+    {
+      "itemVersionId": "9412ec39-4cde-5628-bba4-5f6b2db1130d",
+      "itemId": "3dc6a938-bc5d-589d-87e6-6148812549f7",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "MEDIUM",
+      "prompt": "A maintenance contractor needs elevated access for a two-hour approved task. Which configuration best fits?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Grant access to all unrelated systems for convenience"
+          },
+          {
+            "id": "B",
+            "text": "Grant the required scope with an enforced expiry and auditable use"
+          },
+          {
+            "id": "C",
+            "text": "Provide a permanent shared root password"
+          },
+          {
+            "id": "D",
+            "text": "Record the intended expiry in a note without any revocation mechanism"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ca484715b9f24dba784ce24a08ce14273575ed9c51ace7774534bff674bd7936"
+    },
+    {
+      "itemVersionId": "5e8355c0-6113-5697-914c-f78f5c3340e6",
+      "itemId": "945e2382-75bc-5c51-b288-b53b099cd828",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "MEDIUM",
+      "prompt": "A policy allows Team A to read a folder and Team B to edit it. A user belongs to both, and the approved policy explicitly combines grants. What is the expected permission?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "No access because dual membership is always invalid"
+          },
+          {
+            "id": "B",
+            "text": "Read only because read is less privileged"
+          },
+          {
+            "id": "C",
+            "text": "Administrator access to the entire file server"
+          },
+          {
+            "id": "D",
+            "text": "Read and edit, subject to any separate applicable restrictions"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "e38d54123afcfd274aeb1aa7affbdabb57258d6793369d329c769087da2fd783"
+    },
+    {
+      "itemVersionId": "33c918fc-2ee7-54bc-84c4-6697e1e1a12f",
+      "itemId": "15bfc0a0-ade1-55ad-b5bb-8b80052a1975",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "HARD",
+      "prompt": "Policy says a suspended account must immediately lose API access. Existing tokens remain cryptographically valid for an hour. Which design meets that policy?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Change only the account's display name"
+          },
+          {
+            "id": "B",
+            "text": "Accept all signed tokens until expiry"
+          },
+          {
+            "id": "C",
+            "text": "Check current suspension/revocation state at the protected boundary or use equivalent immediate invalidation"
+          },
+          {
+            "id": "D",
+            "text": "Ask the suspended user to delete their token"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "a17a53685ea434939cf2e267c9966521bcdaff1b71b685065ec01eb3fb236a6b"
+    },
+    {
+      "itemVersionId": "03a59187-60db-5daf-b26b-986ef7bbb876",
+      "itemId": "c8ca50c2-a795-5264-b26f-c7c18879d688",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "HARD",
+      "prompt": "A user has no direct export grant but inherits it through a nested group. Policy forbids their department from exporting. What should the administrator verify before closing the access issue?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Rename the nested group"
+          },
+          {
+            "id": "B",
+            "text": "Remove export access from every department without checking scope"
+          },
+          {
+            "id": "C",
+            "text": "Evaluate effective membership paths, remove the prohibited route and check effective access"
+          },
+          {
+            "id": "D",
+            "text": "Confirm only that the direct-grant list is empty"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "c0f13456366d509a4998bef5a6daaa39fc7e44385350d0dc913eef55ad827a5f"
+    },
+    {
+      "itemVersionId": "a7f1c6c6-0e7d-51fe-8391-b9bd7433ffca",
+      "itemId": "0d1eb4ba-80dc-54cd-b92d-fa7f0c5b49bc",
+      "version": 1,
+      "microSkillId": "MS-SEC03",
+      "microSkillName": "Configure identity and access controls",
+      "difficulty": "HARD",
+      "prompt": "A privileged-access system requires an approved request and separate approver. An emergency override currently allows the requester to self-approve without review. Which correction preserves a controlled emergency path?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Apply the approved emergency authorization, time limit, audit and independent follow-up requirements"
+          },
+          {
+            "id": "B",
+            "text": "Keep self-approval permanently for every request"
+          },
+          {
+            "id": "C",
+            "text": "Delete emergency-use logs to protect the operator"
+          },
+          {
+            "id": "D",
+            "text": "Prohibit all emergency access regardless of the approved procedure"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "d6a4621981c7f7ef6c76ed05f37620e1f89ab753d7aa9dd98d8e9ccb0b88eb22"
+    },
+    {
+      "itemVersionId": "ae8e4ead-48dd-5098-9376-9309999b67a4",
+      "itemId": "1c5c2108-66a6-5a9b-8871-c6f7168323fb",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "EASY",
+      "prompt": "An alert reports repeated failed logins. What is the appropriate first analytical step?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Declare a confirmed breach from the alert title alone"
+          },
+          {
+            "id": "B",
+            "text": "Change every account password before examining scope"
+          },
+          {
+            "id": "C",
+            "text": "Delete the alert because failed logins are common"
+          },
+          {
+            "id": "D",
+            "text": "Inspect relevant authentication events and account context"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "1e2a330015d536738948c2b0ebdaca3130d89fcda0787e7162381e886c35932e"
+    },
+    {
+      "itemVersionId": "4a48789b-81f7-5243-9151-28907dd48fc5",
+      "itemId": "a08d964a-dd38-5bbe-b950-37fafe252575",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "EASY",
+      "prompt": "Why record time zone and clock information when investigating events across systems?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "To replace account and host identifiers"
+          },
+          {
+            "id": "B",
+            "text": "To make log messages shorter"
+          },
+          {
+            "id": "C",
+            "text": "To establish that every event is malicious"
+          },
+          {
+            "id": "D",
+            "text": "To correlate events on a consistent timeline"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "59b9459cc39562a95235cb6fbd7c3dc70480280332a63b1085106babc78001b7"
+    },
+    {
+      "itemVersionId": "b634b694-83d7-5378-ae5c-4c8ca678ddc6",
+      "itemId": "edeacfec-ebb7-5735-8548-24bfe80a5dba",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "EASY",
+      "prompt": "When should an alert be classified as an incident?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "When analyzed evidence meets the organization's defined incident criteria"
+          },
+          {
+            "id": "B",
+            "text": "Whenever the oldest alert has waited an hour"
+          },
+          {
+            "id": "C",
+            "text": "Only after every affected system has failed"
+          },
+          {
+            "id": "D",
+            "text": "Whenever its dashboard color is red"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "16b6fcade8565269047523d6055a904f98390272a5b365ec189222f42e4dc9fd"
+    },
+    {
+      "itemVersionId": "1154e2bc-f1dd-5973-8bf0-fcb26fd9de22",
+      "itemId": "1112aef6-1ddd-59e8-ac51-c184071c2e2a",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "MEDIUM",
+      "prompt": "A new-location login alert occurs during an approved employee trip. Which investigation is most appropriate?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Confirm compromise solely because the location is new"
+          },
+          {
+            "id": "B",
+            "text": "Correlate travel context with authentication, device and session evidence"
+          },
+          {
+            "id": "C",
+            "text": "Remove location alerts for all employees"
+          },
+          {
+            "id": "D",
+            "text": "Close the alert solely because a trip was approved"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f06bb1c98352b5f45f62d8f5a4ff6baf6dcbe14c72a969ae8088dd0f3940396e"
+    },
+    {
+      "itemVersionId": "f4cb0745-0b5f-5076-87a0-c5a24a616bbb",
+      "itemId": "9c1b2e1f-e52e-5264-a2d9-a7f955f22f17",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "MEDIUM",
+      "prompt": "A host alert and proxy log show the same unusual destination, but their clocks differ by seven minutes. What should the analyst do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Rewrite original logs to make their times match"
+          },
+          {
+            "id": "B",
+            "text": "Treat the events as unrelated solely because timestamps differ"
+          },
+          {
+            "id": "C",
+            "text": "Choose whichever timestamp supports the preferred conclusion"
+          },
+          {
+            "id": "D",
+            "text": "Preserve original times and account for the known offset when correlating"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "cace01a8766b7d6ed24dff8ebdab213c035dc7dd37c0bf0027de2abc098953cf"
+    },
+    {
+      "itemVersionId": "acc475fa-103b-5865-afec-c6cdf2cb7278",
+      "itemId": "4216b364-6efe-57fa-af9e-be78f9632499",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "MEDIUM",
+      "prompt": "An alert is confirmed as an authorized maintenance activity. What is the appropriate closure record?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Delete every event from that host"
+          },
+          {
+            "id": "B",
+            "text": "Evidence supporting the benign explanation, scope and any justified detection tuning"
+          },
+          {
+            "id": "C",
+            "text": "Close it with only 'false positive' and no supporting context"
+          },
+          {
+            "id": "D",
+            "text": "Mark all future alerts from the host harmless"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "e7bb19913cba0727c7b9ef3f8ea4d39900c84263155bfd7f7679d276775b5620"
+    },
+    {
+      "itemVersionId": "3268dad6-5a77-53a8-919a-a884948c75dd",
+      "itemId": "041ab1f7-7f33-5c77-b348-2028c0663931",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "HARD",
+      "prompt": "Several failed logins are followed by a successful session and a large export from a sensitive account. No approved export is known. What is the best analytical conclusion and next step?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Review only failed logins and omit the export"
+          },
+          {
+            "id": "B",
+            "text": "State that the export proves a specific named attacker was responsible"
+          },
+          {
+            "id": "C",
+            "text": "Treat the correlated activity as a high-concern scenario, assess scope and escalate under incident criteria"
+          },
+          {
+            "id": "D",
+            "text": "Close the case because the final login succeeded"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "070816108f901fa5082762c95cc5c38bcd2e0a316077c7ea11f849f201b2854e"
+    },
+    {
+      "itemVersionId": "5b80b32a-7458-52c4-acce-ea7f53bbb6b7",
+      "itemId": "cb7c94be-a71b-50cb-b80e-05869f2a1fb8",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "HARD",
+      "prompt": "A detector shows suspected data theft, but the relevant proxy logs expired before collection. What should the investigation report?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The supported observations, evidence gap, uncertainty and next available corroboration"
+          },
+          {
+            "id": "B",
+            "text": "The full stolen dataset with invented details"
+          },
+          {
+            "id": "C",
+            "text": "No theft occurred because the logs are unavailable"
+          },
+          {
+            "id": "D",
+            "text": "Delete the detector observation because corroboration is incomplete"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "11dfba70571cd665744aceb08b86c7b8b6fad9a3fd7c54235885bdedc0058964"
+    },
+    {
+      "itemVersionId": "ddebe25f-fdbb-5f26-82d1-418a7605bf75",
+      "itemId": "3962eb45-f9b6-52b9-9ab3-403b6447522a",
+      "version": 1,
+      "microSkillId": "MS-SEC04",
+      "microSkillName": "Investigate security alerts",
+      "difficulty": "HARD",
+      "prompt": "Two alerts compete for one analyst: repeated blocked scans against a public test host and an active unauthorized privileged session on a payroll system. With no other evidence, which should be prioritized?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The scan solely because its event count is larger"
+          },
+          {
+            "id": "B",
+            "text": "Neither until a weekly report is available"
+          },
+          {
+            "id": "C",
+            "text": "Whichever alert arrived first regardless of risk"
+          },
+          {
+            "id": "D",
+            "text": "The privileged payroll session because current access and business impact warrant urgent assessment"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "53abb4a3425b40b3ba5a55e720e51ce58f22f8176ae35694ebc4ecf455ff1e62"
+    },
+    {
+      "itemVersionId": "55f74930-7ad6-58e6-9d24-11a532625517",
+      "itemId": "91b99cf0-6345-5026-92d9-042cfd5e46e8",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "EASY",
+      "prompt": "An approved incident procedure calls for isolating an infected endpoint from normal network access. What is the purpose of that action?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Limit the incident's spread and further damage"
+          },
+          {
+            "id": "B",
+            "text": "Guarantee that all persistence is removed"
+          },
+          {
+            "id": "C",
+            "text": "Prove the malware's original author"
+          },
+          {
+            "id": "D",
+            "text": "Replace the need to preserve incident records"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2f83bd760e6946e36411afae054991582ab5f66a34e81b8de4a71792e7f0d9cd"
+    },
+    {
+      "itemVersionId": "b07faccd-6a32-5b4a-b2a4-720588e866cb",
+      "itemId": "da44d8be-1736-5e2e-976e-1fa61df6d7c4",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "EASY",
+      "prompt": "Why maintain a chronological incident action log?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "To guarantee a particular legal outcome"
+          },
+          {
+            "id": "B",
+            "text": "To eliminate the need for technical evidence"
+          },
+          {
+            "id": "C",
+            "text": "To preserve who did what, when and why for review and coordination"
+          },
+          {
+            "id": "D",
+            "text": "To publish every incident detail to all employees"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2f2066558609d84c14cd591a4735c1b325ef42829ad94039e72f5f43e84cad0c"
+    },
+    {
+      "itemVersionId": "4d30bfc0-ad2d-5c4d-a85b-2034dc722d79",
+      "itemId": "1ac8c372-fff3-5b60-98e2-b38661dbbed0",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "EASY",
+      "prompt": "Before returning a recovered service to normal use, what should the response team verify?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Only that its login screen has the right logo"
+          },
+          {
+            "id": "B",
+            "text": "Restored operation and the relevant security conditions required by the recovery plan"
+          },
+          {
+            "id": "C",
+            "text": "Only that the incident ticket has an assignee"
+          },
+          {
+            "id": "D",
+            "text": "That all old incident evidence has been deleted"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "10c2f0b66dacbb18357e947b8c16d65d78974656b0ba483fdc9f8fbcc3b3f43d"
+    },
+    {
+      "itemVersionId": "d1839664-fcb5-539b-81e8-6e33089cd957",
+      "itemId": "9f7e46c4-86d3-508c-9a3b-5054520e5207",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "MEDIUM",
+      "prompt": "A responder must contain a compromised server while preserving available evidence under the approved procedure. Which action fits?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Copy evidence to an unrestricted public folder"
+          },
+          {
+            "id": "B",
+            "text": "Wipe the server immediately without recording any evidence or action"
+          },
+          {
+            "id": "C",
+            "text": "Leave active unauthorized access indefinitely to avoid changing anything"
+          },
+          {
+            "id": "D",
+            "text": "Use the authorized containment method and record evidence collected and changes made"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "c6db11738604fb4557ff24b910fa4b799dc2f324f2058ddc7c5ebf696049c651"
+    },
+    {
+      "itemVersionId": "ff4e84f2-abf3-5380-9a12-b2acf6c213af",
+      "itemId": "0c2b5eff-a188-5c5c-b8bd-83b1543b1173",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "MEDIUM",
+      "prompt": "A stolen credential enabled access and the host contains a persistence mechanism. Which response best addresses eradication?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Delete the alert while leaving the credential and persistence active"
+          },
+          {
+            "id": "B",
+            "text": "Remove the persistence and revoke the compromised access, then verify the affected scope"
+          },
+          {
+            "id": "C",
+            "text": "Restart the host and assume all compromise is gone"
+          },
+          {
+            "id": "D",
+            "text": "Change an unrelated user's password only"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "601621eb9dd9f711d7fc24674aadbc9cf8224ade472d1e7ff741f5ab97ee869c"
+    },
+    {
+      "itemVersionId": "1f113fff-eacc-5c31-9032-0213c88a52d8",
+      "itemId": "562e9ef3-c4f6-5bd1-bcfe-d21022c2d191",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "MEDIUM",
+      "prompt": "An analyst is asked to notify an external party during an incident. The plan assigns that communication to a designated lead. What should the analyst do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Route verified facts to the designated lead through the approved channel"
+          },
+          {
+            "id": "B",
+            "text": "Post raw evidence publicly before coordination"
+          },
+          {
+            "id": "C",
+            "text": "Invent a confirmed impact number to avoid delay"
+          },
+          {
+            "id": "D",
+            "text": "Wait silently and withhold relevant evidence from the lead"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "6409563bc609e8e25a08dba1d2ebfd6750c3a70f52e0bea89b406c70568bca48"
+    },
+    {
+      "itemVersionId": "bda2f7be-49e7-59f3-8025-0bdd1b54ea7d",
+      "itemId": "b9004582-852d-52f4-80ae-6a6746ccf6f4",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "HARD",
+      "prompt": "A critical server is actively spreading malware. The approved plan permits immediate network isolation, with evidence collection coordinated as feasible. Which action best follows it?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Wipe all enterprise servers immediately"
+          },
+          {
+            "id": "B",
+            "text": "Disable logging before isolation to reduce disk writes"
+          },
+          {
+            "id": "C",
+            "text": "Delay all containment until a perfect disk image is available"
+          },
+          {
+            "id": "D",
+            "text": "Isolate promptly, preserve feasible evidence and document the decision and resulting changes"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "68c87e12239dcbde6150206eb1877c4f997cd8192ea9a2afd9d8fe5660bd7dd4"
+    },
+    {
+      "itemVersionId": "301088c4-23a4-5596-9f66-67fcb648c04a",
+      "itemId": "80e31623-4b42-593a-bd89-afe42575c2ba",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "HARD",
+      "prompt": "A service is restored from a clean backup, but the exploited credential is still valid and the vulnerable entry point remains open. What is the recovery decision?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Restore the same backup repeatedly as the sole long-term remedy"
+          },
+          {
+            "id": "B",
+            "text": "Do not declare the required security recovery complete until those conditions are treated and verified"
+          },
+          {
+            "id": "C",
+            "text": "Declare complete because the backup predates the incident"
+          },
+          {
+            "id": "D",
+            "text": "Delete the backup history to prevent recurrence"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "95e39e7c9419a4056e1bdefa75d6682d3733fceb24eaacee383fd50aba64b0a2"
+    },
+    {
+      "itemVersionId": "41e50cdd-be19-5085-982e-82b44431b3c4",
+      "itemId": "2d3f89cf-6298-596d-9f16-7fa12581a005",
+      "version": 1,
+      "microSkillId": "MS-SEC05",
+      "microSkillName": "Execute a security incident response procedure",
+      "difficulty": "HARD",
+      "prompt": "An incident ended after containment and recovery, but responders discovered that the escalation contact was unreachable and delayed action. What follow-up best improves the procedure?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Remove escalation from the procedure"
+          },
+          {
+            "id": "B",
+            "text": "Record the lesson, assign corrective ownership and verify an updated escalation method"
+          },
+          {
+            "id": "C",
+            "text": "Rewrite the incident times so no delay appears"
+          },
+          {
+            "id": "D",
+            "text": "Close the issue because the service is currently healthy"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2560ca87d4a0659f1627264de5abf7c6d7636559419a02761fda719c82f62ee7"
+    },
+    {
+      "itemVersionId": "429b3b14-f30e-5791-9e65-960e515cea38",
+      "itemId": "fb81f621-d97a-5631-8928-4e575365863b",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "EASY",
+      "prompt": "Before beginning a technical vulnerability assessment, what must be established?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Authorized scope, permitted activities and rules of engagement"
+          },
+          {
+            "id": "B",
+            "text": "A list of unrelated organizations to scan too"
+          },
+          {
+            "id": "C",
+            "text": "A guarantee that no weakness will be found"
+          },
+          {
+            "id": "D",
+            "text": "Permission implied only by public network reachability"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "108506b070c056a8186365bcb73d180a875fee04af7f8713303b06c55f0087fe"
+    },
+    {
+      "itemVersionId": "bec9e361-53e6-5c75-bc1e-fe7b4ac134eb",
+      "itemId": "aaf9cbf9-ec02-5e0d-9a29-68e582bfabac",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "EASY",
+      "prompt": "A scanner reports a possible vulnerability. What is the defensible initial classification?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "A resolved issue because the scanner finished"
+          },
+          {
+            "id": "B",
+            "text": "Proof that every system in the organization is vulnerable"
+          },
+          {
+            "id": "C",
+            "text": "A confirmed compromise by a specific attacker"
+          },
+          {
+            "id": "D",
+            "text": "A finding requiring validation and context"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "293f3264619e0cba8a1f90c7677f733a629b1163fb6256ee8475d48d074b0458"
+    },
+    {
+      "itemVersionId": "eb728d00-bb3a-5f75-bc9e-750bc588eea0",
+      "itemId": "c60880e7-d60d-5249-98de-4119b6acc2eb",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "EASY",
+      "prompt": "Which information makes a vulnerability finding actionable?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Only the analyst's preferred deadline without a finding description"
+          },
+          {
+            "id": "B",
+            "text": "Only a red severity icon"
+          },
+          {
+            "id": "C",
+            "text": "Affected asset, observed condition, supporting evidence and potential impact"
+          },
+          {
+            "id": "D",
+            "text": "Only the scanner product's name"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9bee7c72987e934c69bba4f6d2da87d4c16e3c3d9510a4ce92a59773aac6f8de"
+    },
+    {
+      "itemVersionId": "b26143cb-130e-5da7-a89e-93f93f0d0bc3",
+      "itemId": "c70560d8-19e6-5cff-a6b3-30932ced97e1",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "MEDIUM",
+      "prompt": "A scanner flags a vulnerable software version from a network banner. The supplier backported the fix without changing that banner. What should the assessor do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Delete the scan result without retaining the validation basis"
+          },
+          {
+            "id": "B",
+            "text": "Confirm the vulnerability solely from the unchanged banner"
+          },
+          {
+            "id": "C",
+            "text": "Assume all supplier packages are safe without checking the advisory"
+          },
+          {
+            "id": "D",
+            "text": "Check authoritative package/advisory evidence and the relevant condition within authorization"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "7adfec5a7e2f42c58be8106cd5f1396379df233431f1ac08132f1b1018675d7f"
+    },
+    {
+      "itemVersionId": "2d5c31b7-a4e6-5e08-aab1-90f8772a85f1",
+      "itemId": "f0ea3d44-6d6b-582e-8256-4c455ddc6c3a",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "MEDIUM",
+      "prompt": "An approved assessment lists subnet A only. Discovery reveals a connected subnet B. What should the assessor do before testing B?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Assume the owner of A owns every reachable network"
+          },
+          {
+            "id": "B",
+            "text": "Test B because routing allows it"
+          },
+          {
+            "id": "C",
+            "text": "Obtain a scope change or clarification through the agreed authority"
+          },
+          {
+            "id": "D",
+            "text": "Use a more aggressive tool so B finishes quickly"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "26af8a6529c886ac9fef3210f6a04eae419065eab8939b0c7b2fac0fadac47ff"
+    },
+    {
+      "itemVersionId": "6fc669cf-e5d9-5922-ad55-24d2e4af00d6",
+      "itemId": "b17c2301-99ea-581e-837e-8fd9df8d040f",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "MEDIUM",
+      "prompt": "An unauthenticated scan finds no issues on a host, but it could not inspect local packages or configuration. How should the result be reported?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "No findings in the observed coverage, with the uninspected areas stated"
+          },
+          {
+            "id": "B",
+            "text": "Omit the coverage limitation because the scan was successful"
+          },
+          {
+            "id": "C",
+            "text": "Every local package is vulnerable"
+          },
+          {
+            "id": "D",
+            "text": "The host is fully secure"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "ed2276e260ec62a26e5dc06be50b1d7dcb8e4e80edabb0a57bcbc096529f40d3"
+    },
+    {
+      "itemVersionId": "fec91662-c826-58cd-9767-73beb1f8c55b",
+      "itemId": "b9d38742-7600-5424-9a36-937099869d12",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "HARD",
+      "prompt": "During an authorized production scan, error rates exceed the engagement's stop threshold. What should the assessor do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Continue until every target is scanned because scope was approved"
+          },
+          {
+            "id": "B",
+            "text": "Stop the affected activity, notify the agreed contact and follow the recovery/escalation rule"
+          },
+          {
+            "id": "C",
+            "text": "Raise the threshold without approval"
+          },
+          {
+            "id": "D",
+            "text": "Hide the errors because the scanner caused them"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "6694a16836198cdd1db20e7580bb750c2a463656554ec824eb11a81f117fdba4"
+    },
+    {
+      "itemVersionId": "b999c11e-78c8-5658-9ed1-b84a434f5955",
+      "itemId": "fe0e5639-fcc4-580d-8aea-d430a753aebf",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "HARD",
+      "prompt": "A finding applies only when feature F is enabled. Version matches the vulnerable range, but evidence about F is missing. Intrusive exploitation is prohibited. What is the best validation path?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Confirm the finding solely from version while ignoring F"
+          },
+          {
+            "id": "B",
+            "text": "Mark it resolved solely because exploitation is prohibited"
+          },
+          {
+            "id": "C",
+            "text": "Exploit the service to settle the question despite the prohibition"
+          },
+          {
+            "id": "D",
+            "text": "Use permitted configuration/vendor evidence and record uncertainty if applicability remains unresolved"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f601a0e93c82343dcc22711de36034585664970785c9fdc54789292d50ffeafa"
+    },
+    {
+      "itemVersionId": "29377a28-84d5-5d6a-96c4-d03d67a88734",
+      "itemId": "b583c37e-ec63-5eb8-b72f-adbb383ed88c",
+      "version": 1,
+      "microSkillId": "MS-SEC06",
+      "microSkillName": "Assess technical vulnerabilities",
+      "difficulty": "HARD",
+      "prompt": "One critical finding is on an isolated retired host and another high finding affects an exposed payroll API. What should accompany remediation prioritization?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Validate asset status, exposure and business impact alongside technical severity"
+          },
+          {
+            "id": "B",
+            "text": "Ignore the payroll finding because it is labeled high rather than critical"
+          },
+          {
+            "id": "C",
+            "text": "Delete the retired-host finding without confirming retirement"
+          },
+          {
+            "id": "D",
+            "text": "Sort by scanner severity and forbid any contextual review"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "0822ad80cab028297177d1e50c6bcdf0565d53ab40447dc9dc04eb7d7567c1dc"
+    },
+    {
+      "itemVersionId": "90566066-686e-515a-ba48-7224a04b2eaa",
+      "itemId": "6aca06e6-8aff-5848-b14f-d9a226ede505",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "EASY",
+      "prompt": "A team says a vulnerability is fixed after deploying a patch. Which evidence best supports closure?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The vulnerability report was archived"
+          },
+          {
+            "id": "B",
+            "text": "The patch ticket has a new assignee"
+          },
+          {
+            "id": "C",
+            "text": "The scanner license was renewed"
+          },
+          {
+            "id": "D",
+            "text": "A relevant verification that the affected deployed condition is resolved"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "656b0107d8afe14b37f12cfb78c47780e04ed6c25f975d6f71b5d0334ac0255c"
+    },
+    {
+      "itemVersionId": "c8114ad4-03d5-5c58-a86d-5147848c6987",
+      "itemId": "45e07cd1-2704-52da-ac9a-4db7775958d5",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "EASY",
+      "prompt": "A temporary firewall mitigation reduces access to a vulnerable service. How should its status be described?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mitigated exposure with the underlying vulnerability and review condition tracked"
+          },
+          {
+            "id": "B",
+            "text": "Permanently patched"
+          },
+          {
+            "id": "C",
+            "text": "Verified complete solely because the rule was requested"
+          },
+          {
+            "id": "D",
+            "text": "Not affected by any future risk"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "2ed94bb7784a18a2b097aebd553d25f3ab4f288203f54fe653be31cf1292f3ea"
+    },
+    {
+      "itemVersionId": "341adadd-103e-5d83-9391-a85a246bf8ce",
+      "itemId": "a29c441c-86f5-5d0b-8243-473f6cfc9dad",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "EASY",
+      "prompt": "A patch applies to ten named hosts, but verification covers only nine. What is the correct coverage status?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "All ten failed"
+          },
+          {
+            "id": "B",
+            "text": "All ten verified because most passed"
+          },
+          {
+            "id": "C",
+            "text": "Remove the tenth host from the original scope"
+          },
+          {
+            "id": "D",
+            "text": "Nine verified; the tenth remains unverified"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5c6110fd636c9f430b773af6e0205a73c31f33199608006b882878b02a3f9ef5"
+    },
+    {
+      "itemVersionId": "81b80c23-ee01-5a9c-8bc8-94b1a443814c",
+      "itemId": "fe64e5b5-a4cf-5f53-9cc4-d0272929b010",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "MEDIUM",
+      "prompt": "After patching, the vulnerability scanner still reports the issue from cached inventory. What should the analyst do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Edit the scanner output to remove the warning"
+          },
+          {
+            "id": "B",
+            "text": "Reopen every finding on every system automatically"
+          },
+          {
+            "id": "C",
+            "text": "Close the finding solely because the administrator says it is fixed"
+          },
+          {
+            "id": "D",
+            "text": "Obtain current authenticated deployment evidence and refresh the relevant verification"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "0ad18bdb64c0eaadc7854620b9403313a2ab9162d2677c2db6cc15e94a5b2176"
+    },
+    {
+      "itemVersionId": "bea1218b-f704-529f-b85d-154643e5439e",
+      "itemId": "1607b4c0-bf42-54bb-9298-6d3c830510c2",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "MEDIUM",
+      "prompt": "A patch is present on disk, but the running service still uses the older library. What should remediation verification conclude?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The running version is irrelevant to vulnerability exposure"
+          },
+          {
+            "id": "B",
+            "text": "The issue is closed because the installer exited successfully"
+          },
+          {
+            "id": "C",
+            "text": "The running exposure remains until the corrected component is activated and checked"
+          },
+          {
+            "id": "D",
+            "text": "Only the source repository version needs updating"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5a42e237d127d71a3ae1924214c6d975348fd02f88b97127b5534e202c24e841"
+    },
+    {
+      "itemVersionId": "a505a117-4af9-51f6-83bd-72c9d168b807",
+      "itemId": "9fc64e09-e617-5526-9c47-953d14d02998",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "MEDIUM",
+      "prompt": "A patch resolves a vulnerability but causes a serious availability failure, so an approved rollback restores the vulnerable version. What is the correct finding status?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Closed permanently because the patch worked briefly"
+          },
+          {
+            "id": "B",
+            "text": "Reopened or otherwise recorded as unresolved, with interim mitigation and ownership"
+          },
+          {
+            "id": "C",
+            "text": "Marked false positive without supporting reassessment"
+          },
+          {
+            "id": "D",
+            "text": "Deleted because the operational incident is more urgent"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "df43b25fa2323d2655219317bb738f9f4fbc0aad33179ce7a68e7b58cf70bfba"
+    },
+    {
+      "itemVersionId": "7c03845f-7484-539f-9ff2-3a7b94c2e142",
+      "itemId": "27e7c979-1ece-524e-9056-b83444935ef2",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "HARD",
+      "prompt": "A load-balanced service has three backends. External verification passes, but only one backend received the remedy. What should the analyst require?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Verify each in-scope backend or equivalent complete deployment evidence before full closure"
+          },
+          {
+            "id": "B",
+            "text": "Close all backends because one external request passed"
+          },
+          {
+            "id": "C",
+            "text": "Disable all monitoring so traffic cannot select an unpatched node"
+          },
+          {
+            "id": "D",
+            "text": "Rename all instances to the patched version"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "e484d90293f44647c0daded2311106d3f03947d222ee15c02317e993d6669245"
+    },
+    {
+      "itemVersionId": "29482b14-0559-50a4-bd96-f7caac6e4f92",
+      "itemId": "382582af-0718-5706-a6ba-9c1fa6176f1d",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "HARD",
+      "prompt": "A mitigation blocks the documented public path to a vulnerable service. Verification finds an unaddressed internal path that policy also requires protected. What is the correct disposition?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Assume internal traffic is always trusted"
+          },
+          {
+            "id": "B",
+            "text": "Remove the internal path from the report without approval"
+          },
+          {
+            "id": "C",
+            "text": "Close because the first path is blocked"
+          },
+          {
+            "id": "D",
+            "text": "Keep the finding open for the remaining scoped path and verify a corrected treatment"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5b26bb4052cbda5559aec8c96c035e906dc4487a5ce5eab52fd3bc172e25ab5b"
+    },
+    {
+      "itemVersionId": "1ae04288-a07f-5f14-925a-418bac508a88",
+      "itemId": "776e2314-580f-52cd-a9a7-c914157edc7f",
+      "version": 1,
+      "microSkillId": "MS-SEC07",
+      "microSkillName": "Verify vulnerability remediation",
+      "difficulty": "HARD",
+      "prompt": "Two observations conflict: the deployment dashboard says fixed, while a current authorized check reproduces the vulnerable condition on the target. What is the best closure decision?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Delete the current observation to preserve the dashboard metric"
+          },
+          {
+            "id": "B",
+            "text": "Retain the open finding, reconcile target/version evidence and repeat focused verification after correction"
+          },
+          {
+            "id": "C",
+            "text": "Close as long as a change ticket exists"
+          },
+          {
+            "id": "D",
+            "text": "Prefer the dashboard solely because it is the official tool"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9adde25e7fca1df54a3459ded926ceb50ce3e1dd08e87dcc41729ca88714c37a"
+    },
+    {
+      "itemVersionId": "c91340ea-a0ed-50d5-9ba1-e8f3eaa8df02",
+      "itemId": "56d23b83-3048-56ec-a193-0f0d9a26255a",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "EASY",
+      "prompt": "Which record best supports a claim that a specific security control met its objective?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The requirement, scoped control, assessment method, observations and conclusion"
+          },
+          {
+            "id": "B",
+            "text": "Only the control owner's job title"
+          },
+          {
+            "id": "C",
+            "text": "Only a product brochure"
+          },
+          {
+            "id": "D",
+            "text": "Only the report's page count"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "dfafb006e9cb817e68875bb4e6b53d1aeea72f37ae865b8080cae423003afa9f"
+    },
+    {
+      "itemVersionId": "b5aee557-a3ba-564d-a583-968ec6e8dd61",
+      "itemId": "c4a33c31-3bc7-5757-8c73-85e8db3a3db3",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "EASY",
+      "prompt": "An assessor reviews an approved access policy document. Which assessment method is this?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Examine"
+          },
+          {
+            "id": "B",
+            "text": "Interview"
+          },
+          {
+            "id": "C",
+            "text": "Authorize"
+          },
+          {
+            "id": "D",
+            "text": "Test"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "5a7050cd655abc824786f3e3f970f85362a48ebdb95f6c05e075123c3e1b6834"
+    },
+    {
+      "itemVersionId": "1320c80f-82d9-50c0-80ce-3676c8e2beed",
+      "itemId": "523010ac-5a30-510d-a4e3-2084b7ca9e55",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "EASY",
+      "prompt": "A control was not assessed because required evidence was unavailable. How should the assurance record describe it?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pass because there is no recorded failure"
+          },
+          {
+            "id": "B",
+            "text": "Hide the control from the report"
+          },
+          {
+            "id": "C",
+            "text": "State the unassessed scope and evidence limitation"
+          },
+          {
+            "id": "D",
+            "text": "Fail every other control automatically"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "35a78191cb4bb6aabae2d9f20b5bfcdc497667e1d9eb9b1347ea364da862b28e"
+    },
+    {
+      "itemVersionId": "e7385b7a-dd35-54b4-b03d-f0f71b266883",
+      "itemId": "25dc0bf0-26ad-56ac-90a5-5a3c3bd7c68d",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "MEDIUM",
+      "prompt": "A requirement says terminated users cannot log in. Which assessment design gives stronger support than reviewing the written policy alone?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Interview only the person who wrote the policy and assume implementation"
+          },
+          {
+            "id": "B",
+            "text": "Examine the configuration and exercise authorized disabled-account denial cases"
+          },
+          {
+            "id": "C",
+            "text": "Count the words in the offboarding policy"
+          },
+          {
+            "id": "D",
+            "text": "Check a screenshot of a successful active-user login only"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "109471b203e5ae2c301ce006f9c1f68390711a86a6b25f5d63b22bac3ef9d60c"
+    },
+    {
+      "itemVersionId": "c1e854d4-e9eb-590f-af99-809d24bcc529",
+      "itemId": "886e19b2-8f9e-5e9c-a842-084e5544dfa6",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "MEDIUM",
+      "prompt": "An access-control assessment checks five of fifty systems. What must its report make clear?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The unobserved systems do not exist for assurance purposes"
+          },
+          {
+            "id": "B",
+            "text": "The selected systems, selection basis, method and limits on the conclusion"
+          },
+          {
+            "id": "C",
+            "text": "Only the aggregate pass badge without sample details"
+          },
+          {
+            "id": "D",
+            "text": "All fifty passed because five passed"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "35541d838f230f63780eedc490c3cb94d790b656e401a7db682ed4301fd2ce83"
+    },
+    {
+      "itemVersionId": "81ebe7d6-1548-5b56-bde3-efda34eaf2a1",
+      "itemId": "bd1c797d-60ea-505b-ba8b-de715ae31db3",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "MEDIUM",
+      "prompt": "A control check fails in staging, is corrected, and later passes. How should the record be updated?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mark production passed solely because staging was corrected"
+          },
+          {
+            "id": "B",
+            "text": "Delete the control requirement"
+          },
+          {
+            "id": "C",
+            "text": "Retain the failure, correction and later evidence with their versions/times"
+          },
+          {
+            "id": "D",
+            "text": "Replace the original evidence with a fabricated first-pass result"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "a18b87115b6dcfaf536043af597a719d77a8c97449cd03996f5bb96807fb577d"
+    },
+    {
+      "itemVersionId": "0ad36969-21ae-5706-8b86-55c8285ec587",
+      "itemId": "03e3dbda-841d-59da-99b9-4de93ce2e363",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "HARD",
+      "prompt": "A report claims tenant isolation based only on a successful same-tenant request. What evidence gap should be recorded?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The system definitely leaks every tenant's data"
+          },
+          {
+            "id": "B",
+            "text": "The permitted request proves all foreign-tenant requests are blocked"
+          },
+          {
+            "id": "C",
+            "text": "The unauthorized cross-tenant boundary has not been exercised by that observation"
+          },
+          {
+            "id": "D",
+            "text": "No further evidence can ever assess tenant isolation"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "9be287e3ded5b67120da2c623590130f15d3a48948c8e310c0f383cb3d7d57af"
+    },
+    {
+      "itemVersionId": "d7669520-882b-5952-981f-698b262432f4",
+      "itemId": "c4738f57-c840-5d07-a40e-207f87c4788a",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "HARD",
+      "prompt": "A control report cites evidence from release R4, but production changed to R5 in the assessed component. What is the appropriate assurance statement?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Identify the evidence/version gap and assess affected R5 behavior before extending the claim"
+          },
+          {
+            "id": "B",
+            "text": "Keep an unqualified R5 pass because the control name is unchanged"
+          },
+          {
+            "id": "C",
+            "text": "Declare every R4 observation useless for all purposes"
+          },
+          {
+            "id": "D",
+            "text": "Relabel the R4 screenshot as R5"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "01a9d9c756346e04aad6b668f552fa8911165017720e3abe9f1a1e9ea9ac555f"
+    },
+    {
+      "itemVersionId": "b26d0df8-28d3-5a77-b3ff-9ca9923142cc",
+      "itemId": "f17380c9-8817-5df8-a46a-972c804c70b5",
+      "version": 1,
+      "microSkillId": "MS-SEC08",
+      "microSkillName": "Document security control assurance",
+      "difficulty": "HARD",
+      "prompt": "An owner states backups are encrypted, but a current configuration export shows encryption disabled for one scoped store. What should the assurance record do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Record the contradictory evidence, investigate scope and withhold an unqualified pass"
+          },
+          {
+            "id": "B",
+            "text": "Prefer the interview automatically over technical evidence"
+          },
+          {
+            "id": "C",
+            "text": "Conclude all backups in the enterprise are unencrypted"
+          },
+          {
+            "id": "D",
+            "text": "Omit the export because it harms the score"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "71a7acc6dc738a45ae333a00026676dc4c53d6f997b2d8ef182297db4474868e"
+    },
+    {
+      "itemVersionId": "9e00220e-2c38-560f-9030-b7e110046cb8",
+      "itemId": "ade4f9ba-5a95-5cff-8f9c-4249782d0bee",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "EASY",
+      "prompt": "A security analyst briefs a business owner on a risk requiring a decision. Which message is most useful?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Affected business outcome, supported risk, options and the decision needed"
+          },
+          {
+            "id": "B",
+            "text": "Only the analyst's tool preferences"
+          },
+          {
+            "id": "C",
+            "text": "Only an unexplained list of scanner acronyms"
+          },
+          {
+            "id": "D",
+            "text": "A guarantee that a recommended control eliminates every risk"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "c693ecf31b1fba22c09bc846d2874f2bd6583242e31a236d4b265cec2db8f40d"
+    },
+    {
+      "itemVersionId": "9a29379d-f249-5d59-9306-34a7b3bee0ff",
+      "itemId": "d5ae2d5f-6048-5818-80c3-77844133a19d",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "EASY",
+      "prompt": "A report contains sensitive investigation details. How should it be shared?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Remove all supporting context before sending any recommendation"
+          },
+          {
+            "id": "B",
+            "text": "Publish credentials to demonstrate technical credibility"
+          },
+          {
+            "id": "C",
+            "text": "Send the full report to every external mailing list"
+          },
+          {
+            "id": "D",
+            "text": "Use approved recipients and channels appropriate to the information"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "4fd8b2ce9bf23dc0e1ab96b9a30c8156f3d052382df4562969fa5b380e703e45"
+    },
+    {
+      "itemVersionId": "f8f062f9-25e5-5f49-82f2-099ed34293e0",
+      "itemId": "ab107a93-1de6-531b-8aab-74c89d1720d5",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "EASY",
+      "prompt": "A recommendation is based on incomplete evidence. What should the analyst state?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "That missing evidence proves the worst possible outcome"
+          },
+          {
+            "id": "B",
+            "text": "Nothing about uncertainty to keep the message short"
+          },
+          {
+            "id": "C",
+            "text": "A precise certainty percentage invented for presentation"
+          },
+          {
+            "id": "D",
+            "text": "The supported conclusion and material uncertainty"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "62491accba8479a21dc8d99633fc48db880e17883817462b13f95759d5939dd2"
+    },
+    {
+      "itemVersionId": "536677d2-b1cb-56bb-9988-8497cee4680c",
+      "itemId": "bb229a8b-253e-5844-be06-2c79b6f9a0d7",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "MEDIUM",
+      "prompt": "Engineers need to fix an access-control finding; the business owner needs to accept a release delay. How should communication differ?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Give engineers reproducible scoped technical detail and the owner decision-focused impact/options"
+          },
+          {
+            "id": "B",
+            "text": "Withhold all technical detail from engineers"
+          },
+          {
+            "id": "C",
+            "text": "Send unrelated conclusions to each audience"
+          },
+          {
+            "id": "D",
+            "text": "Give the owner only a raw packet dump"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "c9d7e54ebbebfcc3f919875f018a6a158b899b2e58c25925f7093f1f2e088e9c"
+    },
+    {
+      "itemVersionId": "8da0a392-e1cb-5214-b8d2-52fb1fe96a57",
+      "itemId": "124e5a13-0a57-5e6c-9ecb-f7204ac46ea4",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "MEDIUM",
+      "prompt": "A manager asks, 'What do you need me to decide?' Which recommendation is actionable?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Security needs improvement someday"
+          },
+          {
+            "id": "B",
+            "text": "The scanner returned seventeen findings"
+          },
+          {
+            "id": "C",
+            "text": "Everything must be made secure immediately"
+          },
+          {
+            "id": "D",
+            "text": "Approve the proposed access restriction by Friday, with stated service impact and residual risk"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "72f2a90383dfbb2c770a2f7763671218cfe743771de4762e6998f05b7976f485"
+    },
+    {
+      "itemVersionId": "9495d97e-70dc-51ab-a4e9-1cace097d189",
+      "itemId": "6acbcb0f-3943-5045-9f87-a36edc59282b",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "MEDIUM",
+      "prompt": "An incident update has a confirmed affected service but an unverified customer count. What should the update communicate?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The raw account credentials found in evidence"
+          },
+          {
+            "id": "B",
+            "text": "No update until every fact is certain"
+          },
+          {
+            "id": "C",
+            "text": "The confirmed service impact, the count's uncertainty and the next update point"
+          },
+          {
+            "id": "D",
+            "text": "An invented count so the update appears complete"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "99b4130e3acd13babec942fb20eebed3f63c646ba9dfd5c85206ff4e56f07e2d"
+    },
+    {
+      "itemVersionId": "5eecaf46-d6ac-5c53-81d1-da6b41102eac",
+      "itemId": "d27d60e3-20dc-568d-bb63-095d2087f1a2",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "HARD",
+      "prompt": "A leader interprets 'high technical severity' as 'a breach has happened.' What should the analyst clarify?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agree that every high-severity issue proves a breach"
+          },
+          {
+            "id": "B",
+            "text": "State that no breach is possible without evidence of one"
+          },
+          {
+            "id": "C",
+            "text": "Remove severity and impact information entirely"
+          },
+          {
+            "id": "D",
+            "text": "Severity describes the weakness's potential; confirmed exploitation needs separate evidence"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "4ef714e4fc9db8f5a37d6f7ef82cf45cb2eee2b5cc2b5dc4fa585b61ec2503c4"
+    },
+    {
+      "itemVersionId": "3b9c3789-82ed-5bdf-9f3d-bf45ce9e524c",
+      "itemId": "01dc0f99-b9ba-5fa7-9cf5-a315ba3b8c62",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "HARD",
+      "prompt": "During an incident, two teams issue inconsistent external impact statements. The plan assigns one communications lead. What should happen?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Let each team continue publishing its own estimate as confirmed"
+          },
+          {
+            "id": "B",
+            "text": "Reconcile supported facts through the lead and issue a coordinated correction/update"
+          },
+          {
+            "id": "C",
+            "text": "Ask the public to choose which estimate is correct"
+          },
+          {
+            "id": "D",
+            "text": "Erase all earlier records of the statements"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "fca9c04e5eb4072425d7e05a8b6dd3fa3068d71971e8fc5fa55b0c7383611105"
+    },
+    {
+      "itemVersionId": "cfca4810-2506-5656-b500-a42d58416bb3",
+      "itemId": "c577084e-6e2f-517b-802d-4c9ffb7d1e97",
+      "version": 1,
+      "microSkillId": "MS-SEC09",
+      "microSkillName": "Communicate security recommendations",
+      "difficulty": "HARD",
+      "prompt": "An executive rejects an expensive recommended control. Two lower-cost options provide partial protection. What is the most useful follow-up?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Keep repeating the original product name without discussing impact"
+          },
+          {
+            "id": "B",
+            "text": "Describe the cheaper options as equally effective without evidence"
+          },
+          {
+            "id": "C",
+            "text": "State that rejecting one control automatically accepts every unrelated risk"
+          },
+          {
+            "id": "D",
+            "text": "Explain each option's protection, operational cost and remaining risk for an authorized decision"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "f24c2a01f93fd0e5335868d36c8c516fd74b1525236c6ecef08063a67817691b"
+    },
+    {
+      "itemVersionId": "ae5184b0-7adb-55cc-a250-10516532ef6f",
+      "itemId": "b9fc1a0e-99f9-55e5-94fd-4da8ce67a72c",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "EASY",
+      "prompt": "What distinguishes a security policy from an operating procedure?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "The procedure grants unlimited exceptions to the policy"
+          },
+          {
+            "id": "B",
+            "text": "The policy states governing requirements; the procedure describes how to carry them out"
+          },
+          {
+            "id": "C",
+            "text": "The policy must contain every mouse click"
+          },
+          {
+            "id": "D",
+            "text": "A policy is only a list of vendor products"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "d67af495508964597dca7c19c31c1e63843336a83d5417b60767240b7eaebc5a"
+    },
+    {
+      "itemVersionId": "fd94dc83-bb17-533b-9d9d-8a15188d2402",
+      "itemId": "931bd074-953b-556f-b36c-10a94fefeae4",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "EASY",
+      "prompt": "An access policy is updated. What should happen to the related offboarding procedure?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Review and revise it so the required actions remain consistent"
+          },
+          {
+            "id": "B",
+            "text": "Keep it unchanged regardless of conflicting steps"
+          },
+          {
+            "id": "C",
+            "text": "Let every operator invent a personal rule"
+          },
+          {
+            "id": "D",
+            "text": "Delete all prior approved versions"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "aa30d0bd2a3f0a47f3e667785c9438795c1f0c8e9fbe6c3350075a06cae42f80"
+    },
+    {
+      "itemVersionId": "868eb68b-9228-5941-9b9b-eceb2b29fb1a",
+      "itemId": "440cf8ba-8968-5721-8f62-166f2ffcdcf9",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "EASY",
+      "prompt": "Why assign an owner to a security policy and its procedures?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "To exempt the owner from every security rule"
+          },
+          {
+            "id": "B",
+            "text": "To guarantee no future update will be needed"
+          },
+          {
+            "id": "C",
+            "text": "To make maintenance, dissemination and review responsibility explicit"
+          },
+          {
+            "id": "D",
+            "text": "To replace approval with informal personal preference"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "4a036ebabe6ada686ac19c17655983a1cbb9da9d376b00d70cd09a47ff266d1e"
+    },
+    {
+      "itemVersionId": "e2a980db-c495-52f9-97bd-a9679ce7ee2f",
+      "itemId": "227c7f8f-5fdb-56b0-af41-aa5abf093998",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "MEDIUM",
+      "prompt": "Policy requires access removal on termination, but the procedure schedules removal at the next monthly batch. What should the owner do?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Remove termination from the policy without authorization"
+          },
+          {
+            "id": "B",
+            "text": "Tell operators to choose whichever timing is easier"
+          },
+          {
+            "id": "C",
+            "text": "Mark both documents consistent because each mentions termination"
+          },
+          {
+            "id": "D",
+            "text": "Resolve the timing conflict through the authorized document/change process and update operations"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "D"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "b6e265eccd6000e7b9f93f3034c89213862ee775b844026cd6fef6c3fbb1f8d9"
+    },
+    {
+      "itemVersionId": "8f894b32-87b0-538e-8c43-aa13913e79af",
+      "itemId": "07b19b8a-aba1-5eea-9d6a-af95ffc846da",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "MEDIUM",
+      "prompt": "A temporary approved exception permits one legacy server to retain a setting until replacement. What should the procedure track?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "No record because the exception is approved"
+          },
+          {
+            "id": "B",
+            "text": "Only a note that 'legacy systems are different'"
+          },
+          {
+            "id": "C",
+            "text": "Exact scope, approval, safeguards, expiry/review and replacement condition"
+          },
+          {
+            "id": "D",
+            "text": "A permanent enterprise-wide exemption"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "7dc100ac6ece553392d5a271d1b0286ae849e8cb744774b28c54c02b678d4406"
+    },
+    {
+      "itemVersionId": "f9751c8c-b836-5732-bdee-f1b899ab108e",
+      "itemId": "b73ef62e-d85f-5f7d-96ed-2141806dad34",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "MEDIUM",
+      "prompt": "An incident reveals that the published response procedure lists a retired team mailbox. What is the appropriate maintenance action?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Validate the responsible contact, approve/publish the correction and notify users of the procedure"
+          },
+          {
+            "id": "B",
+            "text": "Replace it with an unverified personal address"
+          },
+          {
+            "id": "C",
+            "text": "Delete the incident escalation step entirely"
+          },
+          {
+            "id": "D",
+            "text": "Keep the retired mailbox until the next unrelated software release"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "A"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "d4a28c4ed1799b9c35192f6c620d096d0aeb19ec85d065cc61b54dbbd9086034"
+    },
+    {
+      "itemVersionId": "4d5e1462-c494-59b3-b9ce-a97960b6b1ec",
+      "itemId": "3609bd61-ab71-5446-bf45-004fc0892c0d",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "HARD",
+      "prompt": "A policy requires independent approval for privileged access, but an emergency procedure allows the requester to approve their own permanent access. What should the policy owner address?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Declare procedures always override policy"
+          },
+          {
+            "id": "B",
+            "text": "Allow self-approved permanent access for every user"
+          },
+          {
+            "id": "C",
+            "text": "The conflicting exception, with authorized emergency limits and review that preserve the policy's intent"
+          },
+          {
+            "id": "D",
+            "text": "Change the policy's approval date only"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "fd6a37a2dfe7048753d4601a2143e41a6a28a05545ee60d415e90f4c060a5402"
+    },
+    {
+      "itemVersionId": "e6b8958e-9494-5efa-805d-6ef103c5531f",
+      "itemId": "890633d6-2465-5059-b129-01064dab16e9",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "HARD",
+      "prompt": "Two departments maintain different current copies of the same security procedure with contradictory rollback steps. What is the best correction?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Keep both copies current and ask operators to guess"
+          },
+          {
+            "id": "B",
+            "text": "Resolve the content under the designated owner, publish one controlled current version and retire superseded copies visibly"
+          },
+          {
+            "id": "C",
+            "text": "Delete all version history"
+          },
+          {
+            "id": "D",
+            "text": "Combine the steps without reviewing whether they conflict"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "B"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "96def1b39d576a779d2d6f36953f4c7cf09935aeb7f760ab924c0116f5b9dbed"
+    },
+    {
+      "itemVersionId": "22a064de-5578-50f4-8008-84839f9896c9",
+      "itemId": "5cb1e268-fc26-5259-a095-baa6b7d7463f",
+      "version": 1,
+      "microSkillId": "MS-SEC10",
+      "microSkillName": "Maintain security policy procedures",
+      "difficulty": "HARD",
+      "prompt": "A policy review date is reached, and evidence shows the procedure omits a new production platform. What should the review conclude?",
+      "responseSchema": {
+        "type": "SINGLE_CHOICE",
+        "options": [
+          {
+            "id": "A",
+            "text": "Assume the platform is exempt because it is new"
+          },
+          {
+            "id": "B",
+            "text": "Retire the whole policy and all controls immediately"
+          },
+          {
+            "id": "C",
+            "text": "The scope and instructions need an authorized update and validation for the new platform"
+          },
+          {
+            "id": "D",
+            "text": "Change only the review timestamp and mark complete"
+          }
+        ]
+      },
+      "protectedKey": {
+        "correctOptionId": "C"
+      },
+      "publicationState": "DRAFT",
+      "contentHash": "082fb0838f02ab689ad7ee29eab635ba16e15ef509291755066eb10b26af2973"
+    }
+  ]
+}

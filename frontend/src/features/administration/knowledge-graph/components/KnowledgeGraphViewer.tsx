@@ -64,7 +64,7 @@ const GRAPH_NODES: GraphNodeData[] = [
     label: 'MOD-204: Neo4j Cypher Deep Dive',
     group: 'module',
     status: 'mastered',
-    description: 'Comprehensive course covering production Neo4j deployments and APOC procedures.',
+    description: 'Comprehensive learning module covering production Neo4j deployments and APOC procedures.',
   },
   {
     id: 'mod-2',
@@ -193,7 +193,7 @@ export function KnowledgeGraphViewer() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <NetworkIcon className="h-5 w-5 text-primary" />
-              <span>Neo4j Semantic Knowledge Graph Explorer</span>
+              <span>Enterprise Competency Graph Explorer</span>
             </CardTitle>
             <CardDescription className="mt-1">
               Interactive visualization of organizational roles, competencies, skills, and prerequisite learning modules. Click any node to inspect semantic properties.
@@ -238,7 +238,7 @@ export function KnowledgeGraphViewer() {
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-xs bg-primary/80" />
-              <span className="text-muted-foreground">Learning Module (Course)</span>
+              <span className="text-muted-foreground">Learning Module</span>
             </div>
           </div>
         </CardContent>
@@ -281,8 +281,8 @@ export function KnowledgeGraphViewer() {
                 <code className="font-mono text-primary font-bold">{selectedNode.id}</code>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Database Storage:</span>
-                <span className="font-medium text-foreground">Neo4j Property Graph (`:CompetencyNode`)</span>
+                <span className="text-muted-foreground">Ontology Layer:</span>
+                <span className="font-medium text-foreground">Enterprise Competency Model</span>
               </div>
             </div>
 

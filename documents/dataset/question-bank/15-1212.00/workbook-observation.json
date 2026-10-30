@@ -1,0 +1,67 @@
+{
+  "Occupations": {
+    "records": 5,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "TargetRoles": {
+    "records": 48,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "Levels": {
+    "records": 144,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "Competencies": {
+    "records": 472,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "MicroSkills": {
+    "records": 79,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "LearningModules": {
+    "records": 79,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "HAS_ROLE": {
+    "records": 48,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "HAS_LEVEL": {
+    "records": 144,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "REQUIRES_SKILL": {
+    "records": 1891,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "HAS_COMPETENCY": {
+    "records": 472,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "HAS_SKILL": {
+    "records": 1891,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "HAS_SKILL_PREREQUISITE": {
+    "records": 11,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  },
+  "TEACHES": {
+    "records": 79,
+    "idSetsMatch": true,
+    "fieldMismatches": []
+  }
+}

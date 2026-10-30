@@ -1,11 +1,19 @@
 import * as React from 'react'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
+import { baselineTargetMet, pathwaySkill } from '../../../shared/api/initialPathwayMessages'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { Heading } from '../../../shared/components/typography/Heading'
 import {
+  ArrowRight,
+  Award,
   BookOpen,
   Check,
   CheckCircle2,
   CircleDashed,
   Clock,
   Flame,
+  GitFork,
   Layers,
   Lock,
   Search,
@@ -13,12 +21,15 @@ import {
   Target,
   Zap,
 } from 'lucide-react'
-import { Badge } from '../../../shared/components/ui/Badge'
+import { Link } from 'react-router-dom'
+import { Badge, badgeVariants } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { Dialog } from '../../../shared/components/ui/Dialog'
 import { Progress } from '../../../shared/components/ui/Progress'
 import { cn } from '../../../shared/lib/utils'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
+import { normalizeRoleKey } from '../data/employeeOverviewData'
 import {
   type LearningModuleNode,
   type MicroSkillNode,
@@ -27,7 +38,63 @@ import {
 } from '../data/roadmapData'
 import './InteractiveRoleRoadmap.css'
 
-export function InteractiveRoleRoadmap() {
+export interface InteractiveRoleRoadmapProps {
+  pathway?: PathwayView
+  search?: string
+  targetRole?: string
+  isSkillMode?: boolean
+  compact?: boolean
+}
+
+export function InteractiveRoleRoadmap(props: InteractiveRoleRoadmapProps = {}) {
+  return props.pathway ? <ApprovedRoleRoadmap pathway={props.pathway} search={props.search ?? ''} /> : <LegacyInteractiveRoleRoadmap {...props} />
+}
+function ApprovedRoleRoadmap({ pathway, search }: { pathway: PathwayView; search: string }) {
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key)
+  const [selection, setSelection] = React.useState<PathwayDetailSelection>(null)
+  const query = search.trim().toLocaleLowerCase()
+  function skillNode(id: string) {
+    const skill = pathwaySkill(pathway, id), met = baselineTargetMet(skill), known = skill?.mastery != null
+    const matches = !query || `${id} ${skill?.name ?? ''}`.toLocaleLowerCase().includes(query)
+    return <Button key={id} variant="outline" className={cn('roadmap-skill-box h-auto min-h-10 w-full whitespace-normal [&>span]:w-full [&>span]:whitespace-normal', met ? 'is-achieved' : known ? 'is-not-achieved' : 'is-unknown', query && !matches && 'opacity-40', query && matches && 'ring-2 ring-ring')}
+      title={skill?.name ?? id} onClick={() => setSelection({ kind: 'skill', id })}>
+      <span className="max-w-full shrink-0 break-all rounded bg-muted px-1.5 py-0.5 font-mono text-[length:var(--text-eyebrow)] text-foreground">{id}</span>
+      <span className="min-w-0 flex-1 break-words text-left">{skill?.name ?? id}</span>
+      <span className="shrink-0" aria-label={met ? ui('targetMet') : known ? tr('mastery') : tr('unknown')}>{met ? <Check className="size-4 text-success" /> : known ? `${(skill!.mastery! * 100).toLocaleString(language, { maximumFractionDigits: 1 })}%` : '?'}</span>
+    </Button>
+  }
+  return <>
+    <section className="roadmap-container approved-roadmap" aria-label={t('pathway.interactiveRoadmap')}>
+      <div className="roadmap-canvas">
+        <div className="roadmap-target-role-node max-w-full space-y-2"><span className="inline-flex items-center gap-2 text-[length:var(--text-caption)] font-semibold uppercase text-primary"><Target className="size-4" />{tr('targetRole')}</span><Heading level={2} size="page">{pathway.status?.roleName}</Heading><span className="block text-[length:var(--text-body-sm)] text-muted-foreground">{pathway.status?.levelName}</span></div>
+        <div className="roadmap-spine-segment h-12" aria-hidden="true" />
+        {pathway.modules.map(({ module, accessState }, index) => {
+          const targets = [...module.targets].sort((a, b) => Number(b.teachingFocus === 'PRIMARY') - Number(a.teachingFocus === 'PRIMARY'))
+          const matches = !query || `${module.id} ${module.title} ${targets.map(target => pathwaySkill(pathway, target.skillId)?.name ?? target.skillId).join(' ')}`.toLocaleLowerCase().includes(query)
+          return <React.Fragment key={module.id}>
+            <div className={cn('approved-roadmap-row', query && !matches && 'opacity-40')}>
+              <div className="approved-roadmap-skills is-left">{targets.filter((_, i) => (i + index) % 2 === 0).map(target => skillNode(target.skillId))}</div>
+              <Button className="roadmap-module-box h-auto w-full whitespace-normal [&>span]:block [&>span]:w-full [&>span]:whitespace-normal" onClick={() => setSelection({ kind: 'module', id: module.id })}>
+                <span className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-primary-foreground/25 pb-2 text-[length:var(--text-caption)]"><span className="break-all font-mono">{module.id}</span><span className={badgeVariants({ variant: 'outline', className: 'whitespace-normal border-primary-foreground/40 bg-primary-hover text-primary-foreground' })}>{accessState === 'PREVIEW' ? tr('reviewFlow.draft') : tr('state.' + accessState)}</span></span>
+                <span className="block break-words">{module.title}</span>
+              </Button>
+              <div className="approved-roadmap-skills is-right">{targets.filter((_, i) => (i + index) % 2 !== 0).map(target => skillNode(target.skillId))}</div>
+            </div>
+            {index < pathway.modules.length - 1 && <div className="roadmap-spine-segment h-12" aria-hidden="true" />}
+          </React.Fragment>
+        })}
+        <div className="roadmap-spine-segment h-12" aria-hidden="true" />
+        <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-5 py-3 text-[length:var(--text-body-sm)]"><CheckCircle2 className="size-4 text-primary" /><span>{pathway.status?.displayState === 'PREVIEW' ? tr('reviewFlow.draft') : ui(pathway.archived ? 'archivedPlan' : 'approvedPlan')} · {pathway.modules.length} {tr('moduleCount')}</span></div>
+      </div>
+    </section>
+    <InitialPathwayDetails pathway={pathway} selection={selection} onClose={() => setSelection(null)} />
+  </>
+}
+function LegacyInteractiveRoleRoadmap({
+  targetRole: propTargetRole,
+  isSkillMode: propIsSkillMode,
+  compact = false,
+}: InteractiveRoleRoadmapProps = {}) {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
 
   React.useEffect(() => {
@@ -40,12 +107,63 @@ export function InteractiveRoleRoadmap() {
     }
   }, [])
 
-  const selectedRoleKey = 'ai-knowledge-architect'
+  const { profile } = useEmployeeLearningState()
+  const isSkillMode = propIsSkillMode !== undefined ? propIsSkillMode : (profile.selectedViewType === 'skill')
+  const effectiveRole = propTargetRole || profile.targetRole
+  const selectedRoleKey = normalizeRoleKey(effectiveRole)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [selectedDetailSkill, setSelectedDetailSkill] = React.useState<MicroSkillNode | null>(null)
   const [selectedDetailModule, setSelectedDetailModule] = React.useState<LearningModuleNode | null>(null)
 
   const roadmapData: TargetRoleRoadmap = React.useMemo(() => {
+    // If in Skill mode, return dedicated skill roadmap
+    if (isSkillMode) {
+      const currentSkillName = profile.targetSkill || 'Neo4j Cypher Traversal'
+      return {
+        roleId: 'skill-pathway',
+        roleCode: 'SKILL-CYPHER-01',
+        name: `Skill Roadmap: ${currentSkillName}`,
+        jobLevel: profile.targetSkillLevel || 'Intermediate',
+        domain: 'Micro-Skill Upskilling',
+        description: `Dedicated learning pathway and modular curriculum calibrated to master ${currentSkillName}.`,
+        totalModules: 1,
+        totalSkills: 2,
+        achievedSkills: 1,
+        modules: [
+          {
+            id: 'mod-cypher-mastery',
+            moduleCode: 'MOD-CYP-101',
+            title: 'Accelerated Cypher Querying & Pattern Traversal',
+            description: 'Master pattern matching, variable-length path traversal, aggregation pipelines, and graph index optimization using openCypher.',
+            status: 'in_progress',
+            estimatedDurationMinutes: 45,
+            order: 1,
+            branchSide: 'both',
+            microSkills: [
+              {
+                id: 'sk-cyp-01',
+                skillCode: 'SK-CYP-01',
+                name: 'Declarative Cypher MATCH & MERGE',
+                description: 'Path traversal syntax, bidirectional relationship matching, and atomic merge semantics.',
+                status: 'achieved',
+                masteryPercentage: 91,
+                estimatedMinutes: 25,
+              },
+              {
+                id: 'sk-opt-04',
+                skillCode: 'SK-OPT-04',
+                name: 'Cypher Query Profiling (EXPLAIN / PROFILE)',
+                description: 'DbHits analysis, card estimation, cache hits, and Cartesian product elimination.',
+                status: 'not_achieved',
+                masteryPercentage: 45,
+                estimatedMinutes: 20,
+              },
+            ],
+          },
+        ],
+      }
+    }
+
     if (activeCompany.id === 'comp-technova') {
       return TARGET_ROLE_ROADMAPS[selectedRoleKey] || TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
     }
@@ -62,7 +180,7 @@ export function InteractiveRoleRoadmap() {
         id: ms.id,
         skillCode: ms.code,
         name: ms.name,
-        description: ms.observableOutcome || 'Verified operational skill competency.',
+        description: ms.description || 'Verified operational skill competency.',
         status: ms.status === 'published' ? 'achieved' : 'not_achieved',
         masteryPercentage: ms.status === 'published' ? 90 : 50,
         estimatedMinutes: 30,
@@ -81,7 +199,7 @@ export function InteractiveRoleRoadmap() {
       achievedSkills: modules.reduce((acc, m) => acc + m.microSkills.filter((s) => s.status === 'achieved').length, 0),
       modules,
     }
-  }, [activeCompany, selectedRoleKey])
+  }, [activeCompany, selectedRoleKey, isSkillMode, profile.targetSkill, profile.targetSkillLevel, profile.targetRole])
 
   // Derive counts from active company roadmap
   const totalMicroSkills = roadmapData.modules.reduce((acc, m) => acc + m.microSkills.length, 0)
@@ -107,9 +225,9 @@ export function InteractiveRoleRoadmap() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={cn('space-y-6', compact && 'space-y-3.5')}>
       {/* Top Toolbar: Search, Legend & Progress Bar */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
+      <div className={cn('flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs', compact && 'p-3 gap-2.5')}>
         <div className="flex flex-wrap items-center gap-3">
           {/* Quick status counters */}
           <div className="flex items-center gap-3 text-xs">
@@ -122,9 +240,9 @@ export function InteractiveRoleRoadmap() {
           </div>
         </div>
 
-        {/* Search & System Color Legend */}
-        <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-          <div className="relative w-48 sm:w-60">
+        {/* Search */}
+        <div className="flex items-center gap-3 w-full lg:w-auto justify-end">
+          <div className={cn('relative w-48 sm:w-60', compact && 'w-44 sm:w-52')}>
             <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
@@ -134,52 +252,32 @@ export function InteractiveRoleRoadmap() {
               className="w-full pl-8 pr-3 py-1 text-xs bg-muted/40 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
             />
           </div>
-
-          {/* Design System Status Legend */}
-          <div className="hidden sm:flex items-center gap-3 text-[11px] font-medium text-muted-foreground border-l border-border pl-3">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-xs bg-primary inline-block" />
-              <span>Module (Primary)</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-success inline-block" />
-              <span>Success / Achieved</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-warning inline-block" />
-              <span>In Progress</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-secondary border border-primary/40 inline-block" />
-              <span>Not Achieved (Secondary)</span>
-            </span>
-          </div>
         </div>
       </div>
 
       {/* Main Roadmap Canvas (Styled with strict system tokens) */}
-      <div className="roadmap-container">
+      <div className={cn('roadmap-container', compact && 'is-compact')}>
         <div className="roadmap-canvas">
           {/* =========================================================================
               ROOT NODE: TARGET ROLE
              ========================================================================= */}
-          <div className="roadmap-target-role-node group">
+          <div className={cn('roadmap-target-role-node group', compact && 'is-compact')}>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Sparkles size={18} className="text-primary animate-pulse" />
+              <Sparkles size={compact ? 15 : 18} className="text-primary animate-pulse" />
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-primary">
-                Target Role
+                {isSkillMode ? 'Target Skill' : 'Target Role'}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            <h1 className={cn('font-black text-foreground tracking-tight', compact ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl')}>
               {roadmapData.name}
             </h1>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 font-medium">
+            <p className={cn('text-muted-foreground max-w-md mx-auto mt-1 font-medium', compact ? 'text-[11px]' : 'text-xs')}>
               {roadmapData.domain} • {roadmapData.jobLevel}
             </p>
           </div>
 
           {/* Vertical Connecting Spine descending from Target Role */}
-          <div className="w-[2px] h-12 bg-primary my-0" />
+          <div className={cn('w-[2px] bg-primary my-0', compact ? 'h-6' : 'h-12')} />
 
           {/* =========================================================================
               ROADMAP MODULES & FLANKING MICRO-SKILLS
@@ -206,42 +304,67 @@ export function InteractiveRoleRoadmap() {
               return (
                 <div key={module.id} className="w-full flex flex-col items-center relative">
                   {/* Row containing Left Micro-Skills, Center Module, Right Micro-Skills */}
-                  <div className="w-full flex items-center justify-center relative py-5">
+                  <div className={cn('w-full flex items-center justify-center relative', compact ? 'py-2.5' : 'py-5')}>
                     {/* LEFT MICRO-SKILLS FLANK */}
-                    <div className="flex-1 flex flex-col items-end gap-2.5 pr-8 max-w-[340px]">
+                    <div className={cn('flex-1 flex flex-col items-end gap-2.5 pr-8 max-w-[340px]', compact && 'gap-1.5 pr-6 max-w-[280px]')}>
                       {leftSkills.map((skill) => {
                         const isMatch =
                           !searchQuery ||
                           skill.name.toLowerCase().includes(searchQuery.toLowerCase())
                         const isAchieved = skill.status === 'achieved'
+                        const isExamReady = !isAchieved && skill.masteryPercentage >= 70
 
                         return (
                           <div key={skill.id} className="relative group">
                             <div
                               onClick={() => setSelectedDetailSkill(skill)}
-                              className={`roadmap-skill-box ${
-                                isAchieved ? 'is-achieved' : 'is-not-achieved'
-                              } ${!isMatch ? 'opacity-30' : ''}`}
-                              title="Click to view micro-skill details"
+                              className={`roadmap-skill-box ${isAchieved
+                                ? 'is-achieved'
+                                : isExamReady
+                                  ? 'is-exam-ready'
+                                  : 'is-not-achieved'
+                                } ${!isMatch ? 'opacity-30' : ''}`}
+                              title={
+                                isAchieved
+                                  ? 'Completed - Click to view details'
+                                  : isExamReady
+                                    ? 'Exam Ready - Click to take skill exam'
+                                    : 'In Progress - Click to view details'
+                              }
                             >
                               <span
-                                className={`text-[10px] font-mono px-1 py-0.5 rounded font-bold ${
-                                  isAchieved
-                                    ? 'bg-success/15 text-success'
+                                className={`text-[10px] font-mono px-1 py-0.5 rounded font-bold ${isAchieved
+                                  ? 'bg-success/15 text-success'
+                                  : isExamReady
+                                    ? 'bg-amber-500/15 text-black font-bold'
                                     : 'bg-primary/15 text-primary'
-                                }`}
+                                  }`}
                               >
                                 {skill.skillCode}
                               </span>
-                              <span className="text-left flex-1 font-medium">{skill.name}</span>
+                              <div className="text-left flex-1 min-w-0">
+                                <div className="font-medium text-xs leading-snug">{skill.name}</div>
+                              </div>
                               {isAchieved ? (
-                                <Check size={14} className="text-success shrink-0 stroke-[2.5]" />
+                                <div className="flex items-center gap-1 shrink-0" title="Skill Completed">
+                                  <Check size={14} className="text-success stroke-[2.5]" />
+                                </div>
+                              ) : isExamReady ? (
+                                <div className="flex items-center gap-1 shrink-0" title="Exam Ready - Click to take skill exam">
+                                  <span className="text-[10px] font-bold text-black bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">
+                                    {skill.masteryPercentage}%
+                                  </span>
+                                </div>
                               ) : (
-                                <span className="h-2 w-2 rounded-full bg-primary/40 shrink-0" />
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">
+                                    {skill.masteryPercentage}%
+                                  </span>
+                                </div>
                               )}
                             </div>
 
-                            {/* Dotted Connector Line to Center Module */}
+                            {/* Solid Connector Line to Center Module */}
                             <svg
                               className="absolute top-1/2 -right-8 w-8 h-4 pointer-events-none overflow-visible"
                               style={{ transform: 'translateY(-50%)' }}
@@ -251,9 +374,14 @@ export function InteractiveRoleRoadmap() {
                                 y1="8"
                                 x2="32"
                                 y2="8"
-                                stroke={isAchieved ? 'hsl(var(--success))' : 'hsl(var(--primary) / 0.35)'}
+                                stroke={
+                                  isAchieved
+                                    ? 'hsl(var(--success))'
+                                    : isExamReady
+                                      ? 'hsl(var(--warning))'
+                                      : 'hsl(var(--primary) / 0.35)'
+                                }
                                 strokeWidth="1.8"
-                                strokeDasharray="3 3"
                               />
                             </svg>
                           </div>
@@ -302,16 +430,17 @@ export function InteractiveRoleRoadmap() {
                     </div>
 
                     {/* RIGHT MICRO-SKILLS FLANK */}
-                    <div className="flex-1 flex flex-col items-start gap-2.5 pl-8 max-w-[340px]">
+                    <div className={cn('flex-1 flex flex-col items-start gap-2.5 pl-8 max-w-[340px]', compact && 'gap-1.5 max-w-[280px]')}>
                       {rightSkills.map((skill) => {
                         const isMatch =
                           !searchQuery ||
                           skill.name.toLowerCase().includes(searchQuery.toLowerCase())
                         const isAchieved = skill.status === 'achieved'
+                        const isExamReady = !isAchieved && skill.masteryPercentage >= 70
 
                         return (
                           <div key={skill.id} className="relative group">
-                            {/* Dotted Connector Line from Center Module */}
+                            {/* Solid Connector Line from Center Module */}
                             <svg
                               className="absolute top-1/2 -left-8 w-8 h-4 pointer-events-none overflow-visible"
                               style={{ transform: 'translateY(-50%)' }}
@@ -321,33 +450,62 @@ export function InteractiveRoleRoadmap() {
                                 y1="8"
                                 x2="32"
                                 y2="8"
-                                stroke={isAchieved ? 'hsl(var(--success))' : 'hsl(var(--primary) / 0.35)'}
+                                stroke={
+                                  isAchieved
+                                    ? 'hsl(var(--success))'
+                                    : isExamReady
+                                      ? 'hsl(var(--warning))'
+                                      : 'hsl(var(--primary) / 0.35)'
+                                }
                                 strokeWidth="1.8"
-                                strokeDasharray="3 3"
                               />
                             </svg>
 
                             <div
                               onClick={() => setSelectedDetailSkill(skill)}
-                              className={`roadmap-skill-box ${
-                                isAchieved ? 'is-achieved' : 'is-not-achieved'
-                              } ${!isMatch ? 'opacity-30' : ''}`}
-                              title="Click to view micro-skill details"
+                              className={`roadmap-skill-box ${isAchieved
+                                ? 'is-achieved'
+                                : isExamReady
+                                  ? 'is-exam-ready'
+                                  : 'is-not-achieved'
+                                } ${!isMatch ? 'opacity-30' : ''}`}
+                              title={
+                                isAchieved
+                                  ? 'Completed - Click to view details'
+                                  : isExamReady
+                                    ? 'Exam Ready - Click to take skill exam'
+                                    : 'In Progress - Click to view details'
+                              }
                             >
                               <span
-                                className={`text-[10px] font-mono px-1 py-0.5 rounded font-bold ${
-                                  isAchieved
-                                    ? 'bg-success/15 text-success'
+                                className={`text-[10px] font-mono px-1 py-0.5 rounded font-bold ${isAchieved
+                                  ? 'bg-success/15 text-success'
+                                  : isExamReady
+                                    ? 'bg-amber-500/15 text-black font-bold'
                                     : 'bg-primary/15 text-primary'
-                                }`}
+                                  }`}
                               >
                                 {skill.skillCode}
                               </span>
-                              <span className="text-left flex-1 font-medium">{skill.name}</span>
+                              <div className="text-left flex-1 min-w-0">
+                                <div className="font-medium text-xs leading-snug">{skill.name}</div>
+                              </div>
                               {isAchieved ? (
-                                <Check size={14} className="text-success shrink-0 stroke-[2.5]" />
+                                <div className="flex items-center gap-1 shrink-0" title="Skill Completed">
+                                  <Check size={14} className="text-success stroke-[2.5]" />
+                                </div>
+                              ) : isExamReady ? (
+                                <div className="flex items-center gap-1 shrink-0" title="Exam Ready - Click to take skill exam">
+                                  <span className="text-[10px] font-bold text-black bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">
+                                    {skill.masteryPercentage}%
+                                  </span>
+                                </div>
                               ) : (
-                                <span className="h-2 w-2 rounded-full bg-primary/40 shrink-0" />
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">
+                                    {skill.masteryPercentage}%
+                                  </span>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -359,13 +517,15 @@ export function InteractiveRoleRoadmap() {
                   {/* Vertical Spine segment to next module */}
                   {!isLast && (
                     <div
-                      className={`w-[2px] h-12 my-0 ${
+                      className={cn(
+                        'w-[2px] my-0',
+                        compact ? 'h-6' : 'h-12',
                         module.status === 'completed'
                           ? 'bg-success'
                           : module.status === 'in_progress'
                             ? 'bg-warning'
                             : 'bg-border'
-                      }`}
+                      )}
                     />
                   )}
                 </div>
@@ -374,9 +534,9 @@ export function InteractiveRoleRoadmap() {
           </div>
 
           {/* Roadmap Completion Target Checkpoint */}
-          <div className="w-[2px] h-10 bg-border" />
-          <div className="p-3.5 px-6 rounded-xl border border-success bg-success/10 text-foreground flex items-center gap-2 font-bold text-sm shadow-xs">
-            <CheckCircle2 size={18} className="text-success" />
+          <div className={cn('w-[2px] bg-border', compact ? 'h-5' : 'h-10')} />
+          <div className={cn('rounded-xl border border-success bg-success/10 text-foreground flex items-center gap-2 font-bold shadow-xs', compact ? 'p-2.5 px-4 text-xs' : 'p-3.5 px-6 text-sm')}>
+            <CheckCircle2 size={compact ? 16 : 18} className="text-success" />
             <span>Target Role Verified: Production Readiness Capstone</span>
           </div>
         </div>
@@ -578,15 +738,34 @@ export function InteractiveRoleRoadmap() {
                     Part of <strong className="text-foreground">{roadmapData.name}</strong>
                   </span>
                 </div>
-                <div className="flex items-center gap-2 justify-end">
+                <div className="flex items-center gap-2 justify-end flex-wrap">
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="sm"
                     onClick={() => setSelectedDetailModule(null)}
-                    className="shadow-xs"
                   >
-                    Close View
+                    Close
                   </Button>
+                  <Link to={`/employee/assessment?tab=pathway&module=${selectedDetailModule.moduleCode || selectedDetailModule.id}&start=true`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shadow-xs gap-1.5 font-semibold text-primary border-primary/30 hover:bg-secondary"
+                    >
+                      <Award size={13} className="text-primary" />
+                      <span>Take Module Exam</span>
+                    </Button>
+                  </Link>
+                  <Link to={`/employee/modules/${selectedDetailModule.id || 'mod-cypher-mastery'}`}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="shadow-xs gap-1.5 font-semibold"
+                    >
+                      <BookOpen size={13} />
+                      <span>Study Module Content</span>
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -598,18 +777,19 @@ export function InteractiveRoleRoadmap() {
       <Dialog
         open={!!selectedDetailSkill}
         onOpenChange={(open) => !open && setSelectedDetailSkill(null)}
-        className="max-w-xl p-0 sm:p-0 overflow-hidden"
+        className="max-w-lg p-0 sm:p-0 overflow-hidden"
       >
         {selectedDetailSkill && (() => {
           const parentModule = roadmapData.modules.find((m) =>
             m.microSkills.some((s) => s.id === selectedDetailSkill.id)
           )
           const isAchieved = selectedDetailSkill.status === 'achieved'
+          const isExamReady = !isAchieved && selectedDetailSkill.masteryPercentage >= 70
 
           return (
             <div>
-              {/* Hero Banner / Header */}
-              <div className="bg-gradient-to-br from-secondary/50 via-card to-card border-b border-border p-6 sm:p-7 pr-16">
+              {/* Header */}
+              <div className="bg-gradient-to-br from-secondary/40 via-card to-card border-b border-border p-6 sm:p-7 pr-16">
                 <div className="flex flex-wrap items-center gap-2 mb-2.5 max-w-[calc(100%-2.5rem)]">
                   <Badge variant="secondary" className="font-mono text-xs font-bold px-2.5 py-0.5 border border-primary/25">
                     {selectedDetailSkill.skillCode}
@@ -620,19 +800,24 @@ export function InteractiveRoleRoadmap() {
                     </span>
                   )}
                   <Badge
-                    variant={isAchieved ? 'success' : 'outline'}
+                    variant={isAchieved ? 'success' : isExamReady ? 'warning' : 'outline'}
                     className={cn(
                       'font-semibold text-xs px-2.5 py-0.5 flex items-center gap-1.5 shadow-2xs',
-                      !isAchieved && 'bg-muted/40 text-muted-foreground border-border'
+                      isExamReady && 'bg-warning/20 text-amber-800 dark:text-amber-300 border-warning/40',
+                      !isAchieved && !isExamReady && 'bg-muted/40 text-muted-foreground border-border'
                     )}
                   >
                     {isAchieved ? (
                       <>
                         <CheckCircle2 size={12} /> Achieved
                       </>
+                    ) : isExamReady ? (
+                      <>
+                        <Award size={12} /> Exam Ready
+                      </>
                     ) : (
                       <>
-                        <CircleDashed size={12} /> Not Achieved
+                        <CircleDashed size={12} /> In Progress
                       </>
                     )}
                   </Badge>
@@ -646,10 +831,10 @@ export function InteractiveRoleRoadmap() {
               </div>
 
               {/* Body Content */}
-              <div className="p-6 sm:p-7 space-y-5">
+              <div className="p-6 sm:p-7 space-y-4">
                 {/* 2-Column KPI Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-xl border border-border bg-muted/20 flex items-center gap-3.5">
+                  <div className="p-3.5 rounded-xl border border-border bg-card flex items-center gap-3.5 shadow-2xs">
                     <div className="p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
                       <Clock size={18} />
                     </div>
@@ -663,14 +848,14 @@ export function InteractiveRoleRoadmap() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-border bg-muted/20 flex flex-col justify-between gap-2">
+                  <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col justify-between gap-2 shadow-2xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={cn('p-1.5 rounded-md shrink-0', isAchieved ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary')}>
                           <Zap size={15} />
                         </div>
                         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Mastery Calibrated
+                          Current Mastery
                         </span>
                       </div>
                       <span className={cn('text-sm font-bold', isAchieved ? 'text-success' : 'text-primary')}>
@@ -685,47 +870,153 @@ export function InteractiveRoleRoadmap() {
                   </div>
                 </div>
 
-                {/* Ontology Hierarchy Context Box */}
+                {/* Parent Module Context (Read-only metadata reference) */}
                 {parentModule && (
-                  <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                      <BookOpen size={14} className="text-primary" />
-                      <span>Parent Curriculum Module</span>
-                    </div>
-                    <div className="pl-6">
-                      <div className="text-xs font-semibold text-foreground">
-                        {parentModule.moduleCode}: {parentModule.title}
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {parentModule.description}
-                      </p>
+                  <div className="p-3 rounded-xl border border-border bg-muted/20 flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <BookOpen size={14} className="text-primary shrink-0" />
+                      <span className="text-muted-foreground shrink-0">Curriculum Module:</span>
+                      <span className="font-semibold text-foreground truncate">
+                        {parentModule.moduleCode} — {parentModule.title}
+                      </span>
                     </div>
                   </div>
                 )}
 
-                {/* Info Note */}
-                <div className="p-3 rounded-xl border border-border/80 bg-secondary/30 flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed">
-                  <Sparkles size={16} className="text-primary shrink-0 mt-0.5" />
+                {/* Multi-Module Pathway Progression */}
+                {selectedDetailSkill.reinforcedIn && selectedDetailSkill.reinforcedIn.length > 0 && (
+                  <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <GitFork size={13} className="text-primary" />
+                        <span>Multi-Module Pathway Progression</span>
+                      </span>
+                      <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30">
+                        Multi-Course Skill
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      {selectedDetailSkill.learningPathNote ||
+                        `This micro-skill requires progressive practice across modules. Completing ${parentModule?.moduleCode} established foundational understanding; advanced coursework in ${selectedDetailSkill.reinforcedIn.join(', ')} is required along your pathway to reach benchmark proficiency.`}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="p-2.5 rounded-lg bg-muted/40 border border-border text-[11px] flex flex-col gap-1">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Step 1 • Foundation
+                        </div>
+                        <div className="font-semibold text-foreground truncate">{parentModule?.moduleCode}</div>
+                        <div className="text-success font-medium flex items-center gap-1 text-[10px] mt-0.5">
+                          <Check size={11} /> Module Completed ({selectedDetailSkill.masteryPercentage}%)
+                        </div>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/30 text-[11px] flex flex-col gap-1">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Step 2 • Mastery Target
+                        </div>
+                        <div className="font-semibold text-foreground truncate">
+                          {selectedDetailSkill.reinforcedIn.join(', ')}
+                        </div>
+                        <div className="text-primary font-medium flex items-center gap-1 text-[10px] mt-0.5">
+                          <ArrowRight size={11} /> Along Pathway (&ge; 70%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Skill Assessment Eligibility Callout */}
+                {isAchieved ? (
+                  <div className="p-3.5 rounded-xl border border-success/30 bg-success/5 space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={16} className="text-success" />
+                        <span className="text-xs font-bold text-foreground">Skill Certified & Achieved</span>
+                      </div>
+                      <Badge variant="success" className="text-[10px] font-bold">
+                        Certified ({selectedDetailSkill.masteryPercentage}%)
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      You have verified mastery in this micro-skill. Your competency score directly validates readiness for your target role.
+                    </p>
+                  </div>
+                ) : isExamReady ? (
+                  <div className="p-3.5 rounded-xl border border-warning/40 bg-warning/10 space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Award size={16} className="text-amber-800 dark:text-amber-300" />
+                        <span className="text-xs font-bold text-foreground">Skill Assessment Eligible</span>
+                      </div>
+                      <Badge variant="warning" className="text-[10px] font-bold bg-warning/20 text-amber-800 dark:text-amber-300 border border-warning/40">
+                        Target Met ({selectedDetailSkill.masteryPercentage}% &ge; 70%)
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Your current mastery exceeds the benchmark qualification threshold set for this micro-skill. You can attempt the formal skill assessment to certify your competency.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Lock size={15} className="text-muted-foreground" />
+                        <span className="text-xs font-bold text-foreground">Skill Assessment Locked</span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground">
+                        {selectedDetailSkill.masteryPercentage}% of 70% Target
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      This micro-skill certification unlocks once your mastery reaches 70% through module coursework and practice.
+                    </p>
+                  </div>
+                )}
+
+                {/* Clear Human-Centric Skill Status Note */}
+                <div className="p-3.5 rounded-xl border border-border/80 bg-secondary/30 flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed">
+                  <Sparkles size={16} className={cn('shrink-0 mt-0.5', isAchieved ? 'text-success' : 'text-primary')} />
                   <span>
-                    This micro-skill represents an atomic competency in the adaptive knowledge graph. Mastery is evaluated automatically via Bayesian Knowledge Tracing based on diagnostic assessment performance.
+                    {isAchieved
+                      ? 'You have demonstrated mastery in this micro-skill. Its competency contributes directly to your target role readiness.'
+                      : selectedDetailSkill.reinforcedIn && selectedDetailSkill.reinforcedIn.length > 0
+                        ? `You have finished the initial coursework in ${parentModule?.moduleCode || 'this module'}, bringing current mastery to ${selectedDetailSkill.masteryPercentage}%. Continue along the pathway into ${selectedDetailSkill.reinforcedIn.join(', ')} to achieve full proficiency.`
+                        : 'To build and verify proficiency in this micro-skill, complete the coursework and practice exercises in the parent module.'}
                   </span>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="border-t border-border bg-muted/20 px-6 sm:px-7 py-3.5 flex items-center justify-between">
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Target size={14} className="text-primary" />
-                  <span>Calibrated via Knowledge Graph Engine</span>
-                </div>
+              <div className="border-t border-border bg-muted/20 px-6 sm:px-7 py-3 flex items-center justify-between gap-3">
                 <Button
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   onClick={() => setSelectedDetailSkill(null)}
-                  className="shadow-xs"
                 >
                   Close
                 </Button>
+                {isAchieved ? (
+                  <Link to={`/employee/assessment?tab=skills&skill=${selectedDetailSkill.skillCode}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-bold gap-1.5 shadow-xs border-success/40 text-success hover:bg-success/10"
+                    >
+                      <Check size={14} />
+                      <span>Review Assessment</span>
+                    </Button>
+                  </Link>
+                ) : isExamReady ? (
+                  <Link to={`/employee/assessment?tab=skills&skill=${selectedDetailSkill.skillCode}&start=true`}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="font-bold gap-1.5 shadow-xs bg-amber-600 hover:bg-amber-700 text-white border-amber-600"
+                    >
+                      <ArrowRight size={14} />
+                      <span>Take Skill Exam</span>
+                    </Button>
+                  </Link>
+                ) : null}
               </div>
             </div>
           )

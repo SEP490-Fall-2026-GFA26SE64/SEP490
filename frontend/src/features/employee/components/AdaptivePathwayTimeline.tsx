@@ -1,9 +1,19 @@
-import { CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
+import { baselineTargetMet, pathwaySkill } from '../../../shared/api/initialPathwayMessages'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Text } from '../../../shared/components/typography/Text'
+import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
+import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { normalizeRoleKey } from '../data/employeeOverviewData'
 
 export interface PathwayStep {
   id: string
@@ -64,8 +74,130 @@ const INITIAL_PATHWAY: PathwayStep[] = [
   },
 ]
 
-export function AdaptivePathwayTimeline() {
+const BACKEND_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-be-1',
+    code: 'MOD-108',
+    title: 'Event-Driven Microservices & Kafka Stream Processing',
+    status: 'completed',
+    estimatedHours: 4,
+    skillsTaught: ['Kafka Stream Processing', 'Outbox Relay Pattern'],
+    score: 90,
+  },
+  {
+    id: 'step-be-2',
+    code: 'MOD-202',
+    title: 'PostgreSQL Relational Schema Optimization & Indexing',
+    status: 'completed',
+    estimatedHours: 5,
+    skillsTaught: ['PostgreSQL Indexing', 'Lock Contention Analysis'],
+    score: 88,
+  },
+  {
+    id: 'step-be-3',
+    code: 'MOD-304',
+    title: 'Distributed Consensus & Replication Protocols',
+    status: 'recommended',
+    estimatedHours: 6,
+    skillsTaught: ['Raft Consensus', 'gRPC HTTP/2 Streaming'],
+    prerequisite: 'MOD-108',
+  },
+  {
+    id: 'step-be-4',
+    code: 'MOD-402',
+    title: 'Cloud-Native Container Orchestration & Telemetry',
+    status: 'locked',
+    estimatedHours: 8,
+    skillsTaught: ['Kubernetes Workload Meshes', 'OpenTelemetry Tracing'],
+    prerequisite: 'MOD-304',
+  },
+]
+
+const DATA_SCIENTIST_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-ds-1',
+    code: 'MOD-301',
+    title: 'Geometric Deep Learning & Message Passing Networks',
+    status: 'completed',
+    estimatedHours: 5,
+    skillsTaught: ['Graph Convolutional Networks', 'GraphSAGE Inductive Sampling'],
+    score: 86,
+  },
+  {
+    id: 'step-ds-2',
+    code: 'MOD-302',
+    title: 'Graph Representation Learning & Node Embeddings',
+    status: 'recommended',
+    estimatedHours: 6,
+    skillsTaught: ['Node2Vec Biased Random Walks', 'Topological Hyperbolic Geometry'],
+    prerequisite: 'MOD-301',
+  },
+  {
+    id: 'step-ds-3',
+    code: 'MOD-303',
+    title: 'Heterogeneous Knowledge Graphs & Link Prediction',
+    status: 'locked',
+    estimatedHours: 6,
+    skillsTaught: ['Translational Distance Embeddings (TransE / RotatE)', 'Entity Deduplication'],
+    prerequisite: 'MOD-302',
+  },
+  {
+    id: 'step-ds-4',
+    code: 'MOD-403',
+    title: 'Causal Inference & Graph Machine Learning Capstone',
+    status: 'locked',
+    estimatedHours: 8,
+    skillsTaught: ['DAG Causal Discovery', 'GNN Explainer & Subgraph Attribution'],
+    prerequisite: 'MOD-303',
+  },
+]
+
+const SKILL_PATHWAY: PathwayStep[] = [
+  {
+    id: 'step-sk-1',
+    code: 'MOD-CYP-101',
+    title: 'Accelerated Cypher Querying & Pattern Traversal',
+    status: 'recommended',
+    estimatedHours: 3,
+    skillsTaught: ['Declarative Cypher MATCH & MERGE', 'Cypher Query Profiling'],
+    score: 85,
+  },
+]
+
+export function AdaptivePathwayTimeline({ pathway, search = '' }: { pathway?: PathwayView; search?: string } = {}) {
+  return pathway ? <ApprovedPathwayTimeline pathway={pathway} search={search} /> : <LegacyAdaptivePathwayTimeline />
+}
+function ApprovedPathwayTimeline({ pathway, search }: { pathway: PathwayView; search: string }) {
+  const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key)
+  const [selection, setSelection] = React.useState<PathwayDetailSelection>(null), query = search.trim().toLocaleLowerCase()
+  return <>
+    <Card className="min-w-0 overflow-hidden">
+      <CardHeader className="border-b border-border bg-muted/20"><div className="flex items-center gap-2"><Sparkles className="size-5 shrink-0 text-primary" /><Heading level={2} size="subsection">{t('pathway.adaptiveTimeline')}</Heading></div><Text variant="body-sm">{pathway.status?.displayState === 'PREVIEW' ? tr('reviewFlow.previewHelp') : ui('orderHelp')}</Text></CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <div className="relative"><div className="pointer-events-none absolute bottom-6 left-5 top-6 w-px bg-border" aria-hidden="true" /><ol className="relative space-y-6">
+          {pathway.modules.map(({ module, accessState }) => {
+            const matches = !query || `${module.id} ${module.title} ${module.targets.map(target => pathwaySkill(pathway, target.skillId)?.name ?? target.skillId).join(' ')}`.toLocaleLowerCase().includes(query)
+            return <li key={module.id} className={`relative flex min-w-0 items-start gap-3 sm:gap-5 ${matches ? '' : 'opacity-40'}`}>
+              <span className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-xl border-2 ${accessState === 'AVAILABLE' || accessState === 'PREVIEW' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground'}`}>{accessState === 'AVAILABLE' || accessState === 'PREVIEW' ? module.ordinal : <Lock className="size-4" />}</span>
+              <div className="min-w-0 flex-1 space-y-4 rounded-xl border border-border bg-card p-4 shadow-2xs">
+                <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1 basis-48"><Text variant="caption" className="break-all font-mono">{module.id}</Text><Button variant="link" className="h-auto max-w-full whitespace-normal p-0 text-left text-[length:var(--text-card)] font-semibold text-foreground [&>span]:whitespace-normal" onClick={() => setSelection({ kind: 'module', id: module.id })}>{module.ordinal}. {module.title}</Button></div><Badge variant={accessState === 'AVAILABLE' ? 'success' : 'warning'} className="max-w-full whitespace-normal">{accessState === 'PREVIEW' ? tr('reviewFlow.draft') : tr('state.' + accessState)}</Badge></div>
+                <div className="flex flex-wrap gap-4"><Text variant="caption">{(module.durationMinutes / 60).toLocaleString(language, { maximumFractionDigits: 2 })} {ui('hours')}</Text><Text variant="caption">{module.priceVnd.toLocaleString(language)} {tr('price')}</Text></div>
+                <div className="flex min-w-0 flex-wrap gap-2">{module.targets.map(target => { const skill = pathwaySkill(pathway, target.skillId); return <Button key={target.skillId} variant="outline" size="sm" className={`h-auto min-h-9 max-w-full whitespace-normal py-2 text-left [&>span]:whitespace-normal ${baselineTargetMet(skill) ? 'border-success/30 bg-success/10' : 'bg-secondary/40'}`} onClick={() => setSelection({ kind: 'skill', id: target.skillId })}>{baselineTargetMet(skill) && <CheckCircle2 className="size-3 shrink-0 text-success" />}<span className="min-w-0 break-words">{skill?.name ?? target.skillId}</span></Button> })}</div>
+                {module.targets.some(target => target.expertAttention) && <Badge variant="warning">{tr('expertAttention')}</Badge>}
+                <Button variant="ghost" size="sm" onClick={() => setSelection({ kind: 'module', id: module.id })}>{t('upskillingUi.showDetails')}<ChevronRight className="size-4" /></Button>
+              </div>
+            </li>
+          })}
+        </ol></div>
+      </CardContent>
+    </Card>
+    <InitialPathwayDetails pathway={pathway} selection={selection} onClose={() => setSelection(null)} />
+  </>
+}
+function LegacyAdaptivePathwayTimeline() {
   const [activeCompany, setActiveCompany] = React.useState(getActiveCompany)
+  const { profile } = useEmployeeLearningState()
+  const isSkillMode = profile.selectedViewType === 'skill'
 
   React.useEffect(() => {
     const handleSync = () => setActiveCompany(getActiveCompany())
@@ -79,6 +211,11 @@ export function AdaptivePathwayTimeline() {
 
   const defaultSteps: PathwayStep[] = React.useMemo(() => {
     if (activeCompany.id === 'comp-technova') {
+      const isSkillMode = profile.selectedViewType === 'skill'
+      const roleKey = normalizeRoleKey(profile.targetRole)
+      if (isSkillMode) return SKILL_PATHWAY
+      if (roleKey === 'senior-backend-engineer') return BACKEND_PATHWAY
+      if (roleKey === 'graph-data-scientist') return DATA_SCIENTIST_PATHWAY
       return INITIAL_PATHWAY
     }
     if (!activeCompany?.modules || activeCompany.modules.length === 0) {
@@ -94,7 +231,7 @@ export function AdaptivePathwayTimeline() {
       prerequisite: idx > 0 ? activeCompany.modules[idx - 1].code : undefined,
       score: idx === 0 ? 88 : undefined,
     }))
-  }, [activeCompany])
+  }, [activeCompany, profile.selectedViewType, profile.targetRole])
 
   const [steps, setSteps] = React.useState<PathwayStep[]>(defaultSteps)
   React.useEffect(() => {
@@ -143,7 +280,24 @@ export function AdaptivePathwayTimeline() {
     })
   }
 
-  if (steps.length === 0) {
+  const skillSteps: PathwayStep[] = React.useMemo(() => {
+    const currentSkillName = profile.targetSkill || 'Neo4j Cypher Traversal'
+    return [
+      {
+        id: 'step-skill-cypher',
+        code: 'MOD-CYP-101',
+        title: 'Accelerated Cypher Querying & Pattern Traversal',
+        status: 'recommended',
+        estimatedHours: 1,
+        skillsTaught: [currentSkillName],
+        score: 85,
+      },
+    ]
+  }, [profile.targetSkill])
+
+  const effectiveSteps = isSkillMode ? skillSteps : steps
+
+  if (effectiveSteps.length === 0) {
     return (
       <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
         <Sparkles size={32} className="mx-auto text-muted-foreground/60 mb-2" />
@@ -165,23 +319,29 @@ export function AdaptivePathwayTimeline() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                AI-Driven Adaptive Learning Pathway
+                {isSkillMode
+                  ? `Skill Pathway: ${profile.targetSkill || 'Neo4j Cypher Traversal'}`
+                  : 'AI-Driven Adaptive Learning Pathway'}
               </h2>
             </div>
             <p className="text-xs text-muted-foreground">
-              Dynamic graph-traversal route continually recalculated based on real-time assessment performance
+              {isSkillMode
+                ? 'Modular adaptive progression designed to achieve verified single-skill mastery'
+                : 'Dynamic graph-traversal route continually recalculated based on real-time assessment performance'}
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSimulateRemedyFallback}
-            leftIcon={<Zap className="h-4 w-4 text-warning" />}
-            className="self-start md:self-auto shadow-2xs font-semibold"
-          >
-            {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
-          </Button>
+          {!isSkillMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSimulateRemedyFallback}
+              leftIcon={<Zap className="h-4 w-4 text-warning" />}
+              className="self-start md:self-auto shadow-2xs font-semibold"
+            >
+              {hasTriggeredRemedy ? 'Reset Standard Route' : 'Simulate Prerequisite Gap Fallback'}
+            </Button>
+          )}
         </div>
 
         {/* Big Container Body: Continuous Adaptive Timeline Track */}
@@ -191,7 +351,7 @@ export function AdaptivePathwayTimeline() {
             <div className="absolute left-[19px] sm:left-[21px] top-6 bottom-8 w-0.5 bg-border -translate-x-1/2 z-0" />
 
             <div className="space-y-6">
-              {steps.map((step) => {
+              {effectiveSteps.map((step) => {
                 const isRecommended = step.status === 'recommended'
                 const isRemedy = step.status === 'remedy'
                 const isCompleted = step.status === 'completed'
@@ -305,6 +465,15 @@ export function AdaptivePathwayTimeline() {
                             </Badge>
                           ))}
                         </div>
+
+                        {!isLocked && (
+                          <Link to="/employee/modules/mod-cypher-mastery">
+                            <Button variant="outline" size="sm" className="text-xs h-7 gap-1">
+                              <span>Open Module Lessons</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -1,4 +1,10 @@
 export const viPhrases: Record<string, string> = {
+  'Expand sidebar': 'Mở thanh điều hướng',
+  'Collapse sidebar': 'Thu gọn thanh điều hướng',
+  'User actions menu': 'Menu tài khoản',
+  'Notifications unavailable': 'Chưa có thông báo',
+  'Sign out failed': 'Đăng xuất thất bại',
+  'Sign out is unavailable. Refresh and retry.': 'Không thể đăng xuất. Tải lại và thử lại.',
   // ==========================================
   // NAVIGATION & PORTALS
   // ==========================================
@@ -98,6 +104,9 @@ export const viPhrases: Record<string, string> = {
   'Guest Registration': 'Đăng ký Khách hàng',
   'Sign In': 'Đăng nhập',
   'Guest Sign Up': 'Đăng ký Khách',
+  'Sign Up as Guest': 'Đăng ký Khách',
+  "Don't have an account?": 'Chưa có tài khoản?',
+  'New organization?': 'Tổ chức mới?',
   'Enter your email': 'Nhập địa chỉ email của bạn',
   'Passcode': 'Mật khẩu',
   'Show': 'Hiện',
@@ -198,6 +207,8 @@ export const viPhrases: Record<string, string> = {
   'Pathway Progression': 'Tiến độ lộ trình học tập',
   'Adaptivity Hours Saved': 'Số giờ tiết kiệm nhờ thích ứng',
   'Competency Radar Analysis': 'Phân tích biểu đồ radar năng lực',
+  'RIASEC Radar Analysis': 'Phân tích biểu đồ radar RIASEC',
+  'Micro-Skill Proficiency': 'Mức độ thành thạo vi kỹ năng',
   'Micro-Skill Proficiency Breakdown': 'Chi tiết mức độ thành thạo vi kỹ năng',
   'Search micro-skills or categories...': 'Tìm kiếm vi kỹ năng hoặc danh mục...',
   'All Categories': 'Tất cả danh mục',
@@ -394,7 +405,7 @@ export const viPhrases: Record<string, string> = {
   'Cost Savings Forecast': 'Dự báo chi phí tiết kiệm',
   'Projected Time to Competency': 'Thời gian dự kiến đạt chuẩn năng lực',
   '+14% improvement this quarter': '+14% cải thiện trong quý này',
-  'Saved via adaptive knowledge-gap skipping vs rigid traditional LMS courses.': 'Tiết kiệm nhờ bỏ qua phần kiến thức đã vững thay vì học tuần tự truyền thống.',
+  'Saved via adaptive knowledge-gap skipping vs rigid traditional training.': 'Tiết kiệm nhờ bỏ qua phần kiến thức đã vững thay vì đào tạo cứng nhắc tuần tự.',
 
   // ==========================================
   // MANAGER: LEARNING OUTCOMES
@@ -409,6 +420,21 @@ export const viPhrases: Record<string, string> = {
   'Completion Rate': 'Tỷ lệ hoàn thành',
   'Gap Closure Rate': 'Tỷ lệ thu hẹp khoảng cách',
   'Target End Date': 'Ngày kết thúc dự kiến',
+
+  // ==========================================
+  // EXPERT: ASSIGNED ROLES
+  // ==========================================
+  'Assigned Target Roles': 'Vai trò mục tiêu được giao',
+  'Assigned Target Roles Catalog': 'Danh mục vai trò mục tiêu được giao',
+  'Review target roles assigned to your domain expertise by L&D Managers and configure required micro-skill proficiency thresholds.': 'Xem xét các vai trò mục tiêu được Quản lý Đào tạo giao cho chuyên môn của bạn và thiết lập ngưỡng chuẩn vi kỹ năng.',
+  'Drafts Awaiting Skills': 'Bản nháp chờ cấu hình kỹ năng',
+  'Configured Skill Targets': 'Mục tiêu kỹ năng đã cấu hình',
+  'Assigned Domain Focus': 'Lĩnh vực chuyên môn phụ trách',
+  'Configure Micro-skills': 'Cấu hình vi kỹ năng',
+  'View Skill Targets': 'Xem mục tiêu kỹ năng',
+  'Add Micro-skill Target': 'Thêm mục tiêu vi kỹ năng',
+  'Micro-skill Authoring': 'Thiết lập vi kỹ năng',
+  'Publish Role to Graph': 'Xuất bản vai trò lên Đồ thị',
 
   // ==========================================
   // EXPERT: ONTOLOGY & SKILLS
@@ -466,6 +492,26 @@ export const viPhrases: Record<string, string> = {
   'Organizational Role & Competency Mappings': 'Ánh xạ vai trò & năng lực tổ chức',
   'Define required competencies and micro-skill thresholds for each organizational role in the ontology.': 'Định nghĩa các năng lực bắt buộc và ngưỡng vi kỹ năng cho từng vai trò trong bản thể tổ chức.',
   'Add Role / Skill Node': 'Thêm nút Vai trò / Kỹ năng',
+  'Competency Engine: Operational': 'Động cơ Năng lực: Hoạt động',
+  'Competency Graph Engine Connected': 'Đã kết nối Động cơ Đồ thị Năng lực',
+  'Enterprise Competency Knowledge Graph': 'Đồ thị tri thức năng lực doanh nghiệp',
+  'Enterprise Competency Graph Explorer': 'Trình khám phá đồ thị năng lực doanh nghiệp',
+  'Organization Governance & Operations': 'Quản trị Tổ chức & Vận hành',
+  'Team Competency Matrix & Gap Analysis': 'Ma trận Năng lực Đội ngũ & Phân tích Khoảng trống',
+  'Career Guidance & Role Alignment': 'Định hướng Nghề nghiệp & Định vị Vai trò',
+  'Adaptive Pathway Quality Review': 'Thẩm định Chất lượng Lộ trình Thích ứng',
+  'Account Profile & Security': 'Hồ sơ Tài khoản & Bảo mật',
+  'System Health & API Telemetry': 'Tình trạng Hệ thống & Đo lường API',
+  'View Competency Knowledge Graph': 'Xem Đồ thị Tri thức Năng lực',
+  'Learning Module Catalog': 'Danh mục Học phần Đào tạo',
+  'Target Roles & Competency Catalog': 'Danh mục Vai trò Mục tiêu & Năng lực',
+  'Training ROI & Workforce Forecast': 'Dự báo Lợi tức Đào tạo & Nguồn nhân lực',
+  'Competency Framework & Skill Ontology': 'Khung Năng lực & Bản thể Kỹ năng',
+  'Occupational Framework & Disciplines': 'Khung Nghề nghiệp & Chuyên ngành',
+  'Workforce Learning Outcomes': 'Kết quả Học tập của Đội ngũ',
+  'Assessment Question Bank & Blueprints': 'Ngân hàng Câu hỏi & Đề thi Đánh giá',
+  'Skill Discovery & Target Roles': 'Khám phá Kỹ năng & Vai trò Mục tiêu',
+  'Baseline Assessment Configurations': 'Cấu hình Đánh giá Năng lực Đầu vào',
   'Neo4j Bolt: Active': 'Kết nối Neo4j Bolt: Hoạt động',
   'Neo4j Graph Database Connected': 'Đã kết nối cơ sở dữ liệu Neo4j',
   'Organizational Competency Knowledge Graph': 'Đồ thị tri thức năng lực tổ chức',
@@ -518,4 +564,28 @@ export const viPhrases: Record<string, string> = {
   'Typography Scale': 'Thang đo kiểu chữ chuẩn',
   'Interactive Components': 'Các thành phần tương tác',
   'Elevation & Surfaces': 'Độ nổi & Bề mặt phẳng',
+
+  // ==========================================
+  // HUMAN-CENTRIC BENEFIT PHRASES & AUDIT FIXES
+  // ==========================================
+  'Organize company departments, assign leadership, and track team competency coverage across your business units.':
+    'Tổ chức các phòng ban doanh nghiệp, bổ nhiệm lãnh đạo và theo dõi mức độ đáp ứng năng lực của đội ngũ.',
+  'Live competency scores mapped against benchmark target role proficiencies':
+    'Điểm năng lực trực tiếp được đối chiếu với tiêu chuẩn vai trò mục tiêu',
+  'All Pathways Processed': 'Tất cả lộ trình đã được xử lý',
+  'There are currently no adaptive learning pathways awaiting expert review. All assigned pathways have been processed.':
+    'Hiện không có lộ trình học tập thích ứng nào đang chờ chuyên gia duyệt. Tất cả lộ trình đã được xử lý.',
+  'Tenant Workspace Isolation & Storage': 'Phân vùng Không gian làm việc & Lưu trữ Tổ chức',
+  'Knowledge & Competency Graph Engine': 'Công cụ Đồ thị Tri thức & Năng lực',
+  'Take Module Exam': 'Làm bài thi Mô-đun',
+  'Back to Pathway': 'Quay lại Lộ trình',
+  'Pathway & Content Approvals': 'Phê duyệt Lộ trình & Nội dung Đào tạo',
+  'Review adaptive learning pathways tailored for team members, customize recommended offerings, and approve learning plans.':
+    'Xem xét các lộ trình học tập thích ứng được cá nhân hóa cho thành viên đội ngũ, tùy chỉnh các học phần đề xuất và phê duyệt kế hoạch học tập.',
+  'All Pathways and Offerings Processed': 'Tất cả lộ trình và học phần đã được xử lý xong',
+  'There are currently no learning offerings or pathways awaiting review. Any new submissions from domain experts will appear here.':
+    'Hiện không có nội dung học phần hoặc lộ trình nào đang chờ xét duyệt. Mọi đề xuất mới từ chuyên gia sẽ xuất hiện tại đây.',
+  'User Directory & Entitlements': 'Danh bạ Người dùng & Giấy phép',
+  'Manage workforce licenses, assign portal roles, and monitor team seat utilization.':
+    'Quản lý giấy phép nhân sự, phân quyền vai trò và giám sát mức độ sử dụng chỗ ngồi của đội ngũ.',
 }

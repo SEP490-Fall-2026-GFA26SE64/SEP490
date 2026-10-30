@@ -1,0 +1,103 @@
+{
+  "recordedAt": "2026-10-22T22:28:00.016304+07:00",
+  "containerId": "de26f6f2a5107cd7fdb9567996006ea96ffd5d28e1374f3ae832d475e47aa3a0",
+  "mounts": [
+    {
+      "Name": "adapt-learn-graph-dev_neo4j_data",
+      "Destination": "/data"
+    },
+    {
+      "Name": "fad0bcb57b3ef515c73667b254a1d2f449190980595526602023e9a06f74c265",
+      "Destination": "/logs"
+    }
+  ],
+  "readOnlyQueries": [
+    "MATCH (n) RETURN labels(n) AS labels, properties(n) AS props",
+    "MATCH (a)-[r]->(b) RETURN type(r) AS kind,a.id AS src,b.id AS dst,properties(r) AS props",
+    "SHOW CONSTRAINTS YIELD name,type,labelsOrTypes,properties RETURN name,type,labelsOrTypes,properties"
+  ],
+  "sourceSha256": "0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125",
+  "nodes": 827,
+  "relationships": 4536,
+  "exactFullPayloadMatches": true,
+  "canonicalNodesSha256": "e5e777810f8f6a1c089f742ee9fe34529457ecebbd1a2eaf3b098c1b50c4f015",
+  "canonicalRelationshipsSha256": "9786cb3a11eaac345631577eb5e6c383d0e8ec1c89885c755f6d0827419e41a6",
+  "constraints": [
+    {
+      "name": "ontology_v08_competency_id",
+      "type": "UNIQUENESS",
+      "labelsOrTypes": [
+        "Competency"
+      ],
+      "properties": [
+        "id"
+      ]
+    },
+    {
+      "name": "ontology_v08_learningmodule_id",
+      "type": "UNIQUENESS",
+      "labelsOrTypes": [
+        "LearningModule"
+      ],
+      "properties": [
+        "id"
+      ]
+    },
+    {
+      "name": "ontology_v08_level_id",
+      "type": "UNIQUENESS",
+      "labelsOrTypes": [
+        "Level"
+      ],
+      "properties": [
+        "id"
+      ]
+    },
+    {
+      "name": "ontology_v08_microskill_id",
+      "type": "UNIQUENESS",
+      "labelsOrTypes": [
+        "MicroSkill"
+      ],
+      "properties": [
+        "id"
+      ]
+    },
+    {
+      "name": "ontology_v08_occupation_id",
+      "type": "UNIQUENESS",
+      "labelsOrTypes": [
+        "Occupation"
+      ],
+      "properties": [
+        "id"
+      ]
+    },
+    {
+      "name": "ontology_v08_targetrole_id",
+      "type": "UNIQUENESS",
+      "labelsOrTypes": [
+        "TargetRole"
+      ],
+      "properties": [
+        "id"
+      ]
+    }
+  ],
+  "occupation": {
+    "code": "15-1212.00",
+    "jobZone": 4,
+    "interestEnterprising": 0.308333,
+    "interestConventional": 0.846667,
+    "interestInvestigative": 0.733333,
+    "version": "0.8.0",
+    "interestArtistic": 0.056667,
+    "interestSocial": 0.185,
+    "name": "Information Security Analysts",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "id": "OCC-15-1212.00",
+    "interestRealistic": 0.426667,
+    "status": "ACTIVE"
+  },
+  "limits": "Read-only graph parity after main Compose startup, no import/schema/write/readiness approval."
+}

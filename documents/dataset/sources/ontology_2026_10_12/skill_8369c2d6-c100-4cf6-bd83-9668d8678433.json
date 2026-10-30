@@ -1,0 +1,436 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F8369c2d6-c100-4cf6-bd83-9668d8678433&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433",
+    "title": "utilise machine learning",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "maschinelles Lernen einsetzen",
+      "no": "benytte maskinlæring",
+      "fi": "käyttää koneoppimista",
+      "pt": "utilizar aprendizagem por máquina",
+      "bg": "използване на машинно учене",
+      "lt": "naudoti mašinų mokymąsi",
+      "lv": "izmantot mašīnmācīšanos",
+      "hr": "iskoristiti strojno učenje",
+      "fr": "utiliser l’apprentissage automatique",
+      "hu": "gépi tanulást alkalmaz",
+      "uk": "використовувати машинне навчання",
+      "sk": "použiť strojové učenie",
+      "sl": "uporabiti strojno učenje",
+      "ga": "meaisínfhoghlaim a úsáid",
+      "sv": "använda sig av maskininlärning",
+      "mt": "użu ta’ tagħlim permezz tal-magni",
+      "el": "χρήση μηχανικής μάθησης",
+      "en": "utilise machine learning",
+      "is": "nýtir vélfræðinám",
+      "it": "utilizzare sistemi di apprendimento automatico",
+      "es": "utilizar aprendizaje automático",
+      "et": "masinõpet kasutama",
+      "cs": "využívat strojové učení",
+      "ar": "استخدام التعلم الآلي",
+      "pl": "wykorzystywać uczenie maszynowe",
+      "ro": "utilizează învățarea automatizată",
+      "da": "anvende maskinindlæring",
+      "nl": "machinaal leren gebruiken"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "užívat strojové učení",
+        "využít strojové učení",
+        "uplatňovat metody strojového učení",
+        "používat techniky strojového učení",
+        "využívat postupy strojového učení",
+        "užít strojové učení"
+      ],
+      "mt": [
+        "tuża l-machine learning",
+        "tutilizza tekniki tat-tagħlim bil-magni"
+      ],
+      "en": [
+        "use machine learning",
+        "perform machine learning",
+        "carry out machine learning",
+        "utilize machine learning"
+      ],
+      "nl": [
+        "kunstmatige intelligentie ontwikkelen",
+        "processen inzetten voor zelflerende machines",
+        "machine learning",
+        "machine learning gebruiken",
+        "technieken en algoritmen gebruiken om gegevens te laten extraheren en gebruiken door machines"
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Verwenden von Techniken und Algorithmen, die aus Daten Wissen extrahieren, daraus lernen und Prognosen erstellen und die für die Programmoptimierung, die Anpassung von Anwendungen, die Mustererkennung, das Filtern, für Suchmaschinen und maschinelles Sehen verwendet werden.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Bruke teknikker og algoritmer for å samle inn data, lære av informasjonen og utarbeide prognoser i forbindelse med optimalisering av program, tilpasning av applikasjon, mønstergjenkjenning, filtrering, søkemotorer og maskinell synsevne.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Käyttää sellaisia tekniikoita ja algoritmeja, joilla kone voi oppia datan perusteella ja tehdä sen pohjalta ennusteita, joita voidaan käyttää ohjelmistojen optimointiin, sovellusten mukauttamiseen, kuvioiden tunnistamiseen, suodattamiseen, hakukoneissa ja tietokonenäössä.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Utilizar técnicas e algoritmos capazes de retirar conhecimentos a partir de dados, aprender com eles e fazer previsões, para otimização de programas, adaptação de aplicações, reconhecimento de padrões, filtragem, motores de pesquisa e visão computacional.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Използва техники и алгоритми, които са в състояние да извличат познания от данни, овладяват ги и правят прогнози, които да се използват за оптимизация на програмите, адаптиране на приложението, разпознаване на модели, филтриране, търсачки и компютърна визия.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Naudoti metodus ir algoritmus, kurie padeda įgyti meistriškumo įgūdžių ir mokytis iš duomenų ir daryti prognozes, ir naudoti įgytą meistriškumą programoms optimizuoti, pritaikyti, modeliams atpažinti, filtruoti, paieškos sistemoms ir kompiuterinei regai.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izmantot metodes un algoritmus, kas spēj izgūt datus.  Analizēt datus un prognozēt darbības programmu optimizācijai, lietojumprogrammu pielāgošanai, modeļa atpazīšanai, filtrēšanai, meklētājprogrammām un datorredzei.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Upotrebljavati tehnike i algoritme koji mogu izvući vještine iz podataka, učiti iz njih i izrađivati predviđanja koja će se upotrebljavati za optimizaciju programa, prilagođavanje aplikacija, prepoznavanje obrazaca, filtriranje, pretraživače i računalni vid.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Utiliser des techniques et des algorithmes capables d’extraire la maîtrise des données, d’en tirer des enseignements et de faire des prédictions, qui seront utilisés pour l’optimisation des programmes, l’adaptation des applications, la reconnaissance des modèles, le filtrage, les moteurs de recherche et la vision par ordinateur.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Olyan technikákat és algoritmusokat alkalmaz, amelyek lehetővé teszik, hogy az adatok kinyerését, tanulságok levonását és előrejelzések készítését, amelyeket programoptimalizáláshoz, az alkalmazásadaptáláshoz, mintafelismeréshez, szűréshez, a keresőmotorokhoz és a számítógépes látáshoz kell felhasználni.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Використовувати методи й алгоритми, які сприяють оволодінню майстерністю на основі даних, учитися за їх допомогою й робити прогнози, щоб використовувати їх для оптимізації й адаптації програм, розпізнавання шаблонів, фільтрування, для пошукових систем та інструментів комп’ютерного розпізнавання образів.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Používať techniky a algoritmy, ktoré dokážu extrahovať znalosti z údajov, učiť sa z nich a vytvárať predpovede, ktoré sa majú použiť na optimalizáciu programu, úpravu aplikácie, rozpoznávanie vzorcov, filtrovanie, vyhľadávače a počítačové videnie.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Uporabiti tehnike in algoritme, ki lahko iz podatkov izvlečejo strokovna znanja, se iz njih učiti in oblikovati napovedi, ki se uporabijo za optimizacijo programa, prilagajanje aplikacije, prepoznavanje vzorcev, filtriranje, iskalnike in računalniški vid.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Teicnící agus algartaim a úsáid ar nithe iad atá in ann máistreacht a bhaint as sonraí, foghlaim uaidh sin agus réamhaisnéisí a dhéanamh a úsáidfear le haghaidh optamú clár, oiriúnú feidhmchlár, aithint patrún, scagadh, innill chuardaigh agus fís ríomhaire.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Använda tekniker och algoritmer som kan behärska data, lära sig av dem och göra prognoser som kan användas för optimering, programanpassning, mönsterigenkänning, filtrering, sökmotorer och datorseende.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Uża tekniki u algoritmi li huma kapaċi jisiltu padrunanza tad-data, tgħallem minnha u agħmel previżjonijiet, li għandhom jintużaw għall-ottimizzazzjoni tal-programm, l-adattament tal-applikazzjonijiet, ir-rikonoxximent tad-disinn, il-filtrazzjoni, il-magni tat-tiftix u l-vista tal-kompjuter.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Χρήση τεχνικών και αλγορίθμων που μπορούν να εξάγουν γνώση από δεδομένα, να μαθαίνουν από αυτά και να κάνουν προβλέψεις, για τη βελτιστοποίηση προγραμμάτων, την προσαρμογή των εφαρμογών, την αναγνώριση προτύπων, το φιλτράρισμα, τις μηχανές αναζήτησης και την υπολογιστική όραση.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Use techniques and algorithms that are able to extract mastery out of data, learn from it and make predictions, to be used for program optimisation, application adaptation, pattern recognition, filtering, search engines and computer vision.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Notar tækni og reiknirit sem geta dregið þekkingu úr gögnum, lærir af þeim og spáir fyrir um. Notað fyrir bestun í forritun, aðlögun forrita, til að bera kennsl á mynstur, síun, leitarvélar og tölvusjón.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Utilizzare tecniche e algoritmi in grado di estrarre conoscenza approfondita da dati, di imparare da essa e di fare previsioni, da utilizzare per l’ottimizzazione dei programmi, l’adattamento per applicazioni, il riconoscimento di modelli, la filtrazione, i motori di ricerca e la visione informatica.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Utilizar técnicas y algoritmos capaces de extraer maestros a partir de datos, aprender de ellos y hacer predicciones que se utilizarán para optimizar programas, adaptar aplicaciones, reconocer patrones, filtrar, en motores de búsqueda y visión informática.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Tehnikate ja algoritmide kasutamine, millega saab andmeid koguda, neist õppida ja nende järgi prognoosida, et kasutada neid programmide optimeerimiseks, rakenduste kohandamiseks, mustrite tuvastamiseks, filtrimiseks, otsingumootorite jaoks ja raalnägemiseks.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Používat techniky a algoritmy, které jsou schopny extrahovat znalosti z dat, učit se z nich a vytvářet předpovědi, které se používají pro optimalizaci programů, přizpůsobení aplikací, rozpoznávání vzorců, filtrování, vyhledávače a počítačové vidění.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "استخدام التقنيات والخوارزميات القادرة على استخراج الجوانب المهارية من البيانات، والتعلم منها، ووضع التوقعات، وذلك لاستخدامها في تحسين البرامج، وتعديل التطبيقات، والتعرف على الأنماط، والتصفية، ومحركات البحث، ورؤيا الحاسوب.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Stosować techniki i algorytmy, które są w stanie wydobyć najważniejsze informacje z danych, uczyć się na ich podstawie oraz przedstawiać prognozy, służące do optymalizacji programów, dostosowywania aplikacji, rozpoznawania wzorców i filtrowania oraz używane w mechanizmach wyszukiwawczych i systemach wizyjnych.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Utilizează tehnici și algoritmi care pot extrage cele mai importante informații din date, învață din acestea și face predicții care să fie utilizate pentru optimizarea programelor, adaptarea aplicațiilor, recunoașterea modelului, filtrare, motoarele de căutare și viziunea computerului.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Anvende teknikker og algoritmer, der kan uddrage beherskelse fra data, lære af det og gøre forudsigelser til brug for programoptimering, tilpasning af applikationer, mønstergenkendelse, filtrering, søgemaskiner og computersyn.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Technieken en algoritmen gebruiken die in staat zijn om kennis te nemen van gegevens, van informatie te leren en voorspellingen te doen, om deze te gebruiken voor de optimalisatie van een programma, toepassingen aan te passen, patronen te herkennen, te filteren, in zoekmachines en in computervisie.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433&language=en",
+        "uri": "http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433",
+        "title": "utilise machine learning"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/6ce5f7e3-a534-4aa2-ab23-255408ddb53a&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/6ce5f7e3-a534-4aa2-ab23-255408ddb53a",
+          "title": "IoT developer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5a58da2b-2fa0-40d4-a9f5-fead48e7de88&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5a58da2b-2fa0-40d4-a9f5-fead48e7de88",
+          "title": "naval architect"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/615920c5-4f63-4eb3-8b60-afaaed3ab1ff&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/615920c5-4f63-4eb3-8b60-afaaed3ab1ff",
+          "title": "maintenance and repair engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ac37627c-a999-4779-997e-9795cc4f9a3d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ac37627c-a999-4779-997e-9795cc4f9a3d",
+          "title": "power distribution engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/04849c5c-9236-4a75-aabb-11c6d03e459c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/04849c5c-9236-4a75-aabb-11c6d03e459c",
+          "title": "marine engineering technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/42dbb769-4c91-47dc-bd16-ec8e70c4180f&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/42dbb769-4c91-47dc-bd16-ec8e70c4180f",
+          "title": "solar energy engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/7ef064b1-aab8-4818-a468-8f17acbfd995&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/7ef064b1-aab8-4818-a468-8f17acbfd995",
+          "title": "hydropower technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1ff61522-8947-4c95-b589-cb0e0539a62b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1ff61522-8947-4c95-b589-cb0e0539a62b",
+          "title": "energy systems engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/75b63949-1b93-4bf2-a777-ccf978dc3e8a&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/75b63949-1b93-4bf2-a777-ccf978dc3e8a",
+          "title": "solar energy technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+          "title": "artificial intelligence engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1d196f32-05ca-4ea5-a347-4fccbb3da863&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1d196f32-05ca-4ea5-a347-4fccbb3da863",
+          "title": "marine electronics technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2ac509e8-2850-42c3-b11d-d24077a7921b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2ac509e8-2850-42c3-b11d-d24077a7921b",
+          "title": "marine engineering drafter"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7",
+          "title": "application engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/e6800524-eec2-4c33-af0e-6f36d1d679bc&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/e6800524-eec2-4c33-af0e-6f36d1d679bc",
+          "title": "instrumentation engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2bb8adee-2b84-4d7b-84f9-0620bc09ada8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2bb8adee-2b84-4d7b-84f9-0620bc09ada8",
+          "title": "instrumentation engineering technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/58db3ac6-5217-4d46-8a4c-126598be1d13&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/58db3ac6-5217-4d46-8a4c-126598be1d13",
+          "title": "electric power generation engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/27811419-407f-4868-a388-2f7df7aafd91&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/27811419-407f-4868-a388-2f7df7aafd91",
+          "title": "electronics engineering technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ba490796-46f7-45b7-827b-db6882fca3e1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ba490796-46f7-45b7-827b-db6882fca3e1",
+          "title": "onshore wind energy engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c44c37a2-88c3-4ac2-9cf9-959f42deb02b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c44c37a2-88c3-4ac2-9cf9-959f42deb02b",
+          "title": "offshore renewable energy engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+          "title": "software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/51c7015c-dc81-4fcb-b15f-619a4656a9fe&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/51c7015c-dc81-4fcb-b15f-619a4656a9fe",
+          "title": "electromechanical engineering technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0e99c929-364f-4b0a-8a64-2aab42420f00&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0e99c929-364f-4b0a-8a64-2aab42420f00",
+          "title": "renewable energy engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1e2aaeff-5bf1-4649-9f09-9ebbd5cc3501&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1e2aaeff-5bf1-4649-9f09-9ebbd5cc3501",
+          "title": "electromechanical drafter"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ef5b17a5-3ca8-4965-bd3d-61c4aca490d1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ef5b17a5-3ca8-4965-bd3d-61c4aca490d1",
+          "title": "document management officer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/77abfaec-a250-4765-95fa-6091e8da1bba&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/77abfaec-a250-4765-95fa-6091e8da1bba",
+          "title": "electromechanical engineer"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "utilise machine learning",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433&language=en",
+              "uri": "http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

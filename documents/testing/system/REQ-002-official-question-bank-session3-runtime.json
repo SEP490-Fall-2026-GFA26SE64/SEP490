@@ -1,0 +1,190 @@
+{
+  "recordedAt": "2026-10-22T22:30:45.909650+07:00",
+  "startupCommand": "docker compose -f compose.dev.yml up --build -d",
+  "startupExit": 0,
+  "services": [
+    {
+      "Service": "api",
+      "Name": "adapt-learn-graph-dev-api-1",
+      "State": "running",
+      "Health": "healthy",
+      "ExitCode": 0,
+      "Publishers": [
+        {
+          "URL": "127.0.0.1",
+          "TargetPort": 8080,
+          "PublishedPort": 18080,
+          "Protocol": "tcp"
+        }
+      ]
+    },
+    {
+      "Service": "migrate",
+      "Name": "adapt-learn-graph-dev-migrate-1",
+      "State": "exited",
+      "Health": "",
+      "ExitCode": 0,
+      "Publishers": []
+    },
+    {
+      "Service": "neo4j",
+      "Name": "adapt-learn-graph-dev-neo4j-1",
+      "State": "running",
+      "Health": "healthy",
+      "ExitCode": 0,
+      "Publishers": [
+        {
+          "URL": "127.0.0.1",
+          "TargetPort": 7474,
+          "PublishedPort": 7474,
+          "Protocol": "tcp"
+        },
+        {
+          "URL": "127.0.0.1",
+          "TargetPort": 7687,
+          "PublishedPort": 7687,
+          "Protocol": "tcp"
+        }
+      ]
+    },
+    {
+      "Service": "postgres",
+      "Name": "adapt-learn-graph-dev-postgres-1",
+      "State": "running",
+      "Health": "healthy",
+      "ExitCode": 0,
+      "Publishers": [
+        {
+          "URL": "127.0.0.1",
+          "TargetPort": 5432,
+          "PublishedPort": 15432,
+          "Protocol": "tcp"
+        }
+      ]
+    },
+    {
+      "Service": "web",
+      "Name": "adapt-learn-graph-dev-web-1",
+      "State": "running",
+      "Health": "",
+      "ExitCode": 0,
+      "Publishers": [
+        {
+          "URL": "127.0.0.1",
+          "TargetPort": 5173,
+          "PublishedPort": 8088,
+          "Protocol": "tcp"
+        }
+      ]
+    }
+  ],
+  "migrationStartupObservations": [
+    "migrate-1  | 2026-10-22T15:29:37.797Z  INFO 1 --- [adapt-learn-graph] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://postgres:5432/adapt_learn_graph (PostgreSQL 17.6)",
+    "migrate-1  | 2026-10-22T15:29:38.132Z  INFO 1 --- [adapt-learn-graph] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 23 migrations (execution time 00:00.160s)",
+    "migrate-1  | 2026-10-22T15:29:38.192Z  INFO 1 --- [adapt-learn-graph] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema \"public\": 23",
+    "migrate-1  | 2026-10-22T15:29:38.198Z  INFO 1 --- [adapt-learn-graph] [           main] o.f.core.internal.command.DbMigrate      : Schema \"public\" is up to date. No migration necessary."
+  ],
+  "anonymousManualHttp": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/actuator/health",
+      "status": 200,
+      "body": "{\"status\":\"UP\"}",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/api/v1/system/status",
+      "status": 200,
+      "body": "{\"application\":\"adapt-learn-graph\",\"version\":\"0.1.0-SNAPSHOT\",\"stage\":\"SCAFFOLD\"}",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/api/v1/ld/baseline-assessments",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/api/v1/ld/baseline-blueprint-catalog/occupations",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/ld/baseline-blueprints",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/api/v1/ld/adaptive-baseline-blueprints",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/ld/adaptive-baseline-blueprints/occupations/OCC-15-1212.00/working",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/api/v1/employee/baseline-attempts/history",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8088/ld-manager/baseline-assessments",
+      "status": 200,
+      "viteShell": true
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8088/employee/baseline-assessment",
+      "status": 200,
+      "viteShell": true
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8088/ld-manager/baseline-config",
+      "status": 200,
+      "viteShell": true
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18080/api/v1/admin/irt/banks/2f79de6b-dc62-51a1-982d-0be9d6f588dc/models/00000000-0000-0000-0000-000000000001/candidates/00000000-0000-0000-0000-000000000001",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+      "scope": "Actual source route template, unknown sentinel model/candidate ID; anonymous denial only."
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/admin/irt/banks/2f79de6b-dc62-51a1-982d-0be9d6f588dc/models/00000000-0000-0000-0000-000000000001/promotions",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+      "scope": "Actual source route template, unknown sentinel model/candidate ID; anonymous denial only."
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/admin/irt/banks/2f79de6b-dc62-51a1-982d-0be9d6f588dc/models/00000000-0000-0000-0000-000000000001/calibration-runs",
+      "status": 401,
+      "body": "",
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+      "scope": "Actual source route template, unknown sentinel model/candidate ID; anonymous denial only."
+    }
+  ],
+  "limits": "No authenticated business write, actor spoof, model/promotion/attempt creation or API success acceptance. Vite shell HTTP200 is not rendered/browser verification. Browser inventory empty; iab unavailable. UI/keyboard/responsive NOT RUN.",
+  "correctedAdminProbeAt": "2026-10-22T22:45:26.823306+07:00",
+  "probeCorrection": "An initial Admin URL used a non-handler path; removed from reported route observations and replaced with actual IrtAdministrationController source templates. No authorized operation attempted."
+}

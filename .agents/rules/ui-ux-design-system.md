@@ -16,14 +16,17 @@ Always apply these rules to all frontend code and modifications in this reposito
 ## 2. Strict Design Tokens (Zero Hardcoded Colors)
 Never hardcode arbitrary hex codes in stylesheets or components. Always reference defined CSS variables:
 - Primary CTA / Brand Accent: `hsl(var(--primary))` (`#EA580C`)
+- Amber Hover: `hsl(var(--primary-hover))` (`#C2410C`)
 - Soft Secondary Tint: `hsl(var(--secondary))` (`#FFF5EB`)
-- Page Background: `hsl(var(--background))` (`#F8FAFC`)
+- Secondary Hover: `hsl(var(--secondary-hover))` (`#FEE6D4`)
+- Page Background / Canvas: `hsl(var(--background))` (`#F8FAFC`)
+- Neutral Slate Fill / Recessed Docks: `hsl(var(--muted))` (`#F1F5F9`)
 - Surface Containers: `hsl(var(--card))` (`#FFFFFF`)
 - Borders: `hsl(var(--border))` (`#E2E8F0`)
 - Text Primary: `hsl(var(--foreground))` (`#0F172A`)
 - Text Muted: `hsl(var(--muted-foreground))` (`#64748B`)
 - Status Success: `hsl(var(--success))` (`#16A34A`)
-- Status Warning: `hsl(var(--warning))` (`#EAB308`)
+- Status Warning (In Progress / Pending): `hsl(var(--warning))` (`#EAB308`)
 - Status Failed / Destructive: `hsl(var(--destructive))` (`#DC2626`)
 
 ## 3. Typography Hierarchy

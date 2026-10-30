@@ -1,0 +1,494 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F7961413f-61d0-4722-9cd9-20a050a29899&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899",
+    "title": "perform software unit testing",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Softwarekomponenten-Tests durchführen",
+      "no": "utføre programvareenhetstesting",
+      "fi": "suorittaa ohjelmistoyksikköjen testausta",
+      "pt": "testar unidades de «software»",
+      "bg": "извършване на тестване на софтуерно звено",
+      "lt": "atlikti programinės įrangos vienetų testus",
+      "lv": "programmatūras vienību testēšana",
+      "hr": "provesti testiranje softverske jedinice",
+      "fr": "effectuer un test de logiciel",
+      "hu": "komponens-tesztelést végez",
+      "uk": "проводити тестування програмних модулів",
+      "sk": "vykonať jednotkové testovanie softvéru",
+      "sl": "opraviti preskus enote programske opreme",
+      "ga": "tástáil a dhéanamh ar aonaid bhogearraí",
+      "sv": "utföra tester på programvaruenhet",
+      "mt": "twettaq testijiet fuq l-unitajiet tas-softwer",
+      "el": "εκτέλεση ελέγχου μονάδας λογισμικού",
+      "en": "perform software unit testing",
+      "is": "prófar hugbúnað",
+      "it": "eseguire lo unit testing di un software",
+      "es": "efectuar pruebas unitarias de software",
+      "et": "tarkvaraüksuse testimist teostama",
+      "cs": "provádět testování softwarových jednotek",
+      "ar": "القيام بإجراء اختبار وحدة البرمجيات",
+      "pl": "przeprowadzać testy jednostkowe oprogramowania",
+      "ro": "realizează testarea unităților software",
+      "da": "udføre test af softwareenhed",
+      "nl": "software-unittesten uitvoeren"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "provést testování softwarové jednotky",
+        "testovat softwarové jednotky",
+        "provádět testování softwarové jednotky",
+        "zkoušet softwarové jednotky"
+      ],
+      "el": [
+        "εκτελώ ελέγχους σε μονάδες λογισμικού",
+        "πραγματοποιώ επαληθεύσεις σε μεμονωμένες μονάδες πηγαίου κώδικα",
+        "πραγματοποιώ δοκιμές σε μονάδες λογισμικού",
+        "διεξάγω έλεγχο σε μονάδα λογισμικού",
+        "εκτελώ δοκιμές σε μονάδες λογισμικού"
+      ],
+      "mt": [
+        "twettaq testijiet fuq unitajiet tas-softwer",
+        "twettaq testijiet fuq l-unitajiet tas-software",
+        "twettaq testijiet tal-unitajiet tas-softwer",
+        "teżamina l-unitajiet tas-softwer"
+      ],
+      "en": [
+        "perform unit testing"
+      ],
+      "nl": [
+        "testen uitvoeren op software-units",
+        "software-eenheidtesten uitvoeren",
+        "software-unittesten ontwikkelen"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Teste enkelte enheter med kildekode for å avgjøre om de er egnet til bruk ved å skape korte kodefragmenter.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Testen einzelner Quellcodeeinheiten durch Erstellen kurzer Codefragmente, um festzustellen, ob sie geeignet sind oder nicht.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Testata yksittäisiä lähdekoodiyksikköjä luomalla lyhyitä koodifragmentteja sen määrittämiseksi, ovatko ne sopivia käytettäväksi.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Testar unidades únicas de código-fonte para determinar se são ou não adequadas para utilização através da criação de fragmentos de código abreviado.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Тества единици от изходния код, за да определи дали те са подходящи за използване, чрез създаване на фрагменти от кратки кодове.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Kuriant trumpus kodo fragmentus testuoti atskirus pirminio programos teksto vienetus siekiant nustatyti, ar jie yra tinkami naudoti.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Testirati pojedinačne jedinice izvornog koda kako bi se utvrdilo jesu li prikladne za upotrebu stvaranjem kratkih fragmenata kodova.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Pārbaudīt atsevišķas pirmkoda vienības, lai noteiktu, vai tās ir piemērotas lietošanai, izveidojot īsus koda fragmentus.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Tester les unités de code source afin de déterminer si elles se prêtent ou non à la création de fragments de code courts.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Az egyes forráskódrészletek tesztelése annak megállapítására, hogy ezek felhasználása alkalmas-e rövid kódtöredékek létrehozására.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Перевіряти окремі одиниці вихідного коду, щоб визначити їх придатність для використання, створюючи короткі фрагменти коду.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Testovať jednotlivé jednotky zdrojového kódu, aby sa zistilo, či sú vhodné na použitie, vytvorením krátkych fragmentov kódu.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Preskusiti posamezne enote izvorne kode, da se določi, ali so primerne za uporabo z ustvarjanjem fragmentov kratkih kod.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Tástáil a dhéanamh ar aonaid aonair chiód foinse chun a chinneadh cibé acu atá nó nach bhfuil siad oiriúnach lena n-úsáid trí bhlúirí gearrchóid a chruthú.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Testa enskilda enheter av källkod för att avgöra om de är lämpliga för användning genom att skapa korta kodfragment.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Εκτέλεση δοκιμών σε μεμονωμένες μονάδες πηγαίου κώδικα με σκοπό να προσδιοριστεί κατά πόσον αυτές είναι κατάλληλες για χρήση, με τη δημιουργία μικρών κομματιών κώδικα.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ittestja unitajiet uniċi ta’ kodiċi tas-sors sabiex jiġi ddeterminat jekk humiex xierqa jew le għall-użu billi jinħolqu frammenti ta’ kodiċijiet qosra.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Test single units of source code to determine whether or not they are suitable for use by creating short code fragments.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Prófar einstakar einingar forritunarkóða til að ákvarða hvort þeir séu tilbúnir til notkunar með því að búa til styttri kóða.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Testare singole unità di codice sorgente per determinare se siano adatte o meno mediante la creazione di brevi frammenti di codice.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Probar unidades individuales de código fuente para determinar si son adecuadas o no para su uso mediante la creación de fragmentos cortos de código.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Lühikeste koodifragmentide loomise abil lähtekoodi eraldi üksuste katsetamine, et määrata, kas need sobivad kasutamiseks.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Testovat jednotlivé jednotky zdrojového kódu s cílem určit, zda jsou nebo nejsou vhodné pro použití, vytvořením krátkých fragmentů kódu.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إجراء اختبارات لوحدات فردية من الرموز الرئيسية لتحديد ما إذا كانت مناسبة للاستخدام أم لا عن طريق إنشاء قطع رموز قصيرة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Testować pojedyncze jednostki kodu źródłowego w celu ustalenia, czy nadają się one do stosowania, poprzez tworzenie krótkich fragmentów kodu.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Teste enkelte enheder af kildekode ved fremstilling af korte kodestykker for at finde ud af, om de er egnede til brug eller ej.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Testează unități individuale de cod sursă pentru a determina dacă acestea sunt sau nu adecvate pentru utilizare prin crearea de fragmente de coduri scurte.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "De afzonderlijke eenheden van de broncode testen om vast te stellen of zij al dan niet geschikt zijn voor gebruik door korte codefragmenten te creëren.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899&language=en",
+        "uri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899",
+        "title": "perform software unit testing"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+          "title": "plan software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+          "title": "execute software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c0c1364d-f784-4e76-8d3f-1e998dc6545d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c0c1364d-f784-4e76-8d3f-1e998dc6545d",
+          "title": "security alarm technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3b1ea27c-781c-41eb-821f-214285260dd2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3b1ea27c-781c-41eb-821f-214285260dd2",
+          "title": "ICT change and configuration manager"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "perform software unit testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899&language=en",
+              "uri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "execute software tests",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+              "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4",
+            "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db",
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "manage system testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db&language=en",
+              "uri": "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+          ]
+        },
+        {
+          "title": "installing wooden and metal components",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba"
+          ]
+        },
+        {
+          "title": "building and repairing structures",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba&language=en",
+              "uri": "http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63"
+          ]
+        },
+        {
+          "title": "constructing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63&language=en",
+              "uri": "http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "perform test run",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+          ]
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "planning production processes",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+          ]
+        },
+        {
+          "title": "organising, planning and scheduling work and activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+          ]
+        },
+        {
+          "title": "management skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2&language=en",
+              "uri": "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        }
+      ]
+    }
+  }
+}

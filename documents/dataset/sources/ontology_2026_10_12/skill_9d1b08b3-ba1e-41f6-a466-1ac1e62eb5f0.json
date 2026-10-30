@@ -1,0 +1,363 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0",
+    "title": "conduct ICT code review",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "gjennomføre gjennomgang på IKT-kode",
+      "de": "IuK-Code-Reviews durchführen",
+      "fi": "tehdä ICT-koodin tarkistusta",
+      "pt": "realizar revisão de código de TIC",
+      "bg": "извършване на преглед на ИКТ код",
+      "lt": "atlikti informacinių ir ryšių technologijų išeities kodo peržiūrą",
+      "hr": "provesti pregled IKT koda",
+      "lv": "veikt IKT koda izskatīšanu",
+      "fr": "effectuer l’examen du code source",
+      "hu": "IKT kód felülvizsgálatot végez",
+      "uk": "проводити експертну оцінку ІКТ-коду",
+      "sk": "vykonávať kontrolu kódu IKT",
+      "sl": "izvajati pregled kode IKT",
+      "ga": "athbhreithniú a dhéanamh ar chód TFC",
+      "sv": "utföra IT-kodgranskning",
+      "el": "διενέργεια επανελέγχου του κώδικα ΤΠΕ",
+      "mt": "teżamina l-kodiċi tas-sors tal-ICT",
+      "en": "conduct ICT code review",
+      "is": "stendur að endurskoðun UT-kóða",
+      "it": "eseguire una revisione del codice TIC",
+      "es": "realizar una revisión del código de las TIC",
+      "et": "IKT-koodi ülevaatamist läbi viima",
+      "cs": "provádět přezkum ICT kódu",
+      "ar": "اجراء مراجعة لأكواد تكنولوجيا المعلومات والاتصالات",
+      "pl": "przeprowadzać inspekcję kodu ICT",
+      "da": "udføre revision af IKT-koder",
+      "ro": "desfășoară revizuirea codului în TIC",
+      "nl": "ict-codebeoordeling uitvoeren"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "zkoumat zdrojový kód počítače",
+        "kontrolovat zdrojový kód počítače",
+        "provádět přezkum kódu ICT",
+        "zkoumat ICT kód",
+        "provádět přezkum IKT kódu",
+        "provést přezkum ICT kódu",
+        "provádět přezkum kódu IKT",
+        "prověřovat zdrojový kód počítače"
+      ],
+      "el": [
+        "διενέργεια επανεξέτασης του κώδικα ΤΠΕ",
+        "διεξαγωγή επανελέγχου του κώδικα ΤΠΕ"
+      ],
+      "mt": [
+        "teżamina l-kodiċi tas-sors fl-ICT",
+        "teżamina s-source code tal-ICT"
+      ],
+      "en": [
+        "perform code reviews"
+      ],
+      "nl": [
+        "ict-code beoordelen",
+        "doorlopend ict-code analyseren om fouten te zoeken en op te lossen",
+        "broncode beoordelen",
+        "ict-ontwikkeling monitoren"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Undersøke og systematisk kontrollere datakildekode for å finne feil i alle trinn i utviklingen, og for å heve den generelle programvarekvaliteten.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Systematisches Untersuchen und Überprüfen von rechnergestütztem Quellcode zur Ermittlung von Fehlern in allen Phasen der Entwicklung und zur Verbesserung der allgemeinen Softwarequalität.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Tutkia ja tarkastella järjestelmällisesti tietokoneen lähdekoodia, jotta virheet voidaan tunnistaa varhaisessa kehitysvaiheessa ja ohjelmiston yleistä laatua voidaan parantaa.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Examinar e rever sistematicamente o código-fonte informático, a fim de identificar erros em qualquer fase de desenvolvimento e melhorar a qualidade global do «software».",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Изследва и преглежда системно изходния компютърен код, за да идентифицира грешките, в който и да е етап от разработването, и да подобри цялостното качество на софтуера.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Sistemingai nagrinėti ir peržiūrėti kompiuterių išeities kodą, kad būtų galima nustatyti bet kurio kūrimo etapo klaidas ir pagerinti bendrą programinės įrangos kokybę.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Sustavno pregledati izvorni kod računala kako bi se utvrdile pogreške u bilo kojoj fazi razvoja i poboljšala ukupna kvaliteta softvera.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Sistemātiski pārbaudīt un pārskatīt datora pirmkodu, lai jebkurā izstrādes posmā identificētu kļūdas un uzlabotu programmatūru vispārējo kvalitāti.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Examiner et réviser systématiquement le code source informatique afin d’identifier les erreurs à tous les stades de développement et d’améliorer la qualité globale des logiciels.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Rendszeresen megvizsgálja és felülvizsgálja a számítógépes forráskódot, hogy azonosítsa a hibákat a fejlesztés bármely szakaszában, és javítsa a szoftver általános minőségét.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Перевіряти й систематично аналізувати вихідний код, щоб на будь-якому етапі розробки програмного забезпечення можна було виявити помилки й підвищити якість ПЗ.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Systematicky skúmať a kontrolovať počítačový zdrojový kód s cieľom identifikovať chyby v ktoromkoľvek štádiu vývoja a zlepšiť celkovú kvalitu softvéru.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Sistematično preverjati in pregledovati računalniško izvorno kodo, da bi se v kateri koli fazi razvoja odkrile napake in da bi se izboljšala splošna kakovost programske opreme.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Scrúdú agus athbhreithniú córasach a dhéanamh ar chód foinseach ríomhaireachta chun earráidí in aon chéim forbartha a shainaithint agus chun cáilíocht fhoriomlán na mbogearraí a fheabhsú.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Inspektera och systematiskt granska datorkällkod för att identifiera fel i något av utvecklingsstegen och förbättra programvarans övergripande kvalitet.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Eżamina u rrevedi b’mod sistematiku kodiċi tas-sors tal-kompjuter biex tidentifika żbalji fi kwalunkwe stadju ta’ żvilupp u biex ittejjeb il-kwalità ġenerali tas-softwer.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Συστηματική εξέταση και επανεξέταση του κώδικα πηγής για τον εντοπισμό σφαλμάτων σε οποιοδήποτε στάδιο της ανάπτυξης βελτίωση της συνολικής ποιότητας του λογισμικού.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Examine and review systematically computer source code to identify errors in any stage of development and to improve the overall software quality.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Athugar og skoðar kerfisbundið tölvukóða til að bera kennsl á villur á hvaða þróunarstigi sem er og til að bæta gæði hugbúnaðarins í heild.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Esaminare e rivedere sistematicamente il codice sorgente informatico per individuare gli errori in qualsiasi fase di sviluppo e migliorare la qualità generale del software.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Examinar y revisar sistemáticamente el código fuente informático para identificar errores en cualquier etapa de desarrollo y mejorar la calidad general del software.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Tarkvara lähtekoodi analüüsimine ja süstemaatiline läbivaatamine, et tuvastada vead mis tahes arendusetapis ja parandada tarkvara üldist kvaliteeti.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Systematicky kontrolovat a přezkoumávat kód zdroje počítače za účelem zjištění chyb v jakékoli fázi vývoje a za účelem zlepšení celkové kvality softwaru.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "فحص رمز مصدر الكمبيوتر بصورة منهجية ومراجعته لتحديد الأخطاء في أي مرحلة من مراحل التطوير وتحسين الجودة الشاملة للبرنامج.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Dokonywanie regularnego przeglądu i kontroli kodu źródłowego komputera w celu identyfikacji błędów na dowolnym etapie rozwoju oraz poprawy ogólnej jakości oprogramowania.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Undersøgelse og systematisk gennemgang af en computerkildekode for at identificere fejl på alle udviklingsstadier og for at forbedre den generelle softwarekvalitet.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Examinează și revizuiește sistematic codul sursă informatic pentru a identifica erorile în orice etapă de dezvoltare și pentru a îmbunătăți calitatea generală a software-ului.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Systematisch de computerbroncode onderzoeken en herzien om fouten in elk stadium van de ontwikkeling op te sporen en de algemene kwaliteit van de software te verbeteren.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0&language=en",
+        "uri": "http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0",
+        "title": "conduct ICT code review"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/76ef0a87-6afe-4560-b5d0-9a086abe45c5&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/76ef0a87-6afe-4560-b5d0-9a086abe45c5",
+          "title": "ethical hacker"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/4874fa37-0cd1-4a68-aed8-a838851f242d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/4874fa37-0cd1-4a68-aed8-a838851f242d",
+          "title": "language engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7",
+          "title": "application engineer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "conduct ICT code review",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0&language=en",
+              "uri": "http://data.europa.eu/esco/skill/9d1b08b3-ba1e-41f6-a466-1ac1e62eb5f0"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

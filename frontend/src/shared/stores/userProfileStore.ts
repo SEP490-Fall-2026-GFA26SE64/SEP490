@@ -1,6 +1,6 @@
 import { getActiveCompany } from './companyStore'
 
-export type ActorRole = 'employee' | 'expert' | 'ld-manager' | 'admin' | 'guest' | 'learner'
+export type ActorRole = 'employee' | 'expert' | 'ld-manager' | 'admin' | 'learner' | 'platform-admin'
 
 export interface UserProfileData {
   actor: ActorRole
@@ -13,6 +13,49 @@ export interface UserProfileData {
   scope: string
   status: string
   details: { label: string; value: string }[]
+}
+
+export const EXPERT_DIRECTORY: Record<string, { name: string; email: string; roleTitle: string }> = {
+  'a0000000-0000-0000-0000-000000000002': {
+    name: 'Dr. Sarah Chen',
+    email: 'expert@technova.com',
+    roleTitle: 'Senior AI & Knowledge Architect',
+  },
+  'a0000000-0000-0000-0000-000000000005': {
+    name: 'Marcus Vance',
+    email: 'marcus.vance@technova.com',
+    roleTitle: 'Principal Graph Database Architect',
+  },
+  'a0000000-0000-0000-0000-000000000006': {
+    name: 'Alex Rivera',
+    email: 'alex.rivera@technova.com',
+    roleTitle: 'Staff Cloud Infrastructure Engineer',
+  },
+  'a0000000-0000-0000-0000-000000000007': {
+    name: 'Linh Nguyen',
+    email: 'linh.nguyen@technova.com',
+    roleTitle: 'Lead Data Systems Specialist',
+  },
+  'expert-chen': {
+    name: 'Dr. Sarah Chen',
+    email: 'expert@technova.com',
+    roleTitle: 'Senior AI & Knowledge Architect',
+  },
+  'expert-vance': {
+    name: 'Marcus Vance',
+    email: 'expert-vance@adaptlearn.internal',
+    roleTitle: 'Principal Graph Database Architect',
+  },
+  'expert-rivera': {
+    name: 'Alex Rivera',
+    email: 'expert-rivera@adaptlearn.internal',
+    roleTitle: 'Staff Cloud Infrastructure Engineer',
+  },
+  'expert-nguyen': {
+    name: 'Linh Nguyen',
+    email: 'expert-nguyen@adaptlearn.internal',
+    roleTitle: 'Lead Data Systems Specialist',
+  },
 }
 
 const DEFAULT_PROFILES: Record<
@@ -43,9 +86,9 @@ const DEFAULT_PROFILES: Record<
     ],
   },
   expert: {
-    name: 'Chen Wei',
-    email: 'chen.wei@adaptlearn.internal',
-    roleTitle: 'Expert',
+    name: 'Dr. Sarah Chen',
+    email: 'expert-chen@adaptlearn.internal',
+    roleTitle: 'Senior AI & Knowledge Architect',
     portal: 'Expert Authoring Portal',
     department: 'Cognitive Architecture & Curricula',
     scope: 'Macro Competencies, Micro-skills & Question Bank',
@@ -76,27 +119,26 @@ const DEFAULT_PROFILES: Record<
     roleTitle: 'Lead System Administrator',
     portal: 'Administration',
     department: 'Corporate Ontology & Governance',
-    scope: 'Neo4j Knowledge Graph & Design System Showcase',
-    status: 'Neo4j Bolt: Active',
+    scope: 'Competency Framework & Design System Showcase',
+    status: 'Competency Engine: Operational',
     details: [
       { label: 'Department', value: 'Corporate Ontology & Governance' },
-      { label: 'Scope', value: 'Neo4j Knowledge Graph & Design System Showcase' },
-      { label: 'Cluster Connectivity', value: 'Neo4j Bolt: Active' },
+      { label: 'Scope', value: 'Competency Framework & Design System Showcase' },
+      { label: 'Connectivity', value: 'Competency Engine: Operational' },
     ],
   },
-  guest: {
-    name: 'Guest Administrator',
-    email: 'guest.user@example.com',
-    roleTitle: 'Guest / Purchaser',
-    portal: 'Guest',
-    department: 'Organization Provisioning',
-    scope: 'Elevates to L&D Manager upon package selection',
-    status: 'Sandbox Provisioning • Instant Activation',
+  'platform-admin': {
+    name: 'Platform Superadmin',
+    email: 'platform.admin@adaptlearn.io',
+    roleTitle: 'Platform Administrator',
+    portal: 'Platform Administration',
+    department: 'Multi-Tenant Platform Infrastructure',
+    scope: 'Multi-Organization Lifecycle, Subscriptions & Telemetry',
+    status: 'Global Health: 100% Operational',
     details: [
-      { label: 'Account Scope', value: 'Organization Provisioning' },
-      { label: 'Assigned Role', value: 'Elevates to L&D Manager upon package selection' },
-      { label: 'Trial Mode', value: 'Sandbox Provisioning • Instant Activation' },
-      { label: 'Access Level', value: '100% Complete Feature Parity' },
+      { label: 'Platform Scope', value: 'Multi-Tenant Organization Workspaces' },
+      { label: 'Authority', value: 'Global Platform Administrator' },
+      { label: 'Cluster Status', value: 'Multi-Region Neo4j & PostgreSQL Active' },
     ],
   },
 }
@@ -113,19 +155,41 @@ export function getUserProfile(actor: ActorRole): UserProfileData {
   const defaults = DEFAULT_PROFILES[effectiveKey] || DEFAULT_PROFILES.employee
   const company = getActiveCompany()
 
+  if (effectiveKey === 'expert') {
+    const activeExpertId = localStorage.getItem('expert_active_id') || 'expert-chen'
+    const expertInfo = EXPERT_DIRECTORY[activeExpertId] || EXPERT_DIRECTORY['expert-chen']
+    const customName =
+      localStorage.getItem(`user_name_${effectiveKey}`) ||
+      expertInfo.name
+    const customEmail =
+      localStorage.getItem(`user_email_${effectiveKey}`) ||
+      expertInfo.email
+    const initials = computeInitials(customName)
+
+    return {
+      actor,
+      name: customName,
+      email: customEmail,
+      roleTitle: expertInfo.roleTitle,
+      initials,
+      portal: defaults.portal,
+      department: defaults.department,
+      scope: defaults.scope,
+      status: defaults.status,
+      details: [
+        { label: 'Organization', value: company.name },
+        ...defaults.details,
+      ],
+    }
+  }
+
   // 1. Resolve Display Name
   const customName =
     localStorage.getItem(`user_name_${effectiveKey}`) ||
-    (effectiveKey === 'guest'
-      ? localStorage.getItem('auth_display_name')
-      : null) ||
     defaults.name
 
   // 2. Resolve Email
-  let customEmail = localStorage.getItem(`user_email_${effectiveKey}`)
-  if (!customEmail && effectiveKey === 'guest') {
-    customEmail = localStorage.getItem('auth_user')
-  }
+  const customEmail = localStorage.getItem(`user_email_${effectiveKey}`)
   const email = customEmail || defaults.email
 
   // 3. Resolve Initials

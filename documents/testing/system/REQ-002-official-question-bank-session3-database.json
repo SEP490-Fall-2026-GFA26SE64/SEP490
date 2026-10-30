@@ -1,0 +1,2017 @@
+{
+  "recordedAt": "2026-10-22T22:19:28.440054+07:00",
+  "target": {
+    "container": "adapt-learn-graph-dev-postgres-1",
+    "volume": "adapt-learn-graph-dev_postgres_data",
+    "database": "adapt_learn_graph"
+  },
+  "backup": {
+    "snapshot": "00000040-0000000D-1",
+    "backup": "postgres-v22-before.dump",
+    "backupBytes": 459989,
+    "backupSha256": "02830103a2dedf2b7c118d23fb6e4c896a0682fd19e60e4130aee8110032eded",
+    "backupReadability": "pg_restore --list and full --file decode exit 0; no restore executed"
+  },
+  "all84PriorPlatformTablesUnchanged": true,
+  "all22PriorFlywayRowsUnchanged": true,
+  "newTables": [
+    {
+      "count": 0,
+      "table": "irt_effective_parameter_selection",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "irt_parameter_promotion_command",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    }
+  ],
+  "flywayHistory": [
+    {
+      "type": "SQL",
+      "script": "V1__initialize_platform_schema.sql",
+      "success": true,
+      "version": "1",
+      "checksum": -996555326,
+      "description": "initialize platform schema",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-09-30T06:45:13.941752",
+      "execution_time": 8,
+      "installed_rank": 1
+    },
+    {
+      "type": "SQL",
+      "script": "V2__identity_catalog_and_processing.sql",
+      "success": true,
+      "version": "2",
+      "checksum": -1975842268,
+      "description": "identity catalog and processing",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-09-30T06:45:13.996955",
+      "execution_time": 125,
+      "installed_rank": 2
+    },
+    {
+      "type": "SQL",
+      "script": "V3__assessment_evidence_and_learning.sql",
+      "success": true,
+      "version": "3",
+      "checksum": -1741254678,
+      "description": "assessment evidence and learning",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-09-30T06:45:14.162815",
+      "execution_time": 173,
+      "installed_rank": 3
+    },
+    {
+      "type": "SQL",
+      "script": "V4__pathway_analytics_and_evaluation.sql",
+      "success": true,
+      "version": "4",
+      "checksum": 1805290226,
+      "description": "pathway analytics and evaluation",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-09-30T06:45:14.367232",
+      "execution_time": 108,
+      "installed_rank": 4
+    },
+    {
+      "type": "SQL",
+      "script": "V5__publication_and_activity_guards.sql",
+      "success": true,
+      "version": "5",
+      "checksum": -741739431,
+      "description": "publication and activity guards",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-09-30T06:45:14.498584",
+      "execution_time": 15,
+      "installed_rank": 5
+    },
+    {
+      "type": "SQL",
+      "script": "V6__organization_baseline.sql",
+      "success": true,
+      "version": "6",
+      "checksum": 1148597275,
+      "description": "organization baseline",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-09-30T06:45:14.527206",
+      "execution_time": 21,
+      "installed_rank": 6
+    },
+    {
+      "type": "SQL",
+      "script": "V7__target_role_selection_command.sql",
+      "success": true,
+      "version": "7",
+      "checksum": -826639885,
+      "description": "target role selection command",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-02T04:45:17.325452",
+      "execution_time": 66,
+      "installed_rank": 7
+    },
+    {
+      "type": "SQL",
+      "script": "V8__baseline_question_metadata.sql",
+      "success": true,
+      "version": "8",
+      "checksum": -958529426,
+      "description": "baseline question metadata",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.307252",
+      "execution_time": 46,
+      "installed_rank": 8
+    },
+    {
+      "type": "SQL",
+      "script": "V9__baseline_blueprint.sql",
+      "success": true,
+      "version": "9",
+      "checksum": -1488394481,
+      "description": "baseline blueprint",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.407751",
+      "execution_time": 47,
+      "installed_rank": 9
+    },
+    {
+      "type": "SQL",
+      "script": "V10__baseline_blueprint_write_idempotency.sql",
+      "success": true,
+      "version": "10",
+      "checksum": -406452938,
+      "description": "baseline blueprint write idempotency",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.48652",
+      "execution_time": 26,
+      "installed_rank": 10
+    },
+    {
+      "type": "SQL",
+      "script": "V11__baseline_assessment_generation.sql",
+      "success": true,
+      "version": "11",
+      "checksum": 305115675,
+      "description": "baseline assessment generation",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.537785",
+      "execution_time": 50,
+      "installed_rank": 11
+    },
+    {
+      "type": "SQL",
+      "script": "V12__baseline_assessment_review_publish.sql",
+      "success": true,
+      "version": "12",
+      "checksum": 1670694760,
+      "description": "baseline assessment review publish",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.619645",
+      "execution_time": 25,
+      "installed_rank": 12
+    },
+    {
+      "type": "SQL",
+      "script": "V13__occupation_blueprint_identity.sql",
+      "success": true,
+      "version": "13",
+      "checksum": -1992663521,
+      "description": "occupation blueprint identity",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.667411",
+      "execution_time": 32,
+      "installed_rank": 13
+    },
+    {
+      "type": "SQL",
+      "script": "V14__baseline_assessment_management.sql",
+      "success": true,
+      "version": "14",
+      "checksum": 1966272887,
+      "description": "baseline assessment management",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.718621",
+      "execution_time": 109,
+      "installed_rank": 14
+    },
+    {
+      "type": "SQL",
+      "script": "V15__baseline_management_command_idempotency.sql",
+      "success": true,
+      "version": "15",
+      "checksum": -489468397,
+      "description": "baseline management command idempotency",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.861385",
+      "execution_time": 16,
+      "installed_rank": 15
+    },
+    {
+      "type": "SQL",
+      "script": "V16__baseline_answer_reveal_audit.sql",
+      "success": true,
+      "version": "16",
+      "checksum": 919091195,
+      "description": "baseline answer reveal audit",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.900817",
+      "execution_time": 12,
+      "installed_rank": 16
+    },
+    {
+      "type": "SQL",
+      "script": "V17__fix_baseline_management_actor_trigger.sql",
+      "success": true,
+      "version": "17",
+      "checksum": -913315742,
+      "description": "fix baseline management actor trigger",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.930999",
+      "execution_time": 5,
+      "installed_rank": 17
+    },
+    {
+      "type": "SQL",
+      "script": "V18__adaptive_baseline_blueprint_and_irt_versions.sql",
+      "success": true,
+      "version": "18",
+      "checksum": 242615654,
+      "description": "adaptive baseline blueprint and irt versions",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:33.952158",
+      "execution_time": 160,
+      "installed_rank": 18
+    },
+    {
+      "type": "SQL",
+      "script": "V19__adaptive_baseline_attempt.sql",
+      "success": true,
+      "version": "19",
+      "checksum": 975611633,
+      "description": "adaptive baseline attempt",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:34.14849",
+      "execution_time": 115,
+      "installed_rank": 19
+    },
+    {
+      "type": "SQL",
+      "script": "V20__occupation_baseline_scope_compatibility.sql",
+      "success": true,
+      "version": "20",
+      "checksum": 2137365147,
+      "description": "occupation baseline scope compatibility",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:34.29407",
+      "execution_time": 25,
+      "installed_rank": 20
+    },
+    {
+      "type": "SQL",
+      "script": "V21__occupation_baseline_name_and_time_limits.sql",
+      "success": true,
+      "version": "21",
+      "checksum": -935442136,
+      "description": "occupation baseline name and time limits",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:34.336837",
+      "execution_time": 11,
+      "installed_rank": 21
+    },
+    {
+      "type": "SQL",
+      "script": "V22__occupation_baseline_draft_conversion_receipt.sql",
+      "success": true,
+      "version": "22",
+      "checksum": 859223100,
+      "description": "occupation baseline draft conversion receipt",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T19:46:34.362411",
+      "execution_time": 6,
+      "installed_rank": 22
+    },
+    {
+      "type": "SQL",
+      "script": "V23__irt_scoped_parameter_promotion.sql",
+      "success": true,
+      "version": "23",
+      "checksum": -1125147424,
+      "description": "irt scoped parameter promotion",
+      "installed_by": "adapt_learn_graph",
+      "installed_on": "2026-10-22T22:18:39.12269",
+      "execution_time": 131,
+      "installed_rank": 23
+    }
+  ],
+  "tables": [
+    {
+      "count": 1,
+      "table": "account",
+      "digest": "d0a990eb1f70ef3905c7031edb611105",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "account_role",
+      "digest": "13bfc05f7d0b976a34dfdebb8e0fdbdc",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "activity_requirement",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "analytics_snapshot",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 7,
+      "table": "application_role",
+      "digest": "c811d532b99eb9ddd5492319e5e6684a",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "assessment_assignment",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "assessment_attempt",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "assessment_availability",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "assessment_item",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "assessment_result",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "assessment_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 11,
+      "table": "audit_event",
+      "digest": "f4983666f2fa81f83e1cb3cb4b128c51",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_adaptive_attempt",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_adaptive_blueprint_role",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_adaptive_blueprint_skill",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_adaptive_blueprint_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_adaptive_blueprint_working_revision",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_answer_reveal_audit",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_assessment_series",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_assessment_transition",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_command",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_item",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_pool_item",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_response",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_result",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_skill_result",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_attempt_skill_state",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_activation",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_activation_event",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_command",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_role",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_skill",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_version_registry",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_working_registry",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_blueprint_working_revision",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_management_command",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "baseline_mastery_evidence",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "catalog_guard",
+      "digest": "96b2e0b6a5128327ca8da02f5f1d5b8e",
+      "schema": "platform"
+    },
+    {
+      "count": 2,
+      "table": "catalog_reference",
+      "digest": "4620616e065f0351325e973e5df138ed",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "catalog_release",
+      "digest": "c7f824559f86e214fedcc90646c020ad",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "cohort_member",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "cohort_snapshot",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "completion_pass",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "evaluation_artifact",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "evaluation_run",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "evidence_application",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "evidence_observation",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "evidence_policy_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "irt_calibration_run",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "irt_effective_parameter_selection",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "irt_item_parameter",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "irt_parameter_promotion_command",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "irt_parameter_set",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "item_response",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "item_skill_mapping",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 135,
+      "table": "item_version",
+      "digest": "ebf8a76d1bd261d4b0d7dba291ec37bc",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "learner_state",
+      "digest": "d39ab99cb2b04e30c8f637fd1a06b937",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "learning_activity",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "manager_scope",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "mastery_estimate",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "mastery_mapping_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "model_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "module_assessment_binding",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "module_completion",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "organization",
+      "digest": "fbaed39a7cd669e986c758c4fa753d9c",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "organizational_unit",
+      "digest": "ab80a630a123d50fdfd26cfd765f6eb8",
+      "schema": "platform"
+    },
+    {
+      "count": 11,
+      "table": "outbox_event",
+      "digest": "7898fc8bc0122c82a39818e81dfc30f5",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "pathway_approval",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "pathway_revision",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "pathway_step",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "processing_job",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "processing_receipt",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "processing_stream",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "profile_revision",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "progress_revision",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "publication_request",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 1,
+      "table": "question_bank",
+      "digest": "328585284d0a0636e66ed72b6fa81fdb",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "recommendation_candidate",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "recommendation_run",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "recommendation_version",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "roi_scenario",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 0,
+      "table": "session",
+      "digest": "d41d8cd98f00b204e9800998ecf8427e",
+      "schema": "platform"
+    },
+    {
+      "count": 11,
+      "table": "target_selection",
+      "digest": "34adace4faa1899e15a878fe749ca483",
+      "schema": "platform"
+    },
+    {
+      "count": 25,
+      "table": "target_selection_request",
+      "digest": "0f1ea472870b3efacfdfb0c6b80f12da",
+      "schema": "platform"
+    },
+    {
+      "count": 23,
+      "table": "flyway_schema_history",
+      "digest": "6601cf303521b9c5d7a4858e8a76a723",
+      "schema": "public"
+    }
+  ],
+  "schemaMetadata": [
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_selec_parameter_set_id_model_versi_fkey",
+      "type": "f",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (parameter_set_id, model_version_id) REFERENCES platform.irt_parameter_set(parameter_set_id, model_version_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_select_selected_by_organization_id_fkey",
+      "type": "f",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (selected_by, organization_id) REFERENCES platform.account(account_id, organization_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_selection_model_version_id_fkey",
+      "type": "f",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (model_version_id) REFERENCES platform.model_version(model_version_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_selection_organization_id_fkey",
+      "type": "f",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_selection_pkey",
+      "type": "p",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "PRIMARY KEY (organization_id, question_bank_id, model_version_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_selection_question_bank_id_fkey",
+      "type": "f",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (question_bank_id) REFERENCES platform.question_bank(question_bank_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_parameter_selection_selection_revision_check",
+      "type": "c",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": false,
+      "definition": "CHECK ((selection_revision > 0))",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_effective_selection_receipt",
+      "type": "t",
+      "table": "platform.irt_effective_parameter_selection",
+      "validated": true,
+      "deferrable": true,
+      "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED",
+      "initiallyDeferred": true
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_comma_expected_parameter_set_id_mo_fkey",
+      "type": "f",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (expected_parameter_set_id, model_version_id) REFERENCES platform.irt_parameter_set(parameter_set_id, model_version_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_comma_organization_id_question_ban_fkey",
+      "type": "f",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (organization_id, question_bank_id, model_version_id) REFERENCES platform.irt_effective_parameter_selection(organization_id, question_bank_id, model_version_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_comma_organization_id_question_ban_key1",
+      "type": "u",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "UNIQUE (organization_id, question_bank_id, model_version_id, parameter_set_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_comma_organization_id_question_bank_key",
+      "type": "u",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "UNIQUE (organization_id, question_bank_id, model_version_id, selection_revision)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_comma_parameter_set_id_model_versi_fkey",
+      "type": "f",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (parameter_set_id, model_version_id) REFERENCES platform.irt_parameter_set(parameter_set_id, model_version_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_actor_id_organization_id_fkey",
+      "type": "f",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "FOREIGN KEY (actor_id, organization_id) REFERENCES platform.account(account_id, organization_id)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_check",
+      "type": "c",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "CHECK ((selection_revision = (expected_revision + 1)))",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_check1",
+      "type": "c",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "CHECK (((expected_revision = 0) = (expected_parameter_set_id IS NULL)))",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_expected_revision_check",
+      "type": "c",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "CHECK ((expected_revision >= 0))",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_idempotency_key_check",
+      "type": "c",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "CHECK (((btrim(idempotency_key) <> ''::text) AND (char_length(idempotency_key) <= 200)))",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_pkey",
+      "type": "p",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "PRIMARY KEY (organization_id, actor_id, idempotency_key)",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "constraint",
+      "name": "irt_parameter_promotion_command_reason_check",
+      "type": "c",
+      "table": "platform.irt_parameter_promotion_command",
+      "validated": true,
+      "deferrable": false,
+      "definition": "CHECK (((btrim(reason) <> ''::text) AND (char_length(reason) <= 1000)))",
+      "initiallyDeferred": false
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_a_26770",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_a_26770\" AFTER DELETE ON platform.irt_effective_parameter_selection FROM platform.irt_parameter_promotion_command NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_noaction_del\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_a_26771",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_a_26771\" AFTER UPDATE ON platform.irt_effective_parameter_selection FROM platform.irt_parameter_promotion_command NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_noaction_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26731",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26731\" AFTER INSERT ON platform.irt_effective_parameter_selection FROM platform.organization NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26732",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26732\" AFTER UPDATE ON platform.irt_effective_parameter_selection FROM platform.organization NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26736",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26736\" AFTER INSERT ON platform.irt_effective_parameter_selection FROM platform.question_bank NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26737",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26737\" AFTER UPDATE ON platform.irt_effective_parameter_selection FROM platform.question_bank NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26741",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26741\" AFTER INSERT ON platform.irt_effective_parameter_selection FROM platform.model_version NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26742",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26742\" AFTER UPDATE ON platform.irt_effective_parameter_selection FROM platform.model_version NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26746",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26746\" AFTER INSERT ON platform.irt_effective_parameter_selection FROM platform.irt_parameter_set NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26747",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26747\" AFTER UPDATE ON platform.irt_effective_parameter_selection FROM platform.irt_parameter_set NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26751",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26751\" AFTER INSERT ON platform.irt_effective_parameter_selection FROM platform.account NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26752",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26752\" AFTER UPDATE ON platform.irt_effective_parameter_selection FROM platform.account NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "irt_effective_selection_guard",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": false,
+      "definition": "CREATE TRIGGER irt_effective_selection_guard BEFORE INSERT OR DELETE OR UPDATE ON platform.irt_effective_parameter_selection FOR EACH ROW EXECUTE FUNCTION platform.guard_irt_effective_selection()"
+    },
+    {
+      "kind": "trigger",
+      "name": "irt_effective_selection_receipt",
+      "table": "platform.irt_effective_parameter_selection",
+      "enabled": "O",
+      "internal": false,
+      "definition": "CREATE CONSTRAINT TRIGGER irt_effective_selection_receipt AFTER INSERT OR UPDATE ON platform.irt_effective_parameter_selection DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION platform.validate_irt_selection_receipt()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26772",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26772\" AFTER INSERT ON platform.irt_parameter_promotion_command FROM platform.irt_effective_parameter_selection NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26773",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26773\" AFTER UPDATE ON platform.irt_parameter_promotion_command FROM platform.irt_effective_parameter_selection NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26777",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26777\" AFTER INSERT ON platform.irt_parameter_promotion_command FROM platform.account NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26778",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26778\" AFTER UPDATE ON platform.irt_parameter_promotion_command FROM platform.account NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26782",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26782\" AFTER INSERT ON platform.irt_parameter_promotion_command FROM platform.irt_parameter_set NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26783",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26783\" AFTER UPDATE ON platform.irt_parameter_promotion_command FROM platform.irt_parameter_set NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26787",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26787\" AFTER INSERT ON platform.irt_parameter_promotion_command FROM platform.irt_parameter_set NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "RI_ConstraintTrigger_c_26788",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": true,
+      "definition": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_26788\" AFTER UPDATE ON platform.irt_parameter_promotion_command FROM platform.irt_parameter_set NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "kind": "trigger",
+      "name": "irt_promotion_command_immutable",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": false,
+      "definition": "CREATE TRIGGER irt_promotion_command_immutable BEFORE DELETE OR UPDATE ON platform.irt_parameter_promotion_command FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
+    },
+    {
+      "kind": "trigger",
+      "name": "irt_promotion_receipt_guard",
+      "table": "platform.irt_parameter_promotion_command",
+      "enabled": "O",
+      "internal": false,
+      "definition": "CREATE TRIGGER irt_promotion_receipt_guard BEFORE INSERT ON platform.irt_parameter_promotion_command FOR EACH ROW EXECUTE FUNCTION platform.guard_irt_promotion_receipt()"
+    },
+    {
+      "kind": "function",
+      "name": "guard_irt_effective_selection",
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_irt_effective_selection()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'Effective selection history cannot be deleted' USING ERRCODE = '23514';\n    ELSIF TG_OP = 'INSERT' THEN\n        IF NEW.selection_revision <> 1 THEN RAISE EXCEPTION 'First selection revision must be one' USING ERRCODE = '23514'; END IF;\n    ELSIF NEW.organization_id <> OLD.organization_id OR NEW.question_bank_id <> OLD.question_bank_id\n        OR NEW.model_version_id <> OLD.model_version_id OR NEW.selection_revision <> OLD.selection_revision + 1\n        OR NEW.parameter_set_id = OLD.parameter_set_id OR NEW.selected_at <= OLD.selected_at THEN\n        RAISE EXCEPTION 'Selection requires stable scope, a new set and next revision' USING ERRCODE = '23514';\n    END IF;\n    IF NOT EXISTS (\n        SELECT 1 FROM platform.irt_parameter_set s\n        JOIN platform.irt_calibration_run r ON r.output_parameter_set_id=s.parameter_set_id AND r.model_version_id=s.model_version_id\n        JOIN platform.model_version m ON m.model_version_id=s.model_version_id\n        JOIN platform.question_bank b ON b.question_bank_id=NEW.question_bank_id\n        JOIN platform.account owner ON owner.account_id=b.created_by\n        JOIN platform.organization o ON o.organization_id=owner.organization_id\n        WHERE s.parameter_set_id=NEW.parameter_set_id AND s.model_version_id=NEW.model_version_id\n          AND s.status='PROMOTED' AND s.source='CALIBRATED' AND s.activated_by=NEW.selected_by AND s.activated_at=NEW.selected_at\n          AND r.status='SUCCEEDED' AND r.configuration->>'origin'='ACTUAL_PILOT'\n          AND r.diagnostics->'result'->>'origin'='ACTUAL_PILOT'\n          AND r.configuration->'request'->'scope'->>'organizationId'=NEW.organization_id::text\n          AND r.configuration->'request'->'scope'->>'bankId'=NEW.question_bank_id::text\n          AND m.approved_by IS NOT NULL AND m.approved_at IS NOT NULL AND m.algorithm='IRT_3PL'\n          AND owner.organization_id=NEW.organization_id AND owner.active AND o.status='ACTIVE'\n    ) THEN RAISE EXCEPTION 'Scoped approved actual-pilot promotion required' USING ERRCODE = '23514'; END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "kind": "function",
+      "name": "guard_irt_promotion_receipt",
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_irt_promotion_receipt()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF NOT EXISTS (SELECT 1 FROM platform.irt_effective_parameter_selection s\n        WHERE s.organization_id=NEW.organization_id AND s.question_bank_id=NEW.question_bank_id AND s.model_version_id=NEW.model_version_id\n          AND s.selection_revision=NEW.selection_revision AND s.parameter_set_id=NEW.parameter_set_id\n          AND s.selected_by=NEW.actor_id AND s.selected_at=NEW.occurred_at) THEN\n        RAISE EXCEPTION 'Promotion receipt must describe the current transaction selection' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "kind": "function",
+      "name": "validate_irt_selection_receipt",
+      "definition": "CREATE OR REPLACE FUNCTION platform.validate_irt_selection_receipt()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE previous_revision bigint; previous_set uuid;\nBEGIN\n    IF TG_OP='INSERT' THEN previous_revision=0; previous_set=NULL;\n    ELSE previous_revision=OLD.selection_revision; previous_set=OLD.parameter_set_id; END IF;\n    IF NOT EXISTS (\n        SELECT 1 FROM platform.irt_parameter_promotion_command c JOIN platform.irt_parameter_set s USING (parameter_set_id,model_version_id)\n        WHERE c.organization_id=NEW.organization_id AND c.question_bank_id=NEW.question_bank_id AND c.model_version_id=NEW.model_version_id\n          AND c.selection_revision=NEW.selection_revision AND c.parameter_set_id=NEW.parameter_set_id\n          AND c.actor_id=NEW.selected_by AND c.occurred_at=NEW.selected_at AND c.parameter_hash=s.parameter_hash\n          AND c.expected_revision=previous_revision AND c.expected_parameter_set_id IS NOT DISTINCT FROM previous_set\n    ) THEN RAISE EXCEPTION 'Effective selection requires matching immutable command receipt' USING ERRCODE = '23514'; END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "organization_id",
+      "ordinal": 1,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "question_bank_id",
+      "ordinal": 2,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "model_version_id",
+      "ordinal": 3,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "parameter_set_id",
+      "ordinal": 4,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "selection_revision",
+      "ordinal": 5,
+      "dataType": "bigint",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "selected_by",
+      "ordinal": 6,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_effective_parameter_selection",
+      "column": "selected_at",
+      "ordinal": 7,
+      "dataType": "timestamp with time zone",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "organization_id",
+      "ordinal": 1,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "actor_id",
+      "ordinal": 2,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "idempotency_key",
+      "ordinal": 3,
+      "dataType": "text",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "question_bank_id",
+      "ordinal": 4,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "model_version_id",
+      "ordinal": 5,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "request_hash",
+      "ordinal": 6,
+      "dataType": "text",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "parameter_set_id",
+      "ordinal": 7,
+      "dataType": "uuid",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "parameter_hash",
+      "ordinal": 8,
+      "dataType": "text",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "expected_revision",
+      "ordinal": 9,
+      "dataType": "bigint",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "expected_parameter_set_id",
+      "ordinal": 10,
+      "dataType": "uuid",
+      "nullable": "YES"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "selection_revision",
+      "ordinal": 11,
+      "dataType": "bigint",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "reason",
+      "ordinal": 12,
+      "dataType": "text",
+      "nullable": "NO"
+    },
+    {
+      "kind": "column",
+      "table": "irt_parameter_promotion_command",
+      "column": "occurred_at",
+      "ordinal": 13,
+      "dataType": "timestamp with time zone",
+      "nullable": "NO"
+    }
+  ],
+  "limits": "Read-only metadata/count/canonical digest and backup decode; no transaction/trigger rejection/race/authorization or restore execution evidence.",
+  "finalReadOnlyAfterStartupAndHttp": {
+    "recordedAt": "2026-10-22T22:49:00.316100+07:00",
+    "all86PlatformTablesAndFlywayDigestMatchPostMigration": true,
+    "rows": [
+      {
+        "count": 1,
+        "table": "account",
+        "digest": "d0a990eb1f70ef3905c7031edb611105",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "account_role",
+        "digest": "13bfc05f7d0b976a34dfdebb8e0fdbdc",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "activity_requirement",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "analytics_snapshot",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 7,
+        "table": "application_role",
+        "digest": "c811d532b99eb9ddd5492319e5e6684a",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "assessment_assignment",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "assessment_attempt",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "assessment_availability",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "assessment_item",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "assessment_result",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "assessment_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 11,
+        "table": "audit_event",
+        "digest": "f4983666f2fa81f83e1cb3cb4b128c51",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_adaptive_attempt",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_adaptive_blueprint_role",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_adaptive_blueprint_skill",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_adaptive_blueprint_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_adaptive_blueprint_working_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_answer_reveal_audit",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_assessment_series",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_assessment_transition",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_command",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_item",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_pool_item",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_response",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_result",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_skill_result",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_attempt_skill_state",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_activation",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_activation_event",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_command",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_role",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_skill",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_version_registry",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_working_registry",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_blueprint_working_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_management_command",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "baseline_mastery_evidence",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "catalog_guard",
+        "digest": "96b2e0b6a5128327ca8da02f5f1d5b8e",
+        "schema": "platform"
+      },
+      {
+        "count": 2,
+        "table": "catalog_reference",
+        "digest": "4620616e065f0351325e973e5df138ed",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "catalog_release",
+        "digest": "c7f824559f86e214fedcc90646c020ad",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "cohort_member",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "cohort_snapshot",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "completion_pass",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "evaluation_artifact",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "evaluation_run",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "evidence_application",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "evidence_observation",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "evidence_policy_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "irt_calibration_run",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "irt_effective_parameter_selection",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "irt_item_parameter",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "irt_parameter_promotion_command",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "irt_parameter_set",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "item_response",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "item_skill_mapping",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 135,
+        "table": "item_version",
+        "digest": "ebf8a76d1bd261d4b0d7dba291ec37bc",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "learner_state",
+        "digest": "d39ab99cb2b04e30c8f637fd1a06b937",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "learning_activity",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "manager_scope",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "mastery_estimate",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "mastery_mapping_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "model_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "module_assessment_binding",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "module_completion",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "organization",
+        "digest": "fbaed39a7cd669e986c758c4fa753d9c",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "organizational_unit",
+        "digest": "ab80a630a123d50fdfd26cfd765f6eb8",
+        "schema": "platform"
+      },
+      {
+        "count": 11,
+        "table": "outbox_event",
+        "digest": "7898fc8bc0122c82a39818e81dfc30f5",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "pathway_approval",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "pathway_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "pathway_step",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "processing_job",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "processing_receipt",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "processing_stream",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "profile_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "progress_revision",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "publication_request",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 1,
+        "table": "question_bank",
+        "digest": "328585284d0a0636e66ed72b6fa81fdb",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "recommendation_candidate",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "recommendation_run",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "recommendation_version",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "roi_scenario",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 0,
+        "table": "session",
+        "digest": "d41d8cd98f00b204e9800998ecf8427e",
+        "schema": "platform"
+      },
+      {
+        "count": 11,
+        "table": "target_selection",
+        "digest": "34adace4faa1899e15a878fe749ca483",
+        "schema": "platform"
+      },
+      {
+        "count": 25,
+        "table": "target_selection_request",
+        "digest": "0f1ea472870b3efacfdfb0c6b80f12da",
+        "schema": "platform"
+      },
+      {
+        "count": 23,
+        "table": "flyway_schema_history",
+        "digest": "6601cf303521b9c5d7a4858e8a76a723",
+        "schema": "public"
+      }
+    ],
+    "containersAndExplicitGates": [
+      {
+        "name": "adapt-learn-graph-dev-postgres-1",
+        "id": "571e16f125ead64147f6852049b2e0ac17efead234dc093fd4ae745ffaf475bd",
+        "state": "running",
+        "health": "healthy",
+        "mounts": [
+          {
+            "Type": "volume",
+            "Name": "adapt-learn-graph-dev_postgres_data",
+            "Destination": "/var/lib/postgresql/data"
+          }
+        ],
+        "flags": {}
+      },
+      {
+        "name": "adapt-learn-graph-dev-neo4j-1",
+        "id": "de26f6f2a5107cd7fdb9567996006ea96ffd5d28e1374f3ae832d475e47aa3a0",
+        "state": "running",
+        "health": "healthy",
+        "mounts": [
+          {
+            "Type": "volume",
+            "Name": "adapt-learn-graph-dev_neo4j_data",
+            "Destination": "/data"
+          },
+          {
+            "Type": "volume",
+            "Name": "fad0bcb57b3ef515c73667b254a1d2f449190980595526602023e9a06f74c265",
+            "Destination": "/logs"
+          }
+        ],
+        "flags": {}
+      },
+      {
+        "name": "adapt-learn-graph-dev-api-1",
+        "id": "8f11c930eb3b818b784039fd8f276772677b49c25e16fbfbc318438002ba883e",
+        "state": "running",
+        "health": "healthy",
+        "mounts": [],
+        "flags": {
+          "SPRING_PROFILES_ACTIVE": "local",
+          "ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED": "false",
+          "ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED": "false",
+          "CATALOG_SEED_ENABLED": "false",
+          "BASELINE_ANSWER_REVIEW_ENABLED": "false"
+        }
+      },
+      {
+        "name": "adapt-learn-graph-dev-migrate-1",
+        "id": "7ab0afda20a8dd8ff270654f40405effb958efa800f7c0ddc12c47dfd3a9af2e",
+        "state": "exited",
+        "health": null,
+        "mounts": [],
+        "flags": {
+          "ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED": "false",
+          "SPRING_PROFILES_ACTIVE": "local,migrate",
+          "BASELINE_ANSWER_REVIEW_ENABLED": "false",
+          "CATALOG_SEED_ENABLED": "false",
+          "ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED": "false"
+        }
+      },
+      {
+        "name": "adapt-learn-graph-dev-web-1",
+        "id": "b678dd27a07ce05628125a88e2f055e9d755e6ba11bd42efa9960118db03f2b1",
+        "state": "running",
+        "health": null,
+        "mounts": [
+          {
+            "Type": "bind",
+            "Name": null,
+            "Destination": "/workspace"
+          },
+          {
+            "Type": "volume",
+            "Name": "b2b9cc9d19842fc2999df3a83402bb903c06644b07df8b7c5fcee4f47b22e304",
+            "Destination": "/workspace/node_modules"
+          }
+        ],
+        "flags": {
+          "VITE_ADAPTIVE_BASELINE_ENABLED": "false",
+          "VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED": "false"
+        }
+      }
+    ],
+    "noAuthenticatedBusinessOperationPerformed": true
+  }
+}

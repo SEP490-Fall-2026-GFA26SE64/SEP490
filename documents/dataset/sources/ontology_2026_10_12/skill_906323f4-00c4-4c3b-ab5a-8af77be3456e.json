@@ -1,0 +1,388 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F906323f4-00c4-4c3b-ab5a-8af77be3456e&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e",
+    "title": "create data sets",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Datensätze erstellen",
+      "no": "opprette datasett",
+      "fi": "luoda tietokokonaisuuksia",
+      "pt": "gerar conjuntos de dados",
+      "bg": "създаване на набори от данни",
+      "lt": "parengti duomenų rinkinius",
+      "lv": "veidot datu kopas",
+      "hr": "stvarati skupove podataka",
+      "fr": "créer des ensembles de données",
+      "hu": "adathalmazokat képez",
+      "uk": "створювати набори даних",
+      "sk": "vytvárať súbory údajov",
+      "sl": "oblikovati podatkovne nize",
+      "ga": "tacair shonraí a chruthú",
+      "sv": "skapa datauppsättningar",
+      "mt": "ħolqien ta’ settijiet ta' data",
+      "el": "δημιουργία συνόλων δεδομένων",
+      "en": "create data sets",
+      "is": "býr til gagnasöfn",
+      "it": "creare gli insiemi di dati",
+      "es": "generar conjuntos de datos",
+      "et": "andmekogumeid looma",
+      "cs": "vytvářet soubory dat",
+      "ar": "إنشاء مجموعة بيانات",
+      "pl": "tworzyć zestawy danych",
+      "da": "oprette datasæt",
+      "ro": "creează seturi de date",
+      "nl": "gegevenssets maken"
+    },
+    "alternativeLabel": {
+      "sv": [
+        "skapa datamängder"
+      ],
+      "fi": [
+        "tehdä aineistoja"
+      ],
+      "en": [
+        "creating data sets",
+        "design data sets",
+        "create a data set",
+        "data set creation",
+        "develop data sets",
+        "establish data sets",
+        "produce data sets"
+      ],
+      "ro": [
+        "generează seturi de date"
+      ],
+      "nl": [
+        "datasets maken"
+      ],
+      "es": [
+        "redactar conjuntos de datos",
+        "crear conjuntos de datos"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Skape en samling nye eller eksisterende relaterte datasett som består av separate elementer, men som kan håndteres som én enhet.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Erstellung einer Sammlung neuer oder vorhandener Daten zu einem Themenbereich, die aus einzelnen Datensätzen bestehen, aber als Ganzes betrachtet und bearbeitet werden können.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Luoda kokoelma uusia tai olemassa olevia toisiinsa liittyviä tietokokonaisuuksia, jotka koostuvat erillisistä osista, joita voidaan käsitellä yhtenä yksikkönä.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Gerar uma coleção de conjuntos de dados novos ou existentes que sejam constituídos por elementos separados, mas que possam ser manipulados como uma unidade.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Генерира набор от нови или съществуващи свързани набори от данни, които се изработват от отделни елементи, но могат да бъдат манипулирани като една единица.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Kurti naujų arba esamų susijusių duomenų rinkinius, kuriuos sudaro atskiri elementai, bet kuriuos galima tvarkyti kaip vieną vienetą.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Apvienot jaunu vai pastāvošu savstarpēji saistītu datu kopas, kas sastāv no atsevišķiem elementiem, bet ko var izmantot kā vienotu veselumu.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Generirati prikupljanje novih ili postojećih povezanih skupova podataka koji su sastavljeni od odvojenih elemenata, ali se njima može upravljati kao jednom jedinicom.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Générer une collection de séries de données, nouvelles ou existantes, qui sont constituées d’éléments distincts mais qui peuvent être manipulées sous la forme d’une seule unité.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Létrehoz egy új vagy már meglévő kapcsolódó adathalmazokból álló gyűjteményt, amely különálló elemekből áll, de egységként manipulálható.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати колекцію нових або існуючих пов’язаних наборів даних, які складаються з окремих елементів, але з якими можна працювати, як з єдиним цілим.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Generovanie súboru nových alebo existujúcich súvisiacich súborov údajov, ktoré pozostávajú z oddelených prvkov, ale môže sa s nimi zaobchádzať ako s jednou jednotkou.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Ustvariti zbirko novih ali obstoječih povezanih podatkovnih nizov, ki so sestavljeni iz ločenih elementov, vendar jih je mogoče obdelovati kot eno enoto.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Bailiúchán de thacair shonraí ghaolmhara nua nó reatha a ghiniúint, atá déanta as eilimintí ar leithligh, ach ar féidir iad a ionramháil mar aonad amháin.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Generera en samling nya eller befintliga relaterade datauppsättningar som består av separata delar, men som kan göras om till en enhet.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία μιας συλλογής νέων ή υφιστάμενων συνόλων δεδομένων που αποτελούνται από χωριστά στοιχεία, αλλά μπορούν να χειραγωγηθούν ως ενιαία μονάδα.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Iġġenera ġabra ta’ settijiet tad-data ġodda jew eżistenti li huma magħmula minn elementi separati iżda li jistgħu jiġu manipulati bħala unità waħda.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Generate a collection of new or existing related data sets that are made up out of separate elements but can be manipulated as one unit.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Búa til safn af nýjum eða núverandi gögnum sem eru sett saman úr aðskildum þáttum en hægt er að nota sem eina einingu.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Generare una raccolta di insiemi di dati nuovi o esistenti costituiti da elementi separati, ma che possono essere manipolati come un’unica unità.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Generar una recopilación de conjuntos de datos relacionados nuevos o ya existentes que estén formados por elementos separados, pero que puedan manipularse como una unidad.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Uutest või olemasolevatest sarnastest andmestikest andmekogumite loomine, mis koosnevad eraldi elementidest, kuid mida saab käidelda ühe üksusena.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet soubory nových nebo stávajících souborů dat, které se skládají ze samostatných prvků, ale lze je považovat za jednu jednotku a takto s nimi nakládat.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "وضع تشكيلة تتكون من مجموعة البيانات الجديدة أو الموجودة ذات الصلة والتي تتكوّن من عناصر منفصلة لكن يُمكن أن تُعالج كوحدة واحدة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć zbiór nowych lub istniejących powiązanych zestawów danych, które składają się z oddzielnych elementów, ale można nimi manipulować jak jedną jednostką.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Generează o colecție de seturi de date noi sau existente corelate, care sunt alcătuite din elemente separate, dar care pot fi manipulate ca o singură unitate.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Generere en samling af nye eller eksisterende relaterede datasæt, der udgøres af separate elementer, men som kan manipuleres som en enhed.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Genereren van een verzameling nieuwe of bestaande gerelateerde datasets die uit afzonderlijke elementen bestaan, maar kunnen worden gebruikt als één eenheid.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e&language=en",
+        "uri": "http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e",
+        "title": "create data sets"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/cross-sector&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/cross-sector",
+          "title": "cross-sector skills and competences",
+          "code": "Level 2"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77&language=en",
+          "uri": "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77",
+          "title": "managing information",
+          "code": "S2.3.0"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4463a721-69f3-413d-8321-43e3af13a4f1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4463a721-69f3-413d-8321-43e3af13a4f1",
+          "title": "use databases",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+          "title": "artificial intelligence engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
+          "title": "data warehouse designer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "title": "data engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8d9ec84d-cf2d-4179-87bc-335cda54a427&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/8d9ec84d-cf2d-4179-87bc-335cda54a427",
+          "title": "database designer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8213b4bc-60ce-4ffc-9e00-9758fb2003c6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/8213b4bc-60ce-4ffc-9e00-9758fb2003c6",
+          "title": "monitoring and evaluation officer"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "create data sets",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77",
+            "http://data.europa.eu/esco/skill/4463a721-69f3-413d-8321-43e3af13a4f1"
+          ]
+        },
+        {
+          "title": "use databases",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4463a721-69f3-413d-8321-43e3af13a4f1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/4463a721-69f3-413d-8321-43e3af13a4f1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c"
+          ]
+        },
+        {
+          "title": "managing, gathering and storing digital data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/28d2ab6c-38a2-476e-85fe-7982fd242943"
+          ]
+        },
+        {
+          "title": "accessing and analysing digital data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/28d2ab6c-38a2-476e-85fe-7982fd242943&language=en",
+              "uri": "http://data.europa.eu/esco/skill/28d2ab6c-38a2-476e-85fe-7982fd242943"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "managing information",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77&language=en",
+              "uri": "http://data.europa.eu/esco/skill/32c017fd-28ab-4051-bf68-74de952c2f77"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54"
+          ]
+        },
+        {
+          "title": "managing information",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54&language=en",
+              "uri": "http://data.europa.eu/esco/skill/dddd229b-61e1-480d-80d6-d9d9ee9b5f54"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+          ]
+        },
+        {
+          "title": "information skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        }
+      ]
+    }
+  }
+}

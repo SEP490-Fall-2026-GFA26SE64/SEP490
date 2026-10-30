@@ -1,0 +1,28 @@
+# Test-only overlay. Always use the explicit project and --project-directory in the rerun guide.
+services:
+  postgres:
+    ports: !override ["127.0.0.1:25432:5432"]
+    environment:
+      POSTGRES_PASSWORD: cluster3-only-postgres
+  neo4j:
+    ports: !override ["127.0.0.1:28474:7474", "127.0.0.1:28687:7687"]
+    environment:
+      NEO4J_AUTH: neo4j/cluster3-only-neo4j
+  migrate:
+    image: req001002-c3-backend:20261023
+    environment:
+      DB_PASSWORD: cluster3-only-postgres
+      NEO4J_PASSWORD: cluster3-only-neo4j
+  seed:
+    image: req001002-c3-backend:20261023
+    environment:
+      DB_PASSWORD: cluster3-only-postgres
+      NEO4J_PASSWORD: cluster3-only-neo4j
+  api:
+    image: req001002-c3-backend:20261023
+    ports: !override ["127.0.0.1:28080:8080"]
+    environment:
+      DB_PASSWORD: cluster3-only-postgres
+      NEO4J_PASSWORD: cluster3-only-neo4j
+  web:
+    ports: !override ["127.0.0.1:28088:5173"]

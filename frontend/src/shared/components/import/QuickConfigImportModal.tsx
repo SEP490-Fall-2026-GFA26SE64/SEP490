@@ -1,14 +1,15 @@
 import * as React from 'react'
 import {
-  AlertCircle,
-  Check,
-  Code2,
-  FileJson,
+  CheckCircle2,
+  Download,
   FileSpreadsheet,
-  Layers,
+  FileUp,
   Sparkles,
+  Table as TableIcon,
+  Trash2,
   Upload,
 } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import {
@@ -18,7 +19,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/Dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
 import { useToast } from '../../hooks/useToast'
 
 export interface ImportPreset {
@@ -28,7 +28,7 @@ export interface ImportPreset {
   badge: string
   itemCount: number
   previewSnippet: string
-  payload: any
+  payload: unknown
 }
 
 interface QuickConfigImportModalProps {
@@ -36,9 +36,9 @@ interface QuickConfigImportModalProps {
   onOpenChange: (open: boolean) => void
   title: string
   entityName: string
-  description: string
-  presets: ImportPreset[]
-  onImport: (data: any, source: 'preset' | 'custom') => void
+  description?: string
+  presets?: ImportPreset[]
+  onImport: (data: unknown, source: 'preset' | 'custom') => void
   sampleJsonPlaceholder?: string
 }
 
@@ -47,112 +47,217 @@ export function QuickConfigImportModal({
   onOpenChange,
   title,
   entityName,
-  description,
-  presets,
+  description = `Upload an Excel spreadsheet (.xlsx, .xls, .csv) to populate ${entityName.toLowerCase()} in bulk.`,
+  presets = [],
   onImport,
-  sampleJsonPlaceholder = '[\n  {\n    "code": "ITEM-01",\n    "title": "Example Item"\n  }\n]',
+  sampleJsonPlaceholder,
 }: QuickConfigImportModalProps) {
   const { toast } = useToast()
-  const [selectedPresetId, setSelectedPresetId] = React.useState<string>(presets[0]?.id || '')
-  const [customJson, setCustomJson] = React.useState('')
-  const [activeTab, setActiveTab] = React.useState<'presets' | 'custom'>('presets')
-  const [copied, setCopied] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  const selectedPreset = presets.find((p) => p.id === selectedPresetId) || presets[0]
+  const [isDragging, setIsDragging] = React.useState(false)
+  const [parsedRows, setParsedRows] = React.useState<Record<string, unknown>[]>([])
+  const [fileName, setFileName] = React.useState<string>('')
+  const [sheetName, setSheetName] = React.useState<string>('')
+  const [importSource, setImportSource] = React.useState<'preset' | 'custom'>('custom')
 
-  const handleCopyPreview = () => {
-    if (!selectedPreset?.previewSnippet) return
-    navigator.clipboard.writeText(selectedPreset.previewSnippet)
-    setCopied(true)
-    toast({
-      title: 'Copied to Clipboard',
-      description: 'Configuration JSON preview copied.',
-      variant: 'info',
-    })
-    setTimeout(() => setCopied(false), 2000)
-  }
+  // Reset when dialog opens/closes
+  React.useEffect(() => {
+    if (!open) {
+      setParsedRows([])
+      setFileName('')
+      setSheetName('')
+      setIsDragging(false)
+    }
+  }, [open])
 
-  const handleLoadSampleTemplate = () => {
-    setCustomJson(sampleJsonPlaceholder)
-    toast({
-      title: 'Template Inserted',
-      description: 'Sample JSON schema loaded into the editor.',
-      variant: 'info',
-    })
-  }
-
-  const handleApplyPreset = () => {
-    if (!selectedPreset) return
-    onImport(selectedPreset.payload, 'preset')
-    toast({
-      title: 'Import Successful',
-      description: `Loaded ${selectedPreset.itemCount} ${entityName} from "${selectedPreset.name}".`,
-      variant: 'success',
-    })
-    onOpenChange(false)
-  }
-
-  const handleApplyCustomJson = () => {
-    if (!customJson.trim()) {
+  const processFile = (file: File) => {
+    const validExtensions = ['.xlsx', '.xls', '.csv']
+    const hasValidExt = validExtensions.some((ext) => file.name.toLowerCase().endsWith(ext))
+    if (!hasValidExt) {
       toast({
-        title: 'Empty Input',
-        description: 'Please paste a valid JSON array or object configuration.',
+        title: 'Unsupported File Format',
+        description: 'Please upload an Excel workbook (.xlsx, .xls) or .csv file.',
         variant: 'destructive',
       })
       return
     }
 
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const buffer = e.target?.result as ArrayBuffer
+        const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' })
+        const firstSheet = workbook.SheetNames[0]
+        if (!firstSheet) {
+          throw new Error('Workbook contains no sheets.')
+        }
+
+        const worksheet = workbook.Sheets[firstSheet]
+        const rawJson = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet)
+
+        if (!rawJson || rawJson.length === 0) {
+          toast({
+            title: 'Empty Sheet',
+            description: `No data rows found in worksheet "${firstSheet}".`,
+            variant: 'destructive',
+          })
+          return
+        }
+
+        setParsedRows(rawJson)
+        setFileName(file.name)
+        setSheetName(firstSheet)
+        setImportSource('custom')
+
+        toast({
+          title: 'Excel File Loaded',
+          description: `Parsed ${rawJson.length} records from sheet "${firstSheet}".`,
+          variant: 'success',
+        })
+      } catch (err) {
+        toast({
+          title: 'Failed to Parse Excel File',
+          description: err instanceof Error ? err.message : 'Please check your file structure and try again.',
+          variant: 'destructive',
+        })
+      }
+    }
+    reader.readAsArrayBuffer(file)
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      processFile(file)
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      processFile(file)
+    }
+  }
+
+  const handleDownloadTemplate = () => {
     try {
-      const parsed = JSON.parse(customJson)
-      onImport(parsed, 'custom')
+      let sampleData: Record<string, unknown>[] = []
+      if (presets[0]?.payload && Array.isArray(presets[0].payload)) {
+        sampleData = (presets[0].payload as Record<string, unknown>[]).slice(0, 3)
+      } else if (sampleJsonPlaceholder) {
+        try {
+          const parsed = JSON.parse(sampleJsonPlaceholder)
+          sampleData = Array.isArray(parsed) ? parsed : [parsed]
+        } catch {
+          sampleData = [{ code: 'SAMPLE-01', name: `Sample ${entityName}`, description: 'Description here' }]
+        }
+      } else {
+        sampleData = [{ code: 'SAMPLE-01', name: `Sample ${entityName}`, description: 'Description here' }]
+      }
+
+      // Flatten object properties for clean tabular display
+      const flatData = sampleData.map((row) => {
+        const flatRow: Record<string, unknown> = {}
+        for (const [key, val] of Object.entries(row)) {
+          if (typeof val === 'object' && val !== null) {
+            flatRow[key] = JSON.stringify(val)
+          } else {
+            flatRow[key] = val
+          }
+        }
+        return flatRow
+      })
+
+      const ws = XLSX.utils.json_to_sheet(flatData)
+      const wb = XLSX.utils.book_new()
+      const safeSheetTitle = entityName.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 31) || 'Sheet1'
+      XLSX.utils.book_append_sheet(wb, ws, safeSheetTitle)
+      const exportName = `${entityName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_template.xlsx`
+      XLSX.writeFile(wb, exportName)
+
       toast({
-        title: 'Custom Import Successful',
-        description: `Successfully imported custom configuration for ${entityName}.`,
+        title: 'Template Downloaded',
+        description: `Saved "${exportName}". Fill out records and upload to import.`,
         variant: 'success',
       })
-      onOpenChange(false)
-      setCustomJson('')
-    } catch (err: any) {
+    } catch (err) {
       toast({
-        title: 'Invalid JSON Format',
-        description: err?.message || 'Check your syntax and try again.',
+        title: 'Download Failed',
+        description: err instanceof Error ? err.message : 'Unable to generate Excel template.',
         variant: 'destructive',
       })
     }
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleLoadSampleDataset = (preset: ImportPreset) => {
+    if (!preset.payload) return
+    const rawList = Array.isArray(preset.payload)
+      ? (preset.payload as Record<string, unknown>[])
+      : [preset.payload as Record<string, unknown>]
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const text = event.target?.result as string
-      setCustomJson(text)
-      setActiveTab('custom')
-      toast({
-        title: 'File Loaded',
-        description: `Read ${file.name} (${Math.round(file.size / 1024)} KB). Ready to import.`,
-        variant: 'info',
-      })
-    }
-    reader.readAsText(file)
+    setParsedRows(rawList)
+    setFileName(`${preset.name.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`)
+    setSheetName(entityName)
+    setImportSource('preset')
+
+    toast({
+      title: 'Sample Dataset Loaded',
+      description: `Loaded ${rawList.length} records from curated "${preset.name}".`,
+      variant: 'info',
+    })
   }
+
+  const handleConfirmImport = () => {
+    if (parsedRows.length === 0) return
+    onImport(parsedRows, importSource)
+    toast({
+      title: 'Excel Import Completed',
+      description: `Imported ${parsedRows.length} ${entityName} records successfully.`,
+      variant: 'success',
+    })
+    onOpenChange(false)
+  }
+
+  const columns = React.useMemo(() => {
+    if (parsedRows.length === 0) return []
+    return Object.keys(parsedRows[0])
+  }, [parsedRows])
 
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      className="max-w-5xl sm:max-w-5xl xl:max-w-6xl w-[94vw] max-h-[92vh] overflow-y-auto p-6 sm:p-7"
+      className="max-w-4xl sm:max-w-4xl xl:max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto p-6 sm:p-7"
     >
       <div className="space-y-5">
-        <DialogHeader className="mb-2">
+        <DialogHeader className="mb-1">
           <div className="flex items-start gap-3.5">
             <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0 mt-0.5">
-              <Sparkles size={22} />
+              <FileSpreadsheet size={24} />
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight">{title}</DialogTitle>
+              <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight">
+                {title}
+              </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                 {description}
               </DialogDescription>
@@ -160,247 +265,228 @@ export function QuickConfigImportModal({
           </div>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-          <TabsList className="grid grid-cols-2 bg-muted/60 p-1 rounded-xl max-w-md mb-4">
-            <TabsTrigger
-              value="presets"
-              className="text-xs sm:text-sm font-semibold gap-2 py-2 data-[state=active]:bg-card data-[state=active]:text-primary shadow-2xs"
-            >
-              <Layers size={15} />
-              <span>Industry Presets ({presets.length})</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="custom"
-              className="text-xs sm:text-sm font-semibold gap-2 py-2 data-[state=active]:bg-card data-[state=active]:text-primary shadow-2xs"
-            >
-              <Upload size={15} />
-              <span>Paste JSON / Upload</span>
-            </TabsTrigger>
-          </TabsList>
+        {/* TOP TOOLBAR: Preset Samples */}
+        {presets.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-border bg-muted/20">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                <Sparkles size={13} className="text-primary" />
+                <span>Or load curated preset:</span>
+              </span>
+              {presets.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => handleLoadSampleDataset(preset)}
+                  className="px-2.5 py-1 text-xs font-medium rounded-md border border-primary/25 bg-secondary hover:bg-secondary/80 text-primary transition-colors cursor-pointer"
+                >
+                  {preset.name} ({preset.itemCount})
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-          {/* TAB 1: PRESETS */}
-          <TabsContent value="presets" className="space-y-4 pt-1">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-              {/* Presets List Column */}
-              <div className="lg:col-span-5 flex flex-col space-y-3">
-                <div className="flex items-center justify-between px-0.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Available Packages
-                  </span>
-                  <Badge variant="secondary" className="text-[10px] py-0 px-2 font-mono">
-                    {presets.length} Ready
-                  </Badge>
+        {/* UPLOAD DROPZONE / SPREADSHEET PREVIEW */}
+        {parsedRows.length === 0 ? (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[260px] ${
+              isDragging
+                ? 'border-primary bg-primary/10 scale-[0.99]'
+                : 'border-border bg-card hover:bg-muted/30 hover:border-primary/50'
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+            <div className="p-4 rounded-full bg-primary/10 text-primary mb-3">
+              <FileUp size={32} />
+            </div>
+            <h3 className="font-bold text-base text-foreground mb-1">
+              Drop your Excel spreadsheet here, or Browse
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-md leading-relaxed mb-4">
+              Upload your completed Excel template or spreadsheet. Supports{' '}
+              <strong className="text-foreground">.xlsx, .xls, .csv</strong> files.
+            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-[11px] font-mono">
+                .XLSX
+              </Badge>
+              <Badge variant="outline" className="text-[11px] font-mono">
+                .XLS
+              </Badge>
+              <Badge variant="outline" className="text-[11px] font-mono">
+                .CSV
+              </Badge>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Parsed File Banner */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-success/10 text-success border border-success/20">
+                  <FileSpreadsheet size={20} />
                 </div>
+                <div>
+                  <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                    <span>{fileName}</span>
+                    <Badge variant="success" className="text-[10px] py-0 px-2 font-mono">
+                      {sheetName}
+                    </Badge>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                    <span>{parsedRows.length} records detected</span>
+                    <span>•</span>
+                    <span>{columns.length} columns mapped</span>
+                  </div>
+                </div>
+              </div>
 
-                <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
-                  {presets.map((preset) => {
-                    const isSelected = preset.id === selectedPresetId
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => setSelectedPresetId(preset.id)}
-                        className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer relative flex flex-col justify-between group ${
-                          isSelected
-                            ? 'border-primary bg-primary/[0.05] ring-2 ring-primary/25 shadow-xs'
-                            : 'border-border bg-card hover:bg-muted/40 hover:border-primary/40'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex items-start justify-between gap-2.5 mb-1.5">
-                            <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-snug">
-                              {preset.name}
-                            </h4>
-                            <Badge
-                              variant="secondary"
-                              className="shrink-0 text-[10px] py-0.5 px-2 font-mono font-semibold bg-secondary text-primary border border-primary/20"
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  leftIcon={<Upload size={13} />}
+                  className="text-xs"
+                >
+                  Change File
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setParsedRows([])
+                    setFileName('')
+                    setSheetName('')
+                  }}
+                  className="text-xs text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 size={13} className="mr-1" />
+                  Clear
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* Excel Table Grid Preview */}
+            <div className="border border-border rounded-xl overflow-hidden bg-card shadow-xs">
+              <div className="flex items-center justify-between px-3.5 py-2 bg-muted/40 border-b border-border text-xs font-semibold text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <TableIcon size={14} className="text-primary" />
+                  <span>Worksheet Data Preview</span>
+                </div>
+                <span className="text-[11px] font-mono">
+                  Showing first {Math.min(parsedRows.length, 10)} of {parsedRows.length} rows
+                </span>
+              </div>
+
+              <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="sticky top-0 bg-muted/95 backdrop-blur-xs border-b border-border z-10">
+                    <tr>
+                      <th className="py-2 px-3 font-mono text-[11px] text-muted-foreground uppercase border-r border-border/50 w-12 text-center">
+                        #
+                      </th>
+                      {columns.map((col) => (
+                        <th
+                          key={col}
+                          className="py-2 px-3 font-semibold text-[11px] text-foreground uppercase border-r border-border/50 last:border-r-0 whitespace-nowrap"
+                        >
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border font-mono text-[11px]">
+                    {parsedRows.slice(0, 10).map((row, idx) => (
+                      <tr key={idx} className="hover:bg-muted/20 transition-colors">
+                        <td className="py-2 px-3 text-muted-foreground text-center border-r border-border/50 bg-muted/10 font-medium">
+                          {idx + 1}
+                        </td>
+                        {columns.map((col) => {
+                          const val = row[col]
+                          const displayStr =
+                            typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '')
+                          return (
+                            <td
+                              key={col}
+                              className="py-2 px-3 text-foreground/90 border-r border-border/50 last:border-r-0 max-w-xs truncate"
+                              title={displayStr}
                             >
-                              {preset.badge}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                            {preset.description}
-                          </p>
-                        </div>
-
-                        <div className="mt-3.5 flex items-center justify-between pt-2.5 border-t border-border/60 text-xs">
-                          <span className="font-medium text-foreground/80 flex items-center gap-1.5 text-xs">
-                            <Layers className="h-3.5 w-3.5 text-primary shrink-0" />
-                            <span>
-                              {preset.itemCount} {entityName}
-                            </span>
-                          </span>
-                          {isSelected ? (
-                            <span className="text-primary font-bold flex items-center gap-1 text-[11px] bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">
-                              <Check size={12} className="stroke-[3]" /> Selected
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs group-hover:text-foreground transition-colors font-medium">
-                              Select Package
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+                              {displayStr || <span className="text-muted-foreground/40 italic">null</span>}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              {/* Live Preview Column */}
-              <div className="lg:col-span-7 flex flex-col space-y-3">
-                <div className="flex items-center justify-between px-0.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Configuration Specification & Preview
-                  </span>
-                  {selectedPreset && (
-                    <button
-                      type="button"
-                      onClick={handleCopyPreview}
-                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      {copied ? (
-                        <>
-                          <Check size={12} className="text-emerald-500" />
-                          <span className="text-emerald-500 font-medium">Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Code2 size={12} />
-                          <span>Copy Raw JSON</span>
-                        </>
-                      )}
-                    </button>
-                  )}
+              {parsedRows.length > 10 && (
+                <div className="p-2.5 text-center text-[11px] text-muted-foreground bg-muted/20 border-t border-border">
+                  + {parsedRows.length - 10} additional rows will be imported from this spreadsheet.
                 </div>
-
-                {selectedPreset ? (
-                  <div className="rounded-xl border border-border bg-slate-950 text-slate-100 overflow-hidden shadow-xs flex flex-col flex-1 min-h-[380px]">
-                    <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800 text-xs font-semibold text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <Code2 className="h-4 w-4 text-primary" />
-                        <span className="font-mono uppercase tracking-wider text-slate-400">
-                          {selectedPreset.name}
-                        </span>
-                      </div>
-                      <Badge variant="outline" className="font-mono text-[10px] text-primary border-primary/30">
-                        {selectedPreset.itemCount} items payload
-                      </Badge>
-                    </div>
-                    <pre className="p-4 text-xs font-mono text-slate-200 overflow-y-auto max-h-[400px] flex-1 whitespace-pre-wrap leading-relaxed select-text">
-                      {selectedPreset.previewSnippet}
-                    </pre>
-                    <div className="px-4 py-2.5 bg-slate-900/60 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
-                      <span>Ready to load into company tenant workspace.</span>
-                      <span className="text-slate-500 font-mono text-[10px]">JSON Schema Verified</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground text-xs flex flex-col items-center justify-center min-h-[380px]">
-                    <Layers className="h-8 w-8 text-muted-foreground/40 mb-2" />
-                    Select a preset package from the left to inspect its configuration schema.
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+          </div>
+        )}
 
-            <DialogFooter className="pt-3">
-              <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Sparkles size={14} />}
-                onClick={handleApplyPreset}
-                className="font-semibold shadow-2xs px-5"
-              >
-                Apply Preset ({selectedPreset?.itemCount || 0} {entityName})
-              </Button>
-            </DialogFooter>
-          </TabsContent>
+        <DialogFooter className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between sm:justify-between gap-2 w-full mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadTemplate}
+            leftIcon={<Download size={14} className="text-primary" />}
+            className="text-xs font-semibold shadow-2xs w-full sm:w-auto"
+          >
+            Download Excel Template (.xlsx)
+          </Button>
 
-          {/* TAB 2: CUSTOM JSON / FILE */}
-          <TabsContent value="custom" className="space-y-4 pt-1">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <FileJson size={15} className="text-primary" />
-                    <span>JSON Configuration Payload</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleLoadSampleTemplate}
-                    className="text-[11px] text-primary hover:underline cursor-pointer font-medium ml-2"
-                  >
-                    Insert Schema Template
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="quick-import-file"
-                    className="text-xs text-primary font-semibold hover:bg-primary/15 cursor-pointer flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-lg border border-primary/20 transition-colors shadow-2xs"
-                  >
-                    <FileSpreadsheet size={13} />
-                    <span>Upload .json file</span>
-                  </label>
-                  <input
-                    id="quick-import-file"
-                    type="file"
-                    accept=".json"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </div>
-              </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
 
-              <textarea
-                rows={16}
-                value={customJson}
-                onChange={(e) => setCustomJson(e.target.value)}
-                placeholder={sampleJsonPlaceholder}
-                className="w-full font-mono text-xs sm:text-[13px] p-4 rounded-xl border border-border bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-y min-h-[380px] max-h-[550px] leading-relaxed shadow-inner"
-              />
-
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground">
-                <AlertCircle size={15} className="text-primary shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <p className="font-semibold text-foreground">Schema Validation Rule:</p>
-                  <p>
-                    The payload must match the attributes accepted by the creation form for{' '}
-                    <strong className="text-foreground">{entityName}</strong>. You can paste an array of objects or click{' '}
-                    <button
-                      type="button"
-                      onClick={handleLoadSampleTemplate}
-                      className="text-primary underline font-medium hover:opacity-80"
-                    >
-                      "Insert Schema Template"
-                    </button>{' '}
-                    to inspect required properties.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="pt-3">
-              <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Upload size={14} />}
-                onClick={handleApplyCustomJson}
-                disabled={!customJson.trim()}
-                className="font-semibold shadow-2xs px-5"
-              >
-                Import Configuration ({entityName})
-              </Button>
-            </DialogFooter>
-          </TabsContent>
-        </Tabs>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              leftIcon={<CheckCircle2 size={14} />}
+              onClick={handleConfirmImport}
+              disabled={parsedRows.length === 0}
+              className="font-semibold shadow-2xs px-5"
+            >
+              Import {parsedRows.length > 0 ? `${parsedRows.length} ` : ''}Records from Excel
+            </Button>
+          </div>
+        </DialogFooter>
       </div>
     </Dialog>
   )
 }
-

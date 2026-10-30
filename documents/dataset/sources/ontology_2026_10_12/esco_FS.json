@@ -1,0 +1,3049 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2Ff2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Occupation",
+    "classId": "http://data.europa.eu/esco/model#Occupation",
+    "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+    "title": "software developer",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "programvareutvikler",
+      "de": "Softwareentwickler/Softwareentwicklerin",
+      "fi": "ohjelmistokehittäjä",
+      "pt": "Programador de software/Programadora de software",
+      "bg": "разработчик на софтуер",
+      "lt": "programinės įrangos kūrėjas",
+      "hr": "razvojni programer softvera / razvojna programerka softvera",
+      "lv": "programmatūras izstrādātājs",
+      "fr": "développeur de logiciels/développeuse de logiciels",
+      "hu": "szoftverfejlesztő",
+      "uk": "розробник програмного забезпечення/розробниця програмного забезпечення",
+      "sk": "softvérový vývojár/softvérová vývojárka",
+      "sl": "razvijalec/razvijalka programske opreme",
+      "ga": "forbróir bogearraí",
+      "sv": "programvaruutvecklare",
+      "mt": "żviluppatur tas-softwer",
+      "el": "μηχανικός ανάπτυξης λογισμικού",
+      "en": "software developer",
+      "is": "hugbúnaðarsérfræðingur",
+      "it": "sviluppatore di software/sviluppatrice di software",
+      "es": "desarrollador de software/desarrolladora de software",
+      "et": "tarkvaraarendaja",
+      "cs": "softwarový vývojář/softwarová vývojářka",
+      "ar": "مطور برمجيات / مطورة برمجيات",
+      "pl": "twórca oprogramowania",
+      "ro": "dezvoltator de software",
+      "da": "softwareudvikler",
+      "nl": "software ontwikkelaar"
+    },
+    "alternativeLabel": {
+      "no": [
+        "programmerer",
+        "applikasjonsprogramvareutvikler",
+        "programvareutviklere",
+        "programvarespesialist",
+        "programutvikler",
+        "utvikler av programvare",
+        "spesialist på programvare",
+        "programvareingeniør",
+        "applikasjonsutvikler",
+        "applikasjonsprogrammerer",
+        "applikasjonsingeniør",
+        "batteriprogramvareutvikler",
+        "løsningsutvikler"
+      ],
+      "de": [
+        "Entwickler für Batterien-Software",
+        "Softwareentwicklerin",
+        "Softwareentwickler",
+        "Entwickler von Batteriesoftware",
+        "Software-Developer"
+      ],
+      "fi": [
+        "ohjelmistoratkaisujen kehittäjä",
+        "sovellusinsinööri",
+        "ratkaisukehittäjä",
+        "ohjelmistojen kehittäjä",
+        "akkuohjelmiston kehittäjä"
+      ],
+      "pt": [
+        "Programadora de aplicações",
+        "Engenheira de aplicações",
+        "Engenheiro de aplicações",
+        "Programador de software",
+        "programador",
+        "Programador de aplicações",
+        "Programadora de software",
+        "Programador de software de aplicações",
+        "Programadora de software de aplicações"
+      ],
+      "bg": [
+        "разработчик на приложен софтуер",
+        "разработчик на приложения",
+        "разработчици на софтуер",
+        "разработчик на решения",
+        "инженер на приложения",
+        "инженерка на приложения",
+        "програмист",
+        "софтуерен разработчик",
+        "софтуерен инженер"
+      ],
+      "lt": [
+        "baterijų programinės įrangos kūrėjas",
+        "taikomųjų programų programuotojas",
+        "programinės įrangos kūrėja",
+        "taikomųjų programų kūrėjas",
+        "programinės įrangos programuotojas",
+        "akumuliatoriaus programinės įrangos kūrėjas"
+      ],
+      "lv": [
+        "risinājumu izstrādātāja",
+        "programmaparatūras izstrādātājs",
+        "lietojumprogrammu izstrādātājs",
+        "programmaparatūras izstrādātāja",
+        "programmatūra izstrādātāja",
+        "lietotņu programmētājs",
+        "lietojumprogrammu izstrādātāja",
+        "lietojumprogrammu inženiere",
+        "lietotņu programmētāja",
+        "lietojumprogrammu inženieris",
+        "risinājumu izstrādātājs"
+      ],
+      "hr": [
+        "razvojni programer softwarea",
+        "programer aplikacijskog softvera",
+        "programerka",
+        "programerka aplikacijskog softvera",
+        "razvojni programer za softver",
+        "inženjer aplikacija",
+        "programer",
+        "razvojna programerka softwarea",
+        "softverski razvojni programer",
+        "razvojna programerka softvera",
+        "razvojna programerka za softver",
+        "inženjerka aplikacija",
+        "razvojni programer softvera",
+        "programerka softvera",
+        "softverska razvojna programerka",
+        "programer softvera"
+      ],
+      "fr": [
+        "développeur de logiciels de batterie",
+        "développeur logiciels",
+        "développeur applications",
+        "développeur de programmes",
+        "concepteur d'applications",
+        "conceptrice logiciel",
+        "développeur de logiciels pour les batteries",
+        "développeuse logiciels",
+        "développeur de logiciels",
+        "concepteur logiciel",
+        "développeuse de logiciels",
+        "développeuse applications",
+        "concepteur de logiciels"
+      ],
+      "hu": [
+        "szoftverfejlesztők",
+        "alkalmazásfejlesztő",
+        "szoftveralkalmazás fejlesztő"
+      ],
+      "sk": [
+        "vývojárka softvérových riešení",
+        "vývojár softvérových aplikácií",
+        "softvérový špecialista",
+        "programátor",
+        "aplikačný vývojár",
+        "softvérový inžinier",
+        "inžinierka aplikácií",
+        "vývojár aplikácie",
+        "vývojár softvérových riešení",
+        "vývojár softvéru",
+        "vývojár aplikačného softvéru",
+        "inžinier aplikácií",
+        "vývojárka softvérových aplikácií",
+        "programátor aplikácií",
+        "vývojárka softvéru",
+        "programátorka aplikácií"
+      ],
+      "sl": [
+        "razvijalec softvera",
+        "razvijalka programja",
+        "razvijalec programske opreme",
+        "razvijalka PO",
+        "razvijalka softvera",
+        "razvijalec programja",
+        "programski razvijalec",
+        "razvijalec PO",
+        "programska razvijalka",
+        "razvijalec/razvijalka programske opreme za baterije",
+        "software developer",
+        "razvijalka programske opreme"
+      ],
+      "sv": [
+        "applikationsprogrammerare",
+        "applikationsingenjör",
+        "lösningsutvecklare",
+        "xApplication-utvecklare"
+      ],
+      "mt": [
+        "programmatur tal-applikazzjonijiet tas-softwer",
+        "żviluppatur tal-applikazzjonijiet",
+        "żviluppatur tas-software",
+        "żviluppatur ta' softwer",
+        "inġinier tal-applikazzjonijiet"
+      ],
+      "el": [
+        "μηχανικός ανάπτυξης λογισμικού–προγραμματιστής",
+        "προγραμματιστής λογισμικού",
+        "μηχανικός για την ανάπτυξη λογισμικού",
+        "μηχανικός ανάπτυξης λογισμικών",
+        "μηχανικός ανάπτυξης λογισμικού–προγραμματίστρια"
+      ],
+      "en": [
+        "battery software developer",
+        "application developer",
+        "application programmer",
+        "solutions developer",
+        "programmer",
+        "software specialist",
+        "software developers",
+        "applications engineer",
+        "soft developer",
+        "electric vehicle software development engineer",
+        "application software developer",
+        "software engineer",
+        "developer of software"
+      ],
+      "is": [
+        "xApplication hönnuður",
+        "hugbúnaðarhönnuður",
+        "hugbúnaðarþróunarmanni",
+        "hugbúnaðarverkfræðingur",
+        "hugbúnaðarforritari",
+        "hugbúnaðarþróunarmanns",
+        "lausnahönnuður"
+      ],
+      "it": [
+        "sviluppatore/consulente software",
+        "sviluppatore di soluzioni",
+        "sviluppatrice di soluzioni",
+        "sviluppatore di software",
+        "sviluppatrice di software"
+      ],
+      "es": [
+        "ingeniera de aplicaciones",
+        "desarrollador de software de baterías",
+        "desarrollador de software de batería",
+        "desarrolladora de aplicaciones",
+        "desarrollador de aplicaciones",
+        "desarrollador de software",
+        "desarrollador de soluciones",
+        "desarrolladora de soluciones",
+        "desarrolladora de software",
+        "ingeniero de aplicaciones",
+        "desarrolladores de software"
+      ],
+      "et": [
+        "programmeerija",
+        "tarkvaraarendajad",
+        "tarkvara programmeerija",
+        "tarkvara programmeerijad"
+      ],
+      "cs": [
+        "programátor aplikací",
+        "softwarový vývojář",
+        "programátorka softwaru",
+        "vývojářka řešení",
+        "vývojář řešení",
+        "softwarová vývojářka",
+        "programátorka aplikací",
+        "programátor softwaru",
+        "vývojářka aplikací",
+        "vývojář aplikací"
+      ],
+      "pl": [
+        "deweloper oprogramowania",
+        "specjalista ds oprogramowania",
+        "programista aplikacji",
+        "inżynier oprogramowania",
+        "programista miękki",
+        "programista oprogramowania aplikacyjnego",
+        "inżynier aplikacji",
+        "programista oprogramowania baterii",
+        "programista rozwiązań",
+        "twórca programów komputerowych",
+        "projektant oprogramowania",
+        "programista oprogramowania",
+        "twórcy oprogramowania",
+        "programiści oprogramowania",
+        "programista"
+      ],
+      "ro": [
+        "dezvoltator de aplicații",
+        "dezvoltator aplicații software",
+        "dezvoltator aplicații",
+        "programator de aplicatii",
+        "dezvoltator de soluții",
+        "programatoare de software",
+        "dezvoltator de aplicații software",
+        "programator aplicații",
+        "inginer de software",
+        "ingineră de software",
+        "inginer de aplicații software",
+        "dezvoltator de soluții software",
+        "inginer de aplicatii",
+        "dezvoltator software",
+        "programator de software",
+        "inginer de aplicații",
+        "ingineră de aplicații software",
+        "programator",
+        "inginer software",
+        "specialist software",
+        "dezvoltatori de software"
+      ],
+      "da": [
+        "udvikler af applikationssoftware",
+        "udvikler af software",
+        "applikationsudvikler",
+        "udvikler af IKT-løsninger",
+        "udvikling af software",
+        "softwareudviklerer"
+      ],
+      "nl": [
+        "applicatie ontwikkelaar",
+        "software developper",
+        "application programmer",
+        "software ontwerper",
+        "software engineer",
+        "application engineer",
+        "ontwikkelaar van batterijsoftware",
+        "softwarespecialist",
+        "programmeur",
+        "software programmer",
+        "softwareontwikkelaar"
+      ]
+    },
+    "preferredTerm": {
+      "hu": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "szoftverfejlesztő"
+      },
+      "cs": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "softwarový vývojář/softwarová vývojářka"
+      },
+      "lt": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male"
+        ],
+        "label": "programinės įrangos kūrėjas"
+      },
+      "ga": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "forbróir bogearraí"
+      },
+      "el": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "μηχανικός ανάπτυξης λογισμικού"
+      },
+      "ro": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "dezvoltator de software"
+      },
+      "uk": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "розробник програмного забезпечення/розробниця програмного забезпечення"
+      },
+      "is": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "hugbúnaðarsérfræðingur"
+      },
+      "it": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "sviluppatore di software/sviluppatrice di software"
+      },
+      "no": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "programvareutvikler"
+      },
+      "fi": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "ohjelmistokehittäjä"
+      },
+      "bg": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "разработчик на софтуер"
+      },
+      "fr": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "développeur de logiciels/développeuse de logiciels"
+      },
+      "hr": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "razvojni programer softvera / razvojna programerka softvera"
+      },
+      "en": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "software developer"
+      },
+      "es": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "desarrollador de software/desarrolladora de software"
+      },
+      "sk": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "softvérový vývojár/softvérová vývojárka"
+      },
+      "sl": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "razvijalec/razvijalka programske opreme"
+      },
+      "sv": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "programvaruutvecklare"
+      },
+      "pl": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "twórca oprogramowania"
+      },
+      "et": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "tarkvaraarendaja"
+      },
+      "da": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "softwareudvikler"
+      },
+      "lv": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "programmatūras izstrādātājs"
+      },
+      "ar": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "مطور برمجيات / مطورة برمجيات"
+      },
+      "pt": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "Programador de software/Programadora de software"
+      },
+      "de": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "Softwareentwickler/Softwareentwicklerin"
+      },
+      "nl": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "software ontwikkelaar"
+      },
+      "mt": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "żviluppatur tas-softwer"
+      }
+    },
+    "alternativeTerms": {
+      "da": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applikationsudvikler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "softwareudviklerer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "udvikler af applikationssoftware"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "udvikler af software"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "udvikler af IKT-løsninger"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "udvikling af software"
+        }
+      ],
+      "de": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "Software-Developer"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "Softwareentwickler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "Entwickler für Batterien-Software"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "Softwareentwicklerin"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "Entwickler von Batteriesoftware"
+        }
+      ],
+      "es": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "desarrollador de soluciones"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "desarrolladora de aplicaciones"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "ingeniero de aplicaciones"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "desarrollador de aplicaciones"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "desarrolladores de software"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "desarrollador de software"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "desarrolladora de software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "desarrollador de software de baterías"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "ingeniera de aplicaciones"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "desarrolladora de soluciones"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "desarrollador de software de batería"
+        }
+      ],
+      "no": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "applikasjonsutvikler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programutvikler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programmerer"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "applikasjonsprogramvareutvikler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programvarespesialist"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programvareingeniør"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "batteriprogramvareutvikler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "løsningsutvikler"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "applikasjonsprogrammerer"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "spesialist på programvare"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "utvikler av programvare"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "applikasjonsingeniør"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programvareutviklere"
+        }
+      ],
+      "pl": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "projektant oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "deweloper oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista oprogramowania aplikacyjnego"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programiści oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista oprogramowania baterii"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista rozwiązań"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "specjalista ds oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inżynier aplikacji"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "twórcy oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista aplikacji"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inżynier oprogramowania"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "twórca programów komputerowych"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programista miękki"
+        }
+      ],
+      "sk": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "vývojár aplikácie"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "vývojárka softvérových aplikácií"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "vývojár aplikačného softvéru"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "vývojár softvéru"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "inžinierka aplikácií"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "vývojár softvérových aplikácií"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programátor"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "inžinier aplikácií"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "programátor aplikácií"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "programátorka aplikácií"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "vývojárka softvéru"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "vývojár softvérových riešení"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "softvérový špecialista"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "softvérový inžinier"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "aplikačný vývojár"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "vývojárka softvérových riešení"
+        }
+      ],
+      "hu": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "alkalmazásfejlesztő"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "szoftveralkalmazás fejlesztő"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "szoftverfejlesztők"
+        }
+      ],
+      "cs": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "vývojářka aplikací"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "programátor softwaru"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "softwarový vývojář"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "vývojářka řešení"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "softwarová vývojářka"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "programátorka aplikací"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "vývojář řešení"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "programátor aplikací"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "vývojář aplikací"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "programátorka softwaru"
+        }
+      ],
+      "el": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "μηχανικός ανάπτυξης λογισμικού–προγραμματίστρια"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "μηχανικός ανάπτυξης λογισμικού–προγραμματιστής"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "προγραμματιστής λογισμικού"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "μηχανικός ανάπτυξης λογισμικών"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "μηχανικός για την ανάπτυξη λογισμικού"
+        }
+      ],
+      "sl": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "razvijalec PO"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "razvijalec programja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "razvijalka programja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "razvijalec softvera"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "razvijalka softvera"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "programska razvijalka"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "razvijalec/razvijalka programske opreme za baterije"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "razvijalka PO"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "programski razvijalec"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "razvijalka programske opreme"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "software developer"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "razvijalec programske opreme"
+        }
+      ],
+      "nl": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ontwikkelaar van batterijsoftware"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applicatie ontwikkelaar"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "softwarespecialist"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software ontwerper"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "programmeur"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software engineer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application engineer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software programmer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software developper"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "softwareontwikkelaar"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application programmer"
+        }
+      ],
+      "is": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hugbúnaðarverkfræðingur"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "xApplication hönnuður"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hugbúnaðarhönnuður"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hugbúnaðarforritari"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hugbúnaðarþróunarmanni"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hugbúnaðarþróunarmanns"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "lausnahönnuður"
+        }
+      ],
+      "hr": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "softverska razvojna programerka"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "razvojni programer za softver"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inženjerka aplikacija"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "razvojni programer softwarea"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programer softvera"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programer aplikacijskog softvera"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programerka softvera"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programerka aplikacijskog softvera"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programer"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programerka"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inženjer aplikacija"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "razvojni programer softvera"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "razvojna programerka softwarea"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "softverski razvojni programer"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "razvojna programerka za softver"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "razvojna programerka softvera"
+        }
+      ],
+      "lv": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "programmaparatūras izstrādātājs"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "lietojumprogrammu inženieris"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "lietotņu programmētājs"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "programmaparatūras izstrādātāja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "lietojumprogrammu izstrādātāja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "risinājumu izstrādātājs"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "lietotņu programmētāja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "lietojumprogrammu inženiere"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "lietojumprogrammu izstrādātājs"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "risinājumu izstrādātāja"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "programmatūra izstrādātāja"
+        }
+      ],
+      "pt": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Programador de software de aplicações"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Programadora de aplicações"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "Programador de software"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "Programadora de software"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Engenheira de aplicações"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programador"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Programadora de software de aplicações"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Engenheiro de aplicações"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Programador de aplicações"
+        }
+      ],
+      "ro": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programator"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "specialist software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer de aplicatii"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programator aplicații"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programatoare de software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator de soluții"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ingineră de aplicații software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator de aplicații"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltatori de software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programator de aplicatii"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator aplicații software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programator de software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer de software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator de soluții software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ingineră de software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer de aplicații"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer de aplicații software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator aplicații"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dezvoltator de aplicații software"
+        }
+      ],
+      "mt": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "programmatur tal-applikazzjonijiet tas-softwer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "żviluppatur tas-software"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "żviluppatur ta' softwer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "żviluppatur tal-applikazzjonijiet"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "inġinier tal-applikazzjonijiet"
+        }
+      ],
+      "et": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programmeerija"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tarkvara programmeerijad"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "tarkvara programmeerija"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "tarkvaraarendajad"
+        }
+      ],
+      "it": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "sviluppatrice di soluzioni"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "sviluppatrice di software"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "sviluppatore di soluzioni"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "sviluppatore di software"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "sviluppatore/consulente software"
+        }
+      ],
+      "sv": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "xApplication-utvecklare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applikationsprogrammerare"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applikationsingenjör"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "lösningsutvecklare"
+        }
+      ],
+      "lt": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "baterijų programinės įrangos kūrėjas"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "programinės įrangos kūrėja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "taikomųjų programų kūrėjas"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "taikomųjų programų programuotojas"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "akumuliatoriaus programinės įrangos kūrėjas"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "programinės įrangos programuotojas"
+        }
+      ],
+      "en": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "programmer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application developer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "soft developer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "developer of software"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application software developer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "solutions developer"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "software developers"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "applications engineer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "application programmer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software specialist"
+        },
+        {
+          "roles": [],
+          "label": "battery software developer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "software engineer"
+        },
+        {
+          "roles": [],
+          "label": "electric vehicle software development engineer"
+        }
+      ],
+      "fi": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ohjelmistojen kehittäjä"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "akkuohjelmiston kehittäjä"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "sovellusinsinööri"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ohjelmistoratkaisujen kehittäjä"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ratkaisukehittäjä"
+        }
+      ],
+      "bg": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "разработчик на решения"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "програмист"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "разработчик на приложения"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "софтуерен инженер"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "софтуерен разработчик"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "разработчици на софтуер"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "разработчик на приложен софтуер"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "инженер на приложения"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "инженерка на приложения"
+        }
+      ],
+      "fr": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "développeur applications"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "développeur logiciels"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "développeuse logiciels"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "développeuse de logiciels"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "développeur de logiciels"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "développeuse applications"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "développeur de programmes"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "développeur de logiciels de batterie"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "concepteur de logiciels"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "concepteur d'applications"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "développeur de logiciels pour les batteries"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "concepteur logiciel"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "conceptrice logiciel"
+        }
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Programvareutviklere implementerer eller programmerer alle typer programvaresystemer, basert på spesifikasjoner og design ved hjelp av programmeringsspråk, verktøy og plattformer.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Softwareentwickler implementieren oder programmieren Softwaresystemen jeder Art auf der Grundlage von Spezifikationen bzw. Entwürfen unter Einsatz von Programmiersprachen, Tools und Plattformen.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Ohjelmistokehittäjät toteuttavat tai ohjelmoivat kaikenlaisia ohjelmistojärjestelmiä, jotka perustuvat eritelmiin ja malleihin, käyttämällä ohjelmointikieliä, työkaluja ja alustoja.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Os programadores de software implementam ou programam todos os tipos de sistemas de software baseados em especificações e conceções, utilizando linguagens, ferramentas e plataformas de programação.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Разработчиците на софтуери прилагат или програмират всички видове софтуерни системи, въз основа на спецификации и проекти като използват програмни езици, инструменти и платформи.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Programinės įrangos kūrėjai diegia arba programuoja visų rūšių programinės įrangos sistemas, remdamiesi specifikacijomis ir struktūra, ir naudodami programavimo kalbas, priemones ir platformas.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Programmatūras izstrādātāji ievieš vai programmē dažādas programmatūras sistēmas, balstoties uz specifikācijām un projektiem, izmantojot programmēšanas valodas, rīkus un platformas.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Razvojni programeri softvera uvode ili programiraju sve vrste softverskih sustava na temelju specifikacija i dizajna upotrebom programskih jezika, alata i platformi.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Les concepteurs de logiciels mettent en œuvre ou programment tous types de systèmes logiciels fondés sur les spécifications et les modèles en utilisant les langages de programmation, les outils et les plateformes.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "A szoftverfejlesztők a programozási nyelvek, eszközök és platformok felhasználásával a specifikációkon és kialakításokon alapuló valamennyi szoftverrendszert megvalósítják vagy programozzák.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Розробники програмного забезпечення впроваджують або програмують усі види програмних систем на основі специфікацій і проєктів за допомогою мов програмування, інструментів і платформ.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Softvérový vývojárvývojári softvéru implementujú alebo programujú všetky druhy softvérových systémov na základe špecifikácií a návrhov pomocou programovacích jazykov, nástrojov a platforiem.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Razvijalci programske opreme izvajajo ali načrtujejo vse vrste sistemov programske opreme na podlagi specifikacij in zasnov in z uporabo programskih jezikov, orodij in platform.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Déanann forbróirí bogearraí gach cineál córas bogearraí a chur chun feidhme nó a ríomhchlárú bunaithe ar shonraíochtaí agus dearaí trí theangacha ríomhchlárúcháin, uirlisí agus ardáin a úsáid.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Programvaruutvecklare implementerar eller programmerar alla typer av programvarusystem utifrån deras specifikationer och utformning genom användning av programmeringsspråk, programmeringsverktyg och plattformar.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "L-iżviluppaturi tas-softwer jimplimentaw jew jipprogrammaw kull tip ta’ sistema ta’ softwer ibbażata fuq speċifikazzjonijiet u disinni billi jużaw lingwi ta’ programmar, għodod, u pjattaformi.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Οι μηχανικοί ανάπτυξης λογισμικού εφαρμόζουν ή προγραμματίζουν όλα τα είδη συστημάτων λογισμικού που βασίζονται σε προδιαγραφές και σχέδια χρησιμοποιώντας γλώσσες προγραμματισμού, εργαλεία και πλατφόρμες.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Software developers implement or program all kinds of software systems based on specifications and designs by using programming languages, tools, and platforms.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Hugbúnaðarforritarar innleiða eða forrita allar tegundir hugbúnaðarkerfa, og byggja á skilgreiningum og hönnunum með því að nota forritunarmál, tæki og stýrikerfi.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Gli sviluppatori di software realizzano o programmano tutti i tipi di sistemi software sulla base delle specifiche e dei progetti, utilizzando linguaggi di programmazione, strumenti e piattaforme.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Los desarrolladores de software implementan todos los tipos de sistemas de software basados en especificaciones y diseños, utilizando lenguajes, herramientas y plataformas de programación.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Tarkvaraarendajad rakendavad või programmeerivad nõuete või projektide alusel programmeerimiskeelte, vahendite ja platvormide abil igat liiki tarkvarasüsteeme.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vývojáři softwaru implementují nebo programují všechny typy softwarových systémů založených na specifikacích a návrzích s použitím programovacích jazyků, nástrojů a platforem.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "يقوم مطورو البرمجيات بتنفيذ أو برمجة جميع أنواع أنظمة البرامج استنادًا إلى المواصفات والتصميمات باستخدام لغة البرمجة والأدوات والمنصات.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Twórcy oprogramowania wdrażają lub tworzą wszystkie rodzaje systemów na podstawie specyfikacji i projektów, stosując języki, narzędzia i platformy programowania.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Softwareudviklere implementerer eller programmerer alle former for softwaresystemer baseret på specifikationer og design ved hjælp af programmeringssprog, -værktøjer og -platforme.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Dezvoltatorii de software implementează sau programează toate tipurile de sisteme de software bazate pe specificații și design, utilizând limbaje de programare, instrumente și platforme.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Softwareontwikkelaars implementeren of programmeren allerlei softwaresystemen op basis van specificaties en ontwerpen met behulp van programmeertalen, tools en platforms.",
+        "mimetype": "plain/text"
+      }
+    },
+    "scopeNote": {
+      "en": {
+        "literal": "Includes people performing software design.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "code": "2512.4",
+    "codes": [
+      {
+        "datatype": "",
+        "value": "2512.4"
+      }
+    ],
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+        "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+        "title": "software developer"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
+          "title": "ESCO member occupations"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/occupations",
+          "title": "ESCO Occupations"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
+          "title": "ESCO member occupations"
+        }
+      ],
+      "regulatedProfessionNote": {
+        "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/regulated-professions/unregulated&language=en",
+        "uri": "http://data.europa.eu/esco/regulated-professions/unregulated",
+        "title": "To see if and how this occupation is regulated in EU Member States, EEA countries or Switzerland please consult the Regulated Professions Database of the Commission. Regulated Professions Database: http://ec.europa.eu/growth/single-market/services/free-movement-professionals/qualifications-recognition_en"
+      },
+      "broaderIscoGroup": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/isco/C2512&language=en",
+          "uri": "http://data.europa.eu/esco/isco/C2512",
+          "title": "Software developers",
+          "code": "2512"
+        }
+      ],
+      "narrowerOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2",
+          "title": "blockchain developer"
+        }
+      ],
+      "hasEssentialSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/172020d1-e151-445b-8173-e2a5fb16fe51&language=en",
+          "uri": "http://data.europa.eu/esco/skill/172020d1-e151-445b-8173-e2a5fb16fe51",
+          "title": "utilise computer-aided software engineering tools",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a899482-8bcf-40ca-ae67-579a1cc467ab&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6a899482-8bcf-40ca-ae67-579a1cc467ab",
+          "title": "manage engineering project",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/925463a7-d51f-4d5b-9f79-4d28cf30acde&language=en",
+          "uri": "http://data.europa.eu/esco/skill/925463a7-d51f-4d5b-9f79-4d28cf30acde",
+          "title": "integrated development environment software",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/901105f8-3a08-453e-b1dc-23619e317fd3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/901105f8-3a08-453e-b1dc-23619e317fd3",
+          "title": "create flowchart diagram",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/541561bc-510c-4a99-881c-2d8bf5a85462&language=en",
+          "uri": "http://data.europa.eu/esco/skill/541561bc-510c-4a99-881c-2d8bf5a85462",
+          "title": "use technical drawing software",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7111b95d-0ce3-441a-9d92-4c75d05c4388&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7111b95d-0ce3-441a-9d92-4c75d05c4388",
+          "title": "project management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04fe962b-4017-4eb7-9139-7d69b6922bc9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/04fe962b-4017-4eb7-9139-7d69b6922bc9",
+          "title": "use an application-specific interface",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2b7a79e5-84d8-4880-be66-3d9bb05bea17&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2b7a79e5-84d8-4880-be66-3d9bb05bea17",
+          "title": "use software design patterns",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/59ea80e1-463a-4dba-82c6-d0b6d577d532&language=en",
+          "uri": "http://data.europa.eu/esco/skill/59ea80e1-463a-4dba-82c6-d0b6d577d532",
+          "title": "technical drawings",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f84a433f-34f1-4083-b0a3-24802623509c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f84a433f-34f1-4083-b0a3-24802623509c",
+          "title": "web services",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97&language=en",
+          "uri": "http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97",
+          "title": "computer programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be48353d-25c7-4f86-bea9-7b9e248fbc6e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/be48353d-25c7-4f86-bea9-7b9e248fbc6e",
+          "title": "interpret technical requirements",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/72a74f69-5cf1-43c5-99b9-62a444578919&language=en",
+          "uri": "http://data.europa.eu/esco/skill/72a74f69-5cf1-43c5-99b9-62a444578919",
+          "title": "engineering processes",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f28617ad-afdd-4041-814c-216153a38998&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f28617ad-afdd-4041-814c-216153a38998",
+          "title": "analyse software specifications",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8b94aa1e-89c9-459d-b3b4-1dfab8dec2df&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8b94aa1e-89c9-459d-b3b4-1dfab8dec2df",
+          "title": "use software libraries",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/797a4416-0b8d-44f3-8fcd-eb10bd0be6b4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/797a4416-0b8d-44f3-8fcd-eb10bd0be6b4",
+          "title": "develop software prototype",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0e0c9c11-b39e-43cf-ba95-2fe646f5de64&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0e0c9c11-b39e-43cf-ba95-2fe646f5de64",
+          "title": "identify customer requirements",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6014921e-1d25-4039-adc2-04852d61880e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6014921e-1d25-4039-adc2-04852d61880e",
+          "title": "ICT debugging tools",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4fabca9a-7435-4f33-b1da-3cdb00340fdc&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4fabca9a-7435-4f33-b1da-3cdb00340fdc",
+          "title": "perform scientific research",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/209a5498-3449-4689-8ed9-bd08cab4fd78&language=en",
+          "uri": "http://data.europa.eu/esco/skill/209a5498-3449-4689-8ed9-bd08cab4fd78",
+          "title": "engineering principles",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0b0335f3-0aa1-491e-895e-81fc8774a300&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0b0335f3-0aa1-491e-895e-81fc8774a300",
+          "title": "develop automated migration methods",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d9e5349e-8791-49c2-8ba4-839fdd1606c2&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d9e5349e-8791-49c2-8ba4-839fdd1606c2",
+          "title": "define technical requirements",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9d2e926f-53d9-41f5-98f3-19dfaa687f3f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9d2e926f-53d9-41f5-98f3-19dfaa687f3f",
+          "title": "tools for software configuration management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+          "title": "debug software",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9035afc4-5317-455d-ab60-f32e2ecc6bfc&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9035afc4-5317-455d-ab60-f32e2ecc6bfc",
+          "title": "blockchain platforms",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/867137fb-ff1b-4ca3-99f3-cb6969aa2c68&language=en",
+          "uri": "http://data.europa.eu/esco/skill/867137fb-ff1b-4ca3-99f3-cb6969aa2c68",
+          "title": "TypeScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/013441c1-1f13-47e9-80c4-9a53e8e1bc05&language=en",
+          "uri": "http://data.europa.eu/esco/skill/013441c1-1f13-47e9-80c4-9a53e8e1bc05",
+          "title": "KDevelop",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b633eb55-8f1f-4ae6-ab4c-2022ffe2cb7f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b633eb55-8f1f-4ae6-ab4c-2022ffe2cb7f",
+          "title": "C++",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3c2e6f38-42c1-46ec-b782-5854b2db330d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/3c2e6f38-42c1-46ec-b782-5854b2db330d",
+          "title": "blockchain openness",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4350c38d-0fe9-4ca7-bab9-40ed7f72b04f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4350c38d-0fe9-4ca7-bab9-40ed7f72b04f",
+          "title": "PHP",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/75f839c2-fd9a-4ad3-8921-6e734608568d",
+          "title": "use query languages",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04f1b938-d4d4-4cb1-a863-982af76b9d93&language=en",
+          "uri": "http://data.europa.eu/esco/skill/04f1b938-d4d4-4cb1-a863-982af76b9d93",
+          "title": "SAS language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/69f0167e-75d9-46cf-847f-72a592880ebb&language=en",
+          "uri": "http://data.europa.eu/esco/skill/69f0167e-75d9-46cf-847f-72a592880ebb",
+          "title": "STAF",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ba1b0441-a6b8-4e57-8ccc-871012f63e42&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ba1b0441-a6b8-4e57-8ccc-871012f63e42",
+          "title": "trading software",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3cd569a2-4f88-4c1e-9995-8dce8c5e51a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/3cd569a2-4f88-4c1e-9995-8dce8c5e51a7",
+          "title": "JavaScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6d289e8b-2cc1-4eda-ab1f-ad1090ef98f0&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6d289e8b-2cc1-4eda-ab1f-ad1090ef98f0",
+          "title": "WordPress",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1774bd31-8893-44cf-9498-7e3d95508419&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1774bd31-8893-44cf-9498-7e3d95508419",
+          "title": "screen reader",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433",
+          "title": "utilise machine learning",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6417a4cc-6f61-4459-a114-761a7fa0279d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6417a4cc-6f61-4459-a114-761a7fa0279d",
+          "title": "Puppet (tools for software configuration management)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e",
+          "title": "design user interface",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/52cf3037-ab53-4806-85ed-7fd21ea7f6a1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/52cf3037-ab53-4806-85ed-7fd21ea7f6a1",
+          "title": "Groovy",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/af7ae54f-4649-4c16-87c7-59ba41d4d57f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/af7ae54f-4649-4c16-87c7-59ba41d4d57f",
+          "title": "SPARK",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/034c29fa-c3ba-45ea-b8f3-bf8e3705e386&language=en",
+          "uri": "http://data.europa.eu/esco/skill/034c29fa-c3ba-45ea-b8f3-bf8e3705e386",
+          "title": "Erlang",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/38716afc-a93b-44ab-96cc-2ecf67edcf32&language=en",
+          "uri": "http://data.europa.eu/esco/skill/38716afc-a93b-44ab-96cc-2ecf67edcf32",
+          "title": "do cloud refactoring",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/300d432b-f457-4cd3-9cb1-1858c7d14954&language=en",
+          "uri": "http://data.europa.eu/esco/skill/300d432b-f457-4cd3-9cb1-1858c7d14954",
+          "title": "OpenEdge Advanced Business Language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8c4c49d4-9708-433f-8ca7-bf2c5211ee49&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8c4c49d4-9708-433f-8ca7-bf2c5211ee49",
+          "title": "develop creative ideas",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/65e58886-bd1e-4c5b-8ca5-8d9b353c8aa1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/65e58886-bd1e-4c5b-8ca5-8d9b353c8aa1",
+          "title": "data visualisation software",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6b6a9252-2ed7-4862-a02f-1578f4a532ea&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6b6a9252-2ed7-4862-a02f-1578f4a532ea",
+          "title": "Eclipse (integrated development environment software)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2bde42ae-e776-41c1-9ded-b07b30bfe985&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2bde42ae-e776-41c1-9ded-b07b30bfe985",
+          "title": "Prolog (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0d168770-4d9c-4096-b048-a6577818d306&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0d168770-4d9c-4096-b048-a6577818d306",
+          "title": "Apache Maven",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/401eb8d8-6daa-4f8b-90ad-60afc71eb4f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/401eb8d8-6daa-4f8b-90ad-60afc71eb4f8",
+          "title": "Perl",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be80acfc-b6f2-4411-9b8d-b19d9cd2556a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/be80acfc-b6f2-4411-9b8d-b19d9cd2556a",
+          "title": "Swift (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/51586df8-1c46-4b47-8583-773cb63bf00b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/51586df8-1c46-4b47-8583-773cb63bf00b",
+          "title": "R",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5898d99a-62a4-4e10-a2e3-0d815ce44248&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5898d99a-62a4-4e10-a2e3-0d815ce44248",
+          "title": "cyber attack counter-measures",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/438ff259-d086-4004-acda-1ec3e1631bc6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/438ff259-d086-4004-acda-1ec3e1631bc6",
+          "title": "software anomalies",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/993b1e23-f2de-4bd8-b33f-f86dde1c8e9d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/993b1e23-f2de-4bd8-b33f-f86dde1c8e9d",
+          "title": "CoffeeScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9b9de2a4-d8af-4a7b-933a-a8334ae60067&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9b9de2a4-d8af-4a7b-933a-a8334ae60067",
+          "title": "JavaScript Framework",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f47a1998-0beb-43be-9f46-380aa4d183da&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f47a1998-0beb-43be-9f46-380aa4d183da",
+          "title": "Jenkins (tools for software configuration management)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5b9cde20-f1b9-4adc-bfb3-dbf70b14138d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5b9cde20-f1b9-4adc-bfb3-dbf70b14138d",
+          "title": "use object-oriented programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d31fab87-2a7d-485c-b699-2901ca294b15&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d31fab87-2a7d-485c-b699-2901ca294b15",
+          "title": "use functional programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c7451027-8249-405a-bb1b-342ff0f3fb3b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c7451027-8249-405a-bb1b-342ff0f3fb3b",
+          "title": "Salt (tools for software configuration management)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7d10fcb2-b368-48ab-996b-7c9fafcf68ed&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7d10fcb2-b368-48ab-996b-7c9fafcf68ed",
+          "title": "use automatic programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/000f1d3d-220f-4789-9c0a-cc742521fb02&language=en",
+          "uri": "http://data.europa.eu/esco/skill/000f1d3d-220f-4789-9c0a-cc742521fb02",
+          "title": "Haskell",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/42ed3bfb-1a01-4c8b-9758-fc6438865734&language=en",
+          "uri": "http://data.europa.eu/esco/skill/42ed3bfb-1a01-4c8b-9758-fc6438865734",
+          "title": "Smalltalk (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d56fc2b5-4b0a-4e7e-9bde-a33736f6ff18&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d56fc2b5-4b0a-4e7e-9bde-a33736f6ff18",
+          "title": "Scratch (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f049d050-12da-4e40-813a-2b5eb6df6b51&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f049d050-12da-4e40-813a-2b5eb6df6b51",
+          "title": "Internet of Things",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4c016b68-4116-468c-9dc6-42710c239e4a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4c016b68-4116-468c-9dc6-42710c239e4a",
+          "title": "C#",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bb99af26-71ff-4dca-bde7-1eb1f6194426&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bb99af26-71ff-4dca-bde7-1eb1f6194426",
+          "title": "SAP R3",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/25b291b5-8245-4d9d-b391-86a8a31d7109&language=en",
+          "uri": "http://data.europa.eu/esco/skill/25b291b5-8245-4d9d-b391-86a8a31d7109",
+          "title": "use concurrent programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/24c200e5-be20-4370-a137-ab53797f3a17&language=en",
+          "uri": "http://data.europa.eu/esco/skill/24c200e5-be20-4370-a137-ab53797f3a17",
+          "title": "software frameworks",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5be3d306-6cf1-4b49-aa1d-01651dd4ba4c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5be3d306-6cf1-4b49-aa1d-01651dd4ba4c",
+          "title": "object-oriented modelling",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/def007fa-5fed-4a5f-91a2-b0d7e3db1be1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/def007fa-5fed-4a5f-91a2-b0d7e3db1be1",
+          "title": "COBOL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/47b9bbcf-356c-4782-83a4-7f5a1b2b51a3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/47b9bbcf-356c-4782-83a4-7f5a1b2b51a3",
+          "title": "Assembly (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a4e31589-3632-4926-91d0-15b889c90b9b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a4e31589-3632-4926-91d0-15b889c90b9b",
+          "title": "IBM WebSphere",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e8b89eb6-51e8-4c3a-babb-88b2e110376b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/e8b89eb6-51e8-4c3a-babb-88b2e110376b",
+          "title": "Pascal (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8764d4b1-e069-44f2-8baa-fb1eee1850ec&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8764d4b1-e069-44f2-8baa-fb1eee1850ec",
+          "title": "Oracle Application Development Framework",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/71746a0b-e58d-4dc4-ad03-bd84082eae21&language=en",
+          "uri": "http://data.europa.eu/esco/skill/71746a0b-e58d-4dc4-ad03-bd84082eae21",
+          "title": "collect customer feedback on applications",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389&language=en",
+          "uri": "http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389",
+          "title": "Java (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/56a7f561-1d55-43c9-9cd7-36a0a9bc6c50&language=en",
+          "uri": "http://data.europa.eu/esco/skill/56a7f561-1d55-43c9-9cd7-36a0a9bc6c50",
+          "title": "ASP.NET",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0ccdfe98-f845-4598-84a1-3dca66e9d9a3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0ccdfe98-f845-4598-84a1-3dca66e9d9a3",
+          "title": "Ruby (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9973a5a2-7822-4161-99e9-95c781eb63f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9973a5a2-7822-4161-99e9-95c781eb63f8",
+          "title": "Objective-C",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0fb753a1-2ef2-4429-84d2-ecb2b24daf7a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0fb753a1-2ef2-4429-84d2-ecb2b24daf7a",
+          "title": "Apache Tomcat",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/76ef6ed3-1658-4a1a-9593-204d799c6d0c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/76ef6ed3-1658-4a1a-9593-204d799c6d0c",
+          "title": "NoSQL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/eb0e5615-1575-4a86-a1a2-7d39595033c5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/eb0e5615-1575-4a86-a1a2-7d39595033c5",
+          "title": "ABAP",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2c4e11ef-da18-4e19-816b-e6bc19e12424&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2c4e11ef-da18-4e19-816b-e6bc19e12424",
+          "title": "use logic programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f5308e60-d763-4ead-be95-88c96fb3e02b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f5308e60-d763-4ead-be95-88c96fb3e02b",
+          "title": "adapt to changes in technological development plans",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/13bdd41a-2a18-441f-96db-41252c519413&language=en",
+          "uri": "http://data.europa.eu/esco/skill/13bdd41a-2a18-441f-96db-41252c519413",
+          "title": "Visual Basic",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d",
+          "title": "Python (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/58d7a289-dafd-4363-833f-d1dc4140885e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/58d7a289-dafd-4363-833f-d1dc4140885e",
+          "title": "APL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ffddfc7c-a9dd-449f-9e96-882dc447c8b6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ffddfc7c-a9dd-449f-9e96-882dc447c8b6",
+          "title": "Scala",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0cd6dcf1-5778-42a5-b685-4d01ae4a4871&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0cd6dcf1-5778-42a5-b685-4d01ae4a4871",
+          "title": "Common Lisp",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c3a03c5a-c260-4c26-9b9a-873abb396f4d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c3a03c5a-c260-4c26-9b9a-873abb396f4d",
+          "title": "MATLAB",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b4dc6e4f-dc7d-445f-8ce2-d7b9d225e282&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b4dc6e4f-dc7d-445f-8ce2-d7b9d225e282",
+          "title": "AJAX",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/670f8eea-f25b-4c3f-97ef-a4729d4c63d6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/670f8eea-f25b-4c3f-97ef-a4729d4c63d6",
+          "title": "smart contract",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/598de5b0-5b58-4ea7-8058-a4bc4d18c742&language=en",
+          "uri": "http://data.europa.eu/esco/skill/598de5b0-5b58-4ea7-8058-a4bc4d18c742",
+          "title": "SQL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1de3942b-99d8-41e8-9ef0-fbc9e9f6307b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1de3942b-99d8-41e8-9ef0-fbc9e9f6307b",
+          "title": "Drupal",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/17924c75-45f4-4593-afac-eea0d51f04b5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/17924c75-45f4-4593-afac-eea0d51f04b5",
+          "title": "defence standard procedures",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a4d336a6-9ffd-402a-91cc-f359716ba4e0&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a4d336a6-9ffd-402a-91cc-f359716ba4e0",
+          "title": "ML (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8696aff0-18c0-4ba6-a4d0-9a21861b3e5e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8696aff0-18c0-4ba6-a4d0-9a21861b3e5e",
+          "title": "World Wide Web Consortium standards",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dcdd5ddf-82a6-4ac3-8edc-d4b23cae9a88&language=en",
+          "uri": "http://data.europa.eu/esco/skill/dcdd5ddf-82a6-4ac3-8edc-d4b23cae9a88",
+          "title": "VBScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7814e88f-c133-4c3b-b27f-857afa145d42&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7814e88f-c133-4c3b-b27f-857afa145d42",
+          "title": "ICT security legislation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369ede5-4200-4a44-be2e-bc60ef959259&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8369ede5-4200-4a44-be2e-bc60ef959259",
+          "title": "Microsoft Visual C++",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8c88d336-c249-4537-b26e-d679a85c4b9b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8c88d336-c249-4537-b26e-d679a85c4b9b",
+          "title": "Ajax Framework",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/449d119b-2d66-43a9-9230-7d27f16afbb6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/449d119b-2d66-43a9-9230-7d27f16afbb6",
+          "title": "Xcode",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0de61385-de6d-4146-ba32-1cc1bc102220&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0de61385-de6d-4146-ba32-1cc1bc102220",
+          "title": "Lisp",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/020918ef-4b55-47c1-8430-ab7b8f6a7377&language=en",
+          "uri": "http://data.europa.eu/esco/skill/020918ef-4b55-47c1-8430-ab7b8f6a7377",
+          "title": "migrate existing data",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6f8a40d6-f9ce-43ec-a72f-d4213a53f3ed&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6f8a40d6-f9ce-43ec-a72f-d4213a53f3ed",
+          "title": "Ansible",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ed8de897-adbe-4f0e-b4d2-534953e64c72",
+          "title": "integrate system components",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasNACECode": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/621&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/621",
+          "title": "62.1 Computer programming activities",
+          "code": "62.1"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/622&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/622",
+          "title": "62.2 Computer consultancy and computer facilities management activities",
+          "code": "62.2"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "software developer",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+              "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C2512"
+          ]
+        },
+        {
+          "title": "Software developers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2512&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C2512"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C251"
+          ]
+        },
+        {
+          "title": "Software and applications developers and analysts",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C251&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C251"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C25"
+          ]
+        },
+        {
+          "title": "Information and communications technology professionals",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C25&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C25"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C2"
+          ]
+        },
+        {
+          "title": "Professionals",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C2"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,564 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F6a322874-e32f-4cd8-9683-badce67a7f73&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+    "title": "develop automated software tests",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "automatisierte Softwaretests entwickeln",
+      "no": "utvikle automatiserte programvaretester",
+      "fi": "kehittää automaattisia ohjelmistotestejä",
+      "pt": "desenvolver testes de software automatizados",
+      "bg": "разработване на автоматизирани софтуерни тестове",
+      "lt": "kurti automatizuotus programinės įrangos testus",
+      "hr": "razviti automatizirane testove softvera",
+      "lv": "automatizētās testu programmatūras izstrāde",
+      "fr": "développer des tests logiciels automatisés",
+      "hu": "automatizált szoftverteszteket fejleszt",
+      "uk": "розробляти автоматизоване програмне забезпечення для тестування",
+      "sk": "vyvinúť automatizované softvérové skúšky",
+      "sl": "razvijati avtomatizirane preizkuse programske opreme",
+      "ga": "tástálacha uathoibrithe bogearraí a fhorbairt",
+      "sv": "utveckla automatiska programvarutester",
+      "el": "ανάπτυξη αυτοματοποιημένων δοκιμών λογισμικού",
+      "mt": "tiżviluppa testijiet tas-softwer awtomatizzati",
+      "en": "develop automated software tests",
+      "is": "þróa sjálfvirkar hugbúnaðarprófanir",
+      "it": "sviluppare test software automatici",
+      "es": "desarrollar pruebas de software automatizadas",
+      "et": "automatiseeritud tarkvarateste arendama",
+      "cs": "vyvíjet automatické softwarové testy",
+      "ar": "تطوير اختبارات البرمجيات الآلية",
+      "pl": "opracowywać automatyczne testy oprogramowania",
+      "ro": "dezvoltă teste de software automate",
+      "da": "udvikle automatiserede softwaretests",
+      "nl": "geautomatiseerde softwaretests ontwikkelen"
+    },
+    "alternativeLabel": {
+      "de": [
+        "automatisierte Softwaretests konzipieren",
+        "automatische Softwaretests entwickeln",
+        "automatisierten Softwaretest entwickeln",
+        "automatisierte Softwaretests erstellen",
+        "automatisierte Software-Tests entwickeln"
+      ],
+      "sv": [
+        "utarbeta automatiska programtester",
+        "ta fram automatiska programtester",
+        "designa automatiska programtester",
+        "utvecklar automatiska programvarutester",
+        "utvecklade automatiska programvarutester"
+      ],
+      "fi": [
+        "laatia automaattisia ohjelmistotestejä",
+        "laatia automaattisia ohjelmistojen testejä",
+        "suunnitella automaattisia ohjelmistotestejä",
+        "kehittää automaattisia ohjelmistojen testejä",
+        "suunnitella automaattisia ohjelmistojen testejä",
+        "luoda automaattisia ohjelmistojen testejä",
+        "luoda automaattisia ohjelmistotestejä"
+      ],
+      "pt": [
+        "construir testes de software automatizados",
+        "produzir testes de software automatizados",
+        "desenvolver testes automáticos de software",
+        "criar testes de software automatizados",
+        "desenvolver testes automatizados de software",
+        "desenhar testes de software automatizados"
+      ],
+      "bg": [
+        "проектиране на автоматизирани софтуерни тестове",
+        "разработване на автоматизираните софтуерни тестове",
+        "генериране на автоматизирани софтуерни тестове",
+        "създаване на автоматизирани софтуерни тестове",
+        "разработването на автоматизирани софтуерни тестове"
+      ],
+      "el": [
+        "δημιουργία αυτοματοποιημένων δοκιμών λογισμικού",
+        "σχεδιασμός αυτοματοποιημένων δοκιμών λογισμικού"
+      ],
+      "mt": [
+        "tfassal testijiet tas-softwer awtomatizzati",
+        "tiżviluppa testijiet tas-software awtomatizzati",
+        "tippjana testijiet tas-softwer awtomatizzati",
+        "tiżviluppa testijiet awtomatizzati tas-softwer"
+      ],
+      "lt": [
+        "sukurti automatizuotus programinės įrangos testus",
+        "projektuoti automatizuotus programinės įrangos testus"
+      ],
+      "en": [
+        "build automated software tests",
+        "generate automated software tests",
+        "design automated software tests"
+      ],
+      "is": [
+        "þróar sjálfvirkar hugbúnaðarprófanir",
+        "þróaði sjálfvirkar hugbúnaðarprófanir",
+        "móta sjálfvirkar hugbúnaðarprófanir",
+        "þróa sjálfvirka prófun á hugbúnaði"
+      ],
+      "hr": [
+        "razraditi automatizirane softverske testove",
+        "razviti automatizirane testove za software",
+        "razviti automatizirane softverske testove",
+        "razviti automatizirane testove za softver",
+        "razraditi automatizirane testove softwarea",
+        "razraditi automatizirane testove softvera",
+        "razraditi automatizirane testove za softver",
+        "razviti automatizirane testove softwarea"
+      ],
+      "lv": [
+        "automatizētās testu programmatūras izveide",
+        "automatizētās testu programmatūras komplektu izstrāde",
+        "izstrādāt automatizēto testu programmatūru",
+        "automatizētās testu programmatūras sagatavošana",
+        "izveidot automatizēto testu programmatūru"
+      ],
+      "it": [
+        "automatizzare i test di collaudo del software",
+        "eseguire test software automatici",
+        "sviluppare test software automatizzati",
+        "sviluppare un test software automatico",
+        "realizzare test software automatizzati"
+      ],
+      "fr": [
+        "concevoir des tests logiciels automatisés",
+        "mettre en place des tests logiciels automatisés",
+        "élaborer des tests logiciels automatisés",
+        "produire des tests logiciels automatisés",
+        "automatiser les tests logiciels",
+        "automatiser le processus de tests"
+      ],
+      "hu": [
+        "tesztautomatizálást végez szoftvertesztelés terén",
+        "automatizált teszteket fejleszt",
+        "automatizált szoftvertesztelést fejleszt",
+        "automatizált szoftverteszteket készít",
+        "automatizált szoftvertesztelés tervezésével foglalkozik"
+      ],
+      "es": [
+        "desarrollar pruebas de software automáticas",
+        "idear pruebas de software automatizadas",
+        "crear pruebas de software automáticas",
+        "elaborar pruebas de software automatizadas",
+        "crear pruebas de software automatizadas"
+      ],
+      "et": [
+        "automatiseeritud tarkvarateste looma",
+        "tarkvara automatiseeritud testimise tööriistu looma",
+        "automaatseid tarkvarateste arendama",
+        "automaatselt töötavaid tarkvarateste arendama"
+      ],
+      "cs": [
+        "vyvinout automatický softwarový test",
+        "generovat automatické softwarové testy",
+        "navrhovat automatické softwarové testy",
+        "vyvinout automatické softwarové testy",
+        "vyvíjet automatický softwarový test",
+        "vytvářet automatické softwarové testy"
+      ],
+      "sk": [
+        "zostaviť automatizované testy programov",
+        "vypracovať automatizované odskúšanie aplikácií",
+        "automatizovať skúšky softvéru",
+        "vyvinúť automatizované softwarové skúšky",
+        "vytvoriť automatizované softvérové testy"
+      ],
+      "sl": [
+        "razvijati avtomatizirane teste programov",
+        "razviti avtomatizirane preizkuse programske opreme",
+        "zagotoviti avtomatizacijo testiranja programske opreme",
+        "razvijati avtomatske preskuse programske opreme",
+        "pripravljati avtomatizirane preizkuse računalniških programov",
+        "oblikovati avtomatizirane preizkuse programske opreme"
+      ],
+      "pl": [
+        "tworzyć automatyczne testy oprogramowania",
+        "opracowywać automatyczne metody testowania oprogramowania",
+        "opracowywać zautomatyzowane testy oprogramowania",
+        "projektować automatyczne testy oprogramowania"
+      ],
+      "ro": [
+        "concepe teste automate pentru software",
+        "dezvoltă testări de software automate",
+        "dezvoltă testare automată de software",
+        "generează teste automate pentru software",
+        "elaborează teste automate pentru software"
+      ],
+      "da": [
+        "designe automatiserede softwaretests",
+        "udvikle automatiserede applikationstests",
+        "udvikle automatiserede programtests",
+        "bygge automatiserede softwaretests",
+        "skabe automatiserede softwaretests"
+      ],
+      "nl": [
+        "geautomatiseerde softwaretests uitvoeren",
+        "geautomatiseerde softwaretests genereren",
+        "automatische softwaretests uitvoeren",
+        "softwaretests automatiseren",
+        "automatisering van softwaretests ontwikkelen",
+        "geautomatiseerde softwaretests ontwerpen"
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Erstellen automatisierter Softwaretests mithilfe spezieller Sprachen oder Prüfwerkzeuge, um Ressourcen einzusparen und die Effizienz und Wirksamkeit bei der Testdurchführung zu steigern.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Opprette programvaretester automatisk ved bruk av spesialiserte språk eller verktøy, som kan utføres av testverktøy, for å spare ressurser og sikre effektivitet under gjennomføring av testen.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Laatia erikoiskielten tai -työkalujen avulla ohjelmistotestisarjoja, jotka voidaan suorittaa testityökaluilla, jotta voidaan säästää resursseja ja parantaa testauksen tehokkuutta ja vaikuttavuutta.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar conjuntos de testes de software automatizados, utilizando linguagens ou ferramentas especiais, que possam ser realizados por meio de ferramentas de testes, a fim de poupar recursos e aumentar a eficácia dos testes.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава комплекти за автоматизирано изпитване на софтуер чрез специализирани езици или инструменти. Тази операция може да бъде осъществена чрез инструменти за изпитване с цел пестене на ресурси, постигане на ефективност и ефикасност при изпитването.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Automatizuotu būdu, naudojant specialias kalbas ar priemones, kurti programinės įrangos testus, kuriuos galima atlikti naudojant testavimo priemones, siekiant sutaupyti išteklių, padidinti efektyvumą ir veiksmingumą atliekant testus.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izmantojot specializētas valodas vai rīkus, izstrādāt automatizēto testu programmatūru, ko var izmantot testējot instrumentus, lai testa laikā taupītu resursus, uzlabotu produktivitāti un efektivitāti.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izraditi komplete testova softvera na automatiziran način, upotrebom specijaliziranih jezika ili alata, koji se mogu provoditi ispitivanjem alata kako bi se uštedjeli resursi, postigla učinkovitost i djelotvornost pri provođenju testova.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer des ensembles d’essais de logiciels de manière automatisée, à l’aide de langages ou d’outils spécialisés, qui peuvent être réalisés par des outils d’essai afin d’économiser les ressources, de gagner en efficacité et en effectivité lors de l’exécution des essais.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Automatizált módon létrehoz szoftver tesztsorozatokat, speciális nyelvek vagy eszközök felhasználásával, amelyek a vizsgálati eszközök segítségével hajthatók végre az erőforrások megtakarítása, valamint a hatékonyság és hatékony tesztvégrehajtások érdekében.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати тестові набори програмного забезпечення в автоматизований спосіб, ​використовуючи спеціалізовані мови або інструменти. Це можна зробити за допомогою інструментів для тестування, щоб заощадити ресурси, підвищити ефективність і результативність тестування.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvárať automatizované softvérové skúšky s použitím špecializovaných jazykov alebo nástrojov, ktoré sa môžu vykonávať pomocou testovacích nástrojov s cieľom ušetriť zdroje, dosiahnuť efektívnosť a účinnosť pri vykonávaní skúšok.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Samodejno razvijati preizkuse programske opreme z uporabo posebnih jezikov ali orodij, ki jih je mogoče izvesti s preskušanjem orodij za varčevanje z viri, izkoristek in učinkovitost pri izvajanju preskusov.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Sraitheanna tástála bogearraí a chruthú ar bhealach uathoibrithe, trí theangacha nó uirlisí speisialaithe a úsáid, ar féidir iad a chur i gcrích trí uirlisí tástála chun acmhainní a shábháil, éifeachtúlacht agus éifeachtacht a ghnóthú.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Utveckla automatiska programvarutester med hjälp av specialiserade språk eller verktyg, som kan utföras med hjälp av testverktyg för att spara resurser; uppnå effektivitet och ändamålsenlighet vid testets genomförande.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία αυτοματοποιημένων δοκιμών λογισμικού με χρήση εξειδικευμένων γλωσσών ή εργαλείων, οι οποίες μπορούν να πραγματοποιούνται με τη χρήση εργαλείων δοκιμών για την εξοικονόμηση πόρων και την αύξηση της αποδοτικότητας και της αποτελεσματικότητας κατά την εκτέλεση δοκιμών.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ħolqien ta’ settijiet ta’ testijiet tas-softwer b’mod awtomatizzat, bl-użu ta’ lingwi jew ta’ għodod speċjalizzati, li jistgħu jitwettqu permezz ta’ għodod ta’ ttestjar sabiex jiġu ffrankati r-riżorsi, u jinkisbu effiċjenza u effettività fl-eżekuzzjoni tat-test.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create software test sets in an automated manner, ​using specialised languages or tools, that can be performed by testing tools in order to save resources, gain efficiency and effectiveness in test execution.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Byggja á hugbúnaðarprófun með sjálfvirkum hætti, með því að nota sérhæfð tungumál eða verkfæri, sem hægt er að framkvæma með prófunartækjum í því skyni að spara úrræði, auka skilvirkni og árangur við framkvæmd prófunar.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Creare set di test software in modo automatizzato, utilizzando linguaggi o strumenti specializzati, che possono essere eseguiti mediante strumenti di test al fine di risparmiare risorse, guadagnare efficienza ed efficacia nell’esecuzione dei test.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear conjuntos de pruebas de software de forma automatizada, utilizando lenguajes o herramientas especializados, que se pueden realizar mediante herramientas de ensayo con el fin de ahorrar recursos, ganar eficiencia y eficacia en la ejecución de la prueba.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Spetsiaalseid keeli või vahendeid kasutades automatiseeritud viisil tarkvara testkomplektide loomine, mida saab testimisvahendite abil kasutada, et säästa testide ressursse ning saavutada tõhusus ja tulemuslikkus.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet softwarové testovací sady automatizovaným způsobem pomocí využívání specializovaných jazyků nebo nástrojů, které lze provádět testovacími nástroji za účelem úspory zdrojů, zvýšení efektivity a účinnosti při provádění testu.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إنشاء مجموعات من اختبارات البرمجيات بطريقة آلية، باستخدام لغات أو أدوات متخصصة، والتي يمكن أداؤها بأدوات اختبار لحفظ الموارد وتحقيق الكفاءة والفاعلية في تنفيذ الاختبار.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć zestawy testowe oprogramowania w sposób zautomatyzowany, używając wyspecjalizowanych języków lub narzędzi, które można wykonać za pomocą narzędzi testowych w celu zaoszczędzenia zasobów, zwiększenia wydajności i skuteczności w wykonywaniu testów.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Opret software testsæt på en automatiseret måde ved hjælp af specialiserede sprog eller værktøjer, der kan udføres ved hjælp af testværktøjer for at spare ressourcer, opnå effektivitet og udbytte i forbindelse med udførelsen af tests.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Creează seturi de teste de software, în mod automat, utilizând limbi sau instrumente specializate, care pot fi efectuate prin instrumente de testare pentru a economisi resurse și pentru a crește eficiența și eficacitatea în efectuarea testelor.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Sets voor het testen van de software op een geautomatiseerde manier ontwikkelen, met gebruikmaking van gespecialiseerde talen of instrumenten, die kunnen worden uitgevoerd met behulp van testinstrumenten om middelen te besparen, de efficiëntie en de doeltreffendheid van de uitvoering van de tests te verbeteren.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73&language=en",
+        "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+        "title": "develop automated software tests"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+          "title": "designing ict systems or applications",
+          "code": "S1.11.1"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+          "title": "plan software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "narrowerSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639",
+          "title": "develop ICT test suite",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f",
+          "title": "tools for ICT test automation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a28dff76-74df-46ee-929f-d1fffbb63cd7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a28dff76-74df-46ee-929f-d1fffbb63cd7",
+          "title": "ICT quality assurance manager"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "develop automated software tests",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "designing ict systems or applications",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+          ]
+        },
+        {
+          "title": "designing systems and products",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+          ]
+        },
+        {
+          "title": "communication, collaboration and creativity",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8&language=en",
+              "uri": "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "planning production processes",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+          ]
+        },
+        {
+          "title": "organising, planning and scheduling work and activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+          ]
+        },
+        {
+          "title": "management skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2&language=en",
+              "uri": "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        }
+      ]
+    }
+  }
+}

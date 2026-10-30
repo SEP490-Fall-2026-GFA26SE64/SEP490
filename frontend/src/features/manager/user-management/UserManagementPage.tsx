@@ -2,7 +2,6 @@ import * as React from 'react'
 import {
   AlertTriangle,
   Briefcase,
-  Building,
   Edit2,
   GraduationCap,
   Plus,
@@ -14,8 +13,9 @@ import {
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
 import {
   Dialog,
   DialogDescription,
@@ -33,8 +33,6 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
   getActiveCompany,
-  loadCompanies,
-  setActiveCompanyId,
   updateActiveCompany,
   type CompanyRecord,
   type CompanyUser,
@@ -139,11 +137,9 @@ export function UserManagementPage() {
 
   // Subscribe to active company
   const [activeCompany, setActiveCompanyState] = React.useState<CompanyRecord>(getActiveCompany)
-  const [allCompanies, setAllCompanies] = React.useState<CompanyRecord[]>(loadCompanies)
 
   const reloadCompany = () => {
     setActiveCompanyState(getActiveCompany())
-    setAllCompanies(loadCompanies())
   }
 
   React.useEffect(() => {
@@ -324,12 +320,16 @@ export function UserManagementPage() {
     reloadCompany()
   }
 
-  const handleBulkImportUsers = (data: any) => {
-    const importList = Array.isArray(data) ? data : data.users || []
+  const handleBulkImportUsers = (data: unknown) => {
+    const importList = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'users' in data && Array.isArray((data as Record<string, unknown>).users))
+      ? ((data as Record<string, unknown>).users as unknown[])
+      : []
     if (!Array.isArray(importList) || importList.length === 0) {
       toast({
         title: 'Import Failed',
-        description: 'No valid user objects found in import payload.',
+        description: 'No valid user records found in the imported file.',
         variant: 'destructive',
       })
       return
@@ -345,8 +345,10 @@ export function UserManagementPage() {
       return
     }
 
-    const toAdd = importList.slice(0, availableSeats).map((item: any, idx: number) => {
-      const initials = (item.name || 'User')
+    const toAdd = importList.slice(0, availableSeats).map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      const name = String(item.name || `Team Member ${idx + 1}`)
+      const initials = name
         .split(' ')
         .map((p: string) => p[0])
         .join('')
@@ -362,12 +364,12 @@ export function UserManagementPage() {
 
       const user: CompanyUser = {
         id: `USR-${Math.floor(300 + idx * 10 + Math.random() * 9)}`,
-        name: item.name || `Team Member ${idx + 1}`,
-        email: item.email || `user${idx + 1}@${activeCompany.name.toLowerCase().replace(/\s+/g, '')}.internal`,
+        name,
+        email: String(item.email || `user${idx + 1}@${activeCompany.name.toLowerCase().replace(/\s+/g, '')}.internal`),
         role: userRole,
-        department: item.department || DEPARTMENTS[1],
+        department: String(item.department || DEPARTMENTS[1]),
         status: 'active',
-        targetRole: userRole === 'Employee' ? item.targetRole || 'AI Knowledge Architect' : undefined,
+        targetRole: userRole === 'Employee' ? String(item.targetRole || 'AI Knowledge Architect') : undefined,
         lastActive: 'Just imported',
         avatar: initials || 'TM',
       }
@@ -408,6 +410,11 @@ export function UserManagementPage() {
     const matchesDept = deptFilter === 'All Departments' || u.department === deptFilter
     return matchesSearch && matchesRole && matchesStatus && matchesDept
   })
+
+  // Pagination
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const pageSize = 10
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   // KPI calculations
   const totalCount = users.length
@@ -461,7 +468,7 @@ export function UserManagementPage() {
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={<Upload size={14} />}
+                leftIcon={<Upload className="h-4 w-4" />}
                 onClick={() => setIsImportModalOpen(true)}
                 className="font-semibold bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 shadow-2xs"
               >
@@ -470,7 +477,7 @@ export function UserManagementPage() {
               <Button
                 variant="primary"
                 size="sm"
-                leftIcon={<Plus size={14} />}
+                leftIcon={<Plus className="h-4 w-4" />}
                 onClick={openCreateModal}
                 disabled={isNearCapacity}
                 className="font-semibold shadow-2xs whitespace-nowrap"
@@ -481,281 +488,250 @@ export function UserManagementPage() {
           }
         />
 
-        {/* Company Context Banner */}
-        <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-              <Building size={24} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">{activeCompany.name}</h2>
-                <Badge variant="secondary" className="font-mono text-xs">
-                  {activeCompany.packageTier} Package
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Multi-Tenant User Management & Role Administration
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Company Switcher */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground hidden md:inline">
-              Company Scope:
-            </span>
-            <select
-              value={activeCompany.id}
-              onChange={(e) => setActiveCompanyId(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              {allCompanies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.packageTier} • {c.users.length}/{c.maxUsers})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Seat Limit Warning Banner */}
-        {isNearCapacity && (
-          <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 flex items-center justify-between text-xs text-destructive">
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={16} />
-              <span>
-                <strong>Seat Quota Reached:</strong> All {activeCompany.maxUsers} seats of your{' '}
-                {activeCompany.packageTier} plan are currently provisioned.
-              </span>
-            </div>
-            <span className="font-semibold">0 Seats Left</span>
-          </div>
-        )}
-
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             variant="gradient"
-            icon={<Users className="h-4 w-4" />}
+            icon={<Users className="h-4 w-4 text-primary" />}
             title="Total Seats Provisioned"
             value={`${totalCount} / ${activeCompany.maxUsers} Seats`}
+            valueClassName="text-primary"
             description={`${seatsRemaining} seats available to assign`}
           />
           <StatCard
-            variant="default"
+            variant="gradient"
             icon={<GraduationCap className="h-4 w-4 text-primary" />}
             title="Employees"
             value={`${employeeCount} Users`}
+            valueClassName="text-primary"
             description="Assigned personalized pathways"
           />
           <StatCard
-            variant="default"
+            variant="gradient"
             icon={<Sparkles className="h-4 w-4 text-success" />}
             title="Experts"
             value={`${expertCount} Experts`}
+            valueClassName="text-success"
             description="Authoring ontology & modules"
           />
           <StatCard
-            variant="default"
-            icon={<Briefcase className="h-4 w-4 text-secondary-foreground" />}
+            variant="gradient"
+            icon={<Briefcase className="h-4 w-4 text-primary" />}
             title="L&D Managers"
             value={`${ldCount} Managers`}
+            valueClassName="text-primary"
             description="Company administrators"
           />
         </div>
 
-        {/* Filter and Action Toolbar */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card border border-border p-3.5 rounded-xl shadow-2xs">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search by name, email, ID, or department..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-9 bg-background"
-            />
-          </div>
+        {/* User Directory Table Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  User Accounts
+                </CardTitle>
+                <CardDescription>
+                  Provisioned accounts, assigned organizational roles, and target career trajectories ({totalCount} / {activeCompany.maxUsers} seats).
+                </CardDescription>
+              </div>
 
-          {/* Filters Group */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Role Filter */}
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as 'All' | CompanyUserRole)}
-              className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="All">All Roles</option>
-              <option value="Employee">Employees</option>
-              <option value="Expert">Experts</option>
-              <option value="L&D Manager">L&D Managers</option>
-            </select>
+              {/* Search and Filters */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative min-w-[200px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, email, or code..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'All' | UserStatus)}
-              className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="All">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="pending">Pending</option>
-              <option value="inactive">Inactive</option>
-            </select>
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value as 'All' | CompanyUserRole)}
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground focus:outline-none cursor-pointer"
+                >
+                  <option value="All">All Roles</option>
+                  <option value="Employee">Employees</option>
+                  <option value="Expert">Experts</option>
+                  <option value="L&D Manager">L&D Managers</option>
+                </select>
 
-            {/* Department Filter */}
-            <select
-              value={deptFilter}
-              onChange={(e) => setDeptFilter(e.target.value)}
-              className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 max-w-[170px] truncate"
-            >
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as 'All' | UserStatus)}
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground focus:outline-none cursor-pointer"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                  <option value="inactive">Inactive</option>
+                </select>
 
-        {/* User Directory Table */}
-        <Card className="border border-border bg-card shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-5 border-b border-border bg-muted/20 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-foreground">
-              {activeCompany.name} • User Directory ({filteredUsers.length} users)
-            </CardTitle>
-            <span className="text-xs text-muted-foreground font-mono">
-              Limit: {totalCount} / {activeCompany.maxUsers} Seats
-            </span>
+                <select
+                  value={deptFilter}
+                  onChange={(e) => setDeptFilter(e.target.value)}
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground focus:outline-none cursor-pointer max-w-[150px] truncate"
+                >
+                  {DEPARTMENTS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </CardHeader>
 
           <CardContent className="p-0">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-muted/40 border-b border-border text-muted-foreground uppercase text-[10px] font-bold tracking-wider">
-                <tr>
-                  <th className="py-3 px-4 w-[32%]">User Identity</th>
-                  <th className="py-3 px-4 w-[22%]">Role &amp; Status</th>
-                  <th className="py-3 px-4 w-[26%]">Department &amp; Learning Target</th>
-                  <th className="py-3 px-4 w-[10%]">Last Active</th>
-                  <th className="py-3 px-4 w-[10%] text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-10 text-muted-foreground text-xs">
-                      No users found matching your search.
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
+                    <th className="py-2.5 px-3">User Identity</th>
+                    <th className="py-2.5 px-3">Role</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-3">Department &amp; Learning Target</th>
+                    <th className="py-2.5 px-3">Last Active</th>
+                    <th className="py-2.5 px-3 text-right">Actions</th>
                   </tr>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-muted/20 transition-colors group">
-                      {/* 1. Identity */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                            {user.avatar}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-foreground flex items-center gap-1.5 truncate">
-                              <span>{user.name}</span>
-                              <span className="text-[10px] font-mono text-muted-foreground font-normal">
-                                ({user.id})
-                              </span>
-                              {isUserSelfOrOwner(user) && (
-                                <Badge variant="secondary" className="text-[9px] font-bold px-1.5 py-0 text-primary border border-primary/20">
-                                  You (Owner)
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground font-mono truncate">
-                              {user.email}
-                            </div>
-                          </div>
-                        </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {paginatedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-10 text-muted-foreground text-xs">
+                        No users found matching your search.
                       </td>
+                    </tr>
+                  ) : (
+                    paginatedUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-muted/20 transition-colors">
+                        {/* 1. Identity */}
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="h-7 w-7 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-[10px] shrink-0 shadow-2xs">
+                              {user.avatar}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-foreground flex items-center gap-1.5 truncate">
+                                <span>{user.name}</span>
+                                <span className="text-[10px] font-mono text-muted-foreground font-normal">
+                                  ({user.id})
+                                </span>
+                                {isUserSelfOrOwner(user) && (
+                                  <Badge variant="secondary" className="text-[9px] font-bold px-1.5 py-0 text-primary border border-primary/20">
+                                    You (Owner)
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground font-mono truncate">
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
 
-                      {/* 2. Role & Status */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        {/* 2. Role */}
+                        <td className="py-3 px-3">
                           {getRoleBadge(user.role)}
+                        </td>
+
+                        {/* 3. Status */}
+                        <td className="py-3 px-3">
                           {getStatusBadge(user.status)}
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* 3. Department & Target */}
-                      <td className="py-3.5 px-4">
-                        <div className="space-y-0.5 min-w-0">
-                          <div className="text-foreground font-medium truncate" title={user.department}>
-                            {user.department || 'General'}
+                        {/* 4. Department & Target */}
+                        <td className="py-3 px-3">
+                          <div className="space-y-0.5 min-w-0">
+                            <div className="text-foreground font-medium truncate" title={user.department}>
+                              {user.department || 'General'}
+                            </div>
+                            {user.role === 'Employee' && (
+                              <div className="text-[10px] text-muted-foreground truncate">
+                                {user.targetRole ? (
+                                  <span>Target: <strong className="text-foreground/80">{user.targetRole}</strong></span>
+                                ) : (
+                                  <span className="italic text-muted-foreground/70">No target role assigned</span>
+                                )}
+                              </div>
+                            )}
+                            {user.role === 'Expert' && (
+                              <div className="text-[10px] text-success font-semibold truncate">
+                                Ontology &amp; Assessment Author
+                              </div>
+                            )}
                           </div>
-                          {user.role === 'Employee' && (
-                            <div className="text-[10px] text-muted-foreground truncate">
-                              {user.targetRole ? (
-                                <span>Target: <strong className="text-foreground/80">{user.targetRole}</strong></span>
-                              ) : (
-                                <span className="italic text-muted-foreground/70">No target role assigned</span>
-                              )}
-                            </div>
-                          )}
-                          {user.role === 'Expert' && (
-                            <div className="text-[10px] text-success font-semibold truncate">
-                              Ontology &amp; Assessment Author
-                            </div>
-                          )}
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* 4. Last Active */}
-                      <td className="py-3.5 px-4 font-mono text-muted-foreground text-[11px]">
-                        {user.lastActive}
-                      </td>
+                        {/* 4. Last Active */}
+                        <td className="py-3 px-3 font-mono text-muted-foreground text-[11px]">
+                          {user.lastActive}
+                        </td>
 
-                      {/* 5. Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => openEditModal(user)}
-                            title="Edit User Account"
-                          >
-                            <Edit2 size={14} />
-                          </Button>
-                          {isUserSelfOrOwner(user) ? (
+                        {/* 5. Actions */}
+                        <td className="py-3 px-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-8 w-8 p-0 text-muted-foreground/30 cursor-not-allowed border-dashed bg-muted/10 opacity-50"
-                              disabled
-                              title="Primary L&D Manager / your account cannot be deleted"
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="destructive"
-                              size="sm"
                               className="h-8 w-8 p-0"
-                              onClick={() => {
-                                setSelectedUser(user)
-                                setIsDeleteModalOpen(true)
-                              }}
-                              title="Deactivate / Delete User"
+                              onClick={() => openEditModal(user)}
+                              title="Edit User Account"
+                              aria-label="Edit User Account"
                             >
-                              <Trash2 size={14} />
+                              <Edit2 size={14} />
                             </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                            {isUserSelfOrOwner(user) ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-muted-foreground/30 cursor-not-allowed border-dashed bg-muted/10 opacity-50"
+                                disabled
+                                title="Primary L&D Manager / your account cannot be deleted"
+                                aria-label="Cannot Delete Owner"
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  setSelectedUser(user)
+                                  setIsDeleteModalOpen(true)
+                                }}
+                                title="Deactivate / Delete User"
+                                aria-label="Deactivate / Delete User"
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredUsers.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(filteredUsers.length / pageSize) || 1}
+                totalItems={filteredUsers.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                itemLabel="users"
+              />
+            )}
           </CardContent>
         </Card>
 

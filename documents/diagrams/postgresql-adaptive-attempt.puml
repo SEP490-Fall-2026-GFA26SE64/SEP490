@@ -1,0 +1,158 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+hide circle
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+title PostgreSQL 17.6 / platform / V1-V26\nAdaptive baseline attempts and evidence (9 tables)
+legend top left
+PK = primary key; FK = foreign-key column; ? = nullable
+Arrows: referenced parent -> referencing child; no cardinality inference.
+External tables are reference stubs. Full constraints/indexes/triggers: schema catalog.
+endlegend
+class baseline_adaptive_attempt {
+  attempt_id : uuid [PK]
+  organization_id : uuid [FK]
+  learner_id : uuid [FK]
+  occupation_id : text [FK]
+  attempt_purpose : text
+  target_role_id? : text [FK]
+  target_selection_revision? : bigint
+  blueprint_id : uuid [FK]
+  blueprint_version : integer [FK]
+  model_version_id : uuid
+  mastery_mapping_version_id : uuid
+  parameter_set_id : uuid
+  catalog_fingerprint : text
+  max_questions : integer
+  time_limit_seconds : integer
+  state : text
+  revision : bigint
+  started_at : timestamp with time zone
+  deadline_at : timestamp with time zone
+  finished_at? : timestamp with time zone
+  completion_reason? : text
+  replaces_attempt_id? : uuid [FK]
+  scope_policy? : text
+}
+class baseline_attempt_pool_item {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  parameter_set_id : uuid [FK]
+  item_version_id : uuid [PK, FK]
+  micro_skill_id : text [FK]
+}
+class baseline_attempt_item {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  position : integer [PK]
+  item_version_id : uuid [FK]
+  micro_skill_id : text [FK]
+  option_order : jsonb
+  selection_trace : jsonb
+  presented_at : timestamp with time zone
+}
+class baseline_attempt_response {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  position : integer [PK, FK]
+  response_payload : jsonb
+  is_correct : boolean
+  accepted_at : timestamp with time zone
+  request_id : uuid
+}
+class baseline_attempt_skill_state {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  micro_skill_id : text [PK]
+  theta : numeric
+  standard_error : numeric
+  test_information : numeric
+  answered_count : integer
+  revision : bigint
+  updated_at : timestamp with time zone
+}
+class baseline_attempt_command {
+  organization_id : uuid [PK, FK]
+  actor_id : uuid [PK, FK]
+  idempotency_key : text [PK]
+  attempt_id : uuid [FK]
+  occupation_id : text [FK]
+  operation : text
+  request_hash : platform.content_hash
+  response_payload : jsonb
+  created_at : timestamp with time zone
+}
+class baseline_attempt_result {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  answered_count : integer
+  correct_count : integer
+  raw_score? : numeric
+  result_status : text
+  scored_at : timestamp with time zone
+  mastery_event_id : uuid [FK]
+}
+class baseline_attempt_skill_result {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  micro_skill_id : text [PK, FK]
+  theta : numeric
+  standard_error : numeric
+  estimated_mastery : platform.unit_interval
+  mastery : platform.unit_interval
+  confidence_label : text
+  mastery_mapping_version_id : uuid [FK]
+  finalized_at : timestamp with time zone
+}
+class baseline_mastery_evidence {
+  attempt_id : uuid [PK, FK]
+  organization_id : uuid [FK]
+  learner_id : uuid [FK]
+  occupation_id : text [FK]
+  micro_skill_id : text [PK, FK]
+  model_version_id : uuid [FK]
+  mastery_mapping_version_id : uuid [FK]
+  parameter_set_id : uuid [FK]
+  theta : numeric
+  standard_error : numeric
+  estimated_mastery : platform.unit_interval
+  mastery : platform.unit_interval
+  confidence_label : text
+  mastery_event_id : uuid [FK]
+  emitted_at : timestamp with time zone
+}
+class account <<external>> #F1F5F9
+class baseline_adaptive_blueprint_role <<external>> #F1F5F9
+class baseline_adaptive_blueprint_version <<external>> #F1F5F9
+class irt_item_parameter <<external>> #F1F5F9
+class irt_parameter_set <<external>> #F1F5F9
+class learner_state <<external>> #F1F5F9
+class mastery_mapping_version <<external>> #F1F5F9
+class model_version <<external>> #F1F5F9
+class outbox_event <<external>> #F1F5F9
+account --> baseline_adaptive_attempt
+baseline_adaptive_attempt --> baseline_adaptive_attempt
+baseline_adaptive_attempt --> baseline_attempt_command
+baseline_adaptive_attempt --> baseline_attempt_pool_item
+baseline_adaptive_attempt --> baseline_attempt_result
+baseline_adaptive_attempt --> baseline_attempt_skill_state
+baseline_adaptive_attempt --> baseline_mastery_evidence
+baseline_adaptive_blueprint_role --> baseline_adaptive_attempt
+baseline_adaptive_blueprint_version --> baseline_adaptive_attempt
+baseline_attempt_item --> baseline_attempt_response
+baseline_attempt_pool_item --> baseline_attempt_item
+baseline_attempt_result --> baseline_mastery_evidence
+baseline_attempt_skill_result --> baseline_mastery_evidence
+baseline_attempt_skill_state --> baseline_attempt_pool_item
+baseline_attempt_skill_state --> baseline_attempt_skill_result
+irt_item_parameter --> baseline_attempt_pool_item
+irt_parameter_set --> baseline_mastery_evidence
+learner_state --> baseline_adaptive_attempt
+mastery_mapping_version --> baseline_attempt_skill_result
+mastery_mapping_version --> baseline_mastery_evidence
+model_version --> baseline_mastery_evidence
+outbox_event --> baseline_attempt_result
+@enduml

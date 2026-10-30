@@ -1,0 +1,133 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam shadowing false
+hide circle
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+title PostgreSQL 17.6 / platform / V1-V26\nAdaptive baseline configuration (9 tables)
+legend top left
+PK = primary key; FK = foreign-key column; ? = nullable
+Arrows: referenced parent -> referencing child; no cardinality inference.
+External tables are reference stubs. Full constraints/indexes/triggers: schema catalog.
+endlegend
+class baseline_adaptive_blueprint_working_revision {
+  working_revision_id : uuid [PK]
+  organization_id : uuid [FK]
+  occupation_id : text [FK]
+  blueprint_id : uuid [FK]
+  revision : bigint
+  configuration : jsonb
+  state : text
+  created_by : uuid [FK]
+  created_at : timestamp with time zone
+  updated_by : uuid [FK]
+  updated_at : timestamp with time zone
+  closed_at? : timestamp with time zone
+}
+class baseline_adaptive_blueprint_version {
+  blueprint_id : uuid [PK, FK]
+  version : integer [PK]
+  organization_id : uuid [FK]
+  occupation_id : text [FK]
+  name : text
+  occupation_name_snapshot : text
+  catalog_fingerprint : text
+  exploration_max_questions? : integer
+  exploration_time_limit_seconds? : integer
+  model_version_id : uuid [FK]
+  mastery_mapping_version_id : uuid [FK]
+  parameter_set_id : uuid [FK]
+  created_by : uuid [FK]
+  created_at : timestamp with time zone
+  scope_policy? : text
+  occupation_max_questions? : integer
+  occupation_time_limit_seconds? : integer
+}
+class baseline_adaptive_blueprint_role {
+  blueprint_id : uuid [PK, FK]
+  blueprint_version : integer [PK, FK]
+  role_id : text [PK]
+  role_name_snapshot : text
+  catalog_version : text
+  max_questions? : integer
+  time_limit_seconds? : integer
+}
+class baseline_adaptive_blueprint_skill {
+  blueprint_id : uuid [PK, FK]
+  blueprint_version : integer [PK, FK]
+  role_id : text [PK, FK]
+  micro_skill_id : text [PK]
+  micro_skill_name_snapshot : text
+  catalog_version : text
+}
+class baseline_blueprint_working_registry {
+  blueprint_id : uuid [PK, FK]
+  working_revision_id : uuid
+  contract_family : text
+}
+class baseline_blueprint_version_registry {
+  blueprint_id : uuid [PK, FK]
+  version : integer [PK]
+  contract_family : text
+}
+class baseline_blueprint_activation {
+  organization_id : uuid [PK, FK]
+  occupation_id : text [PK, FK]
+  blueprint_id : uuid [FK]
+  blueprint_version? : integer [FK]
+  activation_revision : bigint
+  state? : text
+  activated_by : uuid [FK]
+  activated_at : timestamp with time zone
+}
+class baseline_blueprint_activation_event {
+  activation_event_id : uuid [PK]
+  organization_id : uuid [FK]
+  occupation_id : text [FK]
+  activation_revision : bigint
+  blueprint_id : uuid [FK]
+  blueprint_version? : integer [FK]
+  operation : text
+  actor_id : uuid [FK]
+  reason? : text
+  occurred_at : timestamp with time zone
+}
+class baseline_blueprint_command {
+  organization_id : uuid [PK, FK]
+  actor_id : uuid [PK, FK]
+  idempotency_key : text [PK]
+  occupation_id : text [FK]
+  blueprint_id : uuid [FK]
+  operation : text
+  request_hash : platform.content_hash
+  response_payload : jsonb
+  created_at : timestamp with time zone
+}
+class account <<external>> #F1F5F9
+class baseline_blueprint <<external>> #F1F5F9
+class irt_parameter_set <<external>> #F1F5F9
+class mastery_mapping_version <<external>> #F1F5F9
+class model_version <<external>> #F1F5F9
+account --> baseline_adaptive_blueprint_version
+account --> baseline_adaptive_blueprint_working_revision
+account --> baseline_blueprint_activation
+account --> baseline_blueprint_activation_event
+account --> baseline_blueprint_command
+baseline_adaptive_blueprint_role --> baseline_adaptive_blueprint_skill
+baseline_adaptive_blueprint_version --> baseline_adaptive_blueprint_role
+baseline_adaptive_blueprint_version --> baseline_blueprint_activation
+baseline_adaptive_blueprint_version --> baseline_blueprint_activation_event
+baseline_blueprint --> baseline_adaptive_blueprint_version
+baseline_blueprint --> baseline_adaptive_blueprint_working_revision
+baseline_blueprint --> baseline_blueprint_activation
+baseline_blueprint --> baseline_blueprint_activation_event
+baseline_blueprint --> baseline_blueprint_command
+baseline_blueprint --> baseline_blueprint_version_registry
+baseline_blueprint --> baseline_blueprint_working_registry
+baseline_blueprint_activation --> baseline_blueprint_activation_event
+irt_parameter_set --> baseline_adaptive_blueprint_version
+mastery_mapping_version --> baseline_adaptive_blueprint_version
+model_version --> baseline_adaptive_blueprint_version
+@enduml

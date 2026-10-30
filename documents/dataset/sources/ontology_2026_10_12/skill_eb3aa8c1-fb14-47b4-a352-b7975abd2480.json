@@ -1,0 +1,359 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Feb3aa8c1-fb14-47b4-a352-b7975abd2480&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480",
+    "title": "replicate customer software issues",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "replikere kundeprogramvareproblemer",
+      "de": "Kunden-Softwareprobleme reproduzieren",
+      "fi": "analysoida asiakkaiden ohjelmisto-ongelmia",
+      "pt": "replicar problemas de software do consumidor",
+      "bg": "изготвяне на копия на проблеми на клиенти със софтуер",
+      "lt": "atkartoti kliento programinės įrangos problemas",
+      "lv": "replicēt klientu programmatūru problēmas",
+      "hr": "replicirati pitanja vezana uz korisnički softver",
+      "fr": "reproduire les problèmes du logiciel client",
+      "hu": "ügyfelek szoftverekkel kapcsolatban felmerülő problémáiról elemzés céljából másolatot készít",
+      "uk": "відтворювати проблеми клієнтів з програмним забезпеченням",
+      "sk": "opakovať problémy zákazníkov so softvérom",
+      "sl": "reproducirati težave uporabnikov pri uporabi programske opreme",
+      "ga": "fadhbanna bogearraí custaiméirí a mhacasamhlú",
+      "sv": "replikera kunders problem med programvara",
+      "mt": "tirreplika kwistjonijiet tas-softwer irrapportati mill-klijenti",
+      "el": "αναπαραγωγή προβλημάτων λογισμικού πελάτη",
+      "en": "replicate customer software issues",
+      "is": "endurgera hugbúnaðarvandamál viðskiptavinar",
+      "it": "replicare i problemi software dei clienti",
+      "es": "reproducir los problemas de software del cliente",
+      "et": "kliendi tarkvaraprobleeme rekonstrueerima",
+      "cs": "replikovat potíže zákazníků se softwarem",
+      "ar": "تكرير مشكلات برامج العملاء",
+      "pl": "odtwarzać problemy z oprogramowaniem zgłoszone przez klientów",
+      "ro": "reproduce problemele software ale clienților",
+      "da": "replikere kundes softwareproblemer",
+      "nl": "softwareproblemen van klanten herhalen"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "replikovat potíž zákazníků se softwarem",
+        "opakovat a analyzovat problémy zákazníků se softwarem",
+        "navozovat potíže zákazníků se softwarem",
+        "replikovat potíž zákazníka se softwarem",
+        "replikovat potíže zákazníka se softwarem",
+        "opakovat softwarové problémy zákazníků"
+      ],
+      "el": [
+        "αναπαράγω τα σφάλματα του λογισμικού πελάτη",
+        "επαναλαμβάνω τα σφάλματα του λογισμικού πελάτη",
+        "προκαλώ παρόμοιες βλάβες με τις βλάβες του λογισμικού πελάτη",
+        "επαναλαμβάνω τις βλάβες του λογισμικού πελάτη",
+        "αναπαράγω τις βλάβες του λογισμικού πελάτη"
+      ],
+      "mt": [
+        "tirreplika l-kwistjonijiet tas-softwer irrapportati mill-klijenti",
+        "twettaq replikazzjoni tal-kwistjonijiet tas-softwer irrapportati mill-klijenti",
+        "tirreplika l-problemi tas-softwer irrapportati mill-klijenti"
+      ],
+      "en": [
+        "analyse customer software issues",
+        "simulate customer software problems",
+        "analyse customer software problems",
+        "replicate customer software problems",
+        "simulate customer software issues"
+      ],
+      "nl": [
+        "softwareproblemen oplossen",
+        "problemen die klanten met hun software ondervinden proberen na te bootsen en de omstandigheden waarin deze problemen optreden proberen te achterhalen",
+        "softwareproblemen van klanten oplossen",
+        "softwareproblemen analyseren",
+        "klanten ondersteunen bij softwareproblemen",
+        "softwareproblemen van klanten nabootsen"
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Verwendung von speziellen Tools, um die Umstände zu reproduzieren und zu analysieren, die den vom Kunden gemeldeten Software-Status oder seine Ergebnisse verursacht haben, und um angemessene Lösungen zu bereitzustellen.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Bruke spesialiserte verktøy for å replikere og analysere forholdene som førte til programvaretilstandene eller -resultatene rapportert av kunden, for å gi tilstrekkelige løsninger.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Käyttää erikoistyökaluja, joilla voidaan toistaa ja analysoida ne olosuhteet, jotka aiheuttivat asiakkaan ilmoittamat ohjelmistojen tai tuotosten vikatilat, jotta voidaan määrittää asianmukaiset ratkaisut.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Utilizar ferramentas especializadas para reproduzir e analisar as condições que estiveram na origem dos problemas de software comunicados pelo cliente, a fim de fornecer soluções adequadas.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Използва специализирани инструменти за възпроизвеждане и анализ на условията, които са довели до набора от програмни продукти или крайни продукти, докладвани от клиента, с цел да се осигурят подходящи решения.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Naudoti specializuotas priemones, siekiant atkartoti ir analizuoti sąlygas, kurios lėmė tam tikrą padėtį, susijusią su programine įranga, arba rezultatus, kuriuos klientas nurodė, kad būtų priimti tinkami sprendimai.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izmantot specializētus rīkus, lai atdarinātu un analizētu apstākļus, kas izraisījuši klientu ziņotos programmatūru iestatījumus vai izvaddatus, lai rastu piemērotus risinājumus.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Upotrebljavati specijalizirane alate za replikaciju i analizu uvjeta koji su uzrokovali skup programskih stanja ili izlaza o kojima je klijent izvijestio kako bi se osigurala odgovarajuća rješenja.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Utiliser des outils spécialisés pour reproduire et analyser les conditions à l'origine de l'ensemble des états logiciels ou des sorties signalés par le client afin d'apporter des solutions adéquates.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Speciális eszközöket használ, hogy előhívja azokat az állapotokat elemzésre, amelyek az ügyfél által jelentett szoftverállapotok vagy szoftveres kimenetek sorozatát eredményezték, és megfelelő megoldást találjon.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Використовувати спеціальні інструменти для відтворення та аналізу умов, що спричинили певний стан або результат роботи програмного забезпечення, про які повідомив споживач, щоб знайти належне рішення проблеми.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Využívať špecializované nástroje na replikáciu a analýzu podmienok, ktoré spôsobili zákazníkom problémy so softvérom a poskytnúť im primerané riešenia.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Uporabljati posebna orodja za posnemanje in analizo pogojev, ki so povzročili niz stanj ali rezultatov programske opreme, ki jih sporoči stranka, za zagotovitev ustreznih rešitev.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Úsáid sainuirlisí chun na dálaí a chruthaíonn do shraith bogearraí nó aschuir arna dtuairisciú ag an gcustaiméir a mhacasamhlú agus a anailísiú chun réitigh leordhóthanacha a sholáthar.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Använda specialverktyg för att återskapa och analysera de förhållanden som orsakade den uppsättning av programvarutillstånd eller utfall som rapporterats av kunden i syfte att tillhandahålla lämpliga lösningar.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "L-użu ta’ għodod speċjalizzati biex jirreplikaw u janalizzaw il-kundizzjonijiet li kkawżaw is-sett ta’ stati jew outputs tas-softwer irrappurtati mill-klijent sabiex jipprovdu soluzzjonijiet adegwati.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Χρήση εξειδικευμένων εργαλείων για την αναπαραγωγή και την ανάλυση των συνθηκών που προκάλεσαν το πακέτο των καταστάσεων ή των αποτελεσμάτων λογισμικού που αναφέρονται από τον πελάτη, προκειμένου να παρέχονται οι κατάλληλες λύσεις.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Use specialised tools to replicate and analyse the conditions that caused the set of software states or outputs reported by the customer in order to provide adequate solutions.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Notaðu sérhæfð verkfæri til að endurgera og greina skilyrðin sem urðu til þess hugbúnaðarástands eða útkomu sem viðskiptavinurinn hefur greint frá til að veita fullnægjandi lausnir.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Utilizzare strumenti specializzati per replicare e analizzare le condizioni che hanno determinato la serie di stati del software o i risultati riportati dal cliente al fine di fornire soluzioni adeguate.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Utilizar herramientas especializadas para reproducir y analizar las condiciones que han provocado el conjunto de los estados o resultados del software comunicados por el cliente con el fin de ofrecer soluciones adecuadas.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Erivahendite kasutamine, et rekonstrueerida ja analüüsida tingimusi, mis põhjustasid kliendi teatatud tarkvaraolekute või -väljundite kogumi, et pakkuda sobivaid lahendusi.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Používat specializované nástroje k replikaci a analýze podmínek, které způsobily řadu softwarových stavů nebo výstupů hlášených zákazníkem za účelem nalezení příslušných řešení.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "استخدام الأدوات المتخصصة لتكرار وتحليل الشروط التي تسببت في مجموعة من الحالات البرمجية أو النواتج التي أبلغ عنها العميل من أجل توفير حلول مناسبة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Stosowanie specjalistycznych narzędzi do powielania i analizy warunków, które doprowadziły do powstania zestawu oprogramowania lub produktów zgłoszonych przez klienta w celu zapewnienia odpowiednich rozwiązań.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Anvende specialiserede værktøjer til at kopiere og analysere de betingelser, der er årsag til det sæt af softwaretilstande eller -output, der indberettes af kunden, med henblik på at finde passende løsninger.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Utilizează instrumente specializate pentru reproducerea și analizarea condițiilor care au determinat setul de stări software sau rezultatele raportate de client, pentru a oferi soluții adecvate.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Gespecialiseerde tools gebruiken voor het repliceren en analyseren van de omstandigheden die de door de klant gemelde reeks softwarestatussen of -outputs hebben veroorzaakt, om op die manier adequate oplossingen te kunnen bieden.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480&language=en",
+        "uri": "http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480",
+        "title": "replicate customer software issues"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/0b9968af-72de-470a-98e1-2d19577443fb&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0b9968af-72de-470a-98e1-2d19577443fb",
+          "title": "resolving computer problems",
+          "code": "S5.2.3"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/98c3d8f8-e3a8-49b7-9e58-236f25a6f6a0&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/98c3d8f8-e3a8-49b7-9e58-236f25a6f6a0",
+          "title": "system configurator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "replicate customer software issues",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480&language=en",
+              "uri": "http://data.europa.eu/esco/skill/eb3aa8c1-fb14-47b4-a352-b7975abd2480"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0b9968af-72de-470a-98e1-2d19577443fb"
+          ]
+        },
+        {
+          "title": "resolving computer problems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0b9968af-72de-470a-98e1-2d19577443fb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0b9968af-72de-470a-98e1-2d19577443fb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1"
+          ]
+        },
+        {
+          "title": "setting up and protecting computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/75c1ab73-5b00-48a0-818e-93487ebdd7e1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,736 @@
+[
+  {
+    "skillId": "MS-ARC01",
+    "moduleId": "MOD-MS-ARC01",
+    "sourceModuleIds": [
+      "MOD-READ-ARC01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-ARC02",
+    "moduleId": "MOD-MS-ARC02",
+    "sourceModuleIds": [
+      "MOD-READ-ARC02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-ARC03",
+    "moduleId": "MOD-MS-ARC03",
+    "sourceModuleIds": [
+      "MOD-READ-ARC03"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-ARC04",
+    "moduleId": "MOD-MS-ARC04",
+    "sourceModuleIds": [
+      "MOD-READ-ARC04"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-ARC05",
+    "moduleId": "MOD-MS-ARC05",
+    "sourceModuleIds": [
+      "MOD-READ-ARC05"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-ARC06",
+    "moduleId": "MOD-MS-ARC06",
+    "sourceModuleIds": [
+      "MOD-READ-ARC06"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-CORE01",
+    "moduleId": "MOD-MS-CORE01",
+    "sourceModuleIds": [
+      "MOD-READ-CORE01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-CORE02",
+    "moduleId": "MOD-MS-CORE02",
+    "sourceModuleIds": [
+      "MOD-READ-CORE02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-CORE03",
+    "moduleId": "MOD-MS-CORE03",
+    "sourceModuleIds": [
+      "MOD-READ-CORE03"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-CORE04",
+    "moduleId": "MOD-MS-CORE04",
+    "sourceModuleIds": [
+      "MOD-READ-CORE04"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE01",
+    "moduleId": "MOD-MS-DE01",
+    "sourceModuleIds": [
+      "MOD-DE-J-MODEL-01",
+      "MOD-DE-M-MODEL-01",
+      "MOD-DE-S-MODEL-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE02",
+    "moduleId": "MOD-MS-DE02",
+    "sourceModuleIds": [
+      "MOD-DE-J-PIPE-01",
+      "MOD-DE-M-PIPE-01",
+      "MOD-DE-S-PIPE-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE03",
+    "moduleId": "MOD-MS-DE03",
+    "sourceModuleIds": [
+      "MOD-DE-J-MODEL-01",
+      "MOD-DE-M-MODEL-01",
+      "MOD-DE-S-MODEL-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE04",
+    "moduleId": "MOD-MS-DE04",
+    "sourceModuleIds": [
+      "MOD-DE-J-PIPE-01",
+      "MOD-DE-M-PIPE-01",
+      "MOD-DE-S-PIPE-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE05",
+    "moduleId": "MOD-MS-DE05",
+    "sourceModuleIds": [
+      "MOD-DE-J-QUAL-01",
+      "MOD-DE-M-QUAL-01",
+      "MOD-DE-S-QUAL-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE06",
+    "moduleId": "MOD-MS-DE06",
+    "sourceModuleIds": [
+      "MOD-DE-J-MODEL-01",
+      "MOD-DE-J-QUAL-01",
+      "MOD-DE-M-MODEL-01",
+      "MOD-DE-M-QUAL-01",
+      "MOD-DE-S-MODEL-01",
+      "MOD-DE-S-QUAL-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE07",
+    "moduleId": "MOD-MS-DE07",
+    "sourceModuleIds": [
+      "MOD-DE-J-QUAL-01",
+      "MOD-DE-M-QUAL-01",
+      "MOD-DE-S-QUAL-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE08",
+    "moduleId": "MOD-MS-DE08",
+    "sourceModuleIds": [
+      "MOD-DE-J-PIPE-01",
+      "MOD-DE-M-PIPE-01",
+      "MOD-DE-S-PIPE-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE09",
+    "moduleId": "MOD-MS-DE09",
+    "sourceModuleIds": [
+      "MOD-DE-J-QUAL-02",
+      "MOD-DE-M-QUAL-02",
+      "MOD-DE-S-QUAL-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE10",
+    "moduleId": "MOD-MS-DE10",
+    "sourceModuleIds": [
+      "MOD-DE-J-PIPE-02",
+      "MOD-DE-M-PIPE-02",
+      "MOD-DE-S-PIPE-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE11",
+    "moduleId": "MOD-MS-DE11",
+    "sourceModuleIds": [
+      "MOD-DE-J-PIPE-02",
+      "MOD-DE-M-PIPE-02",
+      "MOD-DE-S-PIPE-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE12",
+    "moduleId": "MOD-MS-DE12",
+    "sourceModuleIds": [
+      "MOD-DE-J-PIPE-02",
+      "MOD-DE-M-PIPE-02",
+      "MOD-DE-S-PIPE-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE13",
+    "moduleId": "MOD-MS-DE13",
+    "sourceModuleIds": [
+      "MOD-DE-J-MODEL-02",
+      "MOD-DE-M-MODEL-02",
+      "MOD-DE-S-MODEL-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE14",
+    "moduleId": "MOD-MS-DE14",
+    "sourceModuleIds": [
+      "MOD-DE-J-QUAL-02",
+      "MOD-DE-M-QUAL-02",
+      "MOD-DE-S-QUAL-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE15",
+    "moduleId": "MOD-MS-DE15",
+    "sourceModuleIds": [
+      "MOD-DE-J-QUAL-02",
+      "MOD-DE-M-QUAL-02",
+      "MOD-DE-S-QUAL-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-DE16",
+    "moduleId": "MOD-MS-DE16",
+    "sourceModuleIds": [
+      "MOD-DE-J-MODEL-02",
+      "MOD-DE-M-MODEL-02",
+      "MOD-DE-S-MODEL-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS01",
+    "moduleId": "MOD-MS-FS01",
+    "sourceModuleIds": [
+      "MOD-FS-J-UI-01",
+      "MOD-FS-M-UI-01",
+      "MOD-FS-S-UI-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS02",
+    "moduleId": "MOD-MS-FS02",
+    "sourceModuleIds": [
+      "MOD-FS-J-UI-01",
+      "MOD-FS-M-UI-01",
+      "MOD-FS-S-UI-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS03",
+    "moduleId": "MOD-MS-FS03",
+    "sourceModuleIds": [
+      "MOD-FS-J-SERVICE-01",
+      "MOD-FS-M-SERVICE-01",
+      "MOD-FS-S-SERVICE-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS04",
+    "moduleId": "MOD-MS-FS04",
+    "sourceModuleIds": [
+      "MOD-FS-J-SERVICE-01",
+      "MOD-FS-M-SERVICE-01",
+      "MOD-FS-S-SERVICE-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS05",
+    "moduleId": "MOD-MS-FS05",
+    "sourceModuleIds": [
+      "MOD-FS-J-SERVICE-01",
+      "MOD-FS-M-SERVICE-01",
+      "MOD-FS-S-SERVICE-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS06",
+    "moduleId": "MOD-MS-FS06",
+    "sourceModuleIds": [
+      "MOD-FS-J-QUALITY-01",
+      "MOD-FS-M-QUALITY-01",
+      "MOD-FS-S-QUALITY-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS07",
+    "moduleId": "MOD-MS-FS07",
+    "sourceModuleIds": [
+      "MOD-FS-J-QUALITY-01",
+      "MOD-FS-M-QUALITY-01",
+      "MOD-FS-S-QUALITY-01",
+      "MOD-QA-J-AUTO-01",
+      "MOD-QA-M-AUTO-01",
+      "MOD-QA-S-AUTO-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS08",
+    "moduleId": "MOD-MS-FS08",
+    "sourceModuleIds": [
+      "MOD-FS-J-QUALITY-01",
+      "MOD-FS-M-QUALITY-01",
+      "MOD-FS-S-QUALITY-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS09",
+    "moduleId": "MOD-MS-FS09",
+    "sourceModuleIds": [
+      "MOD-FS-J-UI-01",
+      "MOD-FS-M-UI-01",
+      "MOD-FS-S-UI-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS10",
+    "moduleId": "MOD-MS-FS10",
+    "sourceModuleIds": [
+      "MOD-FS-J-UI-02",
+      "MOD-FS-M-UI-02",
+      "MOD-FS-S-UI-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS11",
+    "moduleId": "MOD-MS-FS11",
+    "sourceModuleIds": [
+      "MOD-FS-J-UI-02",
+      "MOD-FS-M-UI-02",
+      "MOD-FS-S-UI-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS12",
+    "moduleId": "MOD-MS-FS12",
+    "sourceModuleIds": [
+      "MOD-FS-J-SERVICE-02",
+      "MOD-FS-M-SERVICE-02",
+      "MOD-FS-S-SERVICE-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS13",
+    "moduleId": "MOD-MS-FS13",
+    "sourceModuleIds": [
+      "MOD-FS-J-SERVICE-02",
+      "MOD-FS-M-SERVICE-02",
+      "MOD-FS-S-SERVICE-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS14",
+    "moduleId": "MOD-MS-FS14",
+    "sourceModuleIds": [
+      "MOD-FS-J-SERVICE-02",
+      "MOD-FS-M-SERVICE-02",
+      "MOD-FS-S-SERVICE-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS15",
+    "moduleId": "MOD-MS-FS15",
+    "sourceModuleIds": [
+      "MOD-FS-J-QUALITY-02",
+      "MOD-FS-M-QUALITY-02",
+      "MOD-FS-S-QUALITY-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-FS16",
+    "moduleId": "MOD-MS-FS16",
+    "sourceModuleIds": [
+      "MOD-FS-J-QUALITY-02",
+      "MOD-FS-M-QUALITY-02",
+      "MOD-FS-S-QUALITY-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-GOV01",
+    "moduleId": "MOD-MS-GOV01",
+    "sourceModuleIds": [
+      "MOD-READ-GOV01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-GOV02",
+    "moduleId": "MOD-MS-GOV02",
+    "sourceModuleIds": [
+      "MOD-READ-GOV02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-GOV03",
+    "moduleId": "MOD-MS-GOV03",
+    "sourceModuleIds": [
+      "MOD-READ-GOV03"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF01",
+    "moduleId": "MOD-MS-INF01",
+    "sourceModuleIds": [
+      "MOD-READ-INF01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF02",
+    "moduleId": "MOD-MS-INF02",
+    "sourceModuleIds": [
+      "MOD-READ-INF02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF03",
+    "moduleId": "MOD-MS-INF03",
+    "sourceModuleIds": [
+      "MOD-READ-INF03"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF04",
+    "moduleId": "MOD-MS-INF04",
+    "sourceModuleIds": [
+      "MOD-READ-INF04"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF05",
+    "moduleId": "MOD-MS-INF05",
+    "sourceModuleIds": [
+      "MOD-READ-INF05"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF06",
+    "moduleId": "MOD-MS-INF06",
+    "sourceModuleIds": [
+      "MOD-READ-INF06"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF07",
+    "moduleId": "MOD-MS-INF07",
+    "sourceModuleIds": [
+      "MOD-READ-INF07"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-INF08",
+    "moduleId": "MOD-MS-INF08",
+    "sourceModuleIds": [
+      "MOD-READ-INF08"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA01",
+    "moduleId": "MOD-MS-QA01",
+    "sourceModuleIds": [
+      "MOD-QA-J-DESIGN-01",
+      "MOD-QA-M-DESIGN-01",
+      "MOD-QA-S-DESIGN-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA02",
+    "moduleId": "MOD-MS-QA02",
+    "sourceModuleIds": [
+      "MOD-QA-J-DESIGN-01",
+      "MOD-QA-M-DESIGN-01",
+      "MOD-QA-S-DESIGN-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA03",
+    "moduleId": "MOD-MS-QA03",
+    "sourceModuleIds": [
+      "MOD-QA-J-EXEC-01",
+      "MOD-QA-M-EXEC-01",
+      "MOD-QA-S-EXEC-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA04",
+    "moduleId": "MOD-MS-QA04",
+    "sourceModuleIds": [
+      "MOD-QA-J-EXEC-01",
+      "MOD-QA-M-EXEC-01",
+      "MOD-QA-S-EXEC-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA05",
+    "moduleId": "MOD-MS-QA05",
+    "sourceModuleIds": [
+      "MOD-QA-J-EXEC-01",
+      "MOD-QA-M-EXEC-01",
+      "MOD-QA-S-EXEC-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA06",
+    "moduleId": "MOD-MS-QA06",
+    "sourceModuleIds": [
+      "MOD-QA-J-AUTO-01",
+      "MOD-QA-M-AUTO-01",
+      "MOD-QA-S-AUTO-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA07",
+    "moduleId": "MOD-MS-QA07",
+    "sourceModuleIds": [
+      "MOD-QA-J-AUTO-01",
+      "MOD-QA-M-AUTO-01",
+      "MOD-QA-S-AUTO-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA08",
+    "moduleId": "MOD-MS-QA08",
+    "sourceModuleIds": [
+      "MOD-QA-J-DESIGN-01",
+      "MOD-QA-M-DESIGN-01",
+      "MOD-QA-S-DESIGN-01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA09",
+    "moduleId": "MOD-MS-QA09",
+    "sourceModuleIds": [
+      "MOD-QA-J-DESIGN-02",
+      "MOD-QA-M-DESIGN-02",
+      "MOD-QA-S-DESIGN-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA10",
+    "moduleId": "MOD-MS-QA10",
+    "sourceModuleIds": [
+      "MOD-QA-J-DESIGN-02",
+      "MOD-QA-M-DESIGN-02",
+      "MOD-QA-S-DESIGN-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA11",
+    "moduleId": "MOD-MS-QA11",
+    "sourceModuleIds": [
+      "MOD-QA-J-DESIGN-02",
+      "MOD-QA-M-DESIGN-02",
+      "MOD-QA-S-DESIGN-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA12",
+    "moduleId": "MOD-MS-QA12",
+    "sourceModuleIds": [
+      "MOD-QA-J-EXEC-02",
+      "MOD-QA-M-EXEC-02",
+      "MOD-QA-S-EXEC-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA13",
+    "moduleId": "MOD-MS-QA13",
+    "sourceModuleIds": [
+      "MOD-QA-J-EXEC-02",
+      "MOD-QA-M-EXEC-02",
+      "MOD-QA-S-EXEC-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA14",
+    "moduleId": "MOD-MS-QA14",
+    "sourceModuleIds": [
+      "MOD-QA-J-EXEC-02",
+      "MOD-QA-M-EXEC-02",
+      "MOD-QA-S-EXEC-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA15",
+    "moduleId": "MOD-MS-QA15",
+    "sourceModuleIds": [
+      "MOD-QA-J-AUTO-02",
+      "MOD-QA-M-AUTO-02",
+      "MOD-QA-S-AUTO-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-QA16",
+    "moduleId": "MOD-MS-QA16",
+    "sourceModuleIds": [
+      "MOD-QA-J-AUTO-02",
+      "MOD-QA-M-AUTO-02",
+      "MOD-QA-S-AUTO-02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC01",
+    "moduleId": "MOD-MS-SEC01",
+    "sourceModuleIds": [
+      "MOD-READ-SEC01"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC02",
+    "moduleId": "MOD-MS-SEC02",
+    "sourceModuleIds": [
+      "MOD-READ-SEC02"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC03",
+    "moduleId": "MOD-MS-SEC03",
+    "sourceModuleIds": [
+      "MOD-READ-SEC03"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC04",
+    "moduleId": "MOD-MS-SEC04",
+    "sourceModuleIds": [
+      "MOD-READ-SEC04"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC05",
+    "moduleId": "MOD-MS-SEC05",
+    "sourceModuleIds": [
+      "MOD-READ-SEC05"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC06",
+    "moduleId": "MOD-MS-SEC06",
+    "sourceModuleIds": [
+      "MOD-READ-SEC06"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC07",
+    "moduleId": "MOD-MS-SEC07",
+    "sourceModuleIds": [
+      "MOD-READ-SEC07"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC08",
+    "moduleId": "MOD-MS-SEC08",
+    "sourceModuleIds": [
+      "MOD-READ-SEC08"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC09",
+    "moduleId": "MOD-MS-SEC09",
+    "sourceModuleIds": [
+      "MOD-READ-SEC09"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  },
+  {
+    "skillId": "MS-SEC10",
+    "moduleId": "MOD-MS-SEC10",
+    "sourceModuleIds": [
+      "MOD-READ-SEC10"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW"
+  }
+]

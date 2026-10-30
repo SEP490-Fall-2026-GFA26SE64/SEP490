@@ -1,0 +1,442 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ffd33c66c-70c4-40e6-b87c-5495bd3bf26e&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e",
+    "title": "design user interface",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Benutzerschnittstelle konzipieren",
+      "no": "utforme brukergrensesnitt",
+      "fi": "suunnitella käyttöliittymää",
+      "pt": "conceber interfaces do utilizador",
+      "bg": "проектиране на потребителски интерфейс",
+      "lt": "suprojektuoti naudotojo sąsają",
+      "lv": "lietotāja saskarnes izstrāde",
+      "hr": "osmisliti korisničko sučelje",
+      "fr": "concevoir une interface utilisateur",
+      "hu": "felhasználói felületet tervez",
+      "uk": "проєктувати користувацький інтерфейс",
+      "sk": "navrhnúť používateľské rozhranie",
+      "sl": "oblikovati uporabniške vmesnike",
+      "ga": "comhéadan úsáideora a dhearadh",
+      "sv": "utforma användargränssnitt",
+      "el": "σχεδιασμός διεπαφής χρήστη",
+      "mt": "tfassil ta' interfaċċa tal-utent",
+      "en": "design user interface",
+      "is": "hanna skilviðmót",
+      "it": "progettare l’interfaccia utente",
+      "es": "diseñar una interfaz de usuario",
+      "et": "kasutajaliidest projekteerima",
+      "cs": "navrhovat uživatelská rozhraní",
+      "ar": "تصميم واجهة المستخدم",
+      "pl": "projektować interfejs użytkownika",
+      "ro": "proiectează interfața cu utilizatorul",
+      "da": "designe brugergrænseflade",
+      "nl": "gebruikersinterface ontwerpen"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "vypracovávat návrhy uživatelských rozhraní",
+        "navrhovat uživatelské rozhraní",
+        "vytvářet uživatelská rozhraní",
+        "navrhnout uživatelské rozhraní",
+        "vytvářet návrhy uživatelského rozhraní"
+      ],
+      "el": [
+        "ανάπτυξη διεπαφής χρήστης"
+      ],
+      "mt": [
+        "tiddisinja l-interface tal-utenti",
+        "toħloq l-interface tal-utent",
+        "tiddisinja l-interface għall-utent",
+        "tiżviluppa l-interface tal-utent"
+      ],
+      "en": [
+        "design user interface specifications",
+        "design user interfaces"
+      ],
+      "nl": [
+        "gebruikersinterface",
+        "UI ontwerpen",
+        "computerinterface ontwerpen",
+        "interface ontwerpen waarmee de gebruiker het product bedient",
+        "gebruikersinterface testen"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Lage programvare eller enhetskomponenter som muliggjør interaksjon mellom mennesker og systemer eller maskiner, ved bruk av passende teknikker, språk og verktøy for å effektivisere samhandlingen ved bruk av systemet eller maskinen.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Entwicklung von Software- oder Gerätekomponenten, die eine Interaktion zwischen Menschen und Systemen oder Maschinen ermöglichen, unter Verwendung geeigneter Techniken, Sprachen und Werkzeuge zur Optimierung der Interaktion während der Nutzung des Systems oder der Maschine.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Luoda sellaisia ohjelmistoja tai laitteiden komponentteja, jotka mahdollistavat ihmisten ja järjestelmien tai koneiden välisen vuorovaikutuksen, käyttäen asianmukaisia tekniikoita, kieliä ja välineitä, jotta järjestelmän tai koneen käyttöön liittyvää vuorovaikutusta voitaisiin virtaviivaistaa.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar software ou componentes de dispositivos que permitam a interação entre os seres humanos e os sistemas ou as máquinas, utilizando técnicas, linguagens e ferramentas adequados, de modo a simplificar a interação durante a utilização do sistema ou da máquina.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава софтуер или компоненти за устройства, които позволяват интерактивност между хората и системите или машините, като се използват подходящи техники, езици и инструменти, така че да се оптимизира интерактивността при използване на системата или машината.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Sukurti programinę įrangą ar įtaisų komponentus, kurie leistų užtikrinti žmonių ir sistemų arba mechanizmų sąveiką, naudojant tinkamus metodus, kalbas ir priemones, kad būtų galima optimizuoti sąveiką naudojant sistemą arba mechanizmą.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izraditi softver ili dijelove uređaja koji omogućuju interakciju između ljudi i sustava ili strojeva primjenom odgovarajućih tehnika, jezika i alata kako bi se pojednostavnila interakcija tijekom upotrebe sustava ili stroja.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Radīt programmatūru vai ierīces sastāvdaļas, kas nodrošina mijiedarbību starp cilvēkiem un sistēmām vai iekārtām, izmantojot piemērotus paņēmienus, valodas un instrumentus, lai racionalizētu mijiedarbību, izmantojot sistēmu vai iekārtu.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer des composants logiciels ou matériels qui permettent une interaction entre l’homme et les systèmes ou les machines, en utilisant des techniques, des langages et des outils appropriés, afin de rationaliser l’interaction pendant l’utilisation du système ou de la machine.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Olyan szoftvert vagy eszköz-alkotóelemeket készít, amelyek lehetővé teszik az emberek és a rendszerek vagy gépek közötti interakciót, megfelelő technikák, nyelvek és eszközök segítségével annak érdekében, hogy megkönnyítse az interakciót a rendszer vagy a gép használata közben.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створити компоненти програмного забезпечення або пристрою, які забезпечують взаємодію між людьми та системами або машинами, використовуючи відповідні методи, мови та інструменти, щоб оптимізувати взаємодію під час використання системи або машини.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvárať softvér alebo komponenty zariadenia, ktoré umožňujú interakciu medzi ľuďmi a systémami alebo počítačmi, pomocou vhodných techník, jazykov a nástrojov s cieľom zefektívniť interakciu pri používaní systému alebo počítača.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Oblikovati sestavne dele programske opreme ali naprave, ki omogočajo interakcijo med ljudmi in sistemi ali stroji, z uporabo ustreznih tehnik, jezikov in orodij, da se poenostavi interakcija med njimi.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Bogearraí nó comhpháirteanna feiste a chruthú lena gcumasaítear idirghníomhú idir daoine agus córais nó innill, agus úsáid á baint as teicnící, teangacha agus uirlisí iomchuí chun an t-idirghníomhú a chuíchóiriú fad a úsáidtear an córas nó an meaisín.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Skapa programvaru- eller enhetskomponenter som möjliggör interaktion mellan människor och system eller maskiner, genom att använda lämpliga tekniker, språk och verktyg som effektiviserar interaktionen med ett system eller en maskin.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ħolqien ta’ softwer jew komponenti ta’ apparati li jippermettu l-interazzjoni bejn il-bnedmin u s-sistemi jew il-magni, bl-użu ta’ tekniki, lingwi u għodod adattati sabiex tiġi ssimplifikata l-interazzjoni waqt l-użu tas-sistema jew tal-magna.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία συστατικών στοιχείων λογισμικού ή διατάξεων τα οποία καθιστούν δυνατή την αλληλεπίδραση μεταξύ ανθρώπων και συστημάτων ή μηχανών, με τη χρήση κατάλληλων τεχνικών, γλωσσών και εργαλείων, για τη διευκόλυνση της αλληλεπίδρασης κατά τη χρήση του συστήματος ή της μηχανής.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create software or device components which enable interaction between humans and systems or machines, using appropriate techniques, languages and tools so as to streamline interaction while using the system or machine.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Setja skal upp hugbúnað eða búnaðaríhluti sem gera gagnvirkni manna og kerfa eða véla mögulega með notkun viðeigandi tækni, tungumála og búnaðar til að gera gagnvirkni auðvelda á meðan kerfi eða vél er notuð.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Creare componenti software o di dispositivi che consentano l’interazione tra gli esseri umani e i sistemi o le macchine, utilizzando tecniche, linguaggi e strumenti adeguati in modo da razionalizzare l’interazione durante l’utilizzo del sistema o della macchina.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear componentes de dispositivos o software que permitan la interacción entre personas y sistemas o máquinas, con el empleo de las técnicas, los lenguajes y las herramientas adecuados para racionalizar la interacción durante el uso del sistema o la máquina.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Kasutajate ja süsteemide või masinate vahelist vastastiksuhtlust võimaldavate tarkvara- või seadmekomponentide loomine, kasutades asjakohaseid tehnikaid, keeli ja vahendeid, et süsteemi või masina kasutamine oleks kasutajale võimalikult mugav.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet software nebo součásti zařízení, které umožňují interakci mezi lidmi a systémy nebo stroji, pomocí vhodných technik, jazyků a nástrojů s cílem zefektivnit interakci při používání systému nebo stroje.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إنشاء مكونات البرنامج أو الجهاز التي تتيح التفاعل بين البشر والنظم أو الماكينات، باستخدام التقنيات واللغات والأدوات المناسبة، لتسهيل عملية التفاعل أثناء استخدام النظام أو الماكينة.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć oprogramowanie lub elementów urządzenia, które umożliwiają interakcje między człowiekiem a systemami lub maszynami, przy użyciu odpowiednich technik, języków i narzędzi w celu usprawnienia współdziałania przy użyciu systemu lub maszyny.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Creează componente software sau pentru dispozitive care permit interacțiunea între oameni și sisteme sau utilaje, utilizând tehnici, limbaje și instrumente adecvate, astfel încât să fie raționalizată interacțiunea în timpul utilizării sistemului sau a aparatului.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Oprette software- eller udstyrskomponenter, der muliggør interaktion mellem mennesker og systemer eller maskiner ved hjælp af egnede teknikker, sprog og værktøjer, som strømliner interaktionen med et system eller en maskine.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Creëren van software of apparaatcomponenten die interactie tussen mensen en systemen of machines mogelijk maken, met behulp van de juiste technieken, talen en gereedschappen om de interactie tijdens het gebruik van het systeem of de machine te stroomlijnen.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e&language=en",
+        "uri": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e",
+        "title": "design user interface"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+          "title": "designing ict systems or applications",
+          "code": "S1.11.1"
+        }
+      ],
+      "hasEssentialSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7364cc39-b9c0-449f-9416-57723e2fd9c4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7364cc39-b9c0-449f-9416-57723e2fd9c4",
+          "title": "use methodologies for user-centered design",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/95ee5e38-5c1e-4cd2-a21d-6921390025a9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/95ee5e38-5c1e-4cd2-a21d-6921390025a9",
+          "title": "usability engineering",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b8c01891-e3df-4a4b-948d-95b45e1788f5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b8c01891-e3df-4a4b-948d-95b45e1788f5",
+          "title": "mobile device software frameworks",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/23b45aa6-a479-486d-9e6f-062cbab7c68a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/23b45aa6-a479-486d-9e6f-062cbab7c68a",
+          "title": "interfacing techniques",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/de0be6e8-644c-4cc9-9c8d-925dd98dda56&language=en",
+          "uri": "http://data.europa.eu/esco/skill/de0be6e8-644c-4cc9-9c8d-925dd98dda56",
+          "title": "software interaction design",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/96e20037-0a25-4bf6-a25e-808d1605d890&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/96e20037-0a25-4bf6-a25e-808d1605d890",
+          "title": "user interface designer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c",
+          "title": "user interface developer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "title": "embedded systems security engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/86ca306c-ab99-420a-9e2a-aa73c5c4de22&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/86ca306c-ab99-420a-9e2a-aa73c5c4de22",
+          "title": "electrical engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81",
+          "title": "digital games developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7",
+          "title": "ICT application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+          "title": "software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02",
+          "title": "embedded systems software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135",
+          "title": "ICT system developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
+          "title": "industrial mobile devices software developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d",
+          "title": "web developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
+          "title": "data warehouse designer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/4d34a9ee-2653-4da0-bef7-f59294577224&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/4d34a9ee-2653-4da0-bef7-f59294577224",
+          "title": "electronics engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7",
+          "title": "application engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2",
+          "title": "blockchain developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c",
+          "title": "mobile application developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341",
+          "title": "computer vision engineer"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "design user interface",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce"
+          ]
+        },
+        {
+          "title": "designing ict systems or applications",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+          ]
+        },
+        {
+          "title": "designing systems and products",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+          ]
+        },
+        {
+          "title": "communication, collaboration and creativity",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8&language=en",
+              "uri": "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

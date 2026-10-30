@@ -1,0 +1,600 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+    "title": "execute software tests",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Softwaretests durchführen",
+      "no": "utføre programvaretester",
+      "fi": "suorittaa ohjelmistotestejä",
+      "pt": "executar testes de software",
+      "bg": "извършване на тестване на софтуер",
+      "lt": "atlikti programinės įrangos testus",
+      "hr": "provesti softverske testove",
+      "lv": "programmatūras testēšana",
+      "fr": "exécuter des tests de logiciel",
+      "hu": "szoftvertesztelést végez",
+      "uk": "виконувати тестування програмного забезпечення",
+      "sk": "vykonať softvérové testy",
+      "sl": "izvajati preskušanje programske opreme",
+      "ga": "tástálacha bogearraí a dhéanamh",
+      "sv": "utföra programvarutester",
+      "el": "διενέργεια δοκιμών λογισμικού",
+      "mt": "twettaq testijiet tas-software",
+      "en": "execute software tests",
+      "is": "framkvæma hugbúnaðarprófanir",
+      "it": "eseguire test del software",
+      "es": "ejecutar pruebas de software",
+      "et": "tarkvarateste teostama",
+      "cs": "provádět softwarové testy",
+      "ar": "تنفيذ اختبارات البرامج",
+      "pl": "wykonywać testy oprogramowania",
+      "ro": "execută teste de software",
+      "da": "udføre softwaretests",
+      "nl": "softwaretests uitvoeren"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Software-Testverfahren anwenden",
+        "Programme testen",
+        "Software-Testwerkzeuge und -verfahren anwenden",
+        "Software-Testwerkzeuge anwenden",
+        "Anwendungen testen",
+        "Software testen",
+        "Software-Tests durchführen"
+      ],
+      "sv": [
+        "köra programtester",
+        "göra programtester"
+      ],
+      "mt": [
+        "twettaq testijiet tal-applikazzjonijiet tas-software",
+        "tivverifika s-software",
+        "tiċċekkja s-software",
+        "tittestja s-software",
+        "twettaq testijiet fuq is-software"
+      ],
+      "el": [
+        "διενέργεια ελέγχων λογισμικού",
+        "διενέργεια δοκιμών σε εφαρμογές λογισμικού"
+      ],
+      "en": [
+        "test application",
+        "test programs"
+      ],
+      "lv": [
+        "Testēt programmatūru"
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Durchführung von Tests, um sicherzustellen, dass ein Softwareprodukt unter den spezifizierten Kundenanforderungen einwandfrei funktioniert, und Identifizierung von Softwaremängeln (Bugs) und Fehlfunktionen unter Verwendung spezieller Softwaretools und Testverfahren.\n\t",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Gjennomføre tester for å sikre at et programvareprodukt fungerer problemfritt i henhold til de angitte kundekravene, og identifisere feil og feilfunksjoner i programvare ved hjelp av spesialisert programvareverktøy og testteknikker.\n\t",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Suorittaa testejä sen varmistamiseksi, että ohjelmistotuote suoriutuu täydellisesti asiakkaiden käyttöympäristössä, sekä ohjelmistovirheiden (bugien) ja toimintahäiriöiden tunnistamiseksi käyttäen erikoistuneita ohjelmistotyökaluja ja testaustekniikoita.\n\t",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Realizar testes para garantir o correto funcionamento de um produto de software de acordo com os requisitos especificados pelo cliente e identificar defeitos e falhas (bugs), utilizando ferramentas de software especializadas e técnicas de teste.\n\t",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Извършва изпитвания, за да гарантира, че софтуерният продукт ще работи безупречно съгласно специфичните изисквания на клиентите, и установява дефекти (грешки) и неизправности в софтуера, като използва специализирани софтуерни инструменти и техники за изпитване.\n\t",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Naudojantis specializuotomis programinės įrangos priemonėmis, atlikti testus, siekiant užtikrinti, kad programinės įrangos produktas nepriekaištingai veiks pagal nustatytus klientų reikalavimus, ir nustatyti programinės įrangos defektus (trikdžius) ir gedimus.\n\t",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izmantojot specializētus programmatūras rīkus un testēšanas metodes, veikt testus ar mērķi nodrošināt programmatūras nevainojamu darbību specifisku klienta prasību izpildei un identificēt programmatūras defektus (kļūdas) un darbības traucējumus.\n\t",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Provoditi ispitivanja kako bi se osiguralo da će softverski proizvod besprijekorno raditi u skladu sa zahtjevima korisnika, utvrditi nedostatke (bugove) i kvarove u softveru upotrebom specijaliziranih softverskih alata i tehnika ispitivanja.\n\t",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Effectuer des tests pour s’assurer qu’un produit logiciel fonctionnera parfaitement selon les exigences spécifiées du client et détecter les défauts (bogues) et les dysfonctionnements des logiciels, à l’aide d’outils logiciels et de techniques de test spécialisés.\n\t",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Teszteket végez annak biztosítása érdekében, hogy a szoftvertermék a meghatározott ügyfélkövetelményeknek megfelelően hibátlanul működjön, valamint speciális szoftvereszközök és tesztelési technikák alkalmazásával azonosítja a szoftverhibákat (úgy nevezett „bug”-ok) és a meghibásodásokat.\n\t",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Виконувати тестування, щоб перевірити бездоганність роботи програмного продукту, відповідно до вимог замовника, а також виявляти помилки програмного забезпечення (баги) і його неправильну роботу за допомогою спеціалізованого програмного забезпечення й тестування.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vykonávať skúšky, aby sa zabezpečilo, že softvérový produkt bude fungovať bezchybne v súlade so stanovenými požiadavkami zákazníka, a aby sa identifikovali chyby softvéru (logické chyby) a poruchy, s použitím špecializovaných softvérových nástrojov a skúšobných techník.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Izvajati preskuse, s katerimi se zagotovi brezhibno delovanje programske opreme v skladu z določenimi zahtevami strank, ter odkrivati napake (hrošče) in nepravilno delovanje programske opreme z uporabo posebnih programskih orodij in tehnik preskušanja.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Tástálacha a dhéanamh chun a chinntiú go bhfeidhmeoidh táirge bogearraí gan fabht de réir na gceanglas sonraithe a bhaineann le custaiméir agus lochtanna bogearraí (fabhtanna) agus mífheidhmeanna bogearraí a shainaithint, trí úsáid a bhaint as uirlisí bogearraí speisialaithe agus as teicnící tástála speisialaithe.\n   ",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Utföra tester för att säkerställa att en programvara fungerar felfritt under de specificerade kundkraven och identifiera programfel (buggar) och funktionsfel med hjälp av specialiserad teknik och verktyg för provning av programvara.\n\t",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Twettiq ta’ testijiet biex jiġi żgurat li prodott tas-software jaħdem bla xkiel skont ir-rekwiżiti speċifikati tal-klijent u identifikazzjoni tad-difetti fis-software (bugs) u ħsarat, billi jintużaw għodod tas-software u tekniki ta’ ttestjar speċjalizzati.\n\t",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Διενέργεια δοκιμών για να διασφαλίζεται ότι ένα προϊόν λογισμικού θα λειτουργεί τέλεια, σύμφωνα με τις συγκεκριμένες απαιτήσεις των πελατών, και προσδιορισμός των ελαττωμάτων (σφαλμάτων κώδικα) και των δυσλειτουργιών, με τη χρήση εξειδικευμένων εργαλείων λογισμικού και τεχνικών ελέγχου.\n\t",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Perform tests to ensure that a software product will perform flawlessly under the specified customer requirements and identify software defects (bugs) and malfunctions, using specialised software tools and testing techniques.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Framkvæma próf til að tryggja að hugbúnaðarvara starfi gallalaust og í samræmi við tilgreindar þarfir viðskiptavinarins og greina hugbúnaðarvillur og -starfstruflanir með sérhæfðum hugbúnaðarverkfærum og prófunartækni.\n\t",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Effettuare test per garantire che un prodotto software funzioni perfettamente in base alle esigenze specifiche del cliente, individuare i difetti del software (bug) e i malfunzionamenti utilizzando strumenti software specializzati e tecniche di test.\n\t",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Realizar ensayos para que un producto de software funcione sin problemas conforme a los requisitos especificados por el cliente e identificar los defectos (errores de programación) y los fallos de funcionamiento del programa en cuestión, utilizando para ello herramientas de software y técnicas de ensayo especializadas.\n\t",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Testide tegemine eesmärgiga veenduda, et tarkvaratoode toimib veatult vastavalt kliendi määratud nõuetele ning tarkvara defektide (programmivead) ja tõrgete tuvastamine eri-tarkvaravahendite ja testimistehnikate abil.\n\t",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Provádět testy, které zajistí, že softwarový produkt bude fungovat bezchybně podle požadavků zákazníka, a identifikovat softwarové vady (chyby) a poruchy/selhání pomocí specializovaných softwarových nástrojů a technik testování.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إجراء اختبارات للتأكد من أن منتج البرنامج سيعمل بسلاسة وفق متطلبات العميل المحددة والتعرف على وجود فيروسات في البرنامج أو أعطال، والاستعانة في ذلك بأدوات البرنامج المتخصصة وتقنيات الاختبار.\n   ",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Wykonywać badania w celu upewnienia się w sposób niebudzący wątpliwości, że dany wyrób spełnia określone wymagania klienta oraz zidentyfikowania usterek oprogramowania (błędów) i nieprawidłowości, wykorzystując specjalistyczne oprogramowanie komputerowe i techniki badań.\n\t",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Gennemføre tests for at sikre, at et softwareprodukt vil fungere fejlfrit i henhold til de specificerede kundekrav, og identificere softwarefejl (bugs) og funktionsfejl ved hjælp af specialiserede softwareværktøjer og testteknikker.\n\t",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Efectuează teste pentru a se asigura că un produs software funcționează fără probleme conform cerințelor specifice ale clientului și identifică defectele de software (bug) și defecțiunile, utilizând instrumente software specializate.\n\t",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Testen uitvoeren om te waarborgen dat een softwareproduct foutloos zal functioneren volgens de gespecificeerde eisen van de klant en defecten (bugs) en storingen van de software opsporen met behulp van gespecialiseerde softwarehulpmiddelen en testtechnieken.\n\t",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+        "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+        "title": "execute software tests"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+          "title": "programming computer systems",
+          "code": "S5.1.0"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4",
+          "title": "perform test run",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db",
+          "title": "manage system testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+          "title": "plan software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "narrowerSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ff25cbf0-6978-4c4c-887e-d4b185410d74&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ff25cbf0-6978-4c4c-887e-d4b185410d74",
+          "title": "perform software recovery testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899",
+          "title": "perform software unit testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a9dc215e-4e26-4ac0-b1e8-a721a88af813&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a9dc215e-4e26-4ac0-b1e8-a721a88af813",
+          "title": "execute conversion testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ea412de3-9d7a-4943-8d8c-c6d3c7495d0e",
+          "title": "execute integration testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f",
+          "title": "tools for ICT test automation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97&language=en",
+          "uri": "http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97",
+          "title": "computer programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/09f2f811-a3fb-4de3-a70f-6420a6935575&language=en",
+          "uri": "http://data.europa.eu/esco/skill/09f2f811-a3fb-4de3-a70f-6420a6935575",
+          "title": "systems development life-cycle",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/76ef0a87-6afe-4560-b5d0-9a086abe45c5&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/76ef0a87-6afe-4560-b5d0-9a086abe45c5",
+          "title": "ethical hacker"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "title": "ICT integration tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "title": "ICT system tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/4daee8bd-8400-4da6-ba52-30d4c193d1a9&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/4daee8bd-8400-4da6-ba52-30d4c193d1a9",
+          "title": "aviation ground systems engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "title": "digital games tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5979893a-0a30-447b-8f33-1ea405600583&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5979893a-0a30-447b-8f33-1ea405600583",
+          "title": "powertrain engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "title": "ICT accessibility tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "title": "ICT usability tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "title": "embedded systems security engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a44a1dc5-be08-4840-8bd5-770c4ac1ca6d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a44a1dc5-be08-4840-8bd5-770c4ac1ca6d",
+          "title": "ICT security technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a28dff76-74df-46ee-929f-d1fffbb63cd7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a28dff76-74df-46ee-929f-d1fffbb63cd7",
+          "title": "ICT quality assurance manager"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/998a0bf4-b1be-42ab-aee5-0096c9be3319&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/998a0bf4-b1be-42ab-aee5-0096c9be3319",
+          "title": "quality engineering technician"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a32187fa-bc37-4fc2-8e89-296632bfc271&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/a32187fa-bc37-4fc2-8e89-296632bfc271",
+          "title": "onshore wind farm technician"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/b11e1742-5e28-4270-b081-b0193d85ee7d",
+          "title": "database developer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/58db3ac6-5217-4d46-8a4c-126598be1d13&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/58db3ac6-5217-4d46-8a4c-126598be1d13",
+          "title": "electric power generation engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0464b062-cea6-4164-b10d-956c61956ae7&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0464b062-cea6-4164-b10d-956c61956ae7",
+          "title": "ICT security administrator"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ac37627c-a999-4779-997e-9795cc4f9a3d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/ac37627c-a999-4779-997e-9795cc4f9a3d",
+          "title": "power distribution engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/615920c5-4f63-4eb3-8b60-afaaed3ab1ff&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/615920c5-4f63-4eb3-8b60-afaaed3ab1ff",
+          "title": "maintenance and repair engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8",
+          "title": "offshore renewable energy technician"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "execute software tests",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+              "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4",
+            "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db",
+            "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7",
+            "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+          ]
+        },
+        {
+          "title": "manage system testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db&language=en",
+              "uri": "http://data.europa.eu/esco/skill/ce354460-500e-4eaa-8e95-8f243fcea3db"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+          ]
+        },
+        {
+          "title": "installing wooden and metal components",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba"
+          ]
+        },
+        {
+          "title": "building and repairing structures",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba&language=en",
+              "uri": "http://data.europa.eu/esco/skill/18da3b88-1cd5-4ef3-83d6-664e52afdaba"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63"
+          ]
+        },
+        {
+          "title": "constructing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63&language=en",
+              "uri": "http://data.europa.eu/esco/skill/2ae39fc8-0f1b-4284-9e73-3f2739471f63"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "perform test run",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/465ff64a-1271-4064-8ed1-e969cb68d8b4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6d0cad66-82dd-4854-a03a-68232942c68d"
+          ]
+        },
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "planning production processes",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+          ]
+        },
+        {
+          "title": "organising, planning and scheduling work and activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+          ]
+        },
+        {
+          "title": "management skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2&language=en",
+              "uri": "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7&language=en",
+              "uri": "http://data.europa.eu/esco/skill/a8c3186b-c791-4d57-8f4f-4d12c7a5c6a7"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+          ]
+        },
+        {
+          "title": "programming computer systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609&language=en",
+              "uri": "http://data.europa.eu/esco/skill/d6e4373a-ef2c-4b64-9dc6-4140846f6609"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        }
+      ]
+    }
+  }
+}
