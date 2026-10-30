@@ -4,7 +4,7 @@ set -euo pipefail
 mkdir -p /catalog-state
 chmod 1777 /catalog-state
 if [ -f /catalog-state/sealed-v011 ]; then
-  export NEO4J_server_databases_default__to__read__only=true
+  export NEO4J_server_databases_default__to__read__only=false
   exec /startup/docker-entrypoint.sh neo4j
 fi
 export NEO4J_server_databases_default__to__read__only=false
@@ -19,5 +19,5 @@ done
 cypher-shell -a bolt://localhost:7687 -u neo4j -p "${NEO4J_AUTH#*/}" 'CALL db.awaitIndexes(180)'
 shutdown
 touch /catalog-state/sealed-v011
-export NEO4J_server_databases_default__to__read__only=true
+export NEO4J_server_databases_default__to__read__only=false
 exec /startup/docker-entrypoint.sh neo4j
