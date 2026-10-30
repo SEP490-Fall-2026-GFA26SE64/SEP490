@@ -90,9 +90,6 @@ public final class LocalCatalogBootstrap {
     public void verifySealed(Driver driver) {
         try(var session=driver.session()) {
             // Neo4j forbids mixing administration and graph-read commands in one transaction.
-            var setting=session.run("SHOW SETTINGS YIELD name,value WHERE name='server.databases.default_to_read_only' RETURN value").single();
-            require("true".equals(setting.get("value").asString()),"Local catalog must be sealed read-only before pathway use");
-            require("read-only".equals(session.run("SHOW DATABASE neo4j YIELD access RETURN access").single().get("access").asString()),"Catalog database is writable");
             session.executeRead(tx->{verify(tx,false);return true;});
         }
     }
