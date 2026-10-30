@@ -9761,6 +9761,14 @@ export function TargetRolesPage() {
 
 
 
+              const hasExplicitLevelComps = Boolean(
+                viewingDetailsRole.levelCompetencies &&
+                Object.keys(viewingDetailsRole.levelCompetencies).length > 0 &&
+                Object.values(viewingDetailsRole.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+              )
+
+
+
 
 
 
@@ -10045,7 +10053,7 @@ export function TargetRolesPage() {
 
 
 
-                      const lvlComps = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                      const lvlComps = (viewingDetailsRole.levelCompetencies?.[lvl] || (!hasExplicitLevelComps && lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
 
 
 
@@ -10157,7 +10165,7 @@ export function TargetRolesPage() {
 
 
 
-                        const lvlComps = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                        const lvlComps = (viewingDetailsRole.levelCompetencies?.[lvl] || (!hasExplicitLevelComps && lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
 
 
 
@@ -10505,7 +10513,7 @@ export function TargetRolesPage() {
 
 
 
-                          const lvlComps = (viewingDetailsRole.levelCompetencies?.[selectedDetailLevelTab] || (selectedDetailLevelTab === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                          const lvlComps = (viewingDetailsRole.levelCompetencies?.[selectedDetailLevelTab] || (!hasExplicitLevelComps && selectedDetailLevelTab === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
 
 
 

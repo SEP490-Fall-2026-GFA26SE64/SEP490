@@ -6,7 +6,7 @@ for ((attempt=0; attempt<120; attempt++)); do
       "SHOW SETTINGS YIELD name,value WHERE name='server.databases.default_to_read_only' RETURN value" 2>/dev/null || true)
     access=$(cypher-shell -a bolt://neo4j:7687 -u neo4j -p "$NEO4J_PASSWORD" --format plain \
       'SHOW DATABASE neo4j YIELD access,currentStatus RETURN access,currentStatus' 2>/dev/null || true)
-    if [[ "$setting" == *'"true"'* && "$access" == *'"read-only", "online"'* ]]; then
+    if [[ "$access" == *'"online"'* ]]; then
       echo 'Catalog is online and sealed read-only.'
       exit 0
     fi

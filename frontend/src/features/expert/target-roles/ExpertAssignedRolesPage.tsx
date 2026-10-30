@@ -3468,7 +3468,13 @@ export function ExpertAssignedRolesPage() {
 
                     const isSelected = selectedAuthoringLevels.includes(lvl)
 
-                    const lvlComps = (authoringRole.levelCompetencies?.[lvl] || (lvl === currentRoleLevels[0] ? authoringRole.competencyIds : [])) || []
+                    const hasExplicitAuthoringComps = Boolean(
+                      authoringRole.levelCompetencies &&
+                      Object.keys(authoringRole.levelCompetencies).length > 0 &&
+                      Object.values(authoringRole.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+                    )
+
+                    const lvlComps = (authoringRole.levelCompetencies?.[lvl] || (!hasExplicitAuthoringComps && lvl === currentRoleLevels[0] ? authoringRole.competencyIds : [])) || []
 
                     const lvlSkills = authoringRole.skillTargets.filter((st) => (st.level || currentRoleLevels[0]) === lvl)
 
@@ -4917,6 +4923,12 @@ export function ExpertAssignedRolesPage() {
 
                       : ['Junior', 'Middle', 'Senior']
 
+                    const hasExplicitLevelComps = Boolean(
+                      viewingDetailsRole.levelCompetencies &&
+                      Object.keys(viewingDetailsRole.levelCompetencies).length > 0 &&
+                      Object.values(viewingDetailsRole.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+                    )
+
 
 
                     return (
@@ -4957,7 +4969,7 @@ export function ExpertAssignedRolesPage() {
 
                             {detailRoleLevels.map((lvl) => {
 
-                              const compCount = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : []))?.length || 0
+                              const compCount = (viewingDetailsRole.levelCompetencies?.[lvl] || (!hasExplicitLevelComps && lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : []))?.length || 0
 
                               const skillCount = viewingDetailsRole.skillTargets.filter((st) => (st.level || detailRoleLevels[0]) === lvl).length
 
@@ -5011,7 +5023,7 @@ export function ExpertAssignedRolesPage() {
 
                             {detailRoleLevels.map((lvl) => {
 
-                              const compIds = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                              const compIds = (viewingDetailsRole.levelCompetencies?.[lvl] || (!hasExplicitLevelComps && lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
 
                               const lvlSkills = viewingDetailsRole.skillTargets.filter((st) => (st.level || detailRoleLevels[0]) === lvl)
 
@@ -5169,7 +5181,7 @@ export function ExpertAssignedRolesPage() {
 
                             const lvl = selectedDetailLevelTab
 
-                            const compIds = (viewingDetailsRole.levelCompetencies?.[lvl] || (lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
+                            const compIds = (viewingDetailsRole.levelCompetencies?.[lvl] || (!hasExplicitLevelComps && lvl === detailRoleLevels[0] ? viewingDetailsRole.competencyIds : [])) || []
 
                             const lvlSkills = viewingDetailsRole.skillTargets.filter((st) => (st.level || detailRoleLevels[0]) === lvl)
 
