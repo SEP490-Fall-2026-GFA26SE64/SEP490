@@ -2,9 +2,14 @@ export interface SkillTargetConfig {
   skillId: string
   skillCode: string
   skillName: string
-  threshold: number // e.g. 80 (%)
-  weight: number // positive weight e.g. 1.0, 1.5, 2.0
-  mandatory: boolean
+  threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
+  level?: string
+}
+
+export interface RoleLevelThresholds {
+  J: number
+  M: number
+  S: number
 }
 
 export interface TargetRoleModel {
@@ -12,54 +17,502 @@ export interface TargetRoleModel {
   stableId: string
   code: string
   title: string
-  department: string
+  department?: string
+  domainCode?: string // 'ICT' | 'DATA' | 'AI'
+  familyCode?: string // Local profile e.g. 'DEV' | 'DATAENG' | 'QAENG'
+  track?: 'PROFESSIONAL' | 'MANAGEMENT'
+  seniority?: string
+  assignedExpertId?: string
+  assignedExpertName?: string
   description: string
+  responsibilities?: string[]
   version: string
-  status: 'draft' | 'published' | 'archived'
+  status: 'draft' | 'submitted' | 'sent' | 'rejected' | 'published'
+  rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
+  levelCompetencies?: Record<string, string[]>
   activeEnrollments: number
+  occupationCode?: string
+  occupationTitle?: string
+  scope?: string
+  levels?: string[]
+  levelThresholds?: RoleLevelThresholds
+  createdAt?: string
   updatedAt: string
-  provenanceRef: string
+}
+
+export interface OnetOccupation {
+  code: string // e.g. '15-1252.00'
+  name: string // e.g. 'Software Developers'
+  description: string
+  jobZone: number // e.g. 4
+  profiles: string[] // e.g. ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH']
+  assignedExpertIds: string[]
+}
+
+export const EXPERT_SARAH_CHEN_ID = 'a0000000-0000-0000-0000-000000000002'
+export const EXPERT_MARCUS_VANCE_ID = 'a0000000-0000-0000-0000-000000000005'
+export const EXPERT_ALEX_RIVERA_ID = 'a0000000-0000-0000-0000-000000000006'
+export const EXPERT_LINH_NGUYEN_ID = 'a0000000-0000-0000-0000-000000000007'
+
+export const ONET_OCCUPATIONS: OnetOccupation[] = [
+  {
+    code: '15-1252.00',
+    name: 'Software Developers',
+    description: 'Design, code, and test applications, systems software, and infrastructure pipelines.',
+    jobZone: 4,
+    profiles: ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID],
+  },
+  {
+    code: '15-1243.00',
+    name: 'Database Architects & Engineers',
+    description: 'Design database systems, analytical warehouses, governance policies, and data pipelines.',
+    jobZone: 4,
+    profiles: ['DATARCH', 'DATAENG', 'DATAGOV', 'DBANALYSIS', 'DBDEV', 'ENTERPRISE'],
+    assignedExpertIds: [EXPERT_MARCUS_VANCE_ID],
+  },
+  {
+    code: '15-1253.00',
+    name: 'Software Quality Assurance & Testing',
+    description: 'Design test automation suites, quality gates, and system verification protocols.',
+    jobZone: 4,
+    profiles: ['QAAUTO', 'QAA', 'QAENG'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID, EXPERT_ALEX_RIVERA_ID],
+  },
+  {
+    code: '15-1299.08',
+    name: 'Computer Systems Engineers & Architects',
+    description: 'Architect complex systems, cloud infrastructure networks, and enterprise solutions.',
+    jobZone: 4,
+    profiles: ['SYSARCH', 'INFRA', 'INTEGRATION', 'SYSANALYSIS', 'WEBARCH'],
+    assignedExpertIds: [EXPERT_ALEX_RIVERA_ID],
+  },
+  {
+    code: '15-1212.00',
+    name: 'Information Security & Cybersecurity',
+    description: 'Engineer security perimeters, vulnerability analysis, access policies, and incident response.',
+    jobZone: 4,
+    profiles: ['SECOFFICER', 'SECANALYSIS', 'NETSEC'],
+    assignedExpertIds: [EXPERT_SARAH_CHEN_ID],
+  },
+]
+
+export interface OntologyLevel {
+  code: 'J' | 'M' | 'S'
+  name: 'Junior' | 'Middle' | 'Senior'
+  rank: 1 | 2 | 3
+  threshold: number // 0.60, 0.75, 0.90
+  context: string
+}
+
+export const ONTOLOGY_LEVELS: OntologyLevel[] = [
+  { code: 'J', name: 'Junior', rank: 1, threshold: 0.60, context: 'Guided bounded execution under task support' },
+  { code: 'M', name: 'Middle', rank: 2, threshold: 0.75, context: 'Independent defined-scope delivery and standard troubleshooting' },
+  { code: 'S', name: 'Senior', rank: 3, threshold: 0.90, context: 'Complex solution architecture, system review, and governance' },
+]
+
+export function resolveOccupationForRole(
+  role: {
+    code?: string
+    title?: string
+    domainCode?: string
+    familyCode?: string
+    occupationCode?: string
+  },
+  organizationId?: string
+): OnetOccupation {
+  const occupations = getAvailableOccupations(organizationId)
+  if (role.occupationCode) {
+    const found = occupations.find((o) => o.code === role.occupationCode)
+    if (found) return found
+  }
+
+  const code = (role.code || '').toUpperCase()
+  const title = (role.title || '').toLowerCase()
+  const domain = (role.domainCode || '').toUpperCase()
+  const family = (role.familyCode || '').toUpperCase()
+
+  // Match by keyword in title, code, or family
+  if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
+    return occupations.find((o) => o.code === '15-1212.00') || ONET_OCCUPATIONS[4]
+  }
+  if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
+    return occupations.find((o) => o.code === '15-1253.00') || ONET_OCCUPATIONS[2]
+  }
+  if (title.includes('data') || title.includes('database') || title.includes('analytics') || domain === 'DATA' || code.includes('DATA') || family.includes('DATA')) {
+    return occupations.find((o) => o.code === '15-1243.00') || ONET_OCCUPATIONS[1]
+  }
+  if (title.includes('system') || title.includes('network') || title.includes('cloud') || title.includes('infrastructure') || (title.includes('architect') && !title.includes('software')) || code.includes('SYS') || code.includes('INFRA')) {
+    return occupations.find((o) => o.code === '15-1299.08') || ONET_OCCUPATIONS[3]
+  }
+
+  return occupations.find((o) => o.code === '15-1252.00') || ONET_OCCUPATIONS[0]
+}
+
+/**
+ * Compares semantic or numeric versions, e.g. "1.0" < "1.1" < "1.2" < "2.0".
+ */
+export function compareRoleVersions(vA?: string, vB?: string): number {
+  const partsA = (vA || '0').split('.').map((p) => parseInt(p, 10) || 0)
+  const partsB = (vB || '0').split('.').map((p) => parseInt(p, 10) || 0)
+  const maxLen = Math.max(partsA.length, partsB.length)
+  for (let i = 0; i < maxLen; i++) {
+    const a = partsA[i] || 0
+    const b = partsB[i] || 0
+    if (a !== b) {
+      return a - b
+    }
+  }
+  return 0
+}
+
+/**
+ * Formats an ISO datetime or date string into DD/MM/YYYY format.
+ * e.g. "2026-10-01T06:20:59.069533368Z" -> "01/10/2026"
+ */
+export function formatDate(dateStr?: string): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0')
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const year = d.getFullYear()
+      return `${day}/${month}/${year}`
+    }
+  } catch {}
+
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`
+  }
+  return dateStr
+}
+
+/**
+ * Ensures that within each role lineage (grouped by stableId/code):
+ * 1. The newest published version always appears first as the primary row (e.g. v2.0).
+ * 2. Older published versions appear immediately below the newest version, ordered by version ascending (e.g. v1.0, v1.1, v1.2).
+ * 3. Any draft / sent / rejected successor versions appear directly below the published group.
+ * 4. Lineage groups are sorted by newest creation/update date descending by default so new/updated roles appear at the top.
+ */
+export function sortTargetRolesWithDraftsBelowPublished(
+  roles: TargetRoleModel[],
+  sortBy: 'latest' | 'code' | 'title' = 'latest'
+): TargetRoleModel[] {
+  const groups = new Map<string, TargetRoleModel[]>()
+  for (const r of roles) {
+    const key = r.stableId || r.code
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key)!.push(r)
+  }
+
+  // A lineage is a brand-new role if it has NEVER been published (pure draft/sent/rejected).
+  // A lineage that has a published version is an existing role, even if a successor draft was spawned.
+  const isPureDraftLineage = (groupRoles: TargetRoleModel[]): boolean => {
+    return groupRoles.every((r) => r.status !== 'published')
+  }
+
+  // Base creation time for the lineage:
+  // For existing published roles, anchor to the published base version's creation time so spawning a successor draft does not alter the lineage order.
+  // For brand-new draft roles, use the creation time of that new role.
+  const getLineageBaseTime = (groupRoles: TargetRoleModel[]): number => {
+    let latest = 0
+    for (const r of groupRoles) {
+      const createdTime = r.createdAt ? new Date(r.createdAt).getTime() : 0
+      const updatedTime = r.updatedAt ? new Date(r.updatedAt).getTime() : 0
+      const best = Math.max(
+        isNaN(createdTime) ? 0 : createdTime,
+        isNaN(updatedTime) ? 0 : updatedTime
+      )
+      if (best > latest) {
+        latest = best
+      }
+    }
+    return latest
+  }
+
+  const result: TargetRoleModel[] = []
+
+  // Sort groups by selected criteria
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    const rolesA = groups.get(a)!
+    const rolesB = groups.get(b)!
+    const roleA = rolesA[0]
+    const roleB = rolesB[0]
+
+    if (sortBy === 'latest') {
+      const timeA = getLineageBaseTime(rolesA)
+      const timeB = getLineageBaseTime(rolesB)
+      if (timeB !== timeA) {
+        return timeB - timeA
+      }
+
+      const isPureDraftA = isPureDraftLineage(rolesA)
+      const isPureDraftB = isPureDraftLineage(rolesB)
+      if (isPureDraftA && !isPureDraftB) return -1
+      if (isPureDraftB && !isPureDraftA) return 1
+
+      // Priority: Newly dispatched / submitted roles
+      const hasSentA = rolesA.some((r) => r.status === 'submitted' || r.status === 'sent')
+      const hasSentB = rolesB.some((r) => r.status === 'submitted' || r.status === 'sent')
+      if (hasSentA && !hasSentB) return -1
+      if (hasSentB && !hasSentA) return 1
+
+      // Fallback: reverse ID so newer entries go to top
+      return (roleB?.id || '').localeCompare(roleA?.id || '')
+    }
+
+    if (sortBy === 'title') {
+      return (roleA?.title || '').localeCompare(roleB?.title || '')
+    }
+
+    return (roleA?.code || '').localeCompare(roleB?.code || '')
+  })
+
+  for (const key of sortedKeys) {
+    const groupRoles = groups.get(key)!
+    const published = groupRoles
+      .filter((r) => r.status === 'published')
+      .sort((a, b) => compareRoleVersions(b.version, a.version))
+
+    const newestPublished = published[0]
+    const olderPublished = published.slice(1)
+
+    // Draft / sent / rejected versions placed immediately below published
+    const nonPublished = groupRoles
+      .filter((r) => r.status !== 'published')
+      .sort((a, b) => compareRoleVersions(a.version, b.version))
+
+    if (newestPublished) {
+      result.push(newestPublished, ...olderPublished, ...nonPublished)
+    } else {
+      result.push(...nonPublished)
+    }
+  }
+
+  return result
+}
+
+export const JOB_DOMAINS = [
+  { code: 'ICT', name: 'Information & Communication Technology' },
+  { code: 'DATA', name: 'Data Engineering & Analytics' },
+  { code: 'AI', name: 'Artificial Intelligence & Cognitive Computing' },
+] as const
+
+export const CAREER_FAMILIES = [
+  { code: 'JAVA_BACKEND', name: 'Java Backend Engineering', domain: 'ICT' },
+  { code: 'PYTHON_DATA', name: 'Python & Data Engineering', domain: 'DATA' },
+  { code: 'AI_ML', name: 'Machine Learning & LLM Systems', domain: 'AI' },
+  { code: 'CLOUD_DEVOPS', name: 'Cloud & Infrastructure DevOps', domain: 'ICT' },
+  { code: 'FRONTEND_WEB', name: 'Modern Web & UI Architecture', domain: 'ICT' },
+  { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust', domain: 'ICT' },
+] as const
+
+export const ELIGIBLE_EXPERTS = [
+  { id: EXPERT_SARAH_CHEN_ID, name: 'Dr. Sarah Chen', title: 'Senior AI & Knowledge Architect', email: 'expert@technova.com' },
+  { id: EXPERT_MARCUS_VANCE_ID, name: 'Marcus Vance', title: 'Principal Graph Database Architect', email: 'marcus.vance@technova.com' },
+  { id: EXPERT_ALEX_RIVERA_ID, name: 'Alex Rivera', title: 'Staff Cloud Infrastructure Engineer', email: 'alex.rivera@technova.com' },
+  { id: EXPERT_LINH_NGUYEN_ID, name: 'Linh Nguyen', title: 'Lead Data Systems Specialist', email: 'linh.nguyen@technova.com' },
+] as const;
+
+export type EligibleExpert = {
+  id: string;
+  name: string;
+  title: string;
+  email?: string;
+};
+
+export function normalizeExpertId(id?: string | null): string {
+  if (!id) return '';
+  if (id === 'expert-chen' || id === EXPERT_SARAH_CHEN_ID || id === 'USR-102') return EXPERT_SARAH_CHEN_ID;
+  if (id === 'expert-vance' || id === EXPERT_MARCUS_VANCE_ID || id === 'USR-104') return EXPERT_MARCUS_VANCE_ID;
+  if (id === 'expert-rivera' || id === EXPERT_ALEX_RIVERA_ID) return EXPERT_ALEX_RIVERA_ID;
+  if (id === 'expert-nguyen' || id === EXPERT_LINH_NGUYEN_ID) return EXPERT_LINH_NGUYEN_ID;
+  return id;
+}
+
+export function getOrganizationExperts(organizationId?: string): EligibleExpert[] {
+  const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
+    ? organizationId
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
+
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+
+  const expertsMap = new Map<string, EligibleExpert>();
+
+  // 1. If TechNova, seed standard eligible experts so all 4 are ALWAYS available
+  if (isTechnova) {
+    for (const exp of ELIGIBLE_EXPERTS) {
+      expertsMap.set(exp.id, { ...exp });
+    }
+  }
+
+  // 2. Try to load dynamically cached experts for this organization from the subscription/members API
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('adaptlearn_org_experts_' + effectiveOrg);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          for (const p of parsed) {
+            if (p && p.id) {
+              const canonicalId = normalizeExpertId(p.id);
+              const matchedSeed = ELIGIBLE_EXPERTS.find((se) => se.id === canonicalId || se.name.toLowerCase() === p.name?.toLowerCase());
+              expertsMap.set(canonicalId, {
+                id: canonicalId,
+                name: p.name || matchedSeed?.name || 'Domain Expert',
+                title: p.title || matchedSeed?.title || 'Domain Expert',
+                email: p.email || matchedSeed?.email,
+              });
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // 3. Try to load from companyStore companies in localStorage
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const rawCompanies = localStorage.getItem('adaptlearn_companies_v4');
+      if (rawCompanies) {
+        const companies = JSON.parse(rawCompanies);
+        if (Array.isArray(companies)) {
+          const matched = companies.find((c: any) => c.id === effectiveOrg || (isTechnova && c.id === 'comp-technova'));
+          if (matched && Array.isArray(matched.users)) {
+            const expertUsers = matched.users.filter((u: any) => u.role === 'Expert' || u.role === 'DOMAIN_EXPERT');
+            for (const u of expertUsers) {
+              if (u && u.id) {
+                const canonicalId = normalizeExpertId(u.id);
+                const matchedSeed = ELIGIBLE_EXPERTS.find((se) => se.id === canonicalId || se.name.toLowerCase() === u.name?.toLowerCase());
+                expertsMap.set(canonicalId, {
+                  id: canonicalId,
+                  name: u.name || matchedSeed?.name || 'Domain Expert',
+                  title: u.department || matchedSeed?.title || 'Domain Expert',
+                  email: u.email || matchedSeed?.email,
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return Array.from(expertsMap.values());
+}
+
+export function findEligibleExpert(id?: string | null, organizationId?: string): EligibleExpert | undefined {
+  if (!id) return undefined;
+  const normalized = normalizeExpertId(id);
+  const orgExperts = getOrganizationExperts(organizationId);
+  const found = orgExperts.find((e) => normalizeExpertId(e.id) === normalized);
+  if (found) return found;
+  return ELIGIBLE_EXPERTS.find((e) => normalizeExpertId(e.id) === normalized);
+}
+
+export function getAvailableOccupations(organizationId?: string): OnetOccupation[] {
+  const codeMap = new Map<string, OnetOccupation>();
+  for (const o of ONET_OCCUPATIONS) {
+    codeMap.set(o.code, { ...o });
+  }
+
+  const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
+    ? organizationId
+    : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
+
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('adaptlearn_occupations_v2_' + effectiveOrg) ||
+        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_e0000000-0000-0000-0000-000000000001') : null) ||
+        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_comp-technova') : null);
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (Array.isArray(stored)) {
+          for (const item of stored) {
+            if (item.code) {
+              const existing = codeMap.get(item.code);
+              codeMap.set(item.code, {
+                code: item.code,
+                name: item.name || existing?.name || item.code,
+                description: item.description || existing?.description || '',
+                jobZone: item.jobZone || existing?.jobZone || 4,
+                profiles: existing?.profiles || ['DEV'],
+                assignedExpertIds: Array.isArray(item.assignedExperts)
+                  ? item.assignedExperts.map((ae: any) => normalizeExpertId(ae.id || ae))
+                  : existing?.assignedExpertIds || [],
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch {}
+
+  return Array.from(codeMap.values());
+}
+
+/**
+ * Returns domain experts who are specifically assigned and certified for a given O*NET occupation,
+ * or all experts available to this organization if none are specifically restricted.
+ */
+export function getEligibleExpertsForOccupation(occupationCode?: string, organizationId?: string): EligibleExpert[] {
+  const orgExperts = getOrganizationExperts(organizationId);
+  if (!occupationCode) return orgExperts;
+
+  const occupations = getAvailableOccupations(organizationId);
+  const occ = occupations.find((o) => o.code === occupationCode);
+  if (!occ || !occ.assignedExpertIds || occ.assignedExpertIds.length === 0) {
+    return orgExperts;
+  }
+
+  const assignedNormalized = occ.assignedExpertIds.map(normalizeExpertId);
+  const filtered = orgExperts.filter((exp) => assignedNormalized.includes(normalizeExpertId(exp.id)));
+  return filtered.length > 0 ? filtered : orgExperts;
 }
 
 export interface CompetencyModel {
   id: string
-  stableId: string
   code: string
   name: string
-  definition: string
-  version: string
-  status: 'draft' | 'published' | 'archived'
-  derivationRef: string
+  description?: string
+  status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
   skillIds: string[] // HAS_SKILL links
-  updatedAt: string
+  levelCodes?: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface MicroSkillModel {
   id: string
-  stableId: string
   code: string
   name: string
-  observableOutcome: string
-  bloomLevel: 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create'
-  version: string
-  status: 'draft' | 'published' | 'archived'
-  provenance: {
-    source: string
-    ruleRef: string
-    type: 'source-backed' | 'derived' | 'synthetic'
-    recordedDate: string
-  }
+  description?: string
+  status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
+  macroCompetencyCode?: 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION' | string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface PrerequisiteEdge {
   id: string
   sourceSkillId: string // Prerequisite skill
+  sourceSkillCode?: string
+  sourceSkillName?: string
   targetSkillId: string // Dependent skill
-  requiredThreshold: number // percentage e.g. 75
-  type: 'hard_prerequisite' | 'recommended'
-  ruleRef: string
+  targetSkillCode?: string
+  targetSkillName?: string
+  minMastery: number // Float [0, 1] e.g. 0.75
+  status?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ProvenanceRecord {
@@ -87,6 +540,13 @@ export interface LearningModuleModel {
   activePlanEnrollments: number
   replacementModuleId?: string
   updatedAt: string
+  moduleType?: 'LESSON_AND_PRACTICE' | 'RESOURCE_GUIDED_PRACTICE'
+  contentType?: string
+  contentVersion?: string
+  reviewStatus?: 'NEEDS_EXPERT_REVIEW' | 'APPROVED' | 'REJECTED'
+  reviewedBy?: string | null
+  reviewedAt?: string | null
+  learningContentId?: string
 }
 
 export interface QuizQuestionModel {
@@ -102,6 +562,7 @@ export interface QuizQuestionModel {
   status: 'draft' | 'published' | 'archived'
   difficulty: 'Foundation' | 'Intermediate' | 'Advanced'
   provenance: string
+  updatedAt?: string
 }
 
 export interface BlueprintSkillRequirement {
@@ -128,6 +589,7 @@ export interface AssessmentBlueprintModel {
 
 export interface LearningOutcomeCohort {
   id: string
+  cohortSnapshotId?: string
   cohortName: string
   department: string
   targetRole: string
@@ -136,7 +598,7 @@ export interface LearningOutcomeCohort {
   completionRate: number
   gapClosureRate: number
   velocityTrend: string
-  status: 'Exceeding' | 'On Track' | 'Attention'
+  status: 'Exceeding' | 'On Track' | 'Behind Pace' | 'Attention'
 }
 
 export interface SkillAcquisitionMetric {
@@ -144,317 +606,18 @@ export interface SkillAcquisitionMetric {
   skillName: string
   masteryRate: number
   avgAttemptsToPass: number
-  difficultyTag: 'High Velocity' | 'Standard' | 'Bottleneck'
+  difficultyTag: 'Exceeding' | 'On Track' | 'Behind Pace'
 }
 
 // ----------------------------------------------------
-// INITIAL MOCK DATA
+// INITIAL PREREQUISITES & PROTOTYPE MOCK DATA
 // ----------------------------------------------------
 
-export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = [
-  {
-    id: 'skill-cypher',
-    stableId: 'ms-001',
-    code: 'SKILL-CYPHER-01',
-    name: 'Neo4j Cypher DDL & Pattern Matching',
-    observableOutcome: 'Formulate declarative Cypher queries including MATCH, MERGE, and index constraints against multi-relational graphs.',
-    bloomLevel: 'Apply',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Neo4j Certified Professional Framework v5.12',
-      ruleRef: 'GRAPH-DDL-2025.1',
-      type: 'source-backed',
-      recordedDate: '2025-11-15',
-    },
-  },
-  {
-    id: 'skill-gnn',
-    stableId: 'ms-002',
-    code: 'SKILL-GNN-02',
-    name: 'Graph Neural Networks & Message Passing',
-    observableOutcome: 'Construct spatial graph convolutional layers with neighborhood aggregation using PyTorch Geometric.',
-    bloomLevel: 'Create',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Stanford CS224W Machine Learning with Graphs (2024)',
-      ruleRef: 'GNN-ARCH-03',
-      type: 'source-backed',
-      recordedDate: '2025-10-20',
-    },
-  },
-  {
-    id: 'skill-embeddings',
-    stableId: 'ms-003',
-    code: 'SKILL-EMB-03',
-    name: 'Random Walk & Node2Vec Embeddings',
-    observableOutcome: 'Generate low-dimensional continuous vector representations for nodes using biased second-order random walks.',
-    bloomLevel: 'Analyze',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'KDD Grover & Leskovec Node2Vec Specification',
-      ruleRef: 'EMB-PROV-99',
-      type: 'derived',
-      recordedDate: '2025-09-12',
-    },
-  },
-  {
-    id: 'skill-owl-rdf',
-    stableId: 'ms-004',
-    code: 'SKILL-RDF-04',
-    name: 'RDF Schema & OWL 2 DL Ontologies',
-    observableOutcome: 'Define formal description logic axioms, subsumption hierarchies, and inverse functional object properties.',
-    bloomLevel: 'Evaluate',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'W3C OWL 2 Web Ontology Language Recommendation',
-      ruleRef: 'W3C-REC-OWL2-2012',
-      type: 'source-backed',
-      recordedDate: '2025-08-01',
-    },
-  },
-  {
-    id: 'skill-dkt',
-    stableId: 'ms-005',
-    code: 'SKILL-DKT-05',
-    name: 'Dynamic Deep Knowledge Tracing',
-    observableOutcome: 'Implement LSTM/Transformer architectures to track longitudinal learner skill mastery over chronological exercise logs.',
-    bloomLevel: 'Create',
-    version: '1.1',
-    status: 'draft',
-    provenance: {
-      source: 'NeurIPS Deep Knowledge Tracing Adaptation Matrix',
-      ruleRef: 'AIED-DKT-2024',
-      type: 'synthetic',
-      recordedDate: '2026-01-10',
-    },
-  },
-  {
-    id: 'skill-vector-db',
-    stableId: 'ms-006',
-    code: 'SKILL-VEC-06',
-    name: 'HNSW Indexing & Vector Search Optimization',
-    observableOutcome: 'Configure hierarchical navigable small world graphs for sub-millisecond approximate nearest neighbor retrieval.',
-    bloomLevel: 'Apply',
-    version: '1.0',
-    status: 'published',
-    provenance: {
-      source: 'Malkov & Yashunin HNSW Technical Whitepaper',
-      ruleRef: 'VEC-INDEX-01',
-      type: 'source-backed',
-      recordedDate: '2025-12-04',
-    },
-  },
-]
-
-export const INITIAL_COMPETENCIES: CompetencyModel[] = [
-  {
-    id: 'comp-semantic-arch',
-    stableId: 'comp-uuid-01',
-    code: 'COMP-SEM-01',
-    name: 'Graph Semantic Architecture & Modeling',
-    definition: 'Engineering formal semantic data schemas, ontologies, and property graph representations for corporate enterprise data.',
-    version: '1.0',
-    status: 'published',
-    derivationRef: 'ACM Computing Curricula 2023 / Knowledge Representation & Reasoning',
-    skillIds: ['skill-cypher', 'skill-owl-rdf'],
-    updatedAt: '2026-02-14',
-  },
-  {
-    id: 'comp-graph-ml',
-    stableId: 'comp-uuid-02',
-    code: 'COMP-GML-02',
-    name: 'Graph Machine Learning & Embeddings',
-    definition: 'Applying geometric deep learning, representation learning, and neural message passing over connected topology networks.',
-    version: '1.0',
-    status: 'published',
-    derivationRef: 'IEEE Computational Intelligence Society AI Taxonomy 2025',
-    skillIds: ['skill-gnn', 'skill-embeddings'],
-    updatedAt: '2026-02-18',
-  },
-  {
-    id: 'comp-adaptive-sys',
-    stableId: 'comp-uuid-03',
-    code: 'COMP-ADP-03',
-    name: 'Adaptive Learning Engines & Cognitive Diagnostics',
-    definition: 'Designing personalized Bayesian and neural knowledge tracing architectures for prescriptive recommendation loops.',
-    version: '1.1',
-    status: 'draft',
-    derivationRef: 'International Artificial Intelligence in Education Society Standard',
-    skillIds: ['skill-dkt', 'skill-vector-db'],
-    updatedAt: '2026-03-01',
-  },
-]
-
-export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = [
-  {
-    id: 'pre-1',
-    sourceSkillId: 'skill-cypher',
-    targetSkillId: 'skill-embeddings',
-    requiredThreshold: 75,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-01',
-  },
-  {
-    id: 'pre-2',
-    sourceSkillId: 'skill-embeddings',
-    targetSkillId: 'skill-gnn',
-    requiredThreshold: 80,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-02',
-  },
-  {
-    id: 'pre-3',
-    sourceSkillId: 'skill-owl-rdf',
-    targetSkillId: 'skill-cypher',
-    requiredThreshold: 70,
-    type: 'recommended',
-    ruleRef: 'PREREQ-RULE-03',
-  },
-  {
-    id: 'pre-4',
-    sourceSkillId: 'skill-gnn',
-    targetSkillId: 'skill-dkt',
-    requiredThreshold: 85,
-    type: 'hard_prerequisite',
-    ruleRef: 'PREREQ-RULE-04',
-  },
-]
-
-export const INITIAL_TARGET_ROLES: TargetRoleModel[] = [
-  {
-    id: 'role-ai-arch-v1',
-    stableId: 'role-uuid-001',
-    code: 'ROLE-AI-ARCH',
-    title: 'AI Knowledge Architect',
-    department: 'Machine Learning & Cognitive Architecture',
-    description: 'Enterprise architect responsible for multi-modal knowledge modeling, graph ML pipelines, and ontological integration.',
-    version: '1.0',
-    status: 'published',
-    competencyIds: ['comp-semantic-arch', 'comp-graph-ml'],
-    skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85, weight: 1.5, mandatory: true },
-      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 75, weight: 1.0, mandatory: true },
-      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 80, weight: 2.0, mandatory: true },
-      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 70, weight: 1.0, mandatory: false },
-    ],
-    activeEnrollments: 24,
-    updatedAt: '2026-02-10',
-    provenanceRef: 'Corporate Job Architecture Level 6 / Tech Spec 2026',
-  },
-  {
-    id: 'role-ai-arch-v1.1-draft',
-    stableId: 'role-uuid-001',
-    code: 'ROLE-AI-ARCH',
-    title: 'AI Knowledge Architect',
-    department: 'Machine Learning & Cognitive Architecture',
-    description: 'Updated draft incorporating Vector Search Optimization and Deep Knowledge Tracing into core requirements.',
-    version: '1.1',
-    status: 'draft',
-    competencyIds: ['comp-semantic-arch', 'comp-graph-ml', 'comp-adaptive-sys'],
-    skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 85, weight: 1.5, mandatory: true },
-      { skillId: 'skill-owl-rdf', skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL Ontologies', threshold: 80, weight: 1.2, mandatory: true },
-      { skillId: 'skill-gnn', skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', threshold: 85, weight: 2.0, mandatory: true },
-      { skillId: 'skill-embeddings', skillCode: 'SKILL-EMB-03', skillName: 'Random Walk & Node2Vec Embeddings', threshold: 75, weight: 1.0, mandatory: false },
-      { skillId: 'skill-dkt', skillCode: 'SKILL-DKT-05', skillName: 'Dynamic Deep Knowledge Tracing', threshold: 75, weight: 1.8, mandatory: true },
-      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 80, weight: 1.5, mandatory: false },
-    ],
-    activeEnrollments: 0,
-    updatedAt: '2026-03-02',
-    provenanceRef: 'Corporate Job Architecture Level 6 (Draft Revision Q1)',
-  },
-  {
-    id: 'role-mlops-v2',
-    stableId: 'role-uuid-002',
-    code: 'ROLE-MLOPS-02',
-    title: 'Senior MLOps & Graph Systems Engineer',
-    department: 'Platform Engineering',
-    description: 'Infrastructure specialist maintaining distributed vector stores, graph databases, and continuous model inference services.',
-    version: '2.0',
-    status: 'published',
-    competencyIds: ['comp-semantic-arch'],
-    skillTargets: [
-      { skillId: 'skill-cypher', skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL & Pattern Matching', threshold: 90, weight: 2.0, mandatory: true },
-      { skillId: 'skill-vector-db', skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search Optimization', threshold: 85, weight: 1.5, mandatory: true },
-    ],
-    activeEnrollments: 18,
-    updatedAt: '2026-01-22',
-    provenanceRef: 'Infrastructure Engineering Matrix v2.0',
-  },
-]
-
-export const INITIAL_MODULES: LearningModuleModel[] = [
-  {
-    id: 'mod-cypher-mastery',
-    stableId: 'mod-uuid-01',
-    code: 'MOD-CYP-101',
-    title: 'Accelerated Cypher Querying & Pattern Traversal',
-    version: '1.0',
-    status: 'published',
-    durationMinutes: 45,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/cypher-101/index.html',
-    teachesSkillIds: ['skill-cypher'],
-    activePlanEnrollments: 36,
-    updatedAt: '2026-01-18',
-  },
-  {
-    id: 'mod-gnn-fundamentals',
-    stableId: 'mod-uuid-02',
-    code: 'MOD-GNN-201',
-    title: 'Hands-on Geometric Deep Learning & Message Passing',
-    version: '1.0',
-    status: 'published',
-    durationMinutes: 75,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/gnn-201/interactive-lab.ipynb',
-    teachesSkillIds: ['skill-gnn', 'skill-embeddings'],
-    activePlanEnrollments: 28,
-    updatedAt: '2026-02-01',
-  },
-  {
-    id: 'mod-owl-foundations',
-    stableId: 'mod-uuid-03',
-    code: 'MOD-ONT-301',
-    title: 'Enterprise Ontology Modeling with OWL 2 & Protege',
-    version: '1.0',
-    status: 'published',
-    durationMinutes: 60,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/owl-301/protege-guide.pdf',
-    teachesSkillIds: ['skill-owl-rdf'],
-    activePlanEnrollments: 14,
-    updatedAt: '2026-01-30',
-  },
-  {
-    id: 'mod-dkt-advanced',
-    stableId: 'mod-uuid-04',
-    code: 'MOD-DKT-401',
-    title: 'Personalized Cognitive Modeling with Transformer DKT',
-    version: '1.1',
-    status: 'draft',
-    durationMinutes: 90,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/dkt-401/spec.html',
-    teachesSkillIds: ['skill-dkt'],
-    activePlanEnrollments: 0,
-    updatedAt: '2026-02-25',
-  },
-  {
-    id: 'mod-legacy-sql-graph',
-    stableId: 'mod-uuid-05',
-    code: 'MOD-LEG-001',
-    title: 'Legacy Relational-to-Graph Migration Fundamentals',
-    version: '1.0',
-    status: 'archived',
-    durationMinutes: 30,
-    sampleContentUri: 'https://learning.adaptlearn.internal/modules/legacy-001/archive.pdf',
-    teachesSkillIds: ['skill-cypher'],
-    activePlanEnrollments: 4,
-    replacementModuleId: 'mod-cypher-mastery',
-    updatedAt: '2025-10-10',
-  },
-]
+export const INITIAL_PREREQUISITES: PrerequisiteEdge[] = []
+export const INITIAL_COMPETENCIES: CompetencyModel[] = []
+export const INITIAL_MICRO_SKILLS: MicroSkillModel[] = []
+export const INITIAL_TARGET_ROLES: TargetRoleModel[] = []
+export const INITIAL_MODULES: LearningModuleModel[] = []
 
 export const INITIAL_QUESTIONS: QuizQuestionModel[] = [
   {
@@ -661,6 +824,7 @@ export const INITIAL_PROVENANCE_LEDGER: ProvenanceRecord[] = [
 export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   {
     id: 'coh-01',
+    cohortSnapshotId: 'CS-2026-Q1-01',
     cohortName: 'Q1 AI Architecture Onboarding Cohort',
     department: 'Machine Learning & Cognitive Architecture',
     targetRole: 'AI Knowledge Architect',
@@ -673,6 +837,7 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   },
   {
     id: 'coh-02',
+    cohortSnapshotId: 'CS-2026-Q1-02',
     cohortName: 'Platform Data Engineers Up-skilling',
     department: 'Platform Engineering',
     targetRole: 'Senior MLOps & Graph Systems Engineer',
@@ -685,6 +850,7 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
   },
   {
     id: 'coh-03',
+    cohortSnapshotId: 'CS-2026-Q1-03',
     cohortName: 'Enterprise Data Analysts Cross-Skilling',
     department: 'Data Analytics & BI',
     targetRole: 'AI Knowledge Architect',
@@ -693,14 +859,17 @@ export const LEARNING_OUTCOME_COHORTS: LearningOutcomeCohort[] = [
     completionRate: 58.0,
     gapClosureRate: 42.5,
     velocityTrend: '-3.1% vs Q4',
-    status: 'Attention',
+    status: 'Behind Pace',
   },
 ]
 
 export const SKILL_ACQUISITION_METRICS: SkillAcquisitionMetric[] = [
-  { skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL', masteryRate: 92, avgAttemptsToPass: 1.3, difficultyTag: 'High Velocity' },
-  { skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL', masteryRate: 84, avgAttemptsToPass: 1.8, difficultyTag: 'Standard' },
-  { skillCode: 'SKILL-EMB-03', skillName: 'Node2Vec Embeddings', masteryRate: 78, avgAttemptsToPass: 2.1, difficultyTag: 'Standard' },
-  { skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', masteryRate: 63, avgAttemptsToPass: 3.4, difficultyTag: 'Bottleneck' },
-  { skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search', masteryRate: 71, avgAttemptsToPass: 2.4, difficultyTag: 'Standard' },
+  { skillCode: 'SKILL-CYPHER-01', skillName: 'Neo4j Cypher DDL', masteryRate: 92, avgAttemptsToPass: 1.3, difficultyTag: 'Exceeding' },
+  { skillCode: 'SKILL-RDF-04', skillName: 'RDF Schema & OWL 2 DL', masteryRate: 84, avgAttemptsToPass: 1.8, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-EMB-03', skillName: 'Node2Vec Embeddings', masteryRate: 78, avgAttemptsToPass: 2.1, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-GNN-02', skillName: 'Graph Neural Networks & Message Passing', masteryRate: 63, avgAttemptsToPass: 3.4, difficultyTag: 'Behind Pace' },
+  { skillCode: 'SKILL-VEC-06', skillName: 'HNSW Indexing & Vector Search', masteryRate: 71, avgAttemptsToPass: 2.4, difficultyTag: 'On Track' },
+  { skillCode: 'SKILL-DKT-06', skillName: 'Dynamic Knowledge Tracing & Pedagogy', masteryRate: 59, avgAttemptsToPass: 3.6, difficultyTag: 'Behind Pace' },
+  { skillCode: 'SKILL-ATTN-07', skillName: 'Multi-Head Attention & Transformers', masteryRate: 88, avgAttemptsToPass: 1.4, difficultyTag: 'Exceeding' },
+  { skillCode: 'SKILL-PROMPT-08', skillName: 'Prompt Engineering & Context Injection', masteryRate: 82, avgAttemptsToPass: 1.9, difficultyTag: 'On Track' },
 ]

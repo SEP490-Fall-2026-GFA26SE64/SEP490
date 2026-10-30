@@ -1,0 +1,374 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2F5d74614d-32c8-4ca4-9818-6980e52424b1&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+    "title": "plan software testing",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Softwareprüfung planen",
+      "no": "planlegge programvaretesting",
+      "fi": "suunnitella ohjelmistotestaus",
+      "pt": "planear testes de «software»",
+      "bg": "планиране на тестване на софтуер",
+      "lt": "planuoti programinės įrangos testavimą",
+      "lv": "programmatūru testēšanas plānošana",
+      "hr": "planirati testiranje softvera",
+      "fr": "planifier un test logiciel",
+      "hu": "szoftvertesztelést megtervezi",
+      "uk": "планувати тестування програмного забезпечення",
+      "sk": "plánovať testovanie softvéru",
+      "sl": "načrtovati preskušanje programske opreme",
+      "ga": "tástáil bogearraí a phleanáil",
+      "sv": "planera programvarutestning",
+      "el": "σχεδιασμός δοκιμών λογισμικού",
+      "mt": "tippjana l-ittestjar tas-softwer",
+      "en": "plan software testing",
+      "is": "skipuleggja hugbúnaðarprófun",
+      "it": "pianificare il collaudo del software",
+      "es": "planificar pruebas de software",
+      "et": "tarkvara testimist kavandama",
+      "cs": "plánovat testování softwaru",
+      "ar": "تخطيط اختبار البرامج",
+      "pl": "planować testowanie oprogramowania",
+      "ro": "planifică testarea software-ului",
+      "da": "planlægge afprøvning af software",
+      "nl": "softwaretesten plannen"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "vypracovat plány testů softwaru",
+        "naplánovat testování softwaru",
+        "plánovat zkoušky softwaru",
+        "plánovat softwarové testování",
+        "plánovat testy softwaru",
+        "plánovat testy aplikací"
+      ],
+      "mt": [
+        "tippjana l-ittestjar tas-software",
+        "tħejji għall-ittestjar tas-softwer",
+        "tippjana t-testijiet tas-softwer"
+      ],
+      "el": [
+        "προγραμματίζω δοκιμές λογισμικού· προγραμματίζω ελέγχους λογισμικού· επιβλέπω δοκιμή λογισμικού",
+        "σχεδιάζω δοκιμή λογισμικού· σχεδιάζω έλεγχο λογισμικού"
+      ],
+      "en": [
+        "oversee software testing plans"
+      ],
+      "nl": [
+        "planning maken voor softwaretesten",
+        "softwaretesten uitvoeren",
+        "testen van software plannen",
+        "plan schrijven voor softwaretesten"
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Erstellung und Überwachung von Prüfplänen. Entscheidung über die Zuweisung von Ressourcen, Werkzeugen und Techniken. Festlegung von Prüfkriterien für den Ausgleich aufgetretener Risiken im Falle verbleibender Mängel, Anpassung des Budgets und Planung zusätzlicher Kosten.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Utarbeide og overvåke testplaner. Bestemme fordeling av ressurser, verktøy og teknikker. Definere testkriterier for risikostyring for defekter, tilpasse budsjetter og planlegge ekstrakostnader.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Laatia ja valvoa testaussuunnitelmia. Päättää resurssien, välineiden ja tekniikoiden jakamisesta. Määrittää testauskriteerit, jotta riskit voidaan tasapainottaa virhetilanteissa, mukauttaa budjetteja ja suunnitella lisäkustannuksia.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar e supervisionar planos de testes. Tomar decisões sobre a atribuição de recursos, ferramentas e técnicas. Estabelecer critérios de ensaio para compensar riscos decorrentes de falhas persistentes, adaptar os orçamentos e prever os custos adicionais.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава и контролира плановете за провеждане на тестове. Взима решения за разпределението на ресурсите, инструментите и техниките. Определя критерии за тестване за балансиране на възникналите рискове в случай на оставащи дефекти, адаптира бюджетите и планират допълнителни разходи.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Sukurti ir prižiūrėti bandymų planus. Priimti sprendimus dėl išteklių, priemonių ir metodų skyrimo. Nustatyti bandymo kriterijus, susijusius su patiriamos rizikos subalansavimu, jeigu yra likusių trūkumų, pritaikyti biudžetą ir planuoti papildomas išlaidas.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izrađivati i nadzirati planove testiranja. Odlučivati o upotrebi sredstava, alata i tehnika. Utvrditi kriterije testiranja u cilju uravnoteženja nastalih rizika u slučaju preostalih nedostataka, prilagoditi proračune i planirati dodatne troškove.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izstrādāt un uzraudzīt testu plānus. Lemt par resursu, instrumentu un metožu sadali. Noteikt testēšanas kritērijus, lai līdzsvarotu radušos riskus atlikušo defektu gadījumā, pielāgotu budžetu un plānotu papildu izmaksas.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer et superviser les plans de tests. Décider de l’affectation des ressources, des outils et des techniques. Définir des critères de test pour équilibrer les risques encourus en cas de défauts restants, adapter les budgets et planifier les coûts supplémentaires.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Létrehozza és felügyeli a tesztelési terveket. Dönt az erőforrások, eszközök és technikák elosztásáról. Meghatározza a fennmaradó hibák esetén fennálló kockázatok kiegyenlítésére szolgáló tesztelési kritériumokat, módosítja a költségvetést, és megtervezi a kiegészítő költségeket.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати та контролювати плани випробувань. Приймати рішення про розподіл ресурсів, інструментів і методів. Встановлювати критерії тестування для збалансування ризиків у разі виявлення дефектів, що залишилися, адаптувати бюджети та планувати додаткові витрати.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvorenie plánov skúšok a dozeranie na ne. Rozhodovanie o prideľovaní zdrojov, nástrojov a techník. Stanovenie kritérií na overenie vyváženosti vzniknutých rizík v prípade zostávajúcich nedostatkov, úprava rozpočtov a plánovanie dodatočných nákladov.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Oblikovati in nadzorovati načrte preskusov. Odločati o dodelitvi sredstev, orodij in tehnik. Določiti merila za preskušanje za izravnavo nastalih tveganj v primeru preostalih napak, prilagoditi proračune in načrtovati dodatne stroške.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Pleananna tástála a chruthú agus a mhaoirsiú. Cinneadh a dhéanamh maidir le hacmhainní, uirlisí agus teicnící a leithdháileadh. Critéir thástála a shocrú chun cothromú a dhéanamh ar rioscaí i gcás lochtanna atá fágtha, buiséid a oiriúnú agus costais bhreise a phleanáil.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Upprätta och övervaka testplaner. Besluta om fördelning av resurser, verktyg och tekniker. Fastställa kriterier för balansering av uppkomna risker vid kvarstående fel, anpassa budgetar och planera ytterligare kostnader.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Ħolqien u superviżjoni tal-pjanijiet tat-testijiet. Deċiżjoni dwar l-allokazzjoni ta’ riżorsi, ta’ għodod u ta’ tekniki. Stabbiliment tal-kriterji ta’ ttestjar għall-ibbilanċjar tar-riskji mġarrba fil-każ ta’ difetti li jifdal, li adattament tal-baġits u ppjanar tal-kostijiet addizzjonali.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία και επίβλεψη σχεδίων δοκιμών. Λήψη απόφασης σχετικά με την κατανομή των πόρων, των εργαλείων και των τεχνικών. Καθορισμός κριτηρίων δοκιμής για την εξισορρόπηση των κινδύνων σε περίπτωση εμμενουσών ανεπαρκειών, προσαρμογή των προϋπολογισμών και προγραμματισμός πρόσθετων δαπανών.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create and supervise tests plans. Decide on allocation of resources, tools and techniques. Set testing criteria for balancing incurred risks in case of remaining defects, adapt budgets and plan additional costs.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Búa til áætlanir um prófanir og hafa umsjón með þeim. Taka ákvörðun um ráðstöfun tilfanga, verkfæra og tækni. Setja prófunarviðmið til að jafna áhættu ef um er að ræða galla, aðlaga fjárveitingar og skipuleggja viðbótarkostnað.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Elaborare e controllare i piani di test. Decidere in merito all’assegnazione delle risorse, degli strumenti e delle tecniche. Stabilire criteri di test per bilanciare i rischi incorsi in caso di difetti rimanenti, adeguare i bilanci e pianificare i costi aggiuntivi.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear y supervisar planes de pruebas. Decidir sobre la asignación de recursos, herramientas y técnicas. Establecer criterios de prueba para equilibrar los riesgos en caso de que persistan los defectos, adaptar los presupuestos y planificar los costes adicionales.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Testimiskavade loomine ja juhendamine. Otsustamine ressursside, vahendite ja tehnikate eraldamise üle. Testimiskriteeriumide kehtestamine, et tasakaalustada tekkinud riske järelejäänud puuduste korral, eelarvete kohandamine ja lisakulude kavandamine.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvářet plány zkoušek a dohlížet na ně. Rozhodovat o přidělování zdrojů, nástrojů a technik. Stanovit kritéria pro ověření vyváženosti vzniklých rizik v případě zbývajících nedostatků, upravit rozpočet a naplánovat dodatečné náklady.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إنشاء خطط الاختبارات والإشراف عليها. تحديد تخصيص الموارد والأدوات والتقنيات. إعداد معايير اختبار لموازنة المخاطر العارضة في حالة بقاء العيوب وتعديل الميزانيات والتخطيط للنفقات الإضافية.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć i nadzorować plany testów. Decydować w sprawie przydziału zasobów, narzędzi i technik. Ustalać kryteria testów pod kątem wyważenia ponoszonego ryzyka w przypadku pozostawionych wad, dostosowywać budżet i planować dodatkowe koszty.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Udarbejde og føre tilsyn med afprøvningsplaner. Træffe afgørelse om tildeling af ressourcer, værktøjer og teknikker. Fastsætte prøvningskriterier for balancering af de påførte risici i tilfælde af tilbageværende mangler, tilpasse budgetter og planlægge yderligere omkostninger.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Elaborează și supraveghează planuri de testare. Decide cu privire la alocarea resurselor, a instrumentelor și a tehnicilor. Stabilește criterii de testare pentru echilibrarea riscurilor apărute în cazul deficiențelor care persistă, adaptează bugetele și planifică costurile suplimentare.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Het opstellen van en het toezicht houden op de testplannen. Besluiten nemen over de toewijzing van middelen, instrumenten en technieken. Criteria vaststellen voor het testen van de risico’s in geval van resterende defecten, de aanpassing van de begrotingen en de planning van de extra kosten.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+        "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1",
+        "title": "plan software testing"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+          "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59",
+          "title": "planning production processes",
+          "code": "S4.2.5"
+        }
+      ],
+      "narrowerSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7961413f-61d0-4722-9cd9-20a050a29899",
+          "title": "perform software unit testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/913e7e83-b8f8-4574-b1ca-1b38f3fd974a",
+          "title": "execute software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+          "title": "develop automated software tests",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/446d29ed-9eaa-4798-bb91-5f196651ad0a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/446d29ed-9eaa-4798-bb91-5f196651ad0a",
+          "title": "create game testing software",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7253d98c-4a6d-4e37-8b6c-accca9f4b639",
+          "title": "develop ICT test suite",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ff25cbf0-6978-4c4c-887e-d4b185410d74&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ff25cbf0-6978-4c4c-887e-d4b185410d74",
+          "title": "perform software recovery testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/85f46538-ae70-498a-bfbc-b8ddafe96c7d",
+          "title": "levels of software testing",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7557f0f4-b8bc-4ac0-b91e-222ab1ba744f",
+          "title": "tools for ICT test automation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "title": "ICT test analyst"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "title": "software tester"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "plan software testing",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+          ]
+        },
+        {
+          "title": "planning production processes",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59&language=en",
+              "uri": "http://data.europa.eu/esco/skill/e6eeb84c-ad99-42e2-b883-e6ce338aef59"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+          ]
+        },
+        {
+          "title": "organising, planning and scheduling work and activities",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524&language=en",
+              "uri": "http://data.europa.eu/esco/skill/5c26881e-2759-4a38-b136-5e0f6071b524"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+          ]
+        },
+        {
+          "title": "management skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2&language=en",
+              "uri": "http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

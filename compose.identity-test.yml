@@ -1,0 +1,31 @@
+name: adapt-learn-graph-identity-test
+
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:15437:5432"
+  neo4j:
+    ports: !override
+      - "127.0.0.1:7483:7474"
+      - "127.0.0.1:7693:7687"
+  migrate:
+    image: adapt-learn-graph-backend:identity-migrate-test
+  api:
+    image: adapt-learn-graph-backend:identity-test
+    environment:
+      SUBSCRIPTION_PUBLIC_URL: http://127.0.0.1:8093
+    ports: !override
+      - "127.0.0.1:18085:8080"
+  web:
+    ports: !override
+      - "127.0.0.1:8093:5173"
+  mailpit:
+    ports: !override
+      - "127.0.0.1:8030:8025"
+  platform-seed:
+    image: adapt-learn-graph-backend:identity-migrate-test
+    environment:
+      DB_PASSWORD: subscription-test-only
+      NEO4J_PASSWORD: subscription-test-only
+      PLATFORM_ADMIN_SEED_EMAIL: ""
+      PLATFORM_ADMIN_SEED_PASSWORD: ""

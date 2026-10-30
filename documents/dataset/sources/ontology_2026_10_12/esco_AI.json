@@ -1,0 +1,2719 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F35553663-deab-4d9a-bf22-15c1625d28e8&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Occupation",
+    "classId": "http://data.europa.eu/esco/model#Occupation",
+    "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+    "title": "artificial intelligence engineer",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "no": "ingeniør innen kunstig intelligens",
+      "de": "Ingenieur für künstliche Intelligenz/Ingenieurin für künstliche Intelligenz",
+      "fi": "tekoälyinsinööri",
+      "pt": "engenheiro de inteligência artificial/engenheira de inteligência artificial",
+      "bg": "инженер по изкуствен интелект",
+      "lt": "dirbtinio intelekto inžinierius",
+      "lv": "mākslīgā intelekta inženieris",
+      "hr": "inženjer/inženjerka umjetne inteligencije",
+      "fr": "ingénieur en intelligence artificielle/ingénieure en intelligence artificielle",
+      "hu": "mesterséges intelligenciával foglalkozó mérnök (AI-mérnök)",
+      "uk": "інженер систем штучного інтелекту/інженерка систем штучного інтелекту",
+      "sk": "inžinier umelej inteligencie/inžinierka umelej inteligencie",
+      "sl": "inženir/inženirka za umetno inteligenco",
+      "ga": "innealtóir intleachta saorga",
+      "sv": "AI-ingenjör",
+      "el": "μηχανικός τεχνητής νοημοσύνης",
+      "mt": "inġinier tal-intelliġenza artifiċjali",
+      "en": "artificial intelligence engineer",
+      "is": "gervigreindarverkfræðingur",
+      "it": "ingegnere dell’intelligenza artificiale/ingegnera dell'intelligenza artificiale",
+      "es": "ingeniero de inteligencia artificial/ingeniera de inteligencia artificial",
+      "et": "intellektitehnika insener",
+      "cs": "inženýr v oblasti umělé inteligence/inženýrka v oblasti umělé inteligence",
+      "ar": "مهندس الذكاء الاصطناعي",
+      "pl": "inżynier sztucznej inteligencji",
+      "ro": "inginer în domeniul inteligenței artificiale/ingineră în domeniul inteligenței artificiale",
+      "da": "ingeniør inden for kunstig intelligens",
+      "nl": "artificiële-intelligentie-ingenieur"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Intelligent Systems Designer",
+        "Ingenieur für künstliche Intelligenz",
+        "Entwicklerin intelligenter Systeme",
+        "Intelligent Systems Designerin",
+        "Entwickler intelligenter Systeme",
+        "Ingenieurin für künstliche Intelligenz"
+      ],
+      "fi": [
+        "semanttisen teknologian asiantuntija",
+        "AI-suunnittelija",
+        "koneoppimisjärjestelmien suunnittelija"
+      ],
+      "pt": [
+        "engenheiro de inteligência artificial",
+        "Criadora de sistemas de inteligência artificial",
+        "engenheira de inteligência artificial",
+        "Designer de sistemas inteligentes",
+        "Engenheira de tecnologias da web semântica",
+        "Designer de sistemas de IA",
+        "Engenheiro de tecnologias da web semântica",
+        "Criador de sistemas de inteligência artificial",
+        "Criadora de sistemas de IA",
+        "Criador de sistemas de IA",
+        "Designer de sistemas de inteligência artificial"
+      ],
+      "bg": [
+        "дизайнер на изкуствен интелект",
+        "дизайнерка на изкуствен интелект",
+        "дизайнер на системи за машинно обучение",
+        "дизайнерка на интелигентни системи",
+        "инженер на свързани данни",
+        "дизайнерка на системи за машинно обучение",
+        "дизайнер на интелигентни системи",
+        "инженерка на свързани данни",
+        "дизайнери на интелигентни системи"
+      ],
+      "lt": [
+        "pažangiųjų sistemų projektuotojas",
+        "mašininių mokymosi sistemų projektuotojas",
+        "informacinių ir ryšių technologijų pažangiųjų sistemų projektuotoja",
+        "pažangiųjų sistemų architektas",
+        "dirbtinio intelekto projektuotojas"
+      ],
+      "hr": [
+        "projektant inteligentnih sustava",
+        "projektantica inteligentnih sustava",
+        "dizajnerica inteligentnih sustava",
+        "dizajner inteligentnih sustava",
+        "projektantica za inteligentne sustave",
+        "projektant za inteligentne sustave"
+      ],
+      "lv": [
+        "semantisko tehnoloģiju inženieris",
+        "datorlingvistikas inženieris",
+        "inteliģento sistēmu izstrādātāja",
+        "IKT viedo sistēmu projektētājs",
+        "saistīto datu inženieris",
+        "viedo sistēmu projektētāja",
+        "mašīnmācīšanās sistēmu izstrādātāja",
+        "viedo sistēmu izstrādātāja",
+        "mākslīgā intelekta sistēmu izstrādātājs",
+        "inteliģento sistēmu izstrādātājs",
+        "IKT viedo sistēmu projektētāja",
+        "viedo sistēmu projektētājs",
+        "saistīto datu inženiere",
+        "viedo sistēmu izstrādātājs",
+        "datorlingvistikas inženiere",
+        "mākslīgā intelekta sistēmu izstrādātāja",
+        "mašīnmācīšanās sistēmu izstrādātājs",
+        "semantisko tehnoloģiju inženiere"
+      ],
+      "fr": [
+        "concepteur de systèmes intelligents",
+        "concepteur de SI",
+        "conceptrice de SI",
+        "ingénieur en intelligence artificielle",
+        "designer de systèmes intelligents",
+        "ingénieure en intelligence artificielle",
+        "conceptrice de systèmes intelligents"
+      ],
+      "hu": [
+        "öntanuló rendszertervező",
+        "mesterséges intelligencia tervező",
+        "intelligens rendszerek fejlesztésével foglalkozó szakember",
+        "mesterséges intelligencia alkalmazástervezők"
+      ],
+      "uk": [
+        "інженерка систем штучного інтелекту",
+        "інженер систем штучного інтелекту"
+      ],
+      "sk": [
+        "inžinier umelej inteligencie",
+        "dizajnér sémantických technológií",
+        "dizajnérka sémantických technológií",
+        "dizajnér inteligentných systémov",
+        "inžinierka umelej inteligencie",
+        "tvorca inteligentných systémov",
+        "dizajnérka inteligentných systémov",
+        "tvorkyňa inteligentných systémov"
+      ],
+      "sl": [
+        "dizajnerka inteligentnih sistemov",
+        "oblikovalka inteligentnega sistema",
+        "oblikovalka inteligentnih sistemov",
+        "oblikovalec inteligentnih sistemov",
+        "oblikovalec inteligentnega sistema",
+        "dizajner inteligentnih sistemov"
+      ],
+      "ga": [
+        "dearthóir córas cliste ICT"
+      ],
+      "sv": [
+        "formgivare av intelligenta system",
+        "designer av maskininlärningssystem",
+        "AI-systemdesigner",
+        "designer av intelligenta IT-system",
+        "designer av artificiell intelligens"
+      ],
+      "el": [
+        "μηχανικός ανάπτυξης έξυπνου συστήματος",
+        "σχεδιαστής έξυπνου συστήματος",
+        "σχεδιάστρια ευφυούς συστήματος",
+        "μηχανικός ανάπτυξης ευφυούς συστήματος",
+        "σχεδιαστής ευφυών συστημάτων",
+        "σχεδιαστής ευφυούς συστήματος",
+        "σχεδιαστής έξυπνων συστημάτων",
+        "σχεδιάστρια ευφυών συστημάτων",
+        "σχεδιάστρια έξυπνων συστημάτων",
+        "μηχανικός ανάπτυξης έξυπνων συστημάτων",
+        "μηχανικός ανάπτυξης ευφυών συστημάτων",
+        "σχεδιάστρια έξυπνου συστήματος"
+      ],
+      "mt": [
+        "inġinier ta' sistemi intelliġenti",
+        "disinjatriċi ta' sistemi li jitgħallmu",
+        "disinjatur tas-sistemi intelliġenti",
+        "disinjatriċi ta' sistemi intelliġenti",
+        "disinjatriċi tal-intelliġenza artifiċjali",
+        "disinjatur ta' sistemi li jitgħallmu",
+        "żviluppatur ta' sistemi intelliġenti",
+        "disinjatur ta' sistemi intelliġenti",
+        "integratur tal-għarfien f'sistemi informatiċi",
+        "disinjatur tal-intelliġenza artifiċjali",
+        "disinjatriċi tas-sistemi intelliġenti"
+      ],
+      "en": [
+        "AI system designer",
+        "machine learning engineer",
+        "intelligent systems developer",
+        "linked data engineer",
+        "semantic technologies engineer",
+        "designer of intelligent systems",
+        "ICT intelligent systems designer",
+        "machine learning systems designer",
+        "intelligent systems engineer",
+        "intelligent system designer",
+        "artificial intelligence designer",
+        "intelligent systems designers"
+      ],
+      "is": [
+        "hönnuði á sviði greindarstýrðra kerfa",
+        "kerfishönnuður á sviði vélalærdóms",
+        "hönnuð á sviði greindarstýrðra kerfa",
+        "hönnuðar á sviði greindarstýrðra kerfa",
+        "verkfræðingur á sviði tengdra gagna",
+        "hönnuður greindarstýrðra kerfa",
+        "verkfræðingur á sviði merkingafræðilegrar tækni",
+        "hönnuður á sviði gervigreindar"
+      ],
+      "it": [
+        "ingegnere dell’intelligenza artificiale",
+        "designer di sistemi di apprendimento automatico",
+        "ingegnere di tecnologie semantiche",
+        "ingegnera dell'intelligenza artificiale",
+        "progettisti di sistemi intelligenti"
+      ],
+      "es": [
+        "ingeniera de inteligencia artificial",
+        "diseñadora de sistemas de IA",
+        "responsable de ingeniería de sistemas inteligentes",
+        "diseñador de inteligencia artificial",
+        "diseñadora de inteligencia artificial",
+        "ingeniero de inteligencia artificial",
+        "diseñador de sistemas de IA",
+        "diseñador de sistemas inteligentes",
+        "diseñadora de sistemas inteligentes"
+      ],
+      "et": [
+        "intelligentsete süsteemide väljatöötaja",
+        "nutisüsteemide arendajad",
+        "intelligentsete süsteemide arendaja",
+        "nutisüsteemide programmeerija",
+        "intelligentsete süsteemide väljatöötajad",
+        "intelligentsete süsteemide programmeerija",
+        "nutisüsteemide programmeerijad",
+        "nutisüsteemide väljatöötaja",
+        "intelligentsete süsteemide programmeerijad",
+        "intelligentsete süsteemide arendajad",
+        "nutisüsteemide väljatöötajad"
+      ],
+      "cs": [
+        "inženýrka v oblasti umělé inteligence",
+        "designérka systémů umělé inteligence",
+        "designér inteligentních systémů",
+        "designérka inteligentních systémů",
+        "designér systémů umělé inteligence",
+        "inženýr v oblasti umělé inteligence",
+        "designér chytrých systémů",
+        "designérka chytrých systémů"
+      ],
+      "pl": [
+        "projektant systemów",
+        "projektant systemu inteligentnego",
+        "projektantka systemów inteligentnych",
+        "projektanci systemów inteligentnych",
+        "projektant systemów informatycznych"
+      ],
+      "da": [
+        "systemdesigner",
+        "KI-designer",
+        "designer semantiske webteknologier",
+        "systemudvikler",
+        "udvikler af systemer til maskinindlæring",
+        "designere af intelligente systemer",
+        "AI-designer"
+      ],
+      "ro": [
+        "proiectant de sisteme informatice inteligente",
+        "inginer în sisteme inteligente",
+        "designer pentru sisteme inteligente",
+        "proiectantă de sisteme inteligente",
+        "ingineră în domeniul inteligenței artificiale",
+        "designer al sistemelor de inteligenta artificială",
+        "designer al sistemelor de AI",
+        "inginer în domeniul inteligenței artificiale",
+        "proiectant pentru sisteme inteligente și inginer pentru date înlănțuite",
+        "proiectantă de sisteme informatice inteligente",
+        "inginer în tehnologii semantice",
+        "proiectant de sisteme inteligente",
+        "designer al sistemelor inteligente",
+        "designer pentru sisteme de machine learning"
+      ],
+      "nl": [
+        "bouwer van autonome perceptieve systemen",
+        "AI designer",
+        "semantic engineer",
+        "designer of intelligent system",
+        "machine learning systems designer"
+      ]
+    },
+    "preferredTerm": {
+      "en": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "artificial intelligence engineer"
+      },
+      "de": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "Ingenieur für künstliche Intelligenz/Ingenieurin für künstliche Intelligenz"
+      },
+      "el": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "μηχανικός τεχνητής νοημοσύνης"
+      },
+      "bg": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "инженер по изкуствен интелект"
+      },
+      "ro": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "inginer în domeniul inteligenței artificiale/ingineră în domeniul inteligenței artificiale"
+      },
+      "lv": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "mākslīgā intelekta inženieris"
+      },
+      "es": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "ingeniero de inteligencia artificial/ingeniera de inteligencia artificial"
+      },
+      "et": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "intellektitehnika insener"
+      },
+      "sv": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "AI-ingenjör"
+      },
+      "nl": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "artificiële-intelligentie-ingenieur"
+      },
+      "fi": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "tekoälyinsinööri"
+      },
+      "it": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "ingegnere dell’intelligenza artificiale/ingegnera dell'intelligenza artificiale"
+      },
+      "ga": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "innealtóir intleachta saorga"
+      },
+      "sl": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "inženir/inženirka za umetno inteligenco"
+      },
+      "da": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "ingeniør inden for kunstig intelligens"
+      },
+      "pt": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "engenheiro de inteligência artificial/engenheira de inteligência artificial"
+      },
+      "is": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "gervigreindarverkfræðingur"
+      },
+      "uk": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "інженер систем штучного інтелекту/інженерка систем штучного інтелекту"
+      },
+      "no": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "ingeniør innen kunstig intelligens"
+      },
+      "hr": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "inženjer/inženjerka umjetne inteligencije"
+      },
+      "sk": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "inžinier umelej inteligencie/inžinierka umelej inteligencie"
+      },
+      "ar": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "مهندس الذكاء الاصطناعي"
+      },
+      "pl": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "inżynier sztucznej inteligencji"
+      },
+      "cs": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "inženýr v oblasti umělé inteligence/inženýrka v oblasti umělé inteligence"
+      },
+      "hu": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "mesterséges intelligenciával foglalkozó mérnök (AI-mérnök)"
+      },
+      "mt": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "inġinier tal-intelliġenza artifiċjali"
+      },
+      "fr": {
+        "roles": [
+          "neutral"
+        ],
+        "label": "ingénieur en intelligence artificielle/ingénieure en intelligence artificielle"
+      },
+      "lt": {
+        "roles": [
+          "neutral",
+          "male",
+          "standard male",
+          "female",
+          "standard female"
+        ],
+        "label": "dirbtinio intelekto inžinierius"
+      }
+    },
+    "alternativeTerms": {
+      "ro": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "proiectantă de sisteme informatice inteligente"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "designer pentru sisteme inteligente"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "designer al sistemelor de AI"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer în tehnologii semantice"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "designer al sistemelor de inteligenta artificială"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "designer pentru sisteme de machine learning"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "inginer în sisteme inteligente"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "proiectant de sisteme informatice inteligente"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "ingineră în domeniul inteligenței artificiale"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "designer al sistemelor inteligente"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "proiectant pentru sisteme inteligente și inginer pentru date înlănțuite"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "proiectant de sisteme inteligente"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "proiectantă de sisteme inteligente"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "inginer în domeniul inteligenței artificiale"
+        }
+      ],
+      "lv": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "mašīnmācīšanās sistēmu izstrādātājs"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "viedo sistēmu projektētājs"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "semantisko tehnoloģiju inženiere"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "viedo sistēmu izstrādātāja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "datorlingvistikas inženieris"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "mašīnmācīšanās sistēmu izstrādātāja"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "IKT viedo sistēmu projektētāja"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "saistīto datu inženiere"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "datorlingvistikas inženiere"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "viedo sistēmu izstrādātājs"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "mākslīgā intelekta sistēmu izstrādātāja"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "viedo sistēmu projektētāja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "semantisko tehnoloģiju inženieris"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "IKT viedo sistēmu projektētājs"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "mākslīgā intelekta sistēmu izstrādātājs"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "saistīto datu inženieris"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "inteliģento sistēmu izstrādātāja"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "inteliģento sistēmu izstrādātājs"
+        }
+      ],
+      "lt": [
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "informacinių ir ryšių technologijų pažangiųjų sistemų projektuotoja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "pažangiųjų sistemų architektas"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "mašininių mokymosi sistemų projektuotojas"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "dirbtinio intelekto projektuotojas"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "pažangiųjų sistemų projektuotojas"
+        }
+      ],
+      "es": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "diseñador de inteligencia artificial"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "responsable de ingeniería de sistemas inteligentes"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "diseñadora de sistemas inteligentes"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "diseñadora de sistemas de IA"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "diseñador de sistemas de IA"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "ingeniera de inteligencia artificial"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "diseñador de sistemas inteligentes"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "ingeniero de inteligencia artificial"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "diseñadora de inteligencia artificial"
+        }
+      ],
+      "it": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "ingegnere di tecnologie semantiche"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "progettisti di sistemi intelligenti"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer di sistemi di apprendimento automatico"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "ingegnere dell’intelligenza artificiale"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "ingegnera dell'intelligenza artificiale"
+        }
+      ],
+      "hr": [
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "projektantica inteligentnih sustava"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "dizajner inteligentnih sustava"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "dizajnerica inteligentnih sustava"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "projektant za inteligentne sustave"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "projektantica za inteligentne sustave"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "projektant inteligentnih sustava"
+        }
+      ],
+      "mt": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "żviluppatur ta' sistemi intelliġenti"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "disinjatur ta' sistemi intelliġenti"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "disinjatriċi ta' sistemi li jitgħallmu"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "disinjatriċi tal-intelliġenza artifiċjali"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "disinjatriċi tas-sistemi intelliġenti"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "disinjatur tal-intelliġenza artifiċjali"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "disinjatur tas-sistemi intelliġenti"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "integratur tal-għarfien f'sistemi informatiċi"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "inġinier ta' sistemi intelliġenti"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "disinjatur ta' sistemi li jitgħallmu"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "disinjatriċi ta' sistemi intelliġenti"
+        }
+      ],
+      "et": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "intelligentsete süsteemide arendajad"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "intelligentsete süsteemide väljatöötajad"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "intelligentsete süsteemide programmeerijad"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligentsete süsteemide arendaja"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligentsete süsteemide väljatöötaja"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "nutisüsteemide programmeerija"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "nutisüsteemide väljatöötaja"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "nutisüsteemide programmeerijad"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligentsete süsteemide programmeerija"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "nutisüsteemide arendajad"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "nutisüsteemide väljatöötajad"
+        }
+      ],
+      "en": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligent systems designers"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer of intelligent systems"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "machine learning systems designer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligent systems engineer"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "ICT intelligent systems designer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "semantic technologies engineer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligent system designer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "artificial intelligence designer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "linked data engineer"
+        },
+        {
+          "roles": [],
+          "label": "machine learning engineer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligent systems developer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "AI system designer"
+        }
+      ],
+      "is": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hönnuðar á sviði greindarstýrðra kerfa"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "verkfræðingur á sviði tengdra gagna"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "verkfræðingur á sviði merkingafræðilegrar tækni"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hönnuði á sviði greindarstýrðra kerfa"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hönnuð á sviði greindarstýrðra kerfa"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "kerfishönnuður á sviði vélalærdóms"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hönnuður á sviði gervigreindar"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "hönnuður greindarstýrðra kerfa"
+        }
+      ],
+      "fi": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "AI-suunnittelija"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "koneoppimisjärjestelmien suunnittelija"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "semanttisen teknologian asiantuntija"
+        }
+      ],
+      "cs": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "designérka chytrých systémů"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "inženýrka v oblasti umělé inteligence"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "designérka systémů umělé inteligence"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "designér systémů umělé inteligence"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "inženýr v oblasti umělé inteligence"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "designér inteligentních systémů"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "designér chytrých systémů"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "designérka inteligentních systémů"
+        }
+      ],
+      "da": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "systemdesigner"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "systemudvikler"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "udvikler af systemer til maskinindlæring"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "AI-designer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer semantiske webteknologier"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "designere af intelligente systemer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "KI-designer"
+        }
+      ],
+      "sv": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer av intelligenta IT-system"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer av artificiell intelligens"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer av maskininlärningssystem"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "formgivare av intelligenta system"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "AI-systemdesigner"
+        }
+      ],
+      "bg": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "дизайнерка на изкуствен интелект"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "дизайнери на интелигентни системи"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "инженерка на свързани данни"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "дизайнер на изкуствен интелект"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "дизайнер на системи за машинно обучение"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "дизайнерка на интелигентни системи"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "дизайнерка на системи за машинно обучение"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "инженер на свързани данни"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "дизайнер на интелигентни системи"
+        }
+      ],
+      "fr": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "conceptrice de SI"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer de systèmes intelligents"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "conceptrice de systèmes intelligents"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "ingénieur en intelligence artificielle"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "ingénieure en intelligence artificielle"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "concepteur de systèmes intelligents"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "concepteur de SI"
+        }
+      ],
+      "nl": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "semantic engineer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "AI designer"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "designer of intelligent system"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "bouwer van autonome perceptieve systemen"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "machine learning systems designer"
+        }
+      ],
+      "sl": [
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "oblikovalka inteligentnih sistemov"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "dizajner inteligentnih sistemov"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "oblikovalka inteligentnega sistema"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "oblikovalec inteligentnih sistemov"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "dizajnerka inteligentnih sistemov"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "oblikovalec inteligentnega sistema"
+        }
+      ],
+      "pl": [
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "projektantka systemów inteligentnych"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "projektanci systemów inteligentnych"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "projektant systemu inteligentnego"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "projektant systemów"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "projektant systemów informatycznych"
+        }
+      ],
+      "ga": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "dearthóir córas cliste ICT"
+        }
+      ],
+      "pt": [
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "Designer de sistemas de IA"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "Designer de sistemas de inteligência artificial"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Engenheiro de tecnologias da web semântica"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Engenheira de tecnologias da web semântica"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "engenheira de inteligência artificial"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "Designer de sistemas inteligentes"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Criadora de sistemas de IA"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "engenheiro de inteligência artificial"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Criador de sistemas de inteligência artificial"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Criadora de sistemas de inteligência artificial"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Criador de sistemas de IA"
+        }
+      ],
+      "el": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "μηχανικός ανάπτυξης ευφυούς συστήματος"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "σχεδιαστής έξυπνου συστήματος"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "σχεδιάστρια ευφυών συστημάτων"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "σχεδιαστής ευφυών συστημάτων"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "σχεδιαστής έξυπνων συστημάτων"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "σχεδιάστρια έξυπνου συστήματος"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "μηχανικός ανάπτυξης ευφυών συστημάτων"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "μηχανικός ανάπτυξης έξυπνων συστημάτων"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "σχεδιαστής ευφυούς συστήματος"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "σχεδιάστρια ευφυούς συστήματος"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "μηχανικός ανάπτυξης έξυπνου συστήματος"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "σχεδιάστρια έξυπνων συστημάτων"
+        }
+      ],
+      "de": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "Intelligent Systems Designer"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "Intelligent Systems Designerin"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "Ingenieurin für künstliche Intelligenz"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "Ingenieur für künstliche Intelligenz"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "Entwicklerin intelligenter Systeme"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "Entwickler intelligenter Systeme"
+        }
+      ],
+      "hu": [
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "intelligens rendszerek fejlesztésével foglalkozó szakember"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "öntanuló rendszertervező"
+        },
+        {
+          "roles": [
+            "neutral",
+            "male",
+            "female"
+          ],
+          "label": "mesterséges intelligencia tervező"
+        },
+        {
+          "roles": [
+            "neutral"
+          ],
+          "label": "mesterséges intelligencia alkalmazástervezők"
+        }
+      ],
+      "uk": [
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "інженер систем штучного інтелекту"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "інженерка систем штучного інтелекту"
+        }
+      ],
+      "sk": [
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "dizajnér sémantických technológií"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "dizajnérka sémantických technológií"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "dizajnér inteligentných systémov"
+        },
+        {
+          "roles": [
+            "male"
+          ],
+          "label": "tvorca inteligentných systémov"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "dizajnérka inteligentných systémov"
+        },
+        {
+          "roles": [
+            "male",
+            "standard male"
+          ],
+          "label": "inžinier umelej inteligencie"
+        },
+        {
+          "roles": [
+            "female"
+          ],
+          "label": "tvorkyňa inteligentných systémov"
+        },
+        {
+          "roles": [
+            "female",
+            "standard female"
+          ],
+          "label": "inžinierka umelej inteligencie"
+        }
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Ingenieure für künstliche Intelligenz/Ingenieurinnen für künstliche Intelligenz wenden in den Bereichen Ingenieurwesen, Robotik und Informatik Methoden der künstlichen Intelligenz an, um Programme zu entwickeln, mit denen Intelligenz simuliert wird, z. B. Denkmodelle, kognitive und wissensbasierte Systeme sowie Systeme zur Problemlösung und Entscheidungsfindung. Außerdem überführen sie strukturiertes Wissen (Ontologien, Wissensdatenbanken) in Computersysteme, um komplexe Probleme zu lösen, die in der Regel ein hohes Maß an Humankompetenz oder künstlicher Intelligenz erfordern.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Ingeniører innen kunstig intelligens bruker metoder for kunstig intelligens i ingeniørfag, robotikk og informatikk for å designe programmer som simulerer intelligens, inkludert tenkemodeller, kognitive og kunnskapsbaserte systemer, problemløsing, og beslutningstaking. De integrerer også strukturert kunnskap i datasystemer (ontologier, kunnskapsbaser) for å løse komplekse problemer som normalt krever et høyt nivå av menneskelig kompetanse eller kunstig intelligensmetoder.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Tekoälyinsinöörit soveltavat tekoälymenetelmiä tekniikassa, robotiikassa ja tietojenkäsittelytieteessä suunnitellessaan sellaisia ohjelmia, jotka simuloivat älykkyyttä eli ajattelumalleja, kognitiivisia ja tietämysperusteisia rakennelmia, ongelmanratkaisua ja päätöksentekoa. He myös integroivat rakenteista tietoa tietojenkäsittelyjärjestelmiin (ontologioita, tietämyskantoja) ratkaistakseen monimutkaisia ongelmia, jotka yleensä vaativat korkeatasoista inhimillistä asiantuntemusta tai tekoälymenetelmiä.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Os engenheiros de inteligência artificial aplicam métodos de inteligência artificial em engenharia, robótica e informática para conceber programas que simulam a inteligência, incluindo modelos de pensamento, sistemas cognitivos e baseados no conhecimento, resolução de problemas e tomada de decisões. Integram também conhecimentos estruturados em sistemas informáticos (ontologias, bases de conhecimentos), a fim de resolver problemas complexos que normalmente exigem um nível elevado de especialização humana ou de métodos de inteligência artificial.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Инженерите по изкуствен интелект прилагат методи на изкуствен интелект в инженерството, роботиката и компютърната наука, за да проектират програми, които симулират интелект, включително модели на мислене, когнитивни и основани на знания системи, решаване на проблеми и вземане на решения. Те също така интегрират структурирани знания в компютърните системи (онтологии, бази от знания) с цел решаване на сложни проблеми, които обикновено изискват високо ниво на човешки експертен опит или методи с изкуствен интелект.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Dirbtinio intelekto inžinierius taiko dirbtinio intelekto metodus inžinerijos, robotikos ir informatikos srityse, kurdamas programas, kurios imituoja intelektą, įskaitant mąstymo modelius, kognityviąsias ir žiniomis grindžiamas sistemas, problemų sprendimą ir sprendimų priėmimą. Jis taip pat integruoja struktūrines žinias (ontologijas, žinių bazes) į kompiuterių sistemas, kad būtų sprendžiamos sudėtingos problemos, kurioms paprastai reikia aukšto lygio žmogaus ekspertinių žinių arba dirbtinio intelekto metodų.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Mākslīgā intelekta inženieri izmanto mākslīgā intelekta metodes inženierzinātnēs, robotikā un datorzinātnēs, lai izstrādātu programmas, kas simulē intelektu, citastarp domāšanas modeļus, kognitīvās un uz zināšanām balstītas sistēmas, problēmu risināšanu un lēmumu pieņemšanu. Viņi arī integrē strukturētas zināšanas datorsistēmās (ontoloģijas, zināšanu bāzes), lai risinātu sarežģītas problēmas, kuru risināšanai parasti nepieciešamas augsta līmeņa cilvēku zināšanas vai mākslīgā intelekta metodes.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Inženjeri umjetne inteligencije primjenjuju umjetnu inteligenciju u inženjerstvu, robotici i računalnoj znanosti za osmišljavanje programa koji simuliraju inteligenciju, uključujući modele razmišljanja, kognitivne sustave i sustave utemeljene na znanju, rješavanje problema i donošenje odluka. Integriraju strukturirano znanje u računalne sustave (ontologije, baze znanja) kako bi se riješili složeni problemi koji obično zahtijevaju visoku razinu stručnosti ili primjenu metoda na bazi umjetne inteligencije.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Les ingénieurs en intelligence artificielle/ingénieures en intelligence artificielle mettent en œuvre des méthodes d’intelligence artificielle en ingénierie, robotique et informatique pour concevoir des programmes qui imitent l’intelligence, y compris des modèles de pensée, des systèmes cognitifs et des systèmes fondés sur la connaissance, la résolution de problèmes et la prise de décision. Ils/Elles intègrent également des connaissances structurées dans les systèmes informatiques (ontologies, bases de connaissances) afin de résoudre des problèmes complexes nécessitant normalement un niveau élevé d’expertise humaine ou des méthodes d’intelligence artificielle.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "A mesterséges intelligenciával foglalkozó mérnökök a mesterséges intelligencia módszereit alkalmazzák a műszaki tudományok, a robotika és az informatika területén olyan programok tervezésére, amelyek szimulálják az intelligenciát, beleértve a gondolkodási modelleket, a kognitív és tudásalapú rendszereket, a problémamegoldást és a döntéshozatalt. Emellett strukturált tudást építenek be számítógépes rendszerekbe (ontológiák, tudásbázisok) annak érdekében, hogy megoldják azokat az összetett problémákat, amelyek általában magas szintű emberi szakértelmet vagy mesterségesintelligencia-módszereket igényelnek.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Інженери систем штучного інтелекту застосовують методи штучного інтелекту в інженерії, робототехніці та комп'ютерних науках, щоб розробляти програми, які імітують інтелект, зокрема моделі мислення, когнітивні системи та системи, засновані на знаннях, вирішення проблем і ухвалення рішень. Вони також інтегрують структуровані знання в комп’ютерні системи (онтології, бази знань), щоб вирішити складні проблеми, які зазвичай вимагають високого рівня людського досвіду або методів штучного інтелекту.",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Inžinieri a inžinierky umelej inteligencie používajú metódy umelej inteligencie v inžinierstve, robotike a počítačovej vede na navrhovanie programov, ktoré simulujú inteligenciu, napríklad modelov myslenia, kognitívnych a znalostných systémov, riešenia problémov a rozhodovania. Okrem toho integrujú štruktúrované poznatky do počítačových systémov (ontológie, vedomostné základne) s cieľom vyriešiť zložité problémy, ktoré si zvyčajne vyžadujú vysokú úroveň odborných znalostí ľudí alebo metód umelej inteligencie.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Inženir/inženirka za umetno inteligenco uporablja metode umetne inteligence na področju inženirstva, robotike in računalniške znanosti, da razvije programe, ki simulirajo inteligenco, vključno z modeli razmišljanja, kognitivnimi in na znanju temelječimi sistemi, reševanjem problemov in odločanjem. Poleg tega inženirji za umetno inteligenco v računalniške sisteme (ontologije, baze znanja) integrirajo strukturirano znanje, da bi rešili kompleksne težave, za katere so običajno potrebne visoka raven človeškega strokovnega znanja ali metode umetne inteligence.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Cuireann innealtóirí intleachta saorga modhanna intleachta saorga i bhfeidhm in innealtóireacht, róbataic agus ríomheolaíocht chun ríomhchláir a dhearadh a ionsamhlaíonn intleacht agus samhlacha smaointeoireachta, córais chognaíocha agus eolasbhunaithe, réiteach fadhbanna, agus cinnteoireacht san áireamh. Comhtháthaíonn siad eolas struchtúrtha isteach i ríomhchórais freisin (ointeolaíochtaí, bunachair eolais) chun fadhbanna casta a réiteach lena n‑éilítear ardleibhéal saineolais daonna nó modhanna intleachta saorga de ghnáth.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "AI-ingenjörer använder metoder för artificiell intelligens inom ingenjörsvetenskap, robotteknik och datorvetenskap till att utforma program som simulerar intelligens, inklusive tankemodeller, kognitiva och kunskapsbaserade system, problemlösning och beslutsfattande. De integrerar också strukturerad kunskap i datorsystem (ontologier, kunskapsbaser) för att lösa komplexa problem som normalt kräver en hög nivå av mänsklig expertis eller metoder för artificiell intelligens.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "L-inġiniera tal-intelliġenza artifiċjali japplikaw metodi tal-intelliġenza artifiċjali fl-inġinerija, fir-robotika u fix-xjenza tal-kompjuters sabiex jiddisinjaw programmi li jissimulaw l-intelliġenza inklużi mudelli tal-ħsieb, sistemi konjittivi u bbażati fuq l-għarfien, soluzzjoni tal-problemi, u t-teħid ta’ deċiżjonijiet. Jintegraw ukoll għarfien strutturat f’sistemi tal-kompjuter (ontoloġiji, bażijiet tal-għarfien) sabiex isolvu problemi kumplessi li normalment jeħtieġu livell għoli ta’ għarfien espert uman jew metodi tal-intelliġenza artifiċjali.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Οι μηχανικοί τεχνητής νοημοσύνης εφαρμόζουν μεθόδους τεχνητής νοημοσύνης στους κλάδους της μηχανικής, της ρομποτικής και της επιστήμης των υπολογιστών για τον σχεδιασμό προγραμμάτων προσομοίωσης νοημοσύνης, συμπεριλαμβανομένων των μοντέλων σκέψης, των γνωστικών και των βασιζόμενων στη γνώση συστημάτων, της επίλυσης προβλημάτων και της λήψης αποφάσεων. Ενσωματώνουν επίσης δομημένες γνώσεις σε υπολογιστικά συστήματα (οντολογίες, βάσεις γνώσεων) για την επίλυση σύνθετων προβλημάτων, τα οποία απαιτούν συνήθως υψηλό επίπεδο ανθρώπινης εμπειρογνωσίας ή μεθόδους τεχνητής νοημοσύνης.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Artificial intelligence engineer apply methods of artificial intelligence in engineering, robotics and computer science to design programs which simulate intelligence including thinking models, cognitive and knowledge-based systems, problem solving, and decision making. They also integrate structured knowledge into computer systems (ontologies, knowledge bases) in order to solve complex problems normally requiring a high level of human expertise or artificial intelligence methods.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Gervigreindarverkfræðingar beita gervigreindaraðferðum í verkfræði, vélfærafræði og tölvunarfræði til að hanna forrit sem líkja eftir greind, þ.m.t. hugsunarlíkön, vitsmuna- og þekkingarkerfi, lausn vandamála og ákvarðanatöku. Þau samþætta einnig skipulagða þekkingu inn í tölvukerfi (verufræði, þekkingargrunna) til að leysa flókin vandamál sem venjulega krefjast mikillar sérfræðiþekkingar eða gervigreindaraðferða.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Gli ingegneri dell’intelligenza artificiale applicano metodi di intelligenza artificiale nell’ingegneria, nella robotica e nell’informatica per progettare programmi che simulano l’intelligenza, compresi i modelli di pensiero, i sistemi cognitivi e i sistemi basati sulla conoscenza, la risoluzione dei problemi e il processo decisionale. Integrano inoltre conoscenze strutturate nei sistemi informatici (ontologie, basi di conoscenze) al fine di risolvere problemi complessi che normalmente richiedono un alto livello di competenze umane o metodi di intelligenza artificiale.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Estos ingenieros aplican métodos de inteligencia artificial en ingeniería, robótica e informática para diseñar programas que simulen la inteligencia, en particular modelos de pensamiento, sistemas cognitivos y basados en el conocimiento, y procesos de resolución de problemas y toma de decisiones. También integran conocimientos estructurados en sistemas informáticos (ontologías y bases de conocimientos) con el fin de resolver problemas complejos que normalmente requieren conocimientos especializados humanos de alto nivel o métodos de inteligencia artificial.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Intellektitehnika insenerid rakendavad intellektitehnika meetodeid inseneriteaduses, robootikas ja arvutiteaduses, et projekteerida intellekti jäljendavaid programme, sealhulgas mõtlemismudeleid, kognitiivseid ja teadmuspõhiseid süsteeme, probleemide lahendamist ja otsustamist. Samuti integreerivad nad arvutisüsteemidesse struktureeritud teadmisi (ontoloogiad, teadmusbaasid), et lahendada keerukaid probleeme, milleks on tavaliselt vaja inimeste põhjalikke eriteadmisi või intellektitehnika meetodeid.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Inženýři v oblasti umělé inteligence používají metody umělé inteligence v inženýrství, robotice a počítačové vědě k navrhování programů, které simulují inteligenci včetně modelů myšlení, kognitivních a znalostních systémů, řešení problémů a rozhodování. Integrují také strukturované znalosti do počítačových systémů (ontologie, znalostní báze) s cílem řešit složité problémy, které obvykle vyžadují vysokou úroveň lidských znalostí nebo metod umělé inteligence.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "يطبق مهندس الذكاء الاصطناعي أساليب الذكاء الاصطناعي في الهندسة والروبوتات وعلوم الكمبيوتر لتصميم البرامج التي تحاكي الذكاء بما في ذلك نماذج التفكير والأنظمة المعرفية والقائمة على المعارف وحل المشكلات واتخاذ القرارات.  كما أنه يقوم بدمج المعرفة المنظمة في أنظمة الكمبيوتر (الأنطولوجيات وقواعد المعرفة) من أجل حل المشكلات المعقدة التي تتطلب عادة مستوى عال من الخبرة البشرية أو أساليب الذكاء الاصطناعي.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Inżynierowie sztucznej inteligencji stosują metody sztucznej inteligencji w inżynierii, robotyce i informatyce do projektowania programów, które symulują inteligencję, w tym modele myślenia, systemy poznawcze i systemy oparte na wiedzy, rozwiązywanie problemów i podejmowanie decyzji. Włączają również ustrukturyzowaną wiedzę (ontologie, bazy wiedzy itp.) do systemów komputerowych , aby rozwiązywać złożone problemy, które zwykle wymagają wysokiego poziomu wiedzy specjalistycznej człowieka lub metod sztucznej inteligencji.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Inginerul în domeniul inteligenței artificiale aplică metode de inteligență artificială în inginerie, robotică și informatică pentru a concepe programe care simulează inteligența, inclusiv modele de gândire, sisteme cognitive și bazate pe cunoaștere, de soluționare a problemelor și modele de proces decizional. De asemenea, integrează cunoștințe structurate în sistemele informatice (ontologii, baze de cunoștințe) pentru a rezolva probleme complexe care necesită în mod normal un nivel ridicat de expertiză umană sau metode bazate pe inteligența artificială.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Ingeniører inden for kunstig intelligens anvender metoder baseret på kunstig intelligens inden for ingeniørvirksomhed, robotteknologi og computervidenskab til at udforme programmer, der simulerer intelligens, herunder tankemodeller, kognitive og videnbaserede systemer, problemløsning og beslutningstagning. De integrerer også struktureret viden i computersystemer (ontologier, videnbaser) for at løse komplekse problemer, der normalt kræver et højt niveau af menneskelig ekspertise eller metoder baseret på kunstig intelligens.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Artificiële-intelligentie-ingenieurs passen methoden van artificiële intelligentie toe op het gebied van engineering, robotica en computerwetenschap om programma’s te ontwerpen die intelligentie simuleren, waaronder denkmodellen, cognitieve en op kennis gebaseerde systemen, probleemoplossing en besluitvorming. Zij integreren daarnaast gestructureerde kennis in computersystemen (ontologieën, kennisbanken) om complexe problemen op te lossen die normaal gesproken een hoog niveau van menselijke deskundigheid of artificiële-intelligentiemethoden vereisen.",
+        "mimetype": "plain/text"
+      }
+    },
+    "scopeNote": {
+      "en": {
+        "literal": "Excludes people performing managerial activities.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "code": "2511.11",
+    "codes": [
+      {
+        "datatype": "",
+        "value": "2511.11"
+      }
+    ],
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+        "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+        "title": "artificial intelligence engineer"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
+          "title": "ESCO member occupations"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
+          "title": "ESCO member occupations"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/occupations&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/occupations",
+          "title": "ESCO Occupations"
+        }
+      ],
+      "regulatedProfessionNote": {
+        "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/regulated-professions/unregulated&language=en",
+        "uri": "http://data.europa.eu/esco/regulated-professions/unregulated",
+        "title": "To see if and how this occupation is regulated in EU Member States, EEA countries or Switzerland please consult the Regulated Professions Database of the Commission. Regulated Professions Database: http://ec.europa.eu/growth/single-market/services/free-movement-professionals/qualifications-recognition_en"
+      },
+      "broaderIscoGroup": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/isco/C2511&language=en",
+          "uri": "http://data.europa.eu/esco/isco/C2511",
+          "title": "Systems analysts",
+          "code": "2511"
+        }
+      ],
+      "hasEssentialSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666",
+          "title": "unstructured data",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/906323f4-00c4-4c3b-ab5a-8af77be3456e",
+          "title": "create data sets",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7482a123-e801-48de-9733-262125671410&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7482a123-e801-48de-9733-262125671410",
+          "title": "task algorithmisation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/99207709-d076-4cce-ba38-e90d3bb28806&language=en",
+          "uri": "http://data.europa.eu/esco/skill/99207709-d076-4cce-ba38-e90d3bb28806",
+          "title": "resource description framework query language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/696e3b5b-8b61-45af-ae4c-3ab700f197ec&language=en",
+          "uri": "http://data.europa.eu/esco/skill/696e3b5b-8b61-45af-ae4c-3ab700f197ec",
+          "title": "information extraction",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fecf8a0d-62c4-4e71-9b03-0f4fc2ad7bf5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/fecf8a0d-62c4-4e71-9b03-0f4fc2ad7bf5",
+          "title": "data models",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2c28fc20-8a60-4311-8899-5ef8729c05b3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2c28fc20-8a60-4311-8899-5ef8729c05b3",
+          "title": "design process",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/54924a2c-daca-40d3-9716-4b38ceb04f38&language=en",
+          "uri": "http://data.europa.eu/esco/skill/54924a2c-daca-40d3-9716-4b38ceb04f38",
+          "title": "algorithms",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1bba98a7-92b9-450b-9235-e0c905f8f3c4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1bba98a7-92b9-450b-9235-e0c905f8f3c4",
+          "title": "information architecture",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/47a49cd6-097d-457a-9f7b-c290c14930d5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/47a49cd6-097d-457a-9f7b-c290c14930d5",
+          "title": "analyse big data",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/629685b8-5f9e-4522-8cff-b3e2c4ec625a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/629685b8-5f9e-4522-8cff-b3e2c4ec625a",
+          "title": "digital data processing"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/09f2f811-a3fb-4de3-a70f-6420a6935575&language=en",
+          "uri": "http://data.europa.eu/esco/skill/09f2f811-a3fb-4de3-a70f-6420a6935575",
+          "title": "systems development life-cycle",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/98301d4a-2cc3-439d-8d7f-0b6ac76302bb&language=en",
+          "uri": "http://data.europa.eu/esco/skill/98301d4a-2cc3-439d-8d7f-0b6ac76302bb",
+          "title": "business process modelling",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97&language=en",
+          "uri": "http://data.europa.eu/esco/skill/21d2f96d-35f7-4e3f-9745-c533d2dd6e97",
+          "title": "computer programming",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/03ff0d53-573a-47a0-a0ad-1995815a4339&language=en",
+          "uri": "http://data.europa.eu/esco/skill/03ff0d53-573a-47a0-a0ad-1995815a4339",
+          "title": "information structure",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e465a154-93f7-4973-9ce1-31659fe16dd2&language=en",
+          "uri": "http://data.europa.eu/esco/skill/e465a154-93f7-4973-9ce1-31659fe16dd2",
+          "title": "principles of artificial intelligence",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/348b74cd-49ce-4844-8bdf-ec188b497213&language=en",
+          "uri": "http://data.europa.eu/esco/skill/348b74cd-49ce-4844-8bdf-ec188b497213",
+          "title": "visual presentation techniques",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c3e36d05-8ae8-447f-bb2b-6f9409f85389&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c3e36d05-8ae8-447f-bb2b-6f9409f85389",
+          "title": "deliver visual presentation of data",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1a4cc54f-1e53-442b-a6d2-1682dc8ef8f9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1a4cc54f-1e53-442b-a6d2-1682dc8ef8f9",
+          "title": "creatively use digital technologies",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8c4c49d4-9708-433f-8ca7-bf2c5211ee49&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8c4c49d4-9708-433f-8ca7-bf2c5211ee49",
+          "title": "develop creative ideas",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/93aaf65c-5aad-4e6f-a7ba-ce9bf7c0e6e6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/93aaf65c-5aad-4e6f-a7ba-ce9bf7c0e6e6",
+          "title": "information categorisation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b04f377b-ee80-4b38-aca1-19d266a23b17&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b04f377b-ee80-4b38-aca1-19d266a23b17",
+          "title": "analyse business requirements",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/cbe2c304-1e7d-489a-97d9-a7d3e37a9db6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/cbe2c304-1e7d-489a-97d9-a7d3e37a9db6",
+          "title": "apply ICT systems theory",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/25f0ea33-b4a2-4f31-b7b4-7d20e827b180&language=en",
+          "uri": "http://data.europa.eu/esco/skill/25f0ea33-b4a2-4f31-b7b4-7d20e827b180",
+          "title": "data mining",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/edebd83d-35f6-4ed5-a940-6c203d178c01&language=en",
+          "uri": "http://data.europa.eu/esco/skill/edebd83d-35f6-4ed5-a940-6c203d178c01",
+          "title": "data science",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bb165899-d95f-4433-95f2-173fefd716d2&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bb165899-d95f-4433-95f2-173fefd716d2",
+          "title": "develop statistical software",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d",
+          "title": "Python (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0823ccef-813f-4f22-afef-ac0d68615e8f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0823ccef-813f-4f22-afef-ac0d68615e8f",
+          "title": "computer simulation",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1b70a55d-b8a4-49fc-96c6-15ab4cff2522&language=en",
+          "uri": "http://data.europa.eu/esco/skill/1b70a55d-b8a4-49fc-96c6-15ab4cff2522",
+          "title": "use data processing techniques",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5608d5a0-6d5e-43b7-be37-616501729bb4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5608d5a0-6d5e-43b7-be37-616501729bb4",
+          "title": "artificial neural networks",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d9e5349e-8791-49c2-8ba4-839fdd1606c2&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d9e5349e-8791-49c2-8ba4-839fdd1606c2",
+          "title": "define technical requirements",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d5a59ca8-2e91-472e-8571-d12ce4478679&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d5a59ca8-2e91-472e-8571-d12ce4478679",
+          "title": "Process-based management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/505e4ef3-7ce4-437d-b7b4-5c608f71c258&language=en",
+          "uri": "http://data.europa.eu/esco/skill/505e4ef3-7ce4-437d-b7b4-5c608f71c258",
+          "title": "build recommender systems",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/000f1d3d-220f-4789-9c0a-cc742521fb02&language=en",
+          "uri": "http://data.europa.eu/esco/skill/000f1d3d-220f-4789-9c0a-cc742521fb02",
+          "title": "Haskell",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dc72ad0a-c5dc-4abd-bc0d-ca43e82162e1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/dc72ad0a-c5dc-4abd-bc0d-ca43e82162e1",
+          "title": "build business relationships",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6c08403c-a5bb-4868-b8c2-b7d039c0e511&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6c08403c-a5bb-4868-b8c2-b7d039c0e511",
+          "title": "design database scheme",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8369c2d6-c100-4cf6-bd83-9668d8678433",
+          "title": "utilise machine learning",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/a4d336a6-9ffd-402a-91cc-f359716ba4e0&language=en",
+          "uri": "http://data.europa.eu/esco/skill/a4d336a6-9ffd-402a-91cc-f359716ba4e0",
+          "title": "ML (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c3a03c5a-c260-4c26-9b9a-873abb396f4d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c3a03c5a-c260-4c26-9b9a-873abb396f4d",
+          "title": "MATLAB",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/8369ede5-4200-4a44-be2e-bc60ef959259&language=en",
+          "uri": "http://data.europa.eu/esco/skill/8369ede5-4200-4a44-be2e-bc60ef959259",
+          "title": "Microsoft Visual C++",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0ccdfe98-f845-4598-84a1-3dca66e9d9a3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0ccdfe98-f845-4598-84a1-3dca66e9d9a3",
+          "title": "Ruby (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/2bde42ae-e776-41c1-9ded-b07b30bfe985&language=en",
+          "uri": "http://data.europa.eu/esco/skill/2bde42ae-e776-41c1-9ded-b07b30bfe985",
+          "title": "Prolog (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/51586df8-1c46-4b47-8583-773cb63bf00b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/51586df8-1c46-4b47-8583-773cb63bf00b",
+          "title": "R",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dcdd5ddf-82a6-4ac3-8edc-d4b23cae9a88&language=en",
+          "uri": "http://data.europa.eu/esco/skill/dcdd5ddf-82a6-4ac3-8edc-d4b23cae9a88",
+          "title": "VBScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/98a1dec3-8138-4f46-a596-5e2a83b884b9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/98a1dec3-8138-4f46-a596-5e2a83b884b9",
+          "title": "business analytics",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/143769cb-b61e-47d8-a61e-eedfbec1016c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/143769cb-b61e-47d8-a61e-eedfbec1016c",
+          "title": "business intelligence",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/03a74eee-2dc6-4147-8667-5cdeb65f122d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/03a74eee-2dc6-4147-8667-5cdeb65f122d",
+          "title": "manage ICT data classification",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/be80acfc-b6f2-4411-9b8d-b19d9cd2556a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/be80acfc-b6f2-4411-9b8d-b19d9cd2556a",
+          "title": "Swift (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/e8b89eb6-51e8-4c3a-babb-88b2e110376b&language=en",
+          "uri": "http://data.europa.eu/esco/skill/e8b89eb6-51e8-4c3a-babb-88b2e110376b",
+          "title": "Pascal (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/def007fa-5fed-4a5f-91a2-b0d7e3db1be1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/def007fa-5fed-4a5f-91a2-b0d7e3db1be1",
+          "title": "COBOL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/553ad092-b799-44c9-a94c-65a84fdc7526&language=en",
+          "uri": "http://data.europa.eu/esco/skill/553ad092-b799-44c9-a94c-65a84fdc7526",
+          "title": "identify processes for re-engineering",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/47b9bbcf-356c-4782-83a4-7f5a1b2b51a3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/47b9bbcf-356c-4782-83a4-7f5a1b2b51a3",
+          "title": "Assembly (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/38d49d88-9069-467b-b29e-3cae739bdd4d",
+          "title": "build predictive models",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ffddfc7c-a9dd-449f-9e96-882dc447c8b6&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ffddfc7c-a9dd-449f-9e96-882dc447c8b6",
+          "title": "Scala",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/42ed3bfb-1a01-4c8b-9758-fc6438865734&language=en",
+          "uri": "http://data.europa.eu/esco/skill/42ed3bfb-1a01-4c8b-9758-fc6438865734",
+          "title": "Smalltalk (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/5da8018b-ae85-4cde-ad93-0394369018f3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/5da8018b-ae85-4cde-ad93-0394369018f3",
+          "title": "SPARQL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/034c29fa-c3ba-45ea-b8f3-bf8e3705e386&language=en",
+          "uri": "http://data.europa.eu/esco/skill/034c29fa-c3ba-45ea-b8f3-bf8e3705e386",
+          "title": "Erlang",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/ecc4552a-92c5-4222-b18d-faf5ac841080&language=en",
+          "uri": "http://data.europa.eu/esco/skill/ecc4552a-92c5-4222-b18d-faf5ac841080",
+          "title": "deep learning",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/41bf7ede-fc84-4a57-8c89-b548d11b0ba1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/41bf7ede-fc84-4a57-8c89-b548d11b0ba1",
+          "title": "manage business knowledge",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/da6393d5-a53c-4863-abc7-51f36281d74e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/da6393d5-a53c-4863-abc7-51f36281d74e",
+          "title": "lean project management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a9acb6b-1139-4be9-b431-3a80a959f2f4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0a9acb6b-1139-4be9-b431-3a80a959f2f4",
+          "title": "Agile project management",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4d30ad07-9e39-4899-81dd-02b280f162f9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4d30ad07-9e39-4899-81dd-02b280f162f9",
+          "title": "apply systemic design thinking",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0cd6dcf1-5778-42a5-b685-4d01ae4a4871&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0cd6dcf1-5778-42a5-b685-4d01ae4a4871",
+          "title": "Common Lisp",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/52cf3037-ab53-4806-85ed-7fd21ea7f6a1&language=en",
+          "uri": "http://data.europa.eu/esco/skill/52cf3037-ab53-4806-85ed-7fd21ea7f6a1",
+          "title": "Groovy",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b633eb55-8f1f-4ae6-ab4c-2022ffe2cb7f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b633eb55-8f1f-4ae6-ab4c-2022ffe2cb7f",
+          "title": "C++",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fda917eb-0d6a-4371-8c93-2a10bf950966&language=en",
+          "uri": "http://data.europa.eu/esco/skill/fda917eb-0d6a-4371-8c93-2a10bf950966",
+          "title": "manage ICT semantic integration",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7b0d5000-00da-4864-b776-6de49a87a669&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7b0d5000-00da-4864-b776-6de49a87a669",
+          "title": "computer vision",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4350c38d-0fe9-4ca7-bab9-40ed7f72b04f&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4350c38d-0fe9-4ca7-bab9-40ed7f72b04f",
+          "title": "PHP",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0dc7aa1b-b5af-4f4b-81ce-ee22ed8b6926&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0dc7aa1b-b5af-4f4b-81ce-ee22ed8b6926",
+          "title": "assess ICT knowledge",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9973a5a2-7822-4161-99e9-95c781eb63f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9973a5a2-7822-4161-99e9-95c781eb63f8",
+          "title": "Objective-C",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/4c016b68-4116-468c-9dc6-42710c239e4a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/4c016b68-4116-468c-9dc6-42710c239e4a",
+          "title": "C#",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/f597f772-24d3-4cec-813c-cf5a7027c794&language=en",
+          "uri": "http://data.europa.eu/esco/skill/f597f772-24d3-4cec-813c-cf5a7027c794",
+          "title": "N1QL",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389&language=en",
+          "uri": "http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389",
+          "title": "Java (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/9ef0f3a0-9ce2-4ef1-a987-0366b5cb2dbe&language=en",
+          "uri": "http://data.europa.eu/esco/skill/9ef0f3a0-9ce2-4ef1-a987-0366b5cb2dbe",
+          "title": "database development tools",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c7d24594-0c11-4b27-9039-fe0bb903da8e&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c7d24594-0c11-4b27-9039-fe0bb903da8e",
+          "title": "LINQ",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/300d432b-f457-4cd3-9cb1-1858c7d14954&language=en",
+          "uri": "http://data.europa.eu/esco/skill/300d432b-f457-4cd3-9cb1-1858c7d14954",
+          "title": "OpenEdge Advanced Business Language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968",
+          "title": "design application interfaces",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3cd569a2-4f88-4c1e-9995-8dce8c5e51a7&language=en",
+          "uri": "http://data.europa.eu/esco/skill/3cd569a2-4f88-4c1e-9995-8dce8c5e51a7",
+          "title": "JavaScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/993b1e23-f2de-4bd8-b33f-f86dde1c8e9d&language=en",
+          "uri": "http://data.europa.eu/esco/skill/993b1e23-f2de-4bd8-b33f-f86dde1c8e9d",
+          "title": "CoffeeScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0de61385-de6d-4146-ba32-1cc1bc102220&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0de61385-de6d-4146-ba32-1cc1bc102220",
+          "title": "Lisp",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/13bdd41a-2a18-441f-96db-41252c519413&language=en",
+          "uri": "http://data.europa.eu/esco/skill/13bdd41a-2a18-441f-96db-41252c519413",
+          "title": "Visual Basic",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/867137fb-ff1b-4ca3-99f3-cb6969aa2c68&language=en",
+          "uri": "http://data.europa.eu/esco/skill/867137fb-ff1b-4ca3-99f3-cb6969aa2c68",
+          "title": "TypeScript",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/401eb8d8-6daa-4f8b-90ad-60afc71eb4f8&language=en",
+          "uri": "http://data.europa.eu/esco/skill/401eb8d8-6daa-4f8b-90ad-60afc71eb4f8",
+          "title": "Perl",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bb99af26-71ff-4dca-bde7-1eb1f6194426&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bb99af26-71ff-4dca-bde7-1eb1f6194426",
+          "title": "SAP R3",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3e2ab38a-4519-4bef-b762-a8bf4836a775&language=en",
+          "uri": "http://data.europa.eu/esco/skill/3e2ab38a-4519-4bef-b762-a8bf4836a775",
+          "title": "perform dimensionality reduction",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/d56fc2b5-4b0a-4e7e-9bde-a33736f6ff18&language=en",
+          "uri": "http://data.europa.eu/esco/skill/d56fc2b5-4b0a-4e7e-9bde-a33736f6ff18",
+          "title": "Scratch (computer programming)",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04f1b938-d4d4-4cb1-a863-982af76b9d93&language=en",
+          "uri": "http://data.europa.eu/esco/skill/04f1b938-d4d4-4cb1-a863-982af76b9d93",
+          "title": "SAS language",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/726abd5a-d23c-44b9-abb0-f22bbe95f1d3&language=en",
+          "uri": "http://data.europa.eu/esco/skill/726abd5a-d23c-44b9-abb0-f22bbe95f1d3",
+          "title": "operational research",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/bec4359e-cb92-468f-a997-8fb28e32fba9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/bec4359e-cb92-468f-a997-8fb28e32fba9",
+          "title": "ICT project management methodologies",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "hasNACECode": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/7499&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/7499",
+          "title": "74.99 All other professional, scientific and technical activities n.e.c.",
+          "code": "74.99"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/621&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/621",
+          "title": "62.1 Computer programming activities",
+          "code": "62.1"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/ux2/nace2.1/622&language=en",
+          "uri": "http://data.europa.eu/ux2/nace2.1/622",
+          "title": "62.2 Computer consultancy and computer facilities management activities",
+          "code": "62.2"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "artificial intelligence engineer",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+              "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C2511"
+          ]
+        },
+        {
+          "title": "Systems analysts",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2511&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C2511"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C251"
+          ]
+        },
+        {
+          "title": "Software and applications developers and analysts",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C251&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C251"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C25"
+          ]
+        },
+        {
+          "title": "Information and communications technology professionals",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C25&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C25"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/isco/C2"
+          ]
+        },
+        {
+          "title": "Professionals",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2&language=en",
+              "uri": "http://data.europa.eu/esco/isco/C2"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

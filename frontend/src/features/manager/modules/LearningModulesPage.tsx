@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   Copy,
+  CornerDownRight,
   Edit3,
   ExternalLink,
   Eye,
@@ -23,6 +24,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
 import {
   Dialog,
   DialogDescription,
@@ -42,9 +44,23 @@ import {
   updateActiveCompany,
 } from '../../../shared/stores/companyStore'
 import {
-  INITIAL_MICRO_SKILLS,
   type LearningModuleModel,
+  type MicroSkillModel,
 } from '../data/ldManagerMockData'
+import {
+  fetchLearningModules,
+  createLearningModule,
+  updateLearningModule,
+  deleteLearningModule,
+} from '../../../shared/api/learningModuleApi'
+import {
+  fetchMicroSkills,
+} from '../../../shared/api/microSkillApi'
+import {
+  getApprovedLearningContents,
+  subscribeToLearningContents,
+  type LearningContentPackage,
+} from '../../../shared/stores/learningContentStore'
 
 const MODULE_PRESETS: ImportPreset[] = [
   {
@@ -72,7 +88,7 @@ const MODULE_PRESETS: ImportPreset[] = [
         status: 'published' as const,
         durationMinutes: 60,
         sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/attention.html',
-        teachesSkillIds: [INITIAL_MICRO_SKILLS[0]?.id || 'skill-attn-01'],
+        teachesSkillIds: ['skill-attn-01'],
         activePlanEnrollments: 8,
         updatedAt: new Date().toISOString().slice(0, 10),
       },
@@ -85,7 +101,7 @@ const MODULE_PRESETS: ImportPreset[] = [
         status: 'draft' as const,
         durationMinutes: 75,
         sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/vllm.html',
-        teachesSkillIds: [INITIAL_MICRO_SKILLS[1]?.id || 'skill-kv-01'],
+        teachesSkillIds: ['skill-kv-01'],
         activePlanEnrollments: 0,
         updatedAt: new Date().toISOString().slice(0, 10),
       },
@@ -98,13 +114,112 @@ const MODULE_PRESETS: ImportPreset[] = [
         status: 'published' as const,
         durationMinutes: 90,
         sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/rag.html',
-        teachesSkillIds: [INITIAL_MICRO_SKILLS[2]?.id || 'skill-vec-01'],
+        teachesSkillIds: ['skill-vec-01'],
         activePlanEnrollments: 5,
         updatedAt: new Date().toISOString().slice(0, 10),
       },
     ],
   },
 ]
+
+function compareVersions(v1: string, v2: string): number {
+  const p1 = (v1 || '1.0').split('.').map((n) => parseInt(n, 10) || 0)
+  const p2 = (v2 || '1.0').split('.').map((n) => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+    const num1 = p1[i] ?? 0
+    const num2 = p2[i] ?? 0
+    if (num1 !== num2) return num1 - num2
+  }
+  return 0
+}
+
+function sortModulesWithDraftsBelowPublished(
+  list: LearningModuleModel[],
+  sortBy: 'latest' | 'title' = 'latest'
+): LearningModuleModel[] {
+  const groups = new Map<string, LearningModuleModel[]>()
+  for (const m of list) {
+    const key = m.stableId || m.code
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key)!.push(m)
+  }
+
+  const isPureDraftLineage = (groupModules: LearningModuleModel[]): boolean => {
+    return groupModules.every((m) => m.status !== 'published')
+  }
+
+  const getLineageBaseTime = (groupModules: LearningModuleModel[]): number => {
+    const published = groupModules.filter((m) => m.status === 'published')
+    if (published.length > 0) {
+      let baseTime = Infinity
+      for (const m of published) {
+        const t = m.updatedAt ? new Date(m.updatedAt).getTime() : 0
+        if (!isNaN(t) && t > 0 && t < baseTime) {
+          baseTime = t
+        }
+      }
+      return baseTime === Infinity ? 0 : baseTime
+    }
+
+    let latest = 0
+    for (const m of groupModules) {
+      const t = m.updatedAt ? new Date(m.updatedAt).getTime() : 0
+      if (!isNaN(t) && t > latest) {
+        latest = t
+      }
+    }
+    return latest
+  }
+
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    const modsA = groups.get(a)!
+    const modsB = groups.get(b)!
+    const modA = modsA[0]
+    const modB = modsB[0]
+
+    if (sortBy === 'latest') {
+      const isPureDraftA = isPureDraftLineage(modsA)
+      const isPureDraftB = isPureDraftLineage(modsB)
+
+      // Rule: Brand-new pure draft modules appear on top
+      if (isPureDraftA && !isPureDraftB) return -1
+      if (isPureDraftB && !isPureDraftA) return 1
+
+      const timeA = getLineageBaseTime(modsA)
+      const timeB = getLineageBaseTime(modsB)
+      if (timeB !== timeA) {
+        return timeB - timeA
+      }
+      return (modB?.id || '').localeCompare(modA?.id || '')
+    }
+
+    return (modA?.title || '').localeCompare(modB?.title || '')
+  })
+
+  const result: LearningModuleModel[] = []
+  for (const key of sortedKeys) {
+    const groupMods = groups.get(key)!
+    const published = groupMods
+      .filter((m) => m.status === 'published')
+      .sort((a, b) => compareVersions(b.version, a.version))
+
+    const newestPublished = published[0]
+    const olderPublished = published.slice(1).sort((a, b) => compareVersions(a.version, b.version))
+    const nonPublished = groupMods
+      .filter((m) => m.status !== 'published')
+      .sort((a, b) => compareVersions(a.version, b.version))
+
+    if (newestPublished) {
+      result.push(newestPublished, ...olderPublished, ...nonPublished)
+    } else {
+      result.push(...nonPublished)
+    }
+  }
+
+  return result
+}
 
 export function LearningModulesPage() {
   const { toast } = useToast()
@@ -113,14 +228,72 @@ export function LearningModulesPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'published' | 'draft' | 'archived'>('all')
 
-  // Synchronize state when active company scope changes
+  const [companyMicroSkills, setCompanyMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills || [])
+
+  // Synchronize state when active company scope changes & fetch live from Neo4j
   React.useEffect(() => {
-    const handleSync = () => {
+    let isMounted = true
+    const handleSync = async () => {
       const active = getActiveCompany()
-      setModules(active?.modules ?? [])
+      const orgId = active?.id || 'comp-technova'
+
+      try {
+        const [liveModules, liveSkills] = await Promise.all([
+          fetchLearningModules(orgId).catch(() => []),
+          fetchMicroSkills(orgId).catch(() => []),
+        ])
+
+        if (!isMounted) return
+
+        if (liveSkills && liveSkills.length > 0) {
+          setCompanyMicroSkills(liveSkills.map((s) => ({
+            id: s.id,
+            code: s.code,
+            name: s.name,
+            description: s.description || '',
+            status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
+            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
+          })))
+        }
+
+        if (liveModules && liveModules.length > 0) {
+          const mapped: LearningModuleModel[] = liveModules.map((m) => ({
+            id: m.id,
+            stableId: m.code || m.id,
+            code: m.code || m.id,
+            title: m.title,
+            version: m.version || '0.9.0',
+            status: (m.status?.toUpperCase() === 'DRAFT'
+              ? 'draft'
+              : m.status?.toUpperCase() === 'ARCHIVED'
+              ? 'archived'
+              : 'published') as LearningModuleModel['status'],
+            durationMinutes: m.durationMinutes || 45,
+            sampleContentUri: m.contentUri || '',
+            teachesSkillIds: m.teachesSkillIds || [],
+            activePlanEnrollments: 0,
+            updatedAt: '2026-10-01',
+            moduleType: m.moduleType as LearningModuleModel['moduleType'],
+            contentType: m.contentType,
+            contentVersion: m.contentVersion,
+            reviewStatus: m.reviewStatus as LearningModuleModel['reviewStatus'],
+          }))
+          setModules(mapped)
+          return
+        }
+      } catch (err) {
+        // Fallback to active company modules
+      }
+
+      if (isMounted) {
+        setModules(active?.modules ?? [])
+      }
     }
+
+    handleSync()
     window.addEventListener('active_company_changed', handleSync)
     return () => {
+      isMounted = false
       window.removeEventListener('active_company_changed', handleSync)
     }
   }, [])
@@ -140,8 +313,16 @@ export function LearningModulesPage() {
     []
   )
 
-  const activeComp = getActiveCompany()
-  const companyMicroSkills = activeComp?.microSkills || []
+  // Approved Learning Content Packages from Content Studio
+  const [approvedPackages, setApprovedPackages] = React.useState<LearningContentPackage[]>(() =>
+    getApprovedLearningContents()
+  )
+
+  React.useEffect(() => {
+    return subscribeToLearningContents(() => {
+      setApprovedPackages(getApprovedLearningContents())
+    })
+  }, [])
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
@@ -153,43 +334,83 @@ export function LearningModulesPage() {
   const [viewingDetailsModule, setViewingDetailsModule] = React.useState<LearningModuleModel | null>(null)
   const [deletingDraftModule, setDeletingDraftModule] = React.useState<LearningModuleModel | null>(null)
 
-  const handleImportModules = (data: any) => {
-    const list = Array.isArray(data) ? data : data.modules || []
-    const normalized: LearningModuleModel[] = list.map((item: any, idx: number) => ({
-      id: item.id || `mod-${Date.now()}-${idx}`,
-      stableId: item.stableId || `mod-uuid-${Date.now()}-${idx}`,
-      code: (item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
-      title: (item.title || 'Untitled Module').trim(),
-      version: item.version || '1.0',
-      status: (item.status === 'draft' || item.status === 'archived') ? item.status : 'published',
-      durationMinutes: Number(item.durationMinutes) || 45,
-      sampleContentUri: item.sampleContentUri || 'https://learning.adaptlearn.internal/modules/content/sample.html',
-      teachesSkillIds: Array.isArray(item.teachesSkillIds) ? item.teachesSkillIds : [],
-      activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
-      updatedAt: item.updatedAt || new Date().toISOString().slice(0, 10),
-    }))
+  const handleImportModules = (data: unknown) => {
+    const list = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && 'modules' in data && Array.isArray((data as Record<string, unknown>).modules))
+      ? ((data as Record<string, unknown>).modules as unknown[])
+      : []
+    const normalized: LearningModuleModel[] = list.map((itemRecord: unknown, idx: number) => {
+      const item = (typeof itemRecord === 'object' && itemRecord !== null ? itemRecord : {}) as Record<string, unknown>
+      return {
+        id: (item.id as string) || `mod-${Date.now()}-${idx}`,
+        stableId: (item.stableId as string) || `mod-uuid-${Date.now()}-${idx}`,
+        code: String(item.code || `MOD-IMP-${idx + 1}`).trim().toUpperCase(),
+        title: String(item.title || 'Untitled Module').trim(),
+        version: String(item.version || '1.0'),
+        status: (item.status === 'draft'
+          ? 'draft'
+          : item.status === 'archived'
+          ? 'archived'
+          : 'published') as LearningModuleModel['status'],
+        durationMinutes: Number(item.durationMinutes) || 45,
+        sampleContentUri: String(item.sampleContentUri || 'content/modules/sample.md'),
+        teachesSkillIds: Array.isArray(item.teachesSkillIds) ? (item.teachesSkillIds as string[]) : [],
+        activePlanEnrollments: Number(item.activePlanEnrollments) || 0,
+        updatedAt: String(item.updatedAt || new Date().toISOString().slice(0, 10)),
+        moduleType: 'LESSON_AND_PRACTICE',
+        contentType: 'application/json',
+        contentVersion: '1.0',
+        reviewStatus: 'APPROVED',
+      }
+    })
     saveAndSetModules((prev) => [...normalized, ...prev])
   }
 
-  // Module form state
+  // Module form state matching Neo4j schema
   const [moduleForm, setModuleForm] = React.useState({
     code: '',
     title: '',
     durationMinutes: 45,
     sampleContentUri: '',
+    moduleType: 'LESSON_AND_PRACTICE' as 'LESSON_AND_PRACTICE' | 'RESOURCE_GUIDED_PRACTICE',
+    contentType: 'application/json',
+    contentVersion: '1.0',
+    reviewStatus: 'APPROVED' as 'NEEDS_EXPERT_REVIEW' | 'APPROVED' | 'REJECTED',
+    selectedContentPackageId: '',
+    teachesSkillId: '',
   })
 
   // Replacement selection for archive workflow
   const [replacementModuleId, setReplacementModuleId] = React.useState<string>('')
 
-  // Filtered modules
-  const filteredModules = modules.filter((m) => {
-    const matchesStatus = statusFilter === 'all' || m.status === statusFilter
-    const matchesSearch =
-      m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.code.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+  // Sorting & pagination states
+  const [sortBy, setSortBy] = React.useState<'latest' | 'title'>('latest')
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const pageSize = 10
+
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, statusFilter, sortBy])
+
+  // Filtered and sorted modules
+  const filteredModules = React.useMemo(() => {
+    const list = modules.filter((m) => {
+      const matchesStatus = statusFilter === 'all' || m.status === statusFilter
+      const matchesSearch =
+        m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.code.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesStatus && matchesSearch
+    })
+
+    return sortModulesWithDraftsBelowPublished(list, sortBy)
+  }, [modules, statusFilter, searchQuery, sortBy])
+
+  const totalPages = Math.max(1, Math.ceil(filteredModules.length / pageSize))
+  const paginatedModules = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredModules.slice(start, start + pageSize)
+  }, [filteredModules, currentPage, pageSize])
 
   // Aggregate stats
   const totalModules = modules.length
@@ -207,35 +428,39 @@ export function LearningModulesPage() {
       )}`,
       title: '',
       durationMinutes: 45,
-      sampleContentUri: 'https://learning.adaptlearn.internal/modules/content/sample.html',
+      sampleContentUri: 'content/modules/sample.json',
+      moduleType: 'LESSON_AND_PRACTICE',
+      contentType: 'application/json',
+      contentVersion: '1.0',
+      reviewStatus: 'APPROVED',
+      selectedContentPackageId: '',
+      teachesSkillId: companyMicroSkills[0]?.id || '',
     })
     setSelectedModule(null)
     setIsCreateModalOpen(true)
   }
 
-  const handleSaveModule = () => {
-    // 1. Title & Code validation
-    if (!moduleForm.code.trim() || !moduleForm.title.trim()) {
+  // Module creation / edit handler
+  const handleSaveModule = async () => {
+    if (!moduleForm.title.trim()) {
       toast({
         title: 'Validation Error',
-        description: 'Module Code and Title are required.',
+        description: 'Module title is strictly required.',
         variant: 'destructive',
       })
       return
     }
 
-    // 2. Positive duration validation
     if (moduleForm.durationMinutes <= 0) {
       toast({
         title: 'Invalid Duration',
-        description: 'Duration must be a positive integer greater than 0 minutes.',
+        description: 'Module duration must be greater than 0 minutes.',
         variant: 'destructive',
       })
       return
     }
 
-    // 3. Sample-content URI validation
-    if (!moduleForm.sampleContentUri.trim()) {
+    if (!moduleForm.sampleContentUri.trim() && !moduleForm.selectedContentPackageId) {
       toast({
         title: 'Missing Content Reference',
         description: 'A valid sample-content URI or document reference is required.',
@@ -244,22 +469,51 @@ export function LearningModulesPage() {
       return
     }
 
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+
     if (selectedModule) {
       // Direct edit for draft
-      saveAndSetModules((prev) =>
-        prev.map((m) =>
-          m.id === selectedModule.id
-            ? {
-                ...m,
-                title: moduleForm.title.trim(),
-                durationMinutes: moduleForm.durationMinutes,
-                sampleContentUri: moduleForm.sampleContentUri.trim(),
-                updatedAt: new Date().toISOString().slice(0, 10),
-              }
-            : m,
-        ),
-      )
-      toast({ title: 'Module Updated', description: `Saved changes to draft ${selectedModule.code}.`, variant: 'success' })
+      try {
+        const teachesList = moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : selectedModule.teachesSkillIds
+        await updateLearningModule(orgId, selectedModule.id, {
+          title: moduleForm.title.trim(),
+          durationMinutes: moduleForm.durationMinutes,
+          contentUri: moduleForm.sampleContentUri.trim(),
+          moduleType: moduleForm.moduleType,
+          contentType: moduleForm.contentType,
+          contentVersion: moduleForm.contentVersion,
+          reviewStatus: moduleForm.reviewStatus,
+          teachesSkillIds: teachesList,
+        })
+        saveAndSetModules((prev) =>
+          prev.map((m) =>
+            m.id === selectedModule.id
+              ? {
+                  ...m,
+                  title: moduleForm.title.trim(),
+                  durationMinutes: moduleForm.durationMinutes,
+                  sampleContentUri: moduleForm.sampleContentUri.trim(),
+                  moduleType: moduleForm.moduleType,
+                  contentType: moduleForm.contentType,
+                  contentVersion: moduleForm.contentVersion,
+                  reviewStatus: moduleForm.reviewStatus,
+                  learningContentId: moduleForm.selectedContentPackageId || m.learningContentId,
+                  teachesSkillIds: teachesList,
+                  updatedAt: new Date().toISOString().slice(0, 10),
+                }
+              : m,
+          ),
+        )
+        toast({ title: 'Module Updated', description: `Saved changes to ${selectedModule.code} in Neo4j.`, variant: 'success' })
+      } catch (err: unknown) {
+        toast({
+          title: 'Update Failed',
+          description: err instanceof Error ? err.message : 'Failed to update module in database.',
+          variant: 'destructive',
+        })
+        return
+      }
     } else {
       // Check duplicate code
       if (modules.some((m) => m.code.toUpperCase() === moduleForm.code.trim().toUpperCase())) {
@@ -267,36 +521,67 @@ export function LearningModulesPage() {
         return
       }
 
+      const modCode = moduleForm.code.trim().toUpperCase()
       const newMod: LearningModuleModel = {
-        id: `mod-${Date.now()}`,
+        id: modCode,
         stableId: `mod-uuid-${Date.now()}`,
-        code: moduleForm.code.trim().toUpperCase(),
+        code: modCode,
         title: moduleForm.title.trim(),
         version: '1.0',
         status: 'draft',
         durationMinutes: moduleForm.durationMinutes,
-        sampleContentUri: moduleForm.sampleContentUri.trim(),
-        teachesSkillIds: [],
+        sampleContentUri: moduleForm.sampleContentUri.trim() || `content/modules/${modCode}.json`,
+        teachesSkillIds: moduleForm.teachesSkillId ? [moduleForm.teachesSkillId] : [],
         activePlanEnrollments: 0,
         updatedAt: new Date().toISOString().slice(0, 10),
+        moduleType: moduleForm.moduleType,
+        contentType: moduleForm.contentType,
+        contentVersion: moduleForm.contentVersion,
+        reviewStatus: moduleForm.reviewStatus,
+        learningContentId: moduleForm.selectedContentPackageId || undefined,
       }
 
-      saveAndSetModules([newMod, ...modules])
-      toast({
-        title: 'Draft Module Created',
-        description: `Draft metadata for ${newMod.code} saved. Add taught skills before publishing.`,
-        variant: 'success',
-      })
+      try {
+        await createLearningModule(orgId, {
+          id: newMod.id,
+          code: newMod.code,
+          title: newMod.title,
+          version: newMod.version,
+          status: 'DRAFT',
+          durationMinutes: newMod.durationMinutes,
+          contentUri: newMod.sampleContentUri,
+          moduleType: newMod.moduleType,
+          contentType: newMod.contentType,
+          contentVersion: newMod.contentVersion,
+          reviewStatus: newMod.reviewStatus,
+          teachesSkillIds: newMod.teachesSkillIds,
+        })
+        saveAndSetModules([newMod, ...modules])
+        toast({
+          title: 'Draft Module Created',
+          description: `Draft metadata for ${newMod.code} saved successfully to Neo4j.`,
+          variant: 'success',
+        })
+      } catch (err: unknown) {
+        toast({
+          title: 'Creation Failed',
+          description: err instanceof Error ? err.message : 'Failed to save module to Neo4j database.',
+          variant: 'destructive',
+        })
+        return
+      }
     }
     setIsCreateModalOpen(false)
   }
 
   // Create Successor Draft (Protecting Learning History)
-  const handleCreateSuccessorDraft = (mod: LearningModuleModel) => {
+  const handleCreateSuccessorDraft = async (mod: LearningModuleModel) => {
     const curVer = parseFloat(mod.version) || 1.0
     const nextVer = (curVer + 0.1).toFixed(1)
 
-    const existingDraft = modules.find((m) => m.stableId === mod.stableId && m.status === 'draft')
+    const existingDraft = modules.find(
+      (m) => (m.stableId === mod.stableId || m.code === mod.code) && m.status === 'draft'
+    )
     if (existingDraft) {
       toast({
         title: 'Successor Draft Exists',
@@ -306,9 +591,11 @@ export function LearningModulesPage() {
       return
     }
 
+    const successorId = `${mod.code}-V${nextVer.replace('.', '_')}`
     const successor: LearningModuleModel = {
       ...mod,
-      id: `mod-${Date.now()}`,
+      id: successorId,
+      stableId: mod.stableId || `mod-uuid-${mod.code}`,
       version: nextVer,
       status: 'draft',
       activePlanEnrollments: 0, // Reset for new draft
@@ -316,16 +603,40 @@ export function LearningModulesPage() {
       title: `${mod.title} (Draft Revision)`,
     }
 
-    saveAndSetModules([successor, ...modules])
-    toast({
-      title: 'Successor Draft Created',
-      description: `Created v${nextVer} draft for ${mod.code}. Historical student attempts remain safely linked to v${mod.version}.`,
-      variant: 'success',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await createLearningModule(orgId, {
+        id: successor.id,
+        code: successor.code,
+        title: successor.title,
+        version: successor.version,
+        status: 'DRAFT',
+        durationMinutes: successor.durationMinutes,
+        contentUri: successor.sampleContentUri,
+        moduleType: successor.moduleType,
+        contentType: successor.contentType,
+        contentVersion: successor.contentVersion,
+        reviewStatus: 'NEEDS_EXPERT_REVIEW',
+        teachesSkillIds: successor.teachesSkillIds,
+      })
+      saveAndSetModules((prev) => [...prev, successor])
+      toast({
+        title: 'Successor Draft Created',
+        description: `Created v${nextVer} draft for ${mod.code} in Neo4j. Historical student attempts remain safely linked to v${mod.version}.`,
+        variant: 'success',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to create successor draft in database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Delete Draft Module (initial or successor)
-  const handleDeleteDraftModule = (mod: LearningModuleModel) => {
+  const handleDeleteDraftModule = async (mod: LearningModuleModel) => {
     if (mod.status !== 'draft') {
       toast({
         title: 'Action Rejected',
@@ -335,16 +646,28 @@ export function LearningModulesPage() {
       return
     }
 
-    saveAndSetModules(modules.filter((m) => m.id !== mod.id))
-    toast({
-      title: 'Draft Module Deleted',
-      description: `Draft module ${mod.code} (v${mod.version}) was permanently deleted.`,
-      variant: 'default',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await deleteLearningModule(orgId, mod.id)
+      saveAndSetModules(modules.filter((m) => m.id !== mod.id))
+      toast({
+        title: 'Draft Module Deleted',
+        description: `Draft module ${mod.code} (v${mod.version}) was permanently deleted from Neo4j.`,
+        variant: 'default',
+      })
+      setDeletingDraftModule(null)
+    } catch (err: unknown) {
+      toast({
+        title: 'Delete Failed',
+        description: err instanceof Error ? err.message : 'Failed to delete module from database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Toggle TEACHES Skill Link
-  const handleToggleTeachesSkill = (mod: LearningModuleModel, skillId: string) => {
+  const handleToggleTeachesSkill = async (mod: LearningModuleModel, skillId: string) => {
     if (mod.status === 'published') {
       toast({
         title: 'Published Version Locked',
@@ -359,23 +682,36 @@ export function LearningModulesPage() {
       ? mod.teachesSkillIds.filter((id) => id !== skillId)
       : [...mod.teachesSkillIds, skillId]
 
-    saveAndSetModules((prev) =>
-      prev.map((m) => (m.id === mod.id ? { ...m, teachesSkillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : m)),
-    )
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateLearningModule(orgId, mod.id, {
+        teachesSkillIds: updatedSkills,
+      })
+      saveAndSetModules((prev) =>
+        prev.map((m) => (m.id === mod.id ? { ...m, teachesSkillIds: updatedSkills, updatedAt: new Date().toISOString().slice(0, 10) } : m)),
+      )
 
-    if (selectedModule && selectedModule.id === mod.id) {
-      setSelectedModule({ ...selectedModule, teachesSkillIds: updatedSkills })
+      if (selectedModule && selectedModule.id === mod.id) {
+        setSelectedModule({ ...selectedModule, teachesSkillIds: updatedSkills })
+      }
+
+      toast({
+        title: isLinked ? 'TEACHES Link Removed' : 'TEACHES Link Added',
+        description: `${isLinked ? 'Detached' : 'Attached'} micro-skill link for ${mod.code} in Neo4j.`,
+        variant: 'info',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Update Failed',
+        description: err instanceof Error ? err.message : 'Failed to update taught skills in database.',
+        variant: 'destructive',
+      })
     }
-
-    toast({
-      title: isLinked ? 'TEACHES Link Removed' : 'TEACHES Link Added',
-      description: `${isLinked ? 'Detached' : 'Attached'} micro-skill link for ${mod.code}.`,
-      variant: 'info',
-    })
   }
 
   // Publish validation & execution
-  const handlePublishModule = (mod: LearningModuleModel) => {
+  const handlePublishModule = async (mod: LearningModuleModel) => {
     if (mod.teachesSkillIds.length === 0) {
       toast({
         title: 'Publication Blocked',
@@ -394,15 +730,29 @@ export function LearningModulesPage() {
       return
     }
 
-    saveAndSetModules((prev) =>
-      prev.map((m) => (m.id === mod.id ? { ...m, status: 'published', updatedAt: new Date().toISOString().slice(0, 10) } : m)),
-    )
-    setIsPublishModalOpen(false)
-    toast({
-      title: 'Learning Module Published',
-      description: `${mod.code} (${mod.title} v${mod.version}) is now published and available for pathway synthesis.`,
-      variant: 'success',
-    })
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateLearningModule(orgId, mod.id, {
+        status: 'ACTIVE',
+        reviewStatus: 'APPROVED',
+      })
+      saveAndSetModules((prev) =>
+        prev.map((m) => (m.id === mod.id ? { ...m, status: 'published', reviewStatus: 'APPROVED', updatedAt: new Date().toISOString().slice(0, 10) } : m)),
+      )
+      setIsPublishModalOpen(false)
+      toast({
+        title: 'Learning Module Published',
+        description: `${mod.code} (${mod.title} v${mod.version}) is now published and saved in Neo4j.`,
+        variant: 'success',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Publish Failed',
+        description: err instanceof Error ? err.message : 'Failed to publish module in database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Archive workflow with replacement assignment
@@ -414,7 +764,7 @@ export function LearningModulesPage() {
     setIsArchiveModalOpen(true)
   }
 
-  const handleConfirmArchive = () => {
+  const handleConfirmArchive = async () => {
     if (!selectedModule) return
 
     // If active plan enrollments exist, require replacement
@@ -427,31 +777,44 @@ export function LearningModulesPage() {
       return
     }
 
-    saveAndSetModules((prev) =>
-      prev.map((m) =>
-        m.id === selectedModule.id
-          ? {
-              ...m,
-              status: 'archived',
-              replacementModuleId: replacementModuleId || undefined,
-              updatedAt: new Date().toISOString().slice(0, 10),
-            }
-          : m,
-      ),
-    )
+    const active = getActiveCompany()
+    const orgId = active?.id || 'comp-technova'
+    try {
+      await updateLearningModule(orgId, selectedModule.id, {
+        status: 'ARCHIVED',
+      })
+      saveAndSetModules((prev) =>
+        prev.map((m) =>
+          m.id === selectedModule.id
+            ? {
+                ...m,
+                status: 'archived',
+                replacementModuleId: replacementModuleId || undefined,
+                updatedAt: new Date().toISOString().slice(0, 10),
+              }
+            : m,
+        ),
+      )
 
-    const replacement = modules.find((m) => m.id === replacementModuleId)
+      const replacement = modules.find((m) => m.id === replacementModuleId)
 
-    setIsArchiveModalOpen(false)
-    toast({
-      title: 'Module Archived',
-      description: `${selectedModule.code} excluded from future enrollments. ${
-        selectedModule.activePlanEnrollments > 0
-          ? `${selectedModule.activePlanEnrollments} active plans redirected to ${replacement?.code}.`
-          : 'Historical progress retained.'
-      }`,
-      variant: 'warning',
-    })
+      setIsArchiveModalOpen(false)
+      toast({
+        title: 'Module Archived',
+        description: `${selectedModule.code} excluded from future enrollments. ${
+          selectedModule.activePlanEnrollments > 0
+            ? `${selectedModule.activePlanEnrollments} active plans redirected to ${replacement?.code}.`
+            : 'Historical progress retained in Neo4j.'
+        }`,
+        variant: 'warning',
+      })
+    } catch (err: unknown) {
+      toast({
+        title: 'Archive Failed',
+        description: err instanceof Error ? err.message : 'Failed to archive module in database.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -552,19 +915,31 @@ export function LearningModulesPage() {
                 <div className="flex items-center gap-1 bg-background border border-border rounded-md px-2 py-1">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft' | 'archived')}
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer"
                   >
-                    <option value="all">All Statuses</option>
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
+                    <option value="all">All Statuses ({totalModules})</option>
+                    <option value="published">Published ({publishedCount})</option>
+                    <option value="draft">Draft ({draftCount})</option>
                     <option value="archived">Archived</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1">
+                  <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'latest' | 'title')}
+                    className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                  >
+                    <option value="latest">Latest Created / Updated</option>
+                    <option value="title">Module Title (A–Z)</option>
                   </select>
                 </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {filteredModules.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-60" />
@@ -579,10 +954,10 @@ export function LearningModulesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                       <th className="py-2.5 px-3">Module Code &amp; Version</th>
-                      <th className="py-2.5 px-3">Title</th>
+                      <th className="py-2.5 px-3">Title &amp; Schema Type</th>
                       <th className="py-2.5 px-3 text-center">Duration</th>
-                      <th className="py-2.5 px-3">Sample Content Reference</th>
-                      <th className="py-2.5 px-3 text-center">Taught Skills</th>
+                      <th className="py-2.5 px-3">Content Reference</th>
+                      <th className="py-2.5 px-3 text-center">Taught Skills (1-1)</th>
                       <th className="py-2.5 px-3 text-center">Active Enrollments</th>
                       <th className="py-2.5 px-3">Status</th>
                       <th className="py-2.5 px-3 text-right">Actions</th>
@@ -591,27 +966,67 @@ export function LearningModulesPage() {
                   <tbody className="divide-y divide-border">
                     {filteredModules.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-10 text-muted-foreground text-xs">
+                        <td colSpan={8} className="text-center py-10 text-muted-foreground text-xs">
                           No learning modules registered yet for this company. Click "+ New Module" or import blueprint modules to begin.
                         </td>
                       </tr>
                     ) : (
-                      filteredModules.map((mod) => {
-                      const isDraft = mod.status === 'draft'
-                      const isPublished = mod.status === 'published'
+                      paginatedModules.map((mod) => {
+                        const isDraft = mod.status === 'draft'
+                        const isPublished = mod.status === 'published'
+                        const predecessorPublished = modules.find(
+                          (m) =>
+                            (m.stableId === mod.stableId || m.code === mod.code) &&
+                            m.status === 'published' &&
+                            m.id !== mod.id
+                        )
+                        const isSuccessor = !isPublished && Boolean(predecessorPublished)
 
-                      return (
-                        <tr key={mod.id} className="hover:bg-muted/20">
-                          <td className="py-3 px-3">
-                            <div className="font-mono font-bold text-foreground">{mod.code}</div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1">
-                                v{mod.version}
+                        return (
+                          <tr
+                            key={mod.id}
+                            className={`transition-colors ${
+                              isSuccessor
+                                ? 'bg-muted/10 border-l-2 border-l-primary/60 hover:bg-muted/25'
+                                : 'hover:bg-muted/20'
+                            }`}
+                          >
+                            <td className="py-3 px-3">
+                              {isSuccessor ? (
+                                <div
+                                  className="flex items-center gap-1.5 pl-3"
+                                  title="Successor draft positioned below published version"
+                                >
+                                  <CornerDownRight className="h-3.5 w-3.5 text-primary shrink-0" />
+                                  <span className="font-mono font-bold text-foreground">{mod.code}</span>
+                                </div>
+                              ) : (
+                                <div className="font-mono font-bold text-foreground">{mod.code}</div>
+                              )}
+                              <div className={`flex items-center gap-1.5 mt-0.5 ${isSuccessor ? 'pl-8' : ''}`}>
+                                <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1">
+                                  v{mod.version}
+                                </Badge>
+                                <span className="text-[10px] text-muted-foreground">{mod.updatedAt}</span>
+                              </div>
+                            </td>
+                          <td className="py-3 px-3 max-w-xs">
+                            <span className="font-semibold text-foreground block">{mod.title}</span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">
+                                {mod.moduleType || 'LESSON_AND_PRACTICE'}
                               </Badge>
-                              <span className="text-[10px] text-muted-foreground">{mod.updatedAt}</span>
+                              {mod.reviewStatus === 'APPROVED' ? (
+                                <Badge variant="success" className="text-[10px] py-0 px-1">
+                                  APPROVED
+                                </Badge>
+                              ) : (
+                                <Badge variant="warning" className="text-[10px] py-0 px-1">
+                                  NEEDS REVIEW
+                                </Badge>
+                              )}
                             </div>
                           </td>
-                          <td className="py-3 px-3 font-semibold text-foreground max-w-xs">{mod.title}</td>
                           <td className="py-3 px-3 text-center">
                             <span className="font-bold text-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3 text-primary" />
@@ -657,6 +1072,22 @@ export function LearningModulesPage() {
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              <a
+                                href={`/employee/modules/${mod.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Preview Full Lessons in Reader View"
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                                  title="Preview Lessons"
+                                  aria-label="Preview Lessons"
+                                >
+                                  <BookOpen className="h-4 w-4 text-primary" />
+                                </Button>
+                              </a>
                               {!isDraft && (
                                 <Button
                                   variant="outline"
@@ -682,6 +1113,12 @@ export function LearningModulesPage() {
                                         title: mod.title,
                                         durationMinutes: mod.durationMinutes,
                                         sampleContentUri: mod.sampleContentUri,
+                                        moduleType: mod.moduleType || 'LESSON_AND_PRACTICE',
+                                        contentType: mod.contentType || 'application/json',
+                                        contentVersion: mod.contentVersion || '1.0',
+                                        reviewStatus: mod.reviewStatus || 'APPROVED',
+                                        selectedContentPackageId: mod.learningContentId || '',
+                                        teachesSkillId: mod.teachesSkillIds[0] || '',
                                       })
                                       setIsCreateModalOpen(true)
                                     }}
@@ -689,6 +1126,19 @@ export function LearningModulesPage() {
                                     aria-label="Edit Draft"
                                   >
                                     <Edit3 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-success hover:bg-success/10"
+                                    onClick={() => {
+                                      setSelectedModule(mod)
+                                      setIsPublishModalOpen(true)
+                                    }}
+                                    title="Publish Module"
+                                    aria-label="Publish Module"
+                                  >
+                                    <Check className="h-4 w-4" />
                                   </Button>
                                   <Button
                                     variant="destructive"
@@ -732,6 +1182,19 @@ export function LearningModulesPage() {
                     }))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            {filteredModules.length > 0 && (
+              <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+                <span>
+                  Showing {(currentPage - 1) * pageSize + 1}–
+                  {Math.min(currentPage * pageSize, filteredModules.length)} of {filteredModules.length} modules
+                </span>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             )}
           </CardContent>
@@ -796,23 +1259,147 @@ export function LearningModulesPage() {
               />
             </div>
 
-            <div>
-              <label className="font-semibold text-foreground block mb-1">
-                Sample-Content URI Reference <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. https://learning.adaptlearn.internal/modules/gnn-201/lab.ipynb"
-                value={moduleForm.sampleContentUri}
-                onChange={(e) => setModuleForm({ ...moduleForm, sampleContentUri: e.target.value })}
-                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+            {/* 1. Approved Learning Content Package Selector */}
+            <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/30 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-foreground text-xs flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  Select Approved Learning Content Package
+                </label>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {approvedPackages.length} Approved Packages Available
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Bind an L&D Manager approved curriculum package from Content Studio with structured reading sections and video lectures.
+              </p>
+
+              <select
+                value={moduleForm.selectedContentPackageId}
+                onChange={(e) => {
+                  const pkgId = e.target.value
+                  const pkg = approvedPackages.find((p) => p.id === pkgId)
+                  if (!pkg) {
+                    setModuleForm({ ...moduleForm, selectedContentPackageId: '' })
+                    return
+                  }
+                  const matchedSkill = companyMicroSkills.find(
+                    (s) =>
+                      s.code.toLowerCase() === pkg.skillCode.toLowerCase() ||
+                      s.name.toLowerCase() === pkg.skillName.toLowerCase()
+                  )
+                  setModuleForm({
+                    ...moduleForm,
+                    selectedContentPackageId: pkg.id,
+                    code: moduleForm.code || pkg.code,
+                    title: moduleForm.title || pkg.title,
+                    durationMinutes: pkg.estimatedDuration || moduleForm.durationMinutes,
+                    sampleContentUri: `content/modules/${pkg.code}.json`,
+                    contentType: 'application/json',
+                    contentVersion: pkg.version || '1.0',
+                    reviewStatus: 'APPROVED',
+                    teachesSkillId: matchedSkill ? matchedSkill.id : (companyMicroSkills[0]?.id || ''),
+                  })
+                }}
+                className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
+              >
+                <option value="">-- Choose Approved Content Package (Optional) --</option>
+                {approvedPackages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.id}>
+                    [{pkg.code}] {pkg.title} ({pkg.lessons.length} Lessons, {pkg.estimatedDuration}m) — {pkg.skillName}
+                  </option>
+                ))}
+              </select>
+
+              {moduleForm.selectedContentPackageId && (
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] font-semibold text-success flex items-center gap-1">
+                    <Check className="h-3.5 w-3.5" /> Approved by L&D Manager — Ready for delivery
+                  </span>
+                  <a
+                    href={`/employee/modules/${moduleForm.selectedContentPackageId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Preview Lessons
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Module Type (Neo4j Schema) <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={moduleForm.moduleType}
+                  onChange={(e) =>
+                    setModuleForm({
+                      ...moduleForm,
+                      moduleType: e.target.value as 'LESSON_AND_PRACTICE' | 'RESOURCE_GUIDED_PRACTICE',
+                    })
+                  }
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="LESSON_AND_PRACTICE">LESSON_AND_PRACTICE</option>
+                  <option value="RESOURCE_GUIDED_PRACTICE">RESOURCE_GUIDED_PRACTICE</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Review Status (Neo4j Schema) <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={moduleForm.reviewStatus}
+                  onChange={(e) =>
+                    setModuleForm({
+                      ...moduleForm,
+                      reviewStatus: e.target.value as 'NEEDS_EXPERT_REVIEW' | 'APPROVED',
+                    })
+                  }
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="APPROVED">APPROVED (Catalog Ready)</option>
+                  <option value="NEEDS_EXPERT_REVIEW">NEEDS_EXPERT_REVIEW</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Content URI (File/Reference) <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. content/modules/MOD-MS-CORE02.md"
+                  value={moduleForm.sampleContentUri}
+                  onChange={(e) => setModuleForm({ ...moduleForm, sampleContentUri: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground block mb-1">
+                  Content Version (contentVersion) <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 1.0 or 2.0"
+                  value={moduleForm.contentVersion}
+                  onChange={(e) => setModuleForm({ ...moduleForm, contentVersion: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
             </div>
 
             <div className="p-2.5 rounded bg-muted/40 border border-border text-[11px] text-muted-foreground flex items-center gap-2">
               <Check className="h-4 w-4 text-primary shrink-0" />
               <span>
-                Module will be created in Draft status. At least one taught micro-skill is required before publication.
+                Conforms strictly to Ontology v0.8.0 with 1–1 TEACHES relationship and content URI references.
               </span>
             </div>
           </div>
@@ -864,7 +1451,7 @@ export function LearningModulesPage() {
                         <span className="font-semibold text-foreground">{skill.name}</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                        {skill.observableOutcome}
+                        {skill.description}
                       </p>
                     </div>
 
@@ -1154,11 +1741,11 @@ export function LearningModulesPage() {
                             <span className="font-semibold text-foreground">{skill?.name}</span>
                           </div>
                           <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            {skill?.observableOutcome}
+                            {skill?.description}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="shrink-0 text-[10px] font-semibold">
-                          Bloom: {skill?.bloomLevel || 'Apply'}
+                        <Badge variant="outline" className="shrink-0 text-[10px] font-semibold">
+                          {skill?.status || 'ACTIVE'}
                         </Badge>
                       </div>
                     )
@@ -1225,7 +1812,7 @@ export function LearningModulesPage() {
         onOpenChange={setIsImportModalOpen}
         title="Import Learning Module Catalog"
         entityName="Learning Modules"
-        description="Select an industry course catalog or upload custom curriculum JSON to rapidly populate instructional modules for your organization."
+        description="Select an industry module catalog or upload custom curriculum JSON to rapidly populate instructional modules for your organization."
         presets={MODULE_PRESETS}
         onImport={handleImportModules}
         sampleJsonPlaceholder={`[\n  {\n    "code": "MOD-ATTN-101",\n    "title": "Attention Mechanism & Tensor Workflows",\n    "durationMinutes": 60,\n    "sampleContentUri": "https://learning.adaptlearn.internal/modules/content/sample.html"\n  }\n]`}

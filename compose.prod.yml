@@ -60,6 +60,21 @@ services:
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: prod
+      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:-}
+      REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:-}
+      REGISTRATION_COOKIE_SECURE: "true"
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      SUBSCRIPTION_PUBLIC_URL: ${SUBSCRIPTION_PUBLIC_URL:?Set the HTTPS subscription callback origin}
+      SUBSCRIPTION_WORKER_ENABLED: ${SUBSCRIPTION_WORKER_ENABLED:-true}
     depends_on:
       migrate:
         condition: service_completed_successfully

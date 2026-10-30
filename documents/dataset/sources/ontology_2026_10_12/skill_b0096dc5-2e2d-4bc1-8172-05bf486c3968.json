@@ -1,0 +1,515 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Fb0096dc5-2e2d-4bc1-8172-05bf486c3968&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968",
+    "title": "design application interfaces",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Anwendungsschnittstellen entwerfen",
+      "no": "utforme applikasjonsgrensesnitt",
+      "fi": "suunnitella sovellusten rajapinnat",
+      "pt": "conceber interfaces para aplicações",
+      "bg": "проектиране на интерфейс на приложения",
+      "lt": "projektuoti taikomųjų programų sąsajas",
+      "lv": "izstrādāt lietojumprogrammu saskarnes",
+      "hr": "dizajnirati sučelja za aplikacije",
+      "fr": "concevoir des interfaces d’application",
+      "hu": "alkalmazás-interfészeket tervez",
+      "uk": "розробляти інтерфейси додатків",
+      "sk": "navrhnúť rozhranie aplikácie",
+      "sl": "oblikovati vmesnike med aplikacijami",
+      "ga": "comhéadain feidhmchláir a dhearadh",
+      "sv": "designa programgränssnitt",
+      "mt": "tiddisinja interfaces tal-applikazzjoni",
+      "el": "σχεδιασμός διεπαφής εφαρμογών",
+      "en": "design application interfaces",
+      "is": "hanna viðmót forrita",
+      "it": "progettare interfacce di applicazioni",
+      "es": "diseñar interfaces para aplicaciones",
+      "et": "rakendusliideseid kujundama",
+      "cs": "navrhovat rozhraní aplikací",
+      "ar": "تصميم واجهات التطبيق",
+      "pl": "projektować interfejsy aplikacji",
+      "da": "designe programgrænseflader",
+      "ro": "proiectează interfețe de aplicații",
+      "nl": "toepassingsinterfaces ontwerpen"
+    },
+    "alternativeLabel": {
+      "de": [
+        "Anwendungsschnittstelle entwerfen",
+        "API entwerfen",
+        "Schnittstellen zur Anwendungsprogrammierung entwerfen",
+        "Anwendungsschnittstellen entwickeln",
+        "Programmierschnittstellen entwerfen",
+        "Anwendungsprogrammierschnittstellen entwerfen",
+        "Anwendungs-Schnittstellen entwerfen"
+      ],
+      "fi": [
+        "suunnitella sovellusrajapinnat",
+        "suunnitella API",
+        "suunnitella sovellusten rajapintoja",
+        "ohjelmoida sovellusten rajapinnat",
+        "laatia API-rajapinta"
+      ],
+      "sv": [
+        "ta fram programgränssnitt",
+        "formge programgränssnitt",
+        "designar programgränssnitt",
+        "designade programgränssnitt",
+        "utforma programgränssnitt"
+      ],
+      "pt": [
+        "conceber interfaces de aplicações",
+        "desenhar API",
+        "conceber interfaces de programação de aplicações",
+        "conceber interfaces em aplicações",
+        "conceber API"
+      ],
+      "bg": [
+        "проектирането на интерфейс на приложения",
+        "проектиране на API",
+        "проектиране на интерфейса на приложения",
+        "дизайн на интерфейс на приложения",
+        "проектиране на програмен интерфейс"
+      ],
+      "el": [
+        "σχεδιασμός διασυνδέσεων εφαρμογής",
+        "δημιουργία διεπαφών εφαρμογής",
+        "ανάπτυξη διεπαφών εφαρμογής"
+      ],
+      "mt": [
+        "tipprogramma interfaces tal-applikazzjoni",
+        "tiddisinja interfaces għall-applikazzjoni",
+        "tiddisinja interfaces tal-applikazzjonijiet"
+      ],
+      "lt": [
+        "kurti taikomųjų programų sąsajas",
+        "kurti programų sąsajas",
+        "projektuoti API sąsajas",
+        "suprojektuoti taikomųjų programų sąsajas",
+        "planuoti taikomųjų programų sąsajas",
+        "projektuoti programų sąsajas"
+      ],
+      "en": [
+        "design API"
+      ],
+      "is": [
+        "hönnum viðmót forrita",
+        "hannar viðmót forrita",
+        "þróa viðmót forrita",
+        "hanna notendaviðmót"
+      ],
+      "hr": [
+        "izraditi sučelja za aplikacije",
+        "dizajnirati sučelje za aplikacije",
+        "izraditi sučelje za aplikacije"
+      ],
+      "lv": [
+        "lietojumprogrammu saskarņu izstrāde",
+        "programmēt lietojumprogrammu saskarnes",
+        "izveidot lietojumprogrammu saskarnes",
+        "sagatavot lietojumprogrammu saskarnes"
+      ],
+      "it": [
+        "programmare interfacce di applicazioni",
+        "sviluppare interfacce di applicazioni",
+        "progettare interfacce di programmazione di un'applicazione",
+        "progettare un'interfaccia di applicazione",
+        "creare interfacce di applicazioni"
+      ],
+      "fr": [
+        "Windows API",
+        "Google Map API",
+        "concevoir les interfaces d’application",
+        "OpenGL",
+        "concevoir des interfaces de programmation",
+        "concevoir l’interface d’applications",
+        "concevoir une API"
+      ],
+      "hu": [
+        "alkalmazás-interfészt tervez",
+        "alkalmazásprogramozási interfészt tervez",
+        "alkalmazásprogramozási felületeket tervez",
+        "megtervezi az alkalmazás-interfészeket",
+        "API"
+      ],
+      "es": [
+        "diseñar interfaces de aplicaciones",
+        "idear interfaces para aplicaciones",
+        "diseñar interfaz para aplicación",
+        "crear interfaces para aplicaciones",
+        "desarrollar interfaces para aplicaciones"
+      ],
+      "et": [
+        "rakendusliideseid koostama",
+        "rakendusliideseid disainima",
+        "API-liideseid koostama",
+        "programmiliideseid koostama",
+        "rakenduste liideseid kujundama",
+        "rakendustarkvara liideseid koostama"
+      ],
+      "cs": [
+        "tvořit návrhy rozhraní aplikací  navrhovat API",
+        "vytvářet návrhy rozhraní aplikací",
+        "navrhovat rozhraní aplikace"
+      ],
+      "sk": [
+        "navrhnúť API",
+        "navrhnúť JTAPI",
+        "navrhnúť aplikačné rozhranie",
+        "navrhnúť aplikačné programovacie rozhranie",
+        "navrhovať rozhrania aplikácií"
+      ],
+      "sl": [
+        "oblikovati API vmesnike",
+        "oblikovati aplikacijske vmesnike",
+        "oblikovati vmesnike programskih aplikacij",
+        "oblikovati programske vmesnike",
+        "oblikovati vmesnike za aplikacije"
+      ],
+      "pl": [
+        "opracowywać interfejsy aplikacji",
+        "tworzyć interfejsy aplikacji",
+        "opracowywać API",
+        "projektować API",
+        "projektować interfejs aplikacji"
+      ],
+      "da": [
+        "designe programmeringsgrænseflade til program",
+        "designe grænseflader til applikation",
+        "udvikle programgrænseflade",
+        "lave programgrænseflade",
+        "udvikle program-interface",
+        "designe API"
+      ],
+      "ro": [
+        "proiectează interfețe ale aplicațiilor",
+        "realizează interfețe de aplicații",
+        "creează planul pentru interfețele aplicațiilor",
+        "creează interfețe de aplicații",
+        "elaborează interfețe de aplicații",
+        "proiectează interfața aplicației"
+      ],
+      "nl": [
+        "bediening van toepassingsinterfaces testen",
+        "applicatie-interfaces ontwerpen",
+        "toepassingsinterfaces programmeren",
+        "API ontwerpen",
+        "ontwerp van interface waarmee een toepassing wordt aangestuurd"
+      ]
+    },
+    "description": {
+      "no": {
+        "literal": "Skape og programmere applikasjonsprogrammer, deres virksomhet, innsatsfaktorer og resultater og de underliggende typene.",
+        "mimetype": "plain/text"
+      },
+      "de": {
+        "literal": "Erstellen und Programmieren von Anwendungsschnittstellen unter Einbeziehung ihrer Funktionsweise, ihrer Inputs und Outputs sowie der zugrunde liegenden Typen.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Sovellusrajapintojen sekä niiden toimintojen, syötteiden ja tulosten ja niiden perustana olevien tyyppien luominen ja ohjelmointi.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Criar e programar interfaces para aplicações: as suas operações, entradas e saídas e tipos subjacentes.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Създава и програмира интерфейс за приложения, техните операции, въведена и зададена информация и базови типове.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Kurti ir programuoti naudojimo sąsajas, jų operacijas, įvestis ir rezultatus bei pagrindinius tipus.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Izrađivati i programirati sučelja za aplikacije, njihove operacije, ulaze i izlaze te temeljne vrste.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izstrādāt un programmēt lietojumprogrammu saskarnes, to funkcijas, ievaddatus un rezultātus, un pamatā esošos tipus.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Créer et programmer des interfaces d’application, leurs opérations, intrants et résultats, ainsi que leurs types sous-jacents.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Alkalmazás-interfészek létrehozása és programozása, működésük, bemeneteik és kimeneteik, valamint az ezek alapját képező típusok.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Створювати та програмувати інтерфейси застосунків, їхню роботу, входи та виходи та базові типи.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Vytvoriť a naprogramovať aplikačné rozhrania, ich operácie, vstupy a výstupy a príslušné typy.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Ustvariti in programirati vmesnike med aplikacijami, njihovo delovanje, vhodne in izhodne datoteke ter vrste osnove.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Comhéadain feidhmchlár, a n-oibríochtaí, a n-ionchuir agus a n-aschuir agus a gcineálacha bunúsacha a chruthú agus a ríomhchlárú.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Skapa och programmera programgränssnitt, deras funktioner, in- och utdata samt undertyper.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Δημιουργία και προγραμματισμός διεπαφών εφαρμογών, των λειτουργιών τους, των εισόδων και των εξόδων και των υποκείμενων τύπων τους.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Oħloq u pprogramma interfaċċi tal-applikazzjonijiet, l-operazzjonijiet, l-inputs u l-outputs u t-tipi sottostanti tagħhom.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Create and program application interfaces, their operations, inputs and outputs and underlying types.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Búa til og forrita notendaviðmót, notkun þeirra, ílag og frálag og tegundir sem liggja til grundvallar.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Creare e programmare interfacce di applicazioni, le relative operazioni, input e output e i tipi alla base di questi.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Crear y programar interfaces de aplicación de programas, sus operaciones, entradas y salidas y los tipos subyacentes.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Rakendusliideste, nende operatsioonide, sisendite, väljundite ning nende aluseks olevate tüüpide loomine ja programmeerimine.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Vytvořit a programovat rozhraní aplikací, jejich operací, vstupů a výstupů a příslušné typy.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "إنشاء وبرمجة واجهات التطبيق، وعملياتها ومدخلاتها ومخرجاتها، وأنواعها الأساسية.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Tworzyć i programować interfejsy aplikacji, ich operacje, dane wejściowe i wyjściowe i podstawowe typy.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Skabe og programmere grænseflader mellem applikationer, input og output samt underliggende typer.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Creează și programează interfețe de aplicații, operațiuni, intrări și ieșiri și tipuri de bază ale acestora.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Toepassingsinterfaces, hun bewerkingen, inputs en outputs en onderliggende types creëren en programmeren.",
+        "mimetype": "plain/text"
+      }
+    },
+    "scopeNote": {
+      "en": {
+        "literal": "Application interfaces include Application Programming Interfaces (API).",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968&language=en",
+        "uri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968",
+        "title": "design application interfaces"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce",
+          "title": "designing ict systems or applications",
+          "code": "S1.11.1"
+        }
+      ],
+      "narrowerSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a30e5a8-60a8-4fda-9f89-8e9cee38da5a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/0a30e5a8-60a8-4fda-9f89-8e9cee38da5a",
+          "title": "use interface description language",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasEssentialSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/7364cc39-b9c0-449f-9416-57723e2fd9c4&language=en",
+          "uri": "http://data.europa.eu/esco/skill/7364cc39-b9c0-449f-9416-57723e2fd9c4",
+          "title": "use methodologies for user-centered design",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b8c01891-e3df-4a4b-948d-95b45e1788f5&language=en",
+          "uri": "http://data.europa.eu/esco/skill/b8c01891-e3df-4a4b-948d-95b45e1788f5",
+          "title": "mobile device software frameworks",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/23b45aa6-a479-486d-9e6f-062cbab7c68a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/23b45aa6-a479-486d-9e6f-062cbab7c68a",
+          "title": "interfacing techniques",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/95ee5e38-5c1e-4cd2-a21d-6921390025a9&language=en",
+          "uri": "http://data.europa.eu/esco/skill/95ee5e38-5c1e-4cd2-a21d-6921390025a9",
+          "title": "usability engineering",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/716df735-77eb-47c8-8c06-d86e46903989&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/716df735-77eb-47c8-8c06-d86e46903989",
+          "title": "smart home engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
+          "title": "industrial mobile devices software developer"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/812c217d-32b7-4f6a-9faf-993d3577ac7f&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/812c217d-32b7-4f6a-9faf-993d3577ac7f",
+          "title": "knowledge engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+          "title": "artificial intelligence engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67",
+          "title": "database integrator"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "design application interfaces",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce"
+          ]
+        },
+        {
+          "title": "designing ict systems or applications",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b590d4e5-7c62-4b4a-abc2-c270b482e0ce"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+          ]
+        },
+        {
+          "title": "designing systems and products",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a295163-3e17-47ad-99ac-2b507ce30adb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+          ]
+        },
+        {
+          "title": "communication, collaboration and creativity",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8&language=en",
+              "uri": "http://data.europa.eu/esco/skill/dc06de9f-dd3a-4f28-b58f-b01b5ae72ab8"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        }
+      ]
+    }
+  }
+}

@@ -45,6 +45,64 @@ class session {
     expires_at : timestamp with time zone
     revoked_at? : timestamp with time zone
 }
+class organization_registration {
+    registration_id : uuid [PK]
+    account_id : uuid [FK]
+    organization_name : character varying(200)
+    workspace_slug : character varying(63)
+    industry? : text
+    headcount? : text
+    admin_name : character varying(120)
+    state : text
+    email_verified_at? : timestamp with time zone
+    completed_at? : timestamp with time zone
+    auth_version : bigint
+    recovery_required : boolean
+    created_at : timestamp with time zone
+    updated_at : timestamp with time zone
+}
+class registration_email_verification {
+    account_id : uuid [PK, FK]
+    code_hmac : platform.content_hash
+    generation : bigint
+    expires_at : timestamp with time zone
+    consumed_at? : timestamp with time zone
+    last_sent_at : timestamp with time zone
+    window_started_at : timestamp with time zone
+    sends_in_window : integer
+}
+class account_totp {
+    account_id : uuid [PK, FK]
+    encrypted_secret : text
+    enabled_at : timestamp with time zone
+    last_used_step : bigint
+}
+class account_recovery_code {
+    account_id : uuid [PK, FK]
+    code_hash : platform.content_hash [PK]
+    created_at : timestamp with time zone
+    consumed_at? : timestamp with time zone
+}
+class registration_rate_limit {
+    bucket_key : platform.content_hash [PK]
+    window_started_at : timestamp with time zone
+    attempts : integer
+    blocked_until? : timestamp with time zone
+}
+class registration_session {
+    primary_id : character(36) [PK]
+    session_id : character(36)
+    creation_time : bigint
+    last_access_time : bigint
+    max_inactive_interval : integer
+    expiry_time : bigint
+    principal_name? : character varying(100)
+}
+class registration_session_attributes {
+    session_primary_id : character(36) [PK, FK]
+    attribute_name : character varying(200) [PK]
+    attribute_bytes : bytea
+}
 class learner_state {
     learner_id : uuid [PK, FK]
     submission_sequence : bigint
@@ -85,6 +143,21 @@ class target_selection {
     role_kind : text [FK]
     selected_at : timestamp with time zone
     ended_at? : timestamp with time zone
+    role_snapshot? : jsonb
+}
+class target_selection_request {
+    request_id : uuid [PK]
+    actor_id : uuid [FK]
+    operation : text
+    idempotency_key : text
+    request_hash : platform.content_hash
+    status : text
+    result_selection_id? : uuid [FK]
+    result_target_revision? : bigint
+    result_changed? : boolean
+    outcome_code? : text
+    created_at : timestamp with time zone
+    completed_at? : timestamp with time zone
 }
 class outbox_event {
     event_id : uuid [PK]
@@ -129,10 +202,14 @@ class audit_event {
     correlation_id : uuid
 }
 account --> account_role
+account --> account_totp
 account --> audit_event
 account --> learner_state
 account --> manager_scope
+account --> organization_registration
 account --> session
+account --> target_selection_request
+account_totp --> account_recovery_code
 application_role --> account_role
 catalog_reference --> target_selection
 catalog_release --> catalog_reference
@@ -140,9 +217,12 @@ learner_state --> processing_job
 learner_state --> target_selection
 organization --> account
 organization --> organizational_unit
+organization_registration --> registration_email_verification
 organizational_unit --> account
 organizational_unit --> manager_scope
 organizational_unit --> organizational_unit
 outbox_event --> processing_job
 processing_job --> processing_job
+registration_session --> registration_session_attributes
+target_selection --> target_selection_request
 @enduml

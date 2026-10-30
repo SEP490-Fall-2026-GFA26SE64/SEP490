@@ -7,6 +7,12 @@ skinparam shadowing false
 actor Browser
 component "React/Vite (dev)\nCaddy (production)" as Web
 component "Spring Boot API" as API
+component "Workspace baseline\ntrusted session + tenant resource bindings" as Baseline
+component "Verification / activation / payment mail\n(leased PostgreSQL jobs)" as MailWorker
+component "Shared branded HTML + text template" as MailTemplate
+component "Payment create / reconcile / apply\n(leased PostgreSQL jobs)" as PaymentWorker
+cloud "payOS merchant API" as PayOS
+cloud "SMTP\nGmail / isolated Mailpit" as SMTP
 component "Spring Boot migrate profile" as Migrate
 database "PostgreSQL" as PG
 database "Neo4j" as Graph
@@ -14,7 +20,20 @@ database "Neo4j" as Graph
 Browser --> Web
 Web --> API : /api
 API --> PG
+API --> MailWorker : scheduled transactional delivery
+MailWorker --> MailTemplate : escaped content + authorized recipient
+API --> PaymentWorker : durable order / verified observation
+PaymentWorker --> PG : snapshots, application, period, workspace
+PaymentWorker --> PG : atomic payment-confirmed outbox event
+PaymentWorker --> PayOS : signed create / trusted status
+PayOS --> API : signed webhook (not browser redirects)
+API --> PG : membership + request-time entitlement
+API --> Baseline : L&D configuration / own Employee attempts
+Baseline --> PG : pinned questions / transactions / results
+Baseline --> Graph : authorized reviewed catalog
+MailWorker --> PG : outbox, lease, delivery state
+MailWorker --> SMTP : bounded SMTP retries
 API --> Graph
-Migrate --> PG : Flyway V1-V6
-Migrate --> Graph : V5 catalog constraints
+Migrate --> PG : Flyway V1-V32
+note bottom of Graph : Migration does not reseed or overwrite graph data.
 @enduml

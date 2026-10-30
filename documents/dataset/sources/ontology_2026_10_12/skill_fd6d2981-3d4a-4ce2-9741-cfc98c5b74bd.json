@@ -1,0 +1,475 @@
+{
+  "retrievedAt": "2026-10-12",
+  "requestedVersion": "v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/skill?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fskill%2Ffd6d2981-3d4a-4ce2-9741-cfc98c5b74bd&language=en&selectedVersion=v1.2.1",
+  "data": {
+    "className": "Skill",
+    "classId": "http://data.europa.eu/esco/model#Skill",
+    "uri": "http://data.europa.eu/esco/skill/fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd",
+    "title": "implement data warehousing techniques",
+    "referenceLanguage": [
+      "en"
+    ],
+    "preferredLabel": {
+      "de": "Data-Warehouse-Methoden umsetzen",
+      "no": "implementere datavarehusteknikker",
+      "fi": "ottaa käyttöön tietovarastointitekniikoita",
+      "pt": "executar técnicas de armazenamento de dados",
+      "bg": "работа с техники за съхранение на данни",
+      "lt": "įgyvendinti duomenų saugojimo metodus",
+      "hr": "implementirati tehnike skladištenja podataka",
+      "lv": "datu noliktavas metožu īstenošana",
+      "fr": "mettre en œuvre les techniques de stockage des données",
+      "hu": "adattárház-eszközzel történő adatkezelési technikákat alkalmaz",
+      "uk": "впроваджувати технології зберігання даних",
+      "sk": "realizovať techniky skladovania údajov",
+      "sl": "izvajati tehnike podatkovnega skladiščenja",
+      "ga": "teicnící ollstórála sonraí a chur chun feidhme",
+      "sv": "implementera metoder för datalagerhantering",
+      "el": "εφαρμογή τεχνικών αποθήκευσης δεδομένων",
+      "mt": "implimentazzjoni ta' metodi ta' ħażna tad-data",
+      "en": "implement data warehousing techniques",
+      "is": "innleiða gagnageymslutækni",
+      "it": "implementare tecniche di data warehouse",
+      "es": "aplicar técnicas de almacenamiento de datos",
+      "et": "andmeaidanduse tehnikaid rakendama",
+      "cs": "zavádět techniky skladování dat",
+      "ar": "تطبيق أساليب تخزين البيانات",
+      "pl": "wdrażać koncepcję hurtowni danych",
+      "da": "anvende datalagringsteknikker",
+      "ro": "implementează tehnici de stocare a datelor",
+      "nl": "datawarehousingtechnieken implementeren"
+    },
+    "alternativeLabel": {
+      "cs": [
+        "uplatňovat postupy skladování dat",
+        "zavádět techniku skladování dat",
+        "zavést techniku skladování dat",
+        "zavést techniky skladování dat",
+        "uplatňovat modely a nástroje pro skladování dat",
+        "aplikovat metody skladování dat"
+      ],
+      "el": [
+        "υλοποιώ τακτικές αποθήκευσης δεδομένων",
+        "θέτω σε εφαρμογή μεθόδους φύλαξης δεδομένων",
+        "εκτελώ τεχνικές φύλαξης δεδομένων",
+        "εφαρμόζω μεθόδους φύλαξης δεδομένων",
+        "εφαρμόζω τακτικές φύλαξης δεδομένων"
+      ],
+      "mt": [
+        "timplimenta tekniki għall-ħażna tad-dejta",
+        "timplimenta metodi ta' ħażna tal-informazzjoni",
+        "tapplika metodi ta' ħażna tad-dejta",
+        "timplimenta tekniki ta' ħażna tad-data",
+        "timplimenta metodi ta' ħżin tad-dejta"
+      ],
+      "en": [
+        "implement data warehousing solutions"
+      ],
+      "nl": [
+        "gegevensverzamelingen beheren",
+        "datawarehousingtechnieken begrijpen",
+        "datawarehouses beheren",
+        "modellen en hulpmiddelen toepassen om gegevens te integreren tot een centrale gegevensopslag",
+        "technieken implementeren op datawarehouses",
+        "DWH beheren"
+      ]
+    },
+    "description": {
+      "de": {
+        "literal": "Anwendung von Modellen und Werkzeugen wie Online-Analyseverarbeitung (OLAP) und Online-Transaktionsverarbeitung (OLTP) für die Integration strukturierter oder unstrukturierter Daten aus Quellen, um einen zentralen Speicher historischer und aktueller Daten anzulegen.",
+        "mimetype": "plain/text"
+      },
+      "no": {
+        "literal": "Bruke modeller og verktøy som online analytisk prosessering (OLAP) og online transaksjonsbehandling (OLTP) for å integrere strukturerte eller ustrukturerte data fra kilder for opprettelse av et sentralt arkiv med historiske og aktuelle data.",
+        "mimetype": "plain/text"
+      },
+      "fi": {
+        "literal": "Käyttää malleja ja työkaluja, kuten moniulotteista analysointia (OLAP) ja verkkopohjaista suoraa tapahtumien prosessointia (OLTP), eri lähteistä peräisin olevien strukturoitujen ja strukturoimattomien tietojen integroimiseksi, jotta voitaisiin luoda historiallisten ja nykyisten tietojen keskitetty säilytysjärjestelmä.",
+        "mimetype": "plain/text"
+      },
+      "pt": {
+        "literal": "Aplicar modelos e ferramentas, como o processamento analítico em linha (OLAP) e o processamento de transações em linha (OLTP), a fim de integrar dados estruturados ou não estruturados de fontes, com o objetivo de criar um depositário central de dados históricos e correntes.",
+        "mimetype": "plain/text"
+      },
+      "bg": {
+        "literal": "Прилага модели и инструменти, например онлайн аналитична обработка (OLAP) и обработка на онлайн трансакции (OLTP), с цел интегриране на структурирани или неструктурирани данни от източници, за да се създаде централен регистър с предишни и текущи данни.",
+        "mimetype": "plain/text"
+      },
+      "lt": {
+        "literal": "Taikyti modelius ir priemones, pavyzdžiui, analitinius duomenų apdorojimo (angl. OLAP) ir operacijų internete apdorojimo (OLTP) metodus, siekiant sujungti struktūruotus arba nestruktūruotus duomenis iš šaltinių, kad būtų sukurta centrinė istorinių ir dabartinių duomenų saugykla.",
+        "mimetype": "plain/text"
+      },
+      "hr": {
+        "literal": "Primjenjivati modele i alate kao što su mrežna analitička obrada (OLAP) i mrežna obrada transakcija (OLTP) radi integriranja strukturiranih ili nestrukturiranih podataka iz izvora kako bi se stvorio središnji depozitorij povijesnih i aktualnih podataka.",
+        "mimetype": "plain/text"
+      },
+      "lv": {
+        "literal": "Izmantot modeļus un instrumentus, piemēram, tiešsaistes analītisko apstrādi (OLAP) un operāciju tiešsaistes apstrādi (OLTP), lai integrētu strukturētus vai nestrukturētus datus no avotiem, lai izveidotu vēsturisku un aktuālu centrālo datu depozitāriju.",
+        "mimetype": "plain/text"
+      },
+      "fr": {
+        "literal": "Utiliser des modèles et des outils tels que le traitement analytique en ligne (OLAP) et le traitement transactionnel en ligne (OLTP), pour intégrer des données structurées ou non, afin de créer un entrepôt central de données historiques et actuelles.",
+        "mimetype": "plain/text"
+      },
+      "hu": {
+        "literal": "Olyan modelleket és eszközöket alkalmaz, mint például az online analitikai feldolgozás (OLAP) és az online tranzakciófeldolgozás (OLTP), a forrásokból származó strukturált vagy nem strukturált adatok integrálásához, a történelmi és aktuális adatok központi értéktár létrehozása érdekében.",
+        "mimetype": "plain/text"
+      },
+      "uk": {
+        "literal": "Застосовувати такі моделі й інструменти як інтерактивна аналітична обробка (OLAP) і обробка трансакцій у реальному часі (OLTP) для інтеграції структурованих або неструктурованих даних із джерел для створення центрального сховища попередніх і поточних даних.\n\t",
+        "mimetype": "plain/text"
+      },
+      "sk": {
+        "literal": "Uplatňovať modely a nástroje, ako je analytické spracovanie online (OLAFP) a spracovanie transakcií online (OLTP), s cieľom integrovať štruktúrované alebo neštruktúrované údaje zo zdrojov za účelom vytvorenia centrálneho inventára historických a aktuálnych údajov.",
+        "mimetype": "plain/text"
+      },
+      "sl": {
+        "literal": "Uporabiti modele in orodja, kot sta spletna analitična obdelava (OLAP) in obdelava spletnih transakcij (OLTP), za povezovanje strukturiranih ali nestrukturiranih podatkov, da se vzpostavi centralni register.",
+        "mimetype": "plain/text"
+      },
+      "ga": {
+        "literal": "Samhlacha agus uirlisí a chur i bhfeidhm, amhail próiseáil anailíseach (OLAP) ar líne agus próiseáil idirbheart (OLTP) ar líne, chun sonraí struchtúrtha nó neamhstruchtúrtha a chomhtháthú ó fhoinsí, d’fhonn taisclann lárnach sonraí stairiúla agus sonraí reatha a chruthú.",
+        "mimetype": "plain/text"
+      },
+      "sv": {
+        "literal": "Använda modeller och verktyg som analytisk onlinebearbetning (OLAP) och transaktionsbehandling (OLTP) för att integrera strukturerade eller ostrukturerade data från olika källor, i syfte att skapa en central lagringsplats med historiska och aktuella data.",
+        "mimetype": "plain/text"
+      },
+      "el": {
+        "literal": "Εφαρμογή μοντέλων και εργαλείων, όπως η ηλεκτρονική αναλυτική επεξεργασία (OLAP) και η ηλεκτρονική επεξεργασία συναλλαγών (OLTP), για την ενσωμάτωση δομημένων ή μη δεδομένων από πηγές, προκειμένου για τη δημιουργία κεντρικού αποθετηρίου των ιστορικών και τρεχόντων δεδομένων.",
+        "mimetype": "plain/text"
+      },
+      "mt": {
+        "literal": "Applikazzjoni ta’ mudelli u ta’ għodod bħall-ipproċessar analitiku online (OLAP) u l-ipproċessar online tat-tranżazzjonijiet (OLTTP), biex jiġu integrati data strutturata jew mhux strutturata minn sorsi, sabiex jinħoloq depożitorju ċentrali ta’ data storika u kurrenti.",
+        "mimetype": "plain/text"
+      },
+      "en": {
+        "literal": "Apply models and tools such as online analytical processing (OLAP) and Online transaction processing (OLTP), to integrate structured or unstructured data from sources, in order to create a central depository of historical and current data.",
+        "mimetype": "plain/text"
+      },
+      "is": {
+        "literal": "Beita líkönum og verkfærum, s.s. netgreiningarvinnslu (OLDP) og netviðskiptum (OLTP) í því skyni að samþætta flokkuð eða óflokkuð gögn frá upptökum til að búa til miðlægan gagnagrunn fyrir söguleg og núverandi gögn.",
+        "mimetype": "plain/text"
+      },
+      "it": {
+        "literal": "Applicare modelli e strumenti quali il trattamento analitico online (OLAP) e il trattamento delle transazioni online (OLTP), per integrare dati strutturati o non strutturati provenienti da fonti, al fine di creare un archivio centrale di dati storici e attuali.",
+        "mimetype": "plain/text"
+      },
+      "es": {
+        "literal": "Aplicar modelos y herramientas como el procesamiento analítico en línea (OLAP) y el procesamiento de transacciones en línea (OLTP), para integrar datos estructurados o no estructurados de las fuentes, a fin de crear un depósito central de datos históricos y actuales.",
+        "mimetype": "plain/text"
+      },
+      "et": {
+        "literal": "Mudelite ja vahendite kasutamine (nt sidusanalüüs (OLAP) ja sidus tehingutöötlus (OLTP)), et lõimida eri allikatest pärit liigendatud või liigendamata andmeid ning luua varasemate ja praeguste andmete keskhoidla.",
+        "mimetype": "plain/text"
+      },
+      "cs": {
+        "literal": "Používat modely a nástroje, jako je on-line analytické zpracování a on-line zpracování transakcí s cílem začlenit strukturovaná nebo nestrukturovaná data ze zdrojů, aby se vytvořil centrální depozitář historických a aktuálních údajů.",
+        "mimetype": "plain/text"
+      },
+      "ar": {
+        "literal": "تطبيق النماذج والأدوات مثل المعالجة التحليلية عبر الإنترنت (OLAP) ومعالجة المعاملات عبر الإنترنت (OLTP) لدمج البيانات المنظمة أو غير المنظمة من المصادر من أجل إنشاء مستودع مركزي للبيانات التاريخية والحالية.",
+        "mimetype": "plain/text"
+      },
+      "pl": {
+        "literal": "Stosować modele i narzędzia, takie jak analiza danych online (OLAFP) i przetwarzanie transakcji online (OLTP) w celu zintegrowania danych ustrukturyzowanych lub nieustrukturyzowanych ze źródeł na okoliczność stworzenia centralnego depozytorium danych historycznych i bieżących.",
+        "mimetype": "plain/text"
+      },
+      "ro": {
+        "literal": "Aplică modele și instrumente, cum ar fi prelucrarea analitică online (OLAP) și prelucrarea online a tranzacțiilor (OLTP), pentru a integra date structurate sau nestructurate care provin din diverse surse, în scopul de a crea un depozitar central al datelor istorice și actuale.",
+        "mimetype": "plain/text"
+      },
+      "da": {
+        "literal": "Anvende modeller og værktøjer såsom onlineanalysebehandling (OLP) og onlinetransaktionsbehandling (OLTP) til integration af strukturerede eller ustrukturerede data fra kilder med henblik på at oprette et centralt depot for historiske og aktuelle data.",
+        "mimetype": "plain/text"
+      },
+      "nl": {
+        "literal": "Modellen en tools zoals online analytische verwerking (OLAP) en online transactieverwerking (OLTP) toepassen, om gestructureerde of ongestructureerde gegevens uit bronnen te integreren, om zo een centrale bewaarplaats van historische en actuele gegevens te creëren.",
+        "mimetype": "plain/text"
+      }
+    },
+    "status": "released",
+    "_links": {
+      "self": {
+        "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd&language=en",
+        "uri": "http://data.europa.eu/esco/skill/fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd",
+        "title": "implement data warehousing techniques"
+      },
+      "isTopConceptInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        }
+      ],
+      "isInScheme": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/6c930acd-c104-4ece-acf7-f44fd7333036",
+          "title": "Digital"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/skills",
+          "title": "ESCO skills"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-skills&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-skills",
+          "title": "ESCO member skills"
+        }
+      ],
+      "hasSkillType": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-type/skill&language=en",
+          "uri": "http://data.europa.eu/esco/skill-type/skill",
+          "title": "skill"
+        }
+      ],
+      "hasReuseLevel": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/sector-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/sector-specific",
+          "title": "sector specific skills and competences",
+          "code": "Level 3"
+        }
+      ],
+      "broaderHierarchyConcept": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c",
+          "title": "managing, gathering and storing digital data",
+          "code": "S5.5.2"
+        }
+      ],
+      "broaderSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/382c11ed-20d5-4ae7-b60e-15fec527fa6c&language=en",
+          "uri": "http://data.europa.eu/esco/skill/382c11ed-20d5-4ae7-b60e-15fec527fa6c",
+          "title": "apply statistical analysis techniques",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/611ed16b-99bf-4840-9cab-f55d1d286e0a&language=en",
+          "uri": "http://data.europa.eu/esco/skill/611ed16b-99bf-4840-9cab-f55d1d286e0a",
+          "title": "store digital data and systems",
+          "skillType": "http://data.europa.eu/esco/skill-type/skill"
+        }
+      ],
+      "hasOptionalSkill": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666&language=en",
+          "uri": "http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666",
+          "title": "unstructured data",
+          "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
+        }
+      ],
+      "isEssentialForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "title": "data engineer"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67",
+          "title": "database integrator"
+        }
+      ],
+      "isOptionalForOccupation": [
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/af355ac4-dd89-44df-99a6-bba70202d6fe&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/af355ac4-dd89-44df-99a6-bba70202d6fe",
+          "title": "data entry supervisor"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/6353b3e8-e8f2-4ecb-b230-186927139892&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/6353b3e8-e8f2-4ecb-b230-186927139892",
+          "title": "data entry clerk"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d0aa0792-4345-474b-9365-686cf4869d2e&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/d0aa0792-4345-474b-9365-686cf4869d2e",
+          "title": "software architect"
+        },
+        {
+          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/810e5e67-acd5-499a-b307-cf5bea330859&language=en",
+          "uri": "http://data.europa.eu/esco/occupation/810e5e67-acd5-499a-b307-cf5bea330859",
+          "title": "ICT information and knowledge manager"
+        }
+      ]
+    },
+    "_embedded": {
+      "ancestors": [
+        {
+          "title": "implement data warehousing techniques",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd&language=en",
+              "uri": "http://data.europa.eu/esco/skill/fd6d2981-3d4a-4ce2-9741-cfc98c5b74bd"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c",
+            "http://data.europa.eu/esco/skill/611ed16b-99bf-4840-9cab-f55d1d286e0a",
+            "http://data.europa.eu/esco/skill/382c11ed-20d5-4ae7-b60e-15fec527fa6c"
+          ]
+        },
+        {
+          "title": "managing, gathering and storing digital data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c&language=en",
+              "uri": "http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/28d2ab6c-38a2-476e-85fe-7982fd242943"
+          ]
+        },
+        {
+          "title": "accessing and analysing digital data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/28d2ab6c-38a2-476e-85fe-7982fd242943&language=en",
+              "uri": "http://data.europa.eu/esco/skill/28d2ab6c-38a2-476e-85fe-7982fd242943"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+          ]
+        },
+        {
+          "title": "working with computers",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4&language=en",
+              "uri": "http://data.europa.eu/esco/skill/243eb885-07c7-4b77-ab9c-827551d83dc4"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9&language=en",
+              "uri": "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "apply statistical analysis techniques",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/382c11ed-20d5-4ae7-b60e-15fec527fa6c&language=en",
+              "uri": "http://data.europa.eu/esco/skill/382c11ed-20d5-4ae7-b60e-15fec527fa6c"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/19ba11f3-9c99-41fd-a7c9-f77e6a026186",
+            "http://data.europa.eu/esco/skill/1f2950c0-ef1e-44b4-9a55-125ccd7b78af"
+          ]
+        },
+        {
+          "title": "carry out calculations",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/19ba11f3-9c99-41fd-a7c9-f77e6a026186&language=en",
+              "uri": "http://data.europa.eu/esco/skill/19ba11f3-9c99-41fd-a7c9-f77e6a026186"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/edc72cfe-78a8-4531-b00f-92992a0bb8cb"
+          ]
+        },
+        {
+          "title": "working with numbers and measures",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/edc72cfe-78a8-4531-b00f-92992a0bb8cb&language=en",
+              "uri": "http://data.europa.eu/esco/skill/edc72cfe-78a8-4531-b00f-92992a0bb8cb"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e"
+          ]
+        },
+        {
+          "title": "core skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/b94686e3-cce5-47a2-a8d8-402a0d0ed44e"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+          ]
+        },
+        {
+          "title": "transversal skills and competences",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e&language=en",
+              "uri": "http://data.europa.eu/esco/skill/04a13491-b58c-4d33-8b59-8fad0d55fe9e"
+            }
+          },
+          "parents": []
+        },
+        {
+          "title": "analysing and evaluating information and data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/1f2950c0-ef1e-44b4-9a55-125ccd7b78af&language=en",
+              "uri": "http://data.europa.eu/esco/skill/1f2950c0-ef1e-44b4-9a55-125ccd7b78af"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/3753e796-121e-46a3-9c27-dee31ce92c80"
+          ]
+        },
+        {
+          "title": "analysing and evaluating information and data",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/3753e796-121e-46a3-9c27-dee31ce92c80&language=en",
+              "uri": "http://data.europa.eu/esco/skill/3753e796-121e-46a3-9c27-dee31ce92c80"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+          ]
+        },
+        {
+          "title": "information skills",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740&language=en",
+              "uri": "http://data.europa.eu/esco/skill/0a2d70ee-d435-4965-9e96-702b2fb65740"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/335228d2-297d-4e0e-a6ee-bc6a8dc110d9"
+          ]
+        },
+        {
+          "title": "store digital data and systems",
+          "_links": {
+            "self": {
+              "href": "https://ec.europa.eu/esco/api/resource/skill?uri=http://data.europa.eu/esco/skill/611ed16b-99bf-4840-9cab-f55d1d286e0a&language=en",
+              "uri": "http://data.europa.eu/esco/skill/611ed16b-99bf-4840-9cab-f55d1d286e0a"
+            }
+          },
+          "parents": [
+            "http://data.europa.eu/esco/skill/6a7fc30d-af16-4cc5-a957-29d174bdb61c"
+          ]
+        }
+      ]
+    }
+  }
+}

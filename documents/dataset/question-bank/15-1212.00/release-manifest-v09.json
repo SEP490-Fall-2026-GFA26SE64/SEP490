@@ -1,0 +1,16 @@
+{
+  "manifestPath": "backend/src/main/resources/db/seed/question-bank-15-1212.00-v1-ontology-v09.json",
+  "manifestVersion": "information-security-analysts-en-v1-ontology-v09",
+  "manifestSha256": "ca4fb71cc4a167e9d37d7133d9fe62a0cf8e9400ca9a5faeb22b4264a51b0bb6",
+  "scopePath": "documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json",
+  "scopeSha256": "454b5531a43dba70c29597d866cb29f5e614a02de5e6e596c379bb2712c667a6",
+  "sourceSha256": "6bb30de3dea6afa5aa306246b74ae696c896338991949bb9f392fd79f51a9b02",
+  "catalogVersion": "0.9.0",
+  "bankId": "2f79de6b-dc62-51a1-982d-0be9d6f588dc",
+  "occupationId": "OCC-15-1212.00",
+  "items": 135,
+  "contentIdentity": "All 135 items and content hashes unchanged from v1; only the import envelope has a new catalog pin.",
+  "reviewStatus": "NEEDS_EXPERT_REVIEW",
+  "publication": "DRAFT",
+  "liveImport": "Not executed; existing graph/history must not be overwritten."
+}

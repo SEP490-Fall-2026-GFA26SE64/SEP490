@@ -1,0 +1,4161 @@
+{
+  "manifestVersion": "information-security-analysts-en-v1",
+  "status": "NEEDS_EXPERT_REVIEW",
+  "reviewedBy": null,
+  "reviewedAt": null,
+  "authoringOrigin": "AI-authored original questions; no human expert approval claimed.",
+  "language": "en",
+  "sources": [
+    {
+      "sourceId": "N53",
+      "title": "NIST SP 800-53 Revision 5 (December 2020 update PDF)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N128",
+      "title": "NIST SP 800-128 (2019 update)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-128.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/128/upd1/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N137",
+      "title": "NIST SP 800-137 (2011)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-137.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/137/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N40",
+      "title": "NIST SP 800-40 Revision 4 (2022)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-40r4.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/40/r4/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N30",
+      "title": "NIST SP 800-30 Revision 1 (2012)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-30r1.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/30/r1/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N61",
+      "title": "NIST SP 800-61 Revision 3 (April 2025)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r3.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N92",
+      "title": "NIST SP 800-92 (2006 final)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-92.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/92/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N115",
+      "title": "NIST SP 800-115 (2008)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-115.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/115/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "N53A",
+      "title": "NIST SP 800-53A Revision 5 (January 2022 PDF)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53Ar5.pdf",
+      "publicationPage": "https://csrc.nist.gov/pubs/sp/800/53/a/r5/final",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "RFC1034",
+      "title": "RFC 1034 (1987), DNS concepts",
+      "url": "https://www.rfc-editor.org/rfc/rfc1034",
+      "publicationPage": "https://www.rfc-editor.org/info/rfc1034/",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    },
+    {
+      "sourceId": "RFC1812",
+      "title": "RFC 1812 (1995), IPv4 router requirements",
+      "url": "https://www.rfc-editor.org/rfc/rfc1812",
+      "publicationPage": "https://www.rfc-editor.org/info/rfc1812/",
+      "accessedOn": "2026-10-22",
+      "sourceType": "Primary technical source",
+      "verification": "Official document opened via web; relevant controls/sections inspected. Pinned edition, not a claim of latest supplemental release."
+    }
+  ],
+  "items": [
+    {
+      "authoringKey": "MS-FS13-EASY-01",
+      "itemId": "6b2a232f-c1f2-5e0d-8163-12ab086bcbd8",
+      "itemVersionId": "bfd2744f-1b72-5d1b-aef6-131c4796de78",
+      "contentHash": "8b63eab45fdfc90b764cb44a934fbda88f1e40d7f1bd4dac7dce4fd246725760",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "A page path does not prove resource permission.",
+        "B": "Authentication alone does not establish access to this resource.",
+        "C": "Client presentation does not enforce server access.",
+        "D": "Display names are not resource access grants."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-EASY-02",
+      "itemId": "48b30ba7-babf-58e4-aca7-941e16df6352",
+      "itemVersionId": "3b8b44ee-0e27-5677-8d18-a661cc569a35",
+      "contentHash": "9141db3af6c315b21beccda2c7ba01750126dc1153573b12920f8e9b0bcff844",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "The policy supplies no implicit read grant.",
+        "B": "Unspecified access is denied under the stated policy.",
+        "C": "Login does not supply the missing authorization.",
+        "D": "A caller can bypass browser controls."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-EASY-03",
+      "itemId": "1501603f-43ef-51c5-990c-5669b8461ab1",
+      "itemVersionId": "0c9b07e8-5bb4-50fc-ab25-6a72751d353e",
+      "contentHash": "3ce39503d659c3be4cd4eee1979ebf0ea197b85d187a1988d64e8f13d98cacdc",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Possession of an identifier is not ownership.",
+        "B": "A content preference does not authorize access.",
+        "C": "The approved rule binds the resource to its actual caller.",
+        "D": "The caller can choose an untrusted userId."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-MEDIUM-01",
+      "itemId": "b3ee8376-ee37-5dca-b921-defe3de812f2",
+      "itemVersionId": "1fcceba2-61e8-5b39-ae8f-474f6dfd988b",
+      "contentHash": "4b730a1cd36223017bd243ec7fa65e89fdafca7616bf5fb63bb3ad45939f3ddc",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "That would remove an explicitly permitted operation.",
+        "B": "Visibility does not extend the approved permission.",
+        "C": "The action-specific rule allows reading but not editing this resource.",
+        "D": "Read authorization does not imply write authorization."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-MEDIUM-02",
+      "itemId": "6da56518-182c-566a-ae24-6d84bbfc7103",
+      "itemVersionId": "76173882-0eab-5c8b-b748-f82874eef98d",
+      "contentHash": "d224e0421cbf677609b2e6ea9b04e0763498ad6d03e1e4437d8630e6f42d0a53",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The stated policy includes the worker execution boundary.",
+        "B": "A service account is not the revoked user's authorization.",
+        "C": "Admission does not satisfy the required current-access check.",
+        "D": "An audit entry cannot retroactively authorize disclosure."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-MEDIUM-03",
+      "itemId": "0f94ac8c-08ed-5dd3-93db-25b49a4c39f6",
+      "itemVersionId": "70fca9dd-b4de-5f0f-b165-5ff8339c102b",
+      "contentHash": "2ab48f3d22977ae5f4727acea67474e63486cd0b91c2911c160a65e07218a762",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "The policy does not authorize partial cross-tenant disclosure.",
+        "B": "Consistent untrusted claims remain untrusted.",
+        "C": "Both tenant and resource boundaries must be enforced server-side.",
+        "D": "Transport protection does not repair unauthorized selection."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-HARD-01",
+      "itemId": "a25f37c3-4cd7-58c3-9acf-10a5dc3d0bed",
+      "itemVersionId": "da183ba4-3265-57d3-86da-3901f69d7c05",
+      "contentHash": "952de810d91a94e1a063fc0774cec8e9ea85440810213cbfd798bda2af19a191",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The decision must remain bound to its resource, tenant and permission state.",
+        "B": "Permanent denials can incorrectly survive newly granted access and do not implement current policy.",
+        "C": "Within that hour the incorrect decision can still be reused.",
+        "D": "Titles omit tenant and grant state and need not be unique."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-HARD-02",
+      "itemId": "aafd1723-eea7-51c3-9546-897136533c16",
+      "itemVersionId": "19904543-22b4-5022-9934-1a92e42c9da0",
+      "contentHash": "b91e0cbdae85416e61f45c625425ca5c675313d17a01b3c86fe099ec7fa040f3",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Other resources may have different permissions.",
+        "B": "The stream already released partial output contrary to the rule.",
+        "C": "Silent partial output violates the specified batch contract.",
+        "D": "Preflight of every resource prevents partial disclosure under this all-or-nothing rule."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-FS13-HARD-03",
+      "itemId": "b6c427ce-60a0-56b4-9e35-8c22f33da551",
+      "itemVersionId": "733796a0-b005-5ec2-8f44-6a6056047aca",
+      "contentHash": "8d54773d94c826187330abe7e944f804fe5fdda772a31f2136b3eec6c86f7733",
+      "primaryMicroSkillId": "MS-FS13",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-FS13",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Existence leaves the independent storage key unchecked.",
+        "B": "Logging detects neither ownership nor authorization before disclosure.",
+        "C": "The object returned must be the same resource covered by authorization.",
+        "D": "Syntactic validity does not bind the object to invoice A."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-EASY-01",
+      "itemId": "1bfb6fa2-e15f-503c-82c3-41bd81ccd7af",
+      "itemVersionId": "273496c1-54a8-5ad3-988f-878d9ddde32f",
+      "contentHash": "a5fdc2069490aa452a831ecd1d61a6bfa17cf9e28f0f87dfc6e4f5bb72ad56fa",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A default route supplies the next hop when no more-specific route matches.",
+        "B": "Name resolution does not forward arbitrary IP traffic.",
+        "C": "Unicast routing does not send the packet to every local host.",
+        "D": "Loopback is local to that host and is not a remote next hop."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1812",
+          "locator": "Section 5.2.4.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-EASY-02",
+      "itemId": "287ecc8c-9dc3-5fd3-a7c6-c8557d0ad424",
+      "itemVersionId": "ee19dcc6-7112-5a63-8b6b-2c3daa5a69f1",
+      "contentHash": "13a96942919f2fbec14b8ca400ad2ef6b2fa59ecd0aa33819899a66134ac3ef8",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The contrasting observations isolate name resolution as the first check.",
+        "B": "Roles do not explain a name resolution failure.",
+        "C": "Backups do not supply name-to-address resolution.",
+        "D": "Presentation language does not resolve a host name."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1034",
+          "locator": "Sections 3.6 and 5.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-EASY-03",
+      "itemId": "c29b69ab-3a79-5c06-b8c2-68d1cec6af1d",
+      "itemVersionId": "28a16706-c34c-5cc0-b574-73a93486309b",
+      "contentHash": "59601f1b3fd250c2b09c5bb1766739df7c7aaf7642818d9b1398cd0d46bf7a61",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "The third octet differs within a /24 prefix.",
+        "B": "Its first 24 address bits match the given subnet.",
+        "C": "Its network prefix differs from the given /24.",
+        "D": "The third octet places it in another /24."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1812",
+          "locator": "Section 2.2.5.2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-MEDIUM-01",
+      "itemId": "fb72d135-ebde-5005-9fad-f7f9549bb9e2",
+      "itemVersionId": "79982945-b330-5ea9-a48d-ca255092df77",
+      "contentHash": "2810d1e2442b7a9652b57c30b1e57ffdbc67038c2f5069b4f03553da2cc7dbcb",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Multiple prefix matches are resolved by specificity.",
+        "B": "These are different prefix lengths, not equal best routes.",
+        "C": "The /8 matches but is less specific.",
+        "D": "The /16 is the longest matching prefix."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1812",
+          "locator": "Section 5.2.4.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-MEDIUM-02",
+      "itemId": "5892c78f-a9eb-59ee-85a8-03f4edf4cbc1",
+      "itemVersionId": "64a105e9-7bd9-50dd-b449-52d98f4098d2",
+      "contentHash": "ead3222e667efb98371eb1f5bf9e9114fc36537a716dd8d4154fde54576e94aa",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "MX identifies mail routing and is not the general IPv4 address record.",
+        "B": "A domain name is not an IPv4 address value.",
+        "C": "A CNAME names an alias target rather than containing an IP address.",
+        "D": "DNS aliases do not define IP routing."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1034",
+          "locator": "Sections 3.6.2 and 5.3.1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-MEDIUM-03",
+      "itemId": "b95aab45-0b2a-53d4-9da4-35c893d175fd",
+      "itemVersionId": "c013236a-b3bb-5c22-bd78-819693b9ad72",
+      "contentHash": "b646e1ad792de3a7e26ac52986e0a366cd2229c45ce1db594e17e33a84945f81",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Cache expiry, not mandatory host reboot, governs this case.",
+        "B": "Resolvers are not universally notified of every change.",
+        "C": "Positive caching is permitted for the remaining TTL.",
+        "D": "The stated record update imposes no permanent dual-address rule."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1034",
+          "locator": "Section 3.6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-HARD-01",
+      "itemId": "5c01056a-237c-59d8-af13-89a2058608aa",
+      "itemVersionId": "b17c1aa2-71d3-5c01-b51e-ad71b937cdcc",
+      "contentHash": "050a7a0507e436f6a516d1ebd2ba060bd023704d91e8199a13eb14e4dded7952",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "DNS does not select the IP forwarding route.",
+        "B": "It matches only the specified prefix.",
+        "C": "An unreachable next hop does not make the installed default more specific.",
+        "D": "Longest-prefix selection does the opposite."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1812",
+          "locator": "Section 5.2.4.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-HARD-02",
+      "itemId": "59c35aed-07b9-52a9-8a29-1910bdbecd4a",
+      "itemVersionId": "53cf0356-ac90-5d90-a361-f976308552b6",
+      "contentHash": "b8d0dff846a35e55888e356589e2af42cc6d0152b6393ea7603977d8fcf65bff",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Resolution has already succeeded and does not provide the missing return route.",
+        "B": "That does not change the server's ability to route replies.",
+        "C": "Timeout changes cannot create a network path.",
+        "D": "Bidirectional communication needs routing for the reply as well as the request."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1812",
+          "locator": "Sections 5.2.4.3 and 5.3.1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF01-HARD-03",
+      "itemId": "aa9114df-90f9-501e-a1bf-2d01c7200d52",
+      "itemVersionId": "04551801-ce59-5886-80db-a9fbbf426b99",
+      "contentHash": "9ce9331aa672c42963535f015ee5505f01e4d520159e84205f7d5fa92745bede",
+      "primaryMicroSkillId": "MS-INF01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF01",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "This reverses the applicable prefix membership.",
+        "B": ".50 is outside 198.51.100.128/25.",
+        "C": "The default loses to matching specific routes.",
+        "D": "Only .200 matches the more-specific upper-half /25."
+      },
+      "sources": [
+        {
+          "sourceId": "RFC1812",
+          "locator": "Section 5.2.4.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-EASY-01",
+      "itemId": "045673c3-856b-5472-a700-1fe4ec479a74",
+      "itemVersionId": "66117fab-5eeb-587d-ad3a-ff82371dbdf5",
+      "contentHash": "ec4b9b923b137458943ebc5194d3cc6a6981be352cec186669365728c580ae37",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Proposals alone do not define the agreed deployed state.",
+        "B": "A baseline supplies an authorized reference state.",
+        "C": "Administrator names do not describe system configuration.",
+        "D": "A baseline needs monitoring to detect differences."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Section 3.2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-EASY-02",
+      "itemId": "b500d35c-970c-519b-96be-0ec98e3d5874",
+      "itemVersionId": "a041e934-b68e-5f1f-a5af-1f1903990095",
+      "contentHash": "978e268b22d7a1739f7a17f8c3fe1f0aea70f6f770dd17f632967d94ae202661",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "That loses the configuration and approval details.",
+        "B": "A title cannot establish the implemented state.",
+        "C": "It links authorization to the actual deployed configuration.",
+        "D": "An open status is not a configuration record."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Section 3.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-EASY-03",
+      "itemId": "11539e03-3e59-569a-8895-ec2d817fda95",
+      "itemVersionId": "405947b9-e430-52da-be0b-3dac521cd4d9",
+      "contentHash": "00052451c93cd593158cd90e757d2c6ae709eba8f54e3b27686978767dfe59d5",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "One current state can coexist with historical versions.",
+        "B": "Historical availability does not waive authorization.",
+        "C": "Prior states help explain changes and restore an agreed version if necessary.",
+        "D": "The new state must still be recorded."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Section 3.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-MEDIUM-01",
+      "itemId": "5c8ff97f-c528-523c-995f-f3210dacffcb",
+      "itemVersionId": "aeafd596-4ace-5fc9-8679-fcf4e9673681",
+      "contentHash": "9bb122257155fa1b4fba96a938ba755b86a3297d847f32ee374d74849831926a",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Reapproval alone does not explain or resolve the discrepancy.",
+        "B": "That would erase evidence of unauthorized drift.",
+        "C": "An unexplained difference must not be silently converted into an approved baseline.",
+        "D": "Operational health does not prove configuration authorization."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Sections 3.3 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-MEDIUM-02",
+      "itemId": "25029b70-8c1c-56af-bd8e-4534e1623f44",
+      "itemVersionId": "7679d595-b025-5317-961b-f74c62cffe2a",
+      "contentHash": "40487be5d97c98f2c0ea18ce5a4d6fe394db2c151f6a31fee1b5f5d7f0505405",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Falsified approval destroys the audit trail.",
+        "B": "Delaying all documentation loses incident and change context.",
+        "C": "That omits what changed and how it will be reviewed.",
+        "D": "Emergency handling remains traceable under the stated procedure."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Section 3.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-MEDIUM-03",
+      "itemId": "4a4c6a3e-61f0-59f3-979d-b865b1ce1fb9",
+      "itemVersionId": "ad31f33d-7704-57bd-97c7-a3f95821e565",
+      "contentHash": "49518aa4103200ca8425eff0843f9d34ecfde2f0750146503678d91da88c7151",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "An invented state does not resolve the discrepancy.",
+        "B": "There is already approved patch evidence to examine.",
+        "C": "The stale record cannot verify the current deployment.",
+        "D": "Records should follow verified implementation with trace to its authorized change."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Sections 3.2 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-HARD-01",
+      "itemId": "7191160f-b3c7-52f1-9936-636b67476981",
+      "itemVersionId": "94482980-bc86-53bd-bb58-f1bac1e432e9",
+      "contentHash": "2970b17a819475bd354f1f31f4be07cfb0231af2e231757a9b221dcd8f9b6975",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The resulting configuration must account for both intended changes and their conflict.",
+        "B": "Approval does not prove both changes survived deployment.",
+        "C": "That destroys the record of the intended earlier change.",
+        "D": "Ambiguous current references do not resolve the actual state."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Sections 3.3.3 and 3.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-HARD-02",
+      "itemId": "0f9a99be-50f7-5101-866d-96c426e93bf4",
+      "itemVersionId": "563b0b7f-84fa-5ca8-9c4c-d677c112d2db",
+      "contentHash": "24a9b83b7df73228cc280bf65adf348c03344252fd480c4f3a6818c479332ae3",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Intent is not the actual configuration.",
+        "B": "That removes important historical and incident evidence.",
+        "C": "Relabeling obscures the configuration that was restored.",
+        "D": "The current reference must match verified state while preserving the failed change's trace."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Sections 3.2 and 3.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF04-HARD-03",
+      "itemId": "342b7682-e356-5d8a-831b-cad6420644d5",
+      "itemVersionId": "d363beed-6a22-5a86-bb26-84854f4b492d",
+      "contentHash": "ef46d48749fc135f54f6aa3f4c2282754fe92ab68e62d1afd31f176750324e45",
+      "primaryMicroSkillId": "MS-INF04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF04",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Absence of evidence is not evidence of configuration compliance.",
+        "B": "That changes scope to hide the monitoring gap.",
+        "C": "Unknown state is distinct from a confirmed deviation and all scoped assets matter.",
+        "D": "Missing observations cannot establish agreement with the baseline."
+      },
+      "sources": [
+        {
+          "sourceId": "N128",
+          "locator": "Section 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-EASY-01",
+      "itemId": "2d784b4e-4aaf-5ecb-be8a-8f00d195dc95",
+      "itemVersionId": "7b8326b8-43bb-509b-a5d4-f9ea0d0fb1eb",
+      "contentHash": "ee083189b17b27fb12e6a0c285b726f22dc9516bb8ce0be6d25ff16b7b10ef28",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Feature demand is not service availability.",
+        "B": "Source size does not measure successful requests.",
+        "C": "This measures the stated success objective for the defined population.",
+        "D": "Server count alone does not show request success."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Section 3.2.1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-EASY-02",
+      "itemId": "e25cba97-3449-5847-bac3-124e14e6826e",
+      "itemVersionId": "9fd2d88d-7c70-597d-b00e-2fbda4ccd5e8",
+      "contentHash": "51c9213bd6d236810292359b3334a63c084972dac9c450def966030d5e59a0ef",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The stated trigger requires both magnitude and duration.",
+        "B": "A short observation cannot establish permanent health.",
+        "C": "Ten seconds does not establish five minutes.",
+        "D": "A single sample does not justify removing the agreed rule."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.2 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-EASY-03",
+      "itemId": "94320724-10ae-5bee-9c91-e4e2fa0f4267",
+      "itemVersionId": "e9698125-365c-54ae-8a91-184c148bdf6b",
+      "contentHash": "f904574e950dece7c10b81ca77681134e6051c8c840348eaea25d8c6b2e3abbb",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "A telemetry failure can occur independently of service failure.",
+        "B": "No samples cannot establish an error count.",
+        "C": "Missing measurements do not demonstrate health or failure of the monitored service.",
+        "D": "A stale observation does not prove current health."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.3 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-MEDIUM-01",
+      "itemId": "6bde99e5-2758-5e8e-86d1-ddeaf6b46420",
+      "itemVersionId": "34f76cbf-ca3a-5fd4-a187-6ab40da3e1f8",
+      "contentHash": "068cb1fe0f33e1d0a0f62a0f2fed4dbde8b9fbbd249bb0dae97c327296a8963a",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Cost does not reveal latency distribution.",
+        "B": "The minimum hides the slow tail.",
+        "C": "A tail measure reveals slow requests hidden by the average.",
+        "D": "Commit volume does not measure request latency."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.2.1 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-MEDIUM-02",
+      "itemId": "1b61e3fb-f664-57f9-9247-1f74eeb9ae42",
+      "itemVersionId": "e4637f62-748a-5aaf-806e-bda4fd06d6fd",
+      "contentHash": "3f42bf4e126c1e83fd15bb2dea65035bc9249a28e3cc1c74d72bd55ff6357d1f",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "This removes visibility during investigation.",
+        "B": "Threshold manipulation does not resolve the problem.",
+        "C": "Related observations help test a cause without asserting it from timing alone.",
+        "D": "Correlation alone is not proof of causation."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.4 and 3.5",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-MEDIUM-03",
+      "itemId": "9d3dd6ce-01df-5e3a-a755-f9453fdaee12",
+      "itemVersionId": "5724557a-6571-5e74-9c1b-b0ca003a57e8",
+      "contentHash": "e9da4c2cf546ed4b5c1ffefee0491e30d0b8aaff2d5aa2ead2bee3c08d437b15",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That biases the denominator and comparison.",
+        "B": "Raw counts need exposure denominators for a meaningful reliability comparison.",
+        "C": "The denominator changed substantially.",
+        "D": "Repository size is unrelated to the observed exposure."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.2.1 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-HARD-01",
+      "itemId": "bd1c431a-2fc8-5be7-91ad-85cf1914fdc9",
+      "itemVersionId": "fa86edb9-c136-5ac8-a7fd-d2cf472f3665",
+      "contentHash": "9d34fdd21e8a0892aed9362b642eaf368fe65aecc53dd0ba4ad411ce56b88379",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "It would hide the critical affected population.",
+        "B": "A low aggregate does not establish each route's health.",
+        "C": "Aggregation can conceal serious impact to a smaller important population.",
+        "D": "That misrepresents the total request population."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.2.1 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-HARD-02",
+      "itemId": "5d9f35b4-770a-5e21-a6fd-2d3a1a41c69f",
+      "itemVersionId": "f4edfac5-e7bb-5a08-9559-7c74776f79c9",
+      "contentHash": "cde01ec7cf13ca339db399e14dc31a2bc8ec30cdf7fdbaeaceff0ddaed7ef92d",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The available data do not establish the complete window's performance.",
+        "B": "Missing samples also cannot be counted as confirmed failure.",
+        "C": "That changes the agreed criterion to fit incomplete evidence.",
+        "D": "The missing four minutes cannot be counted as success."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.3 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF05-HARD-03",
+      "itemId": "9a5efc6f-001b-5659-99df-cbd90e5dcabf",
+      "itemVersionId": "70e8c027-eda4-5dd7-8baa-8a26126a6918",
+      "contentHash": "50e495457230afe3beb62e4ba43e9be4df6feba3c2686ab50bdd7eef64d9813e",
+      "primaryMicroSkillId": "MS-INF05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF05",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "One local metric does not establish restored service behavior.",
+        "B": "Provisioning does not prove the capacity change helped.",
+        "C": "Verification checks both the bottleneck signal and user-facing operation.",
+        "D": "Acknowledgement changes workflow state, not service health."
+      },
+      "sources": [
+        {
+          "sourceId": "N137",
+          "locator": "Sections 3.4 and 3.5",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-EASY-01",
+      "itemId": "162627bd-cbaa-5f04-86e9-9caa7be8994a",
+      "itemVersionId": "b0fcadfd-7848-5f7a-8a9b-16d5538c7740",
+      "contentHash": "f910ea8416edcea0c0a29ac671d2689b53b7ffec9ba68458d7131a4c8499c47f",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That exceeds the approved bounded change and can disrupt operation.",
+        "B": "Hardening reduces unnecessary exposure while checking needed operation.",
+        "C": "A display-name change does not remove exposure.",
+        "D": "Unused exposed services can still increase attack surface."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-6; CM-7",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-EASY-02",
+      "itemId": "74e12b18-1964-5f81-a0e0-669e0b366565",
+      "itemVersionId": "912520c7-7f27-56b6-9826-96f208a679eb",
+      "contentHash": "e0f65e5b00dd881bbe166120dea5693ea7db91683e0e23c35ce85767a4f01ca9",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "One installer report does not establish fleet coverage.",
+        "B": "Installation completion alone does not confirm effective deployment or operation.",
+        "C": "Records are needed for traceability.",
+        "D": "A patch only addresses applicable verified findings."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Section 2.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-EASY-03",
+      "itemId": "b3237682-2adb-56d0-98c9-bf16c31778a3",
+      "itemVersionId": "3df7a5c0-29de-5bff-8177-e87eefda43e8",
+      "contentHash": "91a52e5500b0a2029b643d1d7fd0f378df9099e76fab7861629b4803e2141250",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A justified exception is controlled and visible.",
+        "B": "That unnecessarily removes unrelated protections.",
+        "C": "One application's need does not establish a universal exemption.",
+        "D": "An invisible deviation cannot be properly governed."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-MEDIUM-01",
+      "itemId": "90b4f224-6cc5-536f-88fe-b994c5179bf3",
+      "itemVersionId": "64539100-09f0-58d4-ab9d-472afdfd5633",
+      "contentHash": "1e1fa815e8a5a759f6b5907fe640e49766ed75f74ed8cdcc4d7341b26c3e1712",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "The observed old process supports a real remaining exposure.",
+        "B": "Download is earlier than effective deployment.",
+        "C": "Operational pressure does not establish remediation.",
+        "D": "Installed files alone do not show the running vulnerable component was replaced."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.2 and 2.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-MEDIUM-02",
+      "itemId": "2aa18cd1-b59a-5654-9e9f-2135d4a73e5a",
+      "itemVersionId": "db44554f-ecfa-52aa-84b1-9643d579a47d",
+      "contentHash": "fd07b776318a7780ee0144eafaed9e6599129683058db81a02630f170c461ba7",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That violates required authorized connectivity.",
+        "B": "Positive and negative observations check the intended boundary and required operation.",
+        "C": "That does not prove unauthorized access is blocked.",
+        "D": "A saved rule may not be the effective configuration."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-6; SC-7",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-MEDIUM-03",
+      "itemId": "9315f525-2abf-50c0-917c-8e500f14237e",
+      "itemVersionId": "41ec8026-3cfd-54c4-80e7-31aa77cb78e9",
+      "contentHash": "9617d04aacf6544991d075762379d17f1b4a8263cd7879585f105c44d0f819df",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That ignores known operational impact.",
+        "B": "A discovered issue is not a completed production remedy.",
+        "C": "Delay without treatment or ownership leaves unmanaged exposure.",
+        "D": "Both exposure and operational risk require controlled treatment."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.2 and 2.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-HARD-01",
+      "itemId": "c622fe0c-9332-51e1-b40b-84af362cb4e8",
+      "itemVersionId": "e534a055-ccff-50e2-8864-4aace435cec4",
+      "contentHash": "0ed1e462a8010971b52342cc1f45f3860a2f2901234b19dfeb5e9367a4bce200",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Changing the denominator hides the remaining exposure.",
+        "B": "The actual vulnerable versions contradict closure.",
+        "C": "Independent deployment evidence takes precedence over an unverified job summary.",
+        "D": "The evidence supports targeted investigation, not an indiscriminate destructive response."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.3.3 and 2.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-HARD-02",
+      "itemId": "b3d38118-e1ba-5ee1-937b-d8ea2e048300",
+      "itemVersionId": "019aaa78-c74b-5d66-98d5-8feb5198a88f",
+      "contentHash": "ddf3d14bbde3523ab7a6198678292f8f46c3ff2ac07dcee71ced1be36596dd91",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Security changes must also account for required system operation.",
+        "B": "A scoped correction retains the security boundary and required monitoring.",
+        "C": "That exceeds the narrowly required authorized access.",
+        "D": "That removes protections unrelated to the health check."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-6; CM-7; CA-7",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-INF08-HARD-03",
+      "itemId": "9662d10e-7a12-509b-b778-f6b8dd57f583",
+      "itemVersionId": "3d1a873c-8e68-569d-808d-f4235641f311",
+      "contentHash": "5e1e61f1ac12bb46b879c32dae061c9af88151c107f0599cf125cbfc24da686a",
+      "primaryMicroSkillId": "MS-INF08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-INF08",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Future remedies and risk changes still matter.",
+        "B": "Approval does not establish effective deployment.",
+        "C": "Exposure reduction does not prove the defect is removed.",
+        "D": "A temporary mitigation is not equivalent to eliminating the underlying vulnerability."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.2 and 2.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-EASY-01",
+      "itemId": "0543a4ec-b4aa-525a-9b11-602f320782ae",
+      "itemVersionId": "fbc171af-8c88-5fdf-83c4-e15464cff78f",
+      "contentHash": "af59cfe5665bc3dfb7f4a05312b5a8ddc5355462d1ca0a530d63cc28eb85d968",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "A weakness alone omits threat and consequence context.",
+        "B": "Staff count alone is not the bounded security risk.",
+        "C": "It links a possible threat event, weakness and adverse consequence.",
+        "D": "Asset identification alone does not state a risk scenario."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-EASY-02",
+      "itemId": "619e2dac-a8ac-5560-868b-41e3301f4c21",
+      "itemVersionId": "b3b4adf0-b095-5d66-ae23-012658a15f7c",
+      "contentHash": "fddea98dad9431da40d02ee19ee88fecc689e17593dc03196597718c91778550",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Presentation size does not establish risk.",
+        "B": "Both occurrence and consequence inform risk determination.",
+        "C": "Assessor biography is not the event's likelihood or impact.",
+        "D": "These are not the required risk dimensions."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.2, Tasks 2-4 to 2-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-EASY-03",
+      "itemId": "0f64b9f6-ee35-565c-b20f-1b08cf49cb10",
+      "itemVersionId": "0a152c30-cb18-5021-b23d-5a23b051b383",
+      "contentHash": "3e842581648e6fa87571b99dbc8cff9f34b687a3a19f44fea3c9e5211d89fb87",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "A boundary does not supply threat evidence.",
+        "B": "Relevant dependencies may affect the scoped system.",
+        "C": "Scoping cannot eliminate uncertainty.",
+        "D": "Scope makes the analysis bounded and interpretable."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-MEDIUM-01",
+      "itemId": "6695f284-3cb8-58ae-b526-16605673fe67",
+      "itemVersionId": "c3097a00-f601-5e70-9517-d32e1301be7c",
+      "contentHash": "5721cdb396c8c158b495f47ccaf4ebf6480840c63404111b91b2f82bd481a81b",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Public information can still support important operations.",
+        "B": "The same weakness can produce different organizational consequences.",
+        "C": "Technical similarity does not establish equal impact or likelihood.",
+        "D": "Age alone does not determine the scenario's risk."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-MEDIUM-02",
+      "itemId": "fd753e77-142c-5898-976c-c10945fc0525",
+      "itemVersionId": "0ea11934-33f0-598a-bdc7-8a27cbec1ba6",
+      "contentHash": "2cc96c1cb8a21f36f587ecd611eee205360bd1d39c8296aa2fccf491cd3403d9",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Control presence alone does not justify a higher consequence estimate.",
+        "B": "The remaining scenario and control effectiveness still need assessment.",
+        "C": "Existing protections belong in the scenario analysis rather than being ignored.",
+        "D": "Controls can reduce risk without eliminating it."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.2, Tasks 2-4 and 2-5",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-MEDIUM-03",
+      "itemId": "1c8a1751-784c-592d-933d-4e4fabe87d46",
+      "itemVersionId": "4f65f833-778a-58bf-be3b-44fe5a23dd04",
+      "contentHash": "80d6bf329d02b764a0b7b10a7716f06db1162e463b726e55b383de3e460e5056",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Earlier conclusions and their assumptions should remain traceable.",
+        "B": "The evidence applies to affected scenarios and dependencies.",
+        "C": "A known material change warrants review of the assessment.",
+        "D": "A material assumption change can invalidate the previous likelihood analysis."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Sections 3.3 and 3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-HARD-01",
+      "itemId": "3961c40f-c619-5426-901b-b4d6137e8462",
+      "itemVersionId": "48336d86-1e05-5ca4-9893-e70d8624e658",
+      "contentHash": "6a3c76b1580e9ee5f9e5fbe2548b6630e9a37839ebddc9325e7d8ef0c6f0c540",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That conceals a decisive part of the assessment.",
+        "B": "The available evidence does not support that confidence.",
+        "C": "Absence of an observed incident does not validate the assumed control.",
+        "D": "Decision makers need both the estimate and its limitations."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Sections 3.2 and 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-HARD-02",
+      "itemId": "146d81f0-cb89-55f1-afcd-8a6171c68629",
+      "itemVersionId": "9654c9d2-93cf-51ad-9182-def3946c40b0",
+      "contentHash": "a68ca9603a8610b56c8c1ef79ead5d4fce619cdf8bb8ffc0f3db040d62f2639f",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Exposure and preconditions affect likelihood and must be supported by evidence.",
+        "B": "An inventory uncertainty does not remove the service's risk.",
+        "C": "Severity alone omits local likelihood and consequence context.",
+        "D": "The new observation challenges that assumption."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.2, Tasks 2-3 to 2-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC01-HARD-03",
+      "itemId": "822383ac-0937-5ac6-94e2-8f79a659b376",
+      "itemVersionId": "532c4e5e-5f79-53cc-a1ac-5a5909299360",
+      "contentHash": "519d27a6b521ad0e765a00729aa95453ae684a09e4a64f045b9e318757da0b92",
+      "primaryMicroSkillId": "MS-SEC01",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC01",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Risk treatment must be matched to the consequences it actually addresses.",
+        "B": "Changing the scenario to hide residual risk misleads decision makers.",
+        "C": "Coverage of one path does not imply coverage of every consequence.",
+        "D": "Different consequences need a defensible assessment model."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Sections 3.2 and 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-EASY-01",
+      "itemId": "cc140020-10ca-5b5e-9a9d-5be7e9331359",
+      "itemVersionId": "fb6602fc-d952-59f2-85d9-f01fdb54ce15",
+      "contentHash": "f98db541672363388744cff8544001d06f5c655a32bc5b063cd38020b77502bb",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Neither the action nor resource scope is justified.",
+        "B": "Another actor's privileges do not establish this service's needs.",
+        "C": "The grant matches the necessary operation and resource scope.",
+        "D": "This exceeds the stated need."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-EASY-02",
+      "itemId": "e13d101d-8865-573b-8e71-d9067ec262e2",
+      "itemVersionId": "13c88d28-545c-5ad2-bf58-bca166131a80",
+      "contentHash": "e25c50d63e2c0f5290da5636044a30e5d912c5ddfc91d606fa8bfcc341e48c33",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Presentation does not implement event detection.",
+        "B": "A notice does not observe denied requests.",
+        "C": "Backup confidentiality does not detect access attempts.",
+        "D": "Detection requires the event evidence and a way to recognize the pattern."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AU-2; AU-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-EASY-03",
+      "itemId": "c6ea8a1f-f1c1-5657-92cd-63d7cad693bf",
+      "itemVersionId": "2959b1ae-30bd-5795-94de-ab588834823e",
+      "contentHash": "601a383ac80cd7cd55670fc0222d01b13db9071608fa795164bf119f4e978a78",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Product capability is not evidence of this deployment.",
+        "B": "Purchase does not establish effective protection.",
+        "C": "Both outcomes test the intended boundary and allowed operation.",
+        "D": "Lack of complaints does not exercise the control."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CA-2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-MEDIUM-01",
+      "itemId": "93bf534c-1177-5385-b12b-6735efda2e2d",
+      "itemVersionId": "efb38ff7-2bd4-58fd-aa37-d5e3d2206e96",
+      "contentHash": "1ec4aea41e502c1001de8869eee28c0da22d4a4dc0e07cd29754a9d7244a4b2e",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Network reachability and record access are distinct protection boundaries.",
+        "B": "Users who can reach the service still need record-level checks.",
+        "C": "Client presentation does not enforce either boundary.",
+        "D": "That omits an explicit network requirement."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "SC-7; AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-MEDIUM-02",
+      "itemId": "2585193d-6e30-515d-8208-0b7fedcf6058",
+      "itemVersionId": "8e2e5626-2e99-5c11-978b-33dc7034b690",
+      "contentHash": "fc7b57eddda7a2c0ce8a585cbb403f497a7072a7f96065501302ae1858f2e607",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "That prevents the required investigation activity.",
+        "B": "That conflicts with the retention protection requirement.",
+        "C": "Investigation need does not justify changing retained evidence.",
+        "D": "Shared broad privilege weakens both restriction and individual accountability."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AU-9; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-MEDIUM-03",
+      "itemId": "ddc85a22-a5a0-59c7-a4ae-348a90fe2423",
+      "itemVersionId": "9f7e939a-6cc6-59f6-9508-f107efff0daa",
+      "contentHash": "5595fbb3b7956ee110d769011c4fe8ed370a823c5ecb96df93c44aec8ddea570",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "The change calls for affected-scope review, not indiscriminate evidence removal.",
+        "B": "Control effectiveness can change with the system.",
+        "C": "An old result may not establish protection across changed boundaries.",
+        "D": "Installation does not prove the new behavior is protected."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CA-2; CA-7",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-HARD-01",
+      "itemId": "460bedd8-d721-5e92-b762-834aecc539cb",
+      "itemVersionId": "364e7cbe-daf5-5e5a-bf8c-92a546532933",
+      "contentHash": "f6470043d91b04473258a1b7d1d87457e2dedd23cc14cd69be336621c7bddc59",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Labels do not constrain forwarding.",
+        "B": "The newly identified indirect path remains untested.",
+        "C": "The requirement concerns effective access through all relevant paths.",
+        "D": "Existence does not establish coverage of the bypass path."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "SC-7; CA-2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-HARD-02",
+      "itemId": "9b1d3c51-1ef4-54ae-9e7a-bfc095d1f9a7",
+      "itemVersionId": "807b96f7-34a1-5bca-9f38-8c8a0aad35b7",
+      "contentHash": "40b1eccb57d4682ce06d56fa4f60442cc6eb28e45559d2b44e7caa674da1c68b",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Presentation does not enforce separation of duties.",
+        "B": "Two accounts do not provide two independent decision makers.",
+        "C": "That weakens evidence and leaves the control bypass intact.",
+        "D": "Repeated action does not create independent approval."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-5; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC02-HARD-03",
+      "itemId": "0167bd8d-9cdc-5449-9cb6-f6798a19beac",
+      "itemVersionId": "9dcf71f2-2b09-50ea-bb8f-513c8bcc285e",
+      "contentHash": "f52a3fa8be7b20be68a0f2d83ad81d8fde96992222689837d59f3fe2bd75e349",
+      "primaryMicroSkillId": "MS-SEC02",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC02",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Selective evidence misrepresents the observed result.",
+        "B": "Protective behavior alone is insufficient when approved operation is also required.",
+        "C": "Avoiding service use changes the business requirement.",
+        "D": "That ignores the required authorized behavior."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CA-2; SI-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-EASY-01",
+      "itemId": "f08d60d9-b4be-59a6-a15c-2b104e4ea7d7",
+      "itemVersionId": "7c91abd8-60a0-5452-8944-7134899fbc46",
+      "contentHash": "3b3f82532f433b58b1620a45b9b6a6d91ca3b9d90a41a55acc4a06bb28c9fdd9",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Renaming does not revoke access.",
+        "B": "That destroys history without enforcing access termination.",
+        "C": "Expiry timing does not meet immediate offboarding.",
+        "D": "The stated policy requires ending authorization when employment ends."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-EASY-02",
+      "itemId": "9c6218e0-1c5a-54da-9d7a-61097bf95a42",
+      "itemVersionId": "2f6fe8ae-55a4-5464-8d54-7fcf93502d22",
+      "contentHash": "d4e43cfc85fca09d75f0a47f068529d6e483c43e66b284d1e759800ec64e6487",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Its privilege matches the service's defined task.",
+        "B": "Unneeded privilege increases exposure.",
+        "C": "Ownership exceeds the stated task.",
+        "D": "Creator privilege is unrelated to the service's need."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-EASY-03",
+      "itemId": "4cda536e-09bb-50db-823d-9da1b6046dac",
+      "itemVersionId": "1eb59135-cb50-557f-abab-c60a26df5776",
+      "contentHash": "8f29de1585b1c7b89e47bb2b3a2e0f20405f2f21d9ed266e214151494bcbe196",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Individual identity does not replace permission decisions.",
+        "B": "Unique identity does not justify broad privileges.",
+        "C": "Assignments still need review as duties change.",
+        "D": "Actions and privileges can be attributed to the responsible person."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2; IA-2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-MEDIUM-01",
+      "itemId": "2c6730a0-edea-55e7-859f-9ff65297afef",
+      "itemVersionId": "1bebd9dd-8609-5885-b79f-8294ac1a474e",
+      "contentHash": "655c8a7485fc821e7d04ac20f05cb4e2a0accb1da95524139901a58c5080d33b",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Possible future need does not justify retained sensitive access.",
+        "B": "A display-name change does not correct authorization.",
+        "C": "Role changes require reviewing accumulated privileges against current need.",
+        "D": "The issue concerns this employee's excessive retained privileges."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-MEDIUM-02",
+      "itemId": "3dc6a938-bc5d-589d-87e6-6148812549f7",
+      "itemVersionId": "9412ec39-4cde-5628-bba4-5f6b2db1130d",
+      "contentHash": "ca484715b9f24dba784ce24a08ce14273575ed9c51ace7774534bff674bd7936",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "The approved task supplies no such scope.",
+        "B": "The access is bounded by task, time and accountability.",
+        "C": "That exceeds both time and identity boundaries.",
+        "D": "A note alone does not end effective access."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-MEDIUM-03",
+      "itemId": "945e2382-75bc-5c51-b288-b53b099cd828",
+      "itemVersionId": "5e8355c0-6113-5697-914c-f78f5c3340e6",
+      "contentHash": "e38d54123afcfd274aeb1aa7affbdabb57258d6793369d329c769087da2fd783",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "No such conflict rule was specified.",
+        "B": "That would contradict the explicitly stated grant combination.",
+        "C": "Combining these grants does not extend resource scope.",
+        "D": "The stated combining policy grants both operations."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-3; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-HARD-01",
+      "itemId": "15bfc0a0-ade1-55ad-b5bb-8b80052a1975",
+      "itemVersionId": "33c918fc-2ee7-54bc-84c4-6697e1e1a12f",
+      "contentHash": "a17a53685ea434939cf2e267c9966521bcdaff1b71b685065ec01eb3fb236a6b",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Tokens and permissions remain usable.",
+        "B": "That creates an hour of access after required suspension.",
+        "C": "Signature validity alone does not establish current authorization under the stated rule.",
+        "D": "Client cooperation cannot enforce server access denial."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2; AC-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-HARD-02",
+      "itemId": "c8ca50c2-a795-5264-b26f-c7c18879d688",
+      "itemVersionId": "03a59187-60db-5daf-b26b-986ef7bbb876",
+      "contentHash": "c0f13456366d509a4998bef5a6daaa39fc7e44385350d0dc913eef55ad827a5f",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Its effective permission need not change.",
+        "B": "That exceeds the bounded correction and may block authorized work.",
+        "C": "Direct assignments alone do not reveal inherited permission.",
+        "D": "The nested group still grants access."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC03-HARD-03",
+      "itemId": "0d1eb4ba-80dc-54cd-b92d-fa7f0c5b49bc",
+      "itemVersionId": "a7f1c6c6-0e7d-51fe-8391-b9bd7433ffca",
+      "contentHash": "d6a4621981c7f7ef6c76ed05f37620e1f89ab753d7aa9dd98d8e9ccb0b88eb22",
+      "primaryMicroSkillId": "MS-SEC03",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC03",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Emergency access remains governed rather than becoming an unrestricted bypass.",
+        "B": "That defeats the separation requirement.",
+        "C": "That removes accountability.",
+        "D": "That discards the explicitly required emergency capability."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-2; AC-5; AC-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-EASY-01",
+      "itemId": "1c5c2108-66a6-5a9b-8871-c6f7168323fb",
+      "itemVersionId": "ae8e4ead-48dd-5098-9376-9309999b67a4",
+      "contentHash": "1e2a330015d536738948c2b0ebdaca3130d89fcda0787e7162381e886c35932e",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "A detection signal is not conclusive evidence of compromise.",
+        "B": "An indiscriminate action skips the bounded investigation.",
+        "C": "Frequency does not establish this event is harmless.",
+        "D": "The alert must be evaluated against supporting evidence."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-02; DE.AE-03",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-EASY-02",
+      "itemId": "a08d964a-dd38-5bbe-b950-37fafe252575",
+      "itemVersionId": "4a48789b-81f7-5243-9151-28907dd48fc5",
+      "contentHash": "59b9459cc39562a95235cb6fbd7c3dc70480280332a63b1085106babc78001b7",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Correlation also needs the relevant entity context.",
+        "B": "Timeline consistency is unrelated to message length.",
+        "C": "Time normalization does not determine intent.",
+        "D": "Different clock offsets can otherwise distort apparent order."
+      },
+      "sources": [
+        {
+          "sourceId": "N92",
+          "locator": "Sections 3.3 and 5.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-EASY-03",
+      "itemId": "edeacfec-ebb7-5735-8548-24bfe80a5dba",
+      "itemVersionId": "b634b694-83d7-5378-ae5c-4c8ca678ddc6",
+      "contentHash": "16b6fcade8565269047523d6055a904f98390272a5b365ec189222f42e4dc9fd",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Classification follows evidence and the agreed criteria.",
+        "B": "Queue age alone does not determine incident status.",
+        "C": "Incidents can exist before complete system failure.",
+        "D": "Color is not a sufficient incident definition."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-08",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-MEDIUM-01",
+      "itemId": "1112aef6-1ddd-59e8-ac51-c184071c2e2a",
+      "itemVersionId": "1154e2bc-f1dd-5973-8bf0-fcb26fd9de22",
+      "contentHash": "f06bb1c98352b5f45f62d8f5a4ff6baf6dcbe14c72a969ae8088dd0f3940396e",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "The known trip provides a plausible legitimate explanation.",
+        "B": "Legitimate context informs the analysis but does not alone prove the session safe.",
+        "C": "A single case does not justify disabling a detection capability.",
+        "D": "An attacker could still misuse the account."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-03; DE.AE-07",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-MEDIUM-02",
+      "itemId": "9c1b2e1f-e52e-5264-a2d9-a7f955f22f17",
+      "itemVersionId": "f4cb0745-0b5f-5076-87a0-c5a24a616bbb",
+      "contentHash": "cace01a8766b7d6ed24dff8ebdab213c035dc7dd37c0bf0027de2abc098953cf",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That alters evidence rather than documenting interpretation.",
+        "B": "The known offset can explain the apparent discrepancy.",
+        "C": "Evidence analysis should not be outcome-driven.",
+        "D": "Normalized analysis should retain the original evidence and its clock context."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-03; DE.AE-04",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-MEDIUM-03",
+      "itemId": "4216b364-6efe-57fa-af9e-be78f9632499",
+      "itemVersionId": "acc475fa-103b-5865-afec-c6cdf2cb7278",
+      "contentHash": "e7bb19913cba0727c7b9ef3f8ea4d39900c84263155bfd7f7679d276775b5620",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That destroys unrelated evidence.",
+        "B": "The decision remains reviewable and preserves why it was made.",
+        "C": "The conclusion cannot be independently reviewed.",
+        "D": "A current benign event does not determine future activity."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-02; RS.AN-06",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-HARD-01",
+      "itemId": "041ab1f7-7f33-5c77-b348-2028c0663931",
+      "itemVersionId": "3268dad6-5a77-53a8-919a-a884948c75dd",
+      "contentHash": "070816108f901fa5082762c95cc5c38bcd2e0a316077c7ea11f849f201b2854e",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "That excludes evidence relevant to impact and compromise.",
+        "B": "The observations do not establish attribution.",
+        "C": "The combined evidence merits prioritized investigation without claiming facts not yet established.",
+        "D": "Successful authentication does not establish legitimate use."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-03; DE.AE-04; DE.AE-08",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-HARD-02",
+      "itemId": "cb7c94be-a71b-50cb-b80e-05869f2a1fb8",
+      "itemVersionId": "5b80b32a-7458-52c4-acce-ea7f53bbb6b7",
+      "contentHash": "11dfba70571cd665744aceb08b86c7b8b6fad9a3fd7c54235885bdedc0058964",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A missing source limits conclusions and should be explicit.",
+        "B": "The evidence cannot support those specifics.",
+        "C": "Missing evidence does not prove absence.",
+        "D": "A gap does not justify removing the available evidence."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "DE.AE-03; RS.AN-07",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC04-HARD-03",
+      "itemId": "3962eb45-f9b6-52b9-9ab3-403b6447522a",
+      "itemVersionId": "ddebe25f-fdbb-5f26-82d1-418a7605bf75",
+      "contentHash": "53abb4a3425b40b3ba5a55e720e51ce58f22f8176ae35694ebc4ecf455ff1e62",
+      "primaryMicroSkillId": "MS-SEC04",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC04",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Count alone does not capture successful access or impact.",
+        "B": "An active sensitive-system session requires timely handling.",
+        "C": "First-in order is not the stated risk-based prioritization.",
+        "D": "Risk-based triage weighs observed activity and the affected asset."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.MA; DE.AE-04",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-EASY-01",
+      "itemId": "91b99cf0-6345-5026-92d9-042cfd5e46e8",
+      "itemVersionId": "55f74930-7ad6-58e6-9d24-11a532625517",
+      "contentHash": "2f83bd760e6946e36411afae054991582ab5f66a34e81b8de4a71792e7f0d9cd",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Isolation is a containment measure.",
+        "B": "Isolation alone does not eradicate the cause.",
+        "C": "Containment does not establish attribution.",
+        "D": "Containment and evidence preservation are distinct responsibilities."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.MI-01",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-EASY-02",
+      "itemId": "da44d8be-1736-5e2e-976e-1fa61df6d7c4",
+      "itemVersionId": "b07faccd-6a32-5b4a-b2a4-720588e866cb",
+      "contentHash": "2f2066558609d84c14cd591a4735c1b325ef42829ad94039e72f5f43e84cad0c",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "A record does not guarantee such an outcome.",
+        "B": "An action log complements technical evidence.",
+        "C": "Response decisions and actions need traceability.",
+        "D": "Response records can contain restricted information."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.AN-06; RS.AN-07",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-EASY-03",
+      "itemId": "1ac8c372-fff3-5b60-98e2-b38661dbbed0",
+      "itemVersionId": "4d30bfc0-ad2d-5c4d-a85b-2034dc722d79",
+      "contentHash": "10c2f0b66dacbb18357e947b8c16d65d78974656b0ba483fdc9f8fbcc3b3f43d",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Brand appearance does not verify recovery.",
+        "B": "Recovery must check function and that restoration does not retain the incident condition.",
+        "C": "Assignment is workflow metadata rather than recovery evidence.",
+        "D": "Evidence destruction is not a recovery prerequisite."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RC.RP",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-MEDIUM-01",
+      "itemId": "9f7e46c4-86d3-508c-9a3b-5054520e5207",
+      "itemVersionId": "d1839664-fcb5-539b-81e8-6e33089cd957",
+      "contentHash": "c6db11738604fb4557ff24b910fa4b799dc2f324f2058ddc7c5ebf696049c651",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That breaks protection of sensitive incident material.",
+        "B": "That can destroy needed records and bypass the stated procedure.",
+        "C": "Preservation does not require allowing unlimited damage.",
+        "D": "Containment should be coordinated with evidence handling and traceable actions."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.AN-07; RS.MI",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-MEDIUM-02",
+      "itemId": "0c2b5eff-a188-5c5c-b8bd-83b1543b1173",
+      "itemVersionId": "ff4e84f2-abf3-5380-9a12-b2acf6c213af",
+      "contentHash": "601621eb9dd9f711d7fc24674aadbc9cf8224ade472d1e7ff741f5ab97ee869c",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That changes notification rather than incident conditions.",
+        "B": "Both the foothold and the entry capability must be treated.",
+        "C": "Restart need not remove persistence or revoke stolen access.",
+        "D": "That leaves the known compromised path intact."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.MI-02",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-MEDIUM-03",
+      "itemId": "562e9ef3-c4f6-5bd1-bcfe-d21022c2d191",
+      "itemVersionId": "1f113fff-eacc-5c31-9032-0213c88a52d8",
+      "contentHash": "6409563bc609e8e25a08dba1d2ebfd6750c3a70f52e0bea89b406c70568bca48",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "External communication should follow assigned responsibilities and disclosure rules.",
+        "B": "That can disclose sensitive details and bypass the plan.",
+        "C": "Unverified claims mislead recipients.",
+        "D": "The responsible communicator needs timely accurate information."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.CO-02; RS.CO-03",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-HARD-01",
+      "itemId": "b9004582-852d-52f4-80ae-6a6746ccf6f4",
+      "itemVersionId": "bda2f7be-49e7-59f3-8025-0bdd1b54ea7d",
+      "contentHash": "68c87e12239dcbde6150206eb1877c4f997cd8192ea9a2afd9d8fe5660bd7dd4",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That exceeds the bounded containment authority.",
+        "B": "That needlessly removes response visibility and records.",
+        "C": "That ignores the authorized urgent action while harm continues.",
+        "D": "The plan explicitly balances urgent containment with evidence handling."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.MI-01; RS.AN-07",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-HARD-02",
+      "itemId": "80e31623-4b42-593a-bd89-afe42575c2ba",
+      "itemVersionId": "301088c4-23a4-5596-9f66-67fcb648c04a",
+      "contentHash": "95e39e7c9419a4056e1bdefa75d6682d3733fceb24eaacee383fd50aba64b0a2",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Repeated restoration does not remove the continuing cause.",
+        "B": "A clean restore alone does not close the known re-entry paths.",
+        "C": "The original entry conditions can compromise it again.",
+        "D": "Historical records are not the known entry mechanism."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RC.RP; RS.MI-02",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC05-HARD-03",
+      "itemId": "2d3f89cf-6298-596d-9f16-7fa12581a005",
+      "itemVersionId": "41e50cdd-be19-5085-982e-82b44431b3c4",
+      "contentHash": "2560ca87d4a0659f1627264de5abf7c6d7636559419a02761fda719c82f62ee7",
+      "primaryMicroSkillId": "MS-SEC05",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC05",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That discards the needed coordination capability.",
+        "B": "Lessons need an actionable change rather than a passive note.",
+        "C": "That falsifies evidence and prevents learning.",
+        "D": "Current health does not resolve the procedural gap."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.MA; ID.IM",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-EASY-01",
+      "itemId": "fb81f621-d97a-5631-8928-4e575365863b",
+      "itemVersionId": "429b3b14-f30e-5791-9e65-960e515cea38",
+      "contentHash": "108506b070c056a8186365bcb73d180a875fee04af7f8713303b06c55f0087fe",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Assessment authority and boundaries must be agreed before execution.",
+        "B": "That expands beyond the bounded authorized engagement.",
+        "C": "That cannot be guaranteed and is not authorization.",
+        "D": "Reachability does not grant assessment authority."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Section 6; Appendix B",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-EASY-02",
+      "itemId": "aaf9cbf9-ec02-5e0d-9a29-68e582bfabac",
+      "itemVersionId": "bec9e361-53e6-5c75-bc1e-fe7b4ac134eb",
+      "contentHash": "293f3264619e0cba8a1f90c7677f733a629b1163fb6256ee8475d48d074b0458",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Detection completion is not remediation.",
+        "B": "One reported target does not establish enterprise-wide scope.",
+        "C": "A vulnerability signal does not establish exploitation or attribution.",
+        "D": "Automated detection can be incomplete or incorrect."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Sections 4.3 and 8",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-EASY-03",
+      "itemId": "c60880e7-d60d-5249-98de-4119b6acc2eb",
+      "itemVersionId": "eb728d00-bb3a-5f75-bc9e-750bc588eea0",
+      "contentHash": "9bee7c72987e934c69bba4f6d2da87d4c16e3c3d9510a4ce92a59773aac6f8de",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "A deadline cannot substitute for the observed issue.",
+        "B": "An icon is insufficient evidence or scope.",
+        "C": "These connect the technical finding to a bounded remedy decision.",
+        "D": "Tool identity does not describe the affected condition."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Section 8",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-MEDIUM-01",
+      "itemId": "c70560d8-19e6-5cff-a6b3-30932ced97e1",
+      "itemVersionId": "b26143cb-130e-5da7-a89e-93f93f0d0bc3",
+      "contentHash": "7adfec5a7e2f42c58be8106cd5f1396379df233431f1ac08132f1b1018675d7f",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Disposition should remain supported and reviewable.",
+        "B": "That ignores the supplied remediation evidence.",
+        "C": "A general assumption does not validate this installation.",
+        "D": "Version banners alone can misrepresent patched status."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Sections 4.3 and 8",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-MEDIUM-02",
+      "itemId": "f0ea3d44-6d6b-582e-8256-4c455ddc6c3a",
+      "itemVersionId": "2d5c31b7-a4e6-5e08-aab1-90f8772a85f1",
+      "contentHash": "26af8a6529c886ac9fef3210f6a04eae419065eab8939b0c7b2fac0fadac47ff",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Network connectivity does not prove ownership or permission.",
+        "B": "Technical reachability is not authorization.",
+        "C": "A discovered connection does not expand permission.",
+        "D": "Speed does not resolve the scope violation."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Section 6; Appendix B",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-MEDIUM-03",
+      "itemId": "b17c2301-99ea-581e-837e-8fd9df8d040f",
+      "itemVersionId": "6fc669cf-e5d9-5922-ad55-24d2e4af00d6",
+      "contentHash": "ed2276e260ec62a26e5dc06be50b1d7dcb8e4e80edabb0a57bcbc096529f40d3",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A limited method cannot establish complete absence of vulnerabilities.",
+        "B": "Tool completion does not remove its method limitations.",
+        "C": "Missing inspection does not prove vulnerability either.",
+        "D": "The assessment lacks evidence for that universal claim."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Sections 4.3 and 8",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-HARD-01",
+      "itemId": "b9d38742-7600-5424-9a36-937099869d12",
+      "itemVersionId": "fec91662-c826-58cd-9767-73beb1f8c55b",
+      "contentHash": "6694a16836198cdd1db20e7580bb750c2a463656554ec824eb11a81f117fdba4",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Scope approval does not waive explicit stop conditions.",
+        "B": "The agreed safety constraint controls continuation.",
+        "C": "That changes the engagement's risk controls unilaterally.",
+        "D": "The observed impact requires accurate reporting and coordination."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Sections 6 and 7; Appendix B",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-HARD-02",
+      "itemId": "fe0e5639-fcc4-580d-8aea-d430a753aebf",
+      "itemVersionId": "b999c11e-78c8-5658-9ed1-b84a434f5955",
+      "contentHash": "f601a0e93c82343dcc22711de36034585664970785c9fdc54789292d50ffeafa",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "The stated precondition affects applicability.",
+        "B": "A method restriction does not eliminate the possible weakness.",
+        "C": "That violates the explicit engagement boundary.",
+        "D": "Validation must respect both the precondition and the engagement's permitted methods."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Sections 4.3 and 8",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC06-HARD-03",
+      "itemId": "b583c37e-ec63-5eb8-b72f-adbb383ed88c",
+      "itemVersionId": "29377a28-84d5-5d6a-96c4-d03d67a88734",
+      "contentHash": "0822ad80cab028297177d1e50c6bcdf0565d53ab40447dc9dc04eb7d7567c1dc",
+      "primaryMicroSkillId": "MS-SEC06",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC06",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A useful priority considers local context rather than severity labels alone.",
+        "B": "Its exposure and impact may warrant urgent treatment.",
+        "C": "An unverified inventory claim is not a validated disposition.",
+        "D": "Technical severity alone does not capture operational risk."
+      },
+      "sources": [
+        {
+          "sourceId": "N115",
+          "locator": "Section 8",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-EASY-01",
+      "itemId": "6aca06e6-8aff-5848-b14f-d9a226ede505",
+      "itemVersionId": "90566066-686e-515a-ba48-7224a04b2eaa",
+      "contentHash": "656b0107d8afe14b37f12cfb78c47780e04ed6c25f975d6f71b5d0334ac0255c",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Moving the report does not change the system.",
+        "B": "Assignment does not establish the technical outcome.",
+        "C": "Tool licensing does not remediate the affected component.",
+        "D": "Closure needs evidence of effective remediation."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Section 2.3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-EASY-02",
+      "itemId": "45e07cd1-2704-52da-ac9a-4db7775958d5",
+      "itemVersionId": "c8114ad4-03d5-5c58-a86d-5147848c6987",
+      "contentHash": "2ed94bb7784a18a2b097aebd553d25f3ab4f288203f54fe653be31cf1292f3ea",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A compensating action is distinct from removing the defect.",
+        "B": "No patch was applied in the scenario.",
+        "C": "A request is not deployment evidence.",
+        "D": "Environment and mitigation effectiveness can change."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.2 and 2.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-EASY-03",
+      "itemId": "a29c441c-86f5-5d0b-8243-473f6cfc9dad",
+      "itemVersionId": "341adadd-103e-5d83-9391-a85a246bf8ce",
+      "contentHash": "5c6110fd636c9f430b773af6e0205a73c31f33199608006b882878b02a3f9ef5",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Missing verification is distinct from confirmed failure.",
+        "B": "A majority does not establish the missing host's state.",
+        "C": "That would conceal the unresolved portion.",
+        "D": "Evidence should identify the exact remaining coverage gap."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Section 2.3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-MEDIUM-01",
+      "itemId": "fe64e5b5-a4cf-5f53-9cc4-d0272929b010",
+      "itemVersionId": "81b80c23-ee01-5a9c-8bc8-94b1a443814c",
+      "contentHash": "0ad18bdb64c0eaadc7854620b9403313a2ab9162d2677c2db6cc15e94a5b2176",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That changes evidence rather than validating the condition.",
+        "B": "The discrepancy is bounded to the affected evidence and scope.",
+        "C": "An assertion is not sufficient verification.",
+        "D": "Stale scanner data need reconciliation with the actual current state."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.3.3 and 2.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-MEDIUM-02",
+      "itemId": "1607b4c0-bf42-54bb-9298-6d3c830510c2",
+      "itemVersionId": "bea1218b-f704-529f-b85d-154643e5439e",
+      "contentHash": "5a42e237d127d71a3ae1924214c6d975348fd02f88b97127b5534e202c24e841",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "The executing component can retain the defect.",
+        "B": "An installer result does not establish which code is executing.",
+        "C": "Effective remediation concerns the deployed running condition.",
+        "D": "A repository change alone does not repair the deployed service."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Section 2.3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-MEDIUM-03",
+      "itemId": "9fc64e09-e617-5526-9c47-953d14d02998",
+      "itemVersionId": "a505a117-4af9-51f6-83bd-72c9d168b807",
+      "contentHash": "df43b25fa2323d2655219317bb738f9f4fbc0aad33179ce7a68e7b58cf70bfba",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Temporary remediation does not establish the current state.",
+        "B": "Rollback restored the known vulnerable condition and requires explicit follow-up.",
+        "C": "The vulnerability's return does not make the original detection false.",
+        "D": "Both availability and security conditions require traceability."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.2 and 2.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-HARD-01",
+      "itemId": "27e7c979-1ece-524e-9056-b83444935ef2",
+      "itemVersionId": "7c03845f-7484-539f-9ff2-3a7b94c2e142",
+      "contentHash": "e484d90293f44647c0daded2311106d3f03947d222ee15c02317e993d6669245",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "A sampled request can miss vulnerable instances behind the balancer.",
+        "B": "The request may have reached only the patched instance.",
+        "C": "Removing observation does not remove exposure.",
+        "D": "Names do not establish installed or running content."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.3.3 and 2.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-HARD-02",
+      "itemId": "382582af-0718-5706-a6ba-9c1fa6176f1d",
+      "itemVersionId": "29482b14-0559-50a4-bd96-f7caac6e4f92",
+      "contentHash": "5b26bb4052cbda5559aec8c96c035e906dc4487a5ce5eab52fd3bc172e25ab5b",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "The policy explicitly includes that path.",
+        "B": "Scope cannot be changed to conceal a remaining issue.",
+        "C": "Partial path coverage does not satisfy the stated requirement.",
+        "D": "The remedy must cover the actual agreed exposure boundary."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Sections 2.3.3 and 2.3.4",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC07-HARD-03",
+      "itemId": "776e2314-580f-52cd-a9a7-c914157edc7f",
+      "itemVersionId": "1ae04288-a07f-5f14-925a-418bac508a88",
+      "contentHash": "9adde25e7fca1df54a3459ded926ceb50ce3e1dd08e87dcc41729ca88714c37a",
+      "primaryMicroSkillId": "MS-SEC07",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC07",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That suppresses evidence rather than resolving it.",
+        "B": "Contradictory effective-state evidence prevents justified closure.",
+        "C": "An approved change does not establish its successful outcome.",
+        "D": "Tool status does not override a supported current observation."
+      },
+      "sources": [
+        {
+          "sourceId": "N40",
+          "locator": "Section 2.3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-EASY-01",
+      "itemId": "56d23b83-3048-56ec-a193-0f0d9a26255a",
+      "itemVersionId": "c91340ea-a0ed-50d5-9ba1-e8f3eaa8df02",
+      "contentHash": "dfafb006e9cb817e68875bb4e6b53d1aeea72f37ae865b8080cae423003afa9f",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The claim must be traceable to what was assessed and found.",
+        "B": "Ownership is not evidence of the observed behavior.",
+        "C": "Capability claims do not establish deployment-specific assurance.",
+        "D": "Report length does not establish the assessment result."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Sections 2.4 and 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-EASY-02",
+      "itemId": "c4a33c31-3bc7-5757-8c73-85e8db3a3db3",
+      "itemVersionId": "b5aee557-a3ba-564d-a583-968ec6e8dd61",
+      "contentHash": "5a7050cd655abc824786f3e3f970f85362a48ebdb95f6c05e075123c3e1b6834",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Reviewing a specification is an examination activity.",
+        "B": "No discussion with a person is described.",
+        "C": "Authorization is a decision, not this evidence-gathering method.",
+        "D": "No mechanism is exercised in this observation."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Section 2.4.2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-EASY-03",
+      "itemId": "523010ac-5a30-510d-a4e3-2084b7ca9e55",
+      "itemVersionId": "1320c80f-82d9-50c0-80ce-3676c8e2beed",
+      "contentHash": "35a78191cb4bb6aabae2d9f20b5bfcdc497667e1d9eb9b1347ea364da862b28e",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "No failure observation does not establish effectiveness.",
+        "B": "Omission conceals an important coverage limitation.",
+        "C": "Missing evidence must not be presented as a demonstrated result.",
+        "D": "The evidence gap does not establish unrelated failures."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-MEDIUM-01",
+      "itemId": "25dc0bf0-26ad-56ac-90a5-5a3c3bd7c68d",
+      "itemVersionId": "e7385b7a-dd35-54b4-b03d-f0f71b266883",
+      "contentHash": "109471b203e5ae2c301ce006f9c1f68390711a86a6b25f5d63b22bac3ef9d60c",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "Intent alone does not demonstrate operation.",
+        "B": "Mechanism evidence complements the statement of intended policy.",
+        "C": "Length does not establish enforcement.",
+        "D": "That does not exercise terminated-user denial."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Sections 2.4.2 and 3.2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-MEDIUM-02",
+      "itemId": "886e19b2-8f9e-5e9c-a842-084e5544dfa6",
+      "itemVersionId": "c1e854d4-e9eb-590f-af99-809d24bcc529",
+      "contentHash": "35541d838f230f63780eedc490c3cb94d790b656e401a7db682ed4301fd2ce83",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "They remain in the declared population.",
+        "B": "Readers need to understand what the evidence covers.",
+        "C": "That obscures coverage and interpretation.",
+        "D": "The sample alone does not establish every system's result."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Sections 3.2.3 and 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-MEDIUM-03",
+      "itemId": "bd1c797d-60ea-505b-ba8b-de715ae31db3",
+      "itemVersionId": "81ebe7d6-1548-5b56-bde3-efda34eaf2a1",
+      "contentHash": "a18b87115b6dcfaf536043af597a719d77a8c97449cd03996f5bb96807fb577d",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Environment scope must remain explicit.",
+        "B": "A failed check does not remove the requirement.",
+        "C": "The history explains the change in conclusion and its basis.",
+        "D": "That misrepresents what happened."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-HARD-01",
+      "itemId": "03e3dbda-841d-59da-99b9-4de93ce2e363",
+      "itemVersionId": "0ad36969-21ae-5706-8b86-55c8285ec587",
+      "contentHash": "9be287e3ded5b67120da2c623590130f15d3a48948c8e310c0f383cb3d7d57af",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Lack of a denial observation does not itself prove a leak.",
+        "B": "That conclusion exceeds the observed case.",
+        "C": "A permitted request alone does not establish denied access behavior.",
+        "D": "A suitably scoped assessment can exercise that boundary."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Sections 3.2.3 and 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-HARD-02",
+      "itemId": "c4738f57-c840-5d07-a40e-207f87c4788a",
+      "itemVersionId": "d7669520-882b-5952-981f-698b262432f4",
+      "contentHash": "01a9d9c756346e04aad6b668f552fa8911165017720e3abe9f1a1e9ea9ac555f",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Evidence must support the system version covered by the conclusion.",
+        "B": "A name alone does not establish unchanged behavior.",
+        "C": "It still supports its original version and may inform the new assessment.",
+        "D": "Changing a label does not create valid evidence."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC08-HARD-03",
+      "itemId": "f17380c9-8817-5df8-a46a-972c804c70b5",
+      "itemVersionId": "b26d0df8-28d3-5a77-b3ff-9ca9923142cc",
+      "contentHash": "71a7acc6dc738a45ae333a00026676dc4c53d6f997b2d8ef182297db4474868e",
+      "primaryMicroSkillId": "MS-SEC08",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC08",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "An unresolved observation directly challenges the claimed control.",
+        "B": "No method has universal precedence over contradictory facts.",
+        "C": "The observation establishes a bounded concern, not a universal result.",
+        "D": "Evidence selection must not conceal adverse observations."
+      },
+      "sources": [
+        {
+          "sourceId": "N53A",
+          "locator": "Sections 2.4 and 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-EASY-01",
+      "itemId": "ade4f9ba-5a95-5cff-8f9c-4249782d0bee",
+      "itemVersionId": "9e00220e-2c38-560f-9030-b7e110046cb8",
+      "contentHash": "c693ecf31b1fba22c09bc846d2874f2bd6583242e31a236d4b265cec2db8f40d",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "It connects the security finding to the audience's responsibility.",
+        "B": "Tool choice does not describe the risk or required action.",
+        "C": "That does not communicate the decision's business relevance.",
+        "D": "That exceeds the supported claim."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-EASY-02",
+      "itemId": "d5ae2d5f-6048-5818-80c3-77844133a19d",
+      "itemVersionId": "9a29379d-f249-5d59-9306-34a7b3bee0ff",
+      "contentHash": "4fd8b2ce9bf23dc0e1ab96b9a30c8156f3d052382df4562969fa5b380e703e45",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Recipients need enough justified information to act.",
+        "B": "Credentials are not appropriate public evidence.",
+        "C": "That exceeds the designated disclosure scope.",
+        "D": "Communication must respect stakeholder needs and information protection."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.CO-03",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-EASY-03",
+      "itemId": "ab107a93-1de6-531b-8aab-74c89d1720d5",
+      "itemVersionId": "f8f062f9-25e5-5f49-82f2-099ed34293e0",
+      "contentHash": "62491accba8479a21dc8d99633fc48db880e17883817462b13f95759d5939dd2",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "Unknown information does not establish that outcome.",
+        "B": "That can conceal a material decision limitation.",
+        "C": "Unsupported precision misrepresents confidence.",
+        "D": "Decision makers need the claim's evidence limits."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-MEDIUM-01",
+      "itemId": "bb229a8b-253e-5844-be06-2c79b6f9a0d7",
+      "itemVersionId": "536677d2-b1cb-56bb-9988-8497cee4680c",
+      "contentHash": "c9d7e54ebbebfcc3f919875f018a6a158b899b2e58c25925f7093f1f2e088e9c",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Different responsibilities require different detail while keeping the underlying facts consistent.",
+        "B": "They need sufficient evidence to implement and verify a remedy.",
+        "C": "Tailoring presentation does not justify contradictory facts.",
+        "D": "That does not directly support the owner's release decision."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-MEDIUM-02",
+      "itemId": "124e5a13-0a57-5e6c-9ecb-f7204ac46ea4",
+      "itemVersionId": "8da0a392-e1cb-5214-b8d2-52fb1fe96a57",
+      "contentHash": "72f2a90383dfbb2c770a2f7763671218cfe743771de4762e6998f05b7976f485",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That supplies no concrete decision or scope.",
+        "B": "A count alone does not state what to decide.",
+        "C": "That is unbounded and supplies no assessable option.",
+        "D": "It identifies an action, decision time and consequence for the accountable audience."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-MEDIUM-03",
+      "itemId": "6acbcb0f-3943-5045-9f87-a36edc59282b",
+      "itemVersionId": "9495d97e-70dc-51ab-a4e9-1cace097d189",
+      "contentHash": "99b4130e3acd13babec942fb20eebed3f63c646ba9dfd5c85206ff4e56f07e2d",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Sensitive credentials do not belong in a general stakeholder update.",
+        "B": "Timely qualified information can still be necessary.",
+        "C": "Stakeholders receive useful facts without unsupported specificity.",
+        "D": "Fabrication misleads decisions and later corrections."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.CO-02; RS.CO-03",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-HARD-01",
+      "itemId": "d27d60e3-20dc-568d-bb63-095d2087f1a2",
+      "itemVersionId": "5eecaf46-d6ac-5c53-81d1-da6b41102eac",
+      "contentHash": "4ef714e4fc9db8f5a37d6f7ef82cf45cb2eee2b5cc2b5dc4fa585b61ec2503c4",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That conflates different claims.",
+        "B": "Lack of confirmation does not establish impossibility.",
+        "C": "The information remains useful when accurately explained.",
+        "D": "The recommendation must distinguish vulnerability risk from observed compromise."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-HARD-02",
+      "itemId": "01dc0f99-b9ba-5fa7-9cf5-a315ba3b8c62",
+      "itemVersionId": "3b9c3789-82ed-5bdf-9f3d-bf45ce9e524c",
+      "contentHash": "fca9c04e5eb4072425d7e05a8b6dd3fa3068d71971e8fc5fa55b0c7383611105",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That sustains conflicting unsupported messages.",
+        "B": "The assigned process maintains accurate consistent stakeholder communication.",
+        "C": "Responsibility for verified communication stays with the organization.",
+        "D": "Records are needed to explain and correct the communication history."
+      },
+      "sources": [
+        {
+          "sourceId": "N61",
+          "locator": "RS.CO-02; RS.CO-03",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC09-HARD-03",
+      "itemId": "c577084e-6e2f-517b-802d-4c9ffb7d1e97",
+      "itemVersionId": "cfca4810-2506-5656-b500-a42d58416bb3",
+      "contentHash": "f24c2a01f93fd0e5335868d36c8c516fd74b1525236c6ecef08063a67817691b",
+      "primaryMicroSkillId": "MS-SEC09",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC09",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "A product preference does not support the decision.",
+        "B": "That conceals material trade-offs.",
+        "C": "Acceptance must be scoped to the actual decision and authority.",
+        "D": "The audience can compare feasible treatments and their limits."
+      },
+      "sources": [
+        {
+          "sourceId": "N30",
+          "locator": "Section 3.3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-EASY-01",
+      "itemId": "b9fc1a0e-99f9-55e5-94fd-4da8ce67a72c",
+      "itemVersionId": "ae5184b0-7adb-55cc-a250-10516532ef6f",
+      "contentHash": "d67af495508964597dca7c19c31c1e63843336a83d5417b60767240b7eaebc5a",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "A procedure cannot silently negate governing requirements.",
+        "B": "The two documents serve related but different purposes.",
+        "C": "Detailed execution steps belong in procedures where appropriate.",
+        "D": "Product names alone do not define governance."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-1; CM-1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-EASY-02",
+      "itemId": "931bd074-953b-556f-b36c-10a94fefeae4",
+      "itemVersionId": "fd94dc83-bb17-533b-9d9d-8a15188d2402",
+      "contentHash": "aa30d0bd2a3f0a47f3e667785c9438795c1f0c8e9fbe6c3350075a06cae42f80",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "Operational instructions need to implement the current policy.",
+        "B": "That can cause operators to violate the new rule.",
+        "C": "Uncontrolled interpretations undermine consistent execution.",
+        "D": "Historical trace remains useful."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-EASY-03",
+      "itemId": "440cf8ba-8968-5721-8f62-166f2ffcdcf9",
+      "itemVersionId": "868eb68b-9228-5941-9b9b-eceb2b29fb1a",
+      "contentHash": "4a036ebabe6ada686ac19c17655983a1cbb9da9d376b00d70cd09a47ff266d1e",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "One explicit rule or direct interpretation.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Ownership does not provide blanket exemption.",
+        "B": "Technology and organizational conditions can change.",
+        "C": "Governance needs accountable responsibility for current instructions.",
+        "D": "Assigned responsibility still operates within authorization."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-MEDIUM-01",
+      "itemId": "227c7f8f-5fdb-56b0-af41-aa5abf093998",
+      "itemVersionId": "e2a980db-c495-52f9-97bd-a9679ce7ee2f",
+      "contentHash": "b6e265eccd6000e7b9f93f3034c89213862ee775b844026cd6fef6c3fbb1f8d9",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "D",
+      "optionRationales": {
+        "A": "That changes the governing requirement unilaterally.",
+        "B": "That leaves the control inconsistent and unpredictable.",
+        "C": "Matching topics do not resolve contradictory timing.",
+        "D": "The procedure must implement the governing requirement rather than delay it."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-1; AC-2",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-MEDIUM-02",
+      "itemId": "07b19b8a-aba1-5eea-9d6a-af95ffc846da",
+      "itemVersionId": "8f894b32-87b0-538e-8c43-aa13913e79af",
+      "contentHash": "7dc100ac6ece553392d5a271d1b0286ae849e8cb744774b28c54c02b678d4406",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "Approval does not remove the need for maintenance and traceability.",
+        "B": "That does not identify controlled scope or review conditions.",
+        "C": "An exception needs controlled boundaries and a defined follow-up.",
+        "D": "That extends beyond the approved case."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-1; CM-6",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-MEDIUM-03",
+      "itemId": "b73ef62e-d85f-5f7d-96ed-2141806dad34",
+      "itemVersionId": "f9751c8c-b836-5732-bdee-f1b899ab108e",
+      "contentHash": "d4a28c4ed1799b9c35192f6c620d096d0aeb19ec85d065cc61b54dbbd9086034",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "Apply the rule to a bounded operational scenario.",
+      "correctOptionId": "A",
+      "optionRationales": {
+        "A": "The operating instruction must become usable and its change communicated.",
+        "B": "That may misroute sensitive incident information.",
+        "C": "That removes a needed response capability.",
+        "D": "The known operational defect needs controlled correction."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "IR-1",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-HARD-01",
+      "itemId": "3609bd61-ab71-5446-bf45-004fc0892c0d",
+      "itemVersionId": "4d5e1462-c494-59b3-b9ce-a97960b6b1ec",
+      "contentHash": "fd6a37a2dfe7048753d4601a2143e41a6a28a05545ee60d415e90f4c060a5402",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "That is not the stated governance hierarchy.",
+        "B": "That broadens the conflict rather than resolving it.",
+        "C": "Emergency execution must be reconciled with the governing separation requirement.",
+        "D": "Metadata changes do not fix contradictory operational rules."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "AC-1; AC-2; AC-5",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-HARD-02",
+      "itemId": "890633d6-2465-5059-b129-01064dab16e9",
+      "itemVersionId": "e6b8958e-9494-5efa-805d-6ef103c5531f",
+      "contentHash": "96def1b39d576a779d2d6f36953f4c7cf09935aeb7f760ab924c0116f5b9dbed",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "B",
+      "optionRationales": {
+        "A": "That preserves the execution conflict.",
+        "B": "Operators need an authoritative usable instruction with traceable history.",
+        "C": "Removing history is unnecessary to establish the current instruction.",
+        "D": "An unreviewed merge can preserve unsafe or impossible instructions."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-1; CM-3",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    },
+    {
+      "authoringKey": "MS-SEC10-HARD-03",
+      "itemId": "5cb1e268-fc26-5259-a095-baa6b7d7463f",
+      "itemVersionId": "22a064de-5578-50f4-8008-84839f9896c9",
+      "contentHash": "082fb0838f02ab689ad7ee29eab635ba16e15ef509291755066eb10b26af2973",
+      "primaryMicroSkillId": "MS-SEC10",
+      "catalogVersion": "0.8.0",
+      "moduleId": "MOD-MS-SEC10",
+      "difficultyBasis": "Resolve interacting scope, evidence, version or control constraints.",
+      "correctOptionId": "C",
+      "optionRationales": {
+        "A": "No exemption was approved.",
+        "B": "A bounded gap calls for an appropriate update rather than indiscriminate removal.",
+        "C": "A review must consider operational coverage, not just update the date.",
+        "D": "That leaves a known coverage gap unresolved."
+      },
+      "sources": [
+        {
+          "sourceId": "N53",
+          "locator": "CM-1; CA-7",
+          "relationship": "Primary technical principle applied to an original scenario; not a quotation or a source-provided exam question."
+        }
+      ],
+      "technicalReview": {
+        "method": "AI authored, individually checked against the cited technical principle and scenario constraints; static inventory is separate.",
+        "expertReviewStatus": "NEEDS_EXPERT_REVIEW",
+        "reviewedBy": null,
+        "reviewedAt": null
+      }
+    }
+  ]
+}

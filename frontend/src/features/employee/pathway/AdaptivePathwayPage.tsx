@@ -6,7 +6,7 @@ import {
   Lock,
   RefreshCw,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
@@ -17,8 +17,14 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { AdaptivePathwayTimeline } from '../components/AdaptivePathwayTimeline'
 import { InteractiveRoleRoadmap } from '../components/InteractiveRoleRoadmap'
+import { InitialEmployeePathway } from './InitialEmployeePathway'
 
 export function AdaptivePathwayPage() {
+  const { profile } = useEmployeeLearningState()
+  const [params] = useSearchParams()
+  return params.get('view') !== 'role' && profile.selectedViewType === 'skill' ? <IndependentSkillPathwayPage /> : <InitialEmployeePathway />
+}
+function IndependentSkillPathwayPage() {
   const [activeTab, setActiveTab] = React.useState('roadmap')
   const { profile, isLearningLocked, toggleDiagnosticLock } = useEmployeeLearningState()
   const { t } = useTranslation()
@@ -54,7 +60,7 @@ export function AdaptivePathwayPage() {
           />
 
           {/* LOCKED STATE OVERLAY IF DIAGNOSTIC IS NOT YET COMPLETED */}
-          {isLearningLocked ? (
+          {isLearningLocked && profile.selectedViewType !== 'skill' ? (
             <Card className="border border-warning/30 bg-gradient-to-br from-card via-card to-warning/5 shadow-xs overflow-hidden mt-6">
               <CardContent className="py-12 px-6 text-center max-w-2xl mx-auto space-y-5">
                 <div className="mx-auto w-14 h-14 rounded-2xl bg-warning/15 text-warning border border-warning/30 flex items-center justify-center shadow-xs">
@@ -106,6 +112,8 @@ export function AdaptivePathwayPage() {
             </Card>
           ) : (
             <>
+
+
               {/* TAB 1: INTERACTIVE ROADMAP */}
               <TabsContent value="roadmap" className="mt-4">
                 <InteractiveRoleRoadmap />

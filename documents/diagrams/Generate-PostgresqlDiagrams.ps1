@@ -1,3 +1,5 @@
+param([string]$ComposeOverride)
+
 $ErrorActionPreference = 'Stop'
 
 $composeFile = Join-Path $PSScriptRoot '..\..\compose.dev.yml'
@@ -34,7 +36,9 @@ SELECT json_build_object(
 )::text
 '@
 
-$json = docker compose -f $composeFile exec -T postgres psql -X -qAt -U adapt_learn_graph -d adapt_learn_graph -c $sql
+$composeArguments = @('compose', '-f', $composeFile)
+if ($ComposeOverride) { $composeArguments += @('-f', $ComposeOverride) }
+$json = & docker @composeArguments exec -T postgres psql -X -qAt -U adapt_learn_graph -d adapt_learn_graph -c $sql
 if ($LASTEXITCODE -ne 0) {
     throw 'Cannot read the migrated development PostgreSQL schema.'
 }
@@ -45,9 +49,21 @@ $groups = @(
         Name = 'Identity, catalog and processing'
         File = 'postgresql.puml'
         Tables = @('organization', 'organizational_unit', 'account', 'application_role',
-            'account_role', 'manager_scope', 'session', 'learner_state', 'catalog_guard',
-            'catalog_release', 'catalog_reference', 'target_selection', 'outbox_event',
+            'account_role', 'manager_scope', 'session', 'organization_registration',
+            'registration_email_verification', 'account_totp', 'account_recovery_code',
+            'registration_rate_limit', 'registration_session', 'registration_session_attributes',
+            'learner_state', 'catalog_guard',
+            'catalog_release', 'catalog_reference', 'target_selection', 'target_selection_request', 'outbox_event',
             'processing_job', 'processing_receipt', 'audit_event')
+    },
+    @{
+        Name = 'Subscriptions, payments and workspace membership'
+        File = 'postgresql-subscription.puml'
+        Tables = @('subscription_plan', 'subscription_plan_version', 'subscription_intent',
+            'payment_order', 'payment_observation', 'payment_application', 'subscription',
+            'subscription_period', 'organization_workspace', 'department_reference',
+            'occupation_department_reference', 'organization_membership', 'organization_membership_role',
+            'platform_administrator', 'workspace_account_profile', 'workspace_activation')
     },
     @{
         Name = 'Assessment and learning'
@@ -59,7 +75,19 @@ $groups = @(
             'item_response', 'assessment_result', 'evidence_observation',
             'processing_stream', 'profile_revision', 'mastery_estimate',
             'evidence_application', 'progress_revision', 'module_completion',
-            'completion_pass')
+            'completion_pass', 'mastery_mapping_version', 'workspace_baseline_resource',
+            'baseline_adaptive_attempt', 'baseline_adaptive_blueprint_role', 'baseline_adaptive_blueprint_skill',
+            'baseline_adaptive_blueprint_version', 'baseline_adaptive_blueprint_working_revision',
+            'baseline_answer_reveal_audit', 'baseline_assessment_series', 'baseline_assessment_transition',
+            'baseline_attempt_command', 'baseline_attempt_item', 'baseline_attempt_pool_item',
+            'baseline_attempt_response', 'baseline_attempt_result', 'baseline_attempt_skill_result',
+            'baseline_attempt_skill_state', 'baseline_blueprint', 'baseline_blueprint_activation',
+            'baseline_blueprint_activation_event', 'baseline_blueprint_command', 'baseline_blueprint_role',
+            'baseline_blueprint_skill', 'baseline_blueprint_version', 'baseline_blueprint_version_registry',
+            'baseline_blueprint_working_registry', 'baseline_blueprint_working_revision', 'baseline_management_command',
+            'baseline_mastery_evidence', 'employee_occupation_profile', 'employee_role_selection',
+            'employee_role_selection_request', 'irt_calibration_run', 'irt_effective_parameter_selection',
+            'irt_item_parameter', 'irt_parameter_promotion_command', 'irt_parameter_set')
     },
     @{
         Name = 'Recommendation, analytics and evaluation'

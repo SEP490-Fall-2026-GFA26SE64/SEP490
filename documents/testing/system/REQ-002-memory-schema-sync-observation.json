@@ -1,0 +1,355 @@
+{
+  "date": "2026-10-23",
+  "scope": "Coordination cleanup and read-only documentation/schema synchronization",
+  "head": "70679bb43e1798f1235a17d6a9a843701e76a796",
+  "index": [],
+  "backup": {
+    "files": 535,
+    "sha256Verified": true,
+    "path": "D:\\Study\\capstone_project\\.tools\\memory-schema-sync\\20261023\\before"
+  },
+  "protectedMigrationReleaseFiles": 38,
+  "protectedHashMismatches": [],
+  "schema": {
+    "tables": 86,
+    "columns": 703,
+    "constraints": 610,
+    "foreignKeys": 185,
+    "foreignKeyTablePairs": 172,
+    "indexes": 207,
+    "triggers": 97,
+    "functions": 39
+  },
+  "migrationChecksumsMatched": 23,
+  "schemaSnapshotAtUtc": "2026-10-22T17:44:56.127669+00:00",
+  "temporaryIdsRetained": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "inventory": [
+    {
+      "path": ".project/CURRENT.md",
+      "bytes": 4610,
+      "sha256": "d8f02d95bde9ce595d157d7093063b970187aba25a9677ff03399ab532a4e91c"
+    },
+    {
+      "path": ".project/decisions/CROSS-CUTTING.md",
+      "bytes": 1300,
+      "sha256": "445b99ff63b8c2219c917d182b28adf69d401bcab051f20dfbc58ec76f90360c"
+    },
+    {
+      "path": ".project/decisions/INDEX.md",
+      "bytes": 602,
+      "sha256": "8e1a2fe801d755985b99c84add73d19cb1def9458f581b6a54fc79543a788a37"
+    },
+    {
+      "path": ".project/decisions/REQ-001.md",
+      "bytes": 658,
+      "sha256": "b14e62096e4dd4f84bfa652dfa299c666216bf085844cc1ba3ed94b07a65b6b5"
+    },
+    {
+      "path": ".project/decisions/REQ-002-003-009.md",
+      "bytes": 4247,
+      "sha256": "126e6b526c0a9cf0f14b34be4f2fc63b99554800a4337f6cdfb666a6a6711365"
+    },
+    {
+      "path": ".project/DECISIONS.md",
+      "bytes": 183,
+      "sha256": "89def215746b857c5b5bfb60bb291833163f0b460c68f8bb3933a29705985fc3"
+    },
+    {
+      "path": ".project/README.md",
+      "bytes": 1279,
+      "sha256": "bfe230710225911e7f52a2f207d75f4bdded09fdae170a155bf17c5de19332d4"
+    },
+    {
+      "path": ".project/requirements/active/CROSS-REQ-system-direction/2026-10-11-temporary-srs.md",
+      "bytes": 3347,
+      "sha256": "d314b8dffee579a0a30415eab7a86ea091960646fa7783e73dadae29572e3c04"
+    },
+    {
+      "path": ".project/requirements/active/CROSS-REQ-system-direction/FUTURE_BASELINE_ROLE_RECOMMENDATION_FLOW.md",
+      "bytes": 749,
+      "sha256": "d26638231dc8a07f02226349d091301302b56c3dedaaaebb61c99cc6e5938cad"
+    },
+    {
+      "path": ".project/requirements/active/REQ-002-003-009-assessment/00-INDEX.md",
+      "bytes": 664,
+      "sha256": "3d9e2d5e1d2980a81eff852ca835a3f329f694e9951706135e1b7e54b8d38a28"
+    },
+    {
+      "path": ".project/requirements/active/REQ-002-003-009-assessment/2026-10-13-riasec-target-role-research.md",
+      "bytes": 1253,
+      "sha256": "e533df1966319cfdb60fa7943ce6a81882eb7d50cb6e148629bc18327191fa42"
+    },
+    {
+      "path": ".project/requirements/active/REQ-002-003-009-assessment/REQ-002-ADAPTIVE-REDESIGN.md",
+      "bytes": 8023,
+      "sha256": "8a2dcf7486a302620dbda84e84be00f04678b30e670a5f66a1e55964263e3a69"
+    },
+    {
+      "path": ".project/requirements/active/REQ-002-003-009-assessment/REQ-002-IMPLEMENTED-SNAPSHOT.md",
+      "bytes": 1242,
+      "sha256": "fd1af4c623067e79301989cd2188417d16839326bc35849c53a64a6ddaf64c51"
+    },
+    {
+      "path": ".project/requirements/active/REQ-041-mastery/13-BKT-GATE.md",
+      "bytes": 418,
+      "sha256": "1a0c61f6ef9360d7fa5dc93d80933f908e639ba58c4ac9a0586d68906003e4b6"
+    },
+    {
+      "path": ".project/requirements/active/REQ-041-mastery/2026-10-06-assessment-mastery-research.md",
+      "bytes": 423,
+      "sha256": "2664827a2e882fd42cc9e0dbc08847c3a81436d17625d27cfbf5a45b27af9586"
+    },
+    {
+      "path": ".project/requirements/active/REQ-041-mastery/2026-10-12-scoring-mastery-config-define.md",
+      "bytes": 1764,
+      "sha256": "882d6c032ec093c4e33d9d69e86277d9e83d80d127ea4edb008c0e3dac6515af"
+    },
+    {
+      "path": ".project/requirements/README.md",
+      "bytes": 881,
+      "sha256": "1ef5db2ab84868c02c1ef38188d11694c06bd1207ad42f995a08d6cef70d0489"
+    },
+    {
+      "path": ".project/requirements/surface-complete/REQ-001-target-role/2026-09-29-target-role-selection.md",
+      "bytes": 784,
+      "sha256": "1e362e1cac8d63b5a3c808b045d7d2bbb57eae105b5a0d444ef358c1fc7e7ef8"
+    },
+    {
+      "path": ".project/requirements/surface-complete/REQ-001-target-role/FUTURE_UPGRADES.md",
+      "bytes": 896,
+      "sha256": "cc951a52ad59404ac39bc1955942f2ef9946948b67c1013a01f681517eed52f2"
+    },
+    {
+      "path": ".project/requirements/surface-complete/REQ-001-target-role/IMPLEMENTED_FILES.md",
+      "bytes": 712,
+      "sha256": "325ca96b5f47724b4251edf514b36ff3e54581744296aaf317ed3af4047a1fd4"
+    },
+    {
+      "path": ".project/requirements/surface-complete/REQ-001-target-role/TEST_GUIDE.md",
+      "bytes": 671,
+      "sha256": "f15676f35a238fcd7d0166173801c5ff54d1c5b55d5463e24c42fe386a275d8e"
+    },
+    {
+      "path": ".project/TASK_TEMPLATE.md",
+      "bytes": 737,
+      "sha256": "542e2eba4f39dbc354c9076b3260a633ba23dd3f3ea4b89a3ada4046afd02002"
+    },
+    {
+      "path": ".project/temporary/INDEX.md",
+      "bytes": 460,
+      "sha256": "4f35f2266d8e88f2911845ba7285dc2e852722a9be06d7ec84d4762af3272e54"
+    },
+    {
+      "path": ".project/temporary/REQ-001.md",
+      "bytes": 2229,
+      "sha256": "1c2e4b0d53d38fbf7a2a2735a120674637bc1a322b2921cb022b1bc8350989e5"
+    },
+    {
+      "path": ".project/temporary/REQ-002-003-009.md",
+      "bytes": 15423,
+      "sha256": "d31e4b205092edae1a4f5cd12bf30a1bd67d371825b1a51500b04412a8191c71"
+    },
+    {
+      "path": ".project/TEMPORARY_IMPLEMENTATIONS.md",
+      "bytes": 206,
+      "sha256": "98acb086780347725fbe1e4dc09c9150e768a7badd892ce235babf67a6cdea10"
+    },
+    {
+      "path": ".project/WORKFLOW.md",
+      "bytes": 4208,
+      "sha256": "f2bc6efeea664f0c78da41b664e1434fe840e060ffa3f3484857fa28c60a8e49"
+    },
+    {
+      "path": "s2 work/Algorithm/893CorbettAnderson1995.pdf",
+      "bytes": 1523346,
+      "sha256": "379e9b58d6496600cccfdac41bf7874a8fd0640a83e2a1299c77800cf4be87ca"
+    },
+    {
+      "path": "s2 work/Algorithm/NGHIEN_CUU_IRT_3PL_ADAPTIVE_BASELINE.md",
+      "bytes": 13449,
+      "sha256": "8394e07fcb9d7b096b7fa6ec8f139832b1b72413b28f20127f645bc3a8e8330c"
+    },
+    {
+      "path": "s2 work/Algorithm/NGHIEN_CUU_RIASEC.md",
+      "bytes": 4057,
+      "sha256": "dece5af9e28ee264e763a83d090a2971c72f458a8b637adb6930f94725803ff1"
+    },
+    {
+      "path": "s2 work/Algorithm/NGHIEN_CUU_SCORING_MASTERY.md",
+      "bytes": 10923,
+      "sha256": "4067ffd35c9f673749abd9ec64baf8c13c8734d338a771af27241a7f40f1db87"
+    },
+    {
+      "path": "s2 work/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.docx",
+      "bytes": 810149,
+      "sha256": "360281ecd17ae89e1cae8f768a81ec73b73515460f6df29a99e131443dd833b1"
+    },
+    {
+      "path": "s2 work/Ongoing Plan/AGENT_MODEL_CLUSTER_2_ADAPTIVE_BASELINE.md",
+      "bytes": 8943,
+      "sha256": "63d0d0cee243d54848c3b43f40d3572af75d7863a5bb69c945e6939d367254a1"
+    },
+    {
+      "path": "s2 work/Ongoing Plan/CODEX_PROMPTS_QUESTION_BANK_C_D.md",
+      "bytes": 696,
+      "sha256": "d7e93600699ef475ec6417fa6b5c5bc9e5e49123ab31a2fc3b6ed8870d151dab"
+    },
+    {
+      "path": "s2 work/Ongoing Plan/NGUOI_3_CORE_10_SPRINT.md",
+      "bytes": 4764,
+      "sha256": "b400429baa4f82ff77ed6839cee02b5cc5c0a144e0ee2f45e7680d40b058161c"
+    },
+    {
+      "path": "s2 work/rule/BKT_NGUON_VA_KET_LUAN_NGHIEN_CUU.md",
+      "bytes": 9291,
+      "sha256": "b6bb0a85c5ac4614fdbdf894d7e17d92ed504805beb5cb622c448e55dbdee7c6"
+    },
+    {
+      "path": "s2 work/Test Guides/CORE_FLOW.md",
+      "bytes": 1090,
+      "sha256": "6fceadd61455ff59e4d0a2c6838ad823f7e260a961fd71936c3c37cdfb8941a3"
+    },
+    {
+      "path": "s2 work/Test Guides/REQ-002-F02-full-walkthrough-test-guide.md",
+      "bytes": 13280,
+      "sha256": "945976e503f6fbe13297b2494305aaffff3b32ab78eb346741fb3368dfc3f008"
+    }
+  ],
+  "coordinationBefore": {
+    "files": 44,
+    "bytes": 2847548
+  },
+  "coordinationAfter": {
+    "files": 38,
+    "bytes": 2457957
+  },
+  "markdownBefore": 514053,
+  "markdownAfter": 124462,
+  "changedMarkdown": [
+    ".project/CURRENT.md",
+    ".project/decisions/REQ-002-003-009.md",
+    ".project/requirements/active/CROSS-REQ-system-direction/2026-10-11-temporary-srs.md",
+    ".project/requirements/active/CROSS-REQ-system-direction/FUTURE_BASELINE_ROLE_RECOMMENDATION_FLOW.md",
+    ".project/requirements/active/REQ-002-003-009-assessment/00-INDEX.md",
+    ".project/requirements/active/REQ-002-003-009-assessment/2026-10-13-riasec-target-role-research.md",
+    ".project/requirements/active/REQ-002-003-009-assessment/REQ-002-ADAPTIVE-REDESIGN.md",
+    ".project/requirements/active/REQ-002-003-009-assessment/REQ-002-IMPLEMENTED-SNAPSHOT.md",
+    ".project/requirements/active/REQ-041-mastery/2026-10-06-assessment-mastery-research.md",
+    ".project/requirements/active/REQ-041-mastery/2026-10-12-scoring-mastery-config-define.md",
+    ".project/requirements/surface-complete/REQ-001-target-role/FUTURE_UPGRADES.md",
+    ".project/requirements/surface-complete/REQ-001-target-role/TEST_GUIDE.md",
+    ".project/temporary/REQ-001.md",
+    ".project/temporary/REQ-002-003-009.md",
+    "project/SEP490/documents/ARCHITECTURE.md",
+    "project/SEP490/documents/diagrams/README.md",
+    "project/SEP490/documents/diagrams/postgresql-foreign-keys.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Adaptive Baseline Data Architecture.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Calibrate and Promote IRT Parameters.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Complete Baseline Assessment.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Configure Baseline Assessment.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Local Demo Flow.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Occupation Baseline Lifecycle and Transition.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/README.md",
+    "project/SEP490/documents/neo4j_schema.md",
+    "project/SEP490/documents/testing/system/README.md",
+    "project/SEP490/documents/testing/system/REQ-002-memory-schema-sync.md",
+    "s2 work/Algorithm/NGHIEN_CUU_IRT_3PL_ADAPTIVE_BASELINE.md",
+    "s2 work/Algorithm/NGHIEN_CUU_RIASEC.md",
+    "s2 work/Algorithm/NGHIEN_CUU_SCORING_MASTERY.md",
+    "s2 work/Ongoing Plan/AGENT_MODEL_CLUSTER_2_ADAPTIVE_BASELINE.md",
+    "s2 work/Ongoing Plan/CODEX_PROMPTS_QUESTION_BANK_C_D.md",
+    "s2 work/Ongoing Plan/NGUOI_3_CORE_10_SPRINT.md",
+    "s2 work/Test Guides/CORE_FLOW.md",
+    "s2 work/Test Guides/REQ-002-F02-full-walkthrough-test-guide.md"
+  ],
+  "newMissingLocalLinks": [],
+  "preexistingMissingCoordinationLinks": [],
+  "detailDiagrams": [
+    {
+      "file": "postgresql.svg",
+      "ownedTables": 17,
+      "columns": 106,
+      "width": "1536px",
+      "height": "1404px",
+      "sha256": "441bf548b545daabaaef201be9235b438259515207d6f89f5ac61b19c1a8f11d"
+    },
+    {
+      "file": "postgresql-assessment.svg",
+      "ownedTables": 32,
+      "columns": 264,
+      "width": "3027px",
+      "height": "2771px",
+      "sha256": "86df3245b8d3ae1b89897d6455e501516d355efc7ed2a0967bd92b6ddd349669"
+    },
+    {
+      "file": "postgresql-pathway.svg",
+      "ownedTables": 13,
+      "columns": 114,
+      "width": "1765px",
+      "height": "1206px",
+      "sha256": "7f1dd0638c9fe1d337a89c60a192de769c9786f8f0ceddbf0f9bacb274b2435d"
+    },
+    {
+      "file": "postgresql-adaptive-blueprint.svg",
+      "ownedTables": 9,
+      "columns": 75,
+      "width": "1558px",
+      "height": "979px",
+      "sha256": "b2c9d02ca49969d00761994a36a63e49c68afb686c62fdd3957f310d99b02f0d"
+    },
+    {
+      "file": "postgresql-adaptive-attempt.svg",
+      "ownedTables": 9,
+      "columns": 94,
+      "width": "1060px",
+      "height": "1570px",
+      "sha256": "6c728d4f16b3da4d2bf3917578796b5c9f9e892775c9c80d72d9848f83c868e7"
+    },
+    {
+      "file": "postgresql-irt.svg",
+      "ownedTables": 6,
+      "columns": 50,
+      "width": "798px",
+      "height": "979px",
+      "sha256": "4d8af3fa34ea83f04fb620304123faa164ed50bafa955fd080169464d5964c95"
+    }
+  ],
+  "otherRenderedDiagrams": [
+    {
+      "file": "postgresql-overview.svg",
+      "width": "899px",
+      "height": "1871px",
+      "sha256": "aeacd0328ddee3b727806e1f6b7d971f324ba98332796168321e68cb44cc1023"
+    },
+    {
+      "file": "runtime-topology.svg",
+      "width": "1638px",
+      "height": "435px",
+      "sha256": "0efaf9719a230c3a182a897b827f51d10d8545eb3ecfa6f270def8a3de926e68"
+    }
+  ],
+  "visualReview": "All seven current PostgreSQL PNG previews and runtime topology inspected; SVG text coverage verified for703 columns. Dense32-table legacy/shared view requires SVG zoom.",
+  "renderer": {
+    "name": "PlantUML",
+    "version": "1.2025.10",
+    "layout": "Smetana",
+    "sha256": "4a01ea09b317180fb8e7eef712dfdca725409d2ee1919e4b5adfe9d8362b6fe5",
+    "source": "https://github.com/plantuml/plantuml/releases/download/v1.2025.10/plantuml-1.2025.10.jar"
+  },
+  "runtimeWritesPerformed": false,
+  "databaseMutationPerformed": false,
+  "executableTestsRun": false
+}

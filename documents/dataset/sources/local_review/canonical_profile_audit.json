@@ -1,0 +1,230 @@
+[
+  {
+    "canonicalProfileKey": "PROFILE-DATAENG",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "ab205eb8d9bde28705eb09ec88bdc0aac802c7a1e9991cc237795f3a20165b5f": [
+        "ROLE-DE"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-DATAGOV",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "d9ee0a622a6a55dffa4d7694dd762867a3fcf530931c58007a572820c8205b16": [
+        "ROLE-677AE5E25939"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-DATARCH",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "4786fff295f88c00201d8663c5caa4b244ba871f4e4a13c1f81e4c7228fc42e2": [
+        "ROLE-84156EF4FF37",
+        "ROLE-5A07C8E3F89B",
+        "ROLE-D4665145D9A0"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-DBANALYSIS",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "5f4eb213c8da594483c5418b33690f3607d904ee74ac6dbbd9cd7bfb7214c629": [
+        "ROLE-262E99D33528",
+        "ROLE-683035F817DC"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-DBDEV",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "bc1a96374f6d89606a6f98297085acdb67ffd0bdcb1b7bd890e9f2079369a508": [
+        "ROLE-826EF8FFB24A",
+        "ROLE-6C905B8EE52A"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-DEV",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "b0355d5f94a497eab10f26b3a88f5bb39af2a7e9226cefe9ea2c4e8444e76a2f": [
+        "ROLE-F72E5464F9B3",
+        "ROLE-88FA0D759F84",
+        "ROLE-15F02B2EC48A",
+        "ROLE-7838A77B1320",
+        "ROLE-CBAF88DF6DE7"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-DEVOPS",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "9deee17d249e2acac883c7723c9366b0f82c9485007d1ac314601859af50ee31": [
+        "ROLE-2F3EE4DCB9A3"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-ENTERPRISE",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "ace49766771119037e48b4e68c77bd2ce63dc5436fc54ecb532b48b8e2a43b11": [
+        "ROLE-B0C017CA7D49"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-INFRA",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "2bb32358458ca42abc00b83f5e0025f99b2536f79bc54bd05db81f3befa21288": [
+        "ROLE-8C851BC1DBAC-15125200",
+        "ROLE-8C851BC1DBAC-15129908",
+        "ROLE-BE3E290AD0CA",
+        "ROLE-919BDC0216B4"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-INTEGRATION",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "1cd66192abd343ff393ee9be72d73873d147beebc0fb8de4e1d80ce5b0964f6a": [
+        "ROLE-58B047D9053E",
+        "ROLE-D047DF7D12BA"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-NETSEC",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "929ab9d5cb945ed947bdb3e986fec09d73d344133a25562bb6a4f569704093dd": [
+        "ROLE-39DE5AAEA190"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-QAA",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "862a8edf4745d88f7e68547cf2123e0af000a30dafcc5d6cb6df0bb39ce59e29": [
+        "ROLE-39F74565946B",
+        "ROLE-B94440938DCB",
+        "ROLE-600114606368"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-QAAUTO",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "55daf7761ce7dcc155afedd9c139a31d5c9036a99a2128b974e6db05c7403e5c": [
+        "ROLE-3594A031F678"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-QAENG",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "51cb842a6ab422066002de383d701045c47c78cde1eb71dc511424a60fc33bcb": [
+        "ROLE-1947F95DA9EB",
+        "ROLE-140C2EA5BCFA",
+        "ROLE-6E51A03B5F7F",
+        "ROLE-B2B4EB364379",
+        "ROLE-B0E1A3444426",
+        "ROLE-6A2A26EB8380"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-SECANALYSIS",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "81a46b7d44b95b7888e8a0b22dfce89b65d917dcfc1b0a2301930e2db847c142": [
+        "ROLE-9E24DD1E0AE6",
+        "ROLE-AF49BFEFFAE0",
+        "ROLE-AC875FDD2CC1",
+        "ROLE-FE0775936B97",
+        "ROLE-410E150F21A9"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-SECOFFICER",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "17d716aba205f2ba67d5c4b4c6fdcf65922a53a29bba8483cb0220459068e3a2": [
+        "ROLE-BC681F40F67B",
+        "ROLE-AAF660DA34D9"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-SWARCH",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "65b83cf77623c8090b4488f8d139c098152e5581125ec105efc866abca2df2dd": [
+        "ROLE-DC8BCD8CC9FA"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-SYSANALYSIS",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "dae19cdf8ae5a285f980fd7c8dd2ec098ed9936495e566ab26de392bec343df8": [
+        "ROLE-4C23110A9ACE"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-SYSARCH",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "04852c548727fea0adb60cdd8ca6904146bc62d4a02beee86fd63f255f305e62": [
+        "ROLE-6B89F39CA50C-15125200",
+        "ROLE-6B89F39CA50C-15129908",
+        "ROLE-56B826705119",
+        "ROLE-B01510AF5F34",
+        "ROLE-7A06376BE513"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  },
+  {
+    "canonicalProfileKey": "PROFILE-WEBARCH",
+    "distinctSkillThresholdVectors": 1,
+    "variants": {
+      "2f5a0690de7d5d9a015fa34eebbfdd9f34cbcdf639913ac86a09dea3236193c5": [
+        "ROLE-E53C178E5BA6"
+      ]
+    },
+    "note": "ExpectedOutcome text and course selection may remain role-specific; grouping is recommendation presentation, not interchangeable assessment evidence."
+  }
+]

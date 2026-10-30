@@ -1,0 +1,25 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam shadowing false
+title Adaptive baseline data ownership flow
+rectangle "Authorized catalog requirements" as C
+rectangle "Role selection" as S
+rectangle "Authoritative profile coverage" as P
+rectangle "Occupation baseline availability" as D
+rectangle "Immutable Blueprint version" as V
+rectangle "Pinned individual attempt" as A
+rectangle "Final result and mastery evidence" as R
+rectangle "Profile initialization" as M
+rectangle "My Mastery read" as Q
+rectangle "Historical pins" as H
+C --> S
+S --> P
+P --> D : Incomplete
+D --> V
+V --> A
+A --> R
+R --> M
+M --> Q
+H --> R
+@enduml
