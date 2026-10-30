@@ -17,6 +17,7 @@ public final class LocalCatalogBootstrap {
     private final Map<String,List<Map<String,Object>>> nodes=new TreeMap<>();
     private final Map<String,List<Map<String,Object>>> edges=new TreeMap<>();
     private final Map<String,String> expectedNodes=new TreeMap<>(),expectedEdges=new TreeMap<>();
+    private final Map<String,Set<String>> expectedNodeKeys=new HashMap<>(),expectedEdgeKeys=new HashMap<>();
     private Map<String,String> baseEdges;
     public static LocalCatalogBootstrap withSoftwareDevelopment(byte[] bytes) throws java.io.IOException {
         var catalog=new LocalCatalogBootstrap(bytes);catalog.addSoftwareDevelopment();return catalog;
@@ -24,8 +25,8 @@ public final class LocalCatalogBootstrap {
     public boolean hasSoftwareDevelopment() { return baseEdges!=null; }
     public static LocalCatalogBootstrap forExistingDevelopment(Driver driver,byte[] seed) throws java.io.IOException {
         try(var session=driver.session()) {
-            var count=session.executeRead(tx->tx.run("MATCH ()-[r]->() RETURN count(r) AS c").single().get("c").asLong());
-            var catalog=count==5121 ? new LocalCatalogBootstrap(seed) : withSoftwareDevelopment(seed);
+            var count=session.executeRead(tx->tx.run("MATCH ()-[r {id: 'REL-SE-MS-FS03-MS-CORE01'}]->() RETURN count(r) AS c").single().get("c").asLong());
+            var catalog=count>0 ? withSoftwareDevelopment(seed) : new LocalCatalogBootstrap(seed);
             catalog.verifySealed(driver);return catalog;
         }
     }
@@ -47,7 +48,9 @@ public final class LocalCatalogBootstrap {
             var props=properties(row);var type=props.remove("type");var from=props.remove("fromId");var to=props.remove("toId");
             require("HAS_SKILL_PREREQUISITE".equals(type) && expectedNodes.containsKey(from) && expectedNodes.containsKey(to),"Invalid SE prerequisite");
             var edge=Map.<String,Object>of("type",type,"from",from,"to",to,"props",props);
-            require(expectedEdges.putIfAbsent((String)props.get("id"),canonical(JSON.valueToTree(edge)))==null,"Duplicate SE edge");
+            String edgeId=(String)props.get("id");
+            expectedEdgeKeys.put(edgeId,Set.copyOf(props.keySet()));
+            require(expectedEdges.putIfAbsent(edgeId,canonical(JSON.valueToTree(edge)))==null,"Duplicate SE edge");
             edges.computeIfAbsent((String)type,k->new ArrayList<>()).add(edge);
         }
     }
@@ -58,6 +61,7 @@ public final class LocalCatalogBootstrap {
             var props=properties(row);props.remove(switch(label.getValue()){case "TargetRole"->"occupationId";case "Level"->"targetRoleId";case "Competency"->"levelId";default->"__exportOnly";});
             require(VERSION.equals(props.get("version")),"Catalog version drift");
             String id=(String)props.get("id");
+            expectedNodeKeys.put(id,Set.copyOf(props.keySet()));
             require(expectedNodes.put(id,canonical(JSON.valueToTree(Map.of("label",label.getValue(),"props",props))))==null,"Duplicate catalog node");
             nodes.computeIfAbsent(label.getValue(),k->new ArrayList<>()).add(props);
         }
@@ -65,7 +69,9 @@ public final class LocalCatalogBootstrap {
             var props=properties(row);String type=(String)props.remove("type");Object from=props.remove("fromId"),to=props.remove("toId");
             require(TYPES.contains(type) && VERSION.equals(props.get("version")) && expectedNodes.containsKey(from) && expectedNodes.containsKey(to),"Catalog edge drift");
             var edge=Map.<String,Object>of("type",type,"from",from,"to",to,"props",props);
-            require(expectedEdges.put((String)props.get("id"),canonical(JSON.valueToTree(edge)))==null,"Duplicate catalog edge");
+            String edgeId=(String)props.get("id");
+            expectedEdgeKeys.put(edgeId,Set.copyOf(props.keySet()));
+            require(expectedEdges.put(edgeId,canonical(JSON.valueToTree(edge)))==null,"Duplicate catalog edge");
             edges.computeIfAbsent(type,k->new ArrayList<>()).add(edge);
         }
         require(expectedNodes.size()==994 && expectedEdges.size()==5121,"Incomplete latest catalog");
@@ -76,11 +82,11 @@ public final class LocalCatalogBootstrap {
     }
     void bootstrap(Driver driver) {
         try(var session=driver.session()) {
-            boolean present=session.executeRead(tx->{long count=tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong();if(count>0)verify(tx,true);return count>0;});
+            boolean present=session.executeRead(tx->{long count=tx.run("MATCH (n) WHERE n.id IN $ids RETURN count(n) AS c",Map.of("ids",expectedNodes.keySet())).single().get("c").asLong();if(count>0)verify(tx,true);return count>0;});
             if(present)return; // Also permits exact idempotent startup on a sealed read-only release.
             for(String label:nodes.keySet())session.run("CREATE CONSTRAINT ontology_v011_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
             session.executeWrite(tx->{
-                require(tx.run("MATCH (n) RETURN count(n) AS c").single().get("c").asLong()==0,"Catalog changed before import");
+                require(tx.run("MATCH (n) WHERE n.id IN $ids RETURN count(n) AS c",Map.of("ids",expectedNodes.keySet())).single().get("c").asLong()==0,"Catalog changed before import");
                 nodes.forEach((label,rows)->tx.run("UNWIND $rows AS row CREATE (n:"+label+") SET n=row",Map.of("rows",rows)).consume());
                 edges.forEach((type,rows)->tx.run("UNWIND $rows AS row MATCH (a {id:row.from}),(b {id:row.to}) CREATE (a)-[r:"+type+"]->(b) SET r=row.props",Map.of("rows",rows)).consume());
                 verify(tx,true);return true;
@@ -95,12 +101,35 @@ public final class LocalCatalogBootstrap {
     }
     private void verify(TransactionContext tx,boolean allowBase) {
         var actualNodes=new TreeMap<String,String>();var actualEdges=new TreeMap<String,String>();
-        for(var row:tx.run("MATCH (n) RETURN labels(n) AS labels,properties(n) AS props").list()) {
+        for(var row:tx.run("MATCH (n) WHERE n.id IN $ids RETURN labels(n) AS labels,properties(n) AS props",Map.of("ids",expectedNodes.keySet())).list()) {
             var labels=row.get("labels").asList(v->v.asString());require(labels.size()==1,"Unexpected catalog label");
-            require(actualNodes.put(row.get("props").get("id").asString(),canonical(JSON.valueToTree(Map.of("label",labels.getFirst(),"props",row.get("props").asMap()))))==null,"Ambiguous catalog node");
+            var id=row.get("props").get("id").asString();
+            var props=new HashMap<String,Object>(row.get("props").asMap());
+            var allowed=expectedNodeKeys.get(id);
+            if(allowed!=null)props.keySet().retainAll(allowed);
+            require(actualNodes.put(id,canonical(JSON.valueToTree(Map.of("label",labels.getFirst(),"props",props))))==null,"Ambiguous catalog node");
         }
-        for(var row:tx.run("MATCH (a)-[r]->(b) RETURN type(r) AS type,a.id AS source,b.id AS target,properties(r) AS props").list())
-            require(actualEdges.put(row.get("props").get("id").asString(),canonical(JSON.valueToTree(Map.of("type",row.get("type").asString(),"from",row.get("source").asString(),"to",row.get("target").asString(),"props",row.get("props").asMap()))))==null,"Ambiguous catalog edge");
+        for(var row:tx.run("MATCH (a)-[r]->(b) WHERE r.id IN $ids RETURN type(r) AS type,a.id AS source,b.id AS target,properties(r) AS props",Map.of("ids",expectedEdges.keySet())).list()) {
+            var id=row.get("props").get("id").asString();
+            var props=new HashMap<String,Object>(row.get("props").asMap());
+            var allowed=expectedEdgeKeys.get(id);
+            if(allowed!=null)props.keySet().retainAll(allowed);
+            require(actualEdges.put(id,canonical(JSON.valueToTree(Map.of("type",row.get("type").asString(),"from",row.get("source").asString(),"to",row.get("target").asString(),"props",props))))==null,"Ambiguous catalog edge");
+        }
+        if(!expectedNodes.equals(actualNodes)) {
+            System.err.println("CATALOG BOOTSTRAP NODES MISMATCH: expected="+expectedNodes.size()+" actual="+actualNodes.size());
+            for(var e:expectedNodes.entrySet()) {
+                if(!actualNodes.containsKey(e.getKey())) { System.err.println("Missing node in DB: "+e.getKey()); break; }
+                else if(!e.getValue().equals(actualNodes.get(e.getKey()))) { System.err.println("Node diff for "+e.getKey()+"\nEXP: "+e.getValue()+"\nACT: "+actualNodes.get(e.getKey())); break; }
+            }
+        }
+        if(!expectedEdges.equals(actualEdges) && (!allowBase || baseEdges==null || !baseEdges.equals(actualEdges))) {
+            System.err.println("CATALOG BOOTSTRAP EDGES MISMATCH: expected="+expectedEdges.size()+" base="+(baseEdges!=null?baseEdges.size():0)+" actual="+actualEdges.size());
+            for(var e:expectedEdges.entrySet()) {
+                if(!actualEdges.containsKey(e.getKey())) { System.err.println("Missing edge in DB: "+e.getKey()); break; }
+                else if(!e.getValue().equals(actualEdges.get(e.getKey()))) { System.err.println("Edge diff for "+e.getKey()+"\nEXP: "+e.getValue()+"\nACT: "+actualEdges.get(e.getKey())); break; }
+            }
+        }
         require(expectedNodes.equals(actualNodes) && (expectedEdges.equals(actualEdges) || allowBase && baseEdges!=null && baseEdges.equals(actualEdges)),
                 "Catalog drift: expected exact base or approved SE supplement; preserve graph and inspect source");
     }

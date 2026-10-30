@@ -22,7 +22,9 @@ import java.util.UUID;
 /** Import envelope only. Source/review/rationale metadata does not extend public item DTOs. */
 record OfficialQuestionBankManifest(String formatVersion, String manifestVersion, String catalogVersion,
         String sourceSha256, String scopeSha256, String occupationId, Bank questionBank, List<Item> items) {
-    static final ObjectMapper JSON = JsonMapper.builder().enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+    static final ObjectMapper JSON = JsonMapper.builder()
+            .addModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+            .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT).disable(MapperFeature.ALLOW_COERCION_OF_SCALARS).build();
     record Bank(UUID id, String name) {}
