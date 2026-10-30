@@ -299,3 +299,6 @@ The repeatable local acceptance harness may run the same packaged API artifact o
 
 
 Local8088 deployment note (2026-10-30): the preserved accounts/module/content database uses a different historical migration lineage from this branch. Its compatibility runtime retains existing module/content code and dependencies, aligns existing V33–V41 SQL resources with unchanged database history, and appends Question Bank tables as V42. Branch canonical V29/workspace V36 remain unchanged. A plain branch artifact is not interchangeable with this local database; reconcile lineage before a future full deployment. Backup and actual smoke results are recorded in [Question Bank system evidence](testing/system/REQ-014-question-bank.md#existing-8088-deployment--2026-10-30).
+
+
+Question Bank bulk-approval feedback follow-up (2026-10-30): frontend preflight uses existing state/owner and exact-version acknowledgement from BankView, shows code-specific remediation in shared Dialog, and keeps the backend authoritative for concurrency/eligibility. No API/entity/persistence contract or migration changed. See dedicated REQ-014 system evidence.

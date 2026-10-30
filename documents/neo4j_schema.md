@@ -297,3 +297,6 @@ Expected: no rows. This is a manual procedure; no live runtime database is chang
 ### Question Bank authoring boundary — 2026-10-30
 
 Question banks, question versions, protected answers, review/assignment history, import receipts and notifications are PostgreSQL-owned. No QuestionBank/Question graph node or new relation is introduced. Authoring resolves exactly one currently active approved MicroSkill and snapshots its name per version. It does not attach exclusive Occupation ownership or infer IRT calibration/mastery. Existing Module/assessment/baseline references are preserved. See ARCHITECTURE.md, Question Bank authoring R2; actual verification remains in dedicated REQ-014 evidence.
+
+
+Question Bank bulk-approval feedback (2026-10-30) is a frontend-only change. No Neo4j labels, properties, relationships, or catalog eligibility rules were changed.

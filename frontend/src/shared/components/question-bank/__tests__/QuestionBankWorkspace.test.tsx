@@ -62,3 +62,45 @@ it('shows an error and retry instead of creating browser fallback data', async (
  expect(screen.queryByText('Q-1')).toBeNull()
  expect(screen.getByRole('button', { name: 'Reload latest data' })).toBeTruthy()
 })
+
+it('lists unreviewed selected codes in a popup without sending approval and opens the first detail', async () => {
+ session.actor = { id: 'ld', organization: 'org', role: 'LD_MANAGER' }
+ bank.questions[0].versions[0].state = 'SUBMITTED'
+ render(<QuestionBankWorkspace />)
+ fireEvent.click(await screen.findByRole('checkbox', { name: 'Select Q-1' }))
+ fireEvent.click(screen.getByRole('button', { name: 'Approve selected (1)' }))
+ const dialog = screen.getByRole('dialog')
+ expect(within(dialog).getByText('Q-1')).toBeTruthy()
+ expect(within(dialog).getByText(/Open Details & history/)).toBeTruthy()
+ expect(vi.mocked(bankRequest).mock.calls.some(([path]) => path === '/approve')).toBe(false)
+ fireEvent.click(within(dialog).getByRole('button', { name: 'Open first question' }))
+ expect(within(screen.getByRole('dialog')).getByRole('button', { name: 'Mark this version reviewed' })).toBeTruthy()
+})
+it('shows server conflicts in the bulk popup with question codes and retains selection', async () => {
+ session.actor = { id: 'ld', organization: 'org', role: 'LD_MANAGER' }
+ bank.questions[0].versions[0].state = 'SUBMITTED'
+ bank.questions[0].versions[0].viewed = { ld: 'v' }
+ const implementation = vi.mocked(bankRequest).getMockImplementation()!
+ vi.mocked(bankRequest).mockImplementation(async (path, ...args) => {
+  if (path === '/approve') throw new Error('q: Question changed. Reload and review the current version.')
+  return implementation(path, ...args)
+ })
+ render(<QuestionBankWorkspace />)
+ fireEvent.click(await screen.findByRole('checkbox', { name: 'Select Q-1' }))
+ fireEvent.click(screen.getByRole('button', { name: 'Approve selected (1)' }))
+ const dialog = await screen.findByRole('dialog')
+ expect(within(dialog).getByText('Q-1: Question changed. Reload and review the current version.')).toBeTruthy()
+ fireEvent.click(within(dialog).getByRole('button', { name: 'Back to list' }))
+ expect((screen.getByRole('checkbox', { name: 'Select Q-1' }) as HTMLInputElement).checked).toBe(true)
+})
+it('sends bulk approval when all selected versions are acknowledged', async () => {
+ session.actor = { id: 'ld', organization: 'org', role: 'LD_MANAGER' }
+ bank.questions[0].versions[0].state = 'SUBMITTED'
+ bank.questions[0].versions[0].viewed = { ld: 'v' }
+ render(<QuestionBankWorkspace />)
+ fireEvent.click(await screen.findByRole('checkbox', { name: 'Select Q-1' }))
+ fireEvent.click(screen.getByRole('button', { name: 'Approve selected (1)' }))
+ await waitFor(() => expect(bankRequest).toHaveBeenCalledWith('/approve', { questions: [{ id: 'q', expectedRevision: 1, action: 'APPROVE' }] }))
+ await screen.findByText('Selected versions approved.')
+ expect(screen.queryByRole('dialog')).toBeNull()
+})
