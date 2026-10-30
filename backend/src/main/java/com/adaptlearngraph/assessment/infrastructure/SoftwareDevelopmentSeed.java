@@ -37,7 +37,7 @@ public final class SoftwareDevelopmentSeed {
         }
         var bank=parse(bankBytes(),OfficialQuestionBankManifest.class);
         require(bank.questionBank().id().equals(id("bank")) && OCCUPATION.equals(bank.occupationId()),"SE bank identity drift");
-        bank.validate(new OfficialQuestionBankCatalog.Scope(LocalCatalogBootstrap.SOURCE_HASH,OCCUPATION,LocalCatalogBootstrap.VERSION,nodes,List.of()),40);
+        bank.validate(new OfficialQuestionBankCatalog.Scope(LocalCatalogBootstrap.LEGACY_SOURCE_HASH,OCCUPATION,LocalCatalogBootstrap.VERSION,nodes,List.of()),40);
         return bank;
     }
     public static String technicalHash() {
