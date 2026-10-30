@@ -27,6 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Profile("!starter")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableScheduling
+@org.springframework.context.annotation.Import(com.adaptlearngraph.shared.infrastructure.IntegrationPolicyConfiguration.class)
 public class RegistrationConfiguration {
     @Bean
     RegistrationSecrets registrationSecrets(
@@ -54,12 +55,14 @@ public class RegistrationConfiguration {
 
     @Bean
     RegistrationUseCase registrationUseCase(RegistrationStore store, RegistrationSecrets secrets,
-                                           RegistrationMailDelivery delivery) {
-        return new RegistrationService(store, secrets, delivery, Clock.systemUTC());
+                                           RegistrationMailDelivery delivery,
+                                           com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
+        return new RegistrationService(store, secrets, delivery, Clock.systemUTC(), policy);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "registration.mail-worker.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(name = {"registration.mail-worker.enabled", "registration.email-verification-enabled"},
+            havingValue = "true", matchIfMissing = true)
     RegistrationMailWorker registrationMailWorker(JdbcTemplate jdbc, RegistrationStore store,
             RegistrationSecrets secrets, RegistrationMailDelivery delivery) {
         return new RegistrationMailWorker(jdbc, store, secrets, delivery, Clock.systemUTC());

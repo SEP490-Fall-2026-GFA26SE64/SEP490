@@ -107,7 +107,7 @@ async function signup(page: Page, email: string, slug?: string) {
 }
 
 async function verifyAndEnroll(page: Page, request: APIRequestContext, email: string) {
-  await page.getByRole('button', { name: 'Save and verify email' }).click()
+  await page.getByRole('button', { name: 'Save and continue' }).click()
   await expect(page.getByRole('heading', { name: 'Verify your email', exact: true })).toBeVisible()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Verify your email', exact: true })).toBeVisible()
@@ -232,7 +232,7 @@ test('loading, connection failure and invalid input are explicit and preserve en
   await page.unroute(`**${API}/current`)
   await page.getByRole('button', { name: 'Retry connection' }).click()
   await signup(page, `invalid-${randomUUID()}@example.test`, 'admin')
-  await page.getByRole('button', { name: 'Save and verify email' }).click()
+  await page.getByRole('button', { name: 'Save and continue' }).click()
   await expect(page.getByRole('alert')).toContainText('excluding reserved names')
   await expect(page.getByLabel('Organization Legal Name', { exact: false })).toHaveValue('Browser Test Organization')
   await expect(page.getByLabel('Workspace URL Slug', { exact: true })).toHaveValue('admin')
@@ -274,7 +274,7 @@ test('expired email proof and expired session show actionable errors without gra
     await signIn(page, email, 'Verify your email')
   } else {
     await signup(page, email)
-    await page.getByRole('button', { name: 'Save and verify email' }).click()
+    await page.getByRole('button', { name: 'Save and continue' }).click()
   }
   await expect(page.getByRole('heading', { name: 'Verify your email', exact: true })).toBeVisible()
   const code = await emailCode(request, email)

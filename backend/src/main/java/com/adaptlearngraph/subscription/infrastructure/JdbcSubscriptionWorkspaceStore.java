@@ -72,7 +72,8 @@ public final class JdbcSubscriptionWorkspaceStore implements SubscriptionWorkspa
                 (rs,i) -> Role.valueOf(rs.getString(1)), account.member()));
         if (Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.platform_administrator WHERE account_id=?)",
                 Boolean.class, actor.accountId()))) roles.add(Role.PLATFORM_ADMINISTRATOR);
-        return new Actor(actor.accountId(), account.organization(), account.active(), account.membershipActive(), roles, actor.mfaVerified());
+        return new Actor(actor.accountId(), account.organization(), account.active(), account.membershipActive(), roles,
+                actor.mfaVerified(), actor.mfaRequired());
     }
 
     @Override

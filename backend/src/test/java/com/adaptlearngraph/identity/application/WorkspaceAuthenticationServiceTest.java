@@ -54,6 +54,34 @@ class WorkspaceAuthenticationServiceTest {
     }
 
     @Test
+    void disabledMfaAllowsAdminWithoutFalselyClaimingMfaAndReenableRejectsThatSession() {
+        account(credential(Set.of("ORGANIZATION_ADMINISTRATOR"), 0, true));
+        var development = new WorkspaceAuthenticationService(identities, security, secrets, registration,
+                Clock.fixed(now, ZoneOffset.UTC), new com.adaptlearngraph.shared.domain.IntegrationPolicy(true, true, false));
+        var principal = development.signIn("employee@example.test", "correct-password", "test-address");
+        assertEquals(Scope.FULL, principal.scope());
+        assertFalse(principal.mfaVerified());
+        assertEquals("COMPLETE", development.current(principal).stage());
+        assertFalse(development.current(principal).mfaVerified());
+        assertEquals("SIGN_IN_REQUIRED", service.current(principal).stage());
+        verify(security, never()).totp(any());
+    }
+
+    @Test
+    void disabledEmailVerificationPreservesMissingProofAndReenableRejectsSession() {
+        var source = credential(Set.of("EMPLOYEE"), 0, false);
+        account(new Credential(source.accountId(), source.organizationId(), source.email(), source.fullName(),
+                source.passwordHash(), true, true, source.roles(), null, 0, false, false, true));
+        var development = new WorkspaceAuthenticationService(identities, security, secrets, registration,
+                Clock.fixed(now, ZoneOffset.UTC), new com.adaptlearngraph.shared.domain.IntegrationPolicy(true, false, true));
+        var principal = development.signIn("employee@example.test", "correct-password", "test-address");
+        assertEquals("COMPLETE", development.current(principal).stage());
+        assertThrows(RegistrationFailure.class, () -> service.current(principal));
+        assertThrows(RegistrationFailure.class,
+                () -> development.signIn("employee@example.test", "wrong-password", "other-address"));
+    }
+
+    @Test
     void employeeGetsPasswordOnlySessionWithoutMfaEnrollment() {
         account(credential(Set.of("EMPLOYEE"), 0, false));
         var principal = service.signIn("employee@example.test", "correct-password", "test-address");

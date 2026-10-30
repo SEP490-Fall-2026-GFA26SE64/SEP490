@@ -18,10 +18,18 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
     private final SubscriptionWorkspaceStore workspaces;
     private final PaymentGateway gateway;
     private final Clock clock;
+    private final com.adaptlearngraph.shared.domain.IntegrationPolicy policy;
 
     public SubscriptionLifecycleService(SubscriptionIdentity identity, PaymentOrderStore orders, PaymentProcessingStore processing,
             SubscriptionWorkspaceStore workspaces, PaymentGateway gateway, Clock clock) {
+        this(identity, orders, processing, workspaces, gateway, clock, com.adaptlearngraph.shared.domain.IntegrationPolicy.ENABLED);
+    }
+
+    public SubscriptionLifecycleService(SubscriptionIdentity identity, PaymentOrderStore orders, PaymentProcessingStore processing,
+            SubscriptionWorkspaceStore workspaces, PaymentGateway gateway, Clock clock,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
         this.identity=identity; this.orders=orders; this.processing=processing; this.workspaces=workspaces; this.gateway=gateway; this.clock=clock;
+        this.policy=policy;
     }
 
     @Override
@@ -33,8 +41,14 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
     public Status create(PaymentOrderStore.Command command) {
         var actor=identity.current();
         if(command.organizationId()!=null) workspaces.require(actor.actor(),command.organizationId(),Action.RENEW,clock.instant());
-        gateway.requireConfigured();
-        return view(orders.create(actor,command,clock.instant()));
+        if (policy.payosEnabled()) gateway.requireConfigured();
+        var order = orders.create(actor,command,clock.instant());
+        if (!policy.payosEnabled()) {
+            processing.bypassForDevelopment(order.orderId(), clock.instant());
+            processing.apply(order.orderId(), clock.instant());
+            order = orders.find(order.orderId()).orElseThrow();
+        }
+        return view(order);
     }
     @Override public Status status(UUID orderId) { return view(authorized(orderId)); }
     @Override

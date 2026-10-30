@@ -9,6 +9,7 @@ public interface PaymentProcessingStore {
     Optional<Work> claim(Instant now);
     void record(PaymentGateway.Observation observation, Instant now);
     void apply(UUID orderId, Instant now);
+    void bypassForDevelopment(UUID orderId, Instant now);
     void finish(Work work, Instant now);
     void retry(Work work, String failureCode, Instant now);
     void schedule(UUID orderId, Instant now);

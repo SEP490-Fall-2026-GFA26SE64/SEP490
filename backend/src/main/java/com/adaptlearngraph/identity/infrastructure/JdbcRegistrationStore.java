@@ -118,9 +118,25 @@ public final class JdbcRegistrationStore implements RegistrationStore {
     public void markEmailVerified(UUID accountId, Instant now) {
         jdbc.update("""
                 UPDATE platform.organization_registration
-                SET state = 'MFA_PENDING', email_verified_at = coalesce(email_verified_at, ?), updated_at = ?
-                WHERE account_id = ? AND state <> 'REGISTERED'
+                SET state = 'MFA_PENDING', email_verified_at = coalesce(email_verified_at, ?),
+                    email_verification_bypassed = false, updated_at = ?
+                WHERE account_id = ?
                 """, timestamp(now), timestamp(now), accountId);
+    }
+
+    @Override
+    public void updateVerificationState(UUID accountId, Registration.State state, boolean emailBypassed,
+                                        boolean mfaBypassed, Instant now) {
+        int changed = jdbc.update("""
+                UPDATE platform.organization_registration
+                SET state=?, email_verification_bypassed=?, mfa_bypassed=?,
+                    completed_at=CASE WHEN ?='REGISTERED' THEN coalesce(completed_at,?) ELSE completed_at END,
+                    updated_at=?
+                WHERE account_id=? AND (state,email_verification_bypassed,mfa_bypassed)
+                    IS DISTINCT FROM (?::text,?::boolean,?::boolean)
+                """, state.name(), emailBypassed, mfaBypassed, state.name(), timestamp(now), timestamp(now),
+                accountId, state.name(), emailBypassed, mfaBypassed);
+        if (changed > 0) audit(accountId, "REGISTRATION_VERIFICATION_POLICY", "SUCCEEDED", now);
     }
 
     @Override
@@ -146,7 +162,7 @@ public final class JdbcRegistrationStore implements RegistrationStore {
         jdbc.update("""
                 UPDATE platform.organization_registration
                 SET state = 'REGISTERED', completed_at = coalesce(completed_at, ?), updated_at = ?,
-                    recovery_required = false, auth_version = auth_version + 1
+                    recovery_required = false, mfa_bypassed = false, auth_version = auth_version + 1
                 WHERE account_id = ?
                 """, timestamp(now), timestamp(now), accountId);
     }

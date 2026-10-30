@@ -26,6 +26,39 @@ class PaymentProcessorTest {
                 123,"UNKNOWN",null,null,null,now.minusSeconds(10),expiry,null,null,1);
     }
     @Test
+    void disabledPayosNeverQueriesCreatesOrAcceptsProviderObservations() {
+        var development = new PaymentProcessor(store, gateway, Clock.fixed(now, ZoneOffset.UTC),
+                "https://example.test", new com.adaptlearngraph.shared.domain.IntegrationPolicy(false, true, true));
+        var order = order(now.plusSeconds(1800));
+        var work = new PaymentProcessingStore.Work(UUID.randomUUID(), "lease", "PAYMENT_CREATE", 1, order);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        assertTrue(development.processNext());
+        verify(store).bypassForDevelopment(order.orderId(), now);
+        verify(store).apply(order.orderId(), now);
+        verify(store, never()).record(any(), any());
+        assertThrows(SubscriptionFailure.class, () -> development.webhook("{}"));
+        verifyNoInteractions(gateway);
+    }
+
+    @Test
+    void disablingPayosPreservesPreviouslyPaidOrdersAndFinishesTheirCreateWork() {
+        var development = new PaymentProcessor(store, gateway, Clock.fixed(now, ZoneOffset.UTC),
+                "https://example.test", new com.adaptlearngraph.shared.domain.IntegrationPolicy(false, true, true));
+        var source = order(now.plusSeconds(1800));
+        var paid = new PaymentOrder(source.orderId(), source.intentId(), source.kind(), source.registrationId(),
+                source.organizationId(), source.ownerAccountId(), source.planId(), source.planVersionId(), source.terms(),
+                source.providerOrderCode(), "PAID", "existing-link", "https://example.test/existing-link", 4900000L,
+                source.createdAt(), source.expiresAt(), now, null, source.attempt());
+        var work = new PaymentProcessingStore.Work(UUID.randomUUID(), "lease", "PAYMENT_CREATE", 1, paid);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        assertTrue(development.processNext());
+        verify(store).finish(work, now);
+        verify(store, never()).bypassForDevelopment(any(), any());
+        verify(store, never()).retry(any(), any(), any());
+        verifyNoInteractions(gateway);
+    }
+
+    @Test
     void uncertaintyDoesNotCreateAnotherProviderOrder() {
         var order=order(now.plusSeconds(1800));
         var work=new PaymentProcessingStore.Work(UUID.randomUUID(),"lease","PAYMENT_CREATE",1,order);

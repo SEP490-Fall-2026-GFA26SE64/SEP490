@@ -42,11 +42,14 @@ spring:
       "[mail.smtp.timeout]": 5000
       "[mail.smtp.writetimeout]": 5000
 registration:
+  email-verification-enabled: ${EMAIL_VERIFICATION_ENABLED:true}
+  mfa-enabled: ${MFA_ENABLED:true}
   encryption-key: ${REGISTRATION_ENCRYPTION_KEY:}
   hmac-key: ${REGISTRATION_HMAC_KEY:}
   mail-from: ${SMTP_FROM:}
   cookie-secure: ${REGISTRATION_COOKIE_SECURE:true}
 payos:
+  enabled: ${PAYOS_ENABLED:true}
   client-id: ${PAYOS_CLIENT_ID:}
   api-key: ${PAYOS_API_KEY:}
   checksum-key: ${PAYOS_CHECKSUM_KEY:}

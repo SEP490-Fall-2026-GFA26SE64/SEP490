@@ -44,8 +44,9 @@ public class WorkspaceAuthenticationConfiguration {
 
     @Bean
     WorkspaceAuthenticationUseCase workspaceAuthentication(WorkspaceIdentityStore identities, RegistrationStore security,
-            RegistrationSecrets secrets, RegistrationUseCase registration) {
-        return new WorkspaceAuthenticationService(identities, security, secrets, registration, Clock.systemUTC());
+            RegistrationSecrets secrets, RegistrationUseCase registration,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
+        return new WorkspaceAuthenticationService(identities, security, secrets, registration, Clock.systemUTC(), policy);
     }
 
     @Bean

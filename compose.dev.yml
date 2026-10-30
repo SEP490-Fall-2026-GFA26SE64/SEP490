@@ -155,6 +155,9 @@ services:
       PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: "false"
       SPRING_CONFIG_IMPORT: optional:file:/workspace-config/security.properties
       SUBSCRIPTION_WORKER_ENABLED: "false"
+      PAYOS_ENABLED: ${PAYOS_ENABLED:-true}
+      EMAIL_VERIFICATION_ENABLED: ${EMAIL_VERIFICATION_ENABLED:-true}
+      MFA_ENABLED: ${MFA_ENABLED:-true}
       REGISTRATION_MAIL_WORKER_ENABLED: "false"
       # This fixture has no SMTP dependency; database/graph health checks remain active.
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"

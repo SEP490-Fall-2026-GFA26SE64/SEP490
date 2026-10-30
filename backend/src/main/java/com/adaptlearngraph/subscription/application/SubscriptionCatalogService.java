@@ -29,8 +29,8 @@ public final class SubscriptionCatalogService implements SubscriptionCatalogUseC
         var actor = context.actor();
         boolean platform = actor.roles().contains(Role.PLATFORM_ADMINISTRATOR);
         boolean administrator = actor.roles().contains(Role.ORGANIZATION_ADMINISTRATOR)
-                && actor.organizationId() != null && actor.membershipActive() && actor.mfaVerified();
-        boolean registrant = context.registrationId() != null && actor.mfaVerified();
+                && actor.organizationId() != null && actor.membershipActive() && actor.satisfiesMfa();
+        boolean registrant = context.registrationId() != null && actor.satisfiesMfa();
         if (!platform && !administrator && !registrant) throw forbidden();
         return plans.currentPlans();
     }
@@ -39,7 +39,7 @@ public final class SubscriptionCatalogService implements SubscriptionCatalogUseC
     public List<SubscriptionPlan> organizationPlans(UUID organizationId) {
         var actor = requireIdentity().actor();
         if (organizationId == null || !organizationId.equals(actor.organizationId()) || !actor.membershipActive()
-                || !actor.mfaVerified() || !actor.roles().contains(Role.ORGANIZATION_ADMINISTRATOR)) throw forbidden();
+                || !actor.satisfiesMfa() || !actor.roles().contains(Role.ORGANIZATION_ADMINISTRATOR)) throw forbidden();
         return plans.currentPlans();
     }
 

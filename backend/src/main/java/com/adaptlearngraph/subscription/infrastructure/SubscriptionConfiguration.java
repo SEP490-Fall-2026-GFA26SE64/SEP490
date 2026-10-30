@@ -35,8 +35,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SubscriptionConfiguration {
     @Bean
-    SubscriptionIdentity subscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace) {
-        return new ServletSubscriptionIdentity(registration, workspace);
+    SubscriptionIdentity subscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
+        return new ServletSubscriptionIdentity(registration, workspace, policy);
     }
 
     @Bean
@@ -54,8 +55,9 @@ public class SubscriptionConfiguration {
         return new JdbcPaymentOrderStore(jdbc,new TransactionTemplate(manager));
     }
     @Bean
-    PaymentProcessingStore paymentProcessing(JdbcTemplate jdbc,PlatformTransactionManager manager,PaymentOrderStore orders) {
-        return new JdbcPaymentProcessingStore(jdbc,new TransactionTemplate(manager),orders);
+    PaymentProcessingStore paymentProcessing(JdbcTemplate jdbc,PlatformTransactionManager manager,PaymentOrderStore orders,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
+        return new JdbcPaymentProcessingStore(jdbc,new TransactionTemplate(manager),orders,policy);
     }
     @Bean
     SubscriptionWorkspaceStore subscriptionWorkspaces(JdbcTemplate jdbc,PlatformTransactionManager manager,org.springframework.core.env.Environment environment) {
@@ -65,24 +67,28 @@ public class SubscriptionConfiguration {
     @Bean(destroyMethod="close")
     @ConditionalOnMissingBean(PaymentGateway.class)
     PayOsPaymentGateway paymentGateway(@Value("${payos.client-id:}") String clientId,@Value("${payos.api-key:}") String key,
-            @Value("${payos.checksum-key:}") String checksum,ObjectMapper mapper) {
-        return new PayOsPaymentGateway(clientId,key,checksum,mapper);
+            @Value("${payos.checksum-key:}") String checksum,ObjectMapper mapper,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
+        return new PayOsPaymentGateway(policy.payosEnabled() ? clientId : "",
+                policy.payosEnabled() ? key : "", policy.payosEnabled() ? checksum : "",mapper);
     }
     @Bean
     PaymentProcessor paymentProcessor(PaymentProcessingStore store,PaymentGateway gateway,
-            @Value("${subscription.public-url:http://127.0.0.1:8088}") String publicUrl) {
+            @Value("${subscription.public-url:http://127.0.0.1:8088}") String publicUrl,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
         var uri=java.net.URI.create(publicUrl);
         if(uri.getHost()==null || uri.getUserInfo()!=null || uri.getQuery()!=null || uri.getFragment()!=null
                 || !("https".equals(uri.getScheme()) || ("http".equals(uri.getScheme())
                 && java.util.Set.of("127.0.0.1","localhost").contains(uri.getHost())))) {
             throw new IllegalArgumentException("Subscription public URL must use HTTPS or loopback HTTP.");
         }
-        return new PaymentProcessor(store,gateway,Clock.systemUTC(),publicUrl);
+        return new PaymentProcessor(store,gateway,Clock.systemUTC(),publicUrl,policy);
     }
     @Bean
     SubscriptionLifecycleUseCase subscriptionLifecycle(SubscriptionIdentity identity,PaymentOrderStore orders,
-            PaymentProcessingStore processing,SubscriptionWorkspaceStore workspaces,PaymentGateway gateway) {
-        return new SubscriptionLifecycleService(identity,orders,processing,workspaces,gateway,Clock.systemUTC());
+            PaymentProcessingStore processing,SubscriptionWorkspaceStore workspaces,PaymentGateway gateway,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
+        return new SubscriptionLifecycleService(identity,orders,processing,workspaces,gateway,Clock.systemUTC(),policy);
     }
     @Bean
     @ConditionalOnProperty(name="subscription.worker.enabled",havingValue="true",matchIfMissing=true)

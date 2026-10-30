@@ -10,13 +10,14 @@ export function PaymentReceipt({ order }: { order: Order }) {
   const money = (value: number) => `${value.toLocaleString('vi-VN')} VND`
   const date = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
   const paid = order.paymentStatus === 'PAID'
+  const bypassed = order.paymentStatus === 'DEV_BYPASSED'
   const details = [
-    [c('payOS order number', 'Mã đơn payOS'), String(order.providerOrderCode)],
-    [c('Payment method', 'Phương thức'), c('Bank transfer via payOS', 'Chuyển khoản qua payOS')],
+    [bypassed ? c('Internal order number', 'Mã đơn nội bộ') : c('payOS order number', 'Mã đơn payOS'), String(order.providerOrderCode)],
+    [c('Payment method', 'Phương thức'), bypassed ? c('Development bypass — no payment', 'Bỏ qua ở môi trường phát triển — không thanh toán') : c('Bank transfer via payOS', 'Chuyển khoản qua payOS')],
     [c('Order created', 'Ngày tạo đơn'), date(order.createdAt)],
     [c('Checkout deadline', 'Hạn thanh toán'), date(order.expiresAt)],
     [c('System confirmation time', 'Thời điểm hệ thống xác nhận'), order.confirmedAt ? date(order.confirmedAt) : c('Not confirmed yet', 'Chưa xác nhận')],
-    [c('Amount received', 'Số tiền đã nhận'), order.observedPaidAmount === null ? c('Not yet known', 'Chưa xác định') : money(order.observedPaidAmount)],
+    [c('Amount received', 'Số tiền đã nhận'), bypassed ? c('No payment received', 'Không nhận thanh toán') : order.observedPaidAmount === null ? c('Not yet known', 'Chưa xác định') : money(order.observedPaidAmount)],
   ]
   return <Card className="min-w-0 overflow-hidden">
     <CardHeader className="border-b border-border">

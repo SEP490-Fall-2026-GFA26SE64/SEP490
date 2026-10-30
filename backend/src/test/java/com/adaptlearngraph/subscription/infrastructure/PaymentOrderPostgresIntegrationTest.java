@@ -39,7 +39,7 @@ class PaymentOrderPostgresIntegrationTest {
     static void start() {
         POSTGRES.start();
         var source = new DriverManagerDataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
-        Flyway.configure().dataSource(source).locations("classpath:db/migration").load().migrate();
+        Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load().migrate();
         jdbc = new JdbcTemplate(source);
         transactions=new TransactionTemplate(new DataSourceTransactionManager(source));
         orders = new JdbcPaymentOrderStore(jdbc, transactions);
@@ -48,6 +48,47 @@ class PaymentOrderPostgresIntegrationTest {
     }
 
     @AfterAll static void stop() { POSTGRES.stop(); }
+
+    @Test
+    void developmentBypassProvisionsOnceWithoutProviderEvidenceOrPaymentEmail() {
+        var context = registrant();
+        var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
+        var development = new JdbcPaymentProcessingStore(jdbc, transactions, orders,
+                new com.adaptlearngraph.shared.domain.IntegrationPolicy(false, true, true));
+        development.bypassForDevelopment(order.orderId(), NOW);
+        development.apply(order.orderId(), NOW);
+        development.bypassForDevelopment(order.orderId(), NOW.plusSeconds(1));
+        development.apply(order.orderId(), NOW.plusSeconds(1));
+        var saved = orders.find(order.orderId()).orElseThrow();
+        assertEquals("DEV_BYPASSED", saved.paymentStatus());
+        assertNull(saved.observedPaidAmount());
+        assertNull(saved.confirmedAt());
+        assertNull(saved.paymentLinkId());
+        assertNull(saved.checkoutUrl());
+        assertEquals("APPLIED", orders.applicationState(order.orderId()));
+        assertEquals("READY", workspaces.setup(context.registrationId()).state());
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM platform.subscription_period WHERE order_id=?",
+                Integer.class, order.orderId()));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.payment_observation WHERE order_id=?",
+                Integer.class, order.orderId()));
+        assertEquals(0, jdbc.queryForObject("""
+                SELECT count(*) FROM platform.processing_job j JOIN platform.outbox_event e USING(event_id)
+                WHERE e.aggregate_id=? AND j.handler='PAYMENT_CONFIRMATION_EMAIL'
+                """, Integer.class, order.orderId()));
+        assertThrows(SubscriptionFailure.class, () -> processing.bypassForDevelopment(order.orderId(), NOW));
+    }
+
+    @Test
+    void developmentBypassCannotOverwriteAnExternallyPendingOrPaidOrder() {
+        var development = new JdbcPaymentProcessingStore(jdbc, transactions, orders,
+                new com.adaptlearngraph.shared.domain.IntegrationPolicy(false, true, true));
+        var order = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
+        processing.record(observation(order, "PENDING", 0L, "VND", "QUERY"), NOW);
+        assertThrows(SubscriptionFailure.class, () -> development.bypassForDevelopment(order.orderId(), NOW));
+        processing.record(observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW);
+        assertThrows(SubscriptionFailure.class, () -> development.bypassForDevelopment(order.orderId(), NOW));
+        assertEquals("PAID", orders.find(order.orderId()).orElseThrow().paymentStatus());
+    }
 
     @Test
     void paymentMailRetriesToThePurchaserWithoutDuplicatingTheEvent() throws Exception {

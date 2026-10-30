@@ -221,8 +221,8 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
         <div ref={headingRef} tabIndex={-1} className="outline-none">
           <PageHeader title={title} icon={<ShieldCheck aria-hidden="true" size={24} />}
             description={entryStep === 1 && !view ? c('Tell us about your organization. Next, create the account that will manage your workspace.', 'Nhập thông tin tổ chức. Tiếp theo, tạo tài khoản quản lý không gian làm việc.')
-              : view?.stage === 'COMPLETE' && !recoveryCodes ? c('Your account is secure. Continue to choose a plan for your organization.', 'Tài khoản đã được bảo mật. Tiếp tục chọn gói phù hợp cho tổ chức.')
-                : c('Your progress is saved after account creation. Verify your email and secure your account to continue.', 'Tiến trình được lưu sau khi tạo tài khoản. Xác thực email và bảo mật tài khoản để tiếp tục.')} />
+              : view?.stage === 'COMPLETE' && !recoveryCodes ? c('Your registration is saved. Continue to choose a plan for your organization.', 'Đăng ký đã được lưu. Tiếp tục chọn gói phù hợp cho tổ chức.')
+                : c('Your progress is saved after account creation. Complete any required verification steps to continue.', 'Tiến trình được lưu sau khi tạo tài khoản. Hoàn thành các bước xác thực được yêu cầu để tiếp tục.')} />
         </div>
 
         {failure && (
@@ -317,7 +317,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {entryStep === 1 ? <Link to="/guest/resume" className="text-body-sm text-primary underline underline-offset-4">{c('Resume a saved registration', 'Tiếp tục đăng ký đã lưu')}</Link>
                   : <Button type="button" variant="outline" onClick={() => { setEntryStep(1); setFailure(null); setFieldErrors({}) }}>{c('Back', 'Quay lại')}</Button>}
-                <Button type="submit" isLoading={command.isPending}>{entryStep === 1 ? c('Continue to account', 'Tiếp tục tạo tài khoản') : c('Save and verify email', 'Lưu và xác thực email')}</Button>
+                <Button type="submit" isLoading={command.isPending}>{entryStep === 1 ? c('Continue to account', 'Tiếp tục tạo tài khoản') : c('Save and continue', 'Lưu và tiếp tục')}</Button>
               </div>
             </form>
           ) : (
@@ -329,7 +329,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
               <Card>
                 <CardHeader>
                   <CardTitle>{c('Sign in to registration', 'Đăng nhập để tiếp tục')}</CardTitle>
-                  <CardDescription>{c('Resume your saved progress using your account and authenticator.', 'Tiếp tục tiến trình đã lưu bằng tài khoản và ứng dụng xác thực.')}</CardDescription>
+                  <CardDescription>{c('Sign in to resume your saved progress and complete any required verification.', 'Đăng nhập để tiếp tục tiến trình đã lưu và hoàn thành bước xác thực được yêu cầu.')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Field label="Work Email Address" id="registration-adminEmail" required>
@@ -363,7 +363,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
         ) : view.stage === 'COMPLETE' && view.fields ? (
           <Card>
             <CardHeader>
-              <Badge variant="success" className="w-fit"><CheckCircle2 size={14} aria-hidden="true" />{c('Account secured', 'Tài khoản đã được bảo mật')}</Badge>
+              <Badge variant="success" className="w-fit"><CheckCircle2 size={14} aria-hidden="true" />{c('Registration saved', 'Đăng ký đã được lưu')}</Badge>
               <CardTitle>{c('Your registration is saved', 'Đăng ký đã được lưu')}</CardTitle>
               <CardDescription>{c('Your account is ready. Choose a subscription next, then complete payment to prepare your workspace.', 'Tài khoản đã sẵn sàng. Tiếp theo, chọn gói và thanh toán để chuẩn bị không gian làm việc.')}</CardDescription>
             </CardHeader>
@@ -376,7 +376,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
                 <Detail label={c('Industry', 'Lĩnh vực')} value={view.fields.industry ?? c('Not specified', 'Chưa cung cấp')} />
                 <Detail label={c('Headcount', 'Quy mô')} value={view.fields.headcount ?? c('Not specified', 'Chưa cung cấp')} />
               </dl>
-              <Text variant="body-sm" className="mt-5">{c('These committed details are read-only. Sign in with your password and authenticator to view them again.', 'Thông tin đã lưu chỉ được xem. Đăng nhập bằng mật khẩu và ứng dụng xác thực để xem lại.')}</Text>
+              <Text variant="body-sm" className="mt-5">{c('These committed details are read-only. Sign in and complete any required verification to view them again.', 'Thông tin đã lưu chỉ được xem. Đăng nhập và hoàn thành bước xác thực được yêu cầu để xem lại.')}</Text>
               <Link className={buttonVariants({ className: 'mt-4 text-primary-foreground!' })} to="/guest/plans">
                 {c('Continue to subscription plans', 'Tiếp tục chọn gói')}
               </Link>
