@@ -17,7 +17,6 @@ import {
   FileQuestion,
   FolderTree,
   GitFork,
-  GraduationCap,
   HelpCircle,
   LayoutDashboard,
   LogOut,
@@ -29,7 +28,6 @@ import {
   Settings,
   ShieldCheck,
   Sliders,
-  Sparkles,
   Target,
   User,
   Users,
@@ -653,9 +651,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
                   <div className="px-4 py-3 border-b border-border bg-muted/25">
                     <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
                     <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
-                    <p className="text-[11px] text-primary font-semibold mt-1 flex items-center gap-1">
-                      <Building size={12} /> {identity ? identity.organizationName || identity.organizationId : activeCompany?.name}
-                    </p>
                   </div>
 
                   {/* Active Organization Switcher for Multi-Tenant Testing */}
@@ -691,100 +686,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
                   </div>}
 
                   <div className="py-1">
-                    {/* Switch Persona Shortcuts Across 4 Primary Roles */}
-                    <div className="px-3.5 py-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        {t('roles.switchRolePortal')}
-                      </span>
-                      <div className="mt-1.5 flex flex-col gap-0.5">
-                        {/* 1. Employee */}
-                        <Link
-                          to="/employee/overview"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isEmployee
-                              ? 'bg-secondary text-primary font-semibold'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <GraduationCap size={13} />
-                            <span>{t('roles.employee')}</span>
-                          </span>
-                          {isEmployee && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
-                        </Link>
-
-                        {/* 2. Expert */}
-                        <Link
-                          to="/expert/pathway-review"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isExpert
-                              ? 'bg-secondary text-primary font-semibold'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Sparkles size={13} className="text-primary" />
-                            <span>{t('roles.expert')}</span>
-                          </span>
-                          {isExpert && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
-                        </Link>
-
-                        {/* 3. L&D Manager */}
-                        <Link
-                          to="/ld-manager/baseline-assessments"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isLdManager
-                              ? 'bg-secondary text-primary font-semibold'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Briefcase size={13} />
-                            <span>{t('roles.ldManager')}</span>
-                          </span>
-                          {isLdManager && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
-                        </Link>
-
-                        {/* 4. Org Admin */}
-                        <Link
-                          to="/admin/dashboard"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isAdmin
-                              ? 'bg-secondary text-primary font-semibold'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <ShieldCheck size={13} />
-                            <span>{t('roles.admin', 'System Admin')}</span>
-                          </span>
-                          {isAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
-                        </Link>
-
-                        {/* 5. Platform Superadmin */}
-                        <Link
-                          to="/platform-admin/organizations"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className={`px-2 py-1 rounded text-xs flex items-center justify-between transition-colors ${
-                            isPlatformAdmin
-                              ? 'bg-secondary text-primary font-semibold'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Building size={13} className="text-primary" />
-                            <span>Platform Admin</span>
-                          </span>
-                          {isPlatformAdmin && <span className="text-[9px] font-mono font-bold">{t('roles.active')}</span>}
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="my-1 border-t border-border" />
 
                     <Link
                       to="/profile"

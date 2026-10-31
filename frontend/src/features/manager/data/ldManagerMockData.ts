@@ -136,19 +136,35 @@ export function resolveOccupationForRole(
 
   // Match by keyword in title, code, or family
   if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
-    return occupations.find((o) => o.code === '15-1212.00') || ONET_OCCUPATIONS[4]
+    const match = occupations.find((o) => o.code === '15-1212.00')
+    if (match) return match
   }
   if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
-    return occupations.find((o) => o.code === '15-1253.00') || ONET_OCCUPATIONS[2]
+    const match = occupations.find((o) => o.code === '15-1253.00')
+    if (match) return match
   }
   if (title.includes('data') || title.includes('database') || title.includes('analytics') || domain === 'DATA' || code.includes('DATA') || family.includes('DATA')) {
-    return occupations.find((o) => o.code === '15-1243.00') || ONET_OCCUPATIONS[1]
+    const match = occupations.find((o) => o.code === '15-1243.00')
+    if (match) return match
   }
   if (title.includes('system') || title.includes('network') || title.includes('cloud') || title.includes('infrastructure') || (title.includes('architect') && !title.includes('software')) || code.includes('SYS') || code.includes('INFRA')) {
-    return occupations.find((o) => o.code === '15-1299.08') || ONET_OCCUPATIONS[3]
+    const match = occupations.find((o) => o.code === '15-1299.08')
+    if (match) return match
   }
 
-  return occupations.find((o) => o.code === '15-1252.00') || ONET_OCCUPATIONS[0]
+  const defaultMatch = occupations.find((o) => o.code === '15-1252.00')
+  if (defaultMatch) return defaultMatch
+
+  if (occupations.length > 0) return occupations[0]
+
+  return {
+    code: role.occupationCode || 'GEN-0000.00',
+    name: 'Unassigned Occupation',
+    description: 'No occupation aligned yet for this role.',
+    jobZone: 4,
+    profiles: ['DEV'],
+    assignedExpertIds: [],
+  }
 }
 
 /**
@@ -418,15 +434,18 @@ export function findEligibleExpert(id?: string | null, organizationId?: string):
 
 export function getAvailableOccupations(organizationId?: string): OnetOccupation[] {
   const codeMap = new Map<string, OnetOccupation>();
-  for (const o of ONET_OCCUPATIONS) {
-    codeMap.set(o.code, { ...o });
-  }
 
   const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
     ? organizationId
     : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
 
   const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+
+  if (isTechnova) {
+    for (const o of ONET_OCCUPATIONS) {
+      codeMap.set(o.code, { ...o });
+    }
+  }
 
   try {
     if (typeof localStorage !== 'undefined') {

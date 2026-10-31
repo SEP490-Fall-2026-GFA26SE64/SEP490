@@ -224,9 +224,12 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("REQ-023-F04: DELETE /api/v1/organizations/{orgId}/target-roles/{roleId} returns 204 No Content for LD_MANAGER")
+    @DisplayName("REQ-023-F04: DELETE /api/v1/organizations/{orgId}/target-roles/{roleId} returns 204 No Content for LD_MANAGER when DRAFT")
     void deleteTargetRoleReturns204() throws Exception {
         UUID roleId = UUID.randomUUID();
+        TargetRole draftRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "DATA", "ENG", RoleTrack.PROFESSIONAL, "", "desc");
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(draftRole));
         when(manageTargetRoleUseCase.deleteTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(true);
 
@@ -238,7 +241,39 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden when caller is not an L&D Manager")
+    @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden for LD_MANAGER when ACTIVE/PUBLISHED")
+    void deleteTargetRoleReturns403ForLdManagerWhenPublished() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "DATA", "ENG", RoleTrack.PROFESSIONAL, "", "desc").publish();
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(publishedRole));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "LD_MANAGER"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F04: DELETE returns 204 No Content for DOMAIN_EXPERT when PUBLISHED")
+    void deleteTargetRoleReturns204ForExpertWhenPublished() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "DATA", "ENG", RoleTrack.PROFESSIONAL, "", "desc").publish();
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(publishedRole));
+        when(manageTargetRoleUseCase.deleteTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(true);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden when caller is not an L&D Manager or Expert")
     void deleteTargetRoleReturns403ForLearner() throws Exception {
         UUID roleId = UUID.randomUUID();
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/organizations/org-1/target-roles/" + roleId)
