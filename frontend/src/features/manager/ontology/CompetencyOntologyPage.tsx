@@ -902,12 +902,20 @@ export function CompetencyOntologyPage() {
 
   const handleOpenEditCompetency = (comp: CompetencyModel) => {
     setSelectedCompetency(comp)
+    const uniqueSkillIds = Array.from(
+      new Set(
+        (comp.skillIds || []).map((sid) => {
+          const found = microSkills.find((s) => s.id === sid || s.code === sid)
+          return found ? found.id : sid
+        }).filter(Boolean)
+      )
+    )
     setCompetencyForm({
       code: comp.code,
       name: comp.name,
       description: comp.description || '',
       status: comp.status?.toUpperCase() === 'DRAFT' ? 'DRAFT' : 'ACTIVE',
-      skillIds: comp.skillIds || [],
+      skillIds: uniqueSkillIds,
     })
     setIsCompetencyModalOpen(true)
   }
@@ -926,12 +934,20 @@ export function CompetencyOntologyPage() {
 
     try {
       if (selectedCompetency) {
+        const canonicalSkillIds = Array.from(
+          new Set(
+            competencyForm.skillIds.map((sid) => {
+              const found = microSkills.find((s) => s.id === sid || s.code === sid)
+              return found ? found.id : sid
+            }).filter(Boolean)
+          )
+        )
         const updated = await updateCompetency(orgId, selectedCompetency.id, {
           code: competencyForm.code.trim().toUpperCase() || selectedCompetency.code,
           name: competencyForm.name.trim(),
           description: competencyForm.description.trim(),
           status: competencyForm.status,
-          skillIds: competencyForm.skillIds,
+          skillIds: canonicalSkillIds,
         })
         const updatedComp: CompetencyModel = {
           ...selectedCompetency,
@@ -958,12 +974,20 @@ export function CompetencyOntologyPage() {
           variant: 'success',
         })
       } else {
+        const canonicalSkillIds = Array.from(
+          new Set(
+            competencyForm.skillIds.map((sid) => {
+              const found = microSkills.find((s) => s.id === sid || s.code === sid)
+              return found ? found.id : sid
+            }).filter(Boolean)
+          )
+        )
         const created = await createCompetency(orgId, {
           code: competencyForm.code.trim().toUpperCase(),
           name: competencyForm.name.trim(),
           description: competencyForm.description.trim(),
           status: competencyForm.status,
-          skillIds: competencyForm.skillIds,
+          skillIds: canonicalSkillIds,
         })
         const newComp: CompetencyModel = {
           id: created.id,
@@ -2116,7 +2140,10 @@ export function CompetencyOntologyPage() {
                       onChange={(e) =>
                         setPrereqForm({ ...prereqForm, minMasteryPercent: parseInt(e.target.value) || 0 })
                       }
-                      className="flex-1 accent-primary cursor-pointer h-2 bg-muted rounded-lg"
+                      style={{
+                        background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(prereqForm.minMasteryPercent - 10) / 90 * 100}%, #FFFFFF ${(prereqForm.minMasteryPercent - 10) / 90 * 100}%, #FFFFFF 100%)`,
+                      }}
+                      className="flex-1 accent-primary cursor-pointer h-2.5 rounded-lg appearance-none border border-border shadow-xs"
                     />
                     <div className="flex items-center gap-1 shrink-0">
                       {[60, 70, 75, 80, 90].map((preset) => (
@@ -2732,7 +2759,16 @@ export function CompetencyOntologyPage() {
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-primary shrink-0" />
                   <span className="text-xs font-bold text-foreground">
-                    Configured Micro-skills for {competencyForm.name || selectedCompetency?.name || 'Competency'} ({competencyForm.skillIds.length})
+                    Configured Micro-skills for {competencyForm.name || selectedCompetency?.name || 'Competency'} ({
+                    Array.from(
+                      new Set(
+                        competencyForm.skillIds.map((sid) => {
+                          const found = microSkills.find((s) => s.id === sid || s.code === sid)
+                          return found ? (found.code || found.id) : sid
+                        })
+                      )
+                    ).length
+                  })
                   </span>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
@@ -2764,12 +2800,19 @@ export function CompetencyOntologyPage() {
                   size="sm"
                   disabled={!newMemberSkillId}
                   onClick={() => {
-                    if (newMemberSkillId && !competencyForm.skillIds.includes(newMemberSkillId)) {
-                      setCompetencyForm((prev) => ({
-                        ...prev,
-                        skillIds: [...prev.skillIds, newMemberSkillId],
-                      }))
-                      setNewMemberSkillId('')
+                    if (newMemberSkillId) {
+                      const targetSkill = microSkills.find((s) => s.id === newMemberSkillId || s.code === newMemberSkillId)
+                      const canonicalId = targetSkill ? targetSkill.id : newMemberSkillId
+                      const alreadyConfigured = competencyForm.skillIds.some(
+                        (sid) => sid === canonicalId || (targetSkill && sid === targetSkill.code)
+                      )
+                      if (!alreadyConfigured) {
+                        setCompetencyForm((prev) => ({
+                          ...prev,
+                          skillIds: Array.from(new Set([...prev.skillIds, canonicalId])),
+                        }))
+                        setNewMemberSkillId('')
+                      }
                     }
                   }}
                   className="whitespace-nowrap font-semibold shadow-2xs text-xs px-3"
@@ -2813,8 +2856,13 @@ export function CompetencyOntologyPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {competencyForm.skillIds
-                        .map((sid) => microSkills.find((s) => s.id === sid || s.code === sid) || { id: sid, code: sid, name: 'Micro-skill', description: '', status: 'ACTIVE' as const, createdAt: '', updatedAt: '' })
+                      {Array.from(
+                        new Map(
+                          competencyForm.skillIds
+                            .map((sid) => microSkills.find((s) => s.id === sid || s.code === sid) || { id: sid, code: sid, name: 'Micro-skill', description: '', status: 'ACTIVE' as const, createdAt: '', updatedAt: '' })
+                            .map((s) => [s.code || s.id, s])
+                        ).values()
+                      )
                         .filter((s) => {
                           if (!compMemberSearch.trim()) return true
                           const q = compMemberSearch.toLowerCase()

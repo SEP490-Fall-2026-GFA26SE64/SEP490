@@ -40,7 +40,8 @@ public final class SubscriptionAccessPolicy {
                 || !actor.membershipActive() || !workspaceReady) return false;
         return switch (action) {
             case BILLING_READ -> administrator;
-            case MEMBER_READ, RENEW, SEAT_REDUCTION -> administrator && !suspended;
+            case MEMBER_READ -> (administrator || actor.roles().contains(Role.LD_MANAGER) || actor.roles().contains(Role.DOMAIN_EXPERT)) && !suspended;
+            case RENEW, SEAT_REDUCTION -> administrator && !suspended;
             case WORKSPACE -> !suspended && paid && !actor.roles().isEmpty() && !platform;
             case PLAN_CONFIGURATION, SUSPENSION -> false;
         };
