@@ -25,7 +25,8 @@ export function totp(secret: string): string {
   return ((hash.readUInt32BE(offset) & 0x7fffffff) % 1000000).toString().padStart(6, '0')
 }
 export async function mutate(request: APIRequestContext, path: string, data: unknown, method = 'POST') {
-  const base = path.startsWith('/api/v1/registration/') ? '/api/v1/registration' : '/api/v1/workspace-auth'
+  const base = path === '/api/v1/registration' || path.startsWith('/api/v1/registration/')
+    ? '/api/v1/registration' : '/api/v1/workspace-auth'
   const csrf = record(await (await request.get(`${base}/csrf`)).json())
   return request.fetch(path, { method, data, headers: { [text(csrf.headerName)]: text(csrf.token) } })
 }

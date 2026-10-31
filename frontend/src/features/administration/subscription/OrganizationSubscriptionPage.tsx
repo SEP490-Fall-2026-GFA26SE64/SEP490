@@ -42,7 +42,7 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
   const refresh = () => { void order.refetch(); void summary.refetch() }
   return <AdminPageLayout identity={identity} organizationName={value?.organizationName}
     title={c('Organization subscription', 'Gói đăng ký tổ chức')}
-    description={c('Review your purchased plan, paid periods and billing history.', 'Xem gói đã mua, kỳ trả phí và lịch sử thanh toán.')}
+    description={c('Review your selected plan, subscription periods and billing history.', 'Xem gói đã chọn, kỳ đăng ký và lịch sử thanh toán.')}
     actions={<Link className={buttonVariants({ variant: 'outline' })} to="/admin/users">
       <Users size={16} className="mr-2" aria-hidden="true" />{c('Manage users', 'Quản lý người dùng')}
     </Link>}>
@@ -53,7 +53,7 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
         {c('Workspace suspended. Billing is available, but renewal and workspace access remain blocked.', 'Không gian bị tạm ngưng. Có thể xem thanh toán nhưng không thể gia hạn hoặc truy cập chức năng làm việc.')}
       </div>}
       {value.subscriptionStatus === 'EXPIRED' && <div role="status" className="rounded-lg border border-warning/40 bg-card p-4">
-        {c('Your paid period has ended. Renew to restore eligible access; manage seat reductions in User Accounts.', 'Kỳ trả phí đã kết thúc. Gia hạn để khôi phục truy cập; giảm số ghế tại trang Người dùng.')}
+        {c('Your subscription period has ended. Renew to restore eligible access; manage seat reductions in User Accounts.', 'Kỳ đăng ký đã kết thúc. Gia hạn để khôi phục truy cập; giảm số ghế tại trang Người dùng.')}
       </div>}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
         <Card className="overflow-hidden border-primary/20">
@@ -61,7 +61,7 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-1">
                 <CardDescription className="flex items-center gap-2"><CreditCard size={16} aria-hidden="true" />{c('Current plan', 'Gói hiện tại')}</CardDescription>
-                <Heading level={2} size="section">{value.current?.terms.name ?? c('No active paid period', 'Chưa có kỳ trả phí đang hoạt động')}</Heading>
+                <Heading level={2} size="section">{value.current?.terms.name ?? c('No active subscription period', 'Chưa có kỳ đăng ký đang hoạt động')}</Heading>
               </div>
               <Badge variant={value.subscriptionStatus === 'ACTIVE' ? 'success' : 'warning'}><StateLabel value={value.subscriptionStatus} /></Badge>
             </div>
@@ -74,7 +74,7 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
                 <span className="text-body-sm text-muted-foreground">/ {value.current.terms.durationMonths} {c('calendar month(s)', 'tháng theo lịch')}</span>
               </div>
               <div className="rounded-lg border border-border bg-muted/40 p-4">
-                <h2 className="mb-2 flex items-center gap-2 font-semibold"><CalendarDays size={16} aria-hidden="true" />{c('Current paid period', 'Kỳ đã trả hiện tại')}</h2>
+                <h2 className="mb-2 flex items-center gap-2 font-semibold"><CalendarDays size={16} aria-hidden="true" />{c('Current subscription period', 'Kỳ đăng ký hiện tại')}</h2>
                 <p className="text-body-sm">{date(value.current.startsAt)} → {date(value.current.endsAt)}</p>
                 <p className="mt-2 text-caption text-muted-foreground">Asia/Ho_Chi_Minh · {c('Access ends at the exact end time. No grace period.', 'Truy cập kết thúc đúng hạn. Không có thời gian gia hạn miễn phí.')}</p>
               </div>
@@ -93,7 +93,7 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
             description={c('Includes pending and scheduled lower-seat commitments; it does not remove existing users.', 'Bao gồm cam kết giảm chỗ đang chờ hoặc đã đặt lịch; không tự xóa người dùng.')} />
         </div>
       </div>
-      {value.scheduled && <Card><CardHeader><CardTitle>{c('Scheduled paid period', 'Kỳ đã trả tiếp theo')}</CardTitle></CardHeader>
+      {value.scheduled && <Card><CardHeader><CardTitle>{c('Scheduled subscription period', 'Kỳ đăng ký tiếp theo')}</CardTitle></CardHeader>
         <CardContent><p className="font-semibold">{value.scheduled.terms.name} · {value.scheduled.terms.employeeSeats} {c('Employee seats', 'chỗ Nhân viên')}</p>
           <p className="mt-2 text-body-sm">{date(value.scheduled.startsAt)} → {date(value.scheduled.endsAt)} (Asia/Ho_Chi_Minh)</p></CardContent></Card>}
       {renew && canRenew && <PlanCatalog base={base} principal={principal} onCreated={() => { setRenew(false); refresh() }} />}

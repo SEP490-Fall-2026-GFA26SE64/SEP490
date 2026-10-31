@@ -1,0 +1,47 @@
+name: adapt-learn-graph-integration-flags-test
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: integration-flags-test-only
+    ports: !override
+      - "127.0.0.1:15437:5432"
+  neo4j:
+    environment:
+      NEO4J_AUTH: neo4j/integration-flags-test-only
+    ports: !override
+      - "127.0.0.1:7483:7474"
+      - "127.0.0.1:7693:7687"
+  migrate:
+    image: adapt-learn-graph-backend:integration-flags-test
+    environment:
+      DB_PASSWORD: integration-flags-test-only
+      NEO4J_PASSWORD: integration-flags-test-only
+  api:
+    image: adapt-learn-graph-backend:integration-flags-test
+    depends_on: !override
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "false"
+      DB_PASSWORD: integration-flags-test-only
+      NEO4J_PASSWORD: integration-flags-test-only
+      REGISTRATION_ENCRYPTION_KEY: ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWU=
+      REGISTRATION_HMAC_KEY: aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg=
+      REGISTRATION_COOKIE_SECURE: "false"
+      PAYOS_ENABLED: "false"
+      EMAIL_VERIFICATION_ENABLED: "false"
+      MFA_ENABLED: "false"
+      SUBSCRIPTION_PUBLIC_URL: http://127.0.0.1:8094
+      SMTP_HOST: ""
+      SMTP_FROM: ""
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      PAYOS_CLIENT_ID: ""
+      PAYOS_API_KEY: ""
+      PAYOS_CHECKSUM_KEY: ""
+    ports: !override
+      - "127.0.0.1:18085:8080"
+  web:
+    ports: !override
+      - "127.0.0.1:8094:5173"

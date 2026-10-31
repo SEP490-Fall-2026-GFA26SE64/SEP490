@@ -105,6 +105,18 @@ The guarded dev update backed up PostgreSQL, preserved environment/data, applied
 
 ### Registration-first slice (2026-10-21)
 
+#### Guarded optional integrations (2026-10-30)
+
+The shared domain `IntegrationPolicy`, wired by `IntegrationPolicyConfiguration`, reads independent `PAYOS_ENABLED`, `EMAIL_VERIFICATION_ENABLED` and `MFA_ENABLED` switches (all default true). Any disabled switch requires an explicit `local`/`dev` profile and no `prod`/`production` profile; startup rejects other environments and warns on permitted development bypass. This qualifies the historical mandatory email/MFA/payment descriptions below; it does not change production policy.
+
+Registration and workspace authentication compute required stages from trusted policy and actual proofs. Skipped email leaves `email_verified_at` null; skipped MFA leaves the session's actual `mfaVerified` false and retains existing credentials. Internal subscription actors carry a server-owned MFA requirement separately from MFA proof, preserving authorization while allowing the approved local flow. Reenabling checks missing actual proof, including existing bypass sessions. Only registration verification delivery is suppressed by the email flag, not unrelated mail.
+
+Forward-only [workspace V37](../backend/src/main/resources/db/workspace-migration/V37__development_integration_bypass.sql) adds `organization_registration.email_verification_bypassed` and `mfa_bypassed` (non-null, default false). Its progress checks allow skipped email with null real proof; completion still requires `completed_at`, which is retained historically when reenabling sends an account back to verification. Successful real verification clears the relevant bypass marker.
+
+V37 also adds nullable `payment_order.development_bypassed_at` and explicit `DEV_BYPASSED` status. Their CHECK requires that status and timestamp together, with null received amount, paid timestamp, checkout/link and provider status. Only a fresh internal `CREATING` order without external evidence can be converted; repeated bypass is idempotent and existing external pending/paid evidence is preserved. The existing locked payment application provisions the workspace/period once, with a development-specific audit outcome and no payment-confirmation email or provider observation. Disabled payOS processing never calls the gateway or accepts webhooks. Frontend progression remains server-stage/status-driven and labels bypass orders as not paid.
+
+No public API fields or Neo4j schema changes are introduced. The switches are documented in [.env.example](../.env.example). Recreate the API after changing environment values; the first code update also requires the normal image build and forward migration. Do not delete volumes or replace private cryptographic keys. [Dated local evidence](testing/system/REQ-060-061-028-integration-flags-20261030.md) separates development verification from live-provider acceptance.
+
 [Approved REQ-060-F01-F03](features/Organization%20onboarding/README.md#implementation-results-2026-10-21) adds real identity-domain/application ports with JDBC, SMTP and cryptography adapters. The registration-only filter chain and controller enforce staged server-owned sessions; other production APIs remain deny-by-default. The database-free `starter` and non-web worker profiles do not instantiate registration endpoints.
 
 Flyway V8 adds registration, email proof, TOTP, recovery-code, throttle and Spring Session JDBC tables. Existing account, outbox/job and audit stores are reused. Registration creates no organization, department/unit, membership, role, subscription or workspace. Optional industry/headcount and not-yet-completed timestamps remain nullable.

@@ -57,7 +57,7 @@ class RegistrationPostgresIntegrationTest {
     static void startDatabase() {
         POSTGRES.start();
         Flyway.configure().dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
-                .locations("classpath:db/migration").load().migrate();
+                .locations("classpath:db/workspace-migration").load().migrate();
     }
 
     @AfterAll
@@ -72,6 +72,78 @@ class RegistrationPostgresIntegrationTest {
         clock = new MutableClock();
         service = new RegistrationService(store, crypto, () -> {}, clock);
         address = UUID.randomUUID().toString();
+    }
+
+    @Test
+    void independentlyDisabledVerificationStepsPreserveActualProofs() {
+        for (boolean emailRequired : new boolean[] {false, true}) {
+            for (boolean mfaRequired : new boolean[] {false, true}) {
+                var development = new RegistrationService(store, crypto,
+                        () -> { if (!emailRequired) throw new AssertionError("SMTP must not be required"); },
+                        clock, new com.adaptlearngraph.shared.domain.IntegrationPolicy(true, emailRequired, mfaRequired));
+                var actor = development.register(fields(email(), null), PASSWORD, UUID.randomUUID().toString());
+                assertThat(development.current(actor).stage()).isEqualTo(
+                        emailRequired ? "VERIFY_EMAIL" : mfaRequired ? "SETUP_MFA" : "COMPLETE");
+                var saved = store.transaction(() -> store.lockRegistration(actor.accountId()));
+                assertThat(saved.emailVerifiedAt()).isNull();
+                assertThat(store.totp(actor.accountId())).isEmpty();
+                assertThat(actor.mfaVerified()).isFalse();
+                assertThat(store.emailProof(actor.accountId()).isPresent()).isEqualTo(emailRequired);
+                assertThat(jdbc.queryForObject("SELECT email_verification_bypassed FROM platform.organization_registration WHERE account_id=?",
+                        Boolean.class, actor.accountId())).isEqualTo(!emailRequired);
+            }
+        }
+    }
+
+    @Test
+    void disabledEmailStillRequiresRealMfaEnrollmentAndPreservesNullEmailProof() throws Exception {
+        var development = new RegistrationService(store, crypto, () -> { throw new AssertionError("No SMTP"); }, clock,
+                new com.adaptlearngraph.shared.domain.IntegrationPolicy(true, false, true));
+        var initial = development.register(fields(email(), null), PASSWORD, address);
+        assertThat(development.current(initial).stage()).isEqualTo("SETUP_MFA");
+        var enrollment = development.prepareEnrollment(initial, null);
+        var completed = development.confirmEnrollment(initial, enrollment.encryptedSecret(),
+                totp(enrollmentSecret(initial, enrollment.encryptedSecret())), address);
+        assertThat(development.current(completed.actor()).stage()).isEqualTo("COMPLETE");
+        assertThat(development.current(completed.actor()).emailVerifiedAt()).isNull();
+        assertThat(completed.actor().mfaVerified()).isTrue();
+        assertThat(completed.recoveryCodes()).hasSize(10);
+        assertThat(store.totp(initial.accountId())).isPresent();
+        assertThat(store.emailProof(initial.accountId())).isEmpty();
+        assertThat(jdbc.queryForMap("SELECT email_verification_bypassed,mfa_bypassed FROM platform.organization_registration WHERE account_id=?",
+                initial.accountId())).containsEntry("email_verification_bypassed", true).containsEntry("mfa_bypassed", false);
+    }
+
+    @Test
+    void disabledMfaCompletesAfterRealEmailProofWithoutCreatingAuthenticator() {
+        var development = new RegistrationService(store, crypto, () -> {}, clock,
+                new com.adaptlearngraph.shared.domain.IntegrationPolicy(true, true, false));
+        var initial = development.register(fields(email(), null), PASSWORD, address);
+        var completed = development.verifyEmail(initial, emailCode(initial), address);
+        assertThat(development.current(completed).stage()).isEqualTo("COMPLETE");
+        assertThat(development.current(completed).emailVerifiedAt()).isEqualTo(clock.instant());
+        assertThat(store.totp(initial.accountId())).isEmpty();
+        assertThat(completed.mfaVerified()).isFalse();
+    }
+
+    @Test
+    void reenablingRequiresRealEmailAndMfaEvenForAnExistingFullBypassSession() throws Exception {
+        var development = new RegistrationService(store, crypto, () -> { throw new AssertionError("No SMTP"); }, clock,
+                new com.adaptlearngraph.shared.domain.IntegrationPolicy(false, false, false));
+        var bypass = development.register(fields(email(), null), PASSWORD, address);
+        assertThat(development.current(bypass).stage()).isEqualTo("COMPLETE");
+        assertThat(service.current(bypass).stage()).isEqualTo("VERIFY_EMAIL");
+        service.resend(bypass, address);
+        var proven = service.verifyEmail(bypass, emailCode(bypass), address);
+        assertThat(service.current(proven).stage()).isEqualTo("SETUP_MFA");
+        var enrollment = service.prepareEnrollment(proven, null);
+        var completed = service.confirmEnrollment(proven, enrollment.encryptedSecret(),
+                totp(enrollmentSecret(proven, enrollment.encryptedSecret())), address);
+        assertThat(service.current(completed.actor()).stage()).isEqualTo("COMPLETE");
+        assertThat(completed.actor().mfaVerified()).isTrue();
+        assertThat(completed.recoveryCodes()).hasSize(10);
+        assertThat(jdbc.queryForMap("SELECT email_verification_bypassed,mfa_bypassed FROM platform.organization_registration WHERE account_id=?",
+                bypass.accountId())).containsEntry("email_verification_bypassed", false).containsEntry("mfa_bypassed", false);
     }
 
     @Test

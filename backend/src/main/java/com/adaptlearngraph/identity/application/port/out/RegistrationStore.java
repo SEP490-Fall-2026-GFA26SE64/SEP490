@@ -19,6 +19,8 @@ public interface RegistrationStore {
     Optional<EmailProof> emailProof(UUID accountId);
     void saveEmailProof(UUID accountId, EmailProof proof);
     void markEmailVerified(UUID accountId, Instant now);
+    void updateVerificationState(UUID accountId, Registration.State state, boolean emailBypassed,
+                                 boolean mfaBypassed, Instant now);
     void consumeEmailProof(UUID accountId, Instant now);
     Optional<TotpCredential> totp(UUID accountId);
     void completeEnrollment(UUID accountId, String encryptedSecret, long step, Instant now);

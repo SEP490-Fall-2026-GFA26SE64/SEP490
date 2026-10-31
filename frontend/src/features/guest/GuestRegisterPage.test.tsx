@@ -86,7 +86,7 @@ describe('registration flow', () => {
   it('retains the current field set and submits null optional values with an omitted slug', async () => {
     page()
     const user = await fillRegistration()
-    await user.click(screen.getByRole('button', { name: 'Save and verify email' }))
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
     await screen.findByRole('heading', { name: 'Verify your email' })
     expect(api.registerOrganization).toHaveBeenCalledWith({
       organizationName: 'Acme Learning', subdomain: null, industry: null, headcount: null,
@@ -99,7 +99,7 @@ describe('registration flow', () => {
   it('preserves entered values and focuses the error summary for invalid password confirmation', async () => {
     page()
     const user = await fillRegistration('long test password', 'different password')
-    await user.click(screen.getByRole('button', { name: 'Save and verify email' }))
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
     const error = await screen.findByRole('alert')
     expect(error.textContent).toContain('Passwords do not match')
     expect(document.activeElement).toBe(error)
@@ -115,7 +115,7 @@ describe('registration flow', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }))
     await user.type(screen.getByLabelText('Workspace URL Slug'), 'acme-team')
     await user.click(screen.getByRole('button', { name: 'Continue to account' }))
-    await user.click(screen.getByRole('button', { name: 'Save and verify email' }))
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
     expect((await screen.findByRole('alert')).textContent).toContain('already reserved')
     expect(screen.getByDisplayValue('Acme Learning')).toBeTruthy()
     expect(screen.getByDisplayValue('acme-team').getAttribute('aria-invalid')).toBe('true')
