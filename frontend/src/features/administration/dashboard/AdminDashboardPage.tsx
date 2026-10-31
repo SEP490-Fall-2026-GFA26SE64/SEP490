@@ -70,7 +70,7 @@ const INITIAL_AUDIT_LOGS: AuditLogRecord[] = [
   {
     id: 'AUD-8919',
     timestamp: '2026-10-13 17:20:19',
-    actorName: 'Chen Wei',
+    actorName: 'Dr. Sarah Chen',
     actorRole: 'Expert',
     action: 'CONTENT_SUBMITTED_FOR_APPROVAL',
     targetEntity: 'LearningModule: MOD-002 (Graph Neural Networks)',

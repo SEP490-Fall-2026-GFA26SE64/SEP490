@@ -32,6 +32,10 @@ Documentation-only checks do not establish backend/frontend behavior. Revised ru
 
 ## Existing Test Guides and Evidence
 
+### Optional PayOS / Email Verification / MFA, 2026-10-30
+
+[Unit/API/frontend](unit/REQ-060-061-028-integration-flags-20261030.md), [real persistence/migration](integration/REQ-060-061-028-integration-flags-20261030.md) and [system/screenshots/manual checks](system/REQ-060-061-028-integration-flags-20261030.md) cover independent default-on switches, local/dev-only bypass, truthful missing proof/payment state and reenabling. Final feature-only clean-main results: **50 backend tests, 24 frontend tests and two real-API desktop/mobile journeys passed**; typechecked build and scoped lint passed. The earlier combined-working-tree 52/25 results and screenshots remain explicitly historical; unrelated catalog/routing edits were not included. Earlier failures and test-harness corrections remain recorded. Live provider/email and production rollout are not certified.
+
 ### Main / Workspace Baseline Integration, 2026-10-28
 
 [Unit/build](unit/REQ-002-workspace-baseline.md), [migration/persistence](integration/REQ-002-workspace-baseline.md) and [browser/manual evidence](system/REQ-002-workspace-baseline.md) cover the combined runtime, real workspace baseline authorization and preserved identity/subscription data. They distinguish synthetic end-to-end verification and dev readiness from actual-content/model/production certification.

@@ -224,9 +224,12 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("REQ-023-F04: DELETE /api/v1/organizations/{orgId}/target-roles/{roleId} returns 204 No Content for LD_MANAGER")
+    @DisplayName("REQ-023-F04: DELETE /api/v1/organizations/{orgId}/target-roles/{roleId} returns 204 No Content for LD_MANAGER when DRAFT")
     void deleteTargetRoleReturns204() throws Exception {
         UUID roleId = UUID.randomUUID();
+        TargetRole draftRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "DATA", "ENG", RoleTrack.PROFESSIONAL, "", "desc");
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(draftRole));
         when(manageTargetRoleUseCase.deleteTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(true);
 
@@ -238,7 +241,39 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden when caller is not an L&D Manager")
+    @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden for LD_MANAGER when ACTIVE/PUBLISHED")
+    void deleteTargetRoleReturns403ForLdManagerWhenPublished() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "DATA", "ENG", RoleTrack.PROFESSIONAL, "", "desc").publish();
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(publishedRole));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "LD_MANAGER"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F04: DELETE returns 204 No Content for DOMAIN_EXPERT when PUBLISHED")
+    void deleteTargetRoleReturns204ForExpertWhenPublished() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "DATA", "ENG", RoleTrack.PROFESSIONAL, "", "desc").publish();
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(publishedRole));
+        when(manageTargetRoleUseCase.deleteTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(true);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden when caller is not an L&D Manager or Expert")
     void deleteTargetRoleReturns403ForLearner() throws Exception {
         UUID roleId = UUID.randomUUID();
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/organizations/org-1/target-roles/" + roleId)
@@ -365,8 +400,8 @@ class TargetRoleControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("REQ-023-F05: PUT rejects target role with rejectionReason from Domain Expert")
-    void updateTargetRoleRejectionWithReason() throws Exception {
+    @DisplayName("REQ-023-F05: Domain Expert can no longer reject target roles; PUT with REJECTED returns 400 Bad Request")
+    void updateTargetRoleRejectionByExpertReturnsBadRequest() throws Exception {
         UUID roleId = UUID.randomUUID();
         TargetRole existingRole = new TargetRole(
                 new TargetRoleId(roleId),
@@ -382,27 +417,8 @@ class TargetRoleControllerTest {
                 Instant.now(),
                 Instant.now());
 
-        TargetRole rejectedRole = new TargetRole(
-                new TargetRoleId(roleId),
-                "org-1",
-                "ROLE_AI",
-                "AI Spec",
-                "AI",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
-                "expert-alpha",
-                "Desc",
-                RoleStatus.REJECTED,
-                "1.0",
-                "[]",
-                Instant.now(),
-                Instant.now(),
-                "Skill benchmark threshold too high for junior tier");
-
         when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(Optional.of(existingRole));
-        when(manageTargetRoleUseCase.updateTargetRole(any()))
-                .thenReturn(Optional.of(rejectedRole));
 
         com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
@@ -414,9 +430,45 @@ class TargetRoleControllerTest {
                         .header("X-User-Id", "expert-alpha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("REJECTED"))
-                .andExpect(jsonPath("$.rejectionReason").value("Skill benchmark threshold too high for junior tier"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Domain Experts can no longer reject target roles"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-023-F05: Domain Expert can update micro-skills and save draft for an already REJECTED target role")
+    void updateTargetRoleWhenAlreadyRejectedAllowsExpertSave() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole existingRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_AI",
+                "AI Spec",
+                "AI",
+                "AI_ML",
+                RoleTrack.PROFESSIONAL,
+                "expert-alpha",
+                "Desc",
+                RoleStatus.REJECTED,
+                Instant.now(),
+                Instant.now());
+
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(existingRole));
+        when(manageTargetRoleUseCase.updateTargetRole(any()))
+                .thenReturn(Optional.of(existingRole));
+
+        com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.catalog.api.UpdateTargetRoleRequest(
+                        "AI Spec", "AI", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "REJECTED", "1.0", List.of(java.util.Map.of("skillCode", "SKILL_01", "threshold", 80)), "Proposal Rejected: fresher missing skill");
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .header("X-User-Id", "expert-alpha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
     }
 
     @Test

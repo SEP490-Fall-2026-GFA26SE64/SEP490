@@ -1,5 +1,15 @@
 import { workspaceFetch as fetch } from './workspaceFetch'
 
+const DEFAULT_ORG_UUID = 'e0000000-0000-0000-0000-000000000001'
+
+function normalizeOrg(orgId?: string): string {
+  if (!orgId || orgId === 'default-org' || orgId === 'comp-technova') {
+    return DEFAULT_ORG_UUID
+  }
+  return orgId
+}
+
+
 export interface PrerequisiteEdgeDto {
   sourceSkillId: string
   sourceSkillCode?: string
@@ -20,6 +30,7 @@ export interface TargetRoleGraphSkillDto {
   macroCompetencyCode?: string
   targetMastery: number
   status: string
+  level?: string
 }
 
 export interface TargetRoleGraphDto {
@@ -40,7 +51,7 @@ export interface CreatePrerequisitePayload {
 }
 
 export async function fetchPrerequisites(organizationId: string): Promise<PrerequisiteEdgeDto[]> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/prerequisites`, {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites`, {
     headers: {
       Accept: 'application/json',
     },
@@ -55,7 +66,7 @@ export async function createPrerequisite(
   organizationId: string,
   payload: CreatePrerequisitePayload
 ): Promise<PrerequisiteEdgeDto> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/prerequisites`, {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -77,7 +88,7 @@ export async function deletePrerequisite(
   targetSkillId: string
 ): Promise<void> {
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/prerequisites?sourceSkillId=${encodeURIComponent(
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites?sourceSkillId=${encodeURIComponent(
       sourceSkillId
     )}&targetSkillId=${encodeURIComponent(targetSkillId)}`,
     {
@@ -96,7 +107,7 @@ export async function fetchTargetRoleGraph(
   roleId: string
 ): Promise<TargetRoleGraphDto> {
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/target-roles/${encodeURIComponent(roleId)}/graph`,
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/target-roles/${encodeURIComponent(roleId)}/graph`,
     {
       headers: {
         Accept: 'application/json',

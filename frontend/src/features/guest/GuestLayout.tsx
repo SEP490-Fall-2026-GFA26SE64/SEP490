@@ -73,7 +73,7 @@ export function GuestLayout({ children, currentStep = 1, onSignOut, showProgress
     </main>
     <footer className="mt-auto border-t border-border bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-caption text-muted-foreground sm:px-6">
-        <span className="flex items-center gap-2"><ShieldCheck size={16} aria-hidden="true" />{c('Secure account · Verified payments', 'Tài khoản bảo mật · Thanh toán xác minh')}</span>
+        <span className="flex items-center gap-2"><ShieldCheck size={16} aria-hidden="true" />{c('Account setup · Subscription onboarding', 'Thiết lập tài khoản · Đăng ký gói')}</span>
         <span>© {new Date().getFullYear()} Adapt-Learn-Graph</span>
       </div>
     </footer>

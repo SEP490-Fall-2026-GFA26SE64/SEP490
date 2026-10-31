@@ -13,6 +13,7 @@ import com.adaptlearngraph.identity.domain.RegistrationActor.Scope;
 import com.adaptlearngraph.identity.domain.RegistrationFailure;
 import com.adaptlearngraph.identity.domain.RegistrationFailure.Code;
 import com.adaptlearngraph.identity.domain.RegistrationFields;
+import com.adaptlearngraph.shared.domain.IntegrationPolicy;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -28,13 +29,20 @@ public final class RegistrationService implements RegistrationUseCase {
     private final Clock clock;
     private final String dummyPasswordHash;
     private final AuthenticationAttemptGuard attempts;
+    private final IntegrationPolicy policy;
 
     public RegistrationService(RegistrationStore store, RegistrationSecrets secrets,
                                RegistrationDelivery delivery, Clock clock) {
+        this(store, secrets, delivery, clock, IntegrationPolicy.ENABLED);
+    }
+
+    public RegistrationService(RegistrationStore store, RegistrationSecrets secrets,
+                               RegistrationDelivery delivery, Clock clock, IntegrationPolicy policy) {
         this.store = store;
         this.secrets = secrets;
         this.delivery = delivery;
         this.clock = clock;
+        this.policy = policy;
         this.dummyPasswordHash = secrets.hashPassword(UUID.randomUUID().toString());
         this.attempts = new AuthenticationAttemptGuard(store, secrets, clock);
     }
@@ -66,9 +74,10 @@ public final class RegistrationService implements RegistrationUseCase {
                 }
             }
             if (!inserted) throw new RegistrationFailure(Code.SERVICE_UNAVAILABLE, "Unable to reserve a slug. Try again.");
-            queueVerification(accountId, address, now);
+            if (policy.emailVerificationEnabled()) queueVerification(accountId, address, now);
             store.audit(accountId, "REGISTRATION_CREATED", "SUCCEEDED", now);
-            return new RegistrationActor(accountId, Scope.PASSWORD_PROVEN, 0, now);
+            return progressActor(store.lockRegistration(accountId),
+                    new RegistrationActor(accountId, Scope.PASSWORD_PROVEN, 0, now, false));
         });
     }
 
@@ -88,7 +97,7 @@ public final class RegistrationService implements RegistrationUseCase {
                 throw invalidCredentials();
             }
             store.audit(registration.accountId(), "REGISTRATION_PASSWORD_VERIFIED", "SUCCEEDED", clock.instant());
-            return actor(registration, Scope.PASSWORD_PROVEN);
+            return progressActor(registration, actor(registration, Scope.PASSWORD_PROVEN));
         });
     }
 
@@ -97,8 +106,11 @@ public final class RegistrationService implements RegistrationUseCase {
         secrets.requireConfigured();
         return store.transaction(() -> {
             Registration registration = requireActor(actor);
-            boolean full = actor.scope() == Scope.FULL;
-            String stage = switch (actor.scope()) {
+            Scope scope = effectiveScope(registration, actor);
+            synchronizeState(registration);
+            registration = store.lockRegistration(actor.accountId());
+            boolean full = scope == Scope.FULL;
+            String stage = switch (scope) {
                 case FULL -> "COMPLETE";
                 case RECOVERY -> "SETUP_MFA_RECOVERY";
                 case EMAIL_PROVEN -> "SETUP_MFA";
@@ -117,10 +129,11 @@ public final class RegistrationService implements RegistrationUseCase {
 
     @Override
     public void resend(RegistrationActor actor, String address) {
+        if (!policy.emailVerificationEnabled()) throw forbidden();
         requireReadyForEmail();
         store.transaction(() -> {
             Registration registration = requireActor(actor, Scope.PASSWORD_PROVEN);
-            if (registration.state() == State.REGISTERED) throw forbidden();
+            if (registration.emailVerifiedAt() != null && registration.state() == State.REGISTERED) throw forbidden();
             queueVerification(registration.accountId(), address, clock.instant());
             store.audit(registration.accountId(), "REGISTRATION_EMAIL_REQUESTED", "SUCCEEDED", clock.instant());
             return null;
@@ -129,9 +142,10 @@ public final class RegistrationService implements RegistrationUseCase {
 
     @Override
     public RegistrationActor verifyEmail(RegistrationActor actor, String code, String address) {
+        if (!policy.emailVerificationEnabled()) throw forbidden();
         return actorAttempt("email", actor, address, () -> {
             Registration registration = requireActor(actor, Scope.PASSWORD_PROVEN);
-            if (registration.state() == State.REGISTERED) throw forbidden();
+            if (registration.emailVerifiedAt() != null && registration.state() == State.REGISTERED) throw forbidden();
             EmailProof proof = store.emailProof(actor.accountId()).orElseThrow(RegistrationService::invalidProof);
             if (proof.consumedAt() != null) throw invalidProof();
             if (!clock.instant().isBefore(proof.expiresAt())) {
@@ -144,12 +158,13 @@ public final class RegistrationService implements RegistrationUseCase {
             store.consumeEmailProof(actor.accountId(), clock.instant());
             store.markEmailVerified(actor.accountId(), clock.instant());
             store.audit(actor.accountId(), "REGISTRATION_EMAIL_VERIFIED", "SUCCEEDED", clock.instant());
-            return actor(registration, Scope.EMAIL_PROVEN);
+            return progressActor(store.lockRegistration(actor.accountId()), actor(registration, Scope.EMAIL_PROVEN));
         });
     }
 
     @Override
     public Enrollment prepareEnrollment(RegistrationActor actor, String existingEncryptedSecret) {
+        if (!policy.mfaEnabled()) throw forbidden();
         secrets.requireConfigured();
         return store.transaction(() -> {
             Registration registration = requireEnrollmentActor(actor);
@@ -163,6 +178,7 @@ public final class RegistrationService implements RegistrationUseCase {
 
     @Override
     public Completion confirmEnrollment(RegistrationActor actor, String encryptedSecret, String code, String address) {
+        if (!policy.mfaEnabled()) throw forbidden();
         return actorAttempt("totp", actor, address, () -> {
             requireEnrollmentActor(actor);
             if (encryptedSecret == null) throw new RegistrationFailure(Code.INVALID_PROOF, "Set up your authenticator first.");
@@ -183,6 +199,7 @@ public final class RegistrationService implements RegistrationUseCase {
 
     @Override
     public RegistrationActor verifyTotp(RegistrationActor actor, String code, String address) {
+        if (!policy.mfaEnabled()) throw forbidden();
         return actorAttempt("totp", actor, address, () -> {
             Registration registration = requireActor(actor, Scope.PASSWORD_PROVEN);
             if (registration.state() != State.REGISTERED || registration.recoveryRequired()) throw forbidden();
@@ -199,6 +216,7 @@ public final class RegistrationService implements RegistrationUseCase {
 
     @Override
     public RegistrationActor recover(RegistrationActor actor, String recoveryCode, String address) {
+        if (!policy.mfaEnabled()) throw forbidden();
         return actorAttempt("recovery", actor, address, () -> {
             Registration registration = requireActor(actor, Scope.PASSWORD_PROVEN);
             if (registration.state() != State.REGISTERED) throw forbidden();
@@ -213,7 +231,9 @@ public final class RegistrationService implements RegistrationUseCase {
 
     private Registration requireEnrollmentActor(RegistrationActor actor) {
         Registration registration = requireActor(actor, Scope.EMAIL_PROVEN, Scope.RECOVERY);
-        if (actor.scope() == Scope.EMAIL_PROVEN && registration.state() != State.MFA_PENDING) throw forbidden();
+        synchronizeState(registration);
+        registration = store.lockRegistration(actor.accountId());
+        if (effectiveScope(registration, actor) == Scope.EMAIL_PROVEN && registration.state() != State.MFA_PENDING) throw forbidden();
         if (actor.scope() == Scope.RECOVERY && !registration.recoveryRequired()) throw forbidden();
         return registration;
     }
@@ -228,11 +248,34 @@ public final class RegistrationService implements RegistrationUseCase {
         if (!registration.active() || registration.authVersion() != actor.authVersion()) {
             throw new RegistrationFailure(Code.UNAUTHENTICATED, "Your session was revoked. Sign in again.");
         }
-        if (allowed.length > 0 && !List.of(allowed).contains(actor.scope())) throw forbidden();
-        if (actor.scope() == Scope.FULL && (registration.recoveryRequired() || registration.state() != State.REGISTERED)) {
-            throw forbidden();
-        }
+        if (allowed.length > 0 && !List.of(allowed).contains(effectiveScope(registration, actor))) throw forbidden();
         return registration;
+    }
+
+    private Scope effectiveScope(Registration registration, RegistrationActor actor) {
+        if (policy.emailVerificationEnabled() && registration.emailVerifiedAt() == null) return Scope.PASSWORD_PROVEN;
+        if (policy.emailVerificationEnabled() && actor.scope() == Scope.PASSWORD_PROVEN
+                && registration.state() != State.REGISTERED) return Scope.PASSWORD_PROVEN;
+        if (!policy.mfaEnabled()) return Scope.FULL;
+        if (actor.scope() == Scope.RECOVERY && registration.recoveryRequired()) return Scope.RECOVERY;
+        boolean enrolled = store.totp(registration.accountId()).isPresent();
+        if (!enrolled && !registration.recoveryRequired()) return Scope.EMAIL_PROVEN;
+        return actor.scope() == Scope.FULL && actor.mfaVerified() && !registration.recoveryRequired()
+                ? Scope.FULL : Scope.PASSWORD_PROVEN;
+    }
+
+    private void synchronizeState(Registration registration) {
+        boolean emailBypassed = !policy.emailVerificationEnabled() && registration.emailVerifiedAt() == null;
+        State state = !emailBypassed && registration.emailVerifiedAt() == null ? State.EMAIL_PENDING
+                : !policy.mfaEnabled() || store.totp(registration.accountId()).isPresent()
+                    ? State.REGISTERED : State.MFA_PENDING;
+        store.updateVerificationState(registration.accountId(), state, emailBypassed, !policy.mfaEnabled(), clock.instant());
+    }
+
+    private RegistrationActor progressActor(Registration registration, RegistrationActor actor) {
+        synchronizeState(registration);
+        return new RegistrationActor(actor.accountId(), effectiveScope(registration, actor),
+                registration.authVersion(), clock.instant(), actor.mfaVerified());
     }
 
     private void queueVerification(UUID accountId, String address, Instant now) {
@@ -283,7 +326,7 @@ public final class RegistrationService implements RegistrationUseCase {
 
     private void requireReadyForEmail() {
         secrets.requireConfigured();
-        delivery.requireConfigured();
+        if (policy.emailVerificationEnabled()) delivery.requireConfigured();
     }
 
     private static String enrollmentPurpose(RegistrationActor actor) {

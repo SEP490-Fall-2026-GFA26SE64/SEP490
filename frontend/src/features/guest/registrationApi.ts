@@ -175,7 +175,7 @@ function parseRegistration(payload: unknown): RegistrationView {
   const completedAt = timestamp(value.completedAt)
   const emailVerifiedAt = timestamp(value.emailVerifiedAt)
   const email = text(value.email)
-  if (stage === 'COMPLETE' && (!fields || !registrationId || !completedAt || !emailVerifiedAt
+  if (stage === 'COMPLETE' && (!fields || !registrationId || !completedAt
     || fields.adminEmail !== email || fields.subdomain === null)) throw invalidResponse()
   if (stage !== 'COMPLETE' && fields !== null) throw invalidResponse()
   return {

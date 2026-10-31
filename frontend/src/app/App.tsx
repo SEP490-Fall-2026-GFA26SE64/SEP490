@@ -150,6 +150,7 @@ export default function App() {
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />
             <Route path="/manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
+            <Route path="/manager/occupations" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />
