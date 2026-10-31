@@ -21,10 +21,11 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
     }
 
     @Override
-    public List<CompetencyRecord> findAllCompetencies(String search) {
+    public List<CompetencyRecord> findAllCompetencies(String organizationId, String search) {
         String cypher = """
                 MATCH (c:Competency)
-                WHERE ($search IS NULL OR $search = ''
+                WHERE c.organizationId = $organizationId
+                  AND ($search IS NULL OR $search = ''
                    OR toLower(c.name) CONTAINS toLower($search)
                    OR toLower(c.id) CONTAINS toLower($search)
                    OR toLower(coalesce(c.code, '')) CONTAINS toLower($search)
@@ -32,7 +33,7 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                 OPTIONAL MATCH (l:Level)-[:HAS_COMPETENCY]->(c)
                 OPTIONAL MATCH (r:TargetRole)-[:HAS_LEVEL]->(l)
                 OPTIONAL MATCH (c)-[:HAS_SKILL]->(s:MicroSkill)
-                WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: s.code, name: s.name} END) AS skills
+                WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
                 RETURN c.id AS id,
                        coalesce(c.code, c.id) AS code,
                        c.name AS name,
@@ -48,7 +49,9 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                 """;
 
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("search", search != null ? search.trim() : ""));
+            var result = session.run(cypher, Map.of(
+                    "organizationId", organizationId != null ? organizationId : "",
+                    "search", search != null ? search.trim() : ""));
             List<CompetencyRecord> competencies = new ArrayList<>();
             while (result.hasNext()) {
                 competencies.add(mapRecord(result.next()));
@@ -58,13 +61,14 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
     }
 
     @Override
-    public Optional<CompetencyRecord> findById(String id) {
+    public Optional<CompetencyRecord> findById(String organizationId, String id) {
         String cypher = """
                 MATCH (c:Competency {id: $id})
+                WHERE c.organizationId = $organizationId
                 OPTIONAL MATCH (l:Level)-[:HAS_COMPETENCY]->(c)
                 OPTIONAL MATCH (r:TargetRole)-[:HAS_LEVEL]->(l)
                 OPTIONAL MATCH (c)-[:HAS_SKILL]->(s:MicroSkill)
-                WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: s.code, name: s.name} END) AS skills
+                WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
                 RETURN c.id AS id,
                        coalesce(c.code, c.id) AS code,
                        c.name AS name,
@@ -78,7 +82,9 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                        skills
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("id", id));
+            var result = session.run(cypher, Map.of(
+                    "organizationId", organizationId != null ? organizationId : "",
+                    "id", id));
             if (result.hasNext()) {
                 return Optional.of(mapRecord(result.next()));
             }
@@ -87,10 +93,11 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
     }
 
     @Override
-    public CompetencyRecord save(CompetencyRecord record, List<String> skillIds, String levelId) {
+    public CompetencyRecord save(String organizationId, CompetencyRecord record, List<String> skillIds, String levelId) {
         String mergeCypher = """
                 MERGE (c:Competency {id: $id})
-                ON CREATE SET c.code = $code,
+                ON CREATE SET c.organizationId = $organizationId,
+                              c.code = $code,
                               c.name = $name,
                               c.description = $description,
                               c.attainmentRule = $attainmentRule,
@@ -106,6 +113,7 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
 
         Map<String, Object> params = new HashMap<>();
         params.put("id", record.id());
+        params.put("organizationId", organizationId != null ? organizationId : "");
         params.put("code", record.code());
         params.put("name", record.name());
         params.put("description", record.description());
@@ -128,18 +136,25 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
 
             // Sync HAS_SKILL relationships
             if (skillIds != null) {
-                String deleteOldSkills = """
-                        MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(s:MicroSkill)
-                        WHERE NOT (s.id IN $skillIds OR s.code IN $skillIds)
-                        DELETE r
-                        """;
-                session.run(deleteOldSkills, Map.of("id", record.id(), "skillIds", skillIds)).consume();
+                if (skillIds.isEmpty()) {
+                    String deleteAllSkills = """
+                            MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(:MicroSkill)
+                            DELETE r
+                            """;
+                    session.run(deleteAllSkills, Map.of("id", record.id())).consume();
+                } else {
+                    String deleteOldSkills = """
+                            MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(s:MicroSkill)
+                            WHERE NOT (s.id IN $skillIds OR coalesce(s.code, '') IN $skillIds)
+                            DELETE r
+                            """;
+                    session.run(deleteOldSkills, Map.of("id", record.id(), "skillIds", skillIds)).consume();
 
-                if (!skillIds.isEmpty()) {
                     String linkSkills = """
                             UNWIND $skillIds AS sid
                             MATCH (c:Competency {id: $id})
-                            MATCH (s:MicroSkill) WHERE s.id = sid OR s.code = sid
+                            MATCH (s:MicroSkill) WHERE s.id = sid OR coalesce(s.code, '') = sid
+                            WITH DISTINCT c, s
                             MERGE (c)-[r:HAS_SKILL]->(s)
                             ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
                             """;
@@ -147,18 +162,21 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                 }
             }
 
-            return findById(record.id()).orElse(record);
+            return findById(organizationId, record.id()).orElse(record);
         }
     }
 
     @Override
-    public void deleteById(String id) {
+    public void deleteById(String organizationId, String id) {
         String cypher = """
                 MATCH (c:Competency {id: $id})
+                WHERE c.organizationId = $organizationId
                 DETACH DELETE c
                 """;
         try (var session = driver.session()) {
-            session.run(cypher, Map.of("id", id)).consume();
+            session.run(cypher, Map.of(
+                    "organizationId", organizationId != null ? organizationId : "",
+                    "id", id)).consume();
         }
     }
 

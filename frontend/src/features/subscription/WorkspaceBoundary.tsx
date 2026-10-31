@@ -35,7 +35,7 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
   if (identity.isSuccess && authenticated && permitted && (billing || platform || (!users && access.isSuccess) ||
     (users && memberAccess.isSuccess && memberAccess.data.workspaceStatus !== 'SUSPENDED')) && identity.data) {
     return <WorkspaceSessionContext.Provider value={{
-      identity: { fullName: identity.data.fullName, email: identity.data.email, organizationId: identity.data.organizationId,
+      identity: { accountId: identity.data.accountId ?? null, fullName: identity.data.fullName, email: identity.data.email, organizationId: identity.data.organizationId, roles,
         organizationName: memberAccess.data?.organizationName ?? null },
       onSignOut: async () => { await request('/api/v1/workspace-auth/sign-out', 'POST'); cache.clear() },
     }}><WorkspaceQueryScope key={`${identity.data.accountId}:${identity.data.organizationId}:${roles.join(',')}`}>{children}</WorkspaceQueryScope></WorkspaceSessionContext.Provider>
