@@ -54,27 +54,14 @@ export class AdaptiveBaselineApiError extends Error {
 
 const base = (occupation: string) => `/api/v1/ld/adaptive-baseline-blueprints/occupations/${encodeURIComponent(occupation)}`
 
-/** Local Catalog is discovery only. Never display a candidate before adaptive authorization. */
+/** Server-scoped discovery is independent of resource readiness. Workspace loads only after selection. */
 export async function listAdaptiveOccupations(signal?: AbortSignal): Promise<{ id: string; name: string }[]> {
   let response: Response
   try { response = await fetch('/api/v1/ld/baseline-blueprint-catalog/occupations', { credentials: 'same-origin', cache: 'no-store', signal }) }
   catch (cause) { if (signal?.aborted) throw cause; throw new AdaptiveBaselineApiError(0, 'NETWORK_ERROR') }
   if (!response.ok) throw new AdaptiveBaselineApiError(response.status, response.status === 401 ? 'UNAUTHENTICATED' : response.status === 403 ? 'FORBIDDEN' : 'DEPENDENCY_UNAVAILABLE')
-  let ids: string[]
-  try { ids = [...new Set(array(await response.json(), item => text(object(item).id)))] }
+  try { return array(await response.json(), item => { const value = object(item); return { id: text(value.id), name: text(value.name) } }) }
   catch { throw new AdaptiveBaselineApiError(response.status, 'INVALID_RESPONSE') }
-  const authorized: { id: string; name: string }[] = []
-  // Sequential to avoid unbounded fan-out against the provisional Catalog adapter.
-  for (const id of ids) {
-    try {
-      const value = await getAdaptiveWorkspace(id, signal)
-      authorized.push({ id, name: value.capacity.occupationName })
-    } catch (cause) {
-      if (cause instanceof AdaptiveBaselineApiError && (cause.status === 403 || cause.status === 404)) continue
-      throw cause
-    }
-  }
-  return authorized
 }
 
 // Explicit command allowlists: calculator, actor, policy, pins and legacy fields never enter new writes.
@@ -121,7 +108,7 @@ async function request<T>(occupation: string, suffix: string, init: RequestInit,
   return http(base(occupation) + suffix, init, read)
 }
 
-async function http<T>(url: string, init: RequestInit, read: (value: unknown) => T): Promise<T> {
+export async function adaptiveHttp<T>(url: string, init: RequestInit, read: (value: unknown) => T): Promise<T> {
   let response: Response
   try { response = await workspaceFetch(url, init) }
   catch (cause) {
@@ -140,6 +127,8 @@ async function http<T>(url: string, init: RequestInit, read: (value: unknown) =>
     return result
   } catch { throw new AdaptiveBaselineApiError(response.status, 'INVALID_RESPONSE') }
 }
+
+const http = adaptiveHttp
 
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Expected object')

@@ -16,7 +16,7 @@ import { AdaptiveBaselineApiError, listAdaptiveOccupations, type AdaptiveListRow
 import { AdaptiveErrorNotice, AdaptiveLoading } from './AdaptiveBaselineFeedback'
 import { useAdaptiveBaselineList } from './useAdaptiveBaselineList'
 
-export function AdaptiveBaselineDirectory() {
+export function AdaptiveBaselineDirectory({ embedded = false }: { embedded?: boolean } = {}) {
   const { t, language } = useTranslation(), tr = (key: string) => t(`adaptiveBaseline.${key}`), navigate = useNavigate()
   const state = useAdaptiveBaselineList(), locked = state.busy || state.pending
   const [selected, setSelected] = useState<AdaptiveListRow | null>(null), [reason, setReason] = useState('')
@@ -35,7 +35,7 @@ export function AdaptiveBaselineDirectory() {
   const open = (occupation: string) => navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(occupation)}`)
   const statuses = ['DRAFT', 'ACTIVE', 'RETIRING', 'INACTIVE'] as const
   return <div className="min-w-0 space-y-5 pb-8">
-    <Heading level={1} className="sr-only">{tr('title')}</Heading>
+    {!embedded && <Heading level={1} className="sr-only">{tr('title')}</Heading>}
     <div className="flex flex-wrap justify-end gap-2">
       <Button size="sm" variant="outline" leftIcon={<RefreshCw size={14} />} disabled={locked} onClick={state.refresh}>{tr('refresh')}</Button>
       <Button size="sm" disabled={locked} onClick={openPicker}>{tr('choose')}</Button>

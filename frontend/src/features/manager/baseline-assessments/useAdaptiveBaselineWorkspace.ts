@@ -92,7 +92,11 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
         setError(value)
         // A committed response may have been lost. Keep the exact closure/key until resolved.
         const ambiguous = value.status === 0 || value.status >= 500 || value.code === 'INVALID_RESPONSE'
-        if (!ambiguous && !needsRead.current) { retry.current = null; setPending(false); setNeedsRefresh(true) }
+        if (!ambiguous && !needsRead.current) {
+          retry.current = null; setPending(false)
+          // A verified policy prerequisite rejection has no writes; allow its configuration link.
+          setNeedsRefresh(value.code !== 'ASSESSMENT_POLICY_REQUIRED')
+        }
       }
     } finally { if (token === generation.current) { locked.current = false; setBusy(false) } }
   }

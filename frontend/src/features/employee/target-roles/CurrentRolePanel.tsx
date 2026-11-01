@@ -65,11 +65,9 @@ export function CurrentRolePanel() {
   return <section aria-label={t('upskillingUi.roleCatalog')} className="min-w-0 space-y-5">
     {gapRole && <InitialRoleGapDialog role={gapRole} initialLevelId={view.data?.selection?.role.id === gapRole.id ? view.data.selection.levelId : null} onClose={() => setGapRole(null)} onBaseline={value => { setGapRole(null); choose(gapRole, value) }} />}
     {(roles.isPending || view.isPending) && <LoadingCard label={tr('loading')} />}
-    {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr('requestError')}
+    {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr(roles.isError ? 'catalogError' : 'statusError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
     {view.data && !view.isError && <CurrentRoleSummary view={view.data} disabled={blocked} onReviewGaps={() => { if (view.data?.selection?.available) setGapRole(view.data.selection.role) }} />}
-    {roles.isSuccess && roles.data.length === 0 &&
-      <Text role="status" variant="body-sm">{t('baselineIntegration.readiness')}</Text>}
     {assessmentActive && <Text variant="body-sm" role="status">{tr('errors.ASSESSMENT_IN_PROGRESS')}</Text>}
     <Card><CardContent className="flex flex-col gap-3 p-3 lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">
@@ -106,7 +104,8 @@ export function CurrentRolePanel() {
       </div>
     </CardContent></Card>
     {!roles.isPending && !roles.isError && filtered.length === 0 && <EmptyState icon={<Target size={24} />}
-      title={t('upskillingUi.noResults')} description={t('upskillingUi.noResultsHint')} />}
+      title={roles.data?.length === 0 ? tr('catalogEmpty') : t('upskillingUi.noResults')}
+      description={roles.data?.length === 0 ? tr('catalogEmptyHint') : t('upskillingUi.noResultsHint')} />}
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{visible.map(role => {
       const active = Boolean(view.data?.selection?.available && view.data.selection.role.id === role.id)
       return <CurrentRoleCard key={role.id} role={role} active={active}

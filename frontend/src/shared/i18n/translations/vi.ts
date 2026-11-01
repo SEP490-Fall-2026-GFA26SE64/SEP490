@@ -1,6 +1,24 @@
 import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
+  assessmentPolicy: {
+    requiredForBaseline: 'Hãy kích hoạt Chính sách đánh giá cho tổ chức trước khi kích hoạt baseline. Baseline đã kích hoạt cũng cần chính sách này để nhân viên bắt đầu bài mới.',
+    configure: 'Cấu hình chính sách đánh giá', returnBaseline: 'Quay lại baseline', readyToReturn: 'Đã có Chính sách đánh giá đang áp dụng. Quay lại baseline đã lưu, xem thử lại rồi xác nhận kích hoạt.',
+    stale: 'Chính sách đang áp dụng đã thay đổi. Hãy tải lại trước khi lưu hoặc kích hoạt phiên bản khác.',
+    pageTitle: 'Cấu hình đánh giá đầu vào', pageHelp: 'Quản lý cấu hình và chính sách áp dụng cho các bài đánh giá đầu vào mới.', blueprints: 'Cấu hình bài đánh giá',
+    title: 'Chính sách đánh giá', description: 'Thiết lập độ chính xác, độ tin cậy và mức thận trọng cho tổ chức. Lưu phiên bản rồi kích hoạt để áp dụng cho bài mới.',
+    stopSe: 'Mục tiêu độ chính xác (SE)', stopSeHelp: 'Giá trị thấp hơn yêu cầu bằng chứng chính xác hơn để dừng sớm. Vẫn phải đủ kỹ năng và tuân thủ giới hạn của bài đánh giá.',
+    highConfidenceSe: 'Ngưỡng SE cho độ tin cậy cao', highConfidenceSeHelp: 'Kết quả có sai số chuẩn không vượt ngưỡng này được gắn độ tin cậy Cao.',
+    mediumConfidenceSe: 'Ngưỡng SE cho độ tin cậy trung bình', mediumConfidenceSeHelp: 'Kết quả vượt ngưỡng Cao nhưng không vượt giá trị này được gắn độ tin cậy Trung bình.',
+    k: 'Mức thận trọng (k)', kHelp: 'Giá trị cao hơn làm giảm ước lượng năng lực thận trọng khi còn bất định, không đổi nhãn độ tin cậy. Phạm vi: lớn hơn 0 và không quá 10.',
+    required: 'Vui lòng nhập giá trị.', positive: 'Nhập một số hữu hạn lớn hơn 0.', ordered: 'Nhập giá trị lớn hơn ngưỡng độ tin cậy Cao.', kRange: 'Nhập giá trị lớn hơn 0 và không quá 10.',
+    errorSummary: 'Kiểm tra các giá trị chính sách được đánh dấu.', suggestionsHelp: 'Các giá trị gợi ý chưa được áp dụng. Cần lưu và kích hoạt; bài đang làm và kết quả cũ giữ chính sách gốc.',
+    activeVersion: 'Phiên bản đang áp dụng', noActive: 'Chưa có chính sách được kích hoạt', historyHelp: 'Kích hoạt chỉ áp dụng cho bài mới. Bài đang làm và kết quả cũ giữ nguyên.',
+    save: 'Lưu phiên bản chính sách', saving: 'Đang lưu…', saved: 'Đã lưu phiên bản. Hãy kích hoạt khi muốn áp dụng.', unchanged: 'Các giá trị này đã có trong một phiên bản được lưu. Kích hoạt là thao tác riêng.', activated: 'Đã kích hoạt chính sách cho bài mới.',
+    refresh: 'Tải lại chính sách', useActive: 'Dùng giá trị đang áp dụng', uncertain: 'Chưa xác định được kết quả thao tác. Hãy thử lại đúng yêu cầu cũ trước khi thay đổi tiếp.', retry: 'Thử lại yêu cầu cũ',
+    versions: 'Các phiên bản đã lưu', noVersions: 'Chưa có phiên bản nào. Kiểm tra giá trị gợi ý và lưu chính sách đầu tiên.', version: 'Phiên bản', active: 'Đang áp dụng', activate: 'Kích hoạt',
+    confirmTitle: 'Kích hoạt chính sách này?', confirmHelp: 'Bài đánh giá đầu vào mới sẽ dùng phiên bản này. Bài đang làm, kết quả và lịch sử học giữ nguyên đầu vào gốc.',
+  },
   initialPathway: {
     reviewFlow: {
       checkTitle: 'Kiểm tra và bổ sung lộ trình', checking: 'Đang kiểm tra kế hoạch hiện tại…',
@@ -151,6 +169,7 @@ export const vi: TranslationKeys = {
       BLUEPRINT_STALE: 'L&D cần cập nhật Blueprint trước khi bắt đầu bài mới.', INFEASIBLE_SCOPE: 'Blueprint chưa cung cấp đủ câu hỏi hợp lệ.',
       CONFIGURATION_UPDATE_REQUIRED: 'L&D cần cập nhật bài đánh giá nghề nghiệp này trước khi nhận lượt mới.',
       POLICY_UNAVAILABLE: 'Chính sách đánh giá chưa khả dụng. Hãy liên hệ quản trị viên.', ALLOWANCE_CLOSED: 'Đã có bài hoàn tất cho nghề nghiệp này. Hãy mở từ lịch sử đánh giá nền tảng.',
+      ASSESSMENT_POLICY_UNAVAILABLE: 'Chính sách đánh giá của tổ chức chưa khả dụng. Hãy liên hệ L&D Manager trước khi bắt đầu bài đánh giá đầu vào mới.',
       IDEMPOTENCY_CONFLICT: 'Khóa yêu cầu xung đột với yêu cầu trước. Hãy tải lại.', VERSION_CONFLICT: 'Bài đã thay đổi bởi yêu cầu khác. Hãy tải lại trước khi tiếp tục.',
       DEPENDENCY_UNAVAILABLE: 'Một dịch vụ cần thiết chưa khả dụng.', ATTEMPT_CLOSED: 'Bài đã kết thúc. Tải lại để xem kết quả đã lưu.', DEADLINE_REACHED: 'Đã đến hạn chót trên máy chủ. Tải lại để xem kết quả.',
       ANSWER_NOT_PRESENTED: 'Câu hỏi này không còn chờ trả lời. Hãy tải lại.', INVALID_OPTION: 'Lựa chọn không khả dụng. Hãy tải lại câu hỏi.',
@@ -171,13 +190,16 @@ export const vi: TranslationKeys = {
     coverage: 'Kỹ năng đã có mastery', baselineVersion: 'Phiên bản baseline', start: 'Làm baseline bắt buộc', resume: 'Tiếp tục baseline', continue: 'Tiếp tục xem khoảng cách kỹ năng',
     retry: 'Thử lại', retryNotice: 'Giữ trang này mở. Thử lại để đối chiếu an toàn cùng yêu cầu.',
     requestError: 'Chưa tải được vị trí hoặc trạng thái baseline. Vui lòng thử lại.', employeeRequired: 'Phiên hiện tại chưa ở không gian nhân viên. Hãy mở không gian này để xem vị trí và mức độ thành thạo.',
+    catalogError: 'Chưa thể xác minh các vị trí đang khả dụng. Vui lòng thử tải lại danh mục.',
+    statusError: 'Chưa tải được vị trí đã chọn hoặc trạng thái baseline. Vui lòng thử lại.',
+    catalogEmpty: 'Chưa có vị trí khả dụng', catalogEmptyHint: 'Hiện chưa có vị trí nào khả dụng cho bạn trong tổ chức này. Bạn có thể tải lại để kiểm tra.',
     selectFirst: 'Chọn một vị trí ở thẻ Vị trí trong mục Nâng cao kỹ năng. Mức độ thành thạo theo nghề nghiệp sẽ quyết định bạn có cần làm đánh giá đầu vào hay không.',
     mandatory: 'Bắt buộc', requiredScore: 'Mức năng lực yêu cầu',
     states: {
       SELECT_ROLE: 'Chọn vị trí để tiếp tục.', ROLE_UNAVAILABLE: 'Vị trí cũ không còn khả dụng. Hãy chọn vị trí hiện tại ở bên dưới.',
       COMPLETE: 'Đã có mastery cho toàn bộ kỹ năng trong baseline của nghề nghiệp. Không cần làm baseline mới.',
       BASELINE_REQUIRED: 'Cần hoàn thành baseline của nghề nghiệp này trước khi tiếp tục.', RESUME: 'Bạn có baseline chưa hoàn thành. Hãy tiếp tục bài đang làm.',
-      NO_BASELINE: 'Chưa có baseline cho nghề nghiệp này.', BASELINE_UNAVAILABLE: 'Cấu hình baseline cần được cập nhật trước khi có thể bắt đầu bài mới.',
+      NO_BASELINE: 'Chưa có cấu hình baseline đang được áp dụng cho nghề nghiệp này.', BASELINE_UNAVAILABLE: 'Tài nguyên hoặc cấu hình baseline chưa sẵn sàng để bắt đầu bài mới. Vị trí đã chọn và lịch sử làm bài được giữ nguyên.',
       PROFILE_PENDING: 'Kết quả baseline đã được giữ lại. Profile mastery đang chờ đồng bộ.', PROFILE_INCOMPLETE: 'Profile cần được kiểm tra. Lịch sử làm bài được giữ nguyên.',
     },
     errors: { ASSESSMENT_IN_PROGRESS: 'Hãy hoàn thành bài assessment đang làm trước khi đổi vị trí.', STALE_SELECTION: 'Vị trí đã thay đổi. Hãy tải lại và xác nhận.',
@@ -304,6 +326,8 @@ export const vi: TranslationKeys = {
         "INSUFFICIENT_CAPACITY": "Chưa đủ câu hỏi hợp lệ để bao phủ bài đánh giá.",
         "PARAMETER_COVERAGE_MISSING": "Một số câu hỏi chưa sẵn sàng cho đánh giá thích ứng. Hãy liên hệ quản trị viên.",
         "DEPENDENCY_UNAVAILABLE": "Thông tin đánh giá tạm thời chưa khả dụng. Hãy thử lại sau.",
+        "BASELINE_RESOURCES_UNAVAILABLE": "Tài nguyên baseline chưa được cấu hình hoặc chưa dùng được. Cần gắn ngân hàng câu hỏi, model, mapping và bộ tham số cho nghề nghiệp này, đồng thời bảo đảm catalog đã sẵn sàng.",
+        "ASSESSMENT_POLICY_REQUIRED": "Hãy kích hoạt Chính sách đánh giá cho tổ chức trước khi kích hoạt baseline này.",
         "REQUEST_FAILED": "Không thể hoàn tất yêu cầu. Xử lý thao tác đang chờ hoặc tải lại."
     },
     "configuration": "Thiết lập bài đánh giá",
