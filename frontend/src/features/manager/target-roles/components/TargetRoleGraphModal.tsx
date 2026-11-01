@@ -1092,6 +1092,11 @@ export function TargetRoleGraphModal({
                         <strong className="text-foreground">{selectedNode.track || 'PROFESSIONAL'}</strong>
                       </div>
                       <div>
+
+                        <span className="text-[10px] text-muted-foreground block">Role Tier</span>
+                        <strong className="text-foreground">{selectedNode.seniority || 'P3'}</strong>
+                      </div>
+                      <div>
                         <span className="text-[10px] text-muted-foreground block">Attainment Rule</span>
                         <span className="font-mono text-[10px] font-semibold text-primary">ALL_MANDATORY_SKILLS</span>
                       </div>
