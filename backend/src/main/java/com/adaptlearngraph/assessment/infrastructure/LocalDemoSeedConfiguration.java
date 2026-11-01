@@ -30,8 +30,18 @@ public class LocalDemoSeedConfiguration {
             var latest=com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(environment)
                     ? LocalCatalogBootstrap.withSoftwareDevelopment(graph) : new LocalCatalogBootstrap(graph);
             latest.requireBaselineCompatibility(catalog);
-            latest.bootstrap(driver);
             var jdbc=new NamedParameterJdbcTemplate(source);
+            if(com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(environment))MainDevelopmentBankSeed.requireFreshOrProjected(jdbc);
+            latest.bootstrap(driver);
+            if(com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace.enabled(environment)){
+                MainDevelopmentBankSeed.prepareOwner(jdbc);
+                var projected=MainDevelopmentBankSeed.project(bank);
+                projected.validate(catalog);
+                String url;try(var connection=source.getConnection()){url=connection.getMetaData().getURL();}
+                new OfficialQuestionBankImporter(source).importManifest(projected,new OfficialQuestionBankImporter.Owner(
+                        MainDevelopmentBankSeed.id("bank-owner"),MainDevelopmentBankSeed.ORGANIZATION,url),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
+                context.close();return;
+            }
             var id=UUID.fromString("00000000-0000-0000-0000-000000000001");
             jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES(:id,'LOCAL-DEMO','Local Demo') ON CONFLICT(organization_id) DO NOTHING",Map.of("id",id));
             jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES(:id,:id,'local-demo-bank-owner','local-demo-bank-owner','DEMO_NO_PASSWORD_LOGIN') ON CONFLICT(account_id) DO NOTHING",Map.of("id",id));
