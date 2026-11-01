@@ -2,6 +2,8 @@
 
 **Function:** REQ-002-F01. **Actor:** Employee.
 
+**2026-11-01 C1/C2 status:** workspace source now adds the own active [Assessment Policy](Configure%20Baseline%20Assessment.md#organization-assessment-policy--planned) pin for new roots and uses original pins on continuation/replacement; result/evidence/V2 event/profile readers compile. Legacy technical JSON/V1 remains supported. SQL is not applied and runtime/numerical/executable preservation is Not run; full-Occupation/allowance/evidence/history rules remain the contract.
+
 ## Goal and position
 
 Estimate initial mastery for MicroSkills covered by the applicable Occupation Blueprint. The same baseline must distinguish limited evidence from reliable evidence for Intern, Junior and Senior Employees; a strong result is not capped merely because it came from a baseline.
@@ -36,6 +38,8 @@ The Employee cannot choose parameters, submit correctness/mastery, see protected
 
 Server derives Occupation from the trusted selected Role; client cannot substitute scope or supply pool/budget/pins. Draft/inactive/removed Roles and ineligible questions are excluded from new snapshots. Role/selection revision is provenance, never a separate pool or allowance. Role-specific proficiency thresholds belong to later gap processing.
 
+New entry uses the explicit Role+member Level under the session's organization. Resolve new-start resources by that organization+exact graph Occupation ID; identical catalog IDs in another organization do not authorize reuse of its bank, attempt, result or profile. Every follow-up read/command rechecks trusted learner/tenant ownership. Deadline workers use the stored tenant/attempt context. Resume and linked replacement preserve original pins; changing Role/Level or a current resource binding never resets/rescores/repins existing evidence or reopens the completed allowance. [Organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
+
 ### IRT 3PL behavior
 
 For item discrimination `a`, difficulty `b`, guessing `c` and current ability `theta`:
@@ -50,7 +54,7 @@ P(correct | theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
 - The attempt may stop early at sufficient precision; maximum questions and server deadline remain hard stops.
 - Difficulty labels are for authoring/cold-start explanation. The algorithm does not follow a fixed Easy → Medium → Hard ladder.
 
-Exact estimation/stopping/minimum-evidence policy and confidence mapping are system-owned and versioned. Numerical validation is a separate acceptance dependency; UI success or difficulty labels never establish calibration validity.
+Estimation/prior/minimum-evidence/technical validity stay system-managed/versioned. Planned organization policy supplies stop SE, confidence cutoffs and k; Employee cannot supply them. Numerical validation is a separate acceptance dependency; UI success or difficulty labels never establish calibration validity.
 
 ### Ordered operations
 
@@ -92,6 +96,10 @@ The client timer is display-only. PostgreSQL owns deadlines; a worker may claim 
 - REQ-009 shows raw score, conservative per-skill mastery and a plain-language confidence label. It hides theta, SE, protected answers and rationales from the Employee.
 
 ### Resume, versioning and history
+
+Planned org-policy admission: a genuinely new workspace root start resolves own effective policy under shared policy-scope coordination and persists its ID/hash/four numerical values alongside exact existing technical/catalog/pool pins. Missing active policy returns503 ASSESSMENT_POLICY_UNAVAILABLE, separately from unavailable resources/no Active Blueprint, without consuming allowance. Concurrent activation/start has one serialized ordering; no mixed pin/values. Exact authorized replay/resume resolves the original attempt before today's policy lookup. [Planned storage/locking](Adaptive%20Baseline%20Data%20Architecture.md#planned-organization-policy-storage-and-admission).
+
+Answer/manual/precision/deadline finalization and recovery use persisted inputs only. Existing minimum coverage/maxima/deadline priority remains. Estimated mastery=sigmoid(theta); conservative mastery uses pinned k; confidence uses pinned SE cutoffs independently. Existing safe Employee DTOs remain; no client policy/answer-key fields. Legacy attempts keep exact old technical JSON including non-default values. Original-chain invalidated replacements retain their original applicable snapshot/policy mode; new workspace root starts cannot silently fall back to legacy mode. Matching result/evidence policy provenance and versioned outbox commit atomically; corrupt pins fail without partial mastery/profile. Activation never rewrites completed results, old hashes, gaps or pathways.
 
 - Reload/reconnect returns the same responses, item/option order, provisional state and deadline.
 - Presented items never change after question/Blueprint/parameter updates.
@@ -147,7 +155,7 @@ REQ-001 selection/identity; authorized catalog publication/release; REQ-002-F02 
 ### Decision status
 
 - **Confirmed:** immediate Role choice; selected-Role entry with one whole-Occupation baseline/pair; required skill coverage with no role sections; one mastery-producing completion per Employee+Occupation; invalidated/no-mastery linked replacement; unchanged history/pins/allowance; individual adaptive 3PL, raw explanatory score and conservative mastery; no confidence/mastery cap; PostgreSQL authority/reload/deadline/idempotency/security/evidence boundaries above.
-- **Provisional technical configuration:** estimator implementation, exact minimum-evidence/`SE`/`k` constants are system-owned/versioned, not L&D-editable.
+- **Provisional technical configuration:** estimator/prior/minimum-evidence constants remain system-managed/versioned. **Confirmed target:** L&D org policy supplies stop SE/confidence/k. **Proposed:** new policy schema/admission/provenance design; source still uses original technical JSON until separately approved C2.
 - **Confirmed design:** dual-format schema/readers, legacy-configuration admission gate, explicit conversion and transaction protocol in the linked design.
 - **Open:** authoritative external production contracts and numerical/executable/browser validation. Numerical calibration remains outside this alignment.
 - **Rejected:** per-Role or exploration-specific sampling/bounds for new attempts, history relabel/rescore/reset, shared fixed published baseline, fixed difficulty ladder, client scoring, raw score as mastery or unanswered prior as a result.

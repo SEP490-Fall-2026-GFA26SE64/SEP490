@@ -1,5 +1,7 @@
 # Role selection and Occupation baseline
 
+**Revision19 C1 — revised main-authored source alignment:** [the shared consumer contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) adds the owner's stored Level members/direct requirements behind existing ports. Authored levelId is the exact stored member string under roleId, not a hash or claim of a Level node. User confirms all declared authored skills mandatory and explicit temporary org/Role→Occupation bindings. Legacy actual IDs/flags/history remain unchanged. Source/API changes require C2; no integration/runtime acceptance is asserted.
+
 ## Purpose and scope
 
 Employee selects a desired Role, then receives the next step for its Occupation based on authoritative mastery coverage. This contract covers REQ-001-F01 browsing, REQ-001-F02 selection/change, REQ-002-F01 admission/completion and REQ-002-F02 version presentation. Result/history and My Mastery are protected read dependencies; gap calculation and pathway generation remain separate Functions.
@@ -12,7 +14,7 @@ Dependency errors are retryable unavailable states, never missing mastery or abs
 
 ## Initial gap/confirmation extension — 2026-10-27
 
-Latest user decision: Employee explicitly selects catalog TargetRole + Level. Three Levels represent three effective targets. The server validates Level membership and reads requiredScore for the exact Level–Skill; no highest-Level/name inference. This supersedes the earlier no-separate-Level assumption; [shared amendment](../initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#12-confirmed-amendment--employee-selects-role--level) records pair identity, compatibility and history rules.
+Latest user decision: Employee explicitly selects catalog TargetRole + Level. Each member Level represents a distinct effective target. The server validates Level membership and reads requiredScore for the exact Level–Skill; no highest-Level/name inference. This supersedes the earlier no-separate-Level assumption; [shared amendment](../initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#12-confirmed-amendment--employee-selects-role--level) records pair identity, compatibility and history rules.
 
 After a valid baseline profile exists, [F02 gap preview](../initial-pathway/Competency%20profiling%20and%20gap%20analysis/Calculate%20Target-Role%20Gaps.md) reads current permitted Role requirements without changing selection/history. Explicit Employee confirmation then revalidates input and records initial generation intent using the selection owner's guards; [shared planned contract](../initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). Bare GET and baseline admission do not create a pathway.
 
@@ -25,7 +27,7 @@ Authentication supplies an active Employee and trusted organization. L&D manages
 | Function | Client input | Server responsibility/output |
 | --- | --- | --- |
 | REQ-001-F01 | Search, sort, Occupation filter, page, Role detail ID | Authorized current Role/Occupation/Level requirements; read-only |
-| REQ-001-F02 | Role ID, expected selection ID, idempotency key | Recheck availability, serialize selection, return committed snapshot/revision |
+| REQ-001-F02 | Role ID + member Level ID, expected selection ID, idempotency key | Recheck pair availability, serialize selection, return committed snapshot/revision |
 | REQ-002-F01 | Start/resume, own attempt ID, expected revision, response or submit confirmation | Derive scope from selection; check coverage/allowance; pin sequence/deadline; score on server |
 | REQ-002-F02 | Selected version/Draft ID; configuration; expected revisions; command key | Read exact record; Save sole Draft; Preview; Activate/Deactivate; confirmed Draft discard |
 
@@ -33,7 +35,7 @@ Client cannot set actor/tenant, ownership, coverage, mastery, status, correctnes
 
 ## Sources, processing and storage
 
-1. Read authorized catalog relationships: Occupation → HAS_ROLE → TargetRole → HAS_LEVEL → Level → REQUIRES_SKILL → MicroSkill. Current IDs are stable strings. New UI selection requires an explicit member Level; old role-only baseline snapshots/calls remain readable and never infer a historical Level. Publication and visibility remain catalog responsibilities. Baseline still covers the whole Occupation and preserves its original allowance/pins.
+1. Read one authorized normalized catalog projection: legacy mode follows Occupation → HAS_ROLE → TargetRole → HAS_LEVEL → Level → REQUIRES_SKILL → MicroSkill; authored mode follows the selected temporary binding plus stored levels/direct requirements. Never fall back after failed validation. In authored mode validate exact `(roleId,stored member levelId)` plus server source-format/fingerprint; in legacy mode keep real Level IDs. Old snapshots/calls remain readable and never infer a historical Level. Publication/visibility remain catalog responsibilities; temporary binding grants neither publication nor model readiness. Baseline still covers the whole Occupation and preserves original allowance/pins.
 2. Recheck the selected Role and its unique owning Occupation. Under learner serialization, check exact receipt replay, expected selection and assessment activity. End the old selection and write snapshot/revision/receipt/audit/outbox atomically. Selection does not wait for baseline configuration and does not start an attempt.
 3. After selection commits, read authoritative Employee mastery in PostgreSQL through the profile boundary. For a learner without a bound profile, resolve the deduplicated full Occupation skill union. Existing initialized profiles retain their original required skill set and applicable baseline version; newer catalog/version requirements are not imposed retroactively.
 4. Coverage requires valid mastery for every applicable skill. Low or zero valid mastery counts as present; missing/UNKNOWN/null or invalidated evidence does not. An empty/malformed skill union is unavailable, never vacuous success. A terminal attempt alone does not certify an initialized profile.
@@ -43,16 +45,20 @@ Client cannot set actor/tenant, ownership, coverage, mastery, status, correctnes
 
 Neo4j owns catalog data. PostgreSQL owns selection/history, profile/evidence, configuration, attempts/results, receipts/audit/outbox and downstream learner state. No distributed ACID transaction between stores is assumed; readiness uses consistent versions/fingerprints and revalidation.
 
+The [organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract) separates catalog visibility from baseline readiness. A valid authorized Role+Level can be selected before bank/model/mapping or an Active baseline exists. Resolve resources by trusted organization+exact graph Occupation ID; never strip an ID prefix, guess a Level or borrow another organization's resource tuple. A missing/unverifiable catalog grant is not a successfully empty catalog. Every own profile/attempt/history read retains its original tenant and provenance.
+
 ## Observable states and recovery
 
 | Condition | Required outcome |
 | --- | --- |
 | No selection | Browse and explicitly choose; no automatic selection or attempt |
+| Verified authorized catalog is empty | No available Roles; no invented choice or foreign-tenant fallback |
+| Valid Role+Level but unusable bank/model/mapping | Resources unavailable; retain valid selection, original pins/history and no automatic provisioning |
 | Selected Role removed/retired/unauthorized | Explain unavailable prior selection; explicit replacement; preserve snapshot/history |
 | Complete profile coverage | Baseline not required; downstream handoff does not certify proficiency or pathway readiness |
 | Incomplete coverage and usable baseline | Required full-Occupation baseline, start/resume under existing rules |
 | No Active baseline and no resumable attempt | No baseline configured / Chưa có baseline; retain selection |
-| Same-Occupation Role change | Reuse applicable profile coverage; no separate Role allowance |
+| Same-Occupation Role or Level change | Reuse applicable profile coverage; exact selected-Level gap requirements; no separate Role/Level allowance or evidence reset |
 | Different Occupation | Evaluate destination independently; retain old mastery/history |
 | Assessment in progress | Block Role change; offer resume/recovery; no silent cancellation |
 | Completed result but missing profile | Pending/review-needed; no evidence-only completeness, automatic import, reset or retake |
@@ -63,6 +69,8 @@ Neo4j owns catalog data. PostgreSQL owns selection/history, profile/evidence, co
 Serialize selection/start on the same learner coordination boundary. Preserve exact receipt identities, same-role no-op, one active selection and history. Assessment and pathway owners supply lifecycle guards/archive operations; dependency failure must roll back a change. Delivery is separate from durable outbox insertion.
 
 ## Assessment settings and version identity — REQ-002-F02
+
+Revision19's planned selection read model no longer requires Seniority/Job Domain from main's new Role responses. Employee API parsers, filters, dialogs, guidance and query keys must align together; legacy stored values can be read only as actual optional historical data. Do not replace them with defaults or derive them from Level labels. Missing binding/publication/readiness has explicit EN/VI feedback and cannot become a foreign Role, default Occupation or fabricated empty catalog. New-source fingerprints cover complete requirements and binding provenance; reads and accepted replay preserve original scope/pins. [CA19-01–05](../../testing/REQ-001-002-role-baseline-flow-test-plan.md#authored-catalog-alignment--revision19) remains Planned/Not run.
 
 - One stable Blueprint per organization+Occupation, one open Draft and one Active version. A Draft and released versions have distinct identities.
 - Selecting a version renders that version's saved name/settings/status. The Active summary follows its pointer, never the current form or latest Draft.
