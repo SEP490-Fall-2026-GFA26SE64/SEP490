@@ -523,7 +523,7 @@ export function ExpertAssignedRolesPage() {
         (role.department && role.department.toLowerCase().includes(q)) ||
         (role.familyCode && role.familyCode.toLowerCase().includes(q)) ||
         (role.description && role.description.toLowerCase().includes(q)) ||
-                (role.track && role.track.toLowerCase().includes(q)) ||
+        (role.track && role.track.toLowerCase().includes(q)) ||
         (occ &&
           (occ.name.toLowerCase().includes(q) ||
             occ.code.toLowerCase().includes(q))) ||

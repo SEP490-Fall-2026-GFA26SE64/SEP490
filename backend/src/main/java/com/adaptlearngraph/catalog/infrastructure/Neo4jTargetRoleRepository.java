@@ -166,8 +166,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 String supersedeCypher = """
                         MATCH (old:TargetRole)
                         WHERE old.organizationId = $organizationId
-                           AND old.id <> $id
-                           AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
+                          AND old.id <> $id
+                          AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
                         SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
                         """;
                 session.run(supersedeCypher, params).consume();
