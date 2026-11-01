@@ -1,0 +1,34 @@
+---
+title: "CLS-06 - Actual development/ROI design proposal"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_CLS_06_Reports["DevelopmentReportUseCase"] {
+    <<planned>>
+    +query(scope, department, occupation, period)
+  }
+  class SDD_CLS_06_Finance["TrainingFinanceUseCase"] {
+    <<planned>>
+    +recordCost(command)
+    +recordBenefit(command)
+    +updateRecord(command, expectedRevision)
+  }
+  class SDD_CLS_06_Policy["RoiPolicy"] {
+    <<planned>>
+    +calculate(costs, benefits, currency, period)
+  }
+  class SDD_CLS_06_Read["AuthorizedDevelopmentReadPort"]
+  <<planned>> SDD_CLS_06_Read
+  class SDD_CLS_06_Store["FinanceRecordPort"]
+  <<planned>> SDD_CLS_06_Store
+  SDD_CLS_06_Reports --> SDD_CLS_06_Read
+  SDD_CLS_06_Reports --> SDD_CLS_06_Store
+  SDD_CLS_06_Reports --> SDD_CLS_06_Policy
+  SDD_CLS_06_Finance --> SDD_CLS_06_Store
+
+  style SDD_CLS_06_Reports fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+  style SDD_CLS_06_Finance fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+  style SDD_CLS_06_Policy fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+  style SDD_CLS_06_Read fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+  style SDD_CLS_06_Store fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4

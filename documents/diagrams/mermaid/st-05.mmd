@@ -1,0 +1,38 @@
+---
+title: "ST-05 - Payment order (persisted states; representative verified transitions)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+stateDiagram-v2
+  state "CREATING" as SDD_ST_05_CREATING
+  state "PENDING" as SDD_ST_05_PENDING
+  state "UNKNOWN" as SDD_ST_05_UNKNOWN
+  state "PARTIAL" as SDD_ST_05_PARTIAL
+  state "PAID" as SDD_ST_05_PAID
+  state "UNPAID_TERMINAL" as SDD_ST_05_UNPAID_TERMINAL
+  state "EXCEPTION" as SDD_ST_05_EXCEPTION
+  [*] --> SDD_ST_05_CREATING : immutable order and job saved
+  SDD_ST_05_CREATING --> SDD_ST_05_PENDING : verified checkout link
+  SDD_ST_05_CREATING --> SDD_ST_05_UNKNOWN : provider outcome unresolved
+  SDD_ST_05_PENDING --> SDD_ST_05_UNKNOWN : reconciliation cannot establish outcome
+  SDD_ST_05_UNKNOWN --> SDD_ST_05_PENDING : verified pending observation
+  SDD_ST_05_PENDING --> SDD_ST_05_PARTIAL : verified nonterminal partial amount
+  SDD_ST_05_UNKNOWN --> SDD_ST_05_PARTIAL : verified partial observation
+  SDD_ST_05_CREATING --> SDD_ST_05_PAID : full verified payment already exists
+  SDD_ST_05_PENDING --> SDD_ST_05_PAID : exact verified amount / currency
+  SDD_ST_05_UNKNOWN --> SDD_ST_05_PAID : reconciliation proves full payment
+  SDD_ST_05_PARTIAL --> SDD_ST_05_PAID : verified full payment reached
+  SDD_ST_05_PENDING --> SDD_ST_05_UNPAID_TERMINAL : provider proves terminal zero paid
+  SDD_ST_05_UNKNOWN --> SDD_ST_05_UNPAID_TERMINAL : provider proves terminal zero paid
+  SDD_ST_05_CREATING --> SDD_ST_05_EXCEPTION : invalid/inconsistent outcome
+  SDD_ST_05_PENDING --> SDD_ST_05_EXCEPTION : mismatched verified evidence
+  SDD_ST_05_PARTIAL --> SDD_ST_05_EXCEPTION : incompatible amount/outcome
+  SDD_ST_05_PAID --> SDD_ST_05_PAID : duplicate observation, no duplicate<br/>application
+
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_05_PAID accepted
+
+  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_05_EXCEPTION attention
+
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_05_CREATING,SDD_ST_05_PENDING working

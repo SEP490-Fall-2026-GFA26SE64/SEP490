@@ -1,0 +1,151 @@
+---
+title: "DB-05 - Adaptive attempts and evidence V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_05_t_baseline_adaptive_attempt["baseline_adaptive_attempt"] {
+    <<table>>
+    uuid attempt_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    text target_role_id FK_NULLABLE
+    uuid blueprint_id FK_REQUIRED
+    integer blueprint_version FK_REQUIRED
+    uuid replaces_attempt_id FK_NULLABLE
+  }
+  class SDD_DB_05_t_baseline_attempt_pool_item["baseline_attempt_pool_item"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid parameter_set_id FK_REQUIRED
+    uuid item_version_id PK_FK_REQUIRED
+    text micro_skill_id FK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_attempt_item["baseline_attempt_item"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    integer position PK_REQUIRED
+    uuid item_version_id FK_REQUIRED
+    text micro_skill_id FK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_attempt_response["baseline_attempt_response"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    integer position PK_FK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_attempt_skill_state["baseline_attempt_skill_state"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text micro_skill_id PK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_attempt_command["baseline_attempt_command"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid actor_id PK_FK_REQUIRED
+    text idempotency_key PK_REQUIRED
+    uuid attempt_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_attempt_result["baseline_attempt_result"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid mastery_event_id FK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_attempt_skill_result["baseline_attempt_skill_result"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text micro_skill_id PK_FK_REQUIRED
+    uuid mastery_mapping_version_id FK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_mastery_evidence["baseline_mastery_evidence"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    text micro_skill_id PK_FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid mastery_mapping_version_id FK_REQUIRED
+    uuid parameter_set_id FK_REQUIRED
+    uuid mastery_event_id FK_REQUIRED
+  }
+  class SDD_DB_05_t_account["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_adaptive_blueprint_role["baseline_adaptive_blueprint_role"] {
+    <<external>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer blueprint_version PK_FK_REQUIRED
+    text role_id PK_REQUIRED
+  }
+  class SDD_DB_05_t_baseline_adaptive_blueprint_version["baseline_adaptive_blueprint_<br/>version"] {
+    <<external>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer version PK_REQUIRED
+  }
+  class SDD_DB_05_t_irt_item_parameter["irt_item_parameter"] {
+    <<external>>
+    uuid parameter_set_id PK_FK_REQUIRED
+    uuid item_version_id PK_FK_REQUIRED
+    text micro_skill_id PK_FK_REQUIRED
+  }
+  class SDD_DB_05_t_irt_parameter_set["irt_parameter_set"] {
+    <<external>>
+    uuid parameter_set_id PK_REQUIRED
+  }
+  class SDD_DB_05_t_learner_state["learner_state"] {
+    <<external>>
+    uuid learner_id PK_FK_REQUIRED
+  }
+  class SDD_DB_05_t_mastery_mapping_version["mastery_mapping_version"] {
+    <<external>>
+    uuid mastery_mapping_version_id PK_REQUIRED
+  }
+  class SDD_DB_05_t_model_version["model_version"] {
+    <<external>>
+    uuid model_version_id PK_REQUIRED
+  }
+  class SDD_DB_05_t_outbox_event["outbox_event"] {
+    <<external>>
+    uuid event_id PK_REQUIRED
+  }
+  SDD_DB_05_t_baseline_adaptive_blueprint_role ..> SDD_DB_05_t_baseline_adaptive_attempt : FK025
+  SDD_DB_05_t_learner_state ..> SDD_DB_05_t_baseline_adaptive_attempt : FK026
+  SDD_DB_05_t_account ..> SDD_DB_05_t_baseline_adaptive_attempt : FK027
+  SDD_DB_05_t_baseline_adaptive_blueprint_version ..> SDD_DB_05_t_baseline_adaptive_attempt : FK028
+  SDD_DB_05_t_baseline_adaptive_attempt --> SDD_DB_05_t_baseline_adaptive_attempt : FK029
+  SDD_DB_05_t_baseline_adaptive_attempt --> SDD_DB_05_t_baseline_attempt_command : FK059
+  SDD_DB_05_t_baseline_attempt_pool_item --> SDD_DB_05_t_baseline_attempt_item : FK060
+  SDD_DB_05_t_baseline_attempt_skill_state --> SDD_DB_05_t_baseline_attempt_pool_item : FK061
+  SDD_DB_05_t_baseline_adaptive_attempt --> SDD_DB_05_t_baseline_attempt_pool_item : FK062
+  SDD_DB_05_t_irt_item_parameter ..> SDD_DB_05_t_baseline_attempt_pool_item : FK063
+  SDD_DB_05_t_baseline_attempt_item --> SDD_DB_05_t_baseline_attempt_response : FK064
+  SDD_DB_05_t_baseline_adaptive_attempt --> SDD_DB_05_t_baseline_attempt_result : FK065
+  SDD_DB_05_t_outbox_event ..> SDD_DB_05_t_baseline_attempt_result : FK066
+  SDD_DB_05_t_baseline_attempt_skill_state --> SDD_DB_05_t_baseline_attempt_skill_result : FK067
+  SDD_DB_05_t_mastery_mapping_version ..> SDD_DB_05_t_baseline_attempt_skill_result : FK068
+  SDD_DB_05_t_baseline_adaptive_attempt --> SDD_DB_05_t_baseline_attempt_skill_state : FK069
+  SDD_DB_05_t_baseline_adaptive_attempt --> SDD_DB_05_t_baseline_mastery_evidence : FK093
+  SDD_DB_05_t_baseline_attempt_result --> SDD_DB_05_t_baseline_mastery_evidence : FK094
+  SDD_DB_05_t_baseline_attempt_skill_result --> SDD_DB_05_t_baseline_mastery_evidence : FK095
+  SDD_DB_05_t_mastery_mapping_version ..> SDD_DB_05_t_baseline_mastery_evidence : FK096
+  SDD_DB_05_t_model_version ..> SDD_DB_05_t_baseline_mastery_evidence : FK097
+  SDD_DB_05_t_irt_parameter_set ..> SDD_DB_05_t_baseline_mastery_evidence : FK098
+
+  style SDD_DB_05_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_baseline_adaptive_blueprint_role fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_baseline_adaptive_blueprint_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_irt_item_parameter fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_irt_parameter_set fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_learner_state fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_mastery_mapping_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_model_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_05_t_outbox_event fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

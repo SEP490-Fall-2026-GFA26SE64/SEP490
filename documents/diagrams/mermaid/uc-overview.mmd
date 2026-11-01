@@ -1,0 +1,461 @@
+---
+title: "UC-OVERVIEW - Adapt-Learn-Graph use cases"
+config: {"theme":"base","look":"classic","layout":"elk","fontFamily":"Arial, sans-serif","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","textColor":"#000000","usecaseActorBkg":"#ffffff","usecaseActorBorder":"#000000","usecaseBkg":"#ffffff","usecaseBorder":"#000000","usecaseBoundaryBkg":"#ffffff","usecaseBoundaryBorder":"#000000","fontSize":"14px"},"usecase":{"wrappingWidth":180,"actorFontSize":16,"usecaseFontSize":14,"nodeSpacing":14,"rankSpacing":45,"diagramPadding":20},"elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX","cycleBreakingStrategy":"GREEDY","lineHops":false},"themeCSS":".edgeLabel p { font-size: 14px; } .edgeLabel p::before { content: \"\\00ab\"; } .edgeLabel p::after { content: \"\\00bb\"; }"}
+---
+usecase-beta
+direction LR
+actor AuthenticatedUser("Authenticated User")
+actor Guest("Guest")
+actor PlatformAdmin("Platform Administrator")
+actor SystemAdmin("System Administrator")
+systemBoundary ALG["Adapt-Learn-Graph"]
+  %% Shared account goals requested by the user; no new source FR IDs are assigned.
+  Login("Login")
+  Logout("Logout")
+  ChangePassword("Change password")
+  MfaAuthentication("MFA authentication")
+  %% FR-01.01: Register an organization
+  UC0101("Register an organization")
+  %% FR-01.02: Select a subscription
+  UC0102("Select a subscription")
+  %% FR-01.03: Pay for a subscription
+  UC0103("Pay for a subscription")
+  %% FR-01.04: Track onboarding and access the workspace
+  UC0104("Track onboarding and access the workspace")
+  %% FR-02.01: Manage organizations
+  UC0201("Manage organizations")
+  UC0201Action1("View Organizations")
+  UC0201Action2("Update Organization Details")
+  UC0201Action3("Suspend Workspace")
+  UC0201Action4("Reactivate Workspace")
+  %% FR-02.02: Configure subscriptions
+  UC0202("Configure subscriptions")
+  %% FR-02.03: Monitor platform activity
+  UC0203("Monitor platform activity")
+  %% FR-03.01: Manage user accounts
+  UC0301("Manage user accounts")
+  UC0301Action1("Create User Account")
+  UC0301Action2("View User Accounts")
+  UC0301Action3("Update User Account")
+  UC0301Action4("Activate Membership")
+  UC0301Action5("Deactivate Membership")
+  %% FR-03.02: Manage departments
+  UC0302("Manage departments")
+  UC0302Action1("Create Department")
+  UC0302Action2("View Departments")
+  UC0302Action3("Update Department")
+  UC0302Action4("Delete Department")
+  UC0302Action5("Assign Employee to Department")
+  UC0302Action6("Reassign Employee Department")
+  %% FR-03.03: Manage roles and permissions
+  UC0303("Manage roles and permissions")
+  UC0303Action1("Assign Organization Role")
+  UC0303Action2("Remove Organization Role")
+  UC0303Action3("Configure Workspace Access Permissions")
+  %% FR-03.04: Manage system configuration
+  UC0304("Manage system configuration")
+  UC0304Action1("View Organization Profile")
+  UC0304Action2("Update Organization Profile")
+  UC0304Action3("View Workspace Settings")
+  UC0304Action4("Update Workspace Settings")
+  %% FR-03.05: Monitor system activity
+  UC0305("Monitor system activity")
+  %% FR-03.06: Manage organization subscription
+  UC0306("Manage organization subscription")
+  UC0306Action1("View Subscription Details")
+  UC0306Action2("View Employee Seat Usage")
+  UC0306Action3("View Payment History")
+  UC0306Action4("Select Renewal Plan")
+  UC0306Action5("Pay for Subscription Renewal")
+  %% FR-04.01: Manage occupations
+  UC0401("Manage occupations")
+  UC0401Action1("Create Occupation")
+  UC0401Action2("View Occupations")
+  UC0401Action3("Update Occupation")
+  UC0401Action4("Deactivate Occupation")
+  UC0401Action5("Change Occupation Department")
+  %% FR-04.02: Assign Experts
+  UC0402("Assign Experts")
+  %% FR-04.03: Manage target roles
+  UC0403("Manage target roles")
+  UC0403Action1("Create Target Role")
+  UC0403Action2("Update Target Role")
+  UC0403Action3("Assign Target Role to Expert")
+  UC0403Action4("Monitor Role Configuration Status")
+  %% FR-04.04: Manage target role publication
+  UC0404("Manage target role publication")
+  UC0404Action1("Review Submitted Role Configuration")
+  UC0404Action2("Publish Target Role")
+  UC0404Action3("Unpublish Target Role")
+  UC0404Action4("Return Role Configuration for Revision")
+  %% FR-04.05: Manage baseline assessment configuration
+  UC0405("Manage baseline assessment configuration")
+  UC0405Action1("Configure Baseline Competency Coverage")
+  UC0405Action2("Configure Baseline Question Selection")
+  UC0405Action3("Configure Baseline Scoring Rules")
+  %% FR-04.06: Approve learning offerings
+  UC0406("Approve learning offerings")
+  %% FR-04.07: Monitor employee development
+  UC0407("Monitor employee development")
+  %% FR-05.01: Manage micro-skills
+  UC0501("Manage micro-skills")
+  UC0501Action1("Create Micro-skill")
+  UC0501Action2("View Micro-skills")
+  UC0501Action3("Update Micro-skill")
+  UC0501Action4("Deactivate Micro-skill")
+  %% FR-05.02: Manage role competency requirements
+  UC0502("Manage role competency requirements")
+  UC0502Action1("Add Required Competency")
+  UC0502Action2("Remove Required Competency")
+  UC0502Action3("Add Required Micro-skill")
+  UC0502Action4("Remove Required Micro-skill")
+  UC0502Action5("Set Required Proficiency")
+  UC0502Action6("Set Relative Importance")
+  %% FR-05.03: Submit completed target role configurations
+  UC0503("Submit completed target role configurations")
+  %% FR-05.04: Manage skill prerequisites
+  UC0504("Manage skill prerequisites")
+  UC0504Action1("Create Skill Prerequisite")
+  UC0504Action2("Update Skill Prerequisite")
+  UC0504Action3("Remove Skill Prerequisite")
+  %% FR-05.05: Manage learning modules
+  UC0505("Manage learning modules")
+  UC0505Action1("Create Learning Module")
+  UC0505Action2("Update Learning Module")
+  UC0505Action3("Organize Learning Modules")
+  UC0505Action4("Map Module to Micro-skills")
+  UC0505Action5("Add Learning Content")
+  UC0505Action6("Update Learning Content")
+  UC0505Action7("Reorder Learning Content")
+  UC0505Action8("Remove Learning Content")
+  %% FR-05.06: Manage module assessments
+  UC0506("Manage module assessments")
+  UC0506Action1("Create Assessment Question")
+  UC0506Action2("Update Assessment Question")
+  UC0506Action3("Classify Question by Skill")
+  UC0506Action4("Classify Question by Difficulty")
+  UC0506Action5("Configure Module Question Selection")
+  UC0506Action6("Configure Module Scoring Rules")
+  %% FR-05.07: Review initial learning pathways
+  UC0507("Review initial learning pathways")
+  %% FR-05.08: Submit content for approval
+  UC0508("Submit content for approval")
+  %% FR-06.01: Manage personal profile
+  UC0601("Manage personal profile")
+  UC0601Action1("View Personal Profile")
+  UC0601Action2("Edit profile")
+  %% FR-06.02: Complete baseline assessment
+  UC0602("Complete baseline assessment")
+  %% FR-06.03: Complete RIASEC assessment
+  UC0603("Complete RIASEC assessment")
+  %% FR-06.04: Review target role guidance
+  UC0604("Review target role guidance")
+  %% FR-06.05: Review competency profile and gaps
+  UC0605("Review competency profile and gaps")
+  %% FR-06.06: Follow a learning pathway
+  UC0606("Follow a learning pathway")
+  %% FR-06.07: Learn an individual skill
+  UC0607("Learn an individual skill")
+  %% FR-06.08: Complete learning and assessments
+  UC0608("Complete learning and assessments")
+  %% FR-06.09: Track learning progress
+  UC0609("Track learning progress")
+  %% FR-07.02: Process subscription payment
+  UC0702("Process subscription payment")
+  %% FR-07.05: Generate and evaluate assessment
+  UC0705("Generate and evaluate assessment")
+  %% FR-07.10: Send account verification email
+  UC0710("Send account verification email")
+end
+actor Manager("L&D Manager")
+actor Expert("Expert")
+actor Employee("Employee")
+
+Guest -- UC0101
+Guest -- UC0102
+Guest -- UC0103
+Guest -- UC0104
+PlatformAdmin -- UC0201
+PlatformAdmin -- UC0202
+PlatformAdmin -- UC0203
+SystemAdmin -- UC0301
+SystemAdmin -- UC0302
+SystemAdmin -- UC0303
+SystemAdmin -- UC0304
+SystemAdmin -- UC0305
+SystemAdmin -- UC0306
+UC0401 -- Manager
+UC0402 -- Manager
+UC0403 -- Manager
+UC0404 -- Manager
+UC0405 -- Manager
+UC0406 -- Manager
+UC0407 -- Manager
+UC0501 -- Expert
+UC0502 -- Expert
+UC0503 -- Expert
+UC0504 -- Expert
+UC0505 -- Expert
+UC0506 -- Expert
+UC0507 -- Expert
+UC0508 -- Expert
+UC0601 -- Employee
+UC0602 -- Employee
+UC0603 -- Employee
+UC0604 -- Employee
+UC0605 -- Employee
+UC0606 -- Employee
+UC0607 -- Employee
+UC0608 -- Employee
+UC0609 -- Employee
+UC0101 ..> : include UC0710
+UC0103 ..> : include UC0702
+UC0306Action5 ..> : include UC0702
+UC0602 ..> : include UC0705
+UC0603 ..> : include UC0705
+
+UC0201Action1 --|> UC0201
+UC0201Action2 --|> UC0201
+UC0201Action3 --|> UC0201
+UC0201Action4 --|> UC0201
+UC0301Action1 --|> UC0301
+UC0301Action2 --|> UC0301
+UC0301Action3 --|> UC0301
+UC0301Action4 --|> UC0301
+UC0301Action5 --|> UC0301
+UC0302Action1 --|> UC0302
+UC0302Action2 --|> UC0302
+UC0302Action3 --|> UC0302
+UC0302Action4 --|> UC0302
+UC0302Action5 --|> UC0302
+UC0302Action6 --|> UC0302
+UC0303Action1 --|> UC0303
+UC0303Action2 --|> UC0303
+UC0303Action3 --|> UC0303
+UC0304Action1 --|> UC0304
+UC0304Action2 --|> UC0304
+UC0304Action3 --|> UC0304
+UC0304Action4 --|> UC0304
+UC0306Action1 --|> UC0306
+UC0306Action2 --|> UC0306
+UC0306Action3 --|> UC0306
+UC0306Action4 --|> UC0306
+UC0306Action5 --|> UC0306
+UC0401Action1 --|> UC0401
+UC0401Action2 --|> UC0401
+UC0401Action3 --|> UC0401
+UC0401Action4 --|> UC0401
+UC0401Action5 --|> UC0401
+UC0403Action1 --|> UC0403
+UC0403Action2 --|> UC0403
+UC0403Action3 --|> UC0403
+UC0403Action4 --|> UC0403
+UC0404Action1 --|> UC0404
+UC0404Action2 --|> UC0404
+UC0404Action3 --|> UC0404
+UC0404Action4 --|> UC0404
+UC0405Action1 --|> UC0405
+UC0405Action2 --|> UC0405
+UC0405Action3 --|> UC0405
+UC0501Action1 --|> UC0501
+UC0501Action2 --|> UC0501
+UC0501Action3 --|> UC0501
+UC0501Action4 --|> UC0501
+UC0502Action1 --|> UC0502
+UC0502Action2 --|> UC0502
+UC0502Action3 --|> UC0502
+UC0502Action4 --|> UC0502
+UC0502Action5 --|> UC0502
+UC0502Action6 --|> UC0502
+UC0504Action1 --|> UC0504
+UC0504Action2 --|> UC0504
+UC0504Action3 --|> UC0504
+UC0505Action1 --|> UC0505
+UC0505Action2 --|> UC0505
+UC0505Action3 --|> UC0505
+UC0505Action4 --|> UC0505
+UC0505Action5 --|> UC0505
+UC0505Action6 --|> UC0505
+UC0505Action7 --|> UC0505
+UC0505Action8 --|> UC0505
+UC0506Action1 --|> UC0506
+UC0506Action2 --|> UC0506
+UC0506Action3 --|> UC0506
+UC0506Action4 --|> UC0506
+UC0506Action5 --|> UC0506
+UC0506Action6 --|> UC0506
+UC0601Action1 --|> UC0601
+classDef default stroke:#000000,color:#000000,stroke-width:1px
+style ALG fill:#ffffff,stroke:#000000,color:#000000,stroke-width:2px
+%% Concrete management actions specialize the broader Manage goal; they are alternatives, not mandatory included steps.
+%% Inherited actor participation applies to the specialized child goals.
+%% Source FR references occur only in comments; no requirement code is displayed.
+%% Only six human actors are shown; external integrations remain in the context/architecture diagrams.
+
+%% Invisible constraints arrange goal ellipses; these are not UML relationships.
+UC0101 Layout1@-- UC0102
+UC0102 Layout2@-- UC0103
+UC0103 Layout3@-- UC0104
+UC0201 Layout4@-- UC0202
+UC0202 Layout5@-- UC0203
+UC0301 Layout6@-- UC0302
+UC0302 Layout7@-- UC0303
+UC0304 Layout8@-- UC0305
+UC0305 Layout9@-- UC0306
+UC0401 Layout10@-- UC0402
+UC0402 Layout11@-- UC0403
+UC0403 Layout12@-- UC0404
+UC0405 Layout13@-- UC0406
+UC0406 Layout14@-- UC0407
+UC0501 Layout15@-- UC0502
+UC0502 Layout16@-- UC0503
+UC0503 Layout17@-- UC0504
+UC0505 Layout18@-- UC0506
+UC0506 Layout19@-- UC0507
+UC0507 Layout20@-- UC0508
+UC0601 Layout21@-- UC0602
+UC0602 Layout22@-- UC0603
+UC0603 Layout23@-- UC0604
+UC0605 Layout24@-- UC0606
+UC0606 Layout25@-- UC0607
+UC0607 Layout26@-- UC0608
+UC0608 Layout27@-- UC0609
+style Layout1 opacity:0,stroke-opacity:0
+style Layout2 opacity:0,stroke-opacity:0
+style Layout3 opacity:0,stroke-opacity:0
+style Layout4 opacity:0,stroke-opacity:0
+style Layout5 opacity:0,stroke-opacity:0
+style Layout6 opacity:0,stroke-opacity:0
+style Layout7 opacity:0,stroke-opacity:0
+style Layout8 opacity:0,stroke-opacity:0
+style Layout9 opacity:0,stroke-opacity:0
+style Layout10 opacity:0,stroke-opacity:0
+style Layout11 opacity:0,stroke-opacity:0
+style Layout12 opacity:0,stroke-opacity:0
+style Layout13 opacity:0,stroke-opacity:0
+style Layout14 opacity:0,stroke-opacity:0
+style Layout15 opacity:0,stroke-opacity:0
+style Layout16 opacity:0,stroke-opacity:0
+style Layout17 opacity:0,stroke-opacity:0
+style Layout18 opacity:0,stroke-opacity:0
+style Layout19 opacity:0,stroke-opacity:0
+style Layout20 opacity:0,stroke-opacity:0
+style Layout21 opacity:0,stroke-opacity:0
+style Layout22 opacity:0,stroke-opacity:0
+style Layout23 opacity:0,stroke-opacity:0
+style Layout24 opacity:0,stroke-opacity:0
+style Layout25 opacity:0,stroke-opacity:0
+style Layout26 opacity:0,stroke-opacity:0
+style Layout27 opacity:0,stroke-opacity:0
+
+%% Invisible child-row constraints only affect placement.
+UC0201Action1 ChildLayout1@-- UC0201Action2
+style ChildLayout1 opacity:0,stroke-opacity:0
+UC0201Action2 ChildLayout2@-- UC0201Action3
+style ChildLayout2 opacity:0,stroke-opacity:0
+UC0301Action1 ChildLayout3@-- UC0301Action2
+style ChildLayout3 opacity:0,stroke-opacity:0
+UC0301Action2 ChildLayout4@-- UC0301Action3
+style ChildLayout4 opacity:0,stroke-opacity:0
+UC0301Action4 ChildLayout5@-- UC0301Action5
+style ChildLayout5 opacity:0,stroke-opacity:0
+UC0302Action1 ChildLayout6@-- UC0302Action2
+style ChildLayout6 opacity:0,stroke-opacity:0
+UC0302Action2 ChildLayout7@-- UC0302Action3
+style ChildLayout7 opacity:0,stroke-opacity:0
+UC0302Action4 ChildLayout8@-- UC0302Action5
+style ChildLayout8 opacity:0,stroke-opacity:0
+UC0302Action5 ChildLayout9@-- UC0302Action6
+style ChildLayout9 opacity:0,stroke-opacity:0
+UC0303Action1 ChildLayout10@-- UC0303Action2
+style ChildLayout10 opacity:0,stroke-opacity:0
+UC0303Action2 ChildLayout11@-- UC0303Action3
+style ChildLayout11 opacity:0,stroke-opacity:0
+UC0304Action1 ChildLayout12@-- UC0304Action2
+style ChildLayout12 opacity:0,stroke-opacity:0
+UC0304Action2 ChildLayout13@-- UC0304Action3
+style ChildLayout13 opacity:0,stroke-opacity:0
+UC0306Action1 ChildLayout14@-- UC0306Action2
+style ChildLayout14 opacity:0,stroke-opacity:0
+UC0306Action2 ChildLayout15@-- UC0306Action3
+style ChildLayout15 opacity:0,stroke-opacity:0
+UC0306Action4 ChildLayout16@-- UC0306Action5
+style ChildLayout16 opacity:0,stroke-opacity:0
+UC0401Action1 ChildLayout17@-- UC0401Action2
+style ChildLayout17 opacity:0,stroke-opacity:0
+UC0401Action2 ChildLayout18@-- UC0401Action3
+style ChildLayout18 opacity:0,stroke-opacity:0
+UC0401Action4 ChildLayout19@-- UC0401Action5
+style ChildLayout19 opacity:0,stroke-opacity:0
+UC0403Action1 ChildLayout20@-- UC0403Action2
+style ChildLayout20 opacity:0,stroke-opacity:0
+UC0403Action2 ChildLayout21@-- UC0403Action3
+style ChildLayout21 opacity:0,stroke-opacity:0
+UC0404Action1 ChildLayout22@-- UC0404Action2
+style ChildLayout22 opacity:0,stroke-opacity:0
+UC0404Action2 ChildLayout23@-- UC0404Action3
+style ChildLayout23 opacity:0,stroke-opacity:0
+UC0405Action1 ChildLayout24@-- UC0405Action2
+style ChildLayout24 opacity:0,stroke-opacity:0
+UC0405Action2 ChildLayout25@-- UC0405Action3
+style ChildLayout25 opacity:0,stroke-opacity:0
+UC0501Action1 ChildLayout26@-- UC0501Action2
+style ChildLayout26 opacity:0,stroke-opacity:0
+UC0501Action2 ChildLayout27@-- UC0501Action3
+style ChildLayout27 opacity:0,stroke-opacity:0
+UC0502Action1 ChildLayout28@-- UC0502Action2
+style ChildLayout28 opacity:0,stroke-opacity:0
+UC0502Action2 ChildLayout29@-- UC0502Action3
+style ChildLayout29 opacity:0,stroke-opacity:0
+UC0502Action4 ChildLayout30@-- UC0502Action5
+style ChildLayout30 opacity:0,stroke-opacity:0
+UC0502Action5 ChildLayout31@-- UC0502Action6
+style ChildLayout31 opacity:0,stroke-opacity:0
+UC0504Action1 ChildLayout32@-- UC0504Action2
+style ChildLayout32 opacity:0,stroke-opacity:0
+UC0504Action2 ChildLayout33@-- UC0504Action3
+style ChildLayout33 opacity:0,stroke-opacity:0
+UC0505Action1 ChildLayout34@-- UC0505Action2
+style ChildLayout34 opacity:0,stroke-opacity:0
+UC0505Action2 ChildLayout35@-- UC0505Action3
+style ChildLayout35 opacity:0,stroke-opacity:0
+UC0505Action4 ChildLayout36@-- UC0505Action5
+style ChildLayout36 opacity:0,stroke-opacity:0
+UC0505Action5 ChildLayout37@-- UC0505Action6
+style ChildLayout37 opacity:0,stroke-opacity:0
+UC0505Action7 ChildLayout38@-- UC0505Action8
+style ChildLayout38 opacity:0,stroke-opacity:0
+UC0506Action1 ChildLayout39@-- UC0506Action2
+style ChildLayout39 opacity:0,stroke-opacity:0
+UC0506Action2 ChildLayout40@-- UC0506Action3
+style ChildLayout40 opacity:0,stroke-opacity:0
+UC0506Action4 ChildLayout41@-- UC0506Action5
+style ChildLayout41 opacity:0,stroke-opacity:0
+UC0506Action5 ChildLayout42@-- UC0506Action6
+style ChildLayout42 opacity:0,stroke-opacity:0
+
+%% Account-level participation is inherited by specialized organization/platform actors.
+%% Edit profile reuses the existing self-profile editing case; it grants no role/assignment changes.
+Login -- AuthenticatedUser
+Logout -- AuthenticatedUser
+UC0601Action2 -- AuthenticatedUser
+ChangePassword -- AuthenticatedUser
+%% Extension condition: System Administrator account requires MFA; mandatory when this condition is true.
+SystemAdmin -- MfaAuthentication
+MfaAuthentication ..> : extend Login
+PlatformAdmin --|> AuthenticatedUser
+SystemAdmin --|> AuthenticatedUser
+Manager --|> AuthenticatedUser
+Expert --|> AuthenticatedUser
+Employee --|> AuthenticatedUser
+
+%% Shared profile editing is inherited through Authenticated User, not duplicated under Employee profile management.
+%% Hidden positioning links have no UML meaning.
+UC0508 AccountLayout0@-- Login
+style AccountLayout0 opacity:0,stroke-opacity:0
+UC0508 AccountLayout1@-- Logout
+style AccountLayout1 opacity:0,stroke-opacity:0
+UC0508 AccountLayout2@-- UC0601Action2
+style AccountLayout2 opacity:0,stroke-opacity:0
+UC0508 AccountLayout3@-- ChangePassword
+style AccountLayout3 opacity:0,stroke-opacity:0

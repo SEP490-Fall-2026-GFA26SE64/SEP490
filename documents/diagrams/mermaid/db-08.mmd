@@ -1,0 +1,178 @@
+---
+title: "DB-08 - Recommendation, pathway, analytics and evaluation V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_08_t_recommendation_version["recommendation_version"] {
+    <<table>>
+    uuid recommendation_version_id PK_REQUIRED
+    uuid approved_by FK_NULLABLE
+  }
+  class SDD_DB_08_t_recommendation_run["recommendation_run"] {
+    <<table>>
+    uuid recommendation_run_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid selection_id FK_REQUIRED
+    uuid profile_revision_id FK_REQUIRED
+    uuid progress_revision_id FK_REQUIRED
+    uuid catalog_release_id FK_REQUIRED
+    uuid policy_version_id FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid recommendation_version_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_recommendation_candidate["recommendation_candidate"] {
+    <<table>>
+    uuid recommendation_run_id PK_FK_REQUIRED
+    integer rank PK_REQUIRED
+    uuid module_ref_id FK_REQUIRED
+    text module_kind FK_REQUIRED
+  }
+  class SDD_DB_08_t_pathway_revision["pathway_revision"] {
+    <<table>>
+    uuid pathway_revision_id PK_REQUIRED
+    uuid recommendation_run_id FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid selection_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_pathway_step["pathway_step"] {
+    <<table>>
+    uuid step_id PK_REQUIRED
+    uuid pathway_revision_id FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid activity_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_pathway_approval["pathway_approval"] {
+    <<table>>
+    uuid approval_id PK_REQUIRED
+    uuid pathway_revision_id FK_REQUIRED
+    uuid administrator_id FK_REQUIRED
+    platform_content_hash approved_hash FK_REQUIRED
+  }
+  class SDD_DB_08_t_publication_request["publication_request"] {
+    <<table>>
+    uuid publication_request_id PK_REQUIRED
+    uuid actor_id FK_REQUIRED
+    uuid pathway_revision_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_cohort_snapshot["cohort_snapshot"] {
+    <<table>>
+    uuid cohort_snapshot_id PK_REQUIRED
+    uuid created_by FK_REQUIRED
+    uuid role_ref_id FK_REQUIRED
+    text role_kind FK_REQUIRED
+  }
+  class SDD_DB_08_t_cohort_member["cohort_member"] {
+    <<table>>
+    uuid cohort_snapshot_id PK_FK_REQUIRED
+    uuid learner_id PK_FK_REQUIRED
+    uuid before_profile_revision_id FK_NULLABLE
+    uuid after_profile_revision_id FK_NULLABLE
+  }
+  class SDD_DB_08_t_analytics_snapshot["analytics_snapshot"] {
+    <<table>>
+    uuid analytics_snapshot_id PK_REQUIRED
+    uuid cohort_snapshot_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_roi_scenario["roi_scenario"] {
+    <<table>>
+    uuid scenario_id PK_REQUIRED
+    uuid owner_id FK_REQUIRED
+    uuid cohort_snapshot_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_evaluation_run["evaluation_run"] {
+    <<table>>
+    uuid evaluation_run_id PK_REQUIRED
+    uuid created_by FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid recommendation_version_id FK_REQUIRED
+    uuid catalog_release_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_evaluation_artifact["evaluation_artifact"] {
+    <<table>>
+    uuid artifact_id PK_REQUIRED
+    uuid evaluation_run_id FK_REQUIRED
+  }
+  class SDD_DB_08_t_account["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_catalog_reference["catalog_reference"] {
+    <<external>>
+    uuid catalog_ref_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_catalog_release["catalog_release"] {
+    <<external>>
+    uuid release_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_evidence_policy_version["evidence_policy_version"] {
+    <<external>>
+    uuid policy_version_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_learner_state["learner_state"] {
+    <<external>>
+    uuid learner_id PK_FK_REQUIRED
+  }
+  class SDD_DB_08_t_learning_activity["learning_activity"] {
+    <<external>>
+    uuid activity_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_model_version["model_version"] {
+    <<external>>
+    uuid model_version_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_profile_revision["profile_revision"] {
+    <<external>>
+    uuid profile_revision_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_progress_revision["progress_revision"] {
+    <<external>>
+    uuid progress_revision_id PK_REQUIRED
+  }
+  class SDD_DB_08_t_target_selection["target_selection"] {
+    <<external>>
+    uuid selection_id PK_REQUIRED
+  }
+  SDD_DB_08_t_cohort_snapshot --> SDD_DB_08_t_analytics_snapshot : FK010
+  SDD_DB_08_t_profile_revision ..> SDD_DB_08_t_cohort_member : FK100
+  SDD_DB_08_t_profile_revision ..> SDD_DB_08_t_cohort_member : FK101
+  SDD_DB_08_t_cohort_snapshot --> SDD_DB_08_t_cohort_member : FK102
+  SDD_DB_08_t_learner_state ..> SDD_DB_08_t_cohort_member : FK103
+  SDD_DB_08_t_account ..> SDD_DB_08_t_cohort_snapshot : FK104
+  SDD_DB_08_t_catalog_reference ..> SDD_DB_08_t_cohort_snapshot : FK105
+  SDD_DB_08_t_evaluation_run --> SDD_DB_08_t_evaluation_artifact : FK114
+  SDD_DB_08_t_catalog_release ..> SDD_DB_08_t_evaluation_run : FK115
+  SDD_DB_08_t_account ..> SDD_DB_08_t_evaluation_run : FK116
+  SDD_DB_08_t_model_version ..> SDD_DB_08_t_evaluation_run : FK117
+  SDD_DB_08_t_recommendation_version --> SDD_DB_08_t_evaluation_run : FK118
+  SDD_DB_08_t_account ..> SDD_DB_08_t_pathway_approval : FK170
+  SDD_DB_08_t_pathway_revision --> SDD_DB_08_t_pathway_approval : FK171
+  SDD_DB_08_t_recommendation_run --> SDD_DB_08_t_pathway_revision : FK172
+  SDD_DB_08_t_learning_activity ..> SDD_DB_08_t_pathway_step : FK173
+  SDD_DB_08_t_pathway_revision --> SDD_DB_08_t_pathway_step : FK174
+  SDD_DB_08_t_account ..> SDD_DB_08_t_publication_request : FK194
+  SDD_DB_08_t_pathway_revision --> SDD_DB_08_t_publication_request : FK195
+  SDD_DB_08_t_catalog_reference ..> SDD_DB_08_t_recommendation_candidate : FK197
+  SDD_DB_08_t_recommendation_run --> SDD_DB_08_t_recommendation_candidate : FK198
+  SDD_DB_08_t_catalog_release ..> SDD_DB_08_t_recommendation_run : FK199
+  SDD_DB_08_t_model_version ..> SDD_DB_08_t_recommendation_run : FK200
+  SDD_DB_08_t_evidence_policy_version ..> SDD_DB_08_t_recommendation_run : FK201
+  SDD_DB_08_t_profile_revision ..> SDD_DB_08_t_recommendation_run : FK202
+  SDD_DB_08_t_profile_revision ..> SDD_DB_08_t_recommendation_run : FK203
+  SDD_DB_08_t_progress_revision ..> SDD_DB_08_t_recommendation_run : FK204
+  SDD_DB_08_t_recommendation_version --> SDD_DB_08_t_recommendation_run : FK205
+  SDD_DB_08_t_target_selection ..> SDD_DB_08_t_recommendation_run : FK206
+  SDD_DB_08_t_account ..> SDD_DB_08_t_recommendation_version : FK207
+  SDD_DB_08_t_cohort_snapshot --> SDD_DB_08_t_roi_scenario : FK210
+  SDD_DB_08_t_account ..> SDD_DB_08_t_roi_scenario : FK211
+
+  style SDD_DB_08_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_catalog_reference fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_catalog_release fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_evidence_policy_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_learner_state fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_learning_activity fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_model_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_profile_revision fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_progress_revision fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_08_t_target_selection fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

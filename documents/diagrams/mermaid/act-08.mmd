@@ -1,0 +1,30 @@
+---
+title: "ACT-08 - Development reporting and financial accountability (target)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart TD
+    SRS_ACT_08_N1(("Start"))
+    SRS_ACT_08_N2["<b>L and D Manager</b><br/>Select department, occupation<br/>and reporting period"]
+    SRS_ACT_08_N3["<b>L and D Manager</b><br/>Record or correct training costs<br/>and monetary benefits"]
+    SRS_ACT_08_N4["<b>L and D Manager</b><br/>Supply currency, period and<br/>supporting basis"]
+    SRS_ACT_08_N8["<b>L and D Manager</b><br/>Review employee and department<br/>development summaries"]
+    SRS_ACT_08_N9(("End"))
+    SRS_ACT_08_N5{"<b>System</b><br/>Financial inputs comparable and<br/>valid?"}
+    SRS_ACT_08_N6["<b>System</b><br/>Aggregate permitted results and<br/>calculate defined ROI"]
+    SRS_ACT_08_N7["<b>System</b><br/>Show missing, zero-cost or<br/>currency exception explicitly"]
+  SRS_ACT_08_N1 --> SRS_ACT_08_N2
+  SRS_ACT_08_N2 --> SRS_ACT_08_N3
+  SRS_ACT_08_N3 --> SRS_ACT_08_N4
+  SRS_ACT_08_N4 --> SRS_ACT_08_N5
+  SRS_ACT_08_N5 -->|"yes"| SRS_ACT_08_N6
+  SRS_ACT_08_N5 -->|"no"| SRS_ACT_08_N7
+  SRS_ACT_08_N6 --> SRS_ACT_08_N8
+  SRS_ACT_08_N7 --> SRS_ACT_08_N8
+  SRS_ACT_08_N8 --> SRS_ACT_08_N9
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_ACT_08_N5 decision
+  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+  class SRS_ACT_08_N1,SRS_ACT_08_N9 entry
+

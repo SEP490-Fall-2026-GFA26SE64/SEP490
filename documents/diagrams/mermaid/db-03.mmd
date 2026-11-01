@@ -1,0 +1,335 @@
+---
+title: "DB-03 - Shared and legacy assessment, evidence and learning V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_03_t_evidence_policy_version["evidence_policy_version"] {
+    <<table>>
+    uuid policy_version_id PK_REQUIRED
+    uuid approved_by FK_NULLABLE
+  }
+  class SDD_DB_03_t_model_version["model_version"] {
+    <<table>>
+    uuid model_version_id PK_REQUIRED
+    uuid approved_by FK_NULLABLE
+  }
+  class SDD_DB_03_t_question_bank["question_bank"] {
+    <<table>>
+    uuid question_bank_id PK_REQUIRED
+    uuid created_by FK_REQUIRED
+  }
+  class SDD_DB_03_t_item_version["item_version"] {
+    <<table>>
+    uuid item_version_id PK_REQUIRED
+    uuid question_bank_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_assessment_version["assessment_version"] {
+    <<table>>
+    uuid assessment_version_id PK_REQUIRED
+    uuid blueprint_id FK_NULLABLE
+    integer blueprint_version FK_NULLABLE
+    uuid created_by FK_NULLABLE
+    uuid reviewed_by FK_NULLABLE
+  }
+  class SDD_DB_03_t_assessment_availability["assessment_availability"] {
+    <<table>>
+    uuid assessment_version_id PK_FK_REQUIRED
+    bigint revision PK_REQUIRED
+    uuid decided_by FK_REQUIRED
+  }
+  class SDD_DB_03_t_assessment_item["assessment_item"] {
+    <<table>>
+    uuid assessment_version_id PK_FK_REQUIRED
+    integer item_position PK_REQUIRED
+    uuid item_version_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_item_skill_mapping["item_skill_mapping"] {
+    <<table>>
+    uuid mapping_version_id PK_REQUIRED
+    uuid item_version_id FK_REQUIRED
+    uuid skill_ref_id FK_REQUIRED
+    text skill_kind FK_REQUIRED
+  }
+  class SDD_DB_03_t_baseline_blueprint["baseline_blueprint"] {
+    <<table>>
+    uuid blueprint_id PK_REQUIRED
+    uuid created_by FK_REQUIRED
+    uuid organization_id FK_NULLABLE
+  }
+  class SDD_DB_03_t_baseline_blueprint_version["baseline_blueprint_version"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer version PK_REQUIRED
+    uuid created_by FK_REQUIRED
+  }
+  class SDD_DB_03_t_baseline_blueprint_role["baseline_blueprint_role"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer blueprint_version PK_FK_REQUIRED
+    text role_id PK_REQUIRED
+  }
+  class SDD_DB_03_t_baseline_blueprint_skill["baseline_blueprint_skill"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer blueprint_version PK_FK_REQUIRED
+    text role_id PK_FK_REQUIRED
+    text micro_skill_id PK_REQUIRED
+  }
+  class SDD_DB_03_t_baseline_assessment_series["baseline_assessment_series"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    text occupation_id PK_FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+    uuid working_revision_id FK_NULLABLE
+    integer pending_blueprint_version FK_NULLABLE
+    uuid open_assessment_version_id FK_NULLABLE
+    uuid active_assessment_version_id FK_NULLABLE
+  }
+  class SDD_DB_03_t_baseline_blueprint_working_revision["baseline_blueprint_working_<br/>revision"] {
+    <<table>>
+    uuid working_revision_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+    integer base_version FK_NULLABLE
+    uuid created_by FK_REQUIRED
+    uuid updated_by FK_REQUIRED
+  }
+  class SDD_DB_03_t_baseline_assessment_transition["baseline_assessment_transition"] {
+    <<table>>
+    uuid transition_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    uuid actor_id FK_REQUIRED
+    uuid previous_working_revision_id FK_NULLABLE
+    uuid previous_pending_blueprint_id FK_NULLABLE
+    integer previous_pending_blueprint_version FK_NULLABLE
+    uuid previous_open_assessment_version_id FK_NULLABLE
+    uuid previous_active_assessment_version_id FK_NULLABLE
+    uuid working_revision_id FK_NULLABLE
+    uuid pending_blueprint_id FK_NULLABLE
+    integer pending_blueprint_version FK_NULLABLE
+    uuid open_assessment_version_id FK_NULLABLE
+    uuid active_assessment_version_id FK_NULLABLE
+  }
+  class SDD_DB_03_t_baseline_management_command["baseline_management_command"] {
+    <<table>>
+    uuid actor_id PK_FK_REQUIRED
+    text idempotency_key PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_baseline_answer_reveal_audit["baseline_answer_reveal_audit"] {
+    <<table>>
+    uuid answer_reveal_audit_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid assessment_version_id FK_REQUIRED
+    uuid actor_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_module_assessment_binding["module_assessment_binding"] {
+    <<table>>
+    uuid module_ref_id PK_FK_REQUIRED
+    text module_kind FK_REQUIRED
+    uuid assessment_version_id PK_FK_REQUIRED
+    text assessment_purpose FK_REQUIRED
+  }
+  class SDD_DB_03_t_learning_activity["learning_activity"] {
+    <<table>>
+    uuid activity_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid module_ref_id FK_REQUIRED
+    text module_kind FK_REQUIRED
+  }
+  class SDD_DB_03_t_activity_requirement["activity_requirement"] {
+    <<table>>
+    uuid activity_id PK_FK_REQUIRED
+    uuid module_ref_id FK_REQUIRED
+    uuid assessment_version_id PK_FK_REQUIRED
+    boolean required FK_REQUIRED
+    platform_content_hash manifest_hash FK_REQUIRED
+  }
+  class SDD_DB_03_t_assessment_assignment["assessment_assignment"] {
+    <<table>>
+    uuid assignment_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid assessment_version_id FK_REQUIRED
+    text purpose FK_REQUIRED
+    uuid activity_id FK_NULLABLE
+  }
+  class SDD_DB_03_t_assessment_attempt["assessment_attempt"] {
+    <<table>>
+    uuid attempt_id PK_REQUIRED
+    uuid assignment_id FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid assessment_version_id FK_REQUIRED
+    uuid activity_context FK_NULLABLE
+  }
+  class SDD_DB_03_t_item_response["item_response"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    integer item_position PK_FK_REQUIRED
+    uuid assessment_version_id FK_REQUIRED
+    uuid item_version_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_assessment_result["assessment_result"] {
+    <<table>>
+    uuid attempt_id PK_FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid assessment_version_id FK_REQUIRED
+    uuid activity_context FK_NULLABLE
+  }
+  class SDD_DB_03_t_evidence_observation["evidence_observation"] {
+    <<table>>
+    uuid observation_id PK_REQUIRED
+    uuid attempt_id FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    integer item_position FK_REQUIRED
+    uuid item_version_id FK_REQUIRED
+    uuid mapping_version_id FK_REQUIRED
+    uuid skill_ref_id FK_REQUIRED
+    platform_positive_weight weight FK_REQUIRED
+  }
+  class SDD_DB_03_t_processing_stream["processing_stream"] {
+    <<table>>
+    uuid processing_stream_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid policy_version_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_profile_revision["profile_revision"] {
+    <<table>>
+    uuid profile_revision_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid processing_stream_id FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid policy_version_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_mastery_estimate["mastery_estimate"] {
+    <<table>>
+    uuid profile_revision_id PK_FK_REQUIRED
+    uuid skill_ref_id PK_FK_REQUIRED
+    text skill_kind FK_REQUIRED
+  }
+  class SDD_DB_03_t_evidence_application["evidence_application"] {
+    <<table>>
+    uuid processing_stream_id PK_FK_REQUIRED
+    uuid observation_id PK_FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid profile_revision_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_progress_revision["progress_revision"] {
+    <<table>>
+    uuid progress_revision_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_module_completion["module_completion"] {
+    <<table>>
+    uuid activity_id PK_FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid progress_revision_id FK_REQUIRED
+  }
+  class SDD_DB_03_t_completion_pass["completion_pass"] {
+    <<table>>
+    uuid activity_id PK_FK_REQUIRED
+    uuid assessment_version_id PK_FK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid attempt_id FK_REQUIRED
+    boolean passed FK_REQUIRED
+  }
+  class SDD_DB_03_t_account["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class SDD_DB_03_t_catalog_reference["catalog_reference"] {
+    <<external>>
+    uuid catalog_ref_id PK_REQUIRED
+  }
+  class SDD_DB_03_t_learner_state["learner_state"] {
+    <<external>>
+    uuid learner_id PK_FK_REQUIRED
+  }
+  class SDD_DB_03_t_organization["organization"] {
+    <<external>>
+    uuid organization_id PK_REQUIRED
+  }
+  SDD_DB_03_t_learning_activity --> SDD_DB_03_t_activity_requirement : FK008
+  SDD_DB_03_t_module_assessment_binding --> SDD_DB_03_t_activity_requirement : FK009
+  SDD_DB_03_t_activity_requirement --> SDD_DB_03_t_assessment_assignment : FK011
+  SDD_DB_03_t_learning_activity --> SDD_DB_03_t_assessment_assignment : FK012
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_assessment_assignment : FK013
+  SDD_DB_03_t_learner_state ..> SDD_DB_03_t_assessment_assignment : FK014
+  SDD_DB_03_t_assessment_assignment --> SDD_DB_03_t_assessment_attempt : FK015
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_assessment_availability : FK016
+  SDD_DB_03_t_account ..> SDD_DB_03_t_assessment_availability : FK017
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_assessment_item : FK018
+  SDD_DB_03_t_item_version --> SDD_DB_03_t_assessment_item : FK019
+  SDD_DB_03_t_assessment_attempt --> SDD_DB_03_t_assessment_result : FK020
+  SDD_DB_03_t_baseline_blueprint_version --> SDD_DB_03_t_assessment_version : FK021
+  SDD_DB_03_t_account ..> SDD_DB_03_t_assessment_version : FK022
+  SDD_DB_03_t_account ..> SDD_DB_03_t_assessment_version : FK023
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_answer_reveal_audit : FK040
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_answer_reveal_audit : FK041
+  SDD_DB_03_t_organization ..> SDD_DB_03_t_baseline_answer_reveal_audit : FK042
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_assessment_series : FK043
+  SDD_DB_03_t_baseline_blueprint --> SDD_DB_03_t_baseline_assessment_series : FK044
+  SDD_DB_03_t_baseline_blueprint_version --> SDD_DB_03_t_baseline_assessment_series : FK045
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_assessment_series : FK046
+  SDD_DB_03_t_organization ..> SDD_DB_03_t_baseline_assessment_series : FK047
+  SDD_DB_03_t_baseline_blueprint_working_revision --> SDD_DB_03_t_baseline_assessment_series : FK048
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_assessment_transition : FK049
+  SDD_DB_03_t_baseline_assessment_series --> SDD_DB_03_t_baseline_assessment_transition : FK050
+  SDD_DB_03_t_baseline_blueprint_version --> SDD_DB_03_t_baseline_assessment_transition : FK051
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_assessment_transition : FK052
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_assessment_transition : FK053
+  SDD_DB_03_t_baseline_blueprint_version --> SDD_DB_03_t_baseline_assessment_transition : FK054
+  SDD_DB_03_t_baseline_blueprint_working_revision --> SDD_DB_03_t_baseline_assessment_transition : FK055
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_assessment_transition : FK056
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_baseline_assessment_transition : FK057
+  SDD_DB_03_t_baseline_blueprint_working_revision --> SDD_DB_03_t_baseline_assessment_transition : FK058
+  SDD_DB_03_t_baseline_blueprint_version --> SDD_DB_03_t_baseline_blueprint_role : FK079
+  SDD_DB_03_t_baseline_blueprint_role --> SDD_DB_03_t_baseline_blueprint_skill : FK080
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_blueprint_version : FK082
+  SDD_DB_03_t_baseline_blueprint --> SDD_DB_03_t_baseline_blueprint_version : FK083
+  SDD_DB_03_t_baseline_assessment_series --> SDD_DB_03_t_baseline_blueprint_working_revision : FK085
+  SDD_DB_03_t_baseline_blueprint_version --> SDD_DB_03_t_baseline_blueprint_working_revision : FK086
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_blueprint_working_revision : FK087
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_blueprint_working_revision : FK088
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_blueprint : FK089
+  SDD_DB_03_t_organization ..> SDD_DB_03_t_baseline_blueprint : FK090
+  SDD_DB_03_t_account ..> SDD_DB_03_t_baseline_management_command : FK091
+  SDD_DB_03_t_baseline_assessment_series --> SDD_DB_03_t_baseline_management_command : FK092
+  SDD_DB_03_t_activity_requirement --> SDD_DB_03_t_completion_pass : FK106
+  SDD_DB_03_t_module_completion --> SDD_DB_03_t_completion_pass : FK107
+  SDD_DB_03_t_assessment_result --> SDD_DB_03_t_completion_pass : FK108
+  SDD_DB_03_t_evidence_observation --> SDD_DB_03_t_evidence_application : FK119
+  SDD_DB_03_t_profile_revision --> SDD_DB_03_t_evidence_application : FK120
+  SDD_DB_03_t_item_response --> SDD_DB_03_t_evidence_observation : FK121
+  SDD_DB_03_t_assessment_attempt --> SDD_DB_03_t_evidence_observation : FK122
+  SDD_DB_03_t_item_skill_mapping --> SDD_DB_03_t_evidence_observation : FK123
+  SDD_DB_03_t_account ..> SDD_DB_03_t_evidence_policy_version : FK124
+  SDD_DB_03_t_assessment_item --> SDD_DB_03_t_item_response : FK140
+  SDD_DB_03_t_assessment_attempt --> SDD_DB_03_t_item_response : FK141
+  SDD_DB_03_t_item_version --> SDD_DB_03_t_item_skill_mapping : FK142
+  SDD_DB_03_t_catalog_reference ..> SDD_DB_03_t_item_skill_mapping : FK143
+  SDD_DB_03_t_question_bank --> SDD_DB_03_t_item_version : FK144
+  SDD_DB_03_t_learner_state ..> SDD_DB_03_t_learning_activity : FK146
+  SDD_DB_03_t_catalog_reference ..> SDD_DB_03_t_learning_activity : FK147
+  SDD_DB_03_t_profile_revision --> SDD_DB_03_t_mastery_estimate : FK150
+  SDD_DB_03_t_catalog_reference ..> SDD_DB_03_t_mastery_estimate : FK151
+  SDD_DB_03_t_account ..> SDD_DB_03_t_model_version : FK152
+  SDD_DB_03_t_assessment_version --> SDD_DB_03_t_module_assessment_binding : FK153
+  SDD_DB_03_t_catalog_reference ..> SDD_DB_03_t_module_assessment_binding : FK154
+  SDD_DB_03_t_learning_activity --> SDD_DB_03_t_module_completion : FK155
+  SDD_DB_03_t_progress_revision --> SDD_DB_03_t_module_completion : FK156
+  SDD_DB_03_t_learner_state ..> SDD_DB_03_t_processing_stream : FK189
+  SDD_DB_03_t_model_version --> SDD_DB_03_t_processing_stream : FK190
+  SDD_DB_03_t_evidence_policy_version --> SDD_DB_03_t_processing_stream : FK191
+  SDD_DB_03_t_processing_stream --> SDD_DB_03_t_profile_revision : FK192
+  SDD_DB_03_t_learner_state ..> SDD_DB_03_t_progress_revision : FK193
+  SDD_DB_03_t_account ..> SDD_DB_03_t_question_bank : FK196
+
+  style SDD_DB_03_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_03_t_catalog_reference fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_03_t_learner_state fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_03_t_organization fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

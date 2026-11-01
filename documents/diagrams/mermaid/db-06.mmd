@@ -1,0 +1,87 @@
+---
+title: "DB-06 - IRT calibration and parameter selection V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_06_t_mastery_mapping_version["mastery_mapping_version"] {
+    <<table>>
+    uuid mastery_mapping_version_id PK_REQUIRED
+  }
+  class SDD_DB_06_t_irt_calibration_run["irt_calibration_run"] {
+    <<table>>
+    uuid calibration_run_id PK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid output_parameter_set_id FK_NULLABLE
+  }
+  class SDD_DB_06_t_irt_parameter_set["irt_parameter_set"] {
+    <<table>>
+    uuid parameter_set_id PK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid activated_by FK_NULLABLE
+  }
+  class SDD_DB_06_t_irt_item_parameter["irt_item_parameter"] {
+    <<table>>
+    uuid parameter_set_id PK_FK_REQUIRED
+    uuid item_version_id PK_FK_REQUIRED
+    text micro_skill_id PK_FK_REQUIRED
+  }
+  class SDD_DB_06_t_irt_effective_parameter_selection["irt_effective_parameter_selection"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid question_bank_id PK_FK_REQUIRED
+    uuid model_version_id PK_FK_REQUIRED
+    uuid parameter_set_id FK_REQUIRED
+    uuid selected_by FK_REQUIRED
+  }
+  class SDD_DB_06_t_irt_parameter_promotion_command["irt_parameter_promotion_command"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid actor_id PK_FK_REQUIRED
+    text idempotency_key PK_REQUIRED
+    uuid question_bank_id FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid parameter_set_id FK_REQUIRED
+    uuid expected_parameter_set_id FK_NULLABLE
+  }
+  class SDD_DB_06_t_account["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class SDD_DB_06_t_item_version["item_version"] {
+    <<external>>
+    uuid item_version_id PK_REQUIRED
+  }
+  class SDD_DB_06_t_model_version["model_version"] {
+    <<external>>
+    uuid model_version_id PK_REQUIRED
+  }
+  class SDD_DB_06_t_organization["organization"] {
+    <<external>>
+    uuid organization_id PK_REQUIRED
+  }
+  class SDD_DB_06_t_question_bank["question_bank"] {
+    <<external>>
+    uuid question_bank_id PK_REQUIRED
+  }
+  SDD_DB_06_t_model_version ..> SDD_DB_06_t_irt_calibration_run : FK125
+  SDD_DB_06_t_irt_parameter_set --> SDD_DB_06_t_irt_calibration_run : FK126
+  SDD_DB_06_t_irt_parameter_set --> SDD_DB_06_t_irt_effective_parameter_selection : FK127
+  SDD_DB_06_t_account ..> SDD_DB_06_t_irt_effective_parameter_selection : FK128
+  SDD_DB_06_t_model_version ..> SDD_DB_06_t_irt_effective_parameter_selection : FK129
+  SDD_DB_06_t_organization ..> SDD_DB_06_t_irt_effective_parameter_selection : FK130
+  SDD_DB_06_t_question_bank ..> SDD_DB_06_t_irt_effective_parameter_selection : FK131
+  SDD_DB_06_t_item_version ..> SDD_DB_06_t_irt_item_parameter : FK132
+  SDD_DB_06_t_irt_parameter_set --> SDD_DB_06_t_irt_item_parameter : FK133
+  SDD_DB_06_t_irt_parameter_set --> SDD_DB_06_t_irt_parameter_promotion_command : FK134
+  SDD_DB_06_t_irt_effective_parameter_selection --> SDD_DB_06_t_irt_parameter_promotion_command : FK135
+  SDD_DB_06_t_irt_parameter_set --> SDD_DB_06_t_irt_parameter_promotion_command : FK136
+  SDD_DB_06_t_account ..> SDD_DB_06_t_irt_parameter_promotion_command : FK137
+  SDD_DB_06_t_account ..> SDD_DB_06_t_irt_parameter_set : FK138
+  SDD_DB_06_t_model_version ..> SDD_DB_06_t_irt_parameter_set : FK139
+
+  style SDD_DB_06_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_06_t_item_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_06_t_model_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_06_t_organization fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_06_t_question_bank fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

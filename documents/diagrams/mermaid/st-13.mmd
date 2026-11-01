@@ -1,0 +1,26 @@
+---
+title: "ST-13 - Adaptive blueprint working row and released availability"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+stateDiagram-v2
+  state "Working revision (persisted)" as SDD_ST_13_Working {
+    state "OPEN" as SDD_ST_13_OPEN
+    state "FINALIZED" as SDD_ST_13_FINALIZED
+    state "ABANDONED" as SDD_ST_13_ABANDONED
+    [*] --> SDD_ST_13_OPEN
+    SDD_ST_13_OPEN --> SDD_ST_13_OPEN : revision-checked save / no-op receipt
+    SDD_ST_13_OPEN --> SDD_ST_13_FINALIZED : successful activation
+    SDD_ST_13_OPEN --> SDD_ST_13_ABANDONED : explicit confirmed discard
+  }
+  state "Released version (derived<br/>availability)" as SDD_ST_13_Released {
+    state "Active" as SDD_ST_13_Active
+    state "Retiring" as SDD_ST_13_Retiring
+    state "Inactive" as SDD_ST_13_Inactive
+    [*] --> SDD_ST_13_Active : current activation pointer
+    SDD_ST_13_Active --> SDD_ST_13_Retiring : pointer replaced/disabled, pinned<br/>IN_PROGRESS exists
+    SDD_ST_13_Active --> SDD_ST_13_Inactive : pointer replaced/disabled, no IN_PROGRESS
+    SDD_ST_13_Retiring --> SDD_ST_13_Inactive : last pinned attempt genuinely finalized
+  }
+
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_13_OPEN,SDD_ST_13_Active working

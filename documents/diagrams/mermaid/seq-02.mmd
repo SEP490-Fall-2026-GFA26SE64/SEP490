@@ -1,0 +1,32 @@
+---
+title: "SEQ-02 - Trusted workspace identity"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  actor SDD_SEQ_02_User as User
+  participant SDD_SEQ_02_UI as Login UI
+  participant SDD_SEQ_02_API as WorkspaceAuthenticationController
+  participant SDD_SEQ_02_Auth as WorkspaceAuthenticationService
+  participant SDD_SEQ_02_DB as Identity / registration<br/>stores
+  participant SDD_SEQ_02_Guard as Entitlement / assignment<br/>guard
+  SDD_SEQ_02_User->>SDD_SEQ_02_UI: email and password
+  SDD_SEQ_02_UI->>SDD_SEQ_02_API: sign in
+  SDD_SEQ_02_API->>SDD_SEQ_02_Auth: signIn(...)
+  SDD_SEQ_02_Auth->>SDD_SEQ_02_DB: lock current credential and membership
+  SDD_SEQ_02_Auth->>SDD_SEQ_02_Auth: verify password and exactly one role
+  alt Organization Administrator requires MFA
+  SDD_SEQ_02_Auth-->>SDD_SEQ_02_UI: enrollment/challenge stage
+  SDD_SEQ_02_User->>SDD_SEQ_02_UI: valid authenticator proof
+  SDD_SEQ_02_UI->>SDD_SEQ_02_API: verify proof
+  SDD_SEQ_02_API->>SDD_SEQ_02_Auth: verifyTotp(...)
+  SDD_SEQ_02_Auth->>SDD_SEQ_02_DB: replay-safe accepted TOTP step
+  else other eligible single role
+  SDD_SEQ_02_Auth-->>SDD_SEQ_02_API: full principal
+  end
+  SDD_SEQ_02_API-->>SDD_SEQ_02_UI: server session / safe identity
+  SDD_SEQ_02_User->>SDD_SEQ_02_UI: protected action
+  SDD_SEQ_02_UI->>SDD_SEQ_02_Guard: authenticated request
+  SDD_SEQ_02_Guard->>SDD_SEQ_02_DB: recheck membership and paid access
+  SDD_SEQ_02_Guard->>SDD_SEQ_02_Guard: verify resource organization/assignment
+  SDD_SEQ_02_Guard-->>SDD_SEQ_02_UI: allowed result or explicit denial

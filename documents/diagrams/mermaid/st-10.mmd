@@ -1,0 +1,24 @@
+---
+title: "ST-10 - Target role configuration/publication (Version 2 target)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+stateDiagram-v2
+  state "Draft" as SDD_ST_10_Draft
+  state "Submitted" as SDD_ST_10_Submitted
+  state "RevisionRequested" as SDD_ST_10_RevisionRequested
+  state "Published" as SDD_ST_10_Published
+  state "Unpublished" as SDD_ST_10_Unpublished
+  [*] --> SDD_ST_10_Draft : L and D creates and assigns
+  SDD_ST_10_Draft --> SDD_ST_10_Submitted : assigned Expert submits complete version
+  SDD_ST_10_Submitted --> SDD_ST_10_RevisionRequested : L and D returns with feedback
+  SDD_ST_10_RevisionRequested --> SDD_ST_10_Draft : Expert revises
+  SDD_ST_10_Submitted --> SDD_ST_10_Published : L and D publishes exact version
+  SDD_ST_10_Published --> SDD_ST_10_Unpublished : L and D unpublishes
+  SDD_ST_10_Unpublished --> SDD_ST_10_Draft : create revised working version
+  SDD_ST_10_Published --> SDD_ST_10_Draft : create successor draft, retain published<br/>history
+
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_10_Published accepted
+
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_10_Draft,SDD_ST_10_Submitted working

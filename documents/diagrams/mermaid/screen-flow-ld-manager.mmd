@@ -1,0 +1,74 @@
+---
+title: "L&D Manager Screen Flow"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#000000", primaryBorderColor: "#000000", lineColor: "#000000", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 30, rankSpacing: 65, padding: 16}
+  elk: {mergeEdges: false}
+---
+flowchart LR
+  L_Login["Login"]
+  L_Occupations["Occupations"]
+  L_OccupationForm("Occupation Editor")
+  L_Experts("Expert Assignment")
+  L_Roles["Target Roles"]
+  L_RoleForm("Create Role")
+  L_RoleEdit("Edit Role")
+  L_Publication("Role Publication")
+  L_Baselines["Baseline List"]
+  L_Choose("Occupation Selection")
+  L_Disable("Deactivate Baseline")
+  L_Config["Baseline Configuration"]
+  L_Preview("Baseline Preview")
+  L_Confirmation("Action Confirmation")
+  L_Approvals["Content Approvals"]
+  L_Submission("Submission Details")
+  L_Revision("Revision Feedback")
+  L_Matrix["Team Matrix"]
+  L_Outcomes["Learning Outcomes"]
+  L_Profile["Profile"]
+
+  L_Login -->|"Continue"| L_Occupations
+  L_Occupations -->|"Create / edit occupation"| L_OccupationForm
+  L_OccupationForm -->|"Save / close"| L_Occupations
+  L_Occupations -->|"Assign Experts"| L_Experts
+  L_Experts -->|"Apply / close"| L_Occupations
+  L_Occupations --> L_Roles
+  L_Roles -->|"Create role"| L_RoleForm
+  L_RoleForm -->|"Save / close"| L_Roles
+  L_Roles -->|"Edit role"| L_RoleEdit
+  L_RoleEdit -->|"Save / close"| L_Roles
+  L_Roles -->|"Publication action"| L_Publication
+  L_Publication -->|"Confirm / close"| L_Roles
+  L_Occupations --> L_Baselines
+  L_Baselines -->|"Choose Occupation"| L_Choose
+  L_Choose -->|"Select"| L_Config
+  L_Choose -->|"Cancel"| L_Baselines
+  L_Baselines -->|"Manage"| L_Config
+  L_Config -->|"Back (guarded)"| L_Baselines
+  L_Baselines -->|"Deactivate active version"| L_Disable
+  L_Disable -->|"Confirm / cancel"| L_Baselines
+  L_Config -->|"Preview saved Draft"| L_Preview
+  L_Preview -->|"Close"| L_Config
+  L_Config -->|"Confirm action"| L_Confirmation
+  L_Confirmation -->|"Confirm / cancel"| L_Config
+  L_Occupations --> L_Approvals
+  L_Approvals -->|"View submission"| L_Submission
+  L_Submission -->|"Close"| L_Approvals
+  L_Approvals -->|"Request revision"| L_Revision
+  L_Revision -->|"Send feedback / cancel"| L_Approvals
+  L_Occupations --> L_Matrix
+  L_Occupations --> L_Outcomes
+  L_Occupations -->|"User menu"| L_Profile
+  L_Profile -.->|"Direct access"| L_Occupations
+  L_Occupations -->|"Logout"| L_Login
+
+  %% Sidebar actions are available from every WorkspaceLayout page; the diagram uses the default landing page as the hub.
+  %% /ld-manager/baseline-config redirects to the baseline directory, not a separate configuration page.
+  %% Draft and blueprint/version query parameters select inline states of the same Occupation configuration page.
+  %% /ld-manager/dashboard and /ld-manager/learning-outcomes render the same Dashboard component.
+  %% /ld-manager/users redirects to System Administrator user management; it does not grant L&D access.
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px

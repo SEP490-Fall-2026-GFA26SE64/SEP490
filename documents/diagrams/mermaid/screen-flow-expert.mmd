@@ -1,0 +1,75 @@
+---
+title: "Expert Screen Flow"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#000000", primaryBorderColor: "#000000", lineColor: "#000000", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 30, rankSpacing: 65, padding: 16}
+  elk: {mergeEdges: false}
+---
+flowchart LR
+  E_Login["Login"]
+  E_Roles["Assigned Roles"]
+  E_RoleDetail("Role Details")
+  E_Requirements("Role Skills")
+  E_RoleGraph("Role Graph")
+  E_Review["Pathway Reviews"]
+  E_Pathway["Pathway Details"]
+  E_Check("Pathway Validation")
+  E_Confirm("Approval Preview")
+  E_Ontology["Ontology"]
+  E_Skill("Skill Editor")
+  E_Prerequisite("Prerequisite Editor")
+  E_Modules["Modules"]
+  E_ModuleForm("Module Editor")
+  E_Mapping("Teaching Mappings")
+  E_Bank["Assessment Bank"]
+  E_Question("Question Editor")
+  E_Content["Learning Content"]
+  E_ContentForm("Content Editor")
+  E_ContentSubmit("Submit Content")
+  E_Profile["Profile"]
+
+  E_Login -->|"Continue"| E_Roles
+  E_Roles -->|"View role"| E_RoleDetail
+  E_RoleDetail -->|"Close"| E_Roles
+  E_Roles -->|"Configure skills"| E_Requirements
+  E_Requirements -->|"Save / close"| E_Roles
+  E_Roles -->|"Open role graph"| E_RoleGraph
+  E_RoleGraph -->|"Close"| E_Roles
+  E_Roles --> E_Review
+  E_Review -->|"Review"| E_Pathway
+  E_Pathway -->|"Back"| E_Review
+  E_Pathway -->|"Check pathway"| E_Check
+  E_Check -->|"Close / return"| E_Pathway
+  E_Pathway -->|"Preview approval"| E_Confirm
+  E_Confirm -->|"Confirm / back to edit"| E_Pathway
+  E_Roles --> E_Ontology
+  E_Ontology -->|"Create / edit skill"| E_Skill
+  E_Skill -->|"Save / close"| E_Ontology
+  E_Ontology -->|"Prerequisite action"| E_Prerequisite
+  E_Prerequisite -->|"Save / close"| E_Ontology
+  E_Roles --> E_Modules
+  E_Modules -->|"Create / edit draft"| E_ModuleForm
+  E_ModuleForm -->|"Save / close"| E_Modules
+  E_Modules -->|"Teaching mappings"| E_Mapping
+  E_Mapping -->|"Save / close"| E_Modules
+  E_Roles --> E_Bank
+  E_Bank -->|"Create / edit question"| E_Question
+  E_Question -->|"Save / close"| E_Bank
+  E_Roles -->|"User menu"| E_Profile
+  E_Profile -.->|"Direct access"| E_Roles
+  E_Modules -.->|"Direct access"| E_Content
+  E_Content -->|"Create / edit content"| E_ContentForm
+  E_ContentForm -->|"Save / close"| E_Content
+  E_Content -->|"Submit"| E_ContentSubmit
+  E_ContentSubmit -->|"Confirm / close"| E_Content
+  E_Roles -->|"Logout"| E_Login
+
+  %% Sidebar and user-menu actions apply to every page using WorkspaceLayout; not only Assigned target roles.
+  %% W denotes /workspace/:workspaceSlug; query/tab states do not create another routed page.
+  %% Feature visibility, trusted role, assignment and entitlement guards still apply.
+  %% Additional metadata/import/error dialogs are intentionally omitted from this main-navigation view.
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px

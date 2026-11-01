@@ -1,0 +1,39 @@
+---
+title: "ST-06 - Payment application and subscription intent"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+stateDiagram-v2
+  state "Payment application" as SDD_ST_06_Application {
+    state "PENDING" as SDD_ST_06_PENDING
+    state "WAITING_CAPACITY" as SDD_ST_06_WAITING_CAPACITY
+    state "APPLIED" as SDD_ST_06_APPLIED
+    state "EXCEPTION" as SDD_ST_06_EXCEPTION
+    [*] --> SDD_ST_06_PENDING
+    SDD_ST_06_PENDING --> SDD_ST_06_WAITING_CAPACITY : paid renewal exceeds chosen seats
+    SDD_ST_06_WAITING_CAPACITY --> SDD_ST_06_APPLIED : capacity remediated and rechecked
+    SDD_ST_06_PENDING --> SDD_ST_06_APPLIED : valid unique application
+    SDD_ST_06_PENDING --> SDD_ST_06_EXCEPTION : inconsistent application prerequisites
+    SDD_ST_06_APPLIED --> [*]
+  }
+  state "Intent (separate aggregate)" as SDD_ST_06_Intent {
+    state "OPEN" as SDD_ST_06_OPEN
+    state "APPLYING" as SDD_ST_06_APPLYING
+    [*] --> SDD_ST_06_OPEN
+    SDD_ST_06_OPEN --> SDD_ST_06_APPLYING : verified paid order selected
+    SDD_ST_06_APPLYING --> SDD_ST_06_IntentWaiting : capacity blocked
+    state "WAITING_CAPACITY" as SDD_ST_06_IntentWaiting
+    SDD_ST_06_IntentWaiting --> SDD_ST_06_IntentApplied : remediation and apply
+    SDD_ST_06_APPLYING --> SDD_ST_06_IntentApplied : apply succeeds
+    state "APPLIED" as SDD_ST_06_IntentApplied
+    SDD_ST_06_APPLYING --> SDD_ST_06_IntentException : application exception
+    state "EXCEPTION" as SDD_ST_06_IntentException
+  }
+
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_06_APPLIED,SDD_ST_06_IntentApplied accepted
+
+  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_06_EXCEPTION,SDD_ST_06_IntentException attention
+
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_06_PENDING,SDD_ST_06_OPEN working

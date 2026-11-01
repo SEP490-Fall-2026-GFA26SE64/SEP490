@@ -1,0 +1,23 @@
+---
+title: "SEQ-12 - Durable event is not exactly-once inbox delivery"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  participant SDD_SEQ_12_Business as Business transaction
+  participant SDD_SEQ_12_DB as PostgreSQL
+  participant SDD_SEQ_12_Worker as Mail worker
+  participant SDD_SEQ_12_SMTP as Transactional sender / SMTP
+  SDD_SEQ_12_Business->>SDD_SEQ_12_DB: commit mutation + audit/outbox + eligible job
+  SDD_SEQ_12_Worker->>SDD_SEQ_12_DB: claim pending/retry job with fenced lease
+  SDD_SEQ_12_DB-->>SDD_SEQ_12_Worker: safe stored recipient and event data
+  SDD_SEQ_12_Worker->>SDD_SEQ_12_SMTP: send stable transactional message
+  alt SMTP accepts
+  SDD_SEQ_12_SMTP-->>SDD_SEQ_12_Worker: accepted
+  SDD_SEQ_12_Worker->>SDD_SEQ_12_DB: fenced success / receipt
+  else retryable delivery failure
+  SDD_SEQ_12_SMTP-->>SDD_SEQ_12_Worker: failure
+  SDD_SEQ_12_Worker->>SDD_SEQ_12_DB: record error and next retry
+  else exhausted attempts
+  SDD_SEQ_12_Worker->>SDD_SEQ_12_DB: record terminal failure
+  end

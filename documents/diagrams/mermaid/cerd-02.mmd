@@ -1,0 +1,29 @@
+---
+title: "Assessment & Mastery"
+config:
+  layout: elk
+  look: classic
+  theme: base
+  fontFamily: "Arial, sans-serif"
+  themeCSS: ".node rect { stroke: #334155 !important; stroke-width: 1.5px !important; filter: none !important; }"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
+  er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
+---
+erDiagram
+  C02_User["User"]
+  C02_Assessment["Assessment"]
+  C02_Question["Question"]
+  C02_Answer["Answer"]
+  C02_Result["Assessment Result"]
+  C02_Profile["Mastery Profile"]
+  C02_Skill["Skill"]
+  C02_User }o--o{ C02_Assessment : "takes"
+  C02_Assessment }o--o{ C02_Question : "uses"
+  C02_User ||--o{ C02_Answer : "submits"
+  C02_Question ||--o{ C02_Answer : "receives"
+  C02_Assessment ||--o{ C02_Answer : "collects"
+  C02_Assessment ||--o{ C02_Result : "produces"
+  C02_User ||--o{ C02_Result : "receives"
+  C02_User ||--o{ C02_Profile : "has"
+  C02_Result }o--o{ C02_Profile : "informs"
+  C02_Profile }o--o{ C02_Skill : "measures"

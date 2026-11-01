@@ -1,0 +1,47 @@
+---
+title: "UC-B - Organization learning configuration and review"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart LR
+  SRS_UC_B_LD(["L and D Manager"])
+  SRS_UC_B_E(["Expert"])
+  subgraph SRS_UC_B_Group1["Adapt-Learn-Graph"]
+    SRS_UC_B_U0401["FR-04.01<br/>Manage occupations"]
+    SRS_UC_B_U0402["FR-04.02<br/>Assign Experts"]
+    SRS_UC_B_U0403["FR-04.03<br/>Manage target roles"]
+    SRS_UC_B_U0404["FR-04.04<br/>Manage target role<br/>publication"]
+    SRS_UC_B_U0405["FR-04.05<br/>Manage baseline<br/>configuration"]
+    SRS_UC_B_U0406["FR-04.06<br/>Approve learning<br/>offerings"]
+    SRS_UC_B_U0407["FR-04.07<br/>Monitor employee<br/>development"]
+    SRS_UC_B_U0501["FR-05.01<br/>Manage micro-skills"]
+    SRS_UC_B_U0502["FR-05.02<br/>Manage role competency<br/>requirements"]
+    SRS_UC_B_U0503["FR-05.03<br/>Submit completed role<br/>configurations"]
+    SRS_UC_B_U0504["FR-05.04<br/>Manage skill<br/>prerequisites"]
+    SRS_UC_B_U0505["FR-05.05<br/>Manage learning modules"]
+    SRS_UC_B_U0506["FR-05.06<br/>Manage module<br/>assessments"]
+    SRS_UC_B_U0507["FR-05.07<br/>Review initial learning<br/>pathways"]
+    SRS_UC_B_U0508["FR-05.08<br/>Submit content for<br/>approval"]
+  end
+  SRS_UC_B_LD --> SRS_UC_B_U0401
+  SRS_UC_B_LD --> SRS_UC_B_U0402
+  SRS_UC_B_LD --> SRS_UC_B_U0403
+  SRS_UC_B_LD --> SRS_UC_B_U0404
+  SRS_UC_B_LD --> SRS_UC_B_U0405
+  SRS_UC_B_LD --> SRS_UC_B_U0406
+  SRS_UC_B_LD --> SRS_UC_B_U0407
+  SRS_UC_B_E --> SRS_UC_B_U0501
+  SRS_UC_B_E --> SRS_UC_B_U0502
+  SRS_UC_B_E --> SRS_UC_B_U0503
+  SRS_UC_B_E --> SRS_UC_B_U0504
+  SRS_UC_B_E --> SRS_UC_B_U0505
+  SRS_UC_B_E --> SRS_UC_B_U0506
+  SRS_UC_B_E --> SRS_UC_B_U0507
+  SRS_UC_B_E --> SRS_UC_B_U0508
+  SRS_UC_B_U0503 -.->|"include: complete configuration"| SRS_UC_B_U0502
+  SRS_UC_B_U0508 -.->|"include: complete offering"| SRS_UC_B_U0505
+  SRS_UC_B_U0508 -.->|"include: assessment bundle"| SRS_UC_B_U0506
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef actor fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_UC_B_LD,SRS_UC_B_E actor
+  style SRS_UC_B_Group1 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12

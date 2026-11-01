@@ -1,0 +1,32 @@
+---
+title: "ST-18 - Competency profile and evidence lifecycle"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+stateDiagram-v2
+  state "Profile revision (physical<br/>foundation)" as SDD_ST_18_Profile {
+    state "PENDING" as SDD_ST_18_PENDING
+    state "COMPLETE" as SDD_ST_18_COMPLETE
+    state "BLOCKED" as SDD_ST_18_BLOCKED
+    [*] --> SDD_ST_18_PENDING
+    SDD_ST_18_PENDING --> SDD_ST_18_COMPLETE : coherent valid evidence/model application
+    SDD_ST_18_PENDING --> SDD_ST_18_BLOCKED : unresolved required input
+    SDD_ST_18_BLOCKED --> SDD_ST_18_PENDING : approved retry with source identity
+  }
+  state "Skill evidence quality" as SDD_ST_18_Evidence {
+    state "UNKNOWN" as SDD_ST_18_UNKNOWN
+    state "PROVISIONAL" as SDD_ST_18_PROVISIONAL
+    state "OBJECTIVE" as SDD_ST_18_OBJECTIVE
+    [*] --> SDD_ST_18_UNKNOWN
+    SDD_ST_18_UNKNOWN --> SDD_ST_18_PROVISIONAL : permitted provisional evidence
+    SDD_ST_18_UNKNOWN --> SDD_ST_18_OBJECTIVE : accepted objective evidence
+    SDD_ST_18_PROVISIONAL --> SDD_ST_18_OBJECTIVE : accepted objective evidence
+  }
+
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_18_COMPLETE accepted
+
+  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_18_BLOCKED attention
+
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_18_PENDING working

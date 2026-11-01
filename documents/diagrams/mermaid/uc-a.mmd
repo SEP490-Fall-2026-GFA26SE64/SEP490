@@ -1,0 +1,58 @@
+---
+title: "UC-A - Registration, administration and commercial access"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart LR
+  SRS_UC_A_G(["Guest"])
+  SRS_UC_A_P(["Platform Administrator"])
+  SRS_UC_A_A(["System Administrator"])
+  SRS_UC_A_payOS(["payOS"])
+  SRS_UC_A_SMTP(["SMTP service"])
+  subgraph SRS_UC_A_Group1["Adapt-Learn-Graph"]
+    SRS_UC_A_U0101["FR-01.01<br/>Register an<br/>organization"]
+    SRS_UC_A_U0102["FR-01.02<br/>Select a subscription"]
+    SRS_UC_A_U0103["FR-01.03<br/>Pay for a subscription"]
+    SRS_UC_A_U0104["FR-01.04<br/>Track onboarding and<br/>access workspace"]
+    SRS_UC_A_U0201["FR-02.01<br/>Manage organizations"]
+    SRS_UC_A_U0202["FR-02.02<br/>Configure subscriptions"]
+    SRS_UC_A_U0203["FR-02.03<br/>Monitor platform<br/>activity"]
+    SRS_UC_A_U0301["FR-03.01<br/>Manage user accounts"]
+    SRS_UC_A_U0302["FR-03.02<br/>Manage departments"]
+    SRS_UC_A_U0303["FR-03.03<br/>Manage roles and<br/>permissions"]
+    SRS_UC_A_U0304["FR-03.04<br/>Manage system<br/>configuration"]
+    SRS_UC_A_U0305["FR-03.05<br/>Monitor system activity"]
+    SRS_UC_A_U0306["FR-03.06<br/>Manage organization<br/>subscription"]
+    SRS_UC_A_U0701["FR-07.01<br/>Authenticate and<br/>authorize"]
+    SRS_UC_A_U0702["FR-07.02<br/>Process subscription<br/>payments"]
+    SRS_UC_A_U0703["FR-07.03<br/>Provision workspaces"]
+    SRS_UC_A_U0704["FR-07.04<br/>Maintain entitlements"]
+    SRS_UC_A_U0710["FR-07.10<br/>Send email<br/>notifications"]
+    SRS_UC_A_U0711["FR-07.11<br/>Record system activity"]
+  end
+  SRS_UC_A_G --> SRS_UC_A_U0101
+  SRS_UC_A_G --> SRS_UC_A_U0102
+  SRS_UC_A_G --> SRS_UC_A_U0103
+  SRS_UC_A_G --> SRS_UC_A_U0104
+  SRS_UC_A_P --> SRS_UC_A_U0201
+  SRS_UC_A_P --> SRS_UC_A_U0202
+  SRS_UC_A_P --> SRS_UC_A_U0203
+  SRS_UC_A_A --> SRS_UC_A_U0301
+  SRS_UC_A_A --> SRS_UC_A_U0302
+  SRS_UC_A_A --> SRS_UC_A_U0303
+  SRS_UC_A_A --> SRS_UC_A_U0304
+  SRS_UC_A_A --> SRS_UC_A_U0305
+  SRS_UC_A_A --> SRS_UC_A_U0306
+  SRS_UC_A_U0103 -.->|"include"| SRS_UC_A_U0702
+  SRS_UC_A_U0306 -.->|"include: paid renewal"| SRS_UC_A_U0702
+  SRS_UC_A_U0703 -.->|"extend: verified initial purchase"| SRS_UC_A_U0702
+  SRS_UC_A_U0703 -.->|"include"| SRS_UC_A_U0704
+  SRS_UC_A_U0101 -.->|"include: verification"| SRS_UC_A_U0710
+  SRS_UC_A_U0301 -.->|"include"| SRS_UC_A_U0701
+  SRS_UC_A_U0201 -.->|"include: changes"| SRS_UC_A_U0711
+  SRS_UC_A_payOS --> SRS_UC_A_U0702
+  SRS_UC_A_SMTP --> SRS_UC_A_U0710
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef actor fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_UC_A_G,SRS_UC_A_P,SRS_UC_A_A,SRS_UC_A_payOS,SRS_UC_A_SMTP actor
+  style SRS_UC_A_Group1 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12

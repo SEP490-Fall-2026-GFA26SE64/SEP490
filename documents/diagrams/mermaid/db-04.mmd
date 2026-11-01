@@ -1,0 +1,120 @@
+---
+title: "DB-04 - Adaptive blueprint and activation V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_04_t_baseline_adaptive_blueprint_working_revision["baseline_adaptive_blueprint_<br/>working_revision"] {
+    <<table>>
+    uuid working_revision_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+    uuid created_by FK_REQUIRED
+    uuid updated_by FK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_adaptive_blueprint_version["baseline_adaptive_blueprint_<br/>version"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer version PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    uuid model_version_id FK_REQUIRED
+    uuid mastery_mapping_version_id FK_REQUIRED
+    uuid parameter_set_id FK_REQUIRED
+    uuid created_by FK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_adaptive_blueprint_role["baseline_adaptive_blueprint_role"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer blueprint_version PK_FK_REQUIRED
+    text role_id PK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_adaptive_blueprint_skill["baseline_adaptive_blueprint_skill"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer blueprint_version PK_FK_REQUIRED
+    text role_id PK_FK_REQUIRED
+    text micro_skill_id PK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_blueprint_working_registry["baseline_blueprint_working_<br/>registry"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_blueprint_version_registry["baseline_blueprint_version_<br/>registry"] {
+    <<table>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer version PK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_blueprint_activation["baseline_blueprint_activation"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    text occupation_id PK_FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+    integer blueprint_version FK_NULLABLE
+    uuid activated_by FK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_blueprint_activation_event["baseline_blueprint_activation_<br/>event"] {
+    <<table>>
+    uuid activation_event_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    text occupation_id FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+    integer blueprint_version FK_NULLABLE
+    uuid actor_id FK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_blueprint_command["baseline_blueprint_command"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid actor_id PK_FK_REQUIRED
+    text idempotency_key PK_REQUIRED
+    text occupation_id FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+  }
+  class SDD_DB_04_t_account["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class SDD_DB_04_t_baseline_blueprint["baseline_blueprint"] {
+    <<external>>
+    uuid blueprint_id PK_REQUIRED
+  }
+  class SDD_DB_04_t_irt_parameter_set["irt_parameter_set"] {
+    <<external>>
+    uuid parameter_set_id PK_REQUIRED
+  }
+  class SDD_DB_04_t_mastery_mapping_version["mastery_mapping_version"] {
+    <<external>>
+    uuid mastery_mapping_version_id PK_REQUIRED
+  }
+  class SDD_DB_04_t_model_version["model_version"] {
+    <<external>>
+    uuid model_version_id PK_REQUIRED
+  }
+  SDD_DB_04_t_baseline_adaptive_blueprint_version --> SDD_DB_04_t_baseline_adaptive_blueprint_role : FK030
+  SDD_DB_04_t_baseline_adaptive_blueprint_role --> SDD_DB_04_t_baseline_adaptive_blueprint_skill : FK031
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_adaptive_blueprint_version : FK032
+  SDD_DB_04_t_irt_parameter_set ..> SDD_DB_04_t_baseline_adaptive_blueprint_version : FK033
+  SDD_DB_04_t_account ..> SDD_DB_04_t_baseline_adaptive_blueprint_version : FK034
+  SDD_DB_04_t_mastery_mapping_version ..> SDD_DB_04_t_baseline_adaptive_blueprint_version : FK035
+  SDD_DB_04_t_model_version ..> SDD_DB_04_t_baseline_adaptive_blueprint_version : FK036
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_adaptive_blueprint_working_revision : FK037
+  SDD_DB_04_t_account ..> SDD_DB_04_t_baseline_adaptive_blueprint_working_revision : FK038
+  SDD_DB_04_t_account ..> SDD_DB_04_t_baseline_adaptive_blueprint_working_revision : FK039
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_blueprint_activation_event : FK070
+  SDD_DB_04_t_baseline_blueprint_activation --> SDD_DB_04_t_baseline_blueprint_activation_event : FK071
+  SDD_DB_04_t_baseline_adaptive_blueprint_version --> SDD_DB_04_t_baseline_blueprint_activation_event : FK072
+  SDD_DB_04_t_account ..> SDD_DB_04_t_baseline_blueprint_activation_event : FK073
+  SDD_DB_04_t_account ..> SDD_DB_04_t_baseline_blueprint_activation : FK074
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_blueprint_activation : FK075
+  SDD_DB_04_t_baseline_adaptive_blueprint_version --> SDD_DB_04_t_baseline_blueprint_activation : FK076
+  SDD_DB_04_t_account ..> SDD_DB_04_t_baseline_blueprint_command : FK077
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_blueprint_command : FK078
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_blueprint_version_registry : FK081
+  SDD_DB_04_t_baseline_blueprint ..> SDD_DB_04_t_baseline_blueprint_working_registry : FK084
+
+  style SDD_DB_04_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_04_t_baseline_blueprint fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_04_t_irt_parameter_set fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_04_t_mastery_mapping_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_04_t_model_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

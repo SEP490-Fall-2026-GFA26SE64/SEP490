@@ -1,0 +1,63 @@
+---
+title: "CLS-01 - Current registration and workspace identity"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_CLS_01_RegistrationController["RegistrationController"]
+  class SDD_CLS_01_RegistrationUseCase["RegistrationUseCase"]
+  <<interface>> SDD_CLS_01_RegistrationUseCase
+  class SDD_CLS_01_RegistrationService["RegistrationService"] {
+    -RegistrationStore store
+    -RegistrationSecrets secrets
+    -RegistrationDelivery delivery
+    -Clock clock
+    +register(fields, password, address) RegistrationActor
+    +signIn(email, password, address) RegistrationActor
+    +current(actor) View
+    +verifyEmail(actor, code, address) RegistrationActor
+  }
+  class SDD_CLS_01_RegistrationFields["RegistrationFields"] {
+    +String organizationName
+    +String subdomain
+    +String industry
+    +String headcount
+    +String adminName
+    +String adminEmail
+    +validatePassword(password)
+  }
+  class SDD_CLS_01_RegistrationStore["RegistrationStore"]
+  <<interface>> SDD_CLS_01_RegistrationStore
+  class SDD_CLS_01_RegistrationSecrets["RegistrationSecrets"]
+  <<interface>> SDD_CLS_01_RegistrationSecrets
+  class SDD_CLS_01_RegistrationDelivery["RegistrationDelivery"]
+  <<interface>> SDD_CLS_01_RegistrationDelivery
+  class SDD_CLS_01_WorkspaceAuthenticationController["WorkspaceAuthenticationController"]
+  class SDD_CLS_01_WorkspaceAuthenticationUseCase["WorkspaceAuthenticationUseCase"]
+  <<interface>> SDD_CLS_01_WorkspaceAuthenticationUseCase
+  class SDD_CLS_01_WorkspaceAuthenticationService["WorkspaceAuthenticationService"] {
+    -WorkspaceIdentityStore identities
+    -RegistrationStore security
+    +signIn(email, password, address) WorkspacePrincipal
+    +current(principal) Identity
+    +verifyTotp(principal, code, address) WorkspacePrincipal
+  }
+  class SDD_CLS_01_WorkspaceIdentityStore["WorkspaceIdentityStore"]
+  <<interface>> SDD_CLS_01_WorkspaceIdentityStore
+  class SDD_CLS_01_WorkspacePrincipal["WorkspacePrincipal"] {
+    +UUID accountId
+    +Scope scope
+    +boolean mfaVerified
+  }
+  SDD_CLS_01_RegistrationController --> SDD_CLS_01_RegistrationUseCase
+  SDD_CLS_01_RegistrationService ..|> SDD_CLS_01_RegistrationUseCase
+  SDD_CLS_01_RegistrationService --> SDD_CLS_01_RegistrationFields
+  SDD_CLS_01_RegistrationService --> SDD_CLS_01_RegistrationStore
+  SDD_CLS_01_RegistrationService --> SDD_CLS_01_RegistrationSecrets
+  SDD_CLS_01_RegistrationService --> SDD_CLS_01_RegistrationDelivery
+  SDD_CLS_01_WorkspaceAuthenticationController --> SDD_CLS_01_WorkspaceAuthenticationUseCase
+  SDD_CLS_01_WorkspaceAuthenticationService ..|> SDD_CLS_01_WorkspaceAuthenticationUseCase
+  SDD_CLS_01_WorkspaceAuthenticationService --> SDD_CLS_01_WorkspaceIdentityStore
+  SDD_CLS_01_WorkspaceAuthenticationService --> SDD_CLS_01_RegistrationStore
+  SDD_CLS_01_WorkspaceAuthenticationService --> SDD_CLS_01_RegistrationSecrets
+  SDD_CLS_01_WorkspaceAuthenticationService --> SDD_CLS_01_WorkspacePrincipal

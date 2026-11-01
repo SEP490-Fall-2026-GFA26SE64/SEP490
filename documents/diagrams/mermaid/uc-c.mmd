@@ -1,0 +1,46 @@
+---
+title: "UC-C - Employee learning and automated intelligence"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart LR
+  SRS_UC_C_E(["Employee"])
+  SRS_UC_C_LD(["L and D Manager"])
+  SRS_UC_C_AI(["Internal LLM"])
+  subgraph SRS_UC_C_Group1["Adapt-Learn-Graph"]
+    SRS_UC_C_U0601["FR-06.01<br/>Manage personal profile"]
+    SRS_UC_C_U0602["FR-06.02<br/>Complete baseline<br/>assessment"]
+    SRS_UC_C_U0603["FR-06.03<br/>Complete RIASEC<br/>assessment"]
+    SRS_UC_C_U0604["FR-06.04<br/>Review target role<br/>guidance"]
+    SRS_UC_C_U0605["FR-06.05<br/>Review competency<br/>profile and gaps"]
+    SRS_UC_C_U0606["FR-06.06<br/>Follow a learning<br/>pathway"]
+    SRS_UC_C_U0607["FR-06.07<br/>Learn an individual<br/>skill"]
+    SRS_UC_C_U0608["FR-06.08<br/>Complete learning and<br/>assessments"]
+    SRS_UC_C_U0609["FR-06.09<br/>Track learning progress"]
+    SRS_UC_C_U0705["FR-07.05<br/>Generate and evaluate<br/>assessments"]
+    SRS_UC_C_U0706["FR-07.06<br/>Update competency<br/>profiles and gaps"]
+    SRS_UC_C_U0707["FR-07.07<br/>Generate target role<br/>guidance"]
+    SRS_UC_C_U0708["FR-07.08<br/>Generate and adapt<br/>learning pathways"]
+    SRS_UC_C_U0709["FR-07.09<br/>Generate development<br/>summaries and ROI"]
+  end
+  SRS_UC_C_E --> SRS_UC_C_U0601
+  SRS_UC_C_E --> SRS_UC_C_U0602
+  SRS_UC_C_E --> SRS_UC_C_U0603
+  SRS_UC_C_E --> SRS_UC_C_U0604
+  SRS_UC_C_E --> SRS_UC_C_U0605
+  SRS_UC_C_E --> SRS_UC_C_U0606
+  SRS_UC_C_E --> SRS_UC_C_U0607
+  SRS_UC_C_E --> SRS_UC_C_U0608
+  SRS_UC_C_E --> SRS_UC_C_U0609
+  SRS_UC_C_U0602 -.->|"include"| SRS_UC_C_U0705
+  SRS_UC_C_U0603 -.->|"include"| SRS_UC_C_U0705
+  SRS_UC_C_U0608 -.->|"include: assessment"| SRS_UC_C_U0705
+  SRS_UC_C_U0604 -.->|"include: suggestions"| SRS_UC_C_U0707
+  SRS_UC_C_U0706 -.->|"extend: new valid evidence"| SRS_UC_C_U0705
+  SRS_UC_C_U0708 -.->|"extend: changed gaps"| SRS_UC_C_U0706
+  SRS_UC_C_AI --> SRS_UC_C_U0707
+  SRS_UC_C_LD --> SRS_UC_C_U0709
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef actor fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_UC_C_E,SRS_UC_C_LD,SRS_UC_C_AI actor
+  style SRS_UC_C_Group1 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12

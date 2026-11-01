@@ -1,0 +1,38 @@
+---
+title: "Platform Administrator Screen Flow"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#000000", primaryBorderColor: "#000000", lineColor: "#000000", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 32, rankSpacing: 65, padding: 16}
+  elk: {mergeEdges: false}
+---
+flowchart LR
+  P_Login["Login"]
+  P_Plans["Subscription Plans"]
+  P_EditPlan("Plan Editor")
+  P_Workspaces["Organizations"]
+  P_Activity["Platform Activity"]
+  P_Profile["Profile"]
+
+  P_Login -->|"Continue"| P_Plans
+  P_Plans -->|"Edit plan"| P_EditPlan
+  P_EditPlan -->|"Save / close"| P_Plans
+  P_Plans -.->|"Direct access"| P_Workspaces
+  P_Plans -.->|"Direct access"| P_Activity
+  P_Activity --> P_Workspaces
+  P_Activity --> P_Plans
+  P_Activity -->|"User menu"| P_Profile
+  P_Profile --> P_Activity
+  P_Plans -->|"Logout"| P_Login
+  P_Workspaces -->|"Logout"| P_Login
+
+  %% The current default home is /platform-admin/subscriptions.
+  %% PlatformWorkspacePage and PlatformPlansPage use SubscriptionShell, which has Home/Sign out but no actor sidebar.
+  %% Platform Activity and Profile use WorkspaceLayout; their actor menu provides the indicated navigation.
+  %% PlatformOrganizationsPage is not the routed Organizations component; its prototype dialogs are not drawn.
+  %% No organization edit/details or suspension-confirmation dialog is invented for the inline workspace controls.
+  %% Direct URL dotted links document route availability, not a currently implemented clickable navigation control.
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px

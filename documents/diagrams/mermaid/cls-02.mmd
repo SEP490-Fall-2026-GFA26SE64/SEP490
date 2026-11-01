@@ -1,0 +1,52 @@
+---
+title: "CLS-02 - Current subscription and durable payment design"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_CLS_02_SubscriptionLifecycleController["SubscriptionLifecycleController"]
+  class SDD_CLS_02_SubscriptionLifecycleUseCase["SubscriptionLifecycleUseCase"]
+  <<interface>> SDD_CLS_02_SubscriptionLifecycleUseCase
+  class SDD_CLS_02_SubscriptionLifecycleService["SubscriptionLifecycleService"]
+  class SDD_CLS_02_SubscriptionWorkspaceStore["SubscriptionWorkspaceStore"]
+  <<interface>> SDD_CLS_02_SubscriptionWorkspaceStore
+  class SDD_CLS_02_SubscriptionCatalogService["SubscriptionCatalogService"]
+  class SDD_CLS_02_PlanTerms["PlanTerms"] {
+    +String name
+    +String description
+    +long priceVnd
+    +String currency
+    +int durationMonths
+    +int employeeSeats
+  }
+  class SDD_CLS_02_PaymentProcessor["PaymentProcessor"] {
+    -PaymentProcessingStore store
+    -PaymentGateway gateway
+    -Clock clock
+    +webhook(payload)
+    +processNext() boolean
+  }
+  class SDD_CLS_02_PaymentProcessingStore["PaymentProcessingStore"] {
+    <<interface>>
+    +claim(now)
+    +record(observation, now)
+    +apply(orderId, now)
+    +finish(work, now)
+    +retry(work, code, now)
+  }
+  class SDD_CLS_02_PaymentGateway["PaymentGateway"] {
+    <<interface>>
+    +create(request)
+    +query(orderCode, linkId, currency)
+    +verifyWebhook(payload)
+  }
+  class SDD_CLS_02_PayOsPaymentGateway["PayOsPaymentGateway"]
+  class SDD_CLS_02_SubscriptionAccessPolicy["SubscriptionAccessPolicy"]
+  SDD_CLS_02_SubscriptionLifecycleController --> SDD_CLS_02_SubscriptionLifecycleUseCase
+  SDD_CLS_02_SubscriptionLifecycleService ..|> SDD_CLS_02_SubscriptionLifecycleUseCase
+  SDD_CLS_02_SubscriptionLifecycleService --> SDD_CLS_02_SubscriptionWorkspaceStore
+  SDD_CLS_02_SubscriptionLifecycleService --> SDD_CLS_02_SubscriptionAccessPolicy
+  SDD_CLS_02_SubscriptionCatalogService --> SDD_CLS_02_PlanTerms
+  SDD_CLS_02_PaymentProcessor --> SDD_CLS_02_PaymentProcessingStore
+  SDD_CLS_02_PaymentProcessor --> SDD_CLS_02_PaymentGateway
+  SDD_CLS_02_PayOsPaymentGateway ..|> SDD_CLS_02_PaymentGateway

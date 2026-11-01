@@ -1,0 +1,159 @@
+---
+title: "DB-02 - Subscription, payment, workspace and member references V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_02_t_subscription_plan["subscription_plan"] {
+    <<table>>
+    uuid plan_id PK_FK_REQUIRED
+    uuid current_version_id FK_REQUIRED
+  }
+  class SDD_DB_02_t_subscription_plan_version["subscription_plan_version"] {
+    <<table>>
+    uuid version_id PK_REQUIRED
+    uuid plan_id FK_REQUIRED
+    uuid created_by FK_NULLABLE
+  }
+  class SDD_DB_02_t_subscription_intent["subscription_intent"] {
+    <<table>>
+    uuid intent_id PK_FK_REQUIRED
+    uuid registration_id FK_NULLABLE
+    uuid organization_id FK_NULLABLE
+    uuid owner_account_id FK_REQUIRED
+    uuid applied_order_id FK_NULLABLE
+  }
+  class SDD_DB_02_t_payment_order["payment_order"] {
+    <<table>>
+    uuid order_id PK_REQUIRED
+    uuid intent_id FK_REQUIRED
+    uuid created_by FK_REQUIRED
+    uuid plan_id FK_REQUIRED
+    uuid plan_version_id FK_REQUIRED
+    uuid supersedes_order_id FK_NULLABLE
+  }
+  class SDD_DB_02_t_payment_observation["payment_observation"] {
+    <<table>>
+    uuid observation_id PK_REQUIRED
+    uuid order_id FK_NULLABLE
+  }
+  class SDD_DB_02_t_payment_application["payment_application"] {
+    <<table>>
+    uuid application_id PK_REQUIRED
+    uuid order_id FK_REQUIRED
+    uuid intent_id FK_REQUIRED
+    uuid period_id FK_NULLABLE
+  }
+  class SDD_DB_02_t_subscription["subscription"] {
+    <<table>>
+    uuid subscription_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+  }
+  class SDD_DB_02_t_subscription_period["subscription_period"] {
+    <<table>>
+    uuid period_id PK_REQUIRED
+    uuid subscription_id FK_REQUIRED
+    uuid order_id FK_REQUIRED
+  }
+  class SDD_DB_02_t_organization_workspace["organization_workspace"] {
+    <<table>>
+    uuid workspace_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid registration_id FK_REQUIRED
+  }
+  class SDD_DB_02_t_organization_membership["organization_membership"] {
+    <<table>>
+    uuid membership_id PK_REQUIRED
+    uuid account_id FK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid department_id FK_NULLABLE
+    uuid occupation_reference_id FK_NULLABLE
+  }
+  class SDD_DB_02_t_organization_membership_role["organization_membership_role"] {
+    <<table>>
+    uuid membership_id PK_FK_REQUIRED
+    text role_code PK_REQUIRED
+  }
+  class SDD_DB_02_t_platform_administrator["platform_administrator"] {
+    <<table>>
+    uuid account_id PK_FK_REQUIRED
+    uuid granted_by FK_NULLABLE
+  }
+  class SDD_DB_02_t_workspace_activation["workspace_activation"] {
+    <<table>>
+    uuid activation_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid created_by FK_REQUIRED
+    uuid department_id FK_NULLABLE
+    uuid occupation_reference_id FK_NULLABLE
+    uuid account_id FK_NULLABLE
+  }
+  class SDD_DB_02_t_department_reference["department_reference"] {
+    <<table>>
+    uuid department_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+  }
+  class SDD_DB_02_t_occupation_department_reference["occupation_department_reference"] {
+    <<table>>
+    uuid occupation_reference_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid department_id FK_REQUIRED
+  }
+  class SDD_DB_02_t_workspace_account_profile["workspace_account_profile"] {
+    <<table>>
+    uuid account_id PK_FK_REQUIRED
+  }
+  class SDD_DB_02_t_account["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class SDD_DB_02_t_organization["organization"] {
+    <<external>>
+    uuid organization_id PK_REQUIRED
+  }
+  class SDD_DB_02_t_organization_registration["organization_registration"] {
+    <<external>>
+    uuid registration_id PK_REQUIRED
+  }
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_department_reference : FK109
+  SDD_DB_02_t_department_reference --> SDD_DB_02_t_occupation_department_reference : FK157
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_occupation_department_reference : FK158
+  SDD_DB_02_t_organization_membership --> SDD_DB_02_t_organization_membership_role : FK159
+  SDD_DB_02_t_account ..> SDD_DB_02_t_organization_membership : FK160
+  SDD_DB_02_t_account ..> SDD_DB_02_t_organization_membership : FK161
+  SDD_DB_02_t_department_reference --> SDD_DB_02_t_organization_membership : FK162
+  SDD_DB_02_t_occupation_department_reference --> SDD_DB_02_t_organization_membership : FK163
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_organization_membership : FK164
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_organization_workspace : FK166
+  SDD_DB_02_t_organization_registration ..> SDD_DB_02_t_organization_workspace : FK167
+  SDD_DB_02_t_subscription_intent --> SDD_DB_02_t_payment_application : FK175
+  SDD_DB_02_t_payment_order --> SDD_DB_02_t_payment_application : FK176
+  SDD_DB_02_t_payment_order --> SDD_DB_02_t_payment_application : FK177
+  SDD_DB_02_t_subscription_period --> SDD_DB_02_t_payment_application : FK178
+  SDD_DB_02_t_payment_order --> SDD_DB_02_t_payment_observation : FK179
+  SDD_DB_02_t_account ..> SDD_DB_02_t_payment_order : FK180
+  SDD_DB_02_t_subscription_intent --> SDD_DB_02_t_payment_order : FK181
+  SDD_DB_02_t_payment_order --> SDD_DB_02_t_payment_order : FK182
+  SDD_DB_02_t_subscription_plan_version --> SDD_DB_02_t_payment_order : FK183
+  SDD_DB_02_t_account ..> SDD_DB_02_t_platform_administrator : FK184
+  SDD_DB_02_t_account ..> SDD_DB_02_t_platform_administrator : FK185
+  SDD_DB_02_t_payment_order --> SDD_DB_02_t_subscription_intent : FK213
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_subscription_intent : FK214
+  SDD_DB_02_t_account ..> SDD_DB_02_t_subscription_intent : FK215
+  SDD_DB_02_t_organization_registration ..> SDD_DB_02_t_subscription_intent : FK216
+  SDD_DB_02_t_payment_order --> SDD_DB_02_t_subscription_period : FK217
+  SDD_DB_02_t_subscription --> SDD_DB_02_t_subscription_period : FK218
+  SDD_DB_02_t_account ..> SDD_DB_02_t_subscription_plan_version : FK219
+  SDD_DB_02_t_subscription_plan --> SDD_DB_02_t_subscription_plan_version : FK220
+  SDD_DB_02_t_subscription_plan_version --> SDD_DB_02_t_subscription_plan : FK221
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_subscription : FK222
+  SDD_DB_02_t_account ..> SDD_DB_02_t_workspace_account_profile : FK227
+  SDD_DB_02_t_account ..> SDD_DB_02_t_workspace_activation : FK228
+  SDD_DB_02_t_account ..> SDD_DB_02_t_workspace_activation : FK229
+  SDD_DB_02_t_department_reference --> SDD_DB_02_t_workspace_activation : FK230
+  SDD_DB_02_t_occupation_department_reference --> SDD_DB_02_t_workspace_activation : FK231
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_workspace_activation : FK232
+
+  style SDD_DB_02_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_02_t_organization fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_02_t_organization_registration fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

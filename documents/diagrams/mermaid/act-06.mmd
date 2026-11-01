@@ -1,0 +1,38 @@
+---
+title: "ACT-06 - Guidance, initial pathway and adaptation (target)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart TD
+    SRS_ACT_06_N1(("Start"))
+    SRS_ACT_06_N2["<b>Employee</b><br/>Complete competency and RIASEC<br/>assessments"]
+    SRS_ACT_06_N4["<b>Employee</b><br/>Choose or confirm published<br/>target role"]
+    SRS_ACT_06_N5["<b>Employee</b><br/>Review competency gaps"]
+    SRS_ACT_06_N8{"<b>Employee</b><br/>Learning remains?"}
+    SRS_ACT_06_N9["<b>Employee</b><br/>Study approved content and<br/>complete module assessment"]
+    SRS_ACT_06_N11["<b>Employee</b><br/>Review results and pathway<br/>updates"]
+    SRS_ACT_06_N12["<b>Employee</b><br/>Review overall progress"]
+    SRS_ACT_06_N13(("End"))
+    SRS_ACT_06_N3["<b>System</b><br/>Present AI-assisted suggestions<br/>and explanations"]
+    SRS_ACT_06_N6["<b>System</b><br/>Generate initial learning<br/>pathway"]
+    SRS_ACT_06_N10["<b>System</b><br/>Update evidence-based mastery<br/>and remaining pathway"]
+    SRS_ACT_06_N7["<b>Expert</b><br/>Review modules; include or<br/>exclude; confirm pathway"]
+  SRS_ACT_06_N1 --> SRS_ACT_06_N2
+  SRS_ACT_06_N2 --> SRS_ACT_06_N3
+  SRS_ACT_06_N3 --> SRS_ACT_06_N4
+  SRS_ACT_06_N4 --> SRS_ACT_06_N5
+  SRS_ACT_06_N5 --> SRS_ACT_06_N6
+  SRS_ACT_06_N6 --> SRS_ACT_06_N7
+  SRS_ACT_06_N7 --> SRS_ACT_06_N8
+  SRS_ACT_06_N8 -->|"yes"| SRS_ACT_06_N9
+  SRS_ACT_06_N9 --> SRS_ACT_06_N10
+  SRS_ACT_06_N10 --> SRS_ACT_06_N11
+  SRS_ACT_06_N11 --> SRS_ACT_06_N8
+  SRS_ACT_06_N8 -->|"no"| SRS_ACT_06_N12
+  SRS_ACT_06_N12 --> SRS_ACT_06_N13
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_ACT_06_N8 decision
+  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+  class SRS_ACT_06_N1,SRS_ACT_06_N13 entry
+

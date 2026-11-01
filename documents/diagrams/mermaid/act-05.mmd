@@ -1,0 +1,50 @@
+---
+title: "ACT-05 - Baseline configuration and Employee completion"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart TD
+    SRS_ACT_05_N1(("Start"))
+    SRS_ACT_05_N2["<b>L and D Manager</b><br/>Select authorized Occupation"]
+    SRS_ACT_05_N3["<b>L and D Manager</b><br/>Save baseline Draft with<br/>question and time bounds"]
+    SRS_ACT_05_N4["<b>L and D Manager</b><br/>Preview saved Draft"]
+    SRS_ACT_05_N5{"<b>L and D Manager</b><br/>Ready and satisfactory?"}
+    SRS_ACT_05_N6["<b>L and D Manager</b><br/>Confirm activation or<br/>replacement"]
+    SRS_ACT_05_N7["<b>System</b><br/>Activate immutable version;<br/>retain historical attempts"]
+    SRS_ACT_05_N13{"<b>System</b><br/>Sufficient valid evidence?"}
+    SRS_ACT_05_N14["<b>System</b><br/>Store result and initialize<br/>applicable mastery profile"]
+    SRS_ACT_05_N8["<b>Employee</b><br/>Select a published role and<br/>review next step"]
+    SRS_ACT_05_N9{"<b>Employee</b><br/>Applicable mastery coverage<br/>complete?"}
+    SRS_ACT_05_N10["<b>Employee</b><br/>Continue without unnecessary<br/>baseline"]
+    SRS_ACT_05_N11["<b>Employee</b><br/>Start or resume required<br/>Occupation baseline"]
+    SRS_ACT_05_N12["<b>Employee</b><br/>Answer questions and submit"]
+    SRS_ACT_05_N15["<b>Employee</b><br/>View own result and mastery"]
+    SRS_ACT_05_N16["<b>Employee</b><br/>Explain invalidation and<br/>permitted recovery"]
+    SRS_ACT_05_N17["<b>Employee</b><br/>Correct Draft or resolve<br/>resource readiness"]
+    SRS_ACT_05_N18(("End"))
+  SRS_ACT_05_N1 --> SRS_ACT_05_N2
+  SRS_ACT_05_N2 --> SRS_ACT_05_N3
+  SRS_ACT_05_N3 --> SRS_ACT_05_N4
+  SRS_ACT_05_N4 --> SRS_ACT_05_N5
+  SRS_ACT_05_N5 -->|"yes"| SRS_ACT_05_N6
+  SRS_ACT_05_N6 --> SRS_ACT_05_N7
+  SRS_ACT_05_N7 --> SRS_ACT_05_N8
+  SRS_ACT_05_N8 --> SRS_ACT_05_N9
+  SRS_ACT_05_N9 -->|"yes"| SRS_ACT_05_N10
+  SRS_ACT_05_N9 -->|"no"| SRS_ACT_05_N11
+  SRS_ACT_05_N11 --> SRS_ACT_05_N12
+  SRS_ACT_05_N12 --> SRS_ACT_05_N13
+  SRS_ACT_05_N13 -->|"yes"| SRS_ACT_05_N14
+  SRS_ACT_05_N14 --> SRS_ACT_05_N15
+  SRS_ACT_05_N13 -->|"no"| SRS_ACT_05_N16
+  SRS_ACT_05_N5 -->|"no"| SRS_ACT_05_N17
+  SRS_ACT_05_N10 --> SRS_ACT_05_N18
+  SRS_ACT_05_N15 --> SRS_ACT_05_N18
+  SRS_ACT_05_N16 --> SRS_ACT_05_N18
+  SRS_ACT_05_N17 --> SRS_ACT_05_N18
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_ACT_05_N5,SRS_ACT_05_N13,SRS_ACT_05_N9 decision
+  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+  class SRS_ACT_05_N1,SRS_ACT_05_N18 entry
+

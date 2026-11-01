@@ -1,0 +1,106 @@
+---
+title: "SRS-CONTEXT - System Context Diagram"
+config: {"layout":"elk","theme":"base","look":"classic","htmlLabels":true,"fontFamily":"Arial, sans-serif","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","edgeLabelBackground":"#ffffff","fontSize":"16px"},"flowchart":{"curve":"linear","nodeSpacing":110,"rankSpacing":140,"padding":28,"wrappingWidth":300},"elk":{"mergeEdges":false,"cycleBreakingStrategy":"MODEL_ORDER","considerModelOrder":"NODES_AND_EDGES","forceNodeModelOrder":true,"nodePlacementStrategy":"NETWORK_SIMPLEX","keepEntryNodeOnTop":false}}
+---
+flowchart LR
+  Guest["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Guest</div>"]
+  SystemAdmin["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>System Administrator</div>"]
+  Manager["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>L&amp;D Manager</div>"]
+  Email["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Gmail SMTP</div>"]
+  System(("<div style='width:750px;height:750px;display:flex;align-items:center;justify-content:center'>Adapt-Learn-Graph<br/>Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform</div>"))
+  Expert["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Expert</div>"]
+  PlatformAdmin["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Platform Administrator</div>"]
+  Employee["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Employee</div>"]
+  PayOS["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>payOS</div>"]
+  Guest -->|"Organization registration details"| System
+  Guest -->|"Administrator account details"| System
+  Guest -->|"Email verification code"| System
+  Guest -->|"Subscription plan selection"| System
+  Guest -->|"Subscription purchase request"| System
+  Guest -->|"Onboarding status request"| System
+  System -->|"Subscription plan catalog"| Guest
+  System -->|"Registration status"| Guest
+  System -->|"Checkout link"| Guest
+  System -->|"Payment status"| Guest
+  System -->|"Workspace setup status"| Guest
+  System -->|"Workspace access information"| Guest
+  PlatformAdmin -->|"Subscription plan updates"| System
+  PlatformAdmin -->|"Organization detail updates"| System
+  PlatformAdmin -->|"Workspace suspension decision"| System
+  PlatformAdmin -->|"Workspace reactivation decision"| System
+  PlatformAdmin -->|"Platform activity query"| System
+  System -->|"Organization directory"| PlatformAdmin
+  System -->|"Designated administrator details"| PlatformAdmin
+  System -->|"Workspace status summary"| PlatformAdmin
+  System -->|"Subscription status summary"| PlatformAdmin
+  System -->|"Platform activity report"| PlatformAdmin
+  SystemAdmin -->|"Member account changes"| System
+  SystemAdmin -->|"Organization role assignments"| System
+  SystemAdmin -->|"Department details"| System
+  SystemAdmin -->|"Employee department assignments"| System
+  SystemAdmin -->|"Workspace settings"| System
+  SystemAdmin -->|"Subscription renewal request"| System
+  SystemAdmin -->|"Workspace activity query"| System
+  System -->|"Member directory"| SystemAdmin
+  System -->|"Subscription period details"| SystemAdmin
+  System -->|"Employee seat usage"| SystemAdmin
+  System -->|"Payment history"| SystemAdmin
+  System -->|"Workspace audit records"| SystemAdmin
+  Manager -->|"Occupation details"| System
+  Manager -->|"Expert occupation assignments"| System
+  Manager -->|"Target role details"| System
+  Manager -->|"Target role publication decision"| System
+  Manager -->|"Baseline assessment configuration"| System
+  Manager -->|"Learning offering approval decision"| System
+  Manager -->|"Training cost records"| System
+  Manager -->|"Monetary benefit records"| System
+  Manager -->|"Development report filters"| System
+  System -->|"Submitted role configurations"| Manager
+  System -->|"Submitted learning offerings"| Manager
+  System -->|"Employee competency profiles"| Manager
+  System -->|"Employee skill gaps"| Manager
+  System -->|"Employee assessment outcomes"| Manager
+  System -->|"Employee learning progress"| Manager
+  System -->|"Department development summaries"| Manager
+  System -->|"Training ROI reports"| Manager
+  Expert -->|"Micro-skill definitions"| System
+  Expert -->|"Skill prerequisites"| System
+  Expert -->|"Role competency requirements"| System
+  Expert -->|"Completed role configuration"| System
+  Expert -->|"Learning module details"| System
+  Expert -->|"Learning content"| System
+  Expert -->|"Module assessment configuration"| System
+  Expert -->|"Learning offering submission"| System
+  Expert -->|"Initial pathway review decisions"| System
+  System -->|"Assigned target roles"| Expert
+  System -->|"Role revision feedback"| Expert
+  System -->|"Offering revision feedback"| Expert
+  System -->|"Initial learning pathways"| Expert
+  Employee -->|"Personal profile changes"| System
+  Employee -->|"Baseline assessment answers"| System
+  Employee -->|"Module assessment answers"| System
+  Employee -->|"RIASEC assessment answers"| System
+  Employee -->|"Selected target role"| System
+  Employee -->|"Independent skill selection"| System
+  Employee -->|"Learning activity records"| System
+  System -->|"Assessment results"| Employee
+  System -->|"Competency profile"| Employee
+  System -->|"Competency gaps"| Employee
+  System -->|"RIASEC interest profile"| Employee
+  System -->|"Target role suggestions"| Employee
+  System -->|"Role guidance explanations"| Employee
+  System -->|"Learning pathway"| Employee
+  System -->|"Learning content"| Employee
+  System -->|"Learning progress"| Employee
+  System -->|"Subscription payment request"| PayOS
+  System -->|"Payment status query"| PayOS
+  PayOS -->|"Checkout link"| System
+  PayOS -->|"Signed payment notification"| System
+  PayOS -->|"Payment status response"| System
+  System -->|"Account verification email"| Email
+  System -->|"Member activation email"| Email
+  System -->|"Payment confirmation email"| Email
+  System -->|"Workflow notification email"| Email
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px,font-size:20px;
+  classDef system fill:#ffffff,stroke:#000000,color:#000000,stroke-width:3px,font-size:36px,font-weight:bold;
+  class System system;

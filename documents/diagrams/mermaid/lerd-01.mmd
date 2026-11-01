@@ -1,0 +1,64 @@
+---
+title: "LERD-01 - Identity, organization and subscriptions"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+---
+erDiagram
+  SRS_LERD_01_Organization["Organization"]
+  SRS_LERD_01_Account["Account"]
+  SRS_LERD_01_Registration["Registration"]
+  SRS_LERD_01_Workspace["Workspace"]
+  SRS_LERD_01_Membership["Membership"]
+  SRS_LERD_01_MembershipRole["MembershipRole"]
+  SRS_LERD_01_SubscriptionPlan["SubscriptionPlan"]
+  SRS_LERD_01_PlanVersion["PlanVersion"]
+  SRS_LERD_01_SubscriptionIntent["SubscriptionIntent"]
+  SRS_LERD_01_PaymentOrder["PaymentOrder"]
+  SRS_LERD_01_PaymentObservation["PaymentObservation"]
+  SRS_LERD_01_PaymentApplication["PaymentApplication"]
+  SRS_LERD_01_Subscription["Subscription"]
+  SRS_LERD_01_SubscriptionPeriod["SubscriptionPeriod"]
+  SRS_LERD_01_WorkspaceActivation["WorkspaceActivation"]
+  SRS_LERD_01_WorkspaceAccountProfile["WorkspaceAccountProfile"]
+  SRS_LERD_01_PlatformAdministrator["PlatformAdministrator"]
+  SRS_LERD_01_AccountTotp["AccountTotp"]
+  SRS_LERD_01_AccountRecoveryCode["AccountRecoveryCode"]
+  SRS_LERD_01_RegistrationEmailVerification["RegistrationEmailVerification"]
+  SRS_LERD_01_Session["Session"]
+  SRS_LERD_01_Department["Department"]
+  SRS_LERD_01_OccupationDepartmentReference["OccupationDepartmentReference"]
+  %% Selected direct PostgreSQL FKs. Nullable assignments do not imply missing Employee assignment requirements.
+  SRS_LERD_01_Organization ||--o| SRS_LERD_01_Workspace : "has workspace"
+  SRS_LERD_01_Organization ||--o{ SRS_LERD_01_Membership : "contains"
+  SRS_LERD_01_Organization ||--o{ SRS_LERD_01_Department : "owns departments"
+  SRS_LERD_01_Department ||--o{ SRS_LERD_01_OccupationDepartmentReference : "contains occupation references"
+  SRS_LERD_01_Organization ||--o{ SRS_LERD_01_OccupationDepartmentReference : "scopes references"
+  SRS_LERD_01_Department |o--o{ SRS_LERD_01_Membership : "current department"
+  SRS_LERD_01_OccupationDepartmentReference |o--o{ SRS_LERD_01_Membership : "current occupation assignment"
+  SRS_LERD_01_Account ||--o| SRS_LERD_01_Membership : "holds organization membership"
+  SRS_LERD_01_Account ||--o| SRS_LERD_01_Registration : "initiates"
+  SRS_LERD_01_Registration ||--o| SRS_LERD_01_Workspace : "provisions"
+  SRS_LERD_01_Membership ||--|| SRS_LERD_01_MembershipRole : "exactly one role"
+  SRS_LERD_01_Organization ||--o{ SRS_LERD_01_WorkspaceActivation : "invites members"
+  SRS_LERD_01_Account ||--o{ SRS_LERD_01_WorkspaceActivation : "creates invitations"
+  SRS_LERD_01_Account |o--o{ SRS_LERD_01_WorkspaceActivation : "activated recipient"
+  SRS_LERD_01_Department |o--o{ SRS_LERD_01_WorkspaceActivation : "invited department"
+  SRS_LERD_01_OccupationDepartmentReference |o--o{ SRS_LERD_01_WorkspaceActivation : "invited occupation"
+  SRS_LERD_01_Account ||--o| SRS_LERD_01_WorkspaceAccountProfile : "workspace profile"
+  SRS_LERD_01_Account ||--o| SRS_LERD_01_PlatformAdministrator : "platform role grant"
+  SRS_LERD_01_Account ||--o| SRS_LERD_01_AccountTotp : "authenticator"
+  SRS_LERD_01_AccountTotp ||--o{ SRS_LERD_01_AccountRecoveryCode : "recovery codes"
+  SRS_LERD_01_Registration ||--o| SRS_LERD_01_RegistrationEmailVerification : "email verification"
+  SRS_LERD_01_Account ||--o{ SRS_LERD_01_Session : "authenticated sessions"
+  SRS_LERD_01_SubscriptionPlan ||--o{ SRS_LERD_01_PlanVersion : "versions"
+  SRS_LERD_01_PlanVersion ||--o{ SRS_LERD_01_PaymentOrder : "immutable purchased version"
+  SRS_LERD_01_Account ||--o{ SRS_LERD_01_SubscriptionIntent : "owns purchase intent"
+  SRS_LERD_01_Registration |o--o| SRS_LERD_01_SubscriptionIntent : "initial purchase"
+  SRS_LERD_01_Organization |o--o{ SRS_LERD_01_SubscriptionIntent : "renewal intents"
+  SRS_LERD_01_SubscriptionIntent ||--o{ SRS_LERD_01_PaymentOrder : "payment attempts"
+  SRS_LERD_01_PaymentOrder |o--o{ SRS_LERD_01_PaymentObservation : "matched provider evidence"
+  SRS_LERD_01_PaymentOrder ||--o| SRS_LERD_01_PaymentApplication : "application record"
+  SRS_LERD_01_SubscriptionIntent ||--o| SRS_LERD_01_PaymentApplication : "applied purchase"
+  SRS_LERD_01_Organization ||--o| SRS_LERD_01_Subscription : "commercial agreement"
+  SRS_LERD_01_Subscription ||--o{ SRS_LERD_01_SubscriptionPeriod : "paid periods"
+  SRS_LERD_01_PaymentOrder ||--o| SRS_LERD_01_SubscriptionPeriod : "funds period"
+  SRS_LERD_01_SubscriptionPeriod |o--o| SRS_LERD_01_PaymentApplication : "applied period"

@@ -1,0 +1,41 @@
+---
+title: "ACT-02 - Renewal, seats and administrative access"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart TD
+    SRS_ACT_02_N1(("Start"))
+    SRS_ACT_02_N2["<b>System Administrator</b><br/>Review period, Employee seats<br/>and payment history"]
+    SRS_ACT_02_N3["<b>System Administrator</b><br/>Select existing renewal plan and<br/>confirm payment"]
+    SRS_ACT_02_N9["<b>System Administrator</b><br/>Deactivate excess memberships or<br/>resolve capacity"]
+    SRS_ACT_02_N4["<b>payOS</b><br/>Provide signed payment outcome"]
+    SRS_ACT_02_N5{"<b>System</b><br/>Full payment verified?"}
+    SRS_ACT_02_N6{"<b>System</b><br/>Seat capacity sufficient?"}
+    SRS_ACT_02_N7["<b>System</b><br/>Apply renewal and record paid<br/>period"]
+    SRS_ACT_02_N8["<b>System</b><br/>Retain paid order; show<br/>waiting-for-capacity state"]
+    SRS_ACT_02_N10["<b>System</b><br/>Re-evaluate pending application"]
+    SRS_ACT_02_N11["<b>System</b><br/>Keep renewal unresolved; do not<br/>grant paid access"]
+    SRS_ACT_02_N13["<b>System</b><br/>Evaluate paid period and<br/>administrative suspension<br/>independently"]
+    SRS_ACT_02_N14(("End"))
+    SRS_ACT_02_N12["<b>Platform Administrator</b><br/>Suspend or reactivate workspace<br/>when authorized"]
+  SRS_ACT_02_N1 --> SRS_ACT_02_N2
+  SRS_ACT_02_N2 --> SRS_ACT_02_N3
+  SRS_ACT_02_N3 --> SRS_ACT_02_N4
+  SRS_ACT_02_N4 --> SRS_ACT_02_N5
+  SRS_ACT_02_N5 -->|"yes"| SRS_ACT_02_N6
+  SRS_ACT_02_N6 -->|"yes"| SRS_ACT_02_N7
+  SRS_ACT_02_N6 -->|"no"| SRS_ACT_02_N8
+  SRS_ACT_02_N8 --> SRS_ACT_02_N9
+  SRS_ACT_02_N9 --> SRS_ACT_02_N10
+  SRS_ACT_02_N5 -->|"no"| SRS_ACT_02_N11
+  SRS_ACT_02_N7 --> SRS_ACT_02_N12
+  SRS_ACT_02_N10 --> SRS_ACT_02_N12
+  SRS_ACT_02_N11 --> SRS_ACT_02_N12
+  SRS_ACT_02_N12 --> SRS_ACT_02_N13
+  SRS_ACT_02_N13 --> SRS_ACT_02_N14
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  class SRS_ACT_02_N5,SRS_ACT_02_N6 decision
+  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+  class SRS_ACT_02_N1,SRS_ACT_02_N14 entry
+

@@ -1,0 +1,31 @@
+---
+title: "SEQ-01 - Registration and verification"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  actor SDD_SEQ_01_Guest as Guest
+  participant SDD_SEQ_01_UI as Registration UI
+  participant SDD_SEQ_01_API as RegistrationController
+  participant SDD_SEQ_01_Service as RegistrationService
+  participant SDD_SEQ_01_DB as RegistrationStore /<br/>PostgreSQL
+  participant SDD_SEQ_01_Ports as Secrets and delivery ports
+  SDD_SEQ_01_Guest->>SDD_SEQ_01_UI: submit organization/account fields
+  SDD_SEQ_01_UI->>SDD_SEQ_01_API: register command
+  SDD_SEQ_01_API->>SDD_SEQ_01_Service: register(validated fields, password, address)
+  SDD_SEQ_01_Service->>SDD_SEQ_01_Ports: require configuration, hash password
+  SDD_SEQ_01_Service->>SDD_SEQ_01_DB: transaction, lock email, insert account/registration
+  SDD_SEQ_01_Service->>SDD_SEQ_01_DB: queue proof delivery, audit
+  SDD_SEQ_01_DB-->>SDD_SEQ_01_Service: committed registration
+  SDD_SEQ_01_Service-->>SDD_SEQ_01_UI: resumable stage
+  SDD_SEQ_01_Guest->>SDD_SEQ_01_UI: enter received email code
+  SDD_SEQ_01_UI->>SDD_SEQ_01_API: verify email
+  SDD_SEQ_01_API->>SDD_SEQ_01_Service: verifyEmail(actor, code, address)
+  SDD_SEQ_01_Service->>SDD_SEQ_01_DB: lock proof and registration
+  SDD_SEQ_01_Service->>SDD_SEQ_01_Ports: compare proof digest and validity
+  alt valid unconsumed proof
+  SDD_SEQ_01_Service->>SDD_SEQ_01_DB: consume proof, record verification
+  SDD_SEQ_01_Service-->>SDD_SEQ_01_UI: MFA enrollment stage
+  else invalid / expired / rate-limited
+  SDD_SEQ_01_Service-->>SDD_SEQ_01_UI: explicit failure, stage unchanged
+  end

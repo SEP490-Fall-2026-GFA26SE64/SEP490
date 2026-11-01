@@ -1,0 +1,74 @@
+---
+title: "LERD-04 - Pathway, processing and reporting"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","lineColor":"#64748b","textColor":"#0f1729","background":"#ffffff","edgeLabelBackground":"#ffffff"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+---
+erDiagram
+  SRS_LERD_04_Account["Account"]
+  SRS_LERD_04_LearnerState["LearnerState"]
+  SRS_LERD_04_EmployeeRoleSelection["EmployeeRoleSelection"]
+  SRS_LERD_04_OccupationProfile["OccupationProfile"]
+  SRS_LERD_04_InitialGapSnapshot["InitialGapSnapshot"]
+  SRS_LERD_04_InitialPathwayRequest["InitialPathwayRequest"]
+  SRS_LERD_04_InitialPathwayRun["InitialPathwayRun"]
+  SRS_LERD_04_InitialPathwayRevision["InitialPathwayRevision"]
+  SRS_LERD_04_InitialPathwayModule["InitialPathwayModule"]
+  SRS_LERD_04_InitialPathwayTeaching["InitialPathwayTeaching"]
+  SRS_LERD_04_InitialPathwayTarget["InitialPathwayTarget"]
+  SRS_LERD_04_InitialPathwayDependency["InitialPathwayDependency"]
+  SRS_LERD_04_InitialPathwayOverride["InitialPathwayOverride"]
+  SRS_LERD_04_InitialPathwayApproval["InitialPathwayApproval"]
+  SRS_LERD_04_InitialPathwayCurrent["InitialPathwayCurrent"]
+  SRS_LERD_04_InitialPathwayReceipt["InitialPathwayReceipt"]
+  SRS_LERD_04_ProcessingStream["ProcessingStream"]
+  SRS_LERD_04_ProfileRevision["ProfileRevision"]
+  SRS_LERD_04_RecommendationRun["RecommendationRun"]
+  SRS_LERD_04_PathwayRevision["PathwayRevision"]
+  SRS_LERD_04_PathwayStep["PathwayStep"]
+  SRS_LERD_04_PathwayApproval["PathwayApproval"]
+  SRS_LERD_04_LearningActivity["LearningActivity"]
+  SRS_LERD_04_AuditEvent["AuditEvent"]
+  SRS_LERD_04_OutboxEvent["OutboxEvent"]
+  SRS_LERD_04_ProcessingJob["ProcessingJob"]
+  SRS_LERD_04_ProcessingReceipt["ProcessingReceipt"]
+  SRS_LERD_04_CohortSnapshot["CohortSnapshot"]
+  SRS_LERD_04_RoiScenario["RoiScenario"]
+  %% Initial pathway tables are defined in workspace V33 and refined by V34-V35; live application is not asserted.
+  SRS_LERD_04_Account ||--o| SRS_LERD_04_LearnerState : "learner state"
+  SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_EmployeeRoleSelection : "role selections"
+  SRS_LERD_04_EmployeeRoleSelection ||--o{ SRS_LERD_04_InitialGapSnapshot : "role gap snapshots"
+  SRS_LERD_04_OccupationProfile ||--o{ SRS_LERD_04_InitialGapSnapshot : "baseline mastery source"
+  SRS_LERD_04_InitialGapSnapshot ||--o{ SRS_LERD_04_InitialPathwayRequest : "frozen planning input"
+  SRS_LERD_04_InitialPathwayRequest ||--o{ SRS_LERD_04_InitialPathwayRun : "generation runs"
+  SRS_LERD_04_InitialPathwayRequest ||--o{ SRS_LERD_04_InitialPathwayRevision : "content revisions"
+  SRS_LERD_04_InitialPathwayRun ||--o{ SRS_LERD_04_InitialPathwayRevision : "generation origin"
+  SRS_LERD_04_InitialPathwayRevision ||--o{ SRS_LERD_04_InitialPathwayModule : "ordered modules"
+  SRS_LERD_04_InitialPathwayModule ||--o{ SRS_LERD_04_InitialPathwayTarget : "skill targets"
+  SRS_LERD_04_InitialPathwayModule ||--o{ SRS_LERD_04_InitialPathwayTeaching : "format2 skill teaching"
+  SRS_LERD_04_InitialPathwayRevision ||--o{ SRS_LERD_04_InitialPathwayTeaching : "format2 revision scope"
+  SRS_LERD_04_InitialPathwayModule ||--o{ SRS_LERD_04_InitialPathwayDependency : "required dependencies"
+  SRS_LERD_04_InitialPathwayModule |o--o{ SRS_LERD_04_InitialPathwayDependency : "optional prerequisite provider"
+  SRS_LERD_04_InitialPathwayRevision ||--o| SRS_LERD_04_InitialPathwayOverride : "previous revision"
+  SRS_LERD_04_InitialPathwayRevision ||--o| SRS_LERD_04_InitialPathwayOverride : "next revision"
+  SRS_LERD_04_Account ||--o{ SRS_LERD_04_InitialPathwayOverride : "Expert edits"
+  SRS_LERD_04_InitialPathwayRevision ||--o| SRS_LERD_04_InitialPathwayApproval : "approved content"
+  SRS_LERD_04_Account ||--o{ SRS_LERD_04_InitialPathwayApproval : "Expert confirmation"
+  SRS_LERD_04_InitialPathwayRequest ||--o| SRS_LERD_04_InitialPathwayCurrent : "current pointer"
+  SRS_LERD_04_InitialPathwayRevision |o--o| SRS_LERD_04_InitialPathwayCurrent : "selected revision"
+  SRS_LERD_04_Account ||--o{ SRS_LERD_04_InitialPathwayReceipt : "command receipts"
+  %% Legacy pathway and reporting foundations remain separate from the initial pathway aggregate.
+  SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_ProcessingStream : "evidence processing streams"
+  SRS_LERD_04_ProcessingStream ||--o{ SRS_LERD_04_ProfileRevision : "profile revisions"
+  SRS_LERD_04_ProfileRevision ||--o{ SRS_LERD_04_RecommendationRun : "legacy recommendation input"
+  SRS_LERD_04_RecommendationRun ||--o{ SRS_LERD_04_PathwayRevision : "legacy pathway generation"
+  SRS_LERD_04_PathwayRevision ||--o{ SRS_LERD_04_PathwayStep : "legacy steps"
+  SRS_LERD_04_LearningActivity ||--o{ SRS_LERD_04_PathwayStep : "assigned learning activity"
+  SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_LearningActivity : "learning activities"
+  SRS_LERD_04_PathwayRevision ||--o| SRS_LERD_04_PathwayApproval : "legacy approval"
+  SRS_LERD_04_Account ||--o{ SRS_LERD_04_PathwayApproval : "legacy approving account"
+  SRS_LERD_04_Account |o--o{ SRS_LERD_04_AuditEvent : "human actor if present"
+  SRS_LERD_04_OutboxEvent ||--o{ SRS_LERD_04_ProcessingJob : "asynchronous jobs"
+  SRS_LERD_04_LearnerState |o--o{ SRS_LERD_04_ProcessingJob : "optional learner scope"
+  SRS_LERD_04_Account ||--o{ SRS_LERD_04_CohortSnapshot : "reporting cohort creator"
+  SRS_LERD_04_CohortSnapshot ||--o{ SRS_LERD_04_RoiScenario : "scenario scope"
+  SRS_LERD_04_Account ||--o{ SRS_LERD_04_RoiScenario : "scenario owner"
+  %% ProcessingReceipt has event/handler identity but no declared FK; no SQL relationship is invented.

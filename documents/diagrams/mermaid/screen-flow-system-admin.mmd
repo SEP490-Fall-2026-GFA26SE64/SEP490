@@ -1,0 +1,62 @@
+---
+title: "System Administrator Screen Flow"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#000000", primaryBorderColor: "#000000", lineColor: "#000000", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 30, rankSpacing: 65, padding: 16}
+  elk: {mergeEdges: false}
+---
+flowchart LR
+  A_Login["Login"]
+  A_Subscription["Subscription"]
+  A_Users["User Accounts"]
+  A_UserForm("Member Editor")
+  A_UserDetail("User Details")
+  A_Membership("Membership Confirmation")
+  A_Departments["Departments"]
+  A_DepartmentForm("Department Editor")
+  A_DeleteDepartment("Delete Department")
+  A_Roster("Department Roster")
+  A_Settings["Organization Settings"]
+  A_Console["System Console"]
+  A_Graph["Knowledge Graph"]
+  A_Profile["Profile"]
+  A_Provider["payOS Checkout"]
+  A_Result["Payment Result"]
+
+  A_Login -->|"Continue"| A_Subscription
+  A_Subscription --> A_Users
+  A_Users -->|"Invite / edit"| A_UserForm
+  A_UserForm -->|"Save / close"| A_Users
+  A_Users -->|"View"| A_UserDetail
+  A_UserDetail -->|"Close"| A_Users
+  A_Users -->|"Change membership status"| A_Membership
+  A_Membership -->|"Confirm / cancel"| A_Users
+  A_Subscription --> A_Departments
+  A_Departments -->|"Create / edit"| A_DepartmentForm
+  A_DepartmentForm -->|"Save / close"| A_Departments
+  A_Departments -->|"Delete"| A_DeleteDepartment
+  A_DeleteDepartment -->|"Confirm / cancel"| A_Departments
+  A_Departments -->|"View roster"| A_Roster
+  A_Roster -->|"Close"| A_Departments
+  A_Subscription --> A_Settings
+  A_Subscription --> A_Console
+  A_Subscription --> A_Graph
+  A_Subscription -->|"User menu"| A_Profile
+  A_Profile -.->|"Direct access"| A_Subscription
+  A_Subscription -->|"Renew / pay"| A_Provider
+  A_Provider -->|"Return / cancel"| A_Result
+  A_Subscription -->|"View receipt"| A_Result
+  A_Result -->|"Back"| A_Subscription
+  A_Subscription -->|"Logout"| A_Login
+
+  %% W denotes /workspace/:workspaceSlug. Sidebar links work from every WorkspaceLayout page.
+  %% The actual default administrator landing page is billing, not /admin/dashboard.
+  %% Renewal plan selection is an inline PlanCatalog, not a renewal dialog or a distinct route.
+  %% /admin/user and /admin/billing are aliases; the design showcase and server status are omitted as technical utilities.
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px
+  classDef external fill:#ffffff,stroke:#000000,color:#000000,stroke-dasharray:5 4
+  class A_Provider external

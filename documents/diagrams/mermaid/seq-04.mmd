@@ -1,0 +1,21 @@
+---
+title: "SEQ-04 - Serialized entitlement changes"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  actor SDD_SEQ_04_Admin as System Administrator
+  participant SDD_SEQ_04_Service as Membership / billing service
+  participant SDD_SEQ_04_DB as PostgreSQL
+  SDD_SEQ_04_Admin->>SDD_SEQ_04_Service: activate Employee or apply renewal
+  SDD_SEQ_04_Service->>SDD_SEQ_04_DB: transaction and organization coordination lock
+  SDD_SEQ_04_Service->>SDD_SEQ_04_DB: read current/scheduled period and active seats
+  alt requested capacity is valid
+  SDD_SEQ_04_Service->>SDD_SEQ_04_DB: commit membership / period change
+  SDD_SEQ_04_Service-->>SDD_SEQ_04_Admin: confirmed outcome
+  else paid renewal below active Employee count
+  SDD_SEQ_04_Service->>SDD_SEQ_04_DB: preserve paid evidence, WAITING_CAPACITY
+  SDD_SEQ_04_Service-->>SDD_SEQ_04_Admin: explicit capacity remediation
+  else unauthorized / stale / unavailable entitlement
+  SDD_SEQ_04_Service-->>SDD_SEQ_04_Admin: reject, existing records preserved
+  end

@@ -1,0 +1,148 @@
+---
+title: "DB-01 - Identity, registration, catalog references and processing V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_01_t_organization["organization"] {
+    <<table>>
+    uuid organization_id PK_REQUIRED
+  }
+  class SDD_DB_01_t_organizational_unit["organizational_unit"] {
+    <<table>>
+    uuid unit_id PK_REQUIRED
+    uuid parent_unit_id FK_NULLABLE
+    uuid organization_id FK_NULLABLE
+  }
+  class SDD_DB_01_t_account["account"] {
+    <<table>>
+    uuid account_id PK_REQUIRED
+    uuid unit_id FK_NULLABLE
+    uuid organization_id FK_NULLABLE
+  }
+  class SDD_DB_01_t_application_role["application_role"] {
+    <<table>>
+    text role_code PK_REQUIRED
+  }
+  class SDD_DB_01_t_account_role["account_role"] {
+    <<table>>
+    uuid account_id PK_FK_REQUIRED
+    text role_code PK_FK_REQUIRED
+  }
+  class SDD_DB_01_t_manager_scope["manager_scope"] {
+    <<table>>
+    uuid manager_id PK_FK_REQUIRED
+    uuid unit_id PK_FK_REQUIRED
+  }
+  class SDD_DB_01_t_session["session"] {
+    <<table>>
+    uuid session_id PK_REQUIRED
+    uuid account_id FK_REQUIRED
+  }
+  class SDD_DB_01_t_learner_state["learner_state"] {
+    <<table>>
+    uuid learner_id PK_FK_REQUIRED
+  }
+  class SDD_DB_01_t_catalog_guard["catalog_guard"] {
+    <<table>>
+    integer guard_id PK_REQUIRED
+  }
+  class SDD_DB_01_t_catalog_release["catalog_release"] {
+    <<table>>
+    uuid release_id PK_REQUIRED
+  }
+  class SDD_DB_01_t_catalog_reference["catalog_reference"] {
+    <<table>>
+    uuid catalog_ref_id PK_REQUIRED
+    uuid release_id FK_REQUIRED
+  }
+  class SDD_DB_01_t_target_selection["target_selection"] {
+    <<table>>
+    uuid selection_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+    uuid role_ref_id FK_REQUIRED
+    text role_kind FK_REQUIRED
+  }
+  class SDD_DB_01_t_target_selection_request["target_selection_request"] {
+    <<table>>
+    uuid request_id PK_REQUIRED
+    uuid actor_id FK_REQUIRED
+    uuid result_selection_id FK_NULLABLE
+  }
+  class SDD_DB_01_t_outbox_event["outbox_event"] {
+    <<table>>
+    uuid event_id PK_REQUIRED
+  }
+  class SDD_DB_01_t_processing_job["processing_job"] {
+    <<table>>
+    uuid job_id PK_REQUIRED
+    uuid event_id FK_REQUIRED
+    uuid learner_id FK_NULLABLE
+    uuid predecessor_job_id FK_NULLABLE
+  }
+  class SDD_DB_01_t_processing_receipt["processing_receipt"] {
+    <<table>>
+    uuid event_id PK_REQUIRED
+    text handler PK_REQUIRED
+  }
+  class SDD_DB_01_t_audit_event["audit_event"] {
+    <<table>>
+    uuid audit_event_id PK_REQUIRED
+    uuid actor_id FK_NULLABLE
+  }
+  class SDD_DB_01_t_organization_registration["organization_registration"] {
+    <<table>>
+    uuid registration_id PK_REQUIRED
+    uuid account_id FK_REQUIRED
+  }
+  class SDD_DB_01_t_account_totp["account_totp"] {
+    <<table>>
+    uuid account_id PK_FK_REQUIRED
+  }
+  class SDD_DB_01_t_account_recovery_code["account_recovery_code"] {
+    <<table>>
+    uuid account_id PK_FK_REQUIRED
+    platform_content_hash code_hash PK_REQUIRED
+  }
+  class SDD_DB_01_t_registration_email_verification["registration_email_verification"] {
+    <<table>>
+    uuid account_id PK_FK_REQUIRED
+  }
+  class SDD_DB_01_t_registration_rate_limit["registration_rate_limit"] {
+    <<table>>
+    platform_content_hash bucket_key PK_REQUIRED
+  }
+  class SDD_DB_01_t_registration_session["registration_session"] {
+    <<table>>
+    character_36 primary_id PK_REQUIRED
+  }
+  class SDD_DB_01_t_registration_session_attributes["registration_session_attributes"] {
+    <<table>>
+    character_36 session_primary_id PK_FK_REQUIRED
+    character_varying_200 attribute_name PK_REQUIRED
+  }
+  SDD_DB_01_t_account_totp --> SDD_DB_01_t_account_recovery_code : FK001
+  SDD_DB_01_t_account --> SDD_DB_01_t_account_role : FK002
+  SDD_DB_01_t_application_role --> SDD_DB_01_t_account_role : FK003
+  SDD_DB_01_t_account --> SDD_DB_01_t_account_totp : FK004
+  SDD_DB_01_t_organization --> SDD_DB_01_t_account : FK005
+  SDD_DB_01_t_organizational_unit --> SDD_DB_01_t_account : FK006
+  SDD_DB_01_t_organizational_unit --> SDD_DB_01_t_account : FK007
+  SDD_DB_01_t_account --> SDD_DB_01_t_audit_event : FK024
+  SDD_DB_01_t_catalog_release --> SDD_DB_01_t_catalog_reference : FK099
+  SDD_DB_01_t_account --> SDD_DB_01_t_learner_state : FK145
+  SDD_DB_01_t_account --> SDD_DB_01_t_manager_scope : FK148
+  SDD_DB_01_t_organizational_unit --> SDD_DB_01_t_manager_scope : FK149
+  SDD_DB_01_t_account --> SDD_DB_01_t_organization_registration : FK165
+  SDD_DB_01_t_organization --> SDD_DB_01_t_organizational_unit : FK168
+  SDD_DB_01_t_organizational_unit --> SDD_DB_01_t_organizational_unit : FK169
+  SDD_DB_01_t_outbox_event --> SDD_DB_01_t_processing_job : FK186
+  SDD_DB_01_t_learner_state --> SDD_DB_01_t_processing_job : FK187
+  SDD_DB_01_t_processing_job --> SDD_DB_01_t_processing_job : FK188
+  SDD_DB_01_t_organization_registration --> SDD_DB_01_t_registration_email_verification : FK208
+  SDD_DB_01_t_registration_session --> SDD_DB_01_t_registration_session_attributes : FK209
+  SDD_DB_01_t_account --> SDD_DB_01_t_session : FK212
+  SDD_DB_01_t_account --> SDD_DB_01_t_target_selection_request : FK223
+  SDD_DB_01_t_target_selection --> SDD_DB_01_t_target_selection_request : FK224
+  SDD_DB_01_t_learner_state --> SDD_DB_01_t_target_selection : FK225
+  SDD_DB_01_t_catalog_reference --> SDD_DB_01_t_target_selection : FK226

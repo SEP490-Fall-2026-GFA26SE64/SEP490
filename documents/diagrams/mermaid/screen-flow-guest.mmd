@@ -1,0 +1,53 @@
+---
+title: "Guest Screen Flow"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#000000", primaryBorderColor: "#000000", lineColor: "#000000", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 32, rankSpacing: 65, padding: 16}
+  elk: {mergeEdges: false}
+---
+flowchart TB
+  G_Home["Home"]
+  G_Register["Registration"]
+  G_Resume["Resume Registration"]
+  G_Login["Login"]
+  G_Activate["Account Activation"]
+  G_Graph("Graph Selection")
+  G_Plans["Choose a Subscription"]
+  G_Checkout["Checkout"]
+  G_Provider["payOS Checkout"]
+  G_Result["Payment Result"]
+  G_Status["Onboarding Status"]
+  G_Workspace["Subscription"]
+
+  G_Home -->|"Register"| G_Register
+  G_Home -->|"Resume"| G_Resume
+  G_Home -->|"Login"| G_Login
+  G_Home -.->|"Invite link"| G_Activate
+  G_Activate -->|"Login"| G_Login
+  G_Register -->|"Choose graph"| G_Graph
+  G_Graph -->|"Apply / close"| G_Register
+  G_Register -->|"Resume"| G_Resume
+  G_Resume -->|"Register again"| G_Register
+  G_Register -->|"Complete"| G_Plans
+  G_Resume -->|"Complete"| G_Plans
+  G_Plans -->|"Select plan"| G_Checkout
+  G_Checkout -->|"Pay"| G_Provider
+  G_Provider -->|"Return / cancel"| G_Result
+  G_Checkout -->|"Enter when ready"| G_Workspace
+  G_Result -->|"Enter when ready"| G_Workspace
+  G_Status -->|"Enter when ready"| G_Workspace
+  G_Checkout -->|"Resume session"| G_Resume
+  G_Result -->|"Resume session"| G_Resume
+  G_Checkout -.->|"Direct access"| G_Status
+
+  %% /register and /guest/register use the same component; /packages and /guest/plans share the plan view.
+  %% Registration stages are inline states, not separate pages or dialogs.
+  %% Checkout and onboarding status share GuestSubscriptionPage(mode=status).
+  %% Development payment bypass, when explicitly enabled, does not imply provider payment.
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px
+  classDef external fill:#ffffff,stroke:#000000,color:#000000,stroke-dasharray:5 4
+  class G_Provider,G_Workspace external

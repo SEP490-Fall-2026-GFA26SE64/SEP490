@@ -1,0 +1,87 @@
+---
+title: "DB-07 - Current role, Occupation profile and tenant resource binding V1-V32 key-focused physical ERD"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class SDD_DB_07_t_employee_role_selection["employee_role_selection"] {
+    <<table>>
+    uuid selection_id PK_REQUIRED
+    uuid learner_id FK_REQUIRED
+  }
+  class SDD_DB_07_t_employee_role_selection_request["employee_role_selection_request"] {
+    <<table>>
+    uuid organization_id PK_REQUIRED
+    uuid learner_id PK_REQUIRED
+    text retry_key PK_REQUIRED
+    uuid selection_id FK_REQUIRED
+  }
+  class SDD_DB_07_t_employee_occupation_profile["employee_occupation_profile"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid learner_id PK_FK_REQUIRED
+    text occupation_id PK_FK_REQUIRED
+    uuid attempt_id FK_REQUIRED
+    uuid blueprint_id FK_REQUIRED
+    integer blueprint_version FK_REQUIRED
+  }
+  class SDD_DB_07_t_workspace_baseline_resource["workspace_baseline_resource"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid occupation_reference_id FK_REQUIRED
+    text graph_occupation_id PK_REQUIRED
+    uuid question_bank_id FK_NULLABLE
+    uuid model_version_id FK_NULLABLE
+    uuid mastery_mapping_version_id FK_NULLABLE
+  }
+  class SDD_DB_07_t_baseline_adaptive_attempt["baseline_adaptive_attempt"] {
+    <<external>>
+    uuid attempt_id PK_REQUIRED
+  }
+  class SDD_DB_07_t_baseline_adaptive_blueprint_version["baseline_adaptive_blueprint_<br/>version"] {
+    <<external>>
+    uuid blueprint_id PK_FK_REQUIRED
+    integer version PK_REQUIRED
+  }
+  class SDD_DB_07_t_learner_state["learner_state"] {
+    <<external>>
+    uuid learner_id PK_FK_REQUIRED
+  }
+  class SDD_DB_07_t_mastery_mapping_version["mastery_mapping_version"] {
+    <<external>>
+    uuid mastery_mapping_version_id PK_REQUIRED
+  }
+  class SDD_DB_07_t_model_version["model_version"] {
+    <<external>>
+    uuid model_version_id PK_REQUIRED
+  }
+  class SDD_DB_07_t_occupation_department_reference["occupation_department_reference"] {
+    <<external>>
+    uuid occupation_reference_id PK_REQUIRED
+  }
+  class SDD_DB_07_t_organization["organization"] {
+    <<external>>
+    uuid organization_id PK_REQUIRED
+  }
+  class SDD_DB_07_t_question_bank["question_bank"] {
+    <<external>>
+    uuid question_bank_id PK_REQUIRED
+  }
+  SDD_DB_07_t_baseline_adaptive_attempt ..> SDD_DB_07_t_employee_occupation_profile : FK110
+  SDD_DB_07_t_baseline_adaptive_blueprint_version ..> SDD_DB_07_t_employee_occupation_profile : FK111
+  SDD_DB_07_t_employee_role_selection --> SDD_DB_07_t_employee_role_selection_request : FK112
+  SDD_DB_07_t_learner_state ..> SDD_DB_07_t_employee_role_selection : FK113
+  SDD_DB_07_t_mastery_mapping_version ..> SDD_DB_07_t_workspace_baseline_resource : FK233
+  SDD_DB_07_t_model_version ..> SDD_DB_07_t_workspace_baseline_resource : FK234
+  SDD_DB_07_t_occupation_department_reference ..> SDD_DB_07_t_workspace_baseline_resource : FK235
+  SDD_DB_07_t_organization ..> SDD_DB_07_t_workspace_baseline_resource : FK236
+  SDD_DB_07_t_question_bank ..> SDD_DB_07_t_workspace_baseline_resource : FK237
+
+  style SDD_DB_07_t_baseline_adaptive_attempt fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_baseline_adaptive_blueprint_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_learner_state fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_mastery_mapping_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_model_version fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_occupation_department_reference fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_organization fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  style SDD_DB_07_t_question_bank fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

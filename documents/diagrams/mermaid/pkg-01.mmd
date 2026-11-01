@@ -1,0 +1,272 @@
+---
+title: "PKG-01 - Complete backend packages: com.adaptlearngraph"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":18,"rankSpacing":42,"curve":"linear","diagramPadding":24,"padding":12,"wrappingWidth":250}}
+---
+flowchart TD
+  %% Every namespace below is relative to com.adaptlearngraph.
+  subgraph SDD_PKG_01_ROW1["01 - Platform and shared services"]
+    direction LR
+    subgraph SDD_PKG_01_G1["Application entry package"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph["com.adaptlearngraph"]
+    end
+    subgraph SDD_PKG_01_G14["platform"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_platform["package root<br/> [test-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_platform_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_platform_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_platform_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_platform_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_platform_infrastructure["infrastructure"]
+    end
+    subgraph SDD_PKG_01_G16["shared"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_shared_infrastructure_mail["infrastructure.mail"]
+    end
+    SDD_PKG_01_G1 ~~~ SDD_PKG_01_G14
+    SDD_PKG_01_G14 ~~~ SDD_PKG_01_G16
+  end
+  subgraph SDD_PKG_01_ROW2["02 - Identity and subscriptions"]
+    direction LR
+    subgraph SDD_PKG_01_G11["identity"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_identity_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_identity_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_identity_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_identity_infrastructure["infrastructure"]
+    end
+    subgraph SDD_PKG_01_G17["subscription"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_subscription_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_subscription_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_subscription_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_subscription_infrastructure["infrastructure"]
+    end
+    SDD_PKG_01_G11 ~~~ SDD_PKG_01_G17
+  end
+  subgraph SDD_PKG_01_ROW3["03 - Catalog and learning"]
+    direction LR
+    subgraph SDD_PKG_01_G8["catalog"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_catalog["package root<br/> [test-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_catalog_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_catalog_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_catalog_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_catalog_infrastructure["infrastructure"]
+    end
+    subgraph SDD_PKG_01_G9["competency"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_competency["package root<br/> [test-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_competency_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_competency_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_competency_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_competency_infrastructure["infrastructure"]
+    end
+    subgraph SDD_PKG_01_G12["learning"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_learning_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_learning_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_learning_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_learning_infrastructure["infrastructure"]
+    end
+    SDD_PKG_01_G8 ~~~ SDD_PKG_01_G9
+    SDD_PKG_01_G9 ~~~ SDD_PKG_01_G12
+  end
+  subgraph SDD_PKG_01_ROW4["04 - Assessment configuration"]
+    direction LR
+    subgraph SDD_PKG_01_G7["assessment"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_infrastructure["infrastructure"]
+    end
+    subgraph SDD_PKG_01_G4["assessment.adaptive"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive["package root<br/> [test-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_demo["demo"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_infrastructure["infrastructure"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_psychometrics["psychometrics"]
+    end
+    SDD_PKG_01_G7 ~~~ SDD_PKG_01_G4
+  end
+  subgraph SDD_PKG_01_ROW5["05 - Attempts and calibration"]
+    direction LR
+    subgraph SDD_PKG_01_G5["assessment.adaptive.attempt"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_in["application.port.in"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_out["application.port.out"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_infrastructure["infrastructure"]
+    end
+    subgraph SDD_PKG_01_G6["assessment.adaptive.calibration"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_api["api"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_application["application"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_domain["domain"]
+      SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_infrastructure["infrastructure"]
+    end
+    SDD_PKG_01_G5 ~~~ SDD_PKG_01_G6
+  end
+  subgraph SDD_PKG_01_ROW6["06 - Foundations and verification"]
+    direction LR
+    subgraph SDD_PKG_01_G2["analytics"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_analytics_api["api<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_analytics_application["application<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_analytics_domain["domain<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_analytics_infrastructure["infrastructure<br/> [declaration-only]"]
+    end
+    subgraph SDD_PKG_01_G10["evaluation"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_evaluation_api["api<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_evaluation_application["application<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_evaluation_domain["domain<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_evaluation_infrastructure["infrastructure<br/> [declaration-only]"]
+    end
+    subgraph SDD_PKG_01_G13["pathway"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_pathway_api["api<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_pathway_application["application<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_pathway_domain["domain<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_pathway_infrastructure["infrastructure<br/> [declaration-only]"]
+    end
+    subgraph SDD_PKG_01_G15["recommendation"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_recommendation_api["api<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_recommendation_application["application<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_recommendation_domain["domain<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_recommendation_infrastructure["infrastructure<br/> [declaration-only]"]
+    end
+    subgraph SDD_PKG_01_G18["synchronization"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_synchronization_api["api<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_synchronization_application["application<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_synchronization_domain["domain<br/> [declaration-only]"]
+      SDD_PKG_01_P_com_adaptlearngraph_synchronization_infrastructure["infrastructure<br/> [declaration-only]"]
+    end
+    subgraph SDD_PKG_01_G3["architecture"]
+      direction TB
+      SDD_PKG_01_P_com_adaptlearngraph_architecture["package root<br/> [test-only]"]
+    end
+    SDD_PKG_01_G2 ~~~ SDD_PKG_01_G10
+    SDD_PKG_01_G10 ~~~ SDD_PKG_01_G13
+    SDD_PKG_01_G13 ~~~ SDD_PKG_01_G15
+    SDD_PKG_01_G15 ~~~ SDD_PKG_01_G18
+    SDD_PKG_01_G18 ~~~ SDD_PKG_01_G3
+  end
+  SDD_PKG_01_ROW1 ~~~ SDD_PKG_01_ROW2
+  SDD_PKG_01_ROW2 ~~~ SDD_PKG_01_ROW3
+  SDD_PKG_01_ROW3 ~~~ SDD_PKG_01_ROW4
+  SDD_PKG_01_ROW4 ~~~ SDD_PKG_01_ROW5
+  SDD_PKG_01_ROW5 ~~~ SDD_PKG_01_ROW6
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_domain
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_domain
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_application
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_domain
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_application
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_domain
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_application
+  SDD_PKG_01_P_com_adaptlearngraph_assessment_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_catalog_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_catalog_application
+  SDD_PKG_01_P_com_adaptlearngraph_catalog_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_catalog_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_catalog_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_catalog_domain
+  SDD_PKG_01_P_com_adaptlearngraph_catalog_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_catalog_application
+  SDD_PKG_01_P_com_adaptlearngraph_catalog_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_competency_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_competency_application
+  SDD_PKG_01_P_com_adaptlearngraph_competency_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_competency_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_competency_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_competency_domain
+  SDD_PKG_01_P_com_adaptlearngraph_competency_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_competency_application
+  SDD_PKG_01_P_com_adaptlearngraph_competency_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_identity_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_identity_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_identity_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_identity_domain
+  SDD_PKG_01_P_com_adaptlearngraph_identity_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_identity_application
+  SDD_PKG_01_P_com_adaptlearngraph_identity_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_identity_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_shared_infrastructure_mail
+  SDD_PKG_01_P_com_adaptlearngraph_learning_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_learning_application
+  SDD_PKG_01_P_com_adaptlearngraph_learning_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_learning_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_learning_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_learning_domain
+  SDD_PKG_01_P_com_adaptlearngraph_learning_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_learning_application
+  SDD_PKG_01_P_com_adaptlearngraph_learning_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_platform_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_platform_application
+  SDD_PKG_01_P_com_adaptlearngraph_platform_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_platform_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_platform_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_platform_domain
+  SDD_PKG_01_P_com_adaptlearngraph_platform_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_platform_application
+  SDD_PKG_01_P_com_adaptlearngraph_platform_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_platform_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_subscription_application
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_api -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_in
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_out
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_application -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_subscription_domain
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_shared_infrastructure_mail
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_subscription_application
+  SDD_PKG_01_P_com_adaptlearngraph_subscription_infrastructure -.->|"imports"| SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_out
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+  class SDD_PKG_01_P_com_adaptlearngraph entry
+  classDef foundation fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4
+  class SDD_PKG_01_P_com_adaptlearngraph_analytics_api,SDD_PKG_01_P_com_adaptlearngraph_analytics_application,SDD_PKG_01_P_com_adaptlearngraph_analytics_domain,SDD_PKG_01_P_com_adaptlearngraph_analytics_infrastructure,SDD_PKG_01_P_com_adaptlearngraph_evaluation_api,SDD_PKG_01_P_com_adaptlearngraph_evaluation_application,SDD_PKG_01_P_com_adaptlearngraph_evaluation_domain,SDD_PKG_01_P_com_adaptlearngraph_evaluation_infrastructure,SDD_PKG_01_P_com_adaptlearngraph_pathway_api,SDD_PKG_01_P_com_adaptlearngraph_pathway_application,SDD_PKG_01_P_com_adaptlearngraph_pathway_domain,SDD_PKG_01_P_com_adaptlearngraph_pathway_infrastructure,SDD_PKG_01_P_com_adaptlearngraph_recommendation_api,SDD_PKG_01_P_com_adaptlearngraph_recommendation_application,SDD_PKG_01_P_com_adaptlearngraph_recommendation_domain,SDD_PKG_01_P_com_adaptlearngraph_recommendation_infrastructure,SDD_PKG_01_P_com_adaptlearngraph_synchronization_api,SDD_PKG_01_P_com_adaptlearngraph_synchronization_application,SDD_PKG_01_P_com_adaptlearngraph_synchronization_domain,SDD_PKG_01_P_com_adaptlearngraph_synchronization_infrastructure foundation
+  classDef testOnly fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:3 3
+  class SDD_PKG_01_P_com_adaptlearngraph_architecture,SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive,SDD_PKG_01_P_com_adaptlearngraph_catalog,SDD_PKG_01_P_com_adaptlearngraph_competency,SDD_PKG_01_P_com_adaptlearngraph_platform testOnly
+  classDef api fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.3px
+  class SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_api,SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_api,SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_calibration_api,SDD_PKG_01_P_com_adaptlearngraph_assessment_api,SDD_PKG_01_P_com_adaptlearngraph_catalog_api,SDD_PKG_01_P_com_adaptlearngraph_competency_api,SDD_PKG_01_P_com_adaptlearngraph_identity_api,SDD_PKG_01_P_com_adaptlearngraph_learning_api,SDD_PKG_01_P_com_adaptlearngraph_platform_api,SDD_PKG_01_P_com_adaptlearngraph_subscription_api api
+  classDef ports fill:#ffffff,stroke:#64748b,color:#0f1729
+  class SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_assessment_adaptive_attempt_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_assessment_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_catalog_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_competency_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_identity_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_learning_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_platform_application_port_out,SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_in,SDD_PKG_01_P_com_adaptlearngraph_subscription_application_port_out ports
+  style SDD_PKG_01_G1 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G2 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G3 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G4 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G5 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G6 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G7 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G8 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G9 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G10 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G11 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G12 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G13 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G14 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G15 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G16 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G17 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_G18 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_ROW1 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_ROW2 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_ROW3 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_ROW4 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_ROW5 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_01_ROW6 fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12

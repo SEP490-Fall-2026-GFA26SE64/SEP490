@@ -1,0 +1,30 @@
+---
+title: "SEQ-10 - Planned intelligence pipeline with human confirmation"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  actor SDD_SEQ_10_Employee as Employee
+  actor SDD_SEQ_10_Expert as Expert
+  participant SDD_SEQ_10_Guidance as Guidance service
+  participant SDD_SEQ_10_LLM as Internal LLM
+  participant SDD_SEQ_10_Mastery as Competency/evidence service
+  participant SDD_SEQ_10_Pathway as Pathway service
+  participant SDD_SEQ_10_DB as Authorized graph and<br/>versioned state
+  SDD_SEQ_10_Employee->>SDD_SEQ_10_Guidance: request role guidance
+  SDD_SEQ_10_Guidance->>SDD_SEQ_10_DB: authorized candidate roles and minimized evidence
+  SDD_SEQ_10_Guidance->>SDD_SEQ_10_LLM: pinned prompt/model context
+  SDD_SEQ_10_LLM-->>SDD_SEQ_10_Guidance: suggested IDs and explanation
+  SDD_SEQ_10_Guidance->>SDD_SEQ_10_Guidance: validate candidate membership and output shape
+  SDD_SEQ_10_Guidance-->>SDD_SEQ_10_Employee: suggestions, no automatic selection
+  SDD_SEQ_10_Employee->>SDD_SEQ_10_DB: via selection use case: explicit role choice
+  SDD_SEQ_10_Pathway->>SDD_SEQ_10_Mastery: resolve applicable gaps
+  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: graph prerequisites and approved module coverage
+  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: save initial generated revision
+  SDD_SEQ_10_Expert->>SDD_SEQ_10_Pathway: include/exclude and confirm exact version
+  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: persist review and current pathway
+  SDD_SEQ_10_Employee->>SDD_SEQ_10_Mastery: via assessment service: new valid evidence
+  SDD_SEQ_10_Mastery->>SDD_SEQ_10_DB: idempotent profile revision and event
+  SDD_SEQ_10_Mastery->>SDD_SEQ_10_Pathway: updated evidence/gaps
+  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: recalculate remaining modules, preserve completed<br/>work/overrides
+  SDD_SEQ_10_Pathway-->>SDD_SEQ_10_Employee: versioned update and explanation

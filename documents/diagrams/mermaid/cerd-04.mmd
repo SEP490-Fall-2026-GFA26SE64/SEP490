@@ -1,0 +1,33 @@
+---
+title: "Pathways & Reporting"
+config:
+  layout: elk
+  look: classic
+  theme: base
+  fontFamily: "Arial, sans-serif"
+  themeCSS: ".node rect { stroke: #334155 !important; stroke-width: 1.5px !important; filter: none !important; }"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
+  er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
+---
+erDiagram
+  C04_Organization["Organization"]
+  C04_User["User"]
+  C04_Pathway["Learning Pathway"]
+  C04_Module["Learning Module"]
+  C04_Review["Review"]
+  C04_Progress["Learning Progress"]
+  C04_Report["Learning Report"]
+  C04_Cost["Training Cost"]
+  C04_Benefit["Monetary Benefit"]
+  C04_User ||--o{ C04_Pathway : "owns"
+  C04_Pathway }o--o{ C04_Module : "contains"
+  C04_User ||--o{ C04_Review : "performs"
+  C04_Pathway ||--o{ C04_Review : "receives"
+  C04_User ||--o{ C04_Progress : "makes"
+  C04_Module ||--o{ C04_Progress : "records"
+  C04_Organization ||--o{ C04_Report : "has"
+  C04_Report }o--o{ C04_Progress : "summarizes"
+  C04_Organization ||--o{ C04_Cost : "incurs"
+  C04_Organization ||--o{ C04_Benefit : "realizes"
+  C04_Report }o--o{ C04_Cost : "includes"
+  C04_Report }o--o{ C04_Benefit : "includes"

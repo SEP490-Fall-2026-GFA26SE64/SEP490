@@ -1,0 +1,119 @@
+---
+title: "PKG-02 - All frontend source and verification packages"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":18,"rankSpacing":42,"curve":"linear","diagramPadding":24,"padding":12,"wrappingWidth":250}}
+---
+flowchart LR
+  subgraph SDD_PKG_02_D_src["src"]
+    SDD_PKG_02_D_src_app["app"]
+    SDD_PKG_02_D_src_assets["assets"]
+    subgraph SDD_PKG_02_D_src_features["features"]
+      subgraph SDD_PKG_02_D_src_features_administration["administration"]
+        SDD_PKG_02_D_src_features_administration_dashboard["dashboard"]
+        SDD_PKG_02_D_src_features_administration_departments["departments"]
+        SDD_PKG_02_D_src_features_administration_design_system["design-system"]
+        subgraph SDD_PKG_02_D_src_features_administration_knowledge_graph["knowledge-graph"]
+          SDD_PKG_02_D_src_features_administration_knowledge_graph_components["components"]
+        end
+        SDD_PKG_02_D_src_features_administration_settings["settings"]
+        SDD_PKG_02_D_src_features_administration_subscription["subscription"]
+        SDD_PKG_02_D_src_features_administration_user_management["user-management"]
+      end
+      SDD_PKG_02_D_src_features_auth["auth"]
+      subgraph SDD_PKG_02_D_src_features_employee["employee"]
+        SDD_PKG_02_D_src_features_employee_assessment["assessment"]
+        SDD_PKG_02_D_src_features_employee_baseline_assessment["baseline-assessment"]
+        SDD_PKG_02_D_src_features_employee_components["components"]
+        SDD_PKG_02_D_src_features_employee_data["data"]
+        SDD_PKG_02_D_src_features_employee_guidance["guidance"]
+        SDD_PKG_02_D_src_features_employee_modules["modules"]
+        SDD_PKG_02_D_src_features_employee_overview["overview"]
+        SDD_PKG_02_D_src_features_employee_pathway["pathway"]
+        SDD_PKG_02_D_src_features_employee_riasec["riasec"]
+        SDD_PKG_02_D_src_features_employee_skills_catalog["skills-catalog"]
+        SDD_PKG_02_D_src_features_employee_target_roles["target-roles"]
+      end
+      subgraph SDD_PKG_02_D_src_features_expert["expert"]
+        SDD_PKG_02_D_src_features_expert_content["content"]
+        SDD_PKG_02_D_src_features_expert_guidance_review["guidance-review"]
+        SDD_PKG_02_D_src_features_expert_pathway_review["pathway-review"]
+        SDD_PKG_02_D_src_features_expert_target_roles["target-roles"]
+      end
+      SDD_PKG_02_D_src_features_guest["guest"]
+      subgraph SDD_PKG_02_D_src_features_manager["manager"]
+        SDD_PKG_02_D_src_features_manager_approvals["approvals"]
+        SDD_PKG_02_D_src_features_manager_assessment_bank["assessment-bank"]
+        SDD_PKG_02_D_src_features_manager_baseline_assessments["baseline-assessments"]
+        SDD_PKG_02_D_src_features_manager_baseline_blueprints["baseline-blueprints"]
+        SDD_PKG_02_D_src_features_manager_data["data"]
+        SDD_PKG_02_D_src_features_manager_learning_outcomes["learning-outcomes"]
+        SDD_PKG_02_D_src_features_manager_modules["modules"]
+        SDD_PKG_02_D_src_features_manager_occupations["occupations"]
+        SDD_PKG_02_D_src_features_manager_ontology["ontology"]
+        SDD_PKG_02_D_src_features_manager_roi_forecast["roi-forecast"]
+        subgraph SDD_PKG_02_D_src_features_manager_target_roles["target-roles"]
+          SDD_PKG_02_D_src_features_manager_target_roles_components["components"]
+        end
+        SDD_PKG_02_D_src_features_manager_team_matrix["team-matrix"]
+        SDD_PKG_02_D_src_features_manager_user_management["user-management"]
+      end
+      SDD_PKG_02_D_src_features_packages["packages"]
+      SDD_PKG_02_D_src_features_platform_admin["platform-admin"]
+      SDD_PKG_02_D_src_features_profile["profile"]
+      SDD_PKG_02_D_src_features_subscription["subscription"]
+      SDD_PKG_02_D_src_features_system["system"]
+    end
+    subgraph SDD_PKG_02_D_src_shared["shared"]
+      SDD_PKG_02_D_src_shared_api["api"]
+      SDD_PKG_02_D_src_shared_auth["auth"]
+      subgraph SDD_PKG_02_D_src_shared_components["components"]
+        SDD_PKG_02_D_src_shared_components_import["import"]
+        SDD_PKG_02_D_src_shared_components_typography["typography"]
+        SDD_PKG_02_D_src_shared_components_ui["ui"]
+      end
+      SDD_PKG_02_D_src_shared_hooks["hooks"]
+      subgraph SDD_PKG_02_D_src_shared_i18n["i18n"]
+        SDD_PKG_02_D_src_shared_i18n_translations["translations"]
+      end
+      SDD_PKG_02_D_src_shared_layouts["layouts"]
+      SDD_PKG_02_D_src_shared_lib["lib"]
+      SDD_PKG_02_D_src_shared_stores["stores"]
+      SDD_PKG_02_D_src_shared_styles["styles"]
+    end
+  end
+  subgraph SDD_PKG_02_VERIFICATION["Verification support - outside runtime src"]
+    subgraph SDD_PKG_02_D_system_tests["system-tests"]
+      SDD_PKG_02_D_system_tests_support["support"]
+    end
+    SDD_PKG_02_D_test_fixtures["test-fixtures"]
+  end
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_administration_dashboard
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_auth
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_employee_assessment
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_expert_content
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_guest
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_manager_approvals
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_platform_admin
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_profile
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_subscription
+  SDD_PKG_02_D_src_app -.->|"imports"| SDD_PKG_02_D_src_features_system
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+  class SDD_PKG_02_D_src_app entry
+  classDef testOnly fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:3 3
+  class SDD_PKG_02_D_system_tests_support,SDD_PKG_02_D_test_fixtures testOnly
+  classDef api fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.3px
+  class SDD_PKG_02_D_src_shared_api,SDD_PKG_02_D_src_shared_auth api
+  style SDD_PKG_02_D_src fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features_administration fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features_administration_knowledge_graph fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features_employee fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features_expert fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features_manager fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_features_manager_target_roles fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_shared fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_shared_components fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_src_shared_i18n fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_VERIFICATION fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12
+  style SDD_PKG_02_D_system_tests fill:#ffffff,stroke:#64748b,stroke-width:1px,color:#0f1729,rx:12,ry:12

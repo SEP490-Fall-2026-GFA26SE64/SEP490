@@ -1,0 +1,50 @@
+---
+title: "SCREEN-FLOW - Active navigation families"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+---
+flowchart TD
+  SRS_SCREEN_FLOW_Landing["Landing /"]
+  SRS_SCREEN_FLOW_Register["Register /register Resume<br/>/guest/resume"]
+  SRS_SCREEN_FLOW_Plans["Plans /packages"]
+  SRS_SCREEN_FLOW_Checkout["Checkout /guest/checkout"]
+  SRS_SCREEN_FLOW_Receipt["Payment result<br/>/guest/payment-result"]
+  SRS_SCREEN_FLOW_Setup["Setup /guest/onboarding-status"]
+  SRS_SCREEN_FLOW_Login["Sign in /login Activate<br/>/activate"]
+  SRS_SCREEN_FLOW_Platform["Platform /platform-admin/*"]
+  SRS_SCREEN_FLOW_Admin["Administration /admin/*"]
+  SRS_SCREEN_FLOW_LD["L and D /ld-manager/*"]
+  SRS_SCREEN_FLOW_Expert["Expert /expert/*"]
+  SRS_SCREEN_FLOW_Employee["Employee /employee/overview"]
+  SRS_SCREEN_FLOW_Roles["Role selection<br/>/employee/target-roles"]
+  SRS_SCREEN_FLOW_Skills["Upskilling /employee/upskilling"]
+  SRS_SCREEN_FLOW_Baseline["Baseline<br/>/employee/baseline-assessment/:attemptId"]
+  SRS_SCREEN_FLOW_Mastery["Mastery /employee/my-mastery"]
+  SRS_SCREEN_FLOW_Pathway["Pathway /employee/pathway"]
+  SRS_SCREEN_FLOW_Module["Module<br/>/employee/modules/:moduleId"]
+  SRS_SCREEN_FLOW_Quiz["Assessments /employee/assessment"]
+  SRS_SCREEN_FLOW_Profile["Profile /profile"]
+  SRS_SCREEN_FLOW_Landing --> SRS_SCREEN_FLOW_Register
+  SRS_SCREEN_FLOW_Landing --> SRS_SCREEN_FLOW_Plans
+  SRS_SCREEN_FLOW_Register -->|"verified registration"| SRS_SCREEN_FLOW_Plans
+  SRS_SCREEN_FLOW_Plans --> SRS_SCREEN_FLOW_Checkout
+  SRS_SCREEN_FLOW_Checkout --> SRS_SCREEN_FLOW_Receipt
+  SRS_SCREEN_FLOW_Receipt -->|"backend-confirmed application"| SRS_SCREEN_FLOW_Setup
+  SRS_SCREEN_FLOW_Setup -->|"workspace handoff"| SRS_SCREEN_FLOW_Admin
+  SRS_SCREEN_FLOW_Landing --> SRS_SCREEN_FLOW_Login
+  SRS_SCREEN_FLOW_Login --> SRS_SCREEN_FLOW_Platform
+  SRS_SCREEN_FLOW_Login --> SRS_SCREEN_FLOW_Admin
+  SRS_SCREEN_FLOW_Login --> SRS_SCREEN_FLOW_LD
+  SRS_SCREEN_FLOW_Login --> SRS_SCREEN_FLOW_Expert
+  SRS_SCREEN_FLOW_Login --> SRS_SCREEN_FLOW_Employee
+  SRS_SCREEN_FLOW_Employee --> SRS_SCREEN_FLOW_Roles
+  SRS_SCREEN_FLOW_Employee --> SRS_SCREEN_FLOW_Skills
+  SRS_SCREEN_FLOW_Roles -->|"required / resumable"| SRS_SCREEN_FLOW_Baseline
+  SRS_SCREEN_FLOW_Baseline --> SRS_SCREEN_FLOW_Mastery
+  SRS_SCREEN_FLOW_Employee --> SRS_SCREEN_FLOW_Pathway
+  SRS_SCREEN_FLOW_Pathway --> SRS_SCREEN_FLOW_Module
+  SRS_SCREEN_FLOW_Skills --> SRS_SCREEN_FLOW_Module
+  SRS_SCREEN_FLOW_Module --> SRS_SCREEN_FLOW_Quiz
+  SRS_SCREEN_FLOW_Employee --> SRS_SCREEN_FLOW_Profile
+
+  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+

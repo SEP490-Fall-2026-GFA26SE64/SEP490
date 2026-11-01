@@ -1,0 +1,29 @@
+---
+title: "SEQ-09 - Selection commit is separate from next-step readiness"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  actor SDD_SEQ_09_Employee as Employee
+  participant SDD_SEQ_09_API as CurrentRoleFlowController
+  participant SDD_SEQ_09_Flow as RoleBaselineFlow
+  participant SDD_SEQ_09_Guard as Trusted identity and catalog<br/>ports
+  participant SDD_SEQ_09_DB as Selection/profile store
+  participant SDD_SEQ_09_Baseline as Baseline port
+  SDD_SEQ_09_Employee->>SDD_SEQ_09_API: choose role + expected selection + idempotency key
+  SDD_SEQ_09_API->>SDD_SEQ_09_Flow: choose(...)
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_Guard: require Employee, tenant and visible role/Occupation
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: learner lock, replay and expected-selection checks
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: check in-progress assessment guard under learner<br/>coordination
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: end previous selection, save<br/>snapshot/revision/receipt/event
+  SDD_SEQ_09_Flow-->>SDD_SEQ_09_Employee: committed selection
+  SDD_SEQ_09_Employee->>SDD_SEQ_09_API: read next step
+  SDD_SEQ_09_API->>SDD_SEQ_09_Flow: view()
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: applicable profile coverage
+  alt complete valid coverage
+  SDD_SEQ_09_Flow-->>SDD_SEQ_09_Employee: baseline not required
+  else incomplete coverage
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_Baseline: own resumable attempt or current readiness
+  SDD_SEQ_09_Baseline-->>SDD_SEQ_09_Flow: resume / required / missing / stale / unavailable
+  SDD_SEQ_09_Flow-->>SDD_SEQ_09_Employee: actionable next step
+  end

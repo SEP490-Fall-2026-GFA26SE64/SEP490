@@ -1,0 +1,50 @@
+---
+title: "Backend Package Layers"
+config:
+  layout: elk
+  look: classic
+  theme: base
+  securityLevel: loose
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  themeCSS: ".node rect, .cluster rect { filter: none !important; stroke-width: 1.5px !important; }"
+  flowchart: {htmlLabels: true, nodeSpacing: 25, rankSpacing: 45, padding: 14, diagramPadding: 24, curve: linear}
+---
+flowchart LR
+  subgraph Root["com.adaptlearngraph"]
+    subgraph Presentation["Presentation Layer"]
+      Api["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>api"]
+    end
+    subgraph Application["Application Layer"]
+      PortIn["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>application.port.in"]
+      Services["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>application"]
+      PortOut["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>application.port.out"]
+    end
+    subgraph DomainLayer["Domain Layer"]
+      Domain["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>domain"]
+    end
+    subgraph InfrastructureLayer["Infrastructure Layer"]
+      Infrastructure["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>infrastructure"]
+    end
+    subgraph SharedLayer["Shared Support"]
+      Shared["<img src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDMyIDI4Ij48cGF0aCBkPSJNMiA5VjNoMTJ2Nk0yIDloMjh2MTdIMloiIGZpbGw9IiNmZmYzY2QiIHN0cm9rZT0iI2ExNjIwNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=' alt='Package' width='32' height='28'/><br/>shared"]
+    end
+  end
+  Api -.->|"uses"| PortIn
+  Services -.->|"implements"| PortIn
+  Services -.->|"uses"| PortOut
+  Services -.->|"uses"| Domain
+  Infrastructure -.->|"implements"| PortOut
+  Infrastructure -.->|"composes"| Services
+  Services -.->|"uses"| Shared
+  Infrastructure -.->|"uses"| Shared
+
+  %% Selected source dependencies. Layers are group labels, not extra Java packages.
+  %% api is Adapter In; infrastructure contains Adapter Out and composition.
+  classDef default fill:#ffffff,stroke:#334155,color:#0f172a,stroke-width:1.5px
+  style Root fill:#eff6ff,stroke:#2563eb,color:#0f172a
+  style Presentation fill:#fff7ed,stroke:#d97706,color:#0f172a
+  style Application fill:#fff7ed,stroke:#d97706,color:#0f172a
+  style DomainLayer fill:#f0fdf4,stroke:#16a34a,color:#0f172a
+  style InfrastructureLayer fill:#fff7ed,stroke:#d97706,color:#0f172a
+  style SharedLayer fill:#f8fafc,stroke:#64748b,color:#0f172a

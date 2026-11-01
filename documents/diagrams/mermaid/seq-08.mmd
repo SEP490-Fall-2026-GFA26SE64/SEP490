@@ -1,0 +1,40 @@
+---
+title: "SEQ-08 - Pinned Employee baseline"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+sequenceDiagram
+  autonumber
+  actor SDD_SEQ_08_Employee as Employee
+  participant SDD_SEQ_08_UI as Baseline UI
+  participant SDD_SEQ_08_Start as Start/read service
+  participant SDD_SEQ_08_Answer as Answer / submit services
+  participant SDD_SEQ_08_Finalize as AdaptiveAttemptFinalizationService
+  participant SDD_SEQ_08_DB as Transactional<br/>attempt/evidence store
+  participant SDD_SEQ_08_Policy as Pinned policy/content and<br/>catalog ports
+  SDD_SEQ_08_Employee->>SDD_SEQ_08_UI: start or resume
+  SDD_SEQ_08_UI->>SDD_SEQ_08_Start: command key and selection-bound intent
+  SDD_SEQ_08_Start->>SDD_SEQ_08_DB: authorize, learner coordination, replay/resume check
+  alt existing own resumable attempt
+  SDD_SEQ_08_DB-->>SDD_SEQ_08_Start: retained snapshot
+  else eligible new admission
+  SDD_SEQ_08_Start->>SDD_SEQ_08_Policy: validate current scope and feasible resources
+  SDD_SEQ_08_Start->>SDD_SEQ_08_DB: pin versions/pool/content/deadline and first item
+  end
+  SDD_SEQ_08_Start-->>SDD_SEQ_08_UI: safe current item, no answer key
+  SDD_SEQ_08_Employee->>SDD_SEQ_08_UI: answer
+  SDD_SEQ_08_UI->>SDD_SEQ_08_Answer: item position + revision + key/body
+  SDD_SEQ_08_Answer->>SDD_SEQ_08_DB: lock attempt, validate replay/revision
+  SDD_SEQ_08_Answer->>SDD_SEQ_08_Policy: score and evaluate pinned adaptive policy
+  SDD_SEQ_08_Answer->>SDD_SEQ_08_DB: store response/progress
+  alt terminal condition or confirmed submit
+  SDD_SEQ_08_Answer->>SDD_SEQ_08_Finalize: evaluate terminal policy
+  SDD_SEQ_08_Finalize->>SDD_SEQ_08_Policy: load original technical pins
+  SDD_SEQ_08_Finalize->>SDD_SEQ_08_DB: compare actual progress, persist terminal outcome
+  SDD_SEQ_08_DB->>SDD_SEQ_08_DB: valid result/evidence/profile or explicit<br/>invalidation
+  else continue
+  SDD_SEQ_08_Answer->>SDD_SEQ_08_DB: persist next pinned item
+  end
+  SDD_SEQ_08_Answer-->>SDD_SEQ_08_UI: committed outcome
+  SDD_SEQ_08_Employee->>SDD_SEQ_08_UI: open result / mastery
+  SDD_SEQ_08_UI->>SDD_SEQ_08_DB: via authorized read use case
+  SDD_SEQ_08_DB-->>SDD_SEQ_08_UI: safe own result/provenance

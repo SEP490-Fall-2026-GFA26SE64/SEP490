@@ -1,0 +1,23 @@
+---
+title: "CLS-07 - Durable event and transactional mail pattern"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction TB
+  class SDD_CLS_07_Business["Business use case"]
+  class SDD_CLS_07_Store["Transactional store"]
+  <<interface>> SDD_CLS_07_Store
+  class SDD_CLS_07_Event["Outbox event"]
+  class SDD_CLS_07_Job["Processing job"]
+  class SDD_CLS_07_PaymentConfirmationMailWorker["PaymentConfirmationMailWorker"]
+  class SDD_CLS_07_TransactionalMailSender["TransactionalMailSender"]
+  class SDD_CLS_07_TransactionalEmail["TransactionalEmail"]
+  class SDD_CLS_07_SMTP["SMTP endpoint"]
+  <<external>> SDD_CLS_07_SMTP
+  SDD_CLS_07_Business --> SDD_CLS_07_Store
+  SDD_CLS_07_Store --> SDD_CLS_07_Event : same business transaction
+  SDD_CLS_07_Event --> SDD_CLS_07_Job : unique logical handler work
+  SDD_CLS_07_PaymentConfirmationMailWorker --> SDD_CLS_07_Job : fenced claim / finish / retry
+  SDD_CLS_07_PaymentConfirmationMailWorker --> SDD_CLS_07_TransactionalMailSender
+  SDD_CLS_07_TransactionalMailSender --> SDD_CLS_07_TransactionalEmail : text + HTML frame
+  SDD_CLS_07_TransactionalMailSender --> SDD_CLS_07_SMTP
