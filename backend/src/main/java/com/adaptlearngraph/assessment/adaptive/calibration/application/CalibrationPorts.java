@@ -1,6 +1,7 @@
 package com.adaptlearngraph.assessment.adaptive.calibration.application;
 
 import com.adaptlearngraph.assessment.adaptive.calibration.domain.Calibration.*;
+import com.adaptlearngraph.assessment.adaptive.calibration.domain.Calibration;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -25,6 +26,11 @@ public final class CalibrationPorts {
         /** Recheck exact immutable model/content/data pins inside the completion transaction. */
         void revalidate(Grant grant, Request request, Input input);
     }
+    public interface BankSource {
+        /** Owner-supplied immutable authorized content snapshot. Bound rows/bytes before allocation;
+         * never resolve a client filesystem path or fall back to another tenant/bank. */
+        Bank load(Grant grant,Source expected);
+    }
     public interface DatasetSource {
         /** Only a server-approved immutable reference; enforce grant, raw-byte/hash and preallocation size bounds. */
         Dataset load(Grant grant, String reference, String expectedHash);
@@ -32,6 +38,10 @@ public final class CalibrationPorts {
     public interface Encoding {
         String hash(Object value);
         String algorithmHash();
+        default com.adaptlearngraph.assessment.adaptive.calibration.domain.CalibrationPolicy policyFor(String hash){
+            Calibration.require(algorithmHash().equals(hash));
+            return com.adaptlearngraph.assessment.adaptive.calibration.domain.CalibrationPolicy.syntheticV1();
+        }
     }
     public interface Decoding { <T> T read(String body,Class<T> type); }
     public interface Store {

@@ -15,6 +15,7 @@ import java.util.TreeSet;
 
 /** Versioned, recursive canonical JSON; all parser failures are sanitized before leaving this boundary. */
 public final class CalibrationJson implements Encoding, com.adaptlearngraph.assessment.adaptive.calibration.application.CalibrationPorts.Decoding {
+    private final CalibrationPolicy selected;
     private final ObjectMapper mapper=com.fasterxml.jackson.databind.json.JsonMapper.builder().addModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
@@ -22,7 +23,9 @@ public final class CalibrationJson implements Encoding, com.adaptlearngraph.asse
             .enable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
             .disable(com.fasterxml.jackson.databind.MapperFeature.ALLOW_COERCION_OF_SCALARS)
             .disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT).build();
-    public CalibrationJson() {
+    public CalibrationJson(){this(CalibrationPolicy.syntheticV1());}
+    public CalibrationJson(CalibrationPolicy selected) {
+        this.selected=java.util.Objects.requireNonNull(selected);
         mapper.getFactory().setStreamReadConstraints(com.fasterxml.jackson.core.StreamReadConstraints.builder()
                 .maxNestingDepth(16).maxStringLength(4000).maxNumberLength(64).build());
     }
@@ -42,7 +45,11 @@ public final class CalibrationJson implements Encoding, com.adaptlearngraph.asse
     }
     public JsonNode tree(String value) { return read(value,JsonNode.class); }
     @Override public String hash(Object value) { return bytesHash(write(value).getBytes(StandardCharsets.UTF_8)); }
-    @Override public String algorithmHash() { return hash(CalibrationPolicy.syntheticV1()); }
+    @Override public String algorithmHash() { return hash(selected); }
+    @Override public CalibrationPolicy policyFor(String value){
+        for(var policy:java.util.List.of(CalibrationPolicy.syntheticV1(),CalibrationPolicy.syntheticV2()))if(hash(policy).equals(value))return policy;
+        throw new Failure(Code.INVALID_INPUT);
+    }
     public static String bytesHash(byte[] bytes) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); }
         catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }

@@ -46,9 +46,7 @@ public final class Calibration {
     public record Bank(Source source, List<Item> items) {
         public Bank {
             Objects.requireNonNull(source); items = List.copyOf(items);
-            require(items.size() == 135 && items.stream().map(i -> i.pin().itemVersionId()).distinct().count() == 135);
-            var counts = items.stream().collect(java.util.stream.Collectors.groupingBy(i -> i.pin().skillId(), java.util.stream.Collectors.counting()));
-            require(counts.size() == 15 && counts.values().stream().allMatch(n -> n == 9));
+            require(!items.isEmpty() && items.stream().map(i -> i.pin().itemVersionId()).distinct().count() == items.size());
         }
         public List<ItemPin> pins() { return items.stream().map(Item::pin).toList(); }
     }
@@ -99,7 +97,7 @@ public final class Calibration {
     public record Envelope(int formatVersion, UUID actorId, Request request, List<ItemPin> itemPins,
                            Origin origin, String generatingHash, Long seed,ModelPin modelPin) {
         public Envelope {
-            require(formatVersion == 1); id(actorId); Objects.requireNonNull(request); itemPins = List.copyOf(itemPins);
+            require(formatVersion == 1 || formatVersion == 2); id(actorId); Objects.requireNonNull(request); itemPins = List.copyOf(itemPins);
             Objects.requireNonNull(origin); hash(generatingHash); require(origin != Origin.SYNTHETIC || seed != null);
             Objects.requireNonNull(modelPin);
             require(modelPin.modelId().equals(request.scope().modelId()) && modelPin.configurationHash().equals(request.modelConfigurationHash())

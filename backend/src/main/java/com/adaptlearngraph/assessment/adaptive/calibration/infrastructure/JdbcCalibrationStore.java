@@ -87,11 +87,21 @@ public final class JdbcCalibrationStore implements Store {
         if (Boolean.TRUE.equals(run.diagnostics().get("cancelRequested"))) throw new Failure(Code.CANCELLED);
         if (!time().isBefore(run.startedAt().plusSeconds(300))) throw new Failure(Code.TIMEOUT);
         UUID output=candidates.insert(run.envelope(),result);
+        var diagnostics=new java.util.TreeMap<String,Object>(Map.of("origin",result.origin(),"result",result,
+                "operationalPromotionEligible",false,"parameterHash",json.hash(Map.of("envelope",run.envelope(),"result",result))));
+        if(json.policyFor(result.algorithmHash()).generic()){
+            String configuration=jdbc.queryForObject("SELECT configuration::text FROM platform.model_version WHERE model_version_id=:model FOR SHARE",
+                    Map.of("model",scope.modelId()),String.class);
+            var model=json.read(configuration,com.adaptlearngraph.assessment.adaptive.psychometrics.AdaptiveIrtPolicy.Model.class);
+            boolean compatible=result.items().stream().allMatch(item->item.a()>=model.minA() && item.a()<=model.maxA()
+                    && StrictMath.abs(item.b())<=model.maxAbsB() && item.c()<=model.maxC());
+            diagnostics.put("runtimeCompatibility",compatible?"COMPATIBLE":"INCOMPATIBLE");
+            diagnostics.put("runtimeModelConfigurationHash",run.envelope().request().modelConfigurationHash());
+        }
         jdbc.update("""
                 UPDATE platform.irt_calibration_run SET status='SUCCEEDED',output_parameter_set_id=:output,
                     diagnostics=CAST(:diagnostics AS jsonb),completed_at=clock_timestamp() WHERE calibration_run_id=:run AND status='RUNNING'
-                """,key(scope,runId).addValue("output",output).addValue("diagnostics",json.write(Map.of("origin",result.origin(),
-                        "result",result,"operationalPromotionEligible",false,"parameterHash",json.hash(Map.of("envelope",run.envelope(),"result",result))))));
+                """,key(scope,runId).addValue("output",output).addValue("diagnostics",json.write(diagnostics)));
         return required(scope,runId);
     }
     @Override public Run fail(Scope scope,UUID runId,UUID token,Code reason,Map<String,Object> diagnostics) {
