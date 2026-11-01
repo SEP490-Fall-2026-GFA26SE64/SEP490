@@ -14,7 +14,7 @@ beforeEach(() => {
  vi.mocked(bankRequest).mockImplementation(async (path, data) => {
    if (path === '/session') return session
    if (path === '/notifications') return []
-   if (path === '/questions') { expect(data).toMatchObject({ code: 'Q-NEW', content: { skillId: 'skill' } }); return bank }
+   if (path === '/questions') { expect(data).toMatchObject({ content: { skillId: 'skill' } }); return bank }
    return bank
  })
 })
@@ -31,12 +31,14 @@ it('creates an incomplete draft through the protected API and clears the form on
  render(<QuestionBankWorkspace />)
  fireEvent.click(await screen.findByRole('button', { name: /^Create$/ }))
  const dialog = screen.getByRole('dialog')
- fireEvent.change(within(dialog).getByLabelText('Question code'), { target: { value: 'Q-NEW' } })
+ expect(within(dialog).queryByRole('textbox', { name: 'Question code' })).toBeNull()
+ expect(within(dialog).getByText('Generated automatically when saved.')).toBeTruthy()
  fireEvent.change(within(dialog).getByLabelText('Question prompt'), { target: { value: 'Incomplete draft' } })
  fireEvent.change(within(dialog).getByLabelText('MicroSkill'), { target: { value: 'skill' } })
  fireEvent.click(within(dialog).getByRole('button', { name: 'Save draft' }))
  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
  expect(bankRequest).toHaveBeenCalledWith('/questions', expect.objectContaining({ id: null, content: expect.objectContaining({ correctAnswer: null }) }))
+ expect(vi.mocked(bankRequest).mock.calls.find(([path]) => path === '/questions')?.[1]).not.toHaveProperty('code')
 })
 it('does not grant peer edit or submit controls', async () => {
  bank.questions[0].owner = 'peer'

@@ -50,12 +50,14 @@ assert sql("SELECT current_database()") == "question_bank_test"
 post("/api/v1/workspace-auth/sign-in", {"email": "experta@question-bank.test", "password": "question-bank-test-password"})
 code = "SMTP-" + uuid4().hex[:12].upper()
 choices = ["Protected choice " + str(i) + " for " + code for i in range(4)]
-bank = post("/api/v1/question-bank/questions", {"code": code, "content": {
+bank = post("/api/v1/question-bank/questions", {"content": {
     "prompt": "Mail retry acceptance " + code, "options": choices,
     "correctAnswer": 0, "skillId": "QB-TEST-SQL", "skillName": None,
     "difficulty": "EASY", "explanation": "Protected explanation for " + code,
 }})
-question = next(q for q in bank["questions"] if q["code"] == code)
+question = next(q for q in bank["questions"] if q["versions"][-1]["content"]["prompt"] == "Mail retry acceptance " + code)
+explanation = "Protected explanation for " + code
+code = question["code"]
 paused = False
 try:
     subprocess.run(COMPOSE + ["pause", "mailpit"], check=True, stdout=subprocess.DEVNULL)
@@ -87,7 +89,7 @@ def captured():
             continue
         assert {p["Address"] for p in detail["To"]} == {"lda@question-bank.test"}
         assert all(choice not in body for choice in choices)
-        assert "Protected explanation for " + code not in body
+        assert explanation not in body
         return True
     return False
 

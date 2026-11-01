@@ -48,7 +48,7 @@ class QuestionBankPersistenceIntegrationTest {
         var blocked=new QuestionBankService(()->new Actor(expert,org,"DOMAIN_EXPERT"),unavailable,store,Clock.systemUTC());
         int count=author.read().questions().size();
         assertTimeoutPreemptively(Duration.ofSeconds(3),()->{
-            assertEquals(503,assertThrows(Failure.class,()->blocked.save(new Save(null,null,"Q-TIMEOUT",body("Must roll back"),false))).status());
+            assertEquals(503,assertThrows(Failure.class,()->blocked.save(new Save(null,null,null,body("Must roll back"),false))).status());
             assertEquals(count,author.read().questions().size());
         });
         assertEquals(0,jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_identity WHERE code='Q-TIMEOUT'",Integer.class));
@@ -72,7 +72,9 @@ class QuestionBankPersistenceIntegrationTest {
             assertThrows(Failure.class,()->author.save(new Save(old.id,old.revision,old.code,body("Repair"),false)));
             manager.command(new Command(old.id,old.revision,"ASSIGN","Legacy intake",expert));
             assertEquals(legacyBytes,jdbc.queryForObject("SELECT row_to_json(i)::text FROM platform.item_version i WHERE item_version_id=?",String.class,legacy));
-            var draft=author.save(new Save(null,null,"Q-NEW",new Content("Partial",List.of(),null,"skill",null,null,null),false)).questions().getLast();
+            var draft=author.save(new Save(null,null,null,new Content("Partial",List.of(),null,"skill",null,null,null),false)).questions().getLast();
+            assertTrue(draft.code.matches("Q-[0-9A-F-]{36}"));
+            assertEquals(draft.code,jdbc.queryForObject("SELECT code FROM platform.question_bank_identity WHERE question_id=?",String.class,draft.id));
             assertNull(draft.versions.getFirst().content.correctAnswer());assertThrows(Failure.class,()->action(author,draft.id,"SUBMIT"));
             author.save(new Save(draft.id,draft.revision,draft.code,body("Complete"),false));action(author,draft.id,"SUBMIT");action(manager,draft.id,"VIEW");action(manager,draft.id,"APPROVE");
             var published=manager.read().questions().stream().filter(q->q.id.equals(draft.id)).findFirst().orElseThrow();var v=published.versions.getLast();
@@ -83,7 +85,7 @@ class QuestionBankPersistenceIntegrationTest {
             action(author,draft.id,"SUCCESSOR");var latest=author.read().questions().getLast();long expected=latest.revision;
             var responses=new CopyOnWriteArrayList<Integer>();try(var pool=Executors.newFixedThreadPool(2)){var latch=new CountDownLatch(1);var tasks=new ArrayList<Future<?>>();for(int i=0;i<2;i++)tasks.add(pool.submit(()->{try{latch.await();author.save(new Save(latest.id,expected,latest.code,body("Concurrent edit"),false));responses.add(200);}catch(Failure e){responses.add(e.status());}catch(Exception e){throw new RuntimeException(e);}}));latch.countDown();for(var task:tasks)task.get(15,TimeUnit.SECONDS);}assertEquals(List.of(200,409),responses.stream().sorted().toList());
             action(author,draft.id,"SUBMIT");action(manager,draft.id,"VIEW");
-            var second=author.save(new Save(null,null,"Q-SECOND",body("Second"),false)).questions().getLast();action(author,second.id,"SUBMIT");
+            var second=author.save(new Save(null,null,null,body("Second"),false)).questions().getLast();action(author,second.id,"SUBMIT");
             var a=manager.read().questions().stream().filter(q->q.id.equals(draft.id)).findFirst().orElseThrow();var b=manager.read().questions().getLast();
             String snapshot=jdbc.queryForObject("SELECT document::text FROM platform.question_bank_workspace WHERE organization_id=?",String.class,org);
             assertThrows(Failure.class,()->manager.approve(new Bulk(List.of(new Command(a.id,a.revision,"APPROVE",null,null),new Command(b.id,b.revision,"APPROVE",null,null)))));
@@ -92,7 +94,14 @@ class QuestionBankPersistenceIntegrationTest {
             var candidates=new JdbcBaselineAssessmentDraftStore(new NamedParameterJdbcTemplate(source));assertTrue(candidates.findPublishedCandidates(Set.of("skill")).isEmpty());
             assertEquals("PUBLISHED",jdbc.queryForObject("SELECT publication_state FROM platform.item_version WHERE item_version_id=?",String.class,v.id));
             action(author,draft.id,"REQUEST_REACTIVATE");action(manager,draft.id,"CONFIRM_AVAILABILITY");assertEquals(1,candidates.findPublishedCandidates(Set.of("skill")).size());
-            var invalid=author.preview(new Preview(List.of(new Row("Q-X",body("Valid")),new Row("Q-NEW",body("Conflict")))));assertFalse(invalid.errors.isEmpty());int count=author.read().questions().size();assertThrows(Failure.class,()->author.confirm(new Confirmation(invalid.id,true,true)));assertEquals(count,author.read().questions().size());
+            int beforeImport=author.read().questions().size();
+            var preview=author.preview(new Preview(List.of(new Row(null,body("Generated import")))));
+            assertTrue(preview.generatedCodes);assertTrue(preview.errors.isEmpty());String importedCode=preview.rows.getFirst().code();
+            author.confirm(new Confirmation(preview.id,false,false));author.confirm(new Confirmation(preview.id,false,false));
+            var imported=author.read().questions().stream().filter(q->q.code.equals(importedCode)).findFirst().orElseThrow();
+            assertEquals(beforeImport+1,author.read().questions().size());assertEquals(1,imported.versions.size());
+            assertEquals(importedCode,jdbc.queryForObject("SELECT code FROM platform.question_bank_identity WHERE question_id=?",String.class,imported.id));
+            var invalid=author.preview(new Preview(List.of(new Row(null,body("Valid")),new Row(null,body("")))));assertFalse(invalid.errors.isEmpty());int count=author.read().questions().size();assertThrows(Failure.class,()->author.confirm(new Confirmation(invalid.id,true,true)));assertEquals(count,author.read().questions().size());
             assertTrue(jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail",Integer.class)>0);
             var mail=mock(TransactionalMailSender.class);doThrow(new org.springframework.mail.MailPreparationException("Test SMTP down")).when(mail).send(anyString(),any(),anyString(),any());
             new QuestionBankMailWorker(jdbc,tx,mail,"http://localhost").deliver();assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail WHERE status='RETRY' AND attempts=1 AND lease_owner IS NULL",Integer.class));assertNotNull(author.read());

@@ -2,6 +2,10 @@
 export function questionBankMessage(value: string, vi: boolean): string {
   if (!vi) return value
   const phrases: Record<string,string> = {
+    'Question codes are generated automatically. Remove code and use the latest template.': 'Mã câu hỏi được sinh tự động. Hãy bỏ code và dùng mẫu nhập mới nhất.',
+    'Import format changed. Upload the latest template again.': 'Định dạng nhập đã thay đổi. Hãy tải mẫu mới nhất và nhập lại.',
+    'Generated code conflict. Upload the file again.': 'Mã tự sinh bị trùng. Vui lòng tải file lên lại.',
+
     'MicroSkill snapshot changed. Return the question for another review.': 'Thông tin MicroSkill đã thay đổi. Hãy trả lại câu hỏi để kiểm tra và duyệt lại.',
     'correctAnswer must be A–D, or blank for an incomplete draft': 'correctAnswer phải là A–D, hoặc để trống nếu lưu nháp chưa hoàn thiện',
     'Question code is required or too long': 'Mã câu hỏi không được trống và tối đa 100 ký tự',

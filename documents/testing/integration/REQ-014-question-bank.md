@@ -16,3 +16,7 @@ Date: 2026-10-30. `QuestionBankPersistenceIntegrationTest`: **1 passed**, real P
 The graph catalog is a controlled integration dependency here, not a claim of real Neo4j acceptance. The dedicated Compose system suite uses actual Neo4j. No user development database was reset, reseeded or migrated by these tests.
 
 Command and consistent-run receipt: [unit evidence](../unit/REQ-014-question-bank.md). The canonical V29 migration has matching SQL to workspace V36; the executed runtime fixture uses the workspace lineage. Do not apply that lineage over the learning-module-manage development database whose applied V36 has another meaning.
+
+### Automatic codes / creation-only import — 2026-11-01
+
+Real PostgreSQL Testcontainers scenario passed267.2s as part of25 passing focused tests (`/tmp/qb-auto-backend-final.log`). New manually created and imported Q-UUID codes round-trip through JSON aggregate and question_bank_identity; repeated confirmation adds exactly one question, preview code matches persisted code, whole invalid batches roll back, and prior history/concurrency/isolation/retirement/deadline checks remain. Existing V1–V36 checksums/migration behavior unchanged. `generatedCodes` is an additive receipt marker in the existing JSON document; old missing marker defaults false and cannot authorize new import confirmation. No Neo4j graph schema/migration changes.

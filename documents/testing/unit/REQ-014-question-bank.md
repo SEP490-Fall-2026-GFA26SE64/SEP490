@@ -21,3 +21,12 @@ TypeScript/build/lint and real browser outcomes are recorded in the dedicated sy
 ### Bulk approval feedback follow-up — 2026-10-30
 
 Focused component suite:8/8 passed (`/tmp/question-bank-feedback-unit.log`), including unreviewed-code popup/no approval request/direct detail, server conflict with public codes/selection retention, and eligible bulk submission. Initial run7/8 failed because the close-button test locator matched two controls; footer clarified to Back to list and final8/8 passed. TypeScript build passed (`/tmp/question-bank-feedback-types.log`); frontend bundle passed4.73s (`/tmp/question-bank-feedback-build.log`, existing chunk advisory). Scoped lint exit0; diff whitespace check passed. No backend/domain/schema changes; existing backend test results are historical, not rerun for this presentation-only change.
+
+### Automatic codes / creation-only import — 2026-11-01
+
+25 focused backend tests passed (18 service,3 bounded graph reader,1 real PostgreSQL integration,3 architecture),0 failures/errors/skips: `/tmp/qb-auto-backend-final.log`. Covers generated uniqueness, custom-code rejection, unchanged code on edit, duplicate-content acknowledgement, new-only repeated imports, preserved published predecessor, replay-safe confirmation and stale old-format preview rejection. Initial compilation attempts used a stale pre-change domain class while source was being updated; explicit recompilation produced the final passing artifact.
+
+8 component tests passed in `/tmp/qb-auto-frontend-rerun.log`; creation has no code input, submits no code and saves incomplete content; bulk feedback regressions retained. Initial component run failed because Save still depended on a manually entered code (fixed), plus one overloaded-environment timeout. TypeScript and Vite build passed (`/tmp/qb-auto-types-final.log`, `/tmp/qb-auto-build.log`, existing large-chunk advisory); scoped lint exit0 (`/tmp/qb-auto-lint.log`). No new dependency.
+
+After real-browser visual review, the create subtitle was corrected and prompt/explanation textareas received explicit accessible names (filled-textarea editing previously failed exact label lookup). Final component8/8 (`/tmp/qb-auto-component-final.log`), incremental type check and scoped lint passed (`/tmp/qb-auto-types-handoff.log`, `/tmp/qb-auto-lint-handoff.log`). Final real8088 flow passed; see system evidence.
+Final source Vite build passed3.34s (`/tmp/qb-auto-build-handoff.log`); only the existing large-chunk advisory remains. Whitespace diff check passed.

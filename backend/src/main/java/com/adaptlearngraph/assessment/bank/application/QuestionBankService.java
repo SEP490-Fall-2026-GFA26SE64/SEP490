@@ -38,7 +38,14 @@ public final class QuestionBankService implements QuestionBankUseCase {
     private void owner(Question q,Actor a) { require(a.expert()&&a.id().equals(q.owner),403,"Only the responsible Expert can change this question"); catalog.requireExpert(a,a.id()); }
     private void manager(Actor a) { require(a.manager(),403,"L&D Manager required"); }
     private String text(String s,String field,int max) { require(s!=null&&!s.isBlank()&&s.length()<=max,400,field+" is required or too long"); return s.strip(); }
-    private String code(String s) { String v=text(s,"Question code",100).toUpperCase(Locale.ROOT); require(v.matches("[A-Z0-9][A-Z0-9_.-]*"),400,"Use letters, digits, dot, dash or underscore in question code"); return v; }
+    private String generatedCode(QuestionBank b) {
+        String value;
+        do { value="Q-"+UUID.randomUUID().toString().toUpperCase(Locale.ROOT); }
+        while (containsCode(b,value));
+        return value;
+    }
+    private boolean containsCode(QuestionBank b,String value) { return b.questions.stream().anyMatch(q->q.code.equals(value)); }
+    private void automaticCode(String value) { require(value==null||value.isBlank(),400,"Question codes are generated automatically. Remove code and use the latest template."); }
     private Content content(Actor a,Content c,boolean complete) {
         require(c!=null,400,"Question content required");
         String prompt=text(c.prompt(),"Prompt",20000), skill=text(c.skillId(),"MicroSkill",160);
@@ -85,13 +92,14 @@ public final class QuestionBankService implements QuestionBankUseCase {
     @Override public View save(Save input) {
         var a=actor();require(a.expert(),403,"Expert authoring required");
         return store.atomic(a,b->{
-            String c=code(input.code());Content body=content(a,input.content(),false);
+            Content body=content(a,input.content(),false);
             if(input.id()==null) {
+                automaticCode(input.code());
                 require(input.acknowledgeDuplicates()||duplicates(b,body,null).isEmpty(),409,"Matching question content exists: "+String.join(", ",duplicates(b,body,input.id()))+"; acknowledge the duplicate warning");
-                create(b,a,c,body);
+                create(b,a,generatedCode(b),body);
             } else {
                 var q=find(b,input.id());owner(q,a);require(input.expectedRevision()!=null,400,"Expected revision required");expected(q,input.expectedRevision());
-                require(q.code.equals(c),409,"Question code cannot be changed");var v=latest(q);require("DRAFT".equals(v.state),409,"Edit an existing draft or create a successor first");
+                require(input.code()==null||q.code.equals(input.code()),409,"Question code cannot be changed");var v=latest(q);require("DRAFT".equals(v.state),409,"Edit an existing draft or create a successor first");
                 require(input.acknowledgeDuplicates()||duplicates(b,body,q.id).isEmpty(),409,"Matching question content exists: "+String.join(", ",duplicates(b,body,input.id()))+"; acknowledge the duplicate warning");
                 v.content=body;v.editedBy=a.id();v.editedAt=clock.instant();v.viewed.clear();q.revision++;audit(b,q,v,a,"EDITED",null);
             }return view(b);
@@ -126,16 +134,28 @@ public final class QuestionBankService implements QuestionBankUseCase {
     }
     @Override public ImportBatch preview(Preview input) {
         var a=actor();require(a.expert(),403,"Expert import required");require(input.rows()!=null&&!input.rows().isEmpty()&&input.rows().size()<=maxRows,400,"Import 1–"+maxRows+" rows");
-        return store.atomic(a,b->{var batch=new ImportBatch();batch.id=UUID.randomUUID();batch.actor=a.id();batch.expiresAt=clock.instant().plusSeconds(1800);var codes=new HashSet<String>();var signatures=new HashSet<String>();int row=0;
-            for(var in:input.rows()){row++;try {String c=code(in.code());require(codes.add(c),400,"Duplicate code in file");Content body=content(a,in.content(),false);var q=b.questions.stream().filter(x->x.code.equals(c)).findFirst().orElse(null);if(q!=null){owner(q,a);require("PUBLISHED".equals(latest(q).state),409,"Existing draft or submitted successor");batch.expected.put(c,q.revision);batch.warnings.add(c+": creates successor to v"+latest(q).number);}else batch.expected.put(c,-1L);var matches=duplicates(b,body,q==null?null:q.id);batch.matching.put(c,matches);if(!matches.isEmpty())batch.warnings.add(c+": matching content exists: "+String.join(", ",matches));if(!signatures.add(signature(body)))batch.warnings.add(c+": matching content in this file");batch.rows.add(new Row(c,body));}catch(Failure e){batch.errors.add("Row "+row+": "+e.getMessage());}}
+        return store.atomic(a,b->{var batch=new ImportBatch();batch.id=UUID.randomUUID();batch.actor=a.id();batch.generatedCodes=true;batch.expiresAt=clock.instant().plusSeconds(1800);var codes=new HashSet<String>();var signatures=new HashSet<String>();int row=0;
+            for(var in:input.rows()) { row++; try {
+                automaticCode(in.code());
+                Content body=content(a,in.content(),false);
+                String c; do { c=generatedCode(b); } while (!codes.add(c));
+                batch.expected.put(c,-1L);
+                var matches=duplicates(b,body,null);batch.matching.put(c,matches);
+                if(!matches.isEmpty())batch.warnings.add(c+": matching content exists: "+String.join(", ",matches));
+                if(!signatures.add(signature(body)))batch.warnings.add(c+": matching content in this file");
+                batch.rows.add(new Row(c,body));
+            } catch(Failure e) { batch.errors.add("Row "+row+": "+e.getMessage()); } }
             b.imports.removeIf(x->x.expiresAt.isBefore(clock.instant()));require(b.imports.size()<100,429,"Too many pending imports; retry later");b.imports.add(batch);return batch;});
     }
     @Override public View confirm(Confirmation input) {
         var a=actor();require(a.expert(),403,"Expert import required");return store.atomic(a,b->{var batch=b.imports.stream().filter(x->x.id.equals(input.batch())&&x.actor.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Import preview not found"));
-            require(batch.expiresAt.isAfter(clock.instant()),409,"Import preview expired");if(batch.committed)return view(b);require(batch.errors.isEmpty(),400,String.join("; ",batch.errors));require(batch.warnings.isEmpty()||input.acknowledgeWarnings(),409,"Acknowledge import warnings");require(batch.expected.values().stream().noneMatch(v->v>=0)||input.confirmSuccessors(),409,"Confirm successor creation");
+            require(batch.expiresAt.isAfter(clock.instant()),409,"Import preview expired");if(batch.committed)return view(b);require(batch.errors.isEmpty(),400,String.join("; ",batch.errors));require(batch.warnings.isEmpty()||input.acknowledgeWarnings(),409,"Acknowledge import warnings");require(batch.generatedCodes&&batch.expected.values().stream().allMatch(v->v==-1L)&&batch.rows.stream().allMatch(r->r.code().matches("Q-[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}")),409,"Import format changed. Upload the latest template again.");
             var batchCodes=batch.rows.stream().map(Row::code).collect(java.util.stream.Collectors.toSet());
             for(var row:batch.rows){var existing=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);var nowMatches=duplicates(b,row.content(),existing==null?null:existing.id).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());var seenMatches=batch.matching.getOrDefault(row.code(),List.of()).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());require(nowMatches.equals(seenMatches),409,row.code()+": matching content changed since preview; upload again");}
-            for(var row:batch.rows){var q=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);long expected=batch.expected.get(row.code());Content body=content(a,row.content(),false);if(expected<0){require(q==null,409,row.code()+": code was created since preview");create(b,a,row.code(),body);}else{require(q!=null,409,"Question changed");owner(q,a);expected(q,expected);require("PUBLISHED".equals(latest(q).state),409,"Existing draft/review blocks import");q.versions.add(draft(latest(q).number+1,body,a));q.revision++;audit(b,q,latest(q),a,"IMPORTED_SUCCESSOR",null);}}batch.committed=true;return view(b);});
+            for(var row:batch.rows) {
+                require(!containsCode(b,row.code()),409,"Generated code conflict. Upload the file again.");
+                create(b,a,row.code(),content(a,row.content(),false));
+            }batch.committed=true;return view(b);});
     }
     @Override public List<Notice> notices() {var a=actor();return store.atomic(a,b->b.notices.stream().filter(n->a.id().equals(n.recipient)).toList());}
     @Override public void markRead(UUID id) {var a=actor();store.atomic(a,b->{var n=b.notices.stream().filter(x->x.id.equals(id)&&x.recipient.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Notification not found"));n.readAt=clock.instant();return null;});}

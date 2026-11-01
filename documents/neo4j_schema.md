@@ -300,3 +300,5 @@ Question banks, question versions, protected answers, review/assignment history,
 
 
 Question Bank bulk-approval feedback (2026-10-30) is a frontend-only change. No Neo4j labels, properties, relationships, or catalog eligibility rules were changed.
+
+Question Bank automatic codes (2026-11-01): Q-UUID generation and creation-only import receipts belong to PostgreSQL Question Bank authoring. No Neo4j properties/relationships or skill publication rules change.

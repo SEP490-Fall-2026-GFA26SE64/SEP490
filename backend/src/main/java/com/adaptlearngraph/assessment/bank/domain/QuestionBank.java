@@ -56,6 +56,7 @@ public final class QuestionBank {
         public UUID actor;
         public Instant expiresAt;
         public boolean committed;
+        public boolean generatedCodes;
         public List<Row> rows = new ArrayList<>();
         public List<String> errors = new ArrayList<>();
         public List<String> warnings = new ArrayList<>();

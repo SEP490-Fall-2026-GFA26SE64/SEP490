@@ -104,3 +104,29 @@ Actual acceptance on8088 passed using real Chrome, current accounts, actual API/
 Reproducible isolated journey added to `frontend/system-tests/REQ-014-question-bank.spec.ts` (`--grep 'bulk approval explains'`). Two8098 executions failed before authoring at initial catalog loading (503 catalog unavailable), receipts `/tmp/question-bank-feedback-browser.log` and `/tmp/question-bank-feedback-browser-rerun.log`; these are not passing system runs. Restarting dedicated test graph/native API did not restore its fixture startup (Bolt unavailable); separate8098 environment remains unavailable at this handoff.8088 actual browser acceptance above passed after catalog recovery. The initial nonmutating8088 probe could not reproduce missing acknowledgement once user questions were already reviewed/published; dedicated test data was used instead.
 
 Manual checklist: at `http://localhost:8088/ld-manager/question-bank`, sign in as L&D; select an unreviewed submitted question and choose Approve selected. Expect code-specific popup and instructions, no publication. Choose Open first question, read and explicitly acknowledge; return to select only reviewed current versions. A stale concurrent update should instead display its reason and Reload latest data. Back to list retains selection; mobile Vietnamese uses the same actions. Dedicated test question is currently Draft, so submit it as responsible Expert to exercise this checklist again.
+
+### Automatic question codes / new-only import — 2026-11-01
+
+Approved behavior: create/import generate immutable uppercase `Q-<UUID>` codes in backend; no manual code field in creation, existing edit codes are read-only. JSON/Excel Questions templates omit `code`. Import creates new drafts only; matching content still requires acknowledgement, never updates an existing question. Old code-bearing files and uncommitted old-format receipts require the new template/upload.
+
+**Passed on actual8088:** real Chrome with existing Expert, API/PostgreSQL/Neo4j, no HTTP interception: create without code → generated code response/persistence → reload → edit prompt retaining code; download/inspect both JSON and Excel templates without code; actual Excel import → persisted preview code → confirm → replay same batch without another question; repeated JSON content warns and disables confirmation until acknowledged → creates another question with a different code/single draft version; old code-bearing JSON produces the explicit latest-template error. Original question codes remain unchanged. Receipt `/tmp/qb-auto-8088-final.log`; reproducible local procedure `/tmp/qb-auto-8088-ui.cjs` (reads private account sheet internally). Screenshots `/tmp/qb-auto-create-8088.png` and `/tmp/qb-auto-import-8088.png` visually inspected. This is automated real-browser plus AI visual inspection, not a claim of a human-operated walkthrough.
+
+The final successful scenario created3 dedicated `[TEST] Auto code …` drafts. A preceding scenario created1 additional draft before failing to locate the filled textarea during edit; all4 test drafts are retained, no publication or deletion. Explicit accessible textarea names fixed that real browser edit issue; subtitle no longer asks the user to enter a code. Existing user questions/versions were not rewritten.
+
+**Runtime:** backed up database/API in ignored private `local/dev-accounts/question-bank-auto-code-backup-20261101/`; applied only compiled bank classes into the existing compatibility API artifact, retaining module/content dependencies and the existing migration lineage. No migration/seed/review changes. API8088 restarted and became ready; startup took399s (513s process wall) under load. Existing frontend uses workspace source. No commit/push or production deployment.
+
+**Preserved failures/limits:** native8098 API hit Bolt initialization timeouts; same-network Compose test API started but the two focused Playwright cases timed out during sign-in, before question authoring (`/tmp/qb-auto-browser.log`). These are not passing tests. Separate test API/Neo4j/PostgreSQL containers were stopped, with volumes retained, to reduce load;8098 is not the handoff URL. Initial8088 probes hit startup socket closure/navigation timeout; first full attempt used the default5s metric expectation, then a later attempt exposed the filled-textarea label issue. Final real8088 scenario after readiness and accessibility correction passed. No timeouts were hidden as successes. Broad historical Question Bank/mail suites were not rerun for this slice; backend25/component8/type/build results are in dedicated unit/integration evidence.
+
+#### Manual checklist
+
+Prerequisites: login at http://localhost:8088/login as existing Expert, active approved skill available (the explicitly labeled test skill is retained). Password stays in private ACCOUNTS.md.
+
+| Steps | Expected |
+| --- | --- |
+| Expert Assessment Bank → Create | Code has an automatic-generation notice, no editable input. Enter prompt/skill and Save draft. |
+| Save → reload → Details/Edit | New Q-UUID displayed, data persists; edit never changes code. |
+| Import → download fresh JSON/Excel template | No code field/column; Skills reference still available. |
+| Upload valid file → preview → confirm | Generated codes visible in preview and retained in saved drafts; only new questions created. |
+| Upload same content again | Matching-content warning; explicit acknowledgement required; confirmation creates new codes and preserves old questions. |
+| Upload old file with code | Clear instruction to remove code/use new template; no question write. |
+| Switch VI; resize to390px; cancel form/import | Clear translated code notice; code wraps; cancel creates no question. Last mobile step is a user-run checklist, not a new automated mobile acceptance claim. |
