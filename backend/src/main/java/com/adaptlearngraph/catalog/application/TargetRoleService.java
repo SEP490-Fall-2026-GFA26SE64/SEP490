@@ -35,10 +35,8 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.organizationId(),
                 command.code(),
                 command.name(),
-                command.domainCode(),
                 command.familyCode(),
                 command.track(),
-                command.seniority(),
                 command.assignedExpertId(),
                 command.description(),
                 command.responsibilities(),
@@ -77,10 +75,8 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
         TargetRole existing = existingOpt.get();
         TargetRole updated = existing.updateDetails(
                 command.name(),
-                command.domainCode(),
                 command.familyCode(),
                 command.track(),
-                command.seniority(),
                 command.assignedExpertId(),
                 command.description(),
                 command.responsibilities(),
@@ -109,4 +105,3 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
         return true;
     }
 }
-

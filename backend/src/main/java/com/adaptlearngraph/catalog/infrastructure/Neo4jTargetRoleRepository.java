@@ -4,7 +4,6 @@ import com.adaptlearngraph.catalog.application.port.in.TargetRoleFilter;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleRepository;
 import com.adaptlearngraph.catalog.domain.RoleStatus;
 import com.adaptlearngraph.catalog.domain.RoleTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRole;
 import com.adaptlearngraph.catalog.domain.TargetRoleId;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -104,10 +103,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.code = $graphCode,
                     r.baseCode = $rawCode,
                     r.name = $name,
-                    r.domainCode = $domainCode,
                     r.familyCode = $familyCode,
                     r.track = $track,
-                    r.seniority = $seniority,
                     r.assignedExpertId = $assignedExpertId,
                     r.description = $description,
                     r.responsibilities = $responsibilities,
@@ -124,10 +121,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.code = $graphCode,
                     r.baseCode = $rawCode,
                     r.name = $name,
-                    r.domainCode = $domainCode,
                     r.familyCode = $familyCode,
                     r.track = $track,
-                    r.seniority = $seniority,
                     r.assignedExpertId = $assignedExpertId,
                     r.description = $description,
                     r.responsibilities = $responsibilities,
@@ -139,13 +134,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     r.competencyIds = $competencyIds,
                     r.updatedAt = datetime($updatedAt),
                     r.rejectionReason = $rejectionReason
-                WITH r
-                WHERE $domainCode IS NOT NULL AND $domainCode <> ''
-                MERGE (d:JobDomain {code: $domainCode})
-                ON CREATE SET d.id = randomUUID(), d.name = $domainCode, d.status = 'ACTIVE', d.createdAt = datetime($updatedAt), d.updatedAt = datetime($updatedAt)
-                MERGE (d)-[hr:HAS_ROLE]->(r)
-                ON CREATE SET hr.status = 'ACTIVE', hr.createdAt = datetime($updatedAt), hr.updatedAt = datetime($updatedAt)
-                ON MATCH SET hr.status = 'ACTIVE', hr.updatedAt = datetime($updatedAt)
                 RETURN r
                 """;
 
@@ -155,10 +143,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         params.put("graphCode", graphCode);
         params.put("rawCode", rawCode);
         params.put("name", targetRole.getName());
-        params.put("domainCode", targetRole.getDomainCode());
         params.put("familyCode", targetRole.getFamilyCode());
         params.put("track", targetRole.getTrack().name());
-        params.put("seniority", targetRole.getSeniority() != null ? targetRole.getSeniority().name() : null);
         params.put("assignedExpertId", targetRole.getAssignedExpertId());
         params.put("description", targetRole.getDescription());
         params.put("responsibilities", targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of());
@@ -301,10 +287,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             cypher.append(" AND r.status = $status");
             params.put("status", filter.status().name());
         }
-        if (filter.domainCode() != null && !filter.domainCode().isBlank()) {
-            cypher.append(" AND r.domainCode = $domainCode");
-            params.put("domainCode", filter.domainCode().trim().toUpperCase());
-        }
         if (filter.assignedExpertId() != null && !filter.assignedExpertId().isBlank()) {
             List<String> variants = resolveExpertVariants(filter.assignedExpertId().trim());
             cypher.append(" AND r.assignedExpertId IN $expertVariants");
@@ -437,18 +419,12 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         String name = node.containsKey("name") && !node.get("name").isNull()
                 ? node.get("name").asString()
                 : (node.containsKey("title") && !node.get("title").isNull() ? node.get("title").asString() : code);
-        String domainCode = node.containsKey("domainCode") && !node.get("domainCode").isNull()
-                ? node.get("domainCode").asString()
-                : "ICT";
         String familyCode = node.containsKey("familyCode") && !node.get("familyCode").isNull()
                 ? node.get("familyCode").asString()
                 : "SOFTWARE_ENGINEERING";
         String trackStr = node.containsKey("track") && !node.get("track").isNull()
                 ? node.get("track").asString()
                 : "PROFESSIONAL";
-        Seniority seniority = node.containsKey("seniority") && !node.get("seniority").isNull()
-                ? Seniority.fromString(node.get("seniority").asString())
-                : null;
         String assignedExpertId = node.containsKey("assignedExpertId") && !node.get("assignedExpertId").isNull()
                 ? node.get("assignedExpertId").asString()
                 : "";
@@ -526,10 +502,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 orgId,
                 code,
                 name,
-                domainCode,
                 familyCode,
                 RoleTrack.fromString(trackStr),
-                seniority,
                 assignedExpertId,
                 desc,
                 responsibilities,

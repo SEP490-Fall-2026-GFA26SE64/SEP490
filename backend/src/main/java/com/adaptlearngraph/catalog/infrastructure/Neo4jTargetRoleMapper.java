@@ -1,7 +1,6 @@
 package com.adaptlearngraph.catalog.infrastructure;
 
 import com.adaptlearngraph.catalog.domain.CareerTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleRequirement;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
@@ -17,7 +16,6 @@ final class Neo4jTargetRoleMapper {
                 detail.code(),
                 detail.name(),
                 detail.track(),
-                detail.seniority(),
                 detail.description(),
                 detail.requirements().size()));
     }
@@ -36,7 +34,6 @@ final class Neo4jTargetRoleMapper {
                     requiredString(record.get("name")),
                     requiredString(record.get("familyCode")),
                     CareerTrack.valueOf(requiredString(record.get("track"))),
-                    Seniority.valueOf(requiredString(record.get("seniority"))),
                     optionalString(record.get("description")),
                     stringList(record.get("responsibilities")),
                     requirements));

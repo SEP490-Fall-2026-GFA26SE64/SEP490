@@ -20,7 +20,6 @@ import com.adaptlearngraph.learning.application.port.in.TargetRoleSelectionUseCa
 import com.adaptlearngraph.learning.domain.TargetRoleSelection;
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot;
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.CareerTrack;
-import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.Seniority;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -79,7 +78,6 @@ class TargetRoleSelectionControllerTest {
                 .andExpect(jsonPath("$.roleSnapshot.code").value("JAVA_P3"))
                 .andExpect(jsonPath("$.roleSnapshot.name").value("Java Developer"))
                 .andExpect(jsonPath("$.roleSnapshot.track").value("PROFESSIONAL"))
-                .andExpect(jsonPath("$.roleSnapshot.seniority").value("P3"))
                 .andExpect(jsonPath("$.selectedAt").value(SELECTED_AT.toString()))
                 .andExpect(jsonPath("$.targetRevision").value(7))
                 .andExpect(jsonPath("$.changed").value(false));
@@ -202,7 +200,7 @@ class TargetRoleSelectionControllerTest {
                 ROLE_REFERENCE_ID,
                 new TargetRoleSnapshot(
                         ROLE_ID, "JAVA_P3", "Java Developer",
-                        CareerTrack.PROFESSIONAL, Seniority.P3),
+                        CareerTrack.PROFESSIONAL),
                 SELECTED_AT,
                 null,
                 7);

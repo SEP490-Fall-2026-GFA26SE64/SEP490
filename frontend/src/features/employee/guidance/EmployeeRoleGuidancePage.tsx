@@ -1,7 +1,6 @@
 import * as React from 'react'
 import {
   ArrowRight,
-  Award,
   BrainCircuit,
   CheckCircle2,
   Compass,
@@ -33,7 +32,7 @@ import {
   type PendingTargetRoleChoice,
   type TargetRoleChoice,
 } from '../target-roles/TargetRoleSelectionDialog'
-import type { CareerTrack, Seniority } from '../target-roles/targetRoleTypes'
+import type { CareerTrack } from '../target-roles/targetRoleTypes'
 
 interface RiasecQuestion {
   dimension: string
@@ -208,7 +207,6 @@ export function EmployeeRoleGuidancePage() {
       matchPercent: number
       explanation: string
       track: CareerTrack
-      seniority: Seniority
     }
 
     const suggestions: RoleSuggestion[] = [
@@ -219,7 +217,6 @@ export function EmployeeRoleGuidancePage() {
         explanation:
           'Strong Investigative (88%) & Conventional (82%) interest profile matches high baseline score (84%) in Graph Theory and Dynamic Knowledge Tracing.',
         track: 'PROFESSIONAL',
-        seniority: 'P4',
       },
       {
         code: 'TR-002',
@@ -228,7 +225,6 @@ export function EmployeeRoleGuidancePage() {
         explanation:
           'High problem-solving aptitude and software engineering baseline align with production model deployment workflows.',
         track: 'PROFESSIONAL',
-        seniority: 'P4',
       },
       {
         code: 'TR-003',
@@ -237,7 +233,6 @@ export function EmployeeRoleGuidancePage() {
         explanation:
           'Balanced Artistic and Conventional aptitude with demonstrated expertise in graph visualization and API architecture.',
         track: 'PROFESSIONAL',
-        seniority: 'P3',
       },
     ]
 
@@ -252,11 +247,10 @@ export function EmployeeRoleGuidancePage() {
         code: sug.code,
         name: sug.name,
         track: sug.track,
-        seniority: sug.seniority,
       }
       return {
         ...sug,
-        catalogRole: (matchInCatalog as TargetRoleChoice) || fallbackChoice,
+        catalogRole: matchInCatalog || fallbackChoice,
       }
     })
   }, [roles.data])
@@ -444,9 +438,6 @@ export function EmployeeRoleGuidancePage() {
                           </div>
 
                           <div className="pt-2 border-t border-border/70 flex items-center justify-between gap-2">
-                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-                              <Award size={12} className="text-primary" /> {sug.catalogRole.seniority || 'P4'}
-                            </span>
                             <Button
                               type="button"
                               variant={isSelected ? 'outline' : 'primary'}

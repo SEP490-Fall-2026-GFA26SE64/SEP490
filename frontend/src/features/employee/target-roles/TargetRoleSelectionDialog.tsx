@@ -10,14 +10,13 @@ import {
 } from '../../../shared/components/ui/Dialog'
 import { TargetRoleSelectionApiError } from './targetRoleSelectionApi'
 import type { ChooseTargetRoleCommand, TargetRoleSelection } from './targetRoleSelectionTypes'
-import type { CareerTrack, Seniority } from './targetRoleTypes'
+import type { CareerTrack } from './targetRoleTypes'
 
 export interface TargetRoleChoice {
   id: string
   code: string
   name: string
   track: CareerTrack
-  seniority: Seniority
 }
 
 export interface PendingTargetRoleChoice {

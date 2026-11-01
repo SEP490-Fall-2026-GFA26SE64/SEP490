@@ -13,6 +13,7 @@ async function fixture(page: Page, role: 'LD_MANAGER' | 'EMPLOYEE') {
     let json: unknown
     if (path.endsWith('/workspace-auth/current')) json = { accountId: actor, organizationId: org, email: 'ui@example.test', fullName: 'UI contract user', roles: [role], stage: 'COMPLETE', workspaceReady: true }
     else if (path.endsWith('/subscription/access')) json = {}
+    else if (path.includes('/organizations/') && (path.endsWith('/target-roles') || path.endsWith('/members'))) json = []
     else if (path.endsWith('/module-management/session')) json = { id: actor, organizationId: org, roles: [role] }
     else if (path.endsWith('/module-list') || path.endsWith('/module-management/modules')) json = { items: [], total: 0, page: 1, pageSize: 10 }
     else if (path.includes('/module-management/catalog/') || path.endsWith('/contents') || path.endsWith('/grants')) json = []
@@ -46,6 +47,24 @@ test('L&D module aliases, content, approvals and Question Bank keep the manager 
   await expect(feedback.getByText(/Open Details & history/)).toBeVisible()
   expect(calls.some(call => call.endsWith('/question-bank/approve'))).toBe(false)
   await page.screenshot({ path: 'test-results/merged-ui-review-feedback.png', fullPage: true })
+  expect(errors).toEqual([])
+})
+test('main Target Role editor omits retired fields and cancellation makes no role write', async ({ page }) => {
+  test.setTimeout(120_000)
+  const calls = await fixture(page, 'LD_MANAGER')
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/ld-manager/target-roles')
+  await page.getByRole('button', { name: 'Create', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { name: 'Create Target Role' })).toBeVisible()
+  await expect(dialog.getByText('Role Mastery Levels', { exact: true })).toBeVisible()
+  await expect(dialog.getByText('Job Domain', { exact: true })).toHaveCount(0)
+  await expect(dialog.getByText('Role Seniority Levels', { exact: true })).toHaveCount(0)
+  await page.screenshot({ path: 'test-results/latest-main-target-role-fields.png', fullPage: true })
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(dialog).not.toBeVisible()
+  expect(calls.some(call => call.startsWith('POST ') && call.endsWith('/target-roles'))).toBe(false)
   expect(errors).toEqual([])
 })
 test('mobile Employee keeps guided empty pathway and cannot enter the staff Question Bank', async ({ page }) => {

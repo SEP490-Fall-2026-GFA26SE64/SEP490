@@ -77,13 +77,35 @@ class WorkspaceMergeAuthorizationTest {
         verifyNoInteractions(chain);
     }
 
-    @Test void employeeCannotUseStaffCatalogEndpoint() throws Exception {
+    @Test void employeeCanReadCatalogWithTrustedEmployeeIdentity() throws Exception {
         actor(Role.EMPLOYEE);
         var chain = mock(FilterChain.class);
         var response = new MockHttpServletResponse();
-        filter.doFilter(new MockHttpServletRequest("GET", "/api/v1/organizations/" + organization + "/modules"), response, chain);
-        assertEquals(403, response.getStatus());
-        verifyNoInteractions(chain);
+        var request = new MockHttpServletRequest("GET", "/api/v1/organizations/" + organization + "/modules");
+        request.addHeader("X-User-Role", "LD_MANAGER");
+        doAnswer(call -> {
+            var trusted = (HttpServletRequest) call.getArgument(0);
+            assertEquals("EMPLOYEE", trusted.getHeader("X-User-Role"));
+            assertEquals(account.toString(), trusted.getHeader("X-User-Id"));
+            return null;
+        }).when(chain).doFilter(any(), any());
+        filter.doFilter(request, response, chain);
+        assertEquals(200, response.getStatus());
+        verify(chain).doFilter(any(), any());
+        verify(workspaces).require(any(), eq(organization), any(), any());
+    }
+
+    @Test void employeeCannotWriteCatalogEvenWithForgedManagerHeader() throws Exception {
+        actor(Role.EMPLOYEE);
+        for (var method : new String[]{"POST", "PUT", "PATCH", "DELETE"}) {
+            var request = new MockHttpServletRequest(method, "/api/v1/organizations/" + organization + "/modules");
+            request.addHeader("X-User-Role", "LD_MANAGER");
+            var chain = mock(FilterChain.class);
+            var response = new MockHttpServletResponse();
+            filter.doFilter(request, response, chain);
+            assertEquals(403, response.getStatus(), method);
+            verifyNoInteractions(chain);
+        }
     }
 
     @Test void workspaceDenialStopsCrossOrganizationRequest() throws Exception {

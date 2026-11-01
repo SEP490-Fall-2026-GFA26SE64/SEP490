@@ -7,7 +7,6 @@ import com.adaptlearngraph.catalog.application.TargetRoleQueryException.Code;
 import com.adaptlearngraph.catalog.application.port.out.EmployeeContextPort;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import com.adaptlearngraph.catalog.domain.CareerTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleRequirement;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
@@ -29,12 +28,10 @@ class TargetRoleQueryServiceTest {
                 summary("role-a", "Alpha"));
         var service = service(Optional.of(ACTIVE_EMPLOYEE), catalog);
 
-        var result = service.listTargetRoles("  ＪＡＶＡ  ", Seniority.P3);
+        var result = service.listTargetRoles("  ＪＡＶＡ  ");
 
         assertThat(catalog.organizationId).isEqualTo("org-a");
-        assertThat(catalog.criteria.normalizedSearch()).isEqualTo("java");
-        assertThat(catalog.criteria.seniority()).isEqualTo(Seniority.P3);
-        assertThat(result).extracting(TargetRoleSummary::id)
+        assertThat(catalog.criteria.normalizedSearch()).isEqualTo("java");        assertThat(result).extracting(TargetRoleSummary::id)
                 .containsExactly("role-a", "role-b", "role-z");
     }
 
@@ -42,18 +39,16 @@ class TargetRoleQueryServiceTest {
     void blankSearchBecomesNoSearchCriterion() {
         var catalog = new RecordingCatalog();
 
-        service(Optional.of(ACTIVE_EMPLOYEE), catalog).listTargetRoles("   ", null);
+        service(Optional.of(ACTIVE_EMPLOYEE), catalog).listTargetRoles("   ");
 
-        assertThat(catalog.criteria.normalizedSearch()).isNull();
-        assertThat(catalog.criteria.seniority()).isNull();
-    }
+        assertThat(catalog.criteria.normalizedSearch()).isNull();    }
 
     @Test
     void rejectsSearchLongerThanContractBeforeCallingCatalog() {
         var catalog = new RecordingCatalog();
         var service = service(Optional.of(ACTIVE_EMPLOYEE), catalog);
 
-        assertCode(Code.INVALID_REQUEST, () -> service.listTargetRoles("x".repeat(101), null));
+        assertCode(Code.INVALID_REQUEST, () -> service.listTargetRoles("x".repeat(101)));
         assertThat(catalog.listCalls).isZero();
     }
 
@@ -61,13 +56,13 @@ class TargetRoleQueryServiceTest {
     void requiresAuthenticatedActiveEmployee() {
         var catalog = new RecordingCatalog();
 
-        assertCode(Code.UNAUTHENTICATED, () -> service(Optional.empty(), catalog).listTargetRoles(null, null));
+        assertCode(Code.UNAUTHENTICATED, () -> service(Optional.empty(), catalog).listTargetRoles(null));
         assertCode(Code.FORBIDDEN, () -> service(
                 Optional.of(new EmployeeActorContext("account-1", "org-a", false, Set.of("EMPLOYEE"))),
-                catalog).listTargetRoles(null, null));
+                catalog).listTargetRoles(null));
         assertCode(Code.FORBIDDEN, () -> service(
                 Optional.of(new EmployeeActorContext("account-1", "org-a", true, Set.of("MANAGER"))),
-                catalog).listTargetRoles(null, null));
+                catalog).listTargetRoles(null));
         assertThat(catalog.listCalls).isZero();
     }
 
@@ -106,7 +101,7 @@ class TargetRoleQueryServiceTest {
         catalog.failure = new TargetRoleQueryException(Code.CATALOG_UNAVAILABLE, "catalog down");
 
         assertCode(Code.CATALOG_UNAVAILABLE,
-                () -> service(Optional.of(ACTIVE_EMPLOYEE), catalog).listTargetRoles(null, null));
+                () -> service(Optional.of(ACTIVE_EMPLOYEE), catalog).listTargetRoles(null));
     }
 
     private static TargetRoleQueryService service(
@@ -118,12 +113,12 @@ class TargetRoleQueryServiceTest {
 
     private static TargetRoleSummary summary(String id, String name) {
         return new TargetRoleSummary(
-                id, id.toUpperCase(), name, CareerTrack.PROFESSIONAL, Seniority.P3, null, 1);
+                id, id.toUpperCase(), name, CareerTrack.PROFESSIONAL, null, 1);
     }
 
     private static TargetRoleDetail detail(String id) {
         return new TargetRoleDetail(
-                id, "JAVA_P3", "Java Developer", "JAVA", CareerTrack.PROFESSIONAL, Seniority.P3,
+                id, "JAVA_P3", "Java Developer", "JAVA", CareerTrack.PROFESSIONAL,
                 null, List.of(), List.of(new TargetRoleRequirement("skill-1", "JAVA", "Java", 0.7)));
     }
 

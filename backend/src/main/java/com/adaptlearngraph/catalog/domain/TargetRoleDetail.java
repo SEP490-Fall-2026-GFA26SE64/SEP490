@@ -10,7 +10,6 @@ public record TargetRoleDetail(
         String name,
         String familyCode,
         CareerTrack track,
-        Seniority seniority,
         String description,
         List<String> responsibilities,
         List<TargetRoleRequirement> requirements) {
@@ -21,10 +20,6 @@ public record TargetRoleDetail(
         name = requireText(name, "name");
         familyCode = requireText(familyCode, "familyCode");
         track = Objects.requireNonNull(track, "track must not be null");
-        seniority = Objects.requireNonNull(seniority, "seniority must not be null");
-        if (!seniority.supportsTrack(track)) {
-            throw new IllegalArgumentException("seniority must match track");
-        }
         description = optionalText(description);
         responsibilities = copyResponsibilities(responsibilities);
         requirements = List.copyOf(Objects.requireNonNull(requirements, "requirements must not be null"));

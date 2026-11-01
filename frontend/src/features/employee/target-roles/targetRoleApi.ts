@@ -1,6 +1,5 @@
 import type {
   CareerTrack,
-  Seniority,
   TargetRoleDetail,
   TargetRoleFilters,
   TargetRoleRequirement,
@@ -9,7 +8,6 @@ import type {
 
 const TARGET_ROLES_URL = '/api/v1/employee/target-roles'
 const CAREER_TRACKS: ReadonlySet<string> = new Set(['PROFESSIONAL', 'MANAGEMENT'])
-const SENIORITIES: ReadonlySet<string> = new Set(['P1', 'P2', 'P3', 'P4', 'P5', 'M3', 'M4'])
 
 export class TargetRoleApiError extends Error {
   readonly status: number
@@ -30,7 +28,6 @@ export async function getTargetRoles(
   const parameters = new URLSearchParams()
   const search = filters.search?.trim()
   if (search) parameters.set('search', search)
-  if (filters.seniority) parameters.set('seniority', filters.seniority)
   const query = parameters.toString()
   const payload = await requestJson(query ? `${TARGET_ROLES_URL}?${query}` : TARGET_ROLES_URL, signal)
   if (!Array.isArray(payload)) throw new Error('Invalid target-role list response')
@@ -68,7 +65,6 @@ function parseSummary(value: unknown): TargetRoleSummary {
     code: requiredString(value.code, 'code'),
     name: requiredString(value.name, 'name'),
     track: careerTrack(value.track),
-    seniority: seniority(value.seniority),
     description: optionalString(value.description, 'description'),
     requirementCount,
   }
@@ -86,7 +82,6 @@ function parseDetail(value: unknown): TargetRoleDetail {
     name: requiredString(value.name, 'name'),
     familyCode: requiredString(value.familyCode, 'familyCode'),
     track: careerTrack(value.track),
-    seniority: seniority(value.seniority),
     description: optionalString(value.description, 'description'),
     responsibilities: value.responsibilities.map((item) => requiredString(item, 'responsibility')),
     requirements: value.requirements.map(parseRequirement),
@@ -127,9 +122,4 @@ function requiredNumber(value: unknown, field: string): number {
 function careerTrack(value: unknown): CareerTrack {
   if (typeof value !== 'string' || !CAREER_TRACKS.has(value)) throw new Error('Invalid track')
   return value as CareerTrack
-}
-
-function seniority(value: unknown): Seniority {
-  if (typeof value !== 'string' || !SENIORITIES.has(value)) throw new Error('Invalid seniority')
-  return value as Seniority
 }

@@ -9,7 +9,6 @@ const CHOICE = {
     code: 'JAVA_P3',
     name: 'Java Backend Developer',
     track: 'PROFESSIONAL' as const,
-    seniority: 'P3' as const,
   },
   command: {
     roleId: '10000000-0000-0000-0000-000000000001',

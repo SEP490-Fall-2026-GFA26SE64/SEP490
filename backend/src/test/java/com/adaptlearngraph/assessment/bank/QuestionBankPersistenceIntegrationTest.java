@@ -63,7 +63,7 @@ class QuestionBankPersistenceIntegrationTest {
             UUID bank=UUID.randomUUID(),legacy=UUID.randomUUID();jdbc.update("INSERT INTO platform.question_bank(question_bank_id,name,created_by) VALUES (?,'Existing bank',?)",bank,expert);
             jdbc.update("INSERT INTO platform.item_version(item_version_id,item_id,version,question_bank_id,prompt,response_schema,protected_key,content_hash) VALUES (?,?,1,?,'Legacy','{\"type\":\"SINGLE_CHOICE\",\"options\":[]}'::jsonb,'{}'::jsonb,?)",legacy,legacy,bank,"a".repeat(64));
             var legacyBytes=jdbc.queryForObject("SELECT row_to_json(i)::text FROM platform.item_version i WHERE item_version_id=?",String.class,legacy);
-            var flyway=Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load();assertEquals(7,flyway.migrate().migrationsExecuted);assertEquals(0,flyway.migrate().migrationsExecuted);
+            var flyway=Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load();assertEquals(8,flyway.migrate().migrationsExecuted);assertEquals(0,flyway.migrate().migrationsExecuted);
             assertEquals(before,jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=35 ORDER BY installed_rank"));
             var tx=new TransactionTemplate(new DataSourceTransactionManager(source));store=new JdbcQuestionBankStore(jdbc,tx,new ObjectMapper().findAndRegisterModules());
             var author=service(expert,org,"DOMAIN_EXPERT");var manager=service(ld,org,"LD_MANAGER");

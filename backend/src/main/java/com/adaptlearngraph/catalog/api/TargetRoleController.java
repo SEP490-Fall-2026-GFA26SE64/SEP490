@@ -3,7 +3,6 @@ package com.adaptlearngraph.catalog.api;
 import com.adaptlearngraph.catalog.api.TargetRoleResponseMapper.DetailResponse;
 import com.adaptlearngraph.catalog.api.TargetRoleResponseMapper.SummaryResponse;
 import com.adaptlearngraph.catalog.application.port.in.TargetRoleQueryUseCase;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,9 +30,8 @@ public class TargetRoleController {
 
     @GetMapping
     public List<SummaryResponse> list(
-            @RequestParam(required = false) @Size(max = 100) String search,
-            @RequestParam(required = false) Seniority seniority) {
-        return queries.listTargetRoles(search, seniority).stream()
+            @RequestParam(required = false) @Size(max = 100) String search) {
+        return queries.listTargetRoles(search).stream()
                 .map(TargetRoleResponseMapper::toResponse)
                 .toList();
     }

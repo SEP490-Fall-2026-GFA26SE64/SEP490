@@ -5,7 +5,6 @@ import com.adaptlearngraph.catalog.application.port.in.TargetRoleQueryUseCase;
 import com.adaptlearngraph.catalog.application.port.out.EmployeeContextPort;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort.Criteria;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
 import java.text.Normalizer;
@@ -30,11 +29,11 @@ public final class TargetRoleQueryService implements TargetRoleQueryUseCase {
     }
 
     @Override
-    public List<TargetRoleSummary> listTargetRoles(String search, Seniority seniority) {
+    public List<TargetRoleSummary> listTargetRoles(String search) {
         EmployeeActorContext actor = requireActiveEmployee();
         String normalizedSearch = normalizeSearch(search);
         List<TargetRoleSummary> roles = catalog.findAvailableRoles(
-                actor.organizationId(), new Criteria(normalizedSearch, seniority));
+                actor.organizationId(), new Criteria(normalizedSearch));
 
         if (roles == null) {
             throw new IllegalStateException("catalog must not return null");
