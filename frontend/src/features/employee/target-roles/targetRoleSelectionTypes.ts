@@ -1,10 +1,12 @@
-import type { CareerTrack } from './targetRoleTypes'
+import type { CareerTrack, Seniority } from './targetRoleTypes'
 
 export interface TargetRoleSelectionSnapshot {
   id: string
   code: string
   name: string
   track: CareerTrack
+  /** Optional stored legacy field; current responses omit it. */
+  seniority?: Seniority
   requirementCount?: number
 }
 

@@ -18,6 +18,8 @@ public final class SyntheticResponseGenerator {
     public record Generating(String origin,String generator,long seed,String population,List<GeneratingSkill> skills) {}
     public record Generated(Dataset dataset,Generating generating) {}
     public Generated generate(Bank bank,CalibrationJson json,CalibrationBudget budget) {
+        var policy=json.policyFor(json.algorithmHash());policy.validatePins(bank.pins());
+        String generatorVersion=policy.generic()?"SPLITTABLE_RANDOM_BOXMULLER_COMPLETE_V2":VERSION;
         var random=new SplittableRandom(SEED); var groups=new ArrayList<SkillResponses>(); var generation=new ArrayList<GeneratingSkill>();
         var skills=bank.items().stream().collect(Collectors.groupingBy(i->i.pin().skillId(),TreeMap::new,Collectors.toList()));
         for (var entry:skills.entrySet()) {
@@ -40,7 +42,7 @@ public final class SyntheticResponseGenerator {
             generation.add(new GeneratingSkill(entry.getKey(),List.copyOf(parameters),List.copyOf(abilities)));
             groups.add(new SkillResponses(entry.getKey(),items.stream().map(i->i.pin().itemVersionId()).toList(),responses));
         }
-        var generating=new Generating("SYNTHETIC",VERSION,SEED,"Independent per-skill N(0,1); generating a~U(.7,1.8),b~U(-2,2),c=.25; D=1",List.copyOf(generation));
-        return new Generated(new Dataset(Origin.SYNTHETIC,VERSION,SEED,json.hash(generating),groups),generating);
+        var generating=new Generating("SYNTHETIC",generatorVersion,SEED,"Independent per-skill N(0,1); generating a~U(.7,1.8),b~U(-2,2),c=.25; D=1",List.copyOf(generation));
+        return new Generated(new Dataset(Origin.SYNTHETIC,generatorVersion,SEED,json.hash(generating),groups),generating);
     }
 }

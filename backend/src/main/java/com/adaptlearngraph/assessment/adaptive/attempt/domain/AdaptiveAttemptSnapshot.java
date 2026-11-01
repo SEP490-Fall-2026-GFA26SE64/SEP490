@@ -10,14 +10,24 @@ import java.util.stream.Collectors;
 
 /** Server-only immutable starting inputs; never re-resolve current eligibility on resume. */
 public record AdaptiveAttemptSnapshot(AdaptiveBlueprint.Version blueprint, Purpose purpose,
-        Optional<String> roleId, Optional<Long> selectionRevision, Map<UUID, String> itemSkills) {
+        Optional<String> roleId, Optional<Long> selectionRevision, Map<UUID, String> itemSkills,
+        Optional<com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.Pin> assessmentPolicy) {
     public enum Purpose { ROLE_REQUIREMENT, OCCUPATION_EXPLORATION }
+
+    public AdaptiveAttemptSnapshot(AdaptiveBlueprint.Version blueprint,Purpose purpose,Optional<String> roleId,
+            Optional<Long> selectionRevision,Map<UUID,String> itemSkills) {
+        this(blueprint,purpose,roleId,selectionRevision,itemSkills,Optional.empty());
+    }
 
     public AdaptiveAttemptSnapshot {
         Objects.requireNonNull(blueprint);
         Objects.requireNonNull(purpose);
         Objects.requireNonNull(roleId);
         Objects.requireNonNull(selectionRevision);
+        // Missing field in pre-policy immutable receipt JSON is the explicit legacy representation.
+        assessmentPolicy=assessmentPolicy==null?Optional.empty():assessmentPolicy;
+        if(assessmentPolicy.filter(pin->!pin.organizationId().equals(blueprint.scope().organizationId())).isPresent())
+            throw new IllegalArgumentException("Policy tenant differs from pinned Blueprint");
         itemSkills = Map.copyOf(itemSkills);
         if ((purpose == Purpose.ROLE_REQUIREMENT) != roleId.isPresent()
                 || roleId.filter(id -> !blueprint.roles().containsKey(id)).isPresent()

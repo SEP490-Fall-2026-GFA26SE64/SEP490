@@ -1,0 +1,47 @@
+package com.adaptlearngraph.assessment.adaptive.policy.api;
+
+import com.adaptlearngraph.assessment.adaptive.policy.application.AssessmentPolicyService;
+import com.adaptlearngraph.assessment.adaptive.policy.application.AssessmentPolicyUseCase;
+import com.adaptlearngraph.assessment.adaptive.policy.application.AssessmentPolicyService.Failure;
+import com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.assessment.adaptive.policy.application.AssessmentPolicyService.Encoding;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@Profile("local & workspace-baseline & !local-baseline-demo & !prod")
+@ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnProperty(name="assessment.baseline.workspace.enabled",havingValue="true")
+@RequestMapping("/api/v1/ld/adaptive-baseline-policy")
+public final class AssessmentPolicyController {
+    public record Save(UUID commandKey,double stopSe,double highConfidenceSe,double mediumConfidenceSe,double k){}
+    public record Activate(UUID commandKey,UUID policyVersionId,long expectedActivationRevision){}
+    private final AssessmentPolicyUseCase service;private final Encoding json;
+    public AssessmentPolicyController(AssessmentPolicyUseCase service,Encoding json){this.service=service;this.json=json;}
+    @GetMapping public ResponseEntity<State> read(){return response(service.read());}
+    @GetMapping("/versions") public ResponseEntity<Page> list(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return response(service.list(page,size));}
+    @PostMapping(value="/versions",consumes="application/json") public ResponseEntity<Saved> save(jakarta.servlet.http.HttpServletRequest request){
+        var r=decode(request,Save.class);var saved=service.save(r.commandKey(),new Values(r.stopSe(),r.highConfidenceSe(),r.mediumConfidenceSe(),r.k()));
+        return ResponseEntity.status(saved.noOp()?200:201).cacheControl(CacheControl.noStore()).body(saved);
+    }
+    @PostMapping(value="/activation",consumes="application/json") public ResponseEntity<State> activate(jakarta.servlet.http.HttpServletRequest request){var r=decode(request,Activate.class);return response(service.activate(r.commandKey(),r.policyVersionId(),r.expectedActivationRevision()));}
+    private <T>T decode(jakarta.servlet.http.HttpServletRequest request,Class<T> type){
+        service.authorize(); // Trusted authorization precedes parsing/existence/error detail.
+        try{
+            byte[] bytes=request.getInputStream().readNBytes(4097);
+            if(bytes.length>4096)throw new Failure(400,"INVALID_REQUEST");
+            String body=StandardCharsets.UTF_8.newDecoder().decode(java.nio.ByteBuffer.wrap(bytes)).toString();
+            var value=json.read(body,type);if(value==null)throw new Failure(400,"INVALID_REQUEST");return value;
+        }catch(java.io.IOException invalid){throw new Failure(400,"INVALID_REQUEST");}
+    }
+    private <T>ResponseEntity<T> response(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
+    @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure f){return ResponseEntity.status(f.status).cacheControl(CacheControl.noStore()).body(Map.of("code",f.code));}
+    @ExceptionHandler({IllegalArgumentException.class,org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class}) ResponseEntity<Map<String,String>> invalid(Exception f){return failure(new Failure(400,"INVALID_REQUEST"));}
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class}) ResponseEntity<Map<String,String>> unavailable(Exception f){return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));}
+    @ExceptionHandler(com.adaptlearngraph.subscription.domain.SubscriptionFailure.class) ResponseEntity<Map<String,String>> subscription(com.adaptlearngraph.subscription.domain.SubscriptionFailure f){boolean anonymous=f.code()==com.adaptlearngraph.subscription.domain.SubscriptionFailure.Code.UNAUTHENTICATED;return failure(new Failure(anonymous?401:403,anonymous?"UNAUTHENTICATED":"FORBIDDEN"));}
+    @ExceptionHandler(com.adaptlearngraph.identity.domain.RegistrationFailure.class) ResponseEntity<Map<String,String>> identity(com.adaptlearngraph.identity.domain.RegistrationFailure f){boolean anonymous=f.code()==com.adaptlearngraph.identity.domain.RegistrationFailure.Code.UNAUTHENTICATED;return failure(new Failure(anonymous?401:403,anonymous?"UNAUTHENTICATED":"FORBIDDEN"));}
+}

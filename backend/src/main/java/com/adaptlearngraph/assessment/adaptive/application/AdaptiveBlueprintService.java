@@ -2,6 +2,7 @@ package com.adaptlearngraph.assessment.adaptive.application;
 
 import com.adaptlearngraph.assessment.adaptive.application.port.in.AdaptiveBlueprintUseCase;
 import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBlueprintActorPort;
+import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBlueprintActivationPolicyPort;
 import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBlueprintActorPort.Actor;
 import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.assessment.adaptive.application.port.out.AdaptiveBlueprintEligibilityPort.Snapshot;
@@ -36,14 +37,22 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     private final AdaptiveBlueprintValidator validator = new AdaptiveBlueprintValidator();
     private final AdaptiveBlueprintPreview preview;
     private final Clock clock;
+    private final AdaptiveBlueprintActivationPolicyPort activationPolicy;
 
     public AdaptiveBlueprintService(AdaptiveBlueprintActorPort actors, AdaptiveBlueprintStore store,
             AdaptiveBlueprintEligibilityPort eligibility, AdaptiveBlueprintPreviewPort items, Clock clock) {
+        this(actors,store,eligibility,items,clock,scope->{throw failure(Code.ASSESSMENT_POLICY_REQUIRED,"Activate an organization Assessment Policy first");});
+    }
+
+    public AdaptiveBlueprintService(AdaptiveBlueprintActorPort actors, AdaptiveBlueprintStore store,
+            AdaptiveBlueprintEligibilityPort eligibility, AdaptiveBlueprintPreviewPort items, Clock clock,
+            AdaptiveBlueprintActivationPolicyPort activationPolicy) {
         this.actors = Objects.requireNonNull(actors);
         this.store = Objects.requireNonNull(store);
         this.eligibility = Objects.requireNonNull(eligibility);
         this.preview = new AdaptiveBlueprintPreview(items);
         this.clock = Objects.requireNonNull(clock);
+        this.activationPolicy = Objects.requireNonNull(activationPolicy);
     }
 
     @Override public AdaptiveBlueprintListing.Page list(AdaptiveBlueprintListing.Query query) {
@@ -199,6 +208,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
             requireCommon(working.configuration());
             var current = requireActivationRevision(scope, command.expectedActivationRevision());
             requireConfirmedCurrent(current, command.currentConfirmed(), command.expectedCurrent());
+            activationPolicy.requireActive(scope);
             Snapshot eligible = resolve(scope);
             validator.requireFeasible(working.configuration(), eligible);
             requireUnchanged(eligible);
@@ -323,7 +333,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     }
 
     private Snapshot resolve(Scope scope) {
-        Snapshot snapshot = dependency(() -> eligibility.resolve(scope)).orElseThrow(() -> failure(Code.FORBIDDEN, "Occupation unavailable to actor scope"));
+        Snapshot snapshot = dependency(() -> eligibility.resolve(scope)).orElseThrow(() -> failure(Code.BASELINE_RESOURCES_UNAVAILABLE, "Baseline catalog/resources are not configured or usable"));
         if (!scope.equals(snapshot.scope())) throw failure(Code.DEPENDENCY_UNAVAILABLE, "Eligibility scope mismatch");
         return snapshot;
     }

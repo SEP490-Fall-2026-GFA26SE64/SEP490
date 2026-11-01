@@ -42,7 +42,8 @@ final class AdaptiveAttemptRows {
         jdbc.query("SELECT item_version_id,micro_skill_id FROM platform.baseline_attempt_pool_item WHERE organization_id=:org AND attempt_id=:id ORDER BY item_version_id",
                 AdaptiveAttemptJdbc.key(scope, id), rs -> { pool.put(rs.getObject(1, UUID.class), rs.getString(2)); });
         var snapshot = new AdaptiveAttemptSnapshot(blueprint, AdaptiveAttemptSnapshot.Purpose.valueOf(row.getString("attempt_purpose")),
-                Optional.ofNullable(row.getString("target_role_id")), Optional.ofNullable(row.getObject("target_selection_revision", Long.class)), pool);
+                Optional.ofNullable(row.getString("target_role_id")), Optional.ofNullable(row.getObject("target_selection_revision", Long.class)), pool,
+                policy(row,scope.organizationId()));
         String expectedPolicy = blueprint.configuration().occupationBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_OCCUPATION_V2.name();
         if (!java.util.Objects.equals(expectedPolicy, row.getString("scope_policy"))) throw new IllegalStateException("Attempt scope pin mismatch");
         if (!blueprint.pins().modelVersionId().equals(row.getObject("model_version_id", UUID.class))
@@ -62,7 +63,11 @@ final class AdaptiveAttemptRows {
 
     MapSqlParameterSource parameters(AdaptiveAttempt attempt) {
         var blueprint = attempt.snapshot().blueprint();
+        var policy=attempt.snapshot().assessmentPolicy();
         return AdaptiveAttemptJdbc.key(attempt.scope(), attempt.id())
+                .addValue("assessmentMode",policy.isPresent()?com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.SCHEMA:null)
+                .addValue("assessmentVersion",policy.map(p->p.versionId()).orElse(null)).addValue("assessmentHash",policy.map(p->p.hash()).orElse(null))
+                .addValue("assessmentSnapshot",policy.map(p->write(p.values())).orElse(null))
                 .addValue("purpose", attempt.snapshot().purpose().name()).addValue("role", attempt.snapshot().roleId().orElse(null))
                 .addValue("selection", attempt.snapshot().selectionRevision().orElse(null)).addValue("blueprint", blueprint.id().blueprintId())
                 .addValue("version", blueprint.id().version()).addValue("model", blueprint.pins().modelVersionId())
@@ -73,6 +78,19 @@ final class AdaptiveAttemptRows {
                 .addValue("state", attempt.status().name()).addValue("started", time(attempt.startedAt())).addValue("deadline", time(attempt.deadlineAt()))
                 .addValue("finished", attempt.finishedAt().map(AdaptiveAttemptRows::time).orElse(null))
                 .addValue("reason", attempt.completionReason().map(Enum::name).orElse(null)).addValue("replaces", attempt.replacesAttemptId().orElse(null));
+    }
+
+    private Optional<com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.Pin> policy(ResultSet row,UUID organization)throws SQLException {
+        String mode=row.getString("assessment_policy_mode");
+        if(mode==null){
+            if(row.getObject("assessment_policy_version_id")!=null || row.getString("assessment_policy_hash")!=null || row.getString("assessment_policy_snapshot")!=null)
+                throw new IllegalStateException("Corrupt legacy assessment policy");
+            return Optional.empty();
+        }
+        if(!com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.SCHEMA.equals(mode))throw new IllegalStateException("Unsupported assessment policy");
+        return Optional.of(new com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.Pin(organization,
+                row.getObject("assessment_policy_version_id",UUID.class),row.getString("assessment_policy_hash"),
+                read(row.getString("assessment_policy_snapshot"),com.adaptlearngraph.assessment.adaptive.policy.domain.OrganizationAssessmentPolicy.Values.class)));
     }
 
     String write(Object value) {

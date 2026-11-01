@@ -13,21 +13,24 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 /** Real PG model/content preflight and commit-time pin locks, behind authorized source ports. Never creates missing model/actors. */
 public final class JdbcCalibrationInputSource implements InputSource {
     private final NamedParameterJdbcTemplate jdbc;
-    private final OfficialCalibrationBankSource content;
+    private final BankSource content;
     private final DatasetSource datasets;
     private final CalibrationJson json;
     public JdbcCalibrationInputSource(NamedParameterJdbcTemplate jdbc,OfficialCalibrationBankSource content,DatasetSource datasets,CalibrationJson json) {
-        this.jdbc=jdbc; this.content=content; this.datasets=datasets; this.json=json;
+        this(jdbc,(grant,expected)->content.load(),datasets,json);
+    }
+    public JdbcCalibrationInputSource(NamedParameterJdbcTemplate jdbc,BankSource content,DatasetSource datasets,CalibrationJson json){
+        this.jdbc=jdbc;this.content=content;this.datasets=datasets;this.json=json;
     }
     @Override public Input load(Grant grant,Request request) {
-        Bank bank=content.load(); Calibration.require(bank.source().equals(request.source()));
+        Bank bank=content.load(grant,request.source()); Calibration.require(bank.source().equals(request.source()) && bank.source().bankId().equals(grant.scope().bankId()));
         ModelPin model=verify(grant,request,bank);
         Dataset data=datasets.load(grant,request.datasetRef(),request.datasetHash());
         Calibration.require(json.hash(data).equals(request.datasetHash()));
         return new Input(bank,data,request.datasetHash(),request.modelConfigurationHash(),request.modelParameterHash(),model);
     }
     @Override public void revalidate(Grant grant,Request request,Input input) {
-        Calibration.require(content.load().source().equals(request.source()));
+        Calibration.require(content.load(grant,request.source()).source().equals(request.source()));
         Calibration.require(verify(grant,request,input.bank()).equals(input.modelPin()));
         Calibration.require(json.hash(datasets.load(grant,request.datasetRef(),request.datasetHash())).equals(input.datasetHash()));
     }
@@ -47,7 +50,8 @@ public final class JdbcCalibrationInputSource implements InputSource {
                 if (!"IRT_3PL".equals(rs.getString("algorithm"))) throw new Failure(Code.NOT_READY);
                 Model model=json.read(rs.getString("configuration"),Model.class);
                 Calibration.require(json.hash(json.tree(rs.getString("configuration"))).equals(request.modelConfigurationHash()) && rs.getString("parameter_hash").equals(request.modelParameterHash()));
-                Calibration.require(model.minA()<=.25 && model.maxA()>=3 && model.maxAbsB()>=3 && model.maxC()>=.25);
+                Calibration.require(model.maxC()>=.25);
+                if(!json.policyFor(request.algorithmHash()).generic())Calibration.require(model.minA()<=.25 && model.maxA()>=3 && model.maxAbsB()>=3);
                 return new ModelPin(request.scope().modelId(),rs.getString("algorithm"),rs.getString("version"),rs.getString("parameter_hash"),
                         request.modelConfigurationHash(),rs.getString("artifact_ref"),rs.getObject("approved_by",UUID.class),
                         rs.getTimestamp("approved_at")==null?null:rs.getTimestamp("approved_at").toInstant());

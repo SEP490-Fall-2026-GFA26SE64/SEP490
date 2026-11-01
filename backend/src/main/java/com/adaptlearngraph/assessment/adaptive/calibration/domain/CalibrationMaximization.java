@@ -5,6 +5,7 @@ final class CalibrationMaximization {
     record Parameters(double a,double b) {}
     static Parameters fit(double a,double b,double[] totals,double[] correct,double[] theta,
                           CalibrationPolicy p,CalibrationBudget budget) {
+        if(p.generic())return fitGeneric(a,b,totals,correct,theta,p,budget);
         double count=java.util.Arrays.stream(totals).sum();
         for (int iteration=0;iteration<p.maxItemSteps();iteration++) {
             double[] v=evaluate(a,b,totals,correct,theta,p.fixedC(),budget);
@@ -31,6 +32,33 @@ final class CalibrationMaximization {
         return new Parameters(a,b);
     }
     private static double clamp(double x,double low,double high) { return StrictMath.max(low,StrictMath.min(high,x)); }
+    private static Parameters fitGeneric(double a,double b,double[] totals,double[] correct,double[] theta,CalibrationPolicy p,CalibrationBudget budget){
+        double count=java.util.Arrays.stream(totals).sum(),u=StrictMath.log(a);
+        for(int step=0;step<p.maxItemSteps();step++){
+            budget.check();double[] v=evaluate(a,b,totals,correct,theta,p.fixedC(),budget);
+            double gu=a*v[1],gb=v[2],aa=-(a*a*v[3]+a*v[1]),ab=-a*v[4],bb=-v[5],det=aa*bb-ab*ab;
+            double du,db;
+            if(aa>0 && bb>0 && det>1e-12){du=(bb*gu-ab*gb)/det;db=(aa*gb-ab*gu)/det;}
+            else{du=gu/count;db=gb/count;}
+            if(!Double.isFinite(du) || !Double.isFinite(db) || du*gu+db*gb<=0){du=gu/count;db=gb/count;}
+            double scale=1,nextA=a,nextB=b,nextU=u;boolean accepted=false;
+            for(int back=0;back<p.maxBacktracks();back++){
+                budget.check();nextU=u+scale*du;nextA=StrictMath.exp(nextU);nextB=b+scale*db;
+                if(Double.isFinite(nextA) && nextA>0 && Double.isFinite(nextB)){
+                    try{if(evaluate(nextA,nextB,totals,correct,theta,p.fixedC(),budget)[0]>=v[0]){accepted=true;break;}}
+                    catch(Calibration.Failure invalid){if(invalid.code()!=Calibration.Code.NUMERICAL_FAILURE)throw invalid;}
+                }
+                scale*=.5;
+            }
+            if(!accepted){
+                if(StrictMath.max(StrictMath.abs(gu),StrictMath.abs(gb))/count<p.innerTolerance())return new Parameters(a,b);
+                throw new Calibration.Failure(Calibration.Code.NUMERICAL_FAILURE);
+            }
+            double change=StrictMath.max(StrictMath.abs(nextA-a),StrictMath.abs(nextB-b));a=nextA;b=nextB;u=nextU;
+            if(change<p.innerTolerance())break;
+        }
+        return new Parameters(a,b);
+    }
     private static double[] evaluate(double a,double b,double[] totals,double[] correct,double[] theta,double c,CalibrationBudget budget) {
         budget.evaluation(); double[] v=new double[6];
         for (int k=0;k<theta.length;k++) {

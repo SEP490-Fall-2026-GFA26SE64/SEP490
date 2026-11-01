@@ -13,7 +13,6 @@ public final class CalibrationService implements UseCase {
     private final Store store;
     private final CalibrationEnginePort engine;
     private final Encoding encoding;
-    private final CalibrationPolicy policy=CalibrationPolicy.syntheticV1();
     public CalibrationService(Authorization authorization,InputSource inputs,Store store,CalibrationEnginePort engine,Encoding encoding) {
         this.authorization=java.util.Objects.requireNonNull(authorization); this.inputs=java.util.Objects.requireNonNull(inputs);
         this.store=java.util.Objects.requireNonNull(store); this.engine=java.util.Objects.requireNonNull(engine); this.encoding=java.util.Objects.requireNonNull(encoding);
@@ -21,7 +20,7 @@ public final class CalibrationService implements UseCase {
     @Override public Run execute(Request request) {
         var grant=authorization.require(request.scope(),Action.CALIBRATE);
         if (!grant.scope().equals(request.scope())) throw new Failure(Code.FORBIDDEN);
-        Calibration.require(request.algorithmHash().equals(encoding.algorithmHash()));
+        var policy=encoding.policyFor(request.algorithmHash());
         var existing=store.transaction(request.scope(),()->{
             authorization.recheck(grant,Action.CALIBRATE);
             var found=store.find(request.scope(),request.runId()); found.ifPresent(run->sameRequest(grant,request,run)); return found;
@@ -31,10 +30,11 @@ public final class CalibrationService implements UseCase {
         // Bound expensive dataset parsing/preflight as well as fitting across all application instances.
         try (var lease=store.acquireWorker()) {
         Input input=inputs.load(grant,request); budget.check();
+        policy.validatePins(input.bank().pins());
         Calibration.require(input.bank().source().equals(request.source()) && input.datasetHash().equals(request.datasetHash())
                 && input.modelConfigurationHash().equals(request.modelConfigurationHash()) && input.modelParameterHash().equals(request.modelParameterHash())
                 && input.dataset().origin()==Origin.SYNTHETIC && encoding.hash(input.dataset()).equals(request.datasetHash()));
-        var envelope=new Envelope(1,grant.actorId(),request,input.bank().pins(),input.dataset().origin(),input.dataset().generatingHash(),input.dataset().seed(),input.modelPin());
+        var envelope=new Envelope(policy.generic()?2:1,grant.actorId(),request,input.bank().pins(),input.dataset().origin(),input.dataset().generatingHash(),input.dataset().seed(),input.modelPin());
         UUID worker=UUID.randomUUID();
             Run claimed=store.transaction(request.scope(),()->{
                 authorization.recheck(grant,Action.CALIBRATE); inputs.revalidate(grant,request,input);
@@ -49,7 +49,7 @@ public final class CalibrationService implements UseCase {
                     Run state=store.find(request.scope(),request.runId()).orElseThrow(()->new Failure(Code.NOT_FOUND));
                     return state.status()!=Status.RUNNING || Boolean.TRUE.equals(state.diagnostics().get("cancelRequested"));
                 }));
-                Result result=engine.fit(input.bank(),input.dataset(),input.datasetHash(),encoding.algorithmHash(),budget);
+                Result result=engine.fit(input.bank(),input.dataset(),input.datasetHash(),request.algorithmHash(),budget);
                 CalibrationAdmission.validate(envelope,result,policy); budget.check();
                 return store.transaction(request.scope(),()->{
                     authorization.recheck(grant,Action.CALIBRATE); inputs.revalidate(grant,request,input); budget.check();

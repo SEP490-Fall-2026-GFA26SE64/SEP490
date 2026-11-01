@@ -15,7 +15,7 @@ final class JdbcCalibrationCandidates {
     private final CalibrationJson json;
     JdbcCalibrationCandidates(NamedParameterJdbcTemplate jdbc,CalibrationJson json) { this.jdbc=jdbc; this.json=json; }
     UUID insert(Envelope envelope,Result result) {
-        CalibrationAdmission.validate(envelope,result,CalibrationPolicy.syntheticV1());
+        CalibrationAdmission.validate(envelope,result,json.policyFor(envelope.request().algorithmHash()));
         UUID id=UUID.randomUUID(); String hash=json.hash(Map.of("envelope",envelope,"result",result));
         jdbc.update("""
                 INSERT INTO platform.irt_parameter_set(parameter_set_id,model_version_id,source,status,parameter_hash)
@@ -61,7 +61,7 @@ final class JdbcCalibrationCandidates {
             });
             // Ordered content is part of the parameter hash; neither sparse coverage nor reordered content is substituted.
             var actual=new Result(stored.origin(),stored.algorithm(),stored.algorithmHash(),stored.datasetHash(),stored.generatingHash(),stored.seed(),items,stored.skills(),stored.objectiveEvaluations());
-            CalibrationAdmission.validate(envelope,actual,CalibrationPolicy.syntheticV1());
+            CalibrationAdmission.validate(envelope,actual,json.policyFor(envelope.request().algorithmHash()));
             Calibration.require(json.hash(Map.of("envelope",envelope,"result",actual)).equals(rs.getString("parameter_hash")));
             return new Candidate(id,scope.modelId(),rs.getString("source"),rs.getString("status"),rs.getString("parameter_hash"),actual,envelope,
                     rs.getTimestamp("created_at").toInstant(),rs.getObject("activated_by",UUID.class),

@@ -78,7 +78,7 @@ public final class AdaptiveAttemptController {
             case FORBIDDEN -> HttpStatus.FORBIDDEN;
             case NOT_FOUND -> HttpStatus.NOT_FOUND;
             case POLICY_UNAVAILABLE, INFEASIBLE_SCOPE -> HttpStatus.UNPROCESSABLE_ENTITY;
-            case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+            case DEPENDENCY_UNAVAILABLE, ASSESSMENT_POLICY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
             default -> HttpStatus.CONFLICT;
         };
         String message = code == Code.CONFIGURATION_UPDATE_REQUIRED

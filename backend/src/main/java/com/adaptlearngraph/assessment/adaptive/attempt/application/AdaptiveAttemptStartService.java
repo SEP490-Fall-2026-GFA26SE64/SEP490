@@ -43,7 +43,7 @@ public final class AdaptiveAttemptStartService implements StartRead {
             if (active.isPresent()) attempt = active.get();
             else {
                 var snapshot = context.resolveStartingSnapshot(scope, target);
-                var policy = policies.load(snapshot.blueprint().pins(), snapshot.itemSkills());
+                var policy = policies.load(snapshot);
                 var selector = new AdaptiveItemSelector(policy.versions(), snapshot.microSkillIds(), policy.items(), snapshot.bounds().maxQuestions());
                 var firstTime = store.observedAt(scope);
                 var initial = selector.evaluate(List.of(), Set.of(), firstTime, firstTime.plusSeconds(snapshot.bounds().timeLimitSeconds()), false);

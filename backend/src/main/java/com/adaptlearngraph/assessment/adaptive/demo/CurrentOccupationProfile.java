@@ -54,6 +54,7 @@ public final class CurrentOccupationProfile implements Baseline {
                 """,Map.of("org",actor.organizationId(),"learner",actor.learnerId()),(rs,n)-> {
             try {
                 var values=json.readTree(rs.getString("mastery"));
+                attempts.findOwned(actor.organizationId(),actor.learnerId(),rs.getObject("attempt_id",UUID.class)).orElseThrow(()->new IllegalStateException("Profile attempt unavailable"));
                 var skills=jdbc.query("""
                         SELECT s.micro_skill_id,s.confidence_label,
                           (SELECT MIN(b.micro_skill_name_snapshot) FROM platform.baseline_adaptive_blueprint_skill b
@@ -93,6 +94,7 @@ public final class CurrentOccupationProfile implements Baseline {
                 """,key(scope),(rs,n)-> {
                     try {
                         var required=json.readTree(rs.getString(1));var mastery=json.readTree(rs.getString(2));int covered=0;
+                        attempts.findOwned(actor.organizationId(),actor.learnerId(),rs.getObject(4,UUID.class)).orElseThrow(()->new IllegalStateException("Profile attempt unavailable"));
                         for(var id:required) { var value=mastery.get(id.asText()); if(value!=null && value.isNumber()
                                 && value.decimalValue().signum()>=0 && value.decimalValue().compareTo(BigDecimal.ONE)<=0) covered++; }
                         return new Progress(covered==required.size()?"COMPLETE":"PROFILE_INCOMPLETE",required.size(),covered,rs.getObject(4,UUID.class),rs.getInt(3));

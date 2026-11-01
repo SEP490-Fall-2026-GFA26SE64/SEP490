@@ -2,6 +2,7 @@ package com.adaptlearngraph.assessment.adaptive.calibration.domain;
 
 /** Exact response-pattern aggregation for the selected complete nine-item unidimensional design. */
 final class CalibrationExpectation {
+    record Pattern(String answers,int count){}
     record Step(double logLikelihood, double[] totals, double[][] correct) {}
     static double[] grid(CalibrationPolicy p) {
         double[] theta = new double[p.quadraturePoints()];
@@ -47,5 +48,30 @@ final class CalibrationExpectation {
         }
         Calibration.finite(ll);
         return new Step(ll,totals,correct);
+    }
+    static Step compute(java.util.List<Pattern> patterns,double[] a,double[] b,double c,double[] theta,double[] weights,CalibrationBudget budget){
+        int size=a.length,points=theta.length;
+        double[][] yes=new double[size][points],no=new double[size][points],correct=new double[size][points];
+        for(int i=0;i<size;i++)for(int k=0;k<points;k++){
+            budget.check();double p=probability(a[i],b[i],c,theta[k]);
+            if(!Double.isFinite(p) || p<=0 || p>=1)throw new Calibration.Failure(Calibration.Code.NUMERICAL_FAILURE);
+            yes[i][k]=StrictMath.log(p);no[i][k]=StrictMath.log1p(-p);
+        }
+        double[] totals=new double[points],log=new double[points];double ll=0;
+        for(var pattern:patterns){
+            budget.check();Calibration.require(pattern.answers().length()==size && pattern.count()>0);double max=Double.NEGATIVE_INFINITY;
+            for(int k=0;k<points;k++){
+                log[k]=StrictMath.log(weights[k]);
+                for(int i=0;i<size;i++){budget.check();log[k]+=pattern.answers().charAt(i)=='1'?yes[i][k]:no[i][k];}
+                max=StrictMath.max(max,log[k]);
+            }
+            double sum=0;for(int k=0;k<points;k++)sum+=StrictMath.exp(log[k]-max);
+            ll+=pattern.count()*(max+StrictMath.log(sum));
+            for(int k=0;k<points;k++){
+                double expected=pattern.count()*StrictMath.exp(log[k]-max)/sum;totals[k]+=expected;
+                for(int i=0;i<size;i++)if(pattern.answers().charAt(i)=='1')correct[i][k]+=expected;
+            }
+        }
+        Calibration.finite(ll);return new Step(ll,totals,correct);
     }
 }

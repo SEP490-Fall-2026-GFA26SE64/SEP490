@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 /** TMP-REQ002-08: durable initialization handoff only; REQ-041 consumption remains unintegrated. */
 public final class JdbcAdaptiveAttemptOutcome implements AdaptiveAttemptOutcomePort {
     public static final String EVENT_TYPE = "BASELINE_MASTERY_INITIALIZED_V1";
+    public static final String POLICY_EVENT_TYPE = "BASELINE_MASTERY_INITIALIZED_V2";
     private final NamedParameterJdbcTemplate jdbc;
     private final ObjectMapper mapper;
     private final AdaptiveAttemptStore store;
@@ -40,8 +41,11 @@ public final class JdbcAdaptiveAttemptOutcome implements AdaptiveAttemptOutcomeP
                 payload.put("learnerId", next.scope().learnerId()); payload.put("occupationId", next.scope().occupationId());
                 payload.put("sourceRevision", next.revision()); payload.put("completedAt", next.finishedAt().orElseThrow());
                 payload.put("pins", pins); payload.put("initializationOnly", true);
+                var policy=next.snapshot().assessmentPolicy();
+                policy.ifPresent(pin->{payload.put("schemaVersion",2);payload.put("assessmentPolicy",Map.of("versionId",pin.versionId(),"hash",pin.hash(),"values",pin.values()));});
                 payload.put("skills", new TreeMap<>(completion.skills()));
-                params.addValue("event", event).addValue("type", EVENT_TYPE).addValue("payload", json(payload))
+                params.addValue("event", event).addValue("type", policy.isPresent()?POLICY_EVENT_TYPE:EVENT_TYPE).addValue("payload", json(payload))
+                        .addValue("policyVersion",policy.map(p->p.versionId()).orElse(null)).addValue("policyHash",policy.map(p->p.hash()).orElse(null))
                         .addValue("model", pins.modelVersionId()).addValue("mapping", pins.masteryMappingVersionId())
                         .addValue("parameters", pins.parameterSetId());
                 jdbc.update("""
@@ -57,14 +61,14 @@ public final class JdbcAdaptiveAttemptOutcome implements AdaptiveAttemptOutcomeP
                             .addValue("point", value.estimatedMastery()).addValue("mastery", value.mastery()).addValue("confidence", value.confidence());
                     jdbc.update("""
                             INSERT INTO platform.baseline_attempt_skill_result(attempt_id,organization_id,micro_skill_id,theta,standard_error,
-                                estimated_mastery,mastery,confidence_label,mastery_mapping_version_id,finalized_at)
-                            VALUES (:id,:org,:skill,:theta,:se,:point,:mastery,:confidence,:mapping,:time)
+                                estimated_mastery,mastery,confidence_label,mastery_mapping_version_id,finalized_at,policy_version_id,policy_hash)
+                            VALUES (:id,:org,:skill,:theta,:se,:point,:mastery,:confidence,:mapping,:time,:policyVersion,:policyHash)
                             """, params);
                     jdbc.update("""
                             INSERT INTO platform.baseline_mastery_evidence(attempt_id,organization_id,learner_id,occupation_id,micro_skill_id,
                                 model_version_id,mastery_mapping_version_id,parameter_set_id,theta,standard_error,estimated_mastery,
-                                mastery,confidence_label,mastery_event_id,emitted_at)
-                            VALUES (:id,:org,:learner,:occupation,:skill,:model,:mapping,:parameters,:theta,:se,:point,:mastery,:confidence,:event,:time)
+                                mastery,confidence_label,mastery_event_id,emitted_at,policy_version_id,policy_hash)
+                            VALUES (:id,:org,:learner,:occupation,:skill,:model,:mapping,:parameters,:theta,:se,:point,:mastery,:confidence,:event,:time,:policyVersion,:policyHash)
                             """, params);
                 });
             }

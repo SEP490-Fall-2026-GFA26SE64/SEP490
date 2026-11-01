@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ClipboardList, Eye, Layers, Target } from 'lucide-react'
 import { AdaptiveAssessmentPreview } from './AdaptiveAssessmentPreview'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -12,10 +12,13 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { AdaptiveBaselineDirectory } from './AdaptiveBaselineDirectory'
+import { AdaptiveBaselineHome } from './AdaptiveBaselineHome'
 import { AdaptiveBaselineForm } from './AdaptiveBaselineForm'
 import { AdaptiveErrorNotice, AdaptiveLoading, AdaptiveShortages } from './AdaptiveBaselineFeedback'
-import { getAdaptiveVersion, isCommonConfiguration, type AdaptiveVersion } from './adaptiveBaselineApi'
+import { AdaptiveBaselineApiError, getAdaptiveVersion, isCommonConfiguration, type AdaptiveVersion } from './adaptiveBaselineApi'
+import { getAssessmentPolicy } from './assessmentPolicyApi'
+import { assessmentPolicyPath } from './assessmentPolicyNavigation'
+import { AssessmentPolicyNotice } from './AssessmentPolicyNotice'
 import { boundsDraft, createAdaptiveDraft } from './adaptiveBaselineDraft'
 import { adaptiveApproval, useAdaptiveBaselineWorkspace, type AdaptiveApproval } from './useAdaptiveBaselineWorkspace'
 
@@ -32,13 +35,16 @@ export function AdaptiveBaselineRoute() {
     <Heading level={1} className="sr-only">{t('adaptiveBaseline.title')}</Heading>
     <Card><CardContent className="p-6"><Text role="status">{t('adaptiveBaseline.unavailable')}</Text></CardContent></Card>
   </div></WorkspaceLayout>
-  return <WorkspaceLayout>{occupationId ? <AdaptiveBaselineWorkspace key={occupationId} occupationId={occupationId} /> : <AdaptiveBaselineDirectory />}</WorkspaceLayout>
+  return <WorkspaceLayout>{occupationId ? <AdaptiveBaselineWorkspace key={occupationId} occupationId={occupationId} /> : <AdaptiveBaselineHome />}</WorkspaceLayout>
 }
 export const AdaptiveBaselinePage = AdaptiveBaselineRoute
 
 function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
   const navigate = useNavigate(), { t, language } = useTranslation(), tr = (key: string) => t(`adaptiveBaseline.${key}`)
   const state = useAdaptiveBaselineWorkspace(occupationId)
+  const policyCheck = useRef<AbortController | null>(null)
+  const [checkingPolicy, setCheckingPolicy] = useState(false), [policyError, setPolicyError] = useState<AdaptiveBaselineApiError | null>(null)
+  useEffect(() => () => policyCheck.current?.abort(), [])
   const [params, setParams] = useSearchParams()
   const blueprint = params.get('blueprint'), version = params.get('version')
   const [versionReload, setVersionReload] = useState(0)
@@ -69,14 +75,36 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
   const workspace = denied ? null : state.workspace
   const requestedDraft = params.get('draft')
   const draftMismatch = Boolean(requestedDraft && workspace && requestedDraft !== workspace.working?.workingRevisionId)
-  const locked = state.busy || state.pending || state.needsRefresh || draftMismatch
+  const locked = state.busy || state.pending || state.needsRefresh || draftMismatch || checkingPolicy
   const viewingVersion = Boolean(version && editing !== versionKey)
   const versionDraft = workspace && selectedVersion ? createAdaptiveDraft({ ...workspace, working: null, current: selectedVersion }) : null
   const legacy = workspace?.working && !isCommonConfiguration(workspace.working.configuration) ? workspace.working.configuration : null
   const skills = Object.fromEntries(Object.values(workspace?.capacity.roles ?? {}).flatMap(role => Object.entries(role.snapshot.skills).map(([id, skill]) => [id, skill.name])))
   function ask(action: Confirmation['action']) {
-    if (!workspace) return
+    if (!workspace || policyCheck.current) return
+    if (action === 'finalize') { void prepareActivation(); return }
     setReason(''); setConfirmation({ action, snapshot: adaptiveApproval(workspace) })
+  }
+  async function prepareActivation() {
+    if (!workspace || locked || !state.canActivate || policyCheck.current) return
+    const controller = new AbortController(); policyCheck.current = controller
+    const snapshot = adaptiveApproval(workspace)
+    setCheckingPolicy(true); setPolicyError(null)
+    try {
+      const policy = await getAssessmentPolicy(controller.signal)
+      if (controller.signal.aborted) return
+      if (!policy.active) {
+        const context = new URLSearchParams(params)
+        if (workspace.working) context.set('draft', workspace.working.workingRevisionId)
+        navigate(assessmentPolicyPath(occupationId, context)); return
+      }
+      setReason(''); setConfirmation({ action: 'finalize', snapshot })
+    } catch (cause: unknown) {
+      if (!controller.signal.aborted) setPolicyError(cause instanceof AdaptiveBaselineApiError ? cause : new AdaptiveBaselineApiError(0, 'NETWORK_ERROR'))
+    } finally {
+      policyCheck.current = null
+      if (!controller.signal.aborted) setCheckingPolicy(false)
+    }
   }
   function confirm() {
     if (!confirmation) return
@@ -90,8 +118,8 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
     <div className="flex flex-wrap items-center justify-between gap-3">
       <Text variant="body-sm" tone="foreground" className="min-w-0 break-words font-semibold">{workspace?.capacity.occupationName}</Text>
       <div className="flex min-w-0 max-w-full flex-wrap gap-2">
-      <Button size="sm" className={compactAction} variant="ghost" disabled={state.busy || state.pending && !state.writeCommitted} onClick={() => state.dirty && !state.writeCommitted ? ask('leave') : navigate('/ld-manager/baseline-assessments')}>{tr('back')}</Button>
-      <Button size="sm" className={compactAction} variant="outline" disabled={state.busy || state.pending} onClick={() => { if (state.dirty) ask('refresh'); else { setVersionReload(value => value + 1); void state.refresh() } }}>{tr('refresh')}</Button>
+      <Button size="sm" className={compactAction} variant="ghost" disabled={checkingPolicy || state.busy || state.pending && !state.writeCommitted} onClick={() => state.dirty && !state.writeCommitted ? ask('leave') : navigate('/ld-manager/baseline-assessments')}>{tr('back')}</Button>
+      <Button size="sm" className={compactAction} variant="outline" disabled={checkingPolicy || state.busy || state.pending} onClick={() => { if (state.dirty) ask('refresh'); else { setVersionReload(value => value + 1); void state.refresh() } }}>{tr('refresh')}</Button>
       <Button size="sm" className={compactAction} disabled={!workspace || locked || state.dirty} onClick={() => {
         if (workspace?.working) { setDraftExistsNotice(true); return }
         setDraftExistsNotice(false); setParams({}); state.edit({ name: '', occupation: boundsDraft() }); setEditing(null)
@@ -99,6 +127,8 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
     </div></div>
     {state.busy && <AdaptiveLoading />}
     {state.error && <AdaptiveErrorNotice error={state.error} />}
+    {policyError && <AdaptiveErrorNotice error={policyError} />}
+    {!denied && <AssessmentPolicyNotice occupationId={occupationId} disabled={locked || state.dirty} required={state.error?.code === 'ASSESSMENT_POLICY_REQUIRED'} />}
     {!denied && !workspace && selectedVersion && <Card><CardHeader className="p-5 pb-4"><Heading level={2} size="card">{selectedVersion.configuration.name} · v{selectedVersion.id.version}</Heading></CardHeader><CardContent className="space-y-2 px-5 pb-5">
       <Badge variant="outline">{tr(`statuses.${selectedVersion.status}`)}</Badge>
       {isCommonConfiguration(selectedVersion.configuration) && <Text variant="body-sm">{selectedVersion.configuration.occupationBounds.maxQuestions} · {selectedVersion.configuration.occupationBounds.timeLimitSeconds % 60 !== 0 ? '≈ ' : ''}{Math.round(selectedVersion.configuration.occupationBounds.timeLimitSeconds / 60)} {tr('totalMinutes')}</Text>}

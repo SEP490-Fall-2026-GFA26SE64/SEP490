@@ -48,6 +48,9 @@ public final class JdbcParameterPromotionStore implements Store {
                 WHERE model_version_id=:model AND algorithm='IRT_3PL' FOR SHARE
                 """,key,(rs,row)->{
             if (rs.getObject("approved_by")==null || rs.getTimestamp("approved_at")==null) throw new Failure(Code.NOT_READY);
+            var runtime=json.read(rs.getString("configuration"),com.adaptlearngraph.assessment.adaptive.psychometrics.AdaptiveIrtPolicy.Model.class);
+            if(candidate.result().items().stream().anyMatch(item->item.a()<runtime.minA() || item.a()>runtime.maxA()
+                    || StrictMath.abs(item.b())>runtime.maxAbsB() || item.c()>runtime.maxC()))throw new Failure(Code.NOT_READY);
             Calibration.require(json.hash(json.tree(rs.getString("configuration"))).equals(command.modelConfigurationHash())
                     && rs.getString("parameter_hash").equals(command.modelParameterHash()));
             Calibration.require(new ModelPin(command.scope().modelId(),rs.getString("algorithm"),rs.getString("version"),rs.getString("parameter_hash"),

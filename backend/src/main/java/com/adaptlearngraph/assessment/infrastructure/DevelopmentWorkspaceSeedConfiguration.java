@@ -1,6 +1,5 @@
 package com.adaptlearngraph.assessment.infrastructure;
 
-import com.adaptlearngraph.assessment.adaptive.demo.LocalDemoIdentity;
 import com.adaptlearngraph.assessment.adaptive.demo.LocalDemoProvisioning;
 import com.adaptlearngraph.identity.infrastructure.RegistrationCryptography;
 import com.adaptlearngraph.shared.infrastructure.DevelopmentWorkspace;
@@ -33,11 +32,11 @@ public class DevelopmentWorkspaceSeedConfiguration {
             var secrets=new RegistrationCryptography("","");
             new TransactionTemplate(new JdbcTransactionManager(source)).executeWithoutResult(status -> {
                 jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended('WORKSPACE_DEVELOPMENT_V1',0))",(rs,n)->true);
-                var org=DevelopmentWorkspace.ORGANIZATION;
-                if(!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.organization WHERE organization_id=? AND code='LOCAL-DEMO')",Boolean.class,org)))
+                var org=MainDevelopmentBankSeed.ORGANIZATION;
+                if(!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.organization WHERE organization_id=? AND code='TECHNOVA')",Boolean.class,org)))
                     throw new IllegalStateException("Import the exact development catalog and bank first");
                 var now=Timestamp.from(Instant.parse("2026-01-01T00:00:00Z"));
-                UUID provisioner=DevelopmentWorkspace.id("provisioner"),registration=DevelopmentWorkspace.id("registration");
+                UUID provisioner=MainDevelopmentBankSeed.id("provisioner"),registration=MainDevelopmentBankSeed.id("registration");
                 jdbc.update("""
                         INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash)
                         VALUES(?,?,'development-provisioner.invalid','development-provisioner.invalid','DEVELOPMENT_NO_LOGIN')
@@ -52,15 +51,15 @@ public class DevelopmentWorkspaceSeedConfiguration {
                 jdbc.update("""
                         INSERT INTO platform.organization_workspace(workspace_id,organization_id,registration_id,slug,setup_state,created_at,ready_at)
                         VALUES(?,?,?,'workspace-development','READY',?,?) ON CONFLICT(organization_id) DO NOTHING
-                        """,DevelopmentWorkspace.id("workspace"),org,registration,now,now);
-                UUID department=DevelopmentWorkspace.id("department"),reference=DevelopmentWorkspace.id("occupation-reference");
+                        """,MainDevelopmentBankSeed.id("workspace"),org,registration,now,now);
+                UUID department=MainDevelopmentBankSeed.id("department"),reference=MainDevelopmentBankSeed.id("occupation-reference");
                 jdbc.update("INSERT INTO platform.department_reference(department_id,organization_id,name,active) VALUES(?,?,'Development Security',true) ON CONFLICT(department_id) DO NOTHING",department,org);
                 jdbc.update("""
                         INSERT INTO platform.occupation_department_reference(occupation_reference_id,occupation_id,organization_id,department_id,name,active)
                         VALUES(?,?,?,?,'Information Security Analysts',true) ON CONFLICT(occupation_reference_id) DO NOTHING
-                        """,reference,DevelopmentWorkspace.id("occupation"),org,department);
+                        """,reference,MainDevelopmentBankSeed.id("occupation"),org,department);
                 for(var pair:Map.of("ld","LD_MANAGER","employee","EMPLOYEE","expert","DOMAIN_EXPERT").entrySet()) {
-                    UUID account=DevelopmentWorkspace.id(pair.getKey()),membership=DevelopmentWorkspace.id("membership:"+pair.getKey());
+                    UUID account=MainDevelopmentBankSeed.id(pair.getKey()),membership=MainDevelopmentBankSeed.id("membership:"+pair.getKey());
                     String email=pair.getKey()+"@workspace.dev.invalid";
                     jdbc.update("""
                             INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash)
@@ -90,21 +89,21 @@ public class DevelopmentWorkspaceSeedConfiguration {
                 jdbc.update("""
                         INSERT INTO platform.workspace_baseline_resource(organization_id,occupation_reference_id,graph_occupation_id,question_bank_id,model_version_id,mastery_mapping_version_id)
                         VALUES(?,?,?,?,?,?) ON CONFLICT DO NOTHING
-                        """,org,reference,DevelopmentWorkspace.OCCUPATION,LocalDemoIdentity.BANK,null,null);
+                        """,org,reference,DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank(),null,null);
             });
             // Reuse the exact validated synthetic artifact, without provisioning persona accounts or learner state.
-            new LocalDemoProvisioning(source,json,false,DevelopmentWorkspace.id("ld")).run(args);
+            new LocalDemoProvisioning(source,json,false,MainDevelopmentBankSeed.id("ld"),MainDevelopmentBankSeed.securityProjection()).run(args);
             jdbc.update("""
                     UPDATE platform.workspace_baseline_resource SET model_version_id=?,mastery_mapping_version_id=?
                     WHERE organization_id=? AND graph_occupation_id=? AND question_bank_id=?
                       AND model_version_id IS NULL AND mastery_mapping_version_id IS NULL
-                    """,LocalDemoIdentity.id("model-v1"),LocalDemoIdentity.id("mapping-v1"),DevelopmentWorkspace.ORGANIZATION,
-                    DevelopmentWorkspace.OCCUPATION,LocalDemoIdentity.BANK);
+                    """,MainDevelopmentBankSeed.securityId("model-v1"),MainDevelopmentBankSeed.securityId("mapping-v1"),MainDevelopmentBankSeed.ORGANIZATION,
+                    DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank());
             if(!Boolean.TRUE.equals(jdbc.queryForObject("""
                     SELECT EXISTS(SELECT 1 FROM platform.workspace_baseline_resource WHERE organization_id=? AND graph_occupation_id=?
                       AND question_bank_id=? AND model_version_id=? AND mastery_mapping_version_id=?)
-                    """,Boolean.class,DevelopmentWorkspace.ORGANIZATION,DevelopmentWorkspace.OCCUPATION,LocalDemoIdentity.BANK,
-                    LocalDemoIdentity.id("model-v1"),LocalDemoIdentity.id("mapping-v1"))))
+                    """,Boolean.class,MainDevelopmentBankSeed.ORGANIZATION,DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank(),
+                    MainDevelopmentBankSeed.securityId("model-v1"),MainDevelopmentBankSeed.securityId("mapping-v1"))))
                 throw new IllegalStateException("Development baseline resource drift");
             context.close();
         };

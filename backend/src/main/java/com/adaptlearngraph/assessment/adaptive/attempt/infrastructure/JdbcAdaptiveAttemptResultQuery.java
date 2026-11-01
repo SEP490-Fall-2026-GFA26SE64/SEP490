@@ -13,7 +13,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 /** TMP-REQ002-08: own-Employee result/history read model with an explicit safe projection. */
 public final class JdbcAdaptiveAttemptResultQuery implements Results {
     private static final String QUERY = """
-            SELECT attempt.attempt_id,attempt.occupation_id,version.occupation_name_snapshot,
+            SELECT attempt.attempt_id,attempt.organization_id,attempt.occupation_id,version.occupation_name_snapshot,
+                attempt.assessment_policy_mode,attempt.assessment_policy_version_id,attempt.assessment_policy_hash,attempt.assessment_policy_snapshot,
+                skill.policy_version_id AS skill_policy_version_id,skill.policy_hash AS skill_policy_hash,
                 attempt.attempt_purpose,attempt.target_role_id,role.role_name_snapshot,attempt.state,
                 attempt.scope_policy,version.scope_policy AS blueprint_scope_policy,
                 attempt.completion_reason,attempt.started_at,attempt.finished_at,attempt.replaces_attempt_id,
@@ -57,6 +59,7 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
               AND attempt.state<>'IN_PROGRESS'
             """;
     private final NamedParameterJdbcTemplate jdbc;
+    private final com.fasterxml.jackson.databind.ObjectMapper policyJson=new com.fasterxml.jackson.databind.ObjectMapper();
     private final AdaptiveAttemptContextPort context;
     private final boolean workspaceIdentity;
 
@@ -91,6 +94,11 @@ public final class JdbcAdaptiveAttemptResultQuery implements Results {
     private List<Result> read(MapSqlParameterSource parameters, String suffix) {
         var rows = new LinkedHashMap<UUID, MutableResult>();
         jdbc.query(QUERY + suffix, parameters.addValue("workspaceIdentity", workspaceIdentity), result -> {
+            try{
+                var policy=com.adaptlearngraph.assessment.adaptive.policy.infrastructure.AssessmentPolicyProvenance.read(result,policyJson,result.getObject("organization_id",UUID.class));
+                if(result.getString("micro_skill_id")!=null && (!Objects.equals(result.getObject("skill_policy_version_id"),policy.map(p->p.versionId()).orElse(null))
+                        || !Objects.equals(result.getString("skill_policy_hash"),policy.map(p->p.hash()).orElse(null))))throw new IllegalStateException("Result policy mismatch");
+            }catch(Exception invalid){throw new Failure(Code.DEPENDENCY_UNAVAILABLE);}
             UUID id = result.getObject("attempt_id", UUID.class);
             var view = rows.get(id);
             if (view == null) {
