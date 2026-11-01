@@ -1,0 +1,76 @@
+package com.adaptlearngraph.apis;
+
+import com.adaptlearngraph.endpoints.ApiEndpoints;
+import com.adaptlearngraph.services.BaselineBlueprintCapacityUseCase;
+import com.adaptlearngraph.services.BaselineBlueprintCapacityUseCase.CapacityDetail;
+import com.adaptlearngraph.services.BaselineOccupationCatalogUseCase;
+import com.adaptlearngraph.services.BaselineOccupationCatalogUseCase.Failure;
+import com.adaptlearngraph.services.BaselineOccupationCatalogUseCase.OccupationDetail;
+import com.adaptlearngraph.services.BaselineOccupationCatalogUseCase.OccupationSummary;
+import java.util.List;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@Profile("local")
+@ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnProperty(prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+@RequestMapping(ApiEndpoints.BASELINE_OCCUPATION_CATALOG)
+public class BaselineOccupationCatalogController {
+    private final BaselineOccupationCatalogUseCase catalog;
+    private final BaselineBlueprintCapacityUseCase capacity;
+
+    public BaselineOccupationCatalogController(
+            BaselineOccupationCatalogUseCase catalog, BaselineBlueprintCapacityUseCase capacity) {
+        this.catalog = catalog;
+        this.capacity = capacity;
+    }
+
+    @GetMapping
+    List<OccupationSummary> list() {
+        return catalog.listAvailableOccupations();
+    }
+
+    @GetMapping("/{occupationId}")
+    OccupationDetail detail(@PathVariable String occupationId) {
+        return catalog.getAvailableOccupation(occupationId);
+    }
+
+    @GetMapping("/{occupationId}/capacity")
+    CapacityDetail capacity(@PathVariable String occupationId) {
+        return capacity.getAvailableCapacity(occupationId);
+    }
+
+    @ExceptionHandler(Failure.class)
+    ResponseEntity<ApiError> handleFailure(Failure failure) {
+        HttpStatus status = switch (failure.code()) {
+            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+        return ResponseEntity.status(status).body(new ApiError(failure.code().name(), failure.getMessage()));
+    }
+
+    @ExceptionHandler(BaselineBlueprintCapacityUseCase.Failure.class)
+    ResponseEntity<ApiError> handleCapacityFailure(BaselineBlueprintCapacityUseCase.Failure failure) {
+        HttpStatus status = switch (failure.code()) {
+            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+        return ResponseEntity.status(status).body(new ApiError(failure.code().name(), failure.getMessage()));
+    }
+
+    record ApiError(String code, String message) {}
+}

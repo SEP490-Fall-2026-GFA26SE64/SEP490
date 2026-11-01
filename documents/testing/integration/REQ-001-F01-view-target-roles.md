@@ -15,8 +15,8 @@ Follow [current integration criteria](README.md#current-scope-alignment). Record
 
 | Case ID | Acceptance Rule | Container / Fixture | Trigger / Method | Expected Outcome | Executable Test Location | Result |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **F01-I01** | AC02, AC03, AC05, AC07, AC09 | Disposable `neo4j:5.26-community` container; Org A and Org B roles including invalid/inactive graph nodes | Call `Neo4jTargetRoleCatalogAdapter` methods | Tenant isolation holds; catalog validity, full property mapping, and current-state reread verified | [Neo4jTargetRoleCatalogAdapterTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/infrastructure/Neo4jTargetRoleCatalogAdapterTest.java) | **PASS** |
-| **F01-I02** | AC08 | Disposable Neo4j container stopped/unreachable | Call catalog adapter read method | Dependency failure is safely wrapped as `CATALOG_UNAVAILABLE`, never returning false empty or not-found results | [Neo4jTargetRoleCatalogAdapterTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/catalog/infrastructure/Neo4jTargetRoleCatalogAdapterTest.java) | **PASS** |
+| **F01-I01** | AC02, AC03, AC05, AC07, AC09 | Disposable `neo4j:5.26-community` container; Org A and Org B roles including invalid/inactive graph nodes | Call `Neo4jTargetRoleCatalogAdapter` methods | Tenant isolation holds; catalog validity, full property mapping, and current-state reread verified | [Neo4jTargetRoleCatalogAdapterTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/repository/Neo4jTargetRoleCatalogAdapterTest.java) | **PASS** |
+| **F01-I02** | AC08 | Disposable Neo4j container stopped/unreachable | Call catalog adapter read method | Dependency failure is safely wrapped as `CATALOG_UNAVAILABLE`, never returning false empty or not-found results | [Neo4jTargetRoleCatalogAdapterTest.java](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/repository/Neo4jTargetRoleCatalogAdapterTest.java) | **PASS** |
 
 ---
 

@@ -1,0 +1,73 @@
+package com.adaptlearngraph.config;
+
+import com.adaptlearngraph.repository.JdbcLearningContentAdapter;
+import com.adaptlearngraph.repository.JdbcModuleAuthoringAdapter;
+import com.adaptlearngraph.repository.PrivateLearningAssets;
+import com.adaptlearngraph.services.ExcelLearningImport;
+import com.adaptlearngraph.services.LearningMailWorker;
+import com.adaptlearngraph.services.ModuleAuthoringService;
+import com.adaptlearngraph.repository.ModuleAuthoringPort;
+import com.adaptlearngraph.repository.LearningContentPort;
+import com.adaptlearngraph.repository.LearningAssetPort;
+import com.adaptlearngraph.services.LearningContentService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.neo4j.driver.Driver;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+@Configuration(proxyBeanMethods = false)
+@Profile("local")
+public class ModuleAuthoringConfiguration {
+    @Bean ModuleAuthoringPort moduleAuthoringPort(JdbcTemplate jdbc, PlatformTransactionManager manager,
+            ObjectMapper mapper, Driver driver, @Value("${module-authoring.organization-id:comp-technova}") String organization) {
+        return new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(manager), mapper, driver, organization);
+    }
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="learning.mail.enabled",havingValue="true")
+    LearningMailWorker learningMailWorker(JdbcTemplate jdbc, PlatformTransactionManager manager,
+            com.adaptlearngraph.helper.TransactionalMailSender mail,
+            @Value("${subscription.public-url:http://localhost:8088}") String publicUrl) {
+        return new LearningMailWorker(jdbc, new TransactionTemplate(manager), mail, publicUrl);
+    }
+    @Bean LearningAssetPort learningAssetPort(LearningContentPort content, JdbcTemplate jdbc,
+            @Value("${learning.assets.endpoint:http://localhost:28190}") String endpoint,
+            @Value("${learning.assets.access-key:unconfigured}") String access,
+            @Value("${learning.assets.secret-key:unconfigured}") String secret,
+            @Value("${learning.assets.bucket:learning-content}") String bucket) {
+        return new PrivateLearningAssets(endpoint, access, secret, bucket, content, jdbc);
+    }
+    @Bean com.adaptlearngraph.services.LearningImportUseCase learningImport(
+            ModuleAuthoringPort modules, LearningContentPort content, LearningAssetPort files,
+            ModuleAuthoringService service, JdbcTemplate jdbc, ObjectMapper mapper) {
+        return new ExcelLearningImport(modules, content, files, service, jdbc, mapper);
+    }
+    @Bean LearningContentPort learningContentPort(JdbcTemplate jdbc, ObjectMapper mapper, ModuleAuthoringPort modules,
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.InitialPathwayAccess> pathways) {
+        return new JdbcLearningContentAdapter(jdbc,mapper,(organization,learner,module)->{
+            var actor=modules.actor();
+            if(!organization.equals(actor.organizationId()) || !learner.equals(actor.id()) || !actor.roles().contains("EMPLOYEE")) return false;
+            var access=pathways.getIfAvailable();if(access==null)return false;
+            try { access.requireCurrentEntry(module);return true; }
+            catch(com.adaptlearngraph.repository.InitialPathwayPorts.Failure denied){return false;}
+        });
+    }
+    @Bean @Primary
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="pathway.initial.enabled",havingValue="true")
+    com.adaptlearngraph.repository.InitialPlanningPorts.ContentAccess modulePathwayContentAccess(ModuleAuthoringPort modules) {
+        return (scope,module,version,internalGates)->{
+            if(!internalGates.isEmpty()) throw new com.adaptlearngraph.repository.InitialPathwayPorts.Failure(503,"CONTENT_SEGMENT_GATES_NOT_CONFIGURED");
+            var document=modules.documents(scope.organizationId().toString()).stream().filter(d->d.id().equals(module)).findFirst()
+                .orElseThrow(()->new com.adaptlearngraph.repository.InitialPathwayPorts.Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED"));
+            var pin=modules.pinned(scope.organizationId().toString(),scope.learnerId().toString(),module);
+            var revision=pin.flatMap(number->document.revisions().stream().filter(r->r.number()==number).findFirst()).orElse(document.released());
+            if(revision==null || !version.equals(revision.payload().contentVersion()) || revision.payload().content().lessons().isEmpty())
+                throw new com.adaptlearngraph.repository.InitialPathwayPorts.Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED");
+            return "/employee/modules/"+module;
+        };
+    }
+    @Bean ModuleAuthoringService moduleAuthoringService(ModuleAuthoringPort port, LearningContentPort content) { return new ModuleAuthoringService(port, content); }
+    @Bean LearningContentService learningContentService(ModuleAuthoringPort port, LearningContentPort content, ModuleAuthoringService modules) { return new LearningContentService(port, content, modules); }
+}

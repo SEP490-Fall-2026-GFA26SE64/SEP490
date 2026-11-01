@@ -14,7 +14,7 @@ Current PG paths use real JdbcAdaptiveBlueprintStore/Listing/Preview/TechnicalVe
 
 ## Current PostgreSQL methods — all Pass
 
-Actual file: backend/src/test/java/com/adaptlearngraph/assessment/adaptive/RoleBaselinePostgresIntegrationTest.java. All rows use F3 unless noted; source/hash and commands C09/C16/C20/C21/C22/C25/C26/C28 bind exact fixtures to runs. Each row's observed outcome matched the stated expected outcome. The last parameterized method contributes two cases.
+Actual file: backend/src/test/java/com/adaptlearngraph/services/RoleBaselinePostgresIntegrationTest.java. All rows use F3 unless noted; source/hash and commands C09/C16/C20/C21/C22/C25/C26/C28 bind exact fixtures to runs. Each row's observed outcome matched the stated expected outcome. The last parameterized method contributes two cases.
 
 | Method | Function / acceptance | Trigger → expected = observed |
 | --- | --- | --- |

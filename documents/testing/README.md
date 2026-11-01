@@ -32,6 +32,10 @@ Documentation-only checks do not establish backend/frontend behavior. Revised ru
 
 ## Existing Test Guides and Evidence
 
+### Layered Backend Architecture Refactor, 2026-11-01
+
+[Refactor evidence](unit/layered-architecture-refactor-20261101.md) covers the move to layer packages (`apis`, `services`, `repository`, `entities`, `dtos` and infrastructure packages), the new [layer rules](unit/architecture-boundaries.md#current-layered-architecture-checks-2026-11-01), repair of stale pre-existing backend tests and an identical HTTP status sweep against the unmodified code.
+
 ### Optional PayOS / Email Verification / MFA, 2026-10-30
 
 [Unit/API/frontend](unit/REQ-060-061-028-integration-flags-20261030.md), [real persistence/migration](integration/REQ-060-061-028-integration-flags-20261030.md) and [system/screenshots/manual checks](system/REQ-060-061-028-integration-flags-20261030.md) cover independent default-on switches, local/dev-only bypass, truthful missing proof/payment state and reenabling. Final feature-only clean-main results: **50 backend tests, 24 frontend tests and two real-API desktop/mobile journeys passed**; typechecked build and scoped lint passed. The earlier combined-working-tree 52/25 results and screenshots remain explicitly historical; unrelated catalog/routing edits were not included. Earlier failures and test-harness corrections remain recorded. Live provider/email and production rollout are not certified.

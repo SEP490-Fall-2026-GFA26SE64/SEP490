@@ -1,1 +1,0 @@
-package com.adaptlearngraph.identity.domain;

@@ -35,9 +35,9 @@ Running 1 test using 1 worker
 ## 4. Key Implementation Changes
 
 1. **Backend Occupation CRUD Endpoints & Cypher Repository**:
-   - `backend/src/main/java/com/adaptlearngraph/catalog/application/port/out/OccupationRepository.java`: Added `findByIdOrCode`, `save`, and `delete`.
-   - `backend/src/main/java/com/adaptlearngraph/catalog/infrastructure/Neo4jOccupationRepository.java`: Implemented Cypher `MERGE (o:Occupation {code: $code})` persisting RIASEC profile weights (`realistic`, `investigative`, `artistic`, `social`, `enterprising`, `conventional`), `name`, `jobZone`, and `status`.
-   - `backend/src/main/java/com/adaptlearngraph/catalog/api/OccupationController.java`: Added `POST`, `PUT`, `DELETE` endpoints under `/api/v1/organizations/{orgId}/occupations`.
+   - `backend/src/main/java/com/adaptlearngraph/repository/OccupationRepository.java`: Added `findByIdOrCode`, `save`, and `delete`.
+   - `backend/src/main/java/com/adaptlearngraph/repository/Neo4jOccupationRepository.java`: Implemented Cypher `MERGE (o:Occupation {code: $code})` persisting RIASEC profile weights (`realistic`, `investigative`, `artistic`, `social`, `enterprising`, `conventional`), `name`, `jobZone`, and `status`.
+   - `backend/src/main/java/com/adaptlearngraph/apis/OccupationController.java`: Added `POST`, `PUT`, `DELETE` endpoints under `/api/v1/organizations/{orgId}/occupations`.
 2. **Backend MicroSkill & Competency Repository Alignment**:
    - `Neo4jMicroSkillRepository.java`: Updated Cypher `MERGE` to set `s.definition = $description` and `s.version = '0.9.0'` per `neo4j_schema.md` Section 3.5.
    - `Neo4jCompetencyRepository.java`: Added `c.attainmentRule = $attainmentRule` to Cypher `ON MATCH SET`.

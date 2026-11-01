@@ -25,5 +25,5 @@ exec env ISOLATED_QUESTION_BANK_TEST=true \
   -Dspring.neo4j.pool.max-connection-lifetime=30s \
   -Dspring.neo4j.pool.connection-acquisition-timeout=5s \
   -Dspring.neo4j.connection-timeout=5s \
-  -Dloader.main=com.adaptlearngraph.assessment.bank.QuestionBankTestRuntime \
+  -Dloader.main=com.adaptlearngraph.config.QuestionBankTestRuntime \
   -cp "$question_bank_jar" org.springframework.boot.loader.launch.PropertiesLauncher

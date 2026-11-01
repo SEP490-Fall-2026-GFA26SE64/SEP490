@@ -36,19 +36,19 @@ Inventory affected fields with types, nullability, store ownership, validation, 
 
 ## Backend Anchors
 
-Feature modules under [backend source](../../../../backend/src/main/java/com/adaptlearngraph/) use `api`, `application`, `domain` and `infrastructure` boundaries. Find the requested feature's owner first; these selection examples are reusable structure, not universal business rules.
+The [backend source](../../../../backend/src/main/java/com/adaptlearngraph/) uses layer packages: `apis` (controllers), `endpoints`, `advice`, `responseDto`, `services` (use cases and business logic), `dtos`, `entities`, `repository` (data-access contracts and adapters) and infrastructure packages (`config`, `constants`, `exception`, `helper`, `jwt`, `utility`). Find the requested feature's classes first; these selection examples are reusable structure, not universal business rules.
 
 | Example | Reusable pattern |
 | --- | --- |
-| [Selection controller](../../../../backend/src/main/java/com/adaptlearngraph/learning/api/TargetRoleSelectionController.java) | HTTP adapter and request/response boundary. |
-| [Selection use case](../../../../backend/src/main/java/com/adaptlearngraph/learning/application/port/in/TargetRoleSelectionUseCase.java) | Inbound application contract. |
-| [Selection service](../../../../backend/src/main/java/com/adaptlearngraph/learning/application/TargetRoleSelectionService.java) | `getCurrentSelection` / `chooseTargetRole`: trusted actor, catalog, store and transaction ports. |
-| [Command processor](../../../../backend/src/main/java/com/adaptlearngraph/learning/application/TargetSelectionCommandProcessor.java) | Command processing, replay and transaction-dependent state changes. |
-| [Role query service](../../../../backend/src/main/java/com/adaptlearngraph/catalog/application/TargetRoleQueryService.java) | Catalog query orchestration. |
-| [Service tests](../../../../backend/src/test/java/com/adaptlearngraph/learning/application/TargetRoleSelectionServiceTest.java) | Focused application policy checks. |
-| [Persistence integration tests](../../../../backend/src/test/java/com/adaptlearngraph/learning/infrastructure/TargetRoleSelectionPostgresIntegrationTest.java) | Disposable database transactions and replay checks. |
-| [Production boundary tests](../../../../backend/src/test/java/com/adaptlearngraph/learning/api/TargetRoleSelectionProductionBoundaryTest.java) | Local-only versus production security boundaries. |
-| [Architecture tests](../../../../backend/src/test/java/com/adaptlearngraph/architecture/HexagonalArchitectureTest.java) | Module/layer dependency enforcement. |
+| [Selection controller](../../../../backend/src/main/java/com/adaptlearngraph/apis/TargetRoleSelectionController.java) | HTTP adapter and request/response boundary. |
+| [Selection use case](../../../../backend/src/main/java/com/adaptlearngraph/services/TargetRoleSelectionUseCase.java) | Inbound application contract. |
+| [Selection service](../../../../backend/src/main/java/com/adaptlearngraph/services/TargetRoleSelectionService.java) | `getCurrentSelection` / `chooseTargetRole`: trusted actor, catalog, store and transaction ports. |
+| [Command processor](../../../../backend/src/main/java/com/adaptlearngraph/services/TargetSelectionCommandProcessor.java) | Command processing, replay and transaction-dependent state changes. |
+| [Role query service](../../../../backend/src/main/java/com/adaptlearngraph/services/TargetRoleQueryService.java) | Catalog query orchestration. |
+| [Service tests](../../../../backend/src/test/java/com/adaptlearngraph/services/TargetRoleSelectionServiceTest.java) | Focused application policy checks. |
+| [Persistence integration tests](../../../../backend/src/test/java/com/adaptlearngraph/repository/TargetRoleSelectionPostgresIntegrationTest.java) | Disposable database transactions and replay checks. |
+| [Production boundary tests](../../../../backend/src/test/java/com/adaptlearngraph/apis/TargetRoleSelectionProductionBoundaryTest.java) | Local-only versus production security boundaries. |
+| [Architecture tests](../../../../backend/src/test/java/com/adaptlearngraph/architecture/LayeredArchitectureTest.java) | Module/layer dependency enforcement. |
 
 REQ-001 has historical local/demo adapters. Confirm current source before reusing them; configured actors and provisional assessment/pathway dependencies are not production authorization or complete Version 2 behavior.
 

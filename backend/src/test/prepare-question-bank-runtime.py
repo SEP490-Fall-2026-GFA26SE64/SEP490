@@ -10,7 +10,7 @@ root = Path(__file__).resolve().parents[3]
 target = root / 'backend' / 'target'
 original = target / 'adapt-learn-graph.jar'
 output = target / 'question-bank-test.jar'
-fixture = Path('com/adaptlearngraph/assessment/bank')
+fixture = Path('com/adaptlearngraph/config')
 classes = list((target / 'test-classes' / fixture).glob('QuestionBankTestRuntime*.class'))
 if not original.is_file() or not classes:
     raise SystemExit('Run Maven package with test compilation before preparing the isolated runtime.')

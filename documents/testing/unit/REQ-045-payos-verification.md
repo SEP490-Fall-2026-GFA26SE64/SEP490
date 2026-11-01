@@ -83,7 +83,7 @@ These generated reports may be overwritten by future builds; the dated commands/
 
 ### Manual Checklist and Limits
 
-**Reproducible without merchant traffic:** open `backend/src/test/java/com/adaptlearngraph/subscription/infrastructure/PayOsPaymentGatewayTest.java` in the editor and run the final command above. Expect 30 passing tests, including actual loopback GET -> POST and all negative guards. The HTTP server and SDK client are closed after every test.
+**Reproducible without merchant traffic:** open `backend/src/test/java/com/adaptlearngraph/helper/PayOsPaymentGatewayTest.java` in the editor and run the final command above. Expect 30 passing tests, including actual loopback GET -> POST and all negative guards. The HTTP server and SDK client are closed after every test.
 
 **Running-stack follow-up, Not Run in this repair:**
 

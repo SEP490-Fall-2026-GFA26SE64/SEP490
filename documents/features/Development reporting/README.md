@@ -17,7 +17,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Entry points:** `/ld-manager/team-matrix`, `/ld-manager/learning-outcomes`. `/ld-manager/roi-forecast` redirects to the team matrix; the standalone ROI forecast page is not the active route. Prototype export controls do not introduce a new Version 2 requirement.
 
-**Code references:** [team matrix](../../../frontend/src/features/manager/team-matrix/TeamMatrixPage.tsx), [learning outcomes](../../../frontend/src/features/manager/learning-outcomes/LearningOutcomesPage.tsx), [analytics/ROI schema](../../../backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql), [analytics package](../../../backend/src/main/java/com/adaptlearngraph/analytics/), [route wiring](../../../frontend/src/app/App.tsx).
+**Code references:** [team matrix](../../../frontend/src/features/manager/team-matrix/TeamMatrixPage.tsx), [learning outcomes](../../../frontend/src/features/manager/learning-outcomes/LearningOutcomesPage.tsx), [analytics/ROI schema](../../../backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql), [backend business services](../../../backend/src/main/java/com/adaptlearngraph/services/) (no analytics service is implemented yet), [route wiring](../../../frontend/src/app/App.tsx).
 
 ## Requirements
 

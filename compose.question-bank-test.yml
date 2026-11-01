@@ -30,7 +30,7 @@ services:
   api:
     image: adapt-learn-graph-backend:dev
     entrypoint: [java]
-    command: ['-XX:ActiveProcessorCount=2', '-Xms64m', '-Xmx384m', '-Dloader.main=com.adaptlearngraph.assessment.bank.QuestionBankTestRuntime', '-cp', '/app/question-bank-test.jar', 'org.springframework.boot.loader.launch.PropertiesLauncher']
+    command: ['-XX:ActiveProcessorCount=2', '-Xms64m', '-Xmx384m', '-Dloader.main=com.adaptlearngraph.config.QuestionBankTestRuntime', '-cp', '/app/question-bank-test.jar', 'org.springframework.boot.loader.launch.PropertiesLauncher']
     environment:
       ISOLATED_QUESTION_BANK_TEST: 'true'
       SPRING_PROFILES_ACTIVE: local,workspace-baseline

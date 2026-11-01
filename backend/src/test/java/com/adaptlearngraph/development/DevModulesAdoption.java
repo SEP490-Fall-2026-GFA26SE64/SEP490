@@ -1,8 +1,8 @@
 package com.adaptlearngraph.development;
 
-import com.adaptlearngraph.catalog.application.ModuleAuthoringService;
-import com.adaptlearngraph.catalog.domain.ModuleAuthoring.*;
-import com.adaptlearngraph.catalog.infrastructure.JdbcModuleAuthoringAdapter;
+import com.adaptlearngraph.services.ModuleAuthoringService;
+import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.repository.JdbcModuleAuthoringAdapter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;

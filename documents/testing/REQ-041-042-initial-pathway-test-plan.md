@@ -73,11 +73,11 @@ The organization-integration extension at the end of this plan supplements the G
 
 | Suite code | Proposed file / method naming | Proposed command (not run) |
 | --- | --- | --- |
-| GU | backend/src/test/java/com/adaptlearngraph/recommendation/domain/RoleGapTest.java, Gxx_* | backend: `.\mvnw.cmd '-Dtest=RoleGapTest' test` |
-| PU | backend/src/test/java/com/adaptlearngraph/recommendation/domain/InitialPathwayPlannerTest.java, Pxx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayPlannerTest' test` |
-| RU | backend/src/test/java/com/adaptlearngraph/pathway/application/InitialPathwayReviewTest.java, Rxx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayReviewTest' test` |
-| API | backend/src/test/java/com/adaptlearngraph/pathway/api/InitialPathwayApiBoundaryTest.java, G/P/R/Exx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayApiBoundaryTest' test` |
-| INT | backend/src/test/java/com/adaptlearngraph/pathway/infrastructure/InitialPathwayAdapterIntegrationTest.java, G/P/R/Exx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayAdapterIntegrationTest' test` |
+| GU | backend/src/test/java/com/adaptlearngraph/entities/RoleGapTest.java, Gxx_* | backend: `.\mvnw.cmd '-Dtest=RoleGapTest' test` |
+| PU | backend/src/test/java/com/adaptlearngraph/services/InitialPathwayPlannerTest.java, Pxx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayPlannerTest' test` |
+| RU | backend/src/test/java/com/adaptlearngraph/services/InitialPathwayReviewTest.java, Rxx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayReviewTest' test` |
+| API | backend/src/test/java/com/adaptlearngraph/apis/InitialPathwayApiBoundaryTest.java, G/P/R/Exx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayApiBoundaryTest' test` |
+| INT | backend/src/test/java/com/adaptlearngraph/repository/InitialPathwayAdapterIntegrationTest.java, G/P/R/Exx_* | backend: `.\mvnw.cmd '-Dtest=InitialPathwayAdapterIntegrationTest' test` |
 | SYS | frontend/system-tests/REQ-041-042-initial-pathway.spec.ts, rule-tagged scenarios | frontend: npx playwright test system-tests/REQ-041-042-initial-pathway.spec.ts |
 
 Package/file names are Proposed until implementation structure exists; later evidence must replace them with actual file/method and exact commands. INT starts one disposable PostgreSQL/Neo4j Testcontainers environment per approved suite, real adapters and fresh migrations; never development Compose volumes. SYS real-stack execution requires separately authorized environment and real contract, not mocked localStorage approval. Unit fake ports verify policy only, not integration.

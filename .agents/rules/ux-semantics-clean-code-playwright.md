@@ -65,7 +65,7 @@ Never re-invent existing UI patterns or create raw, unstyled HTML elements (`<bu
 
 ---
 
-## 3. Clean Code & Strict Hexagonal Boundaries
+## 3. Clean Code & Strict Layer Boundaries
 
 Code quality must be clean, maintainable, and strictly architected:
 
@@ -73,10 +73,10 @@ Code quality must be clean, maintainable, and strictly architected:
    - Zero `any` types.
    - No blind type coercions (`as unknown as TargetType`) unless interacting with legacy third-party untyped libs with an explicit comment.
    - Maintain shared DTO interfaces between API clients and UI views.
-2. **Layer Boundaries (Hexagonal Architecture)**:
+2. **Layer Boundaries (Layered Architecture)**:
    - Presentation (`components`, `pages`) $\rightarrow$ State/Hooks (`hooks`, `stores`) $\rightarrow$ API Clients (`api`) $\rightarrow$ Domain Models.
    - Never embed raw `fetch` calls or database queries inside UI components.
-   - Backend layers must strictly follow ArchUnit boundary checks (`domain` has zero framework imports, `application` orchestrates use cases, `adapters` connect to HTTP/DB).
+   - Backend layers must strictly follow the ArchUnit layer checks (`apis` controllers call `services`, `services` use `repository` for data access, `entities` have zero framework imports, nothing below the controller layer depends on `apis`).
 3. **Clean Code Hygiene**:
    - Remove unused imports, commented-out dead code, and temporary `console.log` statements.
    - Keep components concise (split views exceeding 250 lines into focused sub-components).

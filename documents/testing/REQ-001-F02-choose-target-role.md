@@ -64,7 +64,7 @@ T1 uses no Spring context, database, container, or development seed. It is unit 
 
 ### T2 executable mapping
 
-Test file: `backend/src/test/java/com/adaptlearngraph/learning/application/TargetRoleSelectionServiceTest.java`.
+Test file: `backend/src/test/java/com/adaptlearngraph/services/TargetRoleSelectionServiceTest.java`.
 
 The deterministic fixture uses learner `00000000-0000-0000-0000-000000000001`, organization `00000000-0000-0000-0000-000000000002`, two role snapshots, a fixed clock, and fake/in-memory ports defined in the test file. Actor and organization always come from the fake trusted context, never the command.
 
@@ -85,8 +85,8 @@ T2 uses no Spring context, JDBC, database, container, or development seed. Its f
 
 Test files:
 
-- `backend/src/test/java/com/adaptlearngraph/learning/api/TargetRoleSelectionControllerTest.java`
-- `backend/src/test/java/com/adaptlearngraph/learning/api/TargetRoleSelectionProductionBoundaryTest.java`
+- `backend/src/test/java/com/adaptlearngraph/apis/TargetRoleSelectionControllerTest.java`
+- `backend/src/test/java/com/adaptlearngraph/apis/TargetRoleSelectionProductionBoundaryTest.java`
 
 | HTTP/security branch | Test method | Expected observation |
 | --- | --- | --- |
@@ -103,8 +103,8 @@ T3 uses Spring MVC/Security slice tests with a mocked use case. It proves HTTP m
 
 Test files:
 
-- `backend/src/test/java/com/adaptlearngraph/learning/infrastructure/TargetRoleSelectionPostgresIntegrationTest.java`
-- `backend/src/test/java/com/adaptlearngraph/learning/infrastructure/ConfiguredAssessmentActivityGuardAdapterTest.java`
+- `backend/src/test/java/com/adaptlearngraph/repository/TargetRoleSelectionPostgresIntegrationTest.java`
+- `backend/src/test/java/com/adaptlearngraph/repository/ConfiguredAssessmentActivityGuardAdapterTest.java`
 
 The PostgreSQL suite uses a disposable `postgres:17.6-alpine` container, cleans and reapplies Flyway V1–V7 before each case, and creates deterministic synthetic organization/account/catalog fixtures. It never connects to the development Compose volume or uses development seed as an oracle.
 

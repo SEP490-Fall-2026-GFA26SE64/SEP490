@@ -17,7 +17,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Entry points:** `/platform-admin/organizations` renders [PlatformWorkspacePage](../../../frontend/src/features/subscription/PlatformWorkspaceControls.tsx), not the older [organization prototype](../../../frontend/src/features/platform-admin/PlatformOrganizationsPage.tsx). `/platform-admin/activity` renders the [activity prototype](../../../frontend/src/features/platform-admin/PlatformActivityMonitoringPage.tsx), backed by the [platform browser store](../../../frontend/src/features/platform-admin/platformAdminStore.ts). Plan administration is covered under [Subscription lifecycle](../Subscription%20lifecycle/README.md#current-implementation).
 
-**Backend reference:** [lifecycle API](../../../backend/src/main/java/com/adaptlearngraph/subscription/api/SubscriptionLifecycleController.java) and [workspace persistence](../../../backend/src/main/java/com/adaptlearngraph/subscription/infrastructure/JdbcSubscriptionWorkspaceStore.java). Password-only seeded Platform Administrator identity is a separate implemented slice; see [Workspace administration](../Workspace%20administration/README.md#implemented-policy-reference).
+**Backend reference:** [lifecycle API](../../../backend/src/main/java/com/adaptlearngraph/apis/SubscriptionLifecycleController.java) and [workspace persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcSubscriptionWorkspaceStore.java). Password-only seeded Platform Administrator identity is a separate implemented slice; see [Workspace administration](../Workspace%20administration/README.md#implemented-policy-reference).
 
 ## Requirements
 

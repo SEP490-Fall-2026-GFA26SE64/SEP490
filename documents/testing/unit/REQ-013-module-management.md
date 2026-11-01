@@ -4,8 +4,8 @@ Scope: new local authoring workflow, not automatic acceptance of legacy catalog 
 
 ## Executable coverage
 
-- `backend/src/test/java/com/adaptlearngraph/catalog/application/ModuleAuthoringServiceTest.java`: complete schema fields; creator versus subsequent editors; stable mapping identities; shared Occupation edit rule; stale-write rejection; primary/duplicate mapping and positive-price validation; authorization and submitted-package locking; revision release and learner pin retention; archive coverage/deletion guards; durable failed-publication retry.
-- `backend/src/test/java/com/adaptlearngraph/architecture/HexagonalArchitectureTest.java`: domain/application/controller layer boundaries.
+- `backend/src/test/java/com/adaptlearngraph/services/ModuleAuthoringServiceTest.java`: complete schema fields; creator versus subsequent editors; stable mapping identities; shared Occupation edit rule; stale-write rejection; primary/duplicate mapping and positive-price validation; authorization and submitted-package locking; revision release and learner pin retention; archive coverage/deletion guards; durable failed-publication retry.
+- `backend/src/test/java/com/adaptlearngraph/architecture/LayeredArchitectureTest.java`: domain/application/controller layer boundaries.
 - `frontend/src/features/expert/modules/ModuleManagementWorkspace.test.tsx`: authenticated scoped data loading/empty CTA, primary-skill validation, retained form/cancel on server conflict, HTTP error propagation, raw HTML/unsafe-link non-execution and failed-video fallback.
 
 ## Execution

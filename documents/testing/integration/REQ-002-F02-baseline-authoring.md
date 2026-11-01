@@ -10,7 +10,7 @@ The PostgreSQL suite now applies V1–V13 and proves one logical blueprint per O
 
 ## Environment and fixture
 
-- Test file: `backend/src/test/java/com/adaptlearngraph/assessment/infrastructure/BaselineAssessmentPostgresIntegrationTest.java`.
+- Test file: `backend/src/test/java/com/adaptlearngraph/repository/BaselineAssessmentPostgresIntegrationTest.java`.
 - Disposable image: `postgres:17.6-alpine` through Testcontainers; Ryuk removes the container on JVM exit.
 - Each case resets the schema and applies the real Flyway migrations. Identity, catalog-reference and question-bank rows are deterministic test fixtures; Catalog lookup remains a fake port because the Neo4j catalog adapter is a separate owner dependency.
 - Real JDBC blueprint/draft stores and Spring transactions are used, including deferred database constraints and publication triggers.

@@ -10,4 +10,4 @@ COPY --from=build /workspace/backend/target/classes ./classes
 COPY --from=build /workspace/backend/target/test-classes ./test-classes
 COPY --from=build /workspace/backend/target/test-libs ./libs
 ENV ISOLATED_SUBSCRIPTION_TEST=true
-ENTRYPOINT ["java","-cp","/app/classes:/app/test-classes:/app/libs/*","com.adaptlearngraph.subscription.infrastructure.SubscriptionTestRuntime"]
+ENTRYPOINT ["java","-cp","/app/classes:/app/test-classes:/app/libs/*","com.adaptlearngraph.config.SubscriptionTestRuntime"]

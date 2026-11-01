@@ -20,7 +20,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Entry points:** `/expert/ontology`, `/expert/modules`, `/expert/assessment-bank`, `/ld-manager/modules`, `/ld-manager/approvals`.
 
-**Code references:** [ontology page](../../../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx), [micro-skill API](../../../backend/src/main/java/com/adaptlearngraph/competency/api/MicroSkillController.java), [prerequisite service](../../../backend/src/main/java/com/adaptlearngraph/competency/application/PrerequisiteService.java), [shared module workspace](../../../frontend/src/features/expert/modules/ModuleManagementWorkspace.tsx), [approval entry](../../../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). Module assessment authoring is separately described in [Assessment workflows](../Assessment%20workflows/README.md#current-implementation).
+**Code references:** [ontology page](../../../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx), [micro-skill API](../../../backend/src/main/java/com/adaptlearngraph/apis/MicroSkillController.java), [prerequisite service](../../../backend/src/main/java/com/adaptlearngraph/services/PrerequisiteService.java), [shared module workspace](../../../frontend/src/features/expert/modules/ModuleManagementWorkspace.tsx), [approval entry](../../../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). Module assessment authoring is separately described in [Assessment workflows](../Assessment%20workflows/README.md#current-implementation).
 
 ## Requirements
 

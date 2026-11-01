@@ -18,7 +18,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Entry points:** `/admin/departments`, `/ld-manager/occupations`; real member assignment is at `/admin/users`.
 
-**Code references:** [department store](../../../frontend/src/shared/stores/departmentStore.ts), [occupation page](../../../frontend/src/features/manager/occupations/OccupationsManagementPage.tsx), [real member editor](../../../frontend/src/features/administration/user-management/UserManagementPage.tsx), [backend reference validation](../../../backend/src/main/java/com/adaptlearngraph/identity/infrastructure/JdbcMemberReferenceValidator.java). Account-reference storage must not be mistaken for a completed department/occupation management API.
+**Code references:** [department store](../../../frontend/src/shared/stores/departmentStore.ts), [occupation page](../../../frontend/src/features/manager/occupations/OccupationsManagementPage.tsx), [real member editor](../../../frontend/src/features/administration/user-management/UserManagementPage.tsx), [backend reference validation](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcMemberReferenceValidator.java). Account-reference storage must not be mistaken for a completed department/occupation management API.
 
 ## Requirements
 

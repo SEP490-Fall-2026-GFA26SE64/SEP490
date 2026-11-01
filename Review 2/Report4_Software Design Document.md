@@ -270,7 +270,7 @@ Dotted arrows show selected source dependencies, not runtime request flow. Inbou
 
 Rows 02-07 are relative to `com.adaptlearngraph.identity` in this diagram; shared rows are relative to `com.adaptlearngraph`. Adapter roles are explained above rather than falsely listed as additional packages.
 
-The [architecture test](../backend/src/test/java/com/adaptlearngraph/architecture/HexagonalArchitectureTest.java) records the dependency constraints. Representative source evidence includes [MemberActivationController](../backend/src/main/java/com/adaptlearngraph/identity/api/MemberActivationController.java), [RegistrationService](../backend/src/main/java/com/adaptlearngraph/identity/application/RegistrationService.java), [JdbcRegistrationStore](../backend/src/main/java/com/adaptlearngraph/identity/infrastructure/JdbcRegistrationStore.java) and [DevelopmentWorkspaceAccountBootstrap](../backend/src/main/java/com/adaptlearngraph/identity/infrastructure/DevelopmentWorkspaceAccountBootstrap.java). Bootstrap is infrastructure composition, not a domain or port package. This documentation revision does not rename application packages or certify a new application test run.
+The [architecture test](../backend/src/test/java/com/adaptlearngraph/architecture/LayeredArchitectureTest.java) records the dependency constraints. Representative source evidence includes [MemberActivationController](../backend/src/main/java/com/adaptlearngraph/apis/MemberActivationController.java), [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java), [JdbcRegistrationStore](../backend/src/main/java/com/adaptlearngraph/repository/JdbcRegistrationStore.java) and [DevelopmentWorkspaceAccountBootstrap](../backend/src/main/java/com/adaptlearngraph/config/DevelopmentWorkspaceAccountBootstrap.java). Bootstrap is infrastructure composition, not a domain or port package. This documentation revision does not rename application packages or certify a new application test run.
 
 **Detailed inventory reference:** [PKG-01 source](../documents/diagrams/mermaid/pkg-01.mmd) · [PKG-01 image](../documents/diagrams/mermaid/pkg-01.png). The previous inventory is retained rather than regenerated as part of this overview revision.
 
@@ -5688,13 +5688,13 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 
 | Class / contract | Specification |
 | --- | --- |
-| [RegistrationFields](../backend/src/main/java/com/adaptlearngraph/identity/domain/RegistrationFields.java) | Immutable normalized registration input; validates name/email/password/slug and optional fixed-choice fields. Null optional industry/headcount/slug is legitimate. |
-| [RegistrationService](../backend/src/main/java/com/adaptlearngraph/identity/application/RegistrationService.java) | Owns atomic registration, email proof, MFA enrollment/recovery and resumable stage. Uses injected clock, secrets and transactional store. |
+| [RegistrationFields](../backend/src/main/java/com/adaptlearngraph/entities/RegistrationFields.java) | Immutable normalized registration input; validates name/email/password/slug and optional fixed-choice fields. Null optional industry/headcount/slug is legitimate. |
+| [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java) | Owns atomic registration, email proof, MFA enrollment/recovery and resumable stage. Uses injected clock, secrets and transactional store. |
 | `RegistrationStore` | Output port for account/registration/proof/rate-limit/audit operations and transaction/locking scope. |
 | `RegistrationSecrets` | Hash/match credentials; HMAC proofs and encrypt MFA material; configuration failure is explicit. |
 | `RegistrationDelivery` | Readiness and durable verification-delivery boundary, not direct business-success guarantee from SMTP. |
-| [WorkspaceAuthenticationService](../backend/src/main/java/com/adaptlearngraph/identity/application/WorkspaceAuthenticationService.java) | Validates exactly one role, active account and eligible workspace; resolves role-specific MFA stage and safe identity projection. |
-| [WorkspaceIdentityStore.Credential](../backend/src/main/java/com/adaptlearngraph/identity/application/port/out/WorkspaceIdentityStore.java) | Internal credential/membership snapshot. `requiresMfa()` checks Organization Administrator; platform identity requires exactly the platform role. Redacted `toString()`. |
+| [WorkspaceAuthenticationService](../backend/src/main/java/com/adaptlearngraph/services/WorkspaceAuthenticationService.java) | Validates exactly one role, active account and eligible workspace; resolves role-specific MFA stage and safe identity projection. |
+| [WorkspaceIdentityStore.Credential](../backend/src/main/java/com/adaptlearngraph/repository/WorkspaceIdentityStore.java) | Internal credential/membership snapshot. `requiresMfa()` checks Organization Administrator; platform identity requires exactly the platform role. Redacted `toString()`. |
 | `WorkspacePrincipal` | Server session authority and assurance state; not accepted from browser-selected role/company data. |
 | Member activation adapters | Single-use invitation proof, recipient-chosen password and current tenant/seat/reference validation; separate from public registration. |
 | Settings/audit read service | Planned completion; current browser settings/sample audit are not represented as implemented persistence classes. |
@@ -5755,12 +5755,12 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 
 | Class / contract | Specification |
 | --- | --- |
-| [PlanTerms](../backend/src/main/java/com/adaptlearngraph/subscription/domain/PlanTerms.java) | Validated immutable terms; nonblank name/description, supported VND integer amount, positive calendar months and Employee seats. |
+| [PlanTerms](../backend/src/main/java/com/adaptlearngraph/entities/PlanTerms.java) | Validated immutable terms; nonblank name/description, supported VND integer amount, positive calendar months and Employee seats. |
 | `SubscriptionCatalogService` | Read existing plans and update through expected-version immutable successor terms. |
 | `SubscriptionLifecycleService` | Purchase/renewal/status, member/suspension and access orchestration through explicit identity/workspace ports. |
 | `SubscriptionAccessPolicy` | Distinguishes ordinary workspace, billing/recovery and membership actions under time/seat/suspension constraints. |
-| [PaymentProcessor](../backend/src/main/java/com/adaptlearngraph/subscription/application/PaymentProcessor.java) | Claims durable work; handles PAYMENT_APPLY or query/create; retries explicit provider failures; callback URL depends on initial versus organization renewal order. |
-| [PayOsPaymentGateway](../backend/src/main/java/com/adaptlearngraph/subscription/infrastructure/PayOsPaymentGateway.java) | Provider client, response/webhook verification and normalized observations; uses official SDK 2.0.1. |
+| [PaymentProcessor](../backend/src/main/java/com/adaptlearngraph/services/PaymentProcessor.java) | Claims durable work; handles PAYMENT_APPLY or query/create; retries explicit provider failures; callback URL depends on initial versus organization renewal order. |
+| [PayOsPaymentGateway](../backend/src/main/java/com/adaptlearngraph/helper/PayOsPaymentGateway.java) | Provider client, response/webhook verification and normalized observations; uses official SDK 2.0.1. |
 | `PaymentProcessingStore` / JDBC adapter | Fenced work claim, immutable observations, application uniqueness, retry/finish and transactional provisioning. |
 | `SubscriptionWorkspaceStore` / JDBC adapter | Membership/seat/reference validation and current workspace entitlement. |
 
@@ -5826,7 +5826,7 @@ Plan versions are immutable value snapshots with a current-plan pointer, not an 
 
 | Class / responsibility | Specification |
 | --- | --- |
-| [OrganizationTargetRoleController](../backend/src/main/java/com/adaptlearngraph/catalog/api/OrganizationTargetRoleController.java) | Current legacy controller behind explicit property gate; old role/domain/track/status model. Its client role-header handling is not the target trusted assignment contract. |
+| [OrganizationTargetRoleController](../backend/src/main/java/com/adaptlearngraph/apis/OrganizationTargetRoleController.java) | Current legacy controller behind explicit property gate; old role/domain/track/status model. Its client role-header handling is not the target trusted assignment contract. |
 | `TargetRoleService`, `Neo4jTargetRoleRepository` | Existing legacy creation/query/update/versioning machinery. Reuse requires schema/authorization reconciliation, not direct enabling against review data. |
 | `MicroSkillService`, `PrerequisiteService` | Existing skill and directed-cycle validation code; associated write APIs are legacy-gated. |
 | Planned `OccupationAdministration` / `ExpertAssignment` | Persist organization/department ownership, active references and assignment history; reject foreign or inactive grants. |
@@ -5895,12 +5895,12 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 | `AdaptiveBlueprintService` | Authorized Draft/save/preview/finalize/disable/discard with exact identity/revision/current-pointer checks and idempotent receipts. |
 | `AdaptiveBlueprintStore` / JDBC implementation | Transactional blueprint/registry/activation persistence; read-only history/list queries and coordinated writes. |
 | `AdaptiveBlueprintEligibilityPort` | Resolve current or pinned available pool from permitted catalog, bank and technical versions; no fabricated default bank/model. |
-| [WorkspaceBaselineResources](../backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/WorkspaceBaselineResources.java) | Read explicit V32 tenant/Occupation/resource binding; null pins mean not ready. |
-| [WorkspaceBaselineConfiguration](../backend/src/main/java/com/adaptlearngraph/assessment/adaptive/infrastructure/WorkspaceBaselineConfiguration.java) | Composition root for trusted session/entitlement adapters, JDBC stores, Neo4j catalog and attempt services. Profile: `workspace-baseline & local & !local-baseline-demo & !prod`. |
+| [WorkspaceBaselineResources](../backend/src/main/java/com/adaptlearngraph/repository/WorkspaceBaselineResources.java) | Read explicit V32 tenant/Occupation/resource binding; null pins mean not ready. |
+| [WorkspaceBaselineConfiguration](../backend/src/main/java/com/adaptlearngraph/config/WorkspaceBaselineConfiguration.java) | Composition root for trusted session/entitlement adapters, JDBC stores, Neo4j catalog and attempt services. Profile: `workspace-baseline & local & !local-baseline-demo & !prod`. |
 | `AdaptiveAttemptStartService` | New admission, resume and replay under trusted learner/selection/current configuration; pins full Occupation scope, content and timing. |
 | `AdaptiveAttemptAnswerService` | Revision/position-bound response acceptance, server correctness and adaptive next-item/finalization. |
 | `AdaptiveAttemptSubmitService` | Explicit manual submission, idempotency and shared terminal policy. |
-| [AdaptiveAttemptFinalizationService](../backend/src/main/java/com/adaptlearngraph/assessment/adaptive/attempt/application/AdaptiveAttemptFinalizationService.java) | Shared answer/manual/deadline terminal policy; checks actual progress against pinned IRT outcomes; invalidates inconsistent/insufficient attempts without invented mastery. |
+| [AdaptiveAttemptFinalizationService](../backend/src/main/java/com/adaptlearngraph/services/AdaptiveAttemptFinalizationService.java) | Shared answer/manual/deadline terminal policy; checks actual progress against pinned IRT outcomes; invalidates inconsistent/insufficient attempts without invented mastery. |
 | `AdaptiveAttemptPolicyPort` | Load pinned technical parameters; distinguishes dependency unavailability from incompatible policy. |
 | `AdaptiveAttemptOutcomePort` | Persist terminal state, result/evidence and permitted profile initialization once. |
 | `CalibrationService`, `PromotionService` | Fit candidate IRT parameters and promote effective selection in authorized scope; actual calibration evidence is distinct from a demo fitted file. |
@@ -5973,8 +5973,8 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 
 | Class / responsibility | Specification |
 | --- | --- |
-| [CurrentRoleFlowController](../backend/src/main/java/com/adaptlearngraph/learning/api/CurrentRoleFlowController.java) | Employee roles/details, current selection/next step, selection command and mastery routes. |
-| [RoleBaselineFlow](../backend/src/main/java/com/adaptlearngraph/learning/application/RoleBaselineFlow.java) | Trusted role choice, replay/CAS coordination and baseline/profile next-step orchestration. Selection is not itself assessment admission. |
+| [CurrentRoleFlowController](../backend/src/main/java/com/adaptlearngraph/apis/CurrentRoleFlowController.java) | Employee roles/details, current selection/next step, selection command and mastery routes. |
+| [RoleBaselineFlow](../backend/src/main/java/com/adaptlearngraph/services/RoleBaselineFlow.java) | Trusted role choice, replay/CAS coordination and baseline/profile next-step orchestration. Selection is not itself assessment admission. |
 | `CurrentRoleCatalog` | Reads current string-ID Occupation/Role/Level requirements through graph adapter. |
 | `CurrentRoleSelectionStore` | Selection history, expected selection comparison, retry receipt, audit/outbox and learner coordination. |
 | Applicable Occupation profile | Stable required skill set and applicable baseline binding; newer catalog requirements do not retroactively alter initialized profiles. |

@@ -104,7 +104,7 @@ Internal naming or reuse of an equivalent existing helper is ordinarily an imple
 
 ## 5. Implement the Approved Slice
 
-Reuse the current project's Java/Spring Boot hexagonal boundaries, frontend API/query patterns, shared components and design tokens. For frontend work load the relevant existing UI skills listed in the context map. Do not introduce a new framework or abstraction without an approved need.
+Reuse the current project's Java/Spring Boot layered package architecture (`apis`, `services`, `repository`, `entities`, `dtos` and infrastructure packages), frontend API/query patterns, shared components and design tokens. For frontend work load the relevant existing UI skills listed in the context map. Do not introduce a new framework or abstraction without an approved need.
 
 Implement only the approved delta from the inventory. Preserve already-correct behavior and reuse its owning code; do not recreate existing capabilities, duplicate helpers or add speculative abstractions. If there is no code gap, make no application edits and proceed to the approved verification. Confirm real dependency availability; target integrations and local/demo adapters are not automatically production-capable. If an unmet dependency requires scope expansion, stop and seek revised approval.
 

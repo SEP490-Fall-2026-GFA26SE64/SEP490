@@ -8,7 +8,7 @@ The merge had 20 unmerged paths: ten both-modified and ten modify/delete. Remove
 
 | Original conflict | Resolution |
 |---|---|
-| `backend/src/test/java/com/adaptlearngraph/assessment/infrastructure/BaselineAssessmentPostgresIntegrationTest.java` | Keep main tests; assert merged latest migration V34. |
+| `backend/src/test/java/com/adaptlearngraph/repository/BaselineAssessmentPostgresIntegrationTest.java` | Keep main tests; assert merged latest migration V34. |
 | `documents/ARCHITECTURE.md` | Keep main architecture; retain accurate Module persistence and migration boundary. |
 | `documents/PRODUCT_OVERVIEW.md` | Keep main Version 2 product and canonical FR-based domain structure. |
 | `documents/features/Assigned target roles/View Assigned Target Roles.md` | Preserve branch historical specification with banner linking canonical domain. |

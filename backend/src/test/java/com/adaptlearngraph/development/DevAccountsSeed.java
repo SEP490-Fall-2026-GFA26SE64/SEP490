@@ -1,13 +1,13 @@
 package com.adaptlearngraph.development;
 
-import com.adaptlearngraph.identity.infrastructure.PlatformAdministratorBootstrap;
-import com.adaptlearngraph.identity.infrastructure.RegistrationCryptography;
-import com.adaptlearngraph.subscription.application.port.out.PaymentGateway;
-import com.adaptlearngraph.subscription.application.port.out.PaymentOrderStore;
-import com.adaptlearngraph.subscription.application.port.out.SubscriptionIdentity;
-import com.adaptlearngraph.subscription.domain.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.subscription.infrastructure.JdbcPaymentOrderStore;
-import com.adaptlearngraph.subscription.infrastructure.JdbcPaymentProcessingStore;
+import com.adaptlearngraph.config.PlatformAdministratorBootstrap;
+import com.adaptlearngraph.utility.RegistrationCryptography;
+import com.adaptlearngraph.helper.PaymentGateway;
+import com.adaptlearngraph.repository.PaymentOrderStore;
+import com.adaptlearngraph.repository.SubscriptionIdentity;
+import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.repository.JdbcPaymentOrderStore;
+import com.adaptlearngraph.repository.JdbcPaymentProcessingStore;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;

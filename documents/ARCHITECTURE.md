@@ -202,24 +202,29 @@ backend/
   pom.xml, Dockerfile
   src/main/java/com/adaptlearngraph/
     AdaptLearnGraphApplication.java
-    platform/            startup, status API, migration orchestration
-    catalog/             Target-role domain/use case/API, Neo4j adapter, constraints and development-only seed
-    identity/            registration/email/TOTP/recovery/session domain, ports, HTTP/JDBC/SMTP adapters and security boundary
-    assessment/          reserved feature package
-    competency/          reserved feature package
-    learning/            F02 target-role selection domain, application ports/service, HTTP and PostgreSQL/local adapters
-    recommendation/      reserved feature package
-    pathway/             reserved feature package
-    synchronization/     reserved feature package
-    analytics/           reserved feature package
-    evaluation/          reserved feature package
+    apis/                Controller layer: REST controllers
+    endpoints/           Controller layer: ApiEndpoints base routes used by @RequestMapping
+    advice/              Controller layer: controller-scoped exception handlers
+    responseDto/         Controller layer: HTTP response models
+    model/dtos/file/response/  Controller layer: file download responses
+    services/            Business layer: use-case contracts, services, workers, adaptive/pathway algorithms
+    dtos/                Data layer: commands, requests and transfer records
+    entities/            Data layer: domain models, value objects and domain policies
+    repository/          Data layer: data-access contracts and JDBC/Neo4j/storage implementations
+    config/              Infrastructure: Spring configuration, security chains, bootstrap and seeds
+    constants/           Infrastructure: fixed identifiers
+    exception/           Infrastructure: custom business exceptions
+    helper/              Infrastructure: JSON codecs, mappers, mail and payment gateway
+    jwt/                 Infrastructure: session authentication support (no JWT tokens are issued)
+    utility/             Infrastructure: cryptography, IRT psychometrics and command-line tools
   src/main/resources/
     application*.yml     local, prod, migrate, starter, worker profiles
     db/migration/        PostgreSQL Flyway V1-V8
     db/neo4j/            graph constraints packaged in the backend JAR
   src/test/java/com/adaptlearngraph/
-    platform/            unit, security, database and graph tests
-    architecture/        module dependency rules
+    <layer>/             tests live in the same layer package as the class under test
+    architecture/        LayeredArchitectureTest (ArchUnit layer rules)
+    development/         local development seeding tools
 frontend/               existing src/app, src/features, src/shared layout
 documents/features/     drafted functions and their current decisions
 documents/diagrams/     PlantUML sources, PostgreSQL generator, rendered SVGs
@@ -227,7 +232,7 @@ documents/testing/      unit, integration, and system test plans
 compose.dev.yml, compose.prod.yml, .env.example
 ```
 
-Each backend feature package uses `api` (HTTP), `application` (use cases/ports), `domain` (Spring-independent policy) and `infrastructure` (PostgreSQL/Neo4j/integrations). `catalog` applies this structure for the recorded REQ-001-F01 baseline: controllers call `TargetRoleQueryUseCase`, the application service reads trusted actor context and `TargetRoleCatalogPort`, and the Neo4j adapter maps driver records into domain outputs. Existing placeholders remain placeholders; add implementations only after detailed contracts are clarified. Subscription/payment capabilities are required by Version 2 but not established by this baseline. The frontend F02 slice uses a shared server selection query and prepared idempotency key; it does not synchronize selection into localStorage. `TargetRoleSelector`, `useEmployeeLearningState`, `NotificationDropdown` and their overview/assessment/gap/pathway consumers still require integration review. Prototype screens/stores do not prove persisted onboarding, payment, authorization or learning workflows.
+The backend follows a layered architecture rooted at `com.adaptlearngraph`. Requests flow `apis` (controllers, routes from `endpoints`, failures mapped by `advice`) -> `services` (business logic; use-case interfaces such as `TargetRoleQueryUseCase` and their implementations) -> `repository` (data-access contracts such as `TargetRoleCatalogPort` and their Neo4j/JDBC implementations) -> `entities`. `dtos` carry data between layers and `responseDto` holds HTTP response models. Infrastructure packages (`config`, `constants`, `exception`, `helper`, `jwt`, `utility`) support every layer. [LayeredArchitectureTest](../backend/src/test/java/com/adaptlearngraph/architecture/LayeredArchitectureTest.java) forbids lower layers from depending on the controller layer and keeps `entities` free of Spring and of other layers; repository implementations may implement contracts declared by business use cases. Subscription/payment capabilities are required by Version 2 but not established by this baseline. The frontend F02 slice uses a shared server selection query and prepared idempotency key; it does not synchronize selection into localStorage. `TargetRoleSelector`, `useEmployeeLearningState`, `NotificationDropdown` and their overview/assessment/gap/pathway consumers still require integration review. Prototype screens/stores do not prove persisted onboarding, payment, authorization or learning workflows.
 
 ## Technologies
 

@@ -1,0 +1,98 @@
+package com.adaptlearngraph.services;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import com.adaptlearngraph.helper.PaymentGateway;
+import com.adaptlearngraph.repository.PaymentProcessingStore;
+import com.adaptlearngraph.entities.PaymentOrder;
+import com.adaptlearngraph.entities.PlanTerms;
+import com.adaptlearngraph.exception.SubscriptionFailure;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
+class PaymentProcessorTest {
+    private final PaymentGateway gateway=mock(PaymentGateway.class);
+    private final PaymentProcessingStore store=mock(PaymentProcessingStore.class);
+    private final Instant now=Instant.parse("2026-10-23T04:00:00Z");
+    private final PaymentProcessor processor=new PaymentProcessor(store,gateway,Clock.fixed(now,ZoneOffset.UTC),"https://example.test");
+    private PaymentOrder order(Instant expiry) {
+        return new PaymentOrder(UUID.randomUUID(),UUID.randomUUID(),"PURCHASE",UUID.randomUUID(),null,UUID.randomUUID(),
+                UUID.randomUUID(),UUID.randomUUID(),new PlanTerms("Starter","Description",4900000,"VND",1,20),
+                123,"UNKNOWN",null,null,null,now.minusSeconds(10),expiry,null,null,1);
+    }
+    @Test
+    void disabledPayosNeverQueriesCreatesOrAcceptsProviderObservations() {
+        var development = new PaymentProcessor(store, gateway, Clock.fixed(now, ZoneOffset.UTC),
+                "https://example.test", new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
+        var order = order(now.plusSeconds(1800));
+        var work = new PaymentProcessingStore.Work(UUID.randomUUID(), "lease", "PAYMENT_CREATE", 1, order);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        assertTrue(development.processNext());
+        verify(store).bypassForDevelopment(order.orderId(), now);
+        verify(store).apply(order.orderId(), now);
+        verify(store, never()).record(any(), any());
+        assertThrows(SubscriptionFailure.class, () -> development.webhook("{}"));
+        verifyNoInteractions(gateway);
+    }
+
+    @Test
+    void disablingPayosPreservesPreviouslyPaidOrdersAndFinishesTheirCreateWork() {
+        var development = new PaymentProcessor(store, gateway, Clock.fixed(now, ZoneOffset.UTC),
+                "https://example.test", new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
+        var source = order(now.plusSeconds(1800));
+        var paid = new PaymentOrder(source.orderId(), source.intentId(), source.kind(), source.registrationId(),
+                source.organizationId(), source.ownerAccountId(), source.planId(), source.planVersionId(), source.terms(),
+                source.providerOrderCode(), "PAID", "existing-link", "https://example.test/existing-link", 4900000L,
+                source.createdAt(), source.expiresAt(), now, null, source.attempt());
+        var work = new PaymentProcessingStore.Work(UUID.randomUUID(), "lease", "PAYMENT_CREATE", 1, paid);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        assertTrue(development.processNext());
+        verify(store).finish(work, now);
+        verify(store, never()).bypassForDevelopment(any(), any());
+        verify(store, never()).retry(any(), any(), any());
+        verifyNoInteractions(gateway);
+    }
+
+    @Test
+    void uncertaintyDoesNotCreateAnotherProviderOrder() {
+        var order=order(now.plusSeconds(1800));
+        var work=new PaymentProcessingStore.Work(UUID.randomUUID(),"lease","PAYMENT_CREATE",1,order);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        when(gateway.query(123,null,null)).thenThrow(new SubscriptionFailure(SubscriptionFailure.Code.PROVIDER_UNAVAILABLE,"Unknown"));
+        assertTrue(processor.processNext());
+        verify(gateway,never()).create(any());
+        verify(store).retry(work,"PROVIDER_UNAVAILABLE",now);
+        verify(store,never()).finish(any(),any());
+    }
+    @Test
+    void trustedNotFoundRetriesSameCodeOnlyBeforeOriginalExpiry() {
+        var order=order(now.plusSeconds(1800));
+        var work=new PaymentProcessingStore.Work(UUID.randomUUID(),"lease","PAYMENT_CREATE",2,order);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        when(gateway.query(123,null,null)).thenReturn(Optional.empty());
+        var result=new PaymentGateway.Observation(123,"link",4900000L,null,"VND","PENDING",null,"https://pay.payos.vn/web/link",null,"CREATE","a".repeat(64));
+        when(gateway.create(any())).thenReturn(result);
+        processor.processNext();
+        verify(gateway).create(argThat(request->request.orderCode()==123 && request.expiresAt().equals(order.expiresAt())
+                && request.planName().equals("Starter")
+                && request.returnUrl().equals("https://example.test/guest/payment-result?order="+order.orderId())));
+        verify(store).record(result,now);
+        verify(store).finish(work,now);
+    }
+    @Test
+    void localExpiryDoesNotFabricateTerminalUnpaidState() {
+        var order=order(now);
+        var work=new PaymentProcessingStore.Work(UUID.randomUUID(),"lease","PAYMENT_CREATE",2,order);
+        when(store.claim(now)).thenReturn(Optional.of(work));
+        when(gateway.query(123,null,null)).thenReturn(Optional.empty());
+        processor.processNext();
+        verify(gateway,never()).create(any());
+        verify(store,never()).record(any(),any());
+        verify(store).retry(work,"PROVIDER_UNAVAILABLE",now);
+    }
+}
