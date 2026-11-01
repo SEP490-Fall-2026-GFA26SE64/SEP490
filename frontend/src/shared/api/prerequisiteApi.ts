@@ -38,7 +38,6 @@ export interface TargetRoleGraphDto {
   roleCode: string
   roleName: string
   track: string
-  seniority: string
   status: string
   requiredSkills: TargetRoleGraphSkillDto[]
   prerequisites: PrerequisiteEdgeDto[]

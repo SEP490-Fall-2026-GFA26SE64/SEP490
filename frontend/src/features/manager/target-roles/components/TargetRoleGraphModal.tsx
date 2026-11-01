@@ -262,7 +262,6 @@ export function TargetRoleGraphModal({
         roleCode: resolvedRoleCode,
         roleName: backendData?.roleName || currentRole?.title || roleTitle || 'Target Role',
         track: backendData?.track || currentRole?.track || 'PROFESSIONAL',
-        seniority: backendData?.seniority || currentRole?.seniority || 'P3',
         status: (backendData?.status || currentRole?.status || 'DRAFT').toUpperCase(),
         requiredSkills,
         prerequisites: backendData && Array.isArray(backendData.prerequisites) ? backendData.prerequisites : [],
@@ -340,7 +339,6 @@ export function TargetRoleGraphModal({
         code: graphData.roleCode,
         title: graphData.roleName,
         track: graphData.track,
-        seniority: graphData.seniority,
         status: graphData.status,
       },
     })
@@ -1095,7 +1093,7 @@ export function TargetRoleGraphModal({
                         <strong className="text-foreground">{selectedNode.track || 'PROFESSIONAL'}</strong>
                       </div>
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Seniority Band</span>
+                        <span className="text-[10px] text-muted-foreground block">Role Tier</span>
                         <strong className="text-foreground">{selectedNode.seniority || 'P3'}</strong>
                       </div>
                       <div>

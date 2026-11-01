@@ -9,7 +9,6 @@ import com.adaptlearngraph.catalog.application.port.in.UpdateTargetRoleCommand;
 import com.adaptlearngraph.catalog.application.port.in.ViewTargetRolesUseCase;
 import com.adaptlearngraph.catalog.domain.RoleStatus;
 import com.adaptlearngraph.catalog.domain.RoleTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRole;
 import com.adaptlearngraph.catalog.domain.TargetRoleId;
 import jakarta.validation.Valid;
@@ -75,14 +74,6 @@ public class OrganizationTargetRoleController {
                 ? RoleTrack.fromString(request.track())
                 : RoleTrack.PROFESSIONAL;
 
-        Seniority seniority = request.seniority() != null && !request.seniority().isBlank()
-                ? Seniority.fromString(request.seniority())
-                : null;
-
-        if (seniority != null && !seniority.supportsTrack(track)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Seniority " + seniority + " does not match track " + track));
-        }
-
         RoleStatus status = request.status() != null && !request.status().isBlank()
                 ? RoleStatus.fromString(request.status())
                 : RoleStatus.DRAFT;
@@ -111,10 +102,9 @@ public class OrganizationTargetRoleController {
                 organizationId,
                 effectiveCode,
                 request.name(),
-                request.domainCode(),
+
                 request.familyCode(),
                 track,
-                seniority,
                 request.assignedExpertId(),
                 request.description(),
                 request.responsibilities() != null ? request.responsibilities() : List.of(),
@@ -140,7 +130,7 @@ public class OrganizationTargetRoleController {
             @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "track", required = false) String track,
             @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "domainCode", required = false) String domainCode,
+
             @RequestParam(value = "assignedExpertId", required = false) String assignedExpertId) {
 
         boolean isManager = isAuthorizedManager(userRole);
@@ -161,7 +151,7 @@ public class OrganizationTargetRoleController {
         RoleTrack trackEnum = track != null && !track.isBlank() ? RoleTrack.fromString(track) : null;
         RoleStatus statusEnum = status != null && !status.isBlank() ? RoleStatus.fromString(status) : null;
 
-        TargetRoleFilter filter = new TargetRoleFilter(search, trackEnum, statusEnum, domainCode, effectiveExpertFilter);
+        TargetRoleFilter filter = new TargetRoleFilter(search, trackEnum, statusEnum, effectiveExpertFilter);
         List<TargetRole> roles = viewTargetRolesUseCase.listTargetRoles(organizationId, filter);
 
         List<TargetRoleResponse> responses = roles.stream()
@@ -254,14 +244,6 @@ public class OrganizationTargetRoleController {
             return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
         }
 
-        Seniority seniority = request.seniority() != null && !request.seniority().isBlank()
-                ? Seniority.fromString(request.seniority())
-                : null;
-
-        if (seniority != null && track != null && !seniority.supportsTrack(track)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Seniority " + seniority + " does not match track " + track));
-        }
-
         String levelCompetenciesJson = null;
         if (request.levelCompetencies() != null) {
             try {
@@ -280,10 +262,9 @@ public class OrganizationTargetRoleController {
                 organizationId,
                 targetRoleId,
                 request.name(),
-                request.domainCode(),
+
                 request.familyCode(),
                 track,
-                seniority,
                 request.assignedExpertId(),
                 request.description(),
                 request.responsibilities(),

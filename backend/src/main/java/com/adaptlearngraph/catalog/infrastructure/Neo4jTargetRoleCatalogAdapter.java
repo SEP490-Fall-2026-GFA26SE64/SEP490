@@ -24,8 +24,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
             role.name AS name,
             role.familyCode AS familyCode,
             role.track AS track,
-            role.seniority AS seniority,
-            role.description AS description,
+                        role.description AS description,
             role.responsibilities AS responsibilities,
             collect(DISTINCT CASE WHEN requirement IS NULL THEN null ELSE {
                 skillId: skill.id,
@@ -39,8 +38,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
             MATCH (role:TargetRole)
             WHERE role.organizationId = $organizationId
               AND role.status = 'ACTIVE'
-              AND ($seniority IS NULL OR role.seniority = $seniority)
-              AND ($search IS NULL OR toLower(trim(role.name)) CONTAINS $search)
+                          AND ($search IS NULL OR toLower(trim(role.name)) CONTAINS $search)
             OPTIONAL MATCH (role)-[requirement:REQUIRES_SKILL]->(skill:MicroSkill)
             WHERE requirement.status = 'ACTIVE' AND skill.status = 'ACTIVE'
             RETURN
@@ -74,8 +72,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("organizationId", requireText(organizationId, "organizationId"));
         parameters.put("search", criteria.normalizedSearch());
-        parameters.put("seniority", criteria.seniority() == null ? null : criteria.seniority().name());
-
+        
         try (var session = driver.session()) {
             return session.executeRead(transaction -> transaction.run(LIST_QUERY, parameters)
                     .list(mapper::toSummary))
