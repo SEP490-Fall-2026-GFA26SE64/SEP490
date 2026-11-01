@@ -49,6 +49,16 @@ describe('registration API', () => {
     await expect(getRegistration()).rejects.toMatchObject({ code: 'INVALID_RESPONSE' })
   })
 
+  it('preserves a legitimately unverified email when the server completes development registration', async () => {
+    const completed = { ...pending, registrationId: 'registration', stage: 'COMPLETE',
+      completedAt: '2026-10-30T12:00:00Z', fields: {
+        organizationName: 'Acme', subdomain: 'acme-dev', industry: null, headcount: null,
+        adminName: 'Owner', adminEmail: pending.email,
+      } }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(completed)))
+    expect(await getRegistration()).toEqual(completed)
+  })
+
   it('requires exactly ten unique recovery codes', async () => {
     vi.stubGlobal('fetch', vi.fn()
       .mockResolvedValueOnce(response({ headerName: 'X-CSRF-TOKEN', token: 'test' }))

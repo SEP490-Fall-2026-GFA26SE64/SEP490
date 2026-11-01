@@ -237,11 +237,12 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         if (driver == null) return;
         try (var session = driver.session()) {
             session.executeWrite(tx -> {
-                // Align target roles for TechNova organization and assign Dr. Sarah Chen
+                // Align all catalog nodes for TechNova organization and assign Dr. Sarah Chen
                 tx.run("""
-                    MATCH (r:TargetRole)
-                    WHERE r.organizationId IS NULL OR r.organizationId = 'comp-technova'
-                    SET r.organizationId = $orgId
+                    MATCH (n)
+                    WHERE (n:Occupation OR n:TargetRole OR n:Level OR n:Competency OR n:MicroSkill OR n:LearningModule)
+                      AND (n.organizationId IS NULL OR n.organizationId = 'comp-technova')
+                    SET n.organizationId = $orgId
                     """, Map.of("orgId", TECHNOVA_ORG_ID.toString())).consume();
 
                 tx.run("""

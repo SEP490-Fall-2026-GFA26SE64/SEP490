@@ -1879,9 +1879,12 @@ function OntologyGraphPlaygroundInner({
       </div>
 
       {/* MODAL: PREREQUISITE THRESHOLD CONFIG */}
-      <Dialog open={isPrereqModalOpen} onOpenChange={setIsPrereqModalOpen}>
+      <Dialog open={isPrereqModalOpen} onOpenChange={(open) => {
+        setIsPrereqModalOpen(open);
+        if (!open) setPendingPrereq(null);
+      }} className="max-w-md">
         {pendingPrereq && (
-          <div className="p-6 space-y-4 max-w-md w-full bg-card rounded-xl border border-border shadow-xl">
+          <div className="space-y-4">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">
                 Set Prerequisite Target Mastery
@@ -1904,7 +1907,10 @@ function OntologyGraphPlaygroundInner({
                 step="5"
                 value={prereqThreshold}
                 onChange={(e) => setPrereqThreshold(e.target.value)}
-                className="w-full accent-primary cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(Number(prereqThreshold) - 50) / 50 * 100}%, #FFFFFF ${(Number(prereqThreshold) - 50) / 50 * 100}%, #FFFFFF 100%)`,
+                }}
+                className="w-full h-2.5 rounded-lg appearance-none cursor-pointer accent-primary border border-border shadow-xs"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                 <span>50% (Basic)</span>

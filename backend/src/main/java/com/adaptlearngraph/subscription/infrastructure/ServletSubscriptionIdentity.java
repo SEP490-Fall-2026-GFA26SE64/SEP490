@@ -16,10 +16,17 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public final class ServletSubscriptionIdentity implements SubscriptionIdentity {
     private final RegistrationUseCase registration;
     private final WorkspaceAuthenticationUseCase workspace;
+    private final com.adaptlearngraph.shared.domain.IntegrationPolicy policy;
 
     public ServletSubscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace) {
+        this(registration, workspace, com.adaptlearngraph.shared.domain.IntegrationPolicy.ENABLED);
+    }
+
+    public ServletSubscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
         this.registration = registration;
         this.workspace = workspace;
+        this.policy = policy;
     }
 
     @Override
@@ -29,19 +36,18 @@ public final class ServletSubscriptionIdentity implements SubscriptionIdentity {
         var session = request.getSession(false);
         if (session == null) throw unauthenticated();
         if (request.getRequestURI().startsWith("/api/v1/registration/")) {
-            if (!(session.getAttribute("REGISTRATION_ACTOR") instanceof RegistrationActor actor)
-                    || actor.scope() != RegistrationActor.Scope.FULL) throw unauthenticated();
+            if (!(session.getAttribute("REGISTRATION_ACTOR") instanceof RegistrationActor actor)) throw unauthenticated();
             var view = registration.current(actor);
             if (!"COMPLETE".equals(view.stage()) || view.registrationId() == null) throw unauthenticated();
-            return new Context(new Actor(actor.accountId(), null, true, false, Set.of(), true), view.registrationId());
+            return new Context(new Actor(actor.accountId(), null, true, false, Set.of(), actor.mfaVerified(),
+                    policy.mfaEnabled()), view.registrationId());
         }
-        if (!(session.getAttribute("WORKSPACE_PRINCIPAL") instanceof WorkspacePrincipal principal)
-                || principal.scope() != WorkspacePrincipal.Scope.FULL) throw unauthenticated();
+        if (!(session.getAttribute("WORKSPACE_PRINCIPAL") instanceof WorkspacePrincipal principal)) throw unauthenticated();
         var identity = workspace.current(principal);
         if (!"COMPLETE".equals(identity.stage()) || identity.accountId() == null) throw unauthenticated();
         return new Context(new Actor(identity.accountId(), identity.organizationId(), identity.accountActive(),
                 identity.membershipActive(), identity.roles().stream().map(Role::valueOf).collect(Collectors.toUnmodifiableSet()),
-                identity.mfaVerified()), null);
+                identity.mfaVerified(), policy.mfaEnabled()), null);
     }
 
     private static SubscriptionFailure unauthenticated() {

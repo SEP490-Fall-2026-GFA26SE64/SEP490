@@ -306,12 +306,30 @@ public class OrganizationTargetRoleController {
             @PathVariable("roleId") String roleId,
             @RequestHeader(value = "X-User-Role", required = false, defaultValue = "LD_MANAGER") String userRole) {
 
-        if (!isAuthorizedManager(userRole)) {
+        if (!isAuthorizedManager(userRole) && !isDomainExpert(userRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers and Administrators can delete target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "You do not have permission to delete target roles"));
         }
 
         TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
+        Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        TargetRole existing = existingOpt.get();
+
+        if (isAuthorizedManager(userRole) && !isAdministrator(userRole)) {
+            if (existing.getStatus() != RoleStatus.DRAFT) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Forbidden", "message", "L&D Managers can only delete target roles in DRAFT status"));
+            }
+        } else if (isDomainExpert(userRole) && !isAdministrator(userRole)) {
+            if (existing.getStatus() != RoleStatus.DRAFT && existing.getStatus() != RoleStatus.ACTIVE) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Forbidden", "message", "Experts can only delete target roles in DRAFT or PUBLISHED status"));
+            }
+        }
+
         boolean deleted = manageTargetRoleUseCase.deleteTargetRole(organizationId, targetRoleId);
         if (deleted) {
             return ResponseEntity.noContent().build();
@@ -334,10 +352,16 @@ public class OrganizationTargetRoleController {
         return normalized.equals("LD_MANAGER") || normalized.equals("ADMINISTRATOR") || normalized.equals("ROLE_LD_MANAGER") || normalized.equals("ROLE_ADMINISTRATOR");
     }
 
+    private boolean isAdministrator(String role) {
+        if (role == null) return false;
+        String normalized = role.trim().toUpperCase();
+        return normalized.equals("ADMINISTRATOR") || normalized.equals("ROLE_ADMINISTRATOR");
+    }
+
     private boolean isDomainExpert(String role) {
         if (role == null) return false;
         String normalized = role.trim().toUpperCase();
-        return normalized.equals("DOMAIN_EXPERT") || normalized.equals("ROLE_DOMAIN_EXPERT");
+        return normalized.equals("DOMAIN_EXPERT") || normalized.equals("ROLE_DOMAIN_EXPERT") || normalized.equals("EXPERT");
     }
 
     private static boolean isSameExpert(String id1, String id2) {

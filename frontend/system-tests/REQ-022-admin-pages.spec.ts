@@ -14,7 +14,7 @@ test('Administrator layout separates billing from user CRUD, persists edits and 
   const order = await purchase(page)
   await confirmPayment(page, order)
   await page.getByRole('button', { name: 'Enter workspace' }).click({ timeout: 30000 })
-  await expect(page.getByText('Current paid period', { exact: true })).toBeVisible()
+  await expect(page.getByText('Current subscription period', { exact: true })).toBeVisible()
   await expect(page.locator('.workspace-sidebar')).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Portal feature tabs' }).getByRole('link', { name: 'Subscription', exact: true })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('button', { name: 'Send activation link' })).toHaveCount(0)

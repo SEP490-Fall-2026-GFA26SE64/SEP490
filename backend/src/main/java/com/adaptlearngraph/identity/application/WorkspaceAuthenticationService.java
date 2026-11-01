@@ -29,11 +29,20 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
 
     public WorkspaceAuthenticationService(WorkspaceIdentityStore identities, RegistrationStore security,
             RegistrationSecrets secrets, RegistrationUseCase registration, Clock clock) {
+        this(identities, security, secrets, registration, clock, com.adaptlearngraph.shared.domain.IntegrationPolicy.ENABLED);
+    }
+
+    private final com.adaptlearngraph.shared.domain.IntegrationPolicy policy;
+
+    public WorkspaceAuthenticationService(WorkspaceIdentityStore identities, RegistrationStore security,
+            RegistrationSecrets secrets, RegistrationUseCase registration, Clock clock,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
         this.identities = identities;
         this.security = security;
         this.secrets = secrets;
         this.registration = registration;
         this.clock = clock;
+        this.policy = policy;
         this.attempts = new AuthenticationAttemptGuard(security, secrets, clock);
         this.dummyPasswordHash = secrets.hashPassword(UUID.randomUUID().toString());
     }
@@ -51,13 +60,14 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
             var account = identities.lock(found.get().accountId());
             if (!account.active() || !secrets.passwordMatches(password, account.passwordHash())
                     || account.roles().size() != 1
-                    || (!account.platformAdministrator() && account.emailVerifiedAt() == null)) throw invalidCredentials();
+                    || (policy.emailVerificationEnabled() && !account.platformAdministrator()
+                        && account.emailVerifiedAt() == null)) throw invalidCredentials();
             boolean platform = account.platformAdministrator();
             if (!platform && (!account.membershipActive() || !account.workspaceReady())) {
                 throw new RegistrationFailure(Code.FORBIDDEN,
                         "No active, ready workspace membership is available. Resume onboarding or contact your administrator.");
             }
-            Scope scope = account.requiresMfa()
+            Scope scope = requiresMfa(account)
                     ? (!account.hasTotp() && !account.recoveryRequired() ? Scope.ENROLLMENT : Scope.PASSWORD) : Scope.FULL;
             security.audit(account.accountId(), "WORKSPACE_PASSWORD_VERIFIED", "SUCCEEDED", clock.instant());
             return principal(account, scope, false);
@@ -68,8 +78,9 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
     public Identity current(WorkspacePrincipal principal) {
         return security.transaction(() -> {
             var account = require(principal);
-            String stage = !account.requiresMfa() && principal.scope() != Scope.FULL ? "SIGN_IN_REQUIRED" : switch (principal.scope()) {
-                case FULL -> account.requiresMfa() && !principal.mfaVerified() ? "SIGN_IN_REQUIRED" : "COMPLETE";
+            String stage = !policy.mfaEnabled() ? "COMPLETE"
+                    : !account.requiresMfa() && principal.scope() != Scope.FULL ? "SIGN_IN_REQUIRED" : switch (principal.scope()) {
+                case FULL -> requiresMfa(account) && !principal.mfaVerified() ? "SIGN_IN_REQUIRED" : "COMPLETE";
                 case PASSWORD -> account.recoveryRequired() ? "RECOVERY_REQUIRED" : "CHALLENGE_MFA";
                 case ENROLLMENT -> "SETUP_MFA";
                 case RECOVERY -> "SETUP_MFA_RECOVERY";
@@ -87,7 +98,7 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
         if (principal == null) throw unauthenticated();
         return attempts.execute("totp", principal.accountId().toString(), address, () -> {
             var account = require(principal);
-            if (!account.requiresMfa() || principal.scope() != Scope.PASSWORD || account.recoveryRequired()) throw forbidden();
+            if (!requiresMfa(account) || principal.scope() != Scope.PASSWORD || account.recoveryRequired()) throw forbidden();
             var credential = security.totp(account.accountId()).orElseThrow(WorkspaceAuthenticationService::forbidden);
             String secret = secrets.decrypt(credential.encryptedSecret(), "totp:" + account.accountId());
             long step = secrets.matchingTotpStep(secret, code, clock.instant(), credential.lastUsedStep());
@@ -136,7 +147,7 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
         if (principal == null) throw unauthenticated();
         return attempts.execute("recovery", principal.accountId().toString(), address, () -> {
             var account = require(principal);
-            if (!account.requiresMfa() || principal.scope() != Scope.PASSWORD) throw forbidden();
+            if (!requiresMfa(account) || principal.scope() != Scope.PASSWORD) throw forbidden();
             String code = recoveryCode == null ? "" : recoveryCode.strip().toLowerCase(Locale.ROOT);
             if (!code.matches("[a-f0-9]{32}") || !security.consumeRecoveryCode(account.accountId(),
                     secrets.digest("recovery:" + account.accountId() + ":" + code), clock.instant())) throw invalidProof();
@@ -148,13 +159,13 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
 
     @Override
     public WorkspacePrincipal fromRegistration(RegistrationActor actor) {
-        if (actor == null || actor.scope() != RegistrationActor.Scope.FULL
-                || !"COMPLETE".equals(registration.current(actor).stage())) throw unauthenticated();
+        if (actor == null || !"COMPLETE".equals(registration.current(actor).stage())) throw unauthenticated();
         return security.transaction(() -> {
             var account = identities.lock(actor.accountId());
             if (!account.active() || !account.membershipActive() || !account.workspaceReady()
-                    || account.authVersion() != actor.authVersion() || account.recoveryRequired()) throw forbidden();
-            return principal(account, Scope.FULL, true);
+                    || account.authVersion() != actor.authVersion()
+                    || (requiresMfa(account) && (account.recoveryRequired() || !actor.mfaVerified()))) throw forbidden();
+            return principal(account, Scope.FULL, actor.mfaVerified());
         });
     }
 
@@ -163,19 +174,23 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
                 principal.scope() == Scope.FULL ? Duration.ofHours(12) : Duration.ofMinutes(10)))) throw unauthenticated();
         var account = identities.lock(principal.accountId());
         if (!account.active() || account.roles().size() != 1 || account.authVersion() != principal.authVersion()
-                || (!account.platformAdministrator() && account.emailVerifiedAt() == null)) {
+                || (policy.emailVerificationEnabled() && !account.platformAdministrator() && account.emailVerifiedAt() == null)) {
             throw unauthenticated();
         }
-        if (principal.scope() == Scope.FULL && account.requiresMfa() && account.recoveryRequired()) throw forbidden();
+        if (principal.scope() == Scope.FULL && requiresMfa(account) && account.recoveryRequired()) throw forbidden();
         return account;
     }
 
     private Credential requireEnrollment(WorkspacePrincipal principal) {
         var account = require(principal);
-        if (principal.scope() == Scope.RECOVERY && account.requiresMfa() && account.recoveryRequired()) return account;
-        if (principal.scope() == Scope.ENROLLMENT && account.requiresMfa()
+        if (principal.scope() == Scope.RECOVERY && requiresMfa(account) && account.recoveryRequired()) return account;
+        if (principal.scope() == Scope.ENROLLMENT && requiresMfa(account)
                 && !account.hasTotp() && !account.recoveryRequired()) return account;
         throw forbidden();
+    }
+
+    private boolean requiresMfa(Credential account) {
+        return policy.mfaEnabled() && account.requiresMfa();
     }
 
     private WorkspacePrincipal principal(Credential account, Scope scope, boolean mfa) {

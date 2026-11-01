@@ -29,4 +29,17 @@ describe('Truthful payment status', () => {
     show({ ...pending, applicationState: 'APPLIED', workspace: { organizationId: 'organization', state: 'READY', failureCode: null } })
     expect(screen.getByRole('button', { name: 'Enter workspace' })).toBeTruthy()
   })
+  it('labels development bypass without implying money was received or offering checkout', () => {
+    show({ ...pending, order: { ...pending.order!, paymentStatus: 'DEV_BYPASSED',
+      observedPaidAmount: null, confirmedAt: null }, applicationState: 'APPLIED',
+      workspace: { organizationId: 'organization', state: 'READY', failureCode: null } })
+    expect(screen.getByText('Development payment bypass')).toBeTruthy()
+    expect(screen.getByText('Development bypass (not paid)')).toBeTruthy()
+    expect(screen.getByText('No payment received')).toBeTruthy()
+    expect(screen.queryByText('Payment confirmed')).toBeNull()
+    expect(screen.queryByText('Thank you for your payment')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Open payOS checkout' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Reconcile payment' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Enter workspace' })).toBeTruthy()
+  })
 })

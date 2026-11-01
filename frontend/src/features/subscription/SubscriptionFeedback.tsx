@@ -27,7 +27,8 @@ export function StateLabel({ value }: { value: string }) {
   const labels: Record<string, [string, string]> = {
     CREATING: ['Creating checkout', 'Đang tạo thanh toán'], PENDING: ['Pending', 'Đang chờ'],
     UNKNOWN: ['Awaiting confirmation', 'Chờ xác nhận'], PARTIAL: ['Payment needs reconciliation', 'Cần đối soát thanh toán'],
-    PAID: ['Payment confirmed', 'Đã xác nhận thanh toán'], UNPAID_TERMINAL: ['Unpaid — retry eligible', 'Chưa thanh toán — có thể thử lại'],
+    PAID: ['Payment confirmed', 'Đã xác nhận thanh toán'], DEV_BYPASSED: ['Development bypass (not paid)', 'Bỏ qua ở môi trường phát triển (chưa thanh toán)'],
+    UNPAID_TERMINAL: ['Unpaid — retry eligible', 'Chưa thanh toán — có thể thử lại'],
     EXCEPTION: ['Payment exception — action required', 'Ngoại lệ thanh toán — cần xử lý'],
     NOT_APPLIED: ['Not activated', 'Chưa kích hoạt'], APPLIED: ['Subscription activated', 'Đã kích hoạt gói'],
     WAITING_CAPACITY: ['Reduce used seats to continue', 'Giảm số chỗ đang dùng để tiếp tục'],

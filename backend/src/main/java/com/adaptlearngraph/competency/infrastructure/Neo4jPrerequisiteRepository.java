@@ -25,7 +25,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     public List<PrerequisiteEdge> findAll(String organizationId) {
         String cypher = """
                 MATCH (source:MicroSkill)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target:MicroSkill)
-                WHERE (source.organizationId = $organizationId OR source.organizationId IS NULL)
+                WHERE source.organizationId = $organizationId
                 RETURN source, target, rel
                 ORDER BY coalesce(source.code, source.id) ASC, coalesce(target.code, target.id) ASC
                 """;
@@ -43,7 +43,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     public List<PrerequisiteEdge> findForRole(String organizationId, String roleId) {
         String cypher = """
                 MATCH (role:TargetRole)
-                WHERE (role.id = $roleId OR role.code = $roleId)
+                WHERE role.organizationId = $organizationId AND (role.id = $roleId OR role.code = $roleId)
                 MATCH (role)-[:REQUIRES_SKILL]->(source:MicroSkill)
                 MATCH (role)-[:REQUIRES_SKILL]->(target:MicroSkill)
                 MATCH (source)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target)
@@ -51,7 +51,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 ORDER BY coalesce(source.code, source.id) ASC, coalesce(target.code, target.id) ASC
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("roleId", roleId));
+            var result = session.run(cypher, Map.of("organizationId", organizationId, "roleId", roleId));
             List<PrerequisiteEdge> edges = new ArrayList<>();
             while (result.hasNext()) {
                 edges.add(mapRecordToEdge(result.next()));

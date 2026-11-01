@@ -16,11 +16,18 @@ public final class JdbcPaymentProcessingStore implements PaymentProcessingStore 
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
     private final PaymentOrderStore orders;
+    private final com.adaptlearngraph.shared.domain.IntegrationPolicy policy;
 
     public JdbcPaymentProcessingStore(JdbcTemplate jdbc, TransactionTemplate transactions, PaymentOrderStore orders) {
+        this(jdbc, transactions, orders, com.adaptlearngraph.shared.domain.IntegrationPolicy.ENABLED);
+    }
+
+    public JdbcPaymentProcessingStore(JdbcTemplate jdbc, TransactionTemplate transactions, PaymentOrderStore orders,
+            com.adaptlearngraph.shared.domain.IntegrationPolicy policy) {
         this.jdbc = jdbc;
         this.transactions = transactions;
         this.orders = orders;
+        this.policy = policy;
     }
 
     @Override
@@ -159,12 +166,37 @@ public final class JdbcPaymentProcessingStore implements PaymentProcessingStore 
     }
 
     @Override
+    public void bypassForDevelopment(UUID orderId, Instant now) {
+        if (policy.payosEnabled()) throw new com.adaptlearngraph.subscription.domain.SubscriptionFailure(
+                com.adaptlearngraph.subscription.domain.SubscriptionFailure.Code.FORBIDDEN,
+                "Development payment bypass is disabled.");
+        transactions.executeWithoutResult(tx -> {
+            var order = lock(orders.find(orderId).orElseThrow());
+            if ("DEV_BYPASSED".equals(order.paymentStatus())) return;
+            if (!"CREATING".equals(order.paymentStatus()) || order.paymentLinkId() != null
+                    || order.observedPaidAmount() != null || order.confirmedAt() != null) {
+                throw new com.adaptlearngraph.subscription.domain.SubscriptionFailure(
+                        com.adaptlearngraph.subscription.domain.SubscriptionFailure.Code.CONFLICT,
+                        "Only a new order without provider payment evidence can use development bypass.");
+            }
+            jdbc.update("""
+                    UPDATE platform.payment_order SET payment_status='DEV_BYPASSED',development_bypassed_at=?,
+                        failure_code=NULL WHERE order_id=?
+                    """, time(now), orderId);
+            audit(order.ownerAccountId(), "SUBSCRIPTION_DEVELOPMENT_BYPASS", orderId, "SUCCEEDED", now);
+            queue(orderId, "PAYMENT_APPLY", now);
+        });
+    }
+
+    @Override
     public void apply(UUID orderId, Instant now) {
         try {
             transactions.executeWithoutResult(tx -> {
             var order = lock(orders.find(orderId).orElseThrow());
             String state = jdbc.queryForObject("SELECT state FROM platform.subscription_intent WHERE intent_id=?", String.class, order.intentId());
-            if ("APPLIED".equals(state) || "EXCEPTION".equals(state) || !"PAID".equals(order.paymentStatus())) return;
+            if ("APPLIED".equals(state) || "EXCEPTION".equals(state)
+                    || !("PAID".equals(order.paymentStatus())
+                        || (!policy.payosEnabled() && "DEV_BYPASSED".equals(order.paymentStatus())))) return;
             UUID organization = order.organizationId();
             if (organization == null) organization = provision(order, now);
             UUID subscription = jdbc.queryForObject("SELECT subscription_id FROM platform.subscription WHERE organization_id=?",
@@ -203,7 +235,8 @@ public final class JdbcPaymentProcessingStore implements PaymentProcessingStore 
                     UPDATE platform.organization_workspace SET setup_state='READY',ready_at=coalesce(ready_at,?),failure_code=NULL
                     WHERE organization_id=? AND setup_state <> 'READY'
                     """, time(now), organization);
-            audit(order.ownerAccountId(), "SUBSCRIPTION_PAYMENT_APPLIED", orderId, "SUCCEEDED", now);
+            audit(order.ownerAccountId(), "DEV_BYPASSED".equals(order.paymentStatus())
+                    ? "SUBSCRIPTION_DEVELOPMENT_APPLIED" : "SUBSCRIPTION_PAYMENT_APPLIED", orderId, "SUCCEEDED", now);
             });
         } catch(org.springframework.dao.DataAccessException failure) {
             org.slf4j.LoggerFactory.getLogger(getClass()).error("Payment application storage failed for order {} ({})",orderId,failure.getClass().getSimpleName());

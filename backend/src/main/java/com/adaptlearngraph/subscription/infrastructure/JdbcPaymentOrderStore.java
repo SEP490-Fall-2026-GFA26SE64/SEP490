@@ -200,7 +200,7 @@ public final class JdbcPaymentOrderStore implements PaymentOrderStore {
 
     private static void validateContext(SubscriptionIdentity.Context context, UUID organizationId) {
         if (context == null || context.actor() == null || !context.actor().accountActive()
-                || !context.actor().mfaVerified()) throw forbidden();
+                || !context.actor().satisfiesMfa()) throw forbidden();
         if (organizationId == null) {
             if (context.registrationId() == null) throw forbidden();
         } else if (!organizationId.equals(context.actor().organizationId())

@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   BookOpen,
   CheckCircle2,
+  Download,
   Edit3,
   Eye,
   FolderTree,
@@ -38,6 +39,7 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { getOrganizationExperts, normalizeExpertId, type EligibleExpert } from '../data/ldManagerMockData'
+import { getMembers } from '../../subscription/subscriptionApi'
 import {
   createOccupation,
   updateOccupation,
@@ -294,8 +296,12 @@ export function OccupationsManagementPage() {
   const activeCompany = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
+  const isTechnova = orgId === 'e0000000-0000-0000-0000-000000000001' || orgId === 'comp-technova' || orgId === 'default-org'
+
   const [occupations, setOccupations] = React.useState<OccupationRecord[]>(() => {
-    return getStoredOccupations(orgId) || INITIAL_OCCUPATIONS
+    const stored = getStoredOccupations(orgId)
+    if (stored) return stored
+    return isTechnova ? INITIAL_OCCUPATIONS : []
   })
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
@@ -317,10 +323,19 @@ export function OccupationsManagementPage() {
   const fetchLiveOccupations = React.useCallback(async () => {
     try {
       const data = await fetchOccupations(orgId)
-      if (Array.isArray(data) && data.length > 0) {
-        if (Array.isArray(data) && data.length > 0) {
-          const currentStored = getStoredOccupations(orgId) || INITIAL_OCCUPATIONS
-          const storedByCode = new Map(currentStored.map((o) => [o.code, o]))
+      if (Array.isArray(data)) {
+        if (data.length === 0) {
+          const currentStored = getStoredOccupations(orgId)
+          if (currentStored && currentStored.length > 0) {
+            setOccupations(currentStored)
+          } else {
+            setOccupations(isTechnova ? INITIAL_OCCUPATIONS : [])
+          }
+          return
+        }
+
+        const currentStored = getStoredOccupations(orgId) || (isTechnova ? INITIAL_OCCUPATIONS : [])
+        const storedByCode = new Map(currentStored.map((o) => [o.code, o]))
 
           const mapped: OccupationRecord[] = data.map((item: {
             id?: string
@@ -339,7 +354,7 @@ export function OccupationsManagementPage() {
           }) => {
             const code = item.code || item.id || ''
             const localMatch = storedByCode.get(code)
-            const initialMatch = INITIAL_OCCUPATIONS.find((o) => o.code === code)
+            const initialMatch = isTechnova ? INITIAL_OCCUPATIONS.find((o) => o.code === code) : undefined
 
             // Preserve assigned experts: local user edits > initial assignments > backend
             const effectiveExperts =
@@ -381,15 +396,14 @@ export function OccupationsManagementPage() {
           const customCreated = currentStored.filter((s) => !backendCodes.has(s.code))
           const merged = [...customCreated, ...mapped]
 
-          setOccupations(merged)
-          setStoredOccupations(orgId, merged)
-          return
-        }
+        setOccupations(merged)
+        setStoredOccupations(orgId, merged)
+        return
       }
     } catch (e) {
       console.warn('Failed to fetch live occupations:', e)
     }
-  }, [orgId])
+  }, [orgId, isTechnova])
 
   React.useEffect(() => {
     fetchLiveOccupations()
@@ -652,8 +666,42 @@ export function OccupationsManagementPage() {
     return assignedExpertsInModal
   }, [assignedExpertsInModal, assignedFilter, newlyAssignedIds])
 
-  // Available experts not yet assigned to this occupation
-  const orgExperts = React.useMemo(() => getOrganizationExperts(orgId), [orgId])
+  // Available experts for this organization (synced with real workspace members)
+  const [orgExperts, setOrgExperts] = React.useState<EligibleExpert[]>(() => getOrganizationExperts(orgId))
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadOrgMembers = async () => {
+      try {
+        const members = await getMembers(orgId).catch(() => [])
+        const expertMembers = (members || []).filter(
+          (m) => m.active && (m.roles.includes("DOMAIN_EXPERT") || m.roles.includes("EXPERT"))
+        )
+        if (expertMembers.length > 0) {
+          const mapped: EligibleExpert[] = expertMembers.map((m) => ({
+            id: m.accountId,
+            name: m.fullName || m.email,
+            title: m.occupationName || m.departmentName || "Domain Expert",
+            email: m.email,
+          }))
+          if (typeof localStorage !== "undefined") {
+            localStorage.setItem("adaptlearn_org_experts_" + orgId, JSON.stringify(mapped))
+          }
+          if (isMounted) {
+            setOrgExperts(mapped)
+          }
+        } else {
+          const fallback = getOrganizationExperts(orgId)
+          if (isMounted) setOrgExperts(fallback)
+        }
+      } catch {
+        const fallback = getOrganizationExperts(orgId)
+        if (isMounted) setOrgExperts(fallback)
+      }
+    }
+    loadOrgMembers()
+    return () => { isMounted = false }
+  }, [orgId])
 
   // Available experts not yet assigned to this occupation
   const availableExperts = React.useMemo(() => {
@@ -952,7 +1000,21 @@ export function OccupationsManagementPage() {
           </CardHeader>
 
           <CardContent className="p-0">
-            {filteredOccupations.length === 0 ? (
+            {occupations.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground space-y-3">
+                <FolderTree className="h-10 w-10 mx-auto text-muted-foreground/40" />
+                <p className="text-base font-semibold text-foreground">No occupations created yet</p>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Import occupations from the O*NET catalog or create custom occupations to start structuring competency requirements.
+                </p>
+                <div className="pt-2">
+                  <Button variant="primary" size="sm" onClick={() => setIsImportModalOpen(true)} className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Import from O*NET
+                  </Button>
+                </div>
+              </div>
+            ) : filteredOccupations.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground space-y-2">
                 <FolderTree className="h-8 w-8 mx-auto text-muted-foreground/40" />
                 <p className="text-sm font-medium">No occupations match your search criteria</p>
@@ -1515,7 +1577,10 @@ export function OccupationsManagementPage() {
                               [dim.key]: Number((num / 100).toFixed(3)),
                             }))
                           }}
-                          className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                          style={{
+                            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${percentVal}%, #FFFFFF ${percentVal}%, #FFFFFF 100%)`,
+                          }}
+                          className="w-full h-2.5 rounded-lg appearance-none cursor-pointer accent-primary border border-border shadow-xs"
                           aria-label={`${dim.code} slider`}
                         />
                       </div>

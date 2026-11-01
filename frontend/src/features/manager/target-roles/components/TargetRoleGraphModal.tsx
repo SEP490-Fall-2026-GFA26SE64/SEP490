@@ -418,6 +418,12 @@ export function TargetRoleGraphModal({
     })
 
     // 3. Competency nodes connected to Level nodes
+    const hasExplicitLevelConfig = Boolean(
+      currentRole?.levelCompetencies &&
+      Object.keys(currentRole.levelCompetencies).length > 0 &&
+      Object.values(currentRole.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+    )
+
     const roleCompIds = new Set<string>()
     if (isLevelFiltered) {
       const matchedKey = Object.keys(currentRole?.levelCompetencies || {}).find(
@@ -426,8 +432,8 @@ export function TargetRoleGraphModal({
       const lvlComps = matchedKey ? currentRole?.levelCompetencies?.[matchedKey] || [] : []
       lvlComps.forEach((cid: string) => roleCompIds.add(cid))
 
-      // If no explicit level-specific competencies exist, fall back to currentRole.competencyIds
-      if (roleCompIds.size === 0 && (currentRole?.competencyIds || []).length > 0) {
+      // Only if the role has NO level-specific competencies configured at all, fall back to currentRole.competencyIds
+      if (!hasExplicitLevelConfig && roleCompIds.size === 0 && (currentRole?.competencyIds || []).length > 0) {
         ;(currentRole?.competencyIds || []).forEach((cid: string) => roleCompIds.add(cid))
       }
     } else {
@@ -438,7 +444,11 @@ export function TargetRoleGraphModal({
     const relevantComps = allCompetencies.filter((c) => {
       // 1. Strictly match competencies explicitly assigned to this role (or level filter)
       if (roleCompIds.size > 0) {
-        return roleCompIds.has(c.id) || (c.code && roleCompIds.has(c.code))
+        return roleCompIds.has(c.id) || Boolean(c.code && roleCompIds.has(c.code))
+      }
+      // If filtering by level and this level has no competencies assigned, do NOT include fallback competencies
+      if (isLevelFiltered) {
+        return false
       }
       // 2. Fallback: only include the macro-competencies directly tagged on the required skills
       if (reqSkills.some((s) => s.macroCompetencyCode === c.code || s.macroCompetencyCode === c.id)) {
@@ -447,7 +457,7 @@ export function TargetRoleGraphModal({
       return false
     })
 
-    if (relevantComps.length === 0 && reqSkills.length > 0) {
+    if (relevantComps.length === 0 && reqSkills.length > 0 && !isLevelFiltered) {
       relevantComps.push({
         id: 'comp-core',
         code: 'CORE-COMP',
@@ -511,6 +521,8 @@ export function TargetRoleGraphModal({
             const foundKey = Object.keys(levelMap).find((k) => k.toLowerCase() === lvl.toLowerCase())
             return foundKey ? levelMap[foundKey] : undefined
           }).filter(Boolean)))
+        : hasExplicitLevelConfig
+        ? []
         : isLevelFiltered
         ? levelNodeIds.slice(0, 1)
         : levelNodeIds
@@ -593,22 +605,23 @@ export function TargetRoleGraphModal({
             (currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
               (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code)))
         ) ||
-        relevantComps[0]
+        (relevantComps.length > 0 ? relevantComps[0] : null)
 
-      const parentNodeId = matchedComp ? `comp-${matchedComp.id}` : (levelNodeIds[0] || `role-${graphData.roleId}`)
-
-      addEdgeSafely({
-        id: `has-skill-${parentNodeId}-${skill.skillId}`,
-        from: parentNodeId,
-        to: skill.skillId,
-        title: `Member skill of ${matchedComp?.name || 'Competency'} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
-        label: 'HAS_SKILL',
-        font: { size: 8, color: '#16A34A', align: 'horizontal' },
-        color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
-        arrows: { to: { enabled: true, scaleFactor: 0.6 } },
-        dashes: false,
-        width: 1.5,
-      })
+      if (matchedComp) {
+        const parentNodeId = `comp-${matchedComp.id}`
+        addEdgeSafely({
+          id: `has-skill-${parentNodeId}-${skill.skillId}`,
+          from: parentNodeId,
+          to: skill.skillId,
+          title: `Member skill of ${matchedComp.name} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
+          label: 'HAS_SKILL',
+          font: { size: 8, color: '#16A34A', align: 'horizontal' },
+          color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
+          arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+          dashes: false,
+          width: 1.5,
+        })
+      }
 
       // Directed edge: (:Level)-[:REQUIRES_SKILL {requiredScore}]->(:MicroSkill)
       const targetLevelNodeId = skill.level

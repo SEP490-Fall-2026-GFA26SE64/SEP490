@@ -18,8 +18,18 @@ public class Neo4jOccupationRepository implements OccupationRepository {
 
     @Override
     public List<Occupation> findAllOccupations() {
+        return queryOccupations(null);
+    }
+
+    @Override
+    public List<Occupation> findAllOccupations(String organizationId) {
+        return queryOccupations(organizationId);
+    }
+
+    private List<Occupation> queryOccupations(String organizationId) {
         String cypher = """
                 MATCH (o:Occupation)
+                WHERE ($organizationId IS NULL OR $organizationId = '' OR o.organizationId = $organizationId)
                 OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
                 OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
                 RETURN o.id AS id,
@@ -40,7 +50,7 @@ public class Neo4jOccupationRepository implements OccupationRepository {
                 """;
 
         try (var session = driver.session()) {
-            var result = session.run(cypher);
+            var result = session.run(cypher, java.util.Map.of("organizationId", organizationId != null ? organizationId : ""));
             List<Occupation> occupations = new ArrayList<>();
             while (result.hasNext()) {
                 Record record = result.next();
@@ -67,9 +77,15 @@ public class Neo4jOccupationRepository implements OccupationRepository {
 
     @Override
     public java.util.Optional<Occupation> findByIdOrCode(String idOrCode) {
+        return findByIdOrCode(null, idOrCode);
+    }
+
+    @Override
+    public java.util.Optional<Occupation> findByIdOrCode(String organizationId, String idOrCode) {
         String cypher = """
                 MATCH (o:Occupation)
-                WHERE o.id = $idOrCode OR o.code = $idOrCode
+                WHERE ($organizationId IS NULL OR $organizationId = '' OR o.organizationId = $organizationId)
+                  AND (o.id = $idOrCode OR o.code = $idOrCode)
                 OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
                 OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
                 RETURN o.id AS id,
@@ -88,7 +104,9 @@ public class Neo4jOccupationRepository implements OccupationRepository {
                        count(DISTINCT s) AS microSkillCount
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher, java.util.Map.of("idOrCode", idOrCode));
+            var result = session.run(cypher, java.util.Map.of(
+                    "organizationId", organizationId != null ? organizationId : "",
+                    "idOrCode", idOrCode));
             if (result.hasNext()) {
                 Record record = result.next();
                 return java.util.Optional.of(new Occupation(
@@ -114,10 +132,16 @@ public class Neo4jOccupationRepository implements OccupationRepository {
 
     @Override
     public Occupation save(Occupation o) {
+        return save(null, o);
+    }
+
+    @Override
+    public Occupation save(String organizationId, Occupation o) {
         String cypher = """
                 MERGE (o:Occupation {code: $code})
                 ON CREATE SET
                     o.id = coalesce($id, $code),
+                    o.organizationId = $organizationId,
                     o.code = $code,
                     o.name = $name,
                     o.jobZone = $jobZone,
@@ -130,6 +154,7 @@ public class Neo4jOccupationRepository implements OccupationRepository {
                     o.status = $status,
                     o.version = $version
                 ON MATCH SET
+                    o.organizationId = coalesce(o.organizationId, $organizationId),
                     o.name = $name,
                     o.jobZone = $jobZone,
                     o.interestRealistic = $interestRealistic,
@@ -144,6 +169,7 @@ public class Neo4jOccupationRepository implements OccupationRepository {
                 """;
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         params.put("id", o.id() != null ? o.id() : o.code());
+        params.put("organizationId", organizationId != null ? organizationId : "");
         params.put("code", o.code());
         params.put("name", o.name());
         params.put("jobZone", o.jobZone() > 0 ? o.jobZone() : 4);
@@ -164,13 +190,21 @@ public class Neo4jOccupationRepository implements OccupationRepository {
 
     @Override
     public void delete(String idOrCode) {
+        delete(null, idOrCode);
+    }
+
+    @Override
+    public void delete(String organizationId, String idOrCode) {
         String cypher = """
                 MATCH (o:Occupation)
-                WHERE o.id = $idOrCode OR o.code = $idOrCode
+                WHERE ($organizationId IS NULL OR $organizationId = '' OR o.organizationId = $organizationId)
+                  AND (o.id = $idOrCode OR o.code = $idOrCode)
                 DETACH DELETE o
                 """;
         try (var session = driver.session()) {
-            session.run(cypher, java.util.Map.of("idOrCode", idOrCode)).consume();
+            session.run(cypher, java.util.Map.of(
+                    "organizationId", organizationId != null ? organizationId : "",
+                    "idOrCode", idOrCode)).consume();
         }
     }
 }

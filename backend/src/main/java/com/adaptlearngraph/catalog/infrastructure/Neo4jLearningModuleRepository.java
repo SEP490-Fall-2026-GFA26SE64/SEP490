@@ -23,7 +23,7 @@ public class Neo4jLearningModuleRepository implements LearningModuleRepository {
     public List<LearningModuleRecord> findAll(String organizationId) {
         String cypher = """
                 MATCH (m:LearningModule)
-                WHERE (m.organizationId = $organizationId OR m.organizationId IS NULL)
+                WHERE m.organizationId = $organizationId
                 OPTIONAL MATCH (m)-[:TEACHES]->(s:MicroSkill)
                 RETURN m.id AS id,
                        coalesce(m.title, m.name, m.id) AS title,
@@ -53,7 +53,7 @@ public class Neo4jLearningModuleRepository implements LearningModuleRepository {
     public Optional<LearningModuleRecord> findById(String organizationId, String id) {
         String cypher = """
                 MATCH (m:LearningModule {id: $id})
-                WHERE (m.organizationId = $organizationId OR m.organizationId IS NULL)
+                WHERE m.organizationId = $organizationId
                 OPTIONAL MATCH (m)-[:TEACHES]->(s:MicroSkill)
                 RETURN m.id AS id,
                        coalesce(m.title, m.name, m.id) AS title,

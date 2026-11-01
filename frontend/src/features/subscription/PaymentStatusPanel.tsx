@@ -27,6 +27,8 @@ export function PaymentStatusPanel({ status, guest, principal, base, refresh }:
   if (!status.order) return <p>{c('No payment order has been created.', 'Chưa tạo đơn thanh toán.')}</p>
   const order = status.order
   const paid = order.paymentStatus === 'PAID'
+  const bypassed = order.paymentStatus === 'DEV_BYPASSED'
+  const settled = paid || bypassed
   const expired = Date.parse(order.expiresAt) <= now
   const ready = (!guest || status.workspace?.state === 'READY') && status.applicationState === 'APPLIED'
   const canPay = order.checkoutUrl && !expired && ['PENDING', 'PARTIAL'].includes(order.paymentStatus)
@@ -37,19 +39,22 @@ export function PaymentStatusPanel({ status, guest, principal, base, refresh }:
         <Card className={paid ? 'border-success/30' : ''}>
           <CardHeader><CardTitle className="flex items-center gap-2">
             {paid ? <CheckCircle2 size={20} className="text-success" aria-hidden="true" /> : <Clock3 size={20} className="text-primary" aria-hidden="true" />}
-            {paid ? c('Thank you for your payment', 'Cảm ơn bạn đã thanh toán') : c('Complete your payment', 'Hoàn tất thanh toán')}
+            {bypassed ? c('Development payment bypass', 'Bỏ qua thanh toán ở môi trường phát triển')
+              : paid ? c('Thank you for your payment', 'Cảm ơn bạn đã thanh toán') : c('Complete your payment', 'Hoàn tất thanh toán')}
           </CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-body-sm leading-relaxed text-muted-foreground">{paid
+            <p role={bypassed ? 'status' : undefined} className="text-body-sm leading-relaxed text-muted-foreground">{bypassed
+              ? c('PayOS is disabled for local development. No payment was made or verified. This subscription uses an explicit development bypass.', 'PayOS đang tắt ở môi trường phát triển. Không có khoản thanh toán nào được thực hiện hoặc xác minh. Gói này được cấp bằng cơ chế bỏ qua dành riêng cho phát triển.')
+              : paid
               ? c('Your payment has been verified. Keep this order number for your records. Check the setup status below before entering your workspace.', 'Thanh toán đã được xác minh. Lưu mã đơn hàng để tra cứu. Kiểm tra trạng thái thiết lập bên dưới trước khi vào không gian làm việc.')
               : c('Open payOS to scan the bank QR code or follow its transfer instructions. Keep the exact amount and transfer content shown there. This page updates automatically.', 'Mở payOS để quét mã QR ngân hàng hoặc làm theo hướng dẫn chuyển khoản. Giữ đúng số tiền và nội dung hiển thị tại đó. Trang này tự cập nhật trạng thái.')}</p>
             {canPay && order.checkoutUrl && <a href={order.checkoutUrl} className={buttonVariants({ className: 'w-full gap-2 text-primary-foreground!' })}>
               {c('Open payOS checkout', 'Mở thanh toán payOS')}<ArrowUpRight size={17} aria-hidden="true" />
             </a>}
-            {!paid && expired && <p role="status" className="rounded-lg bg-muted p-3 text-body-sm">{c('The checkout deadline has passed. Check payment status before trying again; a delayed transfer may still be processing.', 'Đã quá hạn thanh toán. Kiểm tra trạng thái trước khi thử lại; giao dịch chậm có thể vẫn đang được xử lý.')}</p>}
+            {!settled && expired && <p role="status" className="rounded-lg bg-muted p-3 text-body-sm">{c('The checkout deadline has passed. Check payment status before trying again; a delayed transfer may still be processing.', 'Đã quá hạn thanh toán. Kiểm tra trạng thái trước khi thử lại; giao dịch chậm có thể vẫn đang được xử lý.')}</p>}
             {order.paymentStatus === 'PARTIAL' && <p role="status" className="rounded-lg border border-warning/40 p-3 text-body-sm">{c('The full amount has not been verified. Do not create another order; check this payment first.', 'Chưa xác minh đủ số tiền. Không tạo đơn mới; hãy kiểm tra giao dịch này trước.')}</p>}
-            {!paid && <Button variant="outline" className="w-full" isLoading={reconcile.isPending} onClick={() => reconcile.mutate()}>{c('Reconcile payment', 'Kiểm tra thanh toán')}</Button>}
-            <p className="flex items-center gap-2 text-caption text-muted-foreground"><ShieldCheck size={15} aria-hidden="true" />{c('Only verified payment records activate your subscription.', 'Gói chỉ được kích hoạt sau khi xác minh thanh toán.')}</p>
+            {!settled && <Button variant="outline" className="w-full" isLoading={reconcile.isPending} onClick={() => reconcile.mutate()}>{c('Reconcile payment', 'Kiểm tra thanh toán')}</Button>}
+            {!bypassed && <p className="flex items-center gap-2 text-caption text-muted-foreground"><ShieldCheck size={15} aria-hidden="true" />{c('Only verified payment records activate your subscription.', 'Gói chỉ được kích hoạt sau khi xác minh thanh toán.')}</p>}
           </CardContent>
         </Card>
         <Card><CardHeader><CardTitle>{c('What happens next', 'Bước tiếp theo')}</CardTitle></CardHeader>
@@ -60,13 +65,15 @@ export function PaymentStatusPanel({ status, guest, principal, base, refresh }:
               <div><p className="text-body-sm font-semibold">{c('Workspace readiness', 'Thiết lập không gian')}</p><p className="mt-1 text-body-sm text-muted-foreground"><StateLabel value={status.workspace.state} /></p></div></div>}
             {!status.workspace && <p className="text-caption text-muted-foreground">{c('Your existing workspace and any suspension restrictions remain unchanged.', 'Không gian hiện có và các giới hạn tạm ngưng được giữ nguyên.')}</p>}
             {guest && ready && <Button className="w-full" isLoading={enter.isPending} onClick={() => enter.mutate()}>{c('Enter workspace', 'Vào không gian làm việc')}</Button>}
-            {paid && !ready && <Button variant="outline" className="w-full" isLoading={reconcile.isPending} onClick={() => reconcile.mutate()}>{c('Refresh setup status', 'Cập nhật trạng thái thiết lập')}</Button>}
+            {settled && !ready && <Button variant="outline" className="w-full" isLoading={reconcile.isPending} onClick={() => reconcile.mutate()}>{c('Refresh setup status', 'Cập nhật trạng thái thiết lập')}</Button>}
           </CardContent>
         </Card>
       </div>
     </div>
     {(order.failureCode || status.workspace?.failureCode) && <div role="status" className="rounded-lg border border-warning/40 bg-card p-4 text-body-sm">
-      {c('Processing needs attention. Your recorded payment is preserved. Refresh the status or contact your platform administrator with the order number.', 'Quá trình xử lý cần kiểm tra. Thanh toán đã ghi nhận được giữ nguyên. Cập nhật trạng thái hoặc cung cấp mã đơn cho quản trị viên nền tảng.')}
+      {bypassed
+        ? c('Development setup needs attention. Refresh the status or contact your platform administrator with the order number.', 'Thiết lập phát triển cần kiểm tra. Cập nhật trạng thái hoặc cung cấp mã đơn cho quản trị viên nền tảng.')
+        : c('Processing needs attention. Your recorded payment is preserved. Refresh the status or contact your platform administrator with the order number.', 'Quá trình xử lý cần kiểm tra. Thanh toán đã ghi nhận được giữ nguyên. Cập nhật trạng thái hoặc cung cấp mã đơn cho quản trị viên nền tảng.')}
       <p className="mt-2 text-caption text-muted-foreground">{order.failureCode ?? status.workspace?.failureCode}</p>
     </div>}
     {reconcile.isError && <Failure error={reconcile.error} />}

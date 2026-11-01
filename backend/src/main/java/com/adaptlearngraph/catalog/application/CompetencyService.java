@@ -16,12 +16,12 @@ public class CompetencyService implements ManageCompetencyUseCase {
     }
 
     @Override
-    public List<CompetencyRecord> listCompetencies(String search) {
-        return repository.findAllCompetencies(search);
+    public List<CompetencyRecord> listCompetencies(String organizationId, String search) {
+        return repository.findAllCompetencies(organizationId, search);
     }
 
     @Override
-    public CompetencyRecord createCompetency(String code, String name, String description, List<String> skillIds, String levelId) {
+    public CompetencyRecord createCompetency(String organizationId, String code, String name, String description, List<String> skillIds, String levelId) {
         String id = UUID.randomUUID().toString();
         String finalCode = (code != null && !code.isBlank())
                 ? code.trim().toUpperCase()
@@ -40,12 +40,12 @@ public class CompetencyService implements ManageCompetencyUseCase {
                 "",
                 List.of()
         );
-        return repository.save(newRecord, skillIds != null ? skillIds : List.of(), levelId);
+        return repository.save(organizationId, newRecord, skillIds != null ? skillIds : List.of(), levelId);
     }
 
     @Override
-    public CompetencyRecord updateCompetency(String id, String code, String name, String description, List<String> skillIds) {
-        var existingOpt = repository.findById(id);
+    public CompetencyRecord updateCompetency(String organizationId, String id, String code, String name, String description, List<String> skillIds) {
+        var existingOpt = repository.findById(organizationId, id);
         CompetencyRecord existing = existingOpt.orElseGet(() -> new CompetencyRecord(
                 id,
                 code != null && !code.isBlank() ? code.trim().toUpperCase() : generateDefaultCode(),
@@ -77,12 +77,12 @@ public class CompetencyService implements ManageCompetencyUseCase {
                 existing.roleName(),
                 existing.memberSkills()
         );
-        return repository.save(updated, skillIds != null ? skillIds : List.of(), existing.levelId());
+        return repository.save(organizationId, updated, skillIds != null ? skillIds : List.of(), existing.levelId());
     }
 
     @Override
-    public void deleteCompetency(String id) {
-        repository.deleteById(id);
+    public void deleteCompetency(String organizationId, String id) {
+        repository.deleteById(organizationId, id);
     }
 
     private String generateDefaultCode() {

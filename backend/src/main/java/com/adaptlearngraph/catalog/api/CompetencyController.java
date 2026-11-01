@@ -33,7 +33,7 @@ public class CompetencyController {
     public ResponseEntity<List<CompetencyResponse>> listCompetencies(
             @PathVariable("organizationId") String organizationId,
             @RequestParam(value = "search", required = false) String search) {
-        List<CompetencyResponse> list = manageCompetencyUseCase.listCompetencies(search)
+        List<CompetencyResponse> list = manageCompetencyUseCase.listCompetencies(organizationId, search)
                 .stream()
                 .map(CompetencyResponse::fromDomain)
                 .toList();
@@ -45,6 +45,7 @@ public class CompetencyController {
             @PathVariable("organizationId") String organizationId,
             @RequestBody CreateCompetencyRequest request) {
         CompetencyRecord created = manageCompetencyUseCase.createCompetency(
+                organizationId,
                 request.code(),
                 request.name(),
                 request.description(),
@@ -60,6 +61,7 @@ public class CompetencyController {
             @PathVariable("id") String id,
             @RequestBody UpdateCompetencyRequest request) {
         CompetencyRecord updated = manageCompetencyUseCase.updateCompetency(
+                organizationId,
                 id,
                 request.code(),
                 request.name(),
@@ -73,7 +75,7 @@ public class CompetencyController {
     public ResponseEntity<Void> deleteCompetency(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {
-        manageCompetencyUseCase.deleteCompetency(id);
+        manageCompetencyUseCase.deleteCompetency(organizationId, id);
         return ResponseEntity.noContent().build();
     }
 }

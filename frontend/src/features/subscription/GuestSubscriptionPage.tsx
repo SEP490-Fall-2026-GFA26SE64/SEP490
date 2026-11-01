@@ -16,7 +16,7 @@ export function GuestSubscriptionPage({ mode }: { mode: 'plans' | 'status' | 're
   const base = '/api/v1/registration/subscription'
   const order = useQuery({ queryKey: ['purchase-status', principal, search.get('order')],
     queryFn: () => getStatus(base, search.get('order') ?? undefined), enabled: !!principal && registration.data?.stage === 'COMPLETE' && (mode !== 'result' || !!search.get('order')), refetchInterval: 3000 })
-  return <GuestLayout currentStep={order.data?.order ? order.data.order.paymentStatus === 'PAID' ? 7 : 6 : 5}
+  return <GuestLayout currentStep={order.data?.order ? ['PAID', 'DEV_BYPASSED'].includes(order.data.order.paymentStatus) ? 7 : 6 : 5}
     onSignOut={principal ? () => request('/api/v1/registration/sign-out', 'POST') : undefined}>
     <PageHeader title={mode === 'result' ? c('Your payment summary', 'Kết quả thanh toán') : order.data?.order ? c('Payment and workspace status', 'Thanh toán và thiết lập không gian') : c('Choose a subscription', 'Chọn gói đăng ký')}
       description={c('A clear path from your selected plan to your organization’s workspace.', 'Từ gói đã chọn đến không gian làm việc của tổ chức.')} />
