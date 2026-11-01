@@ -2,7 +2,6 @@ import * as React from 'react'
 import {
   AlertCircle,
   ArrowUpDown,
-  Award,
   CheckCircle2,
   ChevronDown,
   RefreshCw,
@@ -31,9 +30,8 @@ import {
   type TargetRoleChoice,
 } from './TargetRoleSelectionDialog'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
-import type { Seniority, TargetRoleSummary } from './targetRoleTypes'
+import type { TargetRoleSummary } from './targetRoleTypes'
 
-const SENIORITY_OPTIONS: Seniority[] = ['P1', 'P2', 'P3', 'P4', 'P5', 'M3', 'M4']
 const PAGE_SIZE = 12
 
 const ROLE_RECOMMENDATIONS: Record<string, { score: number; reason: string }> = {
@@ -72,7 +70,6 @@ export function TargetRoleBrowsePanel() {
   const initialSearch = getSearchFromLocation()
   const [searchInput, setSearchInput] = React.useState(initialSearch)
   const [search, setSearch] = React.useState(initialSearch)
-  const [seniority, setSeniority] = React.useState<Seniority | null>(null)
   const [sortBy, setSortBy] = React.useState<'recommendation' | 'alphabetical'>('recommendation')
   const [currentPage, setCurrentPage] = React.useState(1)
   const [detailRoleId, setDetailRoleId] = React.useState<string | null>(null)
@@ -103,20 +100,19 @@ export function TargetRoleBrowsePanel() {
 
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [seniority, statusFilter, sortBy])
+  }, [statusFilter, sortBy])
 
-  const roles = useTargetRoles({ search, seniority })
+  const roles = useTargetRoles({ search })
   const selection = useTargetRoleSelection()
   const chooseRole = useChooseTargetRoleMutation()
   const { selectTargetRole, profile } = useEmployeeLearningState()
-  const hasFilters = search.length > 0 || seniority !== null || statusFilter !== 'All' || sortBy !== 'recommendation'
+  const hasFilters = search.length > 0 || statusFilter !== 'All' || sortBy !== 'recommendation'
   const showToolbarClear = hasFilters
     && (roles.isPending || roles.isError || (roles.data?.length ?? 0) > 0)
 
   const clearFilters = () => {
     setSearchInput('')
     setSearch('')
-    setSeniority(null)
     setStatusFilter('All')
     setSortBy('recommendation')
     setCurrentPage(1)
@@ -318,34 +314,6 @@ export function TargetRoleBrowsePanel() {
             </select>
           </div>
 
-          {/* Seniority Filter Pill */}
-          <div
-            className={cn(
-              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none shrink-0",
-              seniority
-                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
-                : "border-border bg-background hover:bg-muted/60 text-foreground"
-            )}
-          >
-            <Award size={13} className={seniority ? 'text-primary' : 'text-muted-foreground'} />
-            <span className="text-muted-foreground font-normal">Seniority:</span>
-            <span className="font-semibold text-foreground">
-              {seniority ?? 'All levels'}
-            </span>
-            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
-            <select
-              aria-label="Filter by seniority"
-              value={seniority ?? ''}
-              onChange={(event) => setSeniority((event.target.value || null) as Seniority | null)}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-            >
-              <option value="" className="bg-card text-foreground">All levels</option>
-              {SENIORITY_OPTIONS.map((level) => (
-                <option key={level} value={level} className="bg-card text-foreground">{level}</option>
-              ))}
-            </select>
-          </div>
-
           {showToolbarClear && (
             <button
               type="button"
@@ -388,7 +356,7 @@ export function TargetRoleBrowsePanel() {
           icon={<Target size={28} className="text-primary" />}
           title={hasFilters ? 'No matching roles' : 'No target roles available'}
           description={hasFilters
-            ? 'No target roles match the current name and seniority filters.'
+            ? 'No target roles match the current filters.'
             : 'No roles are available. Please contact your Organization Administrator.'}
           action={hasFilters ? <Button variant="outline" size="sm" onClick={clearFilters}>Clear filters</Button> : undefined}
         />

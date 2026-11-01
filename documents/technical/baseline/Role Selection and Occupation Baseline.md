@@ -83,3 +83,4 @@ Result/history show the Employee's original attempt scope, completion, raw asses
 Confirmed: Role-first entry, profile authority, evidence sufficiency without a score threshold, retained learner versions, early no-mastery invalidation, isolated version settings and confirmed Draft discard. Open: cross-owner production integration and remediation for genuinely missing/invalid profiles beyond the confirmed preservation rules. Provisional: exact model numerical constants pending numerical validation. Rejected: fabricated completion, history reset/re-score/repin, silent Draft overwrite or client identity override.
 
 Confirmed | Proposed | Provisional | Open | Rejected.
+> Historical main-branch design, retained for traceability. Current ownership is defined by [Role guidance](../../features/Role%20guidance/README.md) and [Assessment workflows](../../features/Assessment%20workflows/README.md). Legacy selections are preserved, not silently rewritten.

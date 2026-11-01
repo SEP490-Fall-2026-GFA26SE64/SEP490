@@ -17,6 +17,11 @@ public final class InitialPathwayAccess {
         this.actors=actors;this.coordination=coordination;this.store=store;this.assignments=assignments;this.bindings=bindings;
         this.availability=availability;this.readiness=readiness;this.content=content;
     }
+    public String requireCurrentEntry(String moduleId) {
+        var scope=Scope.own(actors.require());
+        var current=store.current(scope).orElseThrow(()->new Failure(404,"PATHWAY_NOT_FOUND"));
+        return requireEntry(current.id(),moduleId);
+    }
     public String requireEntry(UUID pathwayId,String moduleId) {
         InitialPathwayPorts.text(moduleId);
         var scope=Scope.own(actors.require());var r=requireApproved(scope,pathwayId);var revision=store.revision(scope,pathwayId,r.revision());

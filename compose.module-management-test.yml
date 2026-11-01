@@ -1,0 +1,28 @@
+# Use with compose.dev.yml and -p module-authoring-test. Keep test memory bounded.
+# Build the host jar first: cd backend && bash mvnw -DskipTests package
+services:
+  neo4j:
+    environment:
+      NEO4J_server_memory_heap_initial__size: 128m
+      NEO4J_server_memory_heap_max__size: 384m
+      NEO4J_server_memory_pagecache_size: 128m
+    healthcheck:
+      interval: 15s
+      timeout: 30s
+      retries: 16
+      start_period: 60s
+  api:
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx512m
+    volumes:
+      - ./backend/target/adapt-learn-graph.jar:/app/app.jar:ro
+  migrate:
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx384m
+    volumes:
+      - ./backend/target/adapt-learn-graph.jar:/app/app.jar:ro
+  seed:
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx384m
+    volumes:
+      - ./backend/target/adapt-learn-graph.jar:/app/app.jar:ro

@@ -12,17 +12,16 @@ describe('targetRoleApi', () => {
       code: 'JAVA_P3',
       name: 'Java Developer',
       track: 'PROFESSIONAL',
-      seniority: 'P3',
       description: null,
       requirementCount: 1,
     }]))
     vi.stubGlobal('fetch', fetchMock)
 
     const roles = await getTargetRoles(
-      { search: ' java & spring ', seniority: 'P3' }, new AbortController().signal)
+      { search: ' java & spring ' }, new AbortController().signal)
 
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/v1/employee/target-roles?search=java+%26+spring&seniority=P3',
+      '/api/v1/employee/target-roles?search=java+%26+spring',
       expect.objectContaining({ credentials: 'same-origin' }),
     )
     expect(roles[0].id).toBe('role-1')

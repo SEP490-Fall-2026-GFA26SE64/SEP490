@@ -12,6 +12,7 @@ export const en = {
       warningHelp: 'This plan uses alternative teaching or difficulty. Review the module details before approving; these warnings do not by themselves block approval.',
     },
     display: {
+      assignedModules: 'Assigned modules',
       roleMode: 'Role', skillMode: 'Skill', chooseSkill: 'Choose an individual skill',
       baselineTargets: 'Baseline targets', targetsMet: 'met', remaining: 'remaining',
       snapshotHelp: 'Based on the baseline used to prepare this plan. These values do not measure completed learning.',

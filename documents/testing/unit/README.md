@@ -21,6 +21,7 @@ Unit testing in this workspace validates pure domain invariants, application ser
 
 | Requirement ID | Feature Name | Primary Actor | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
+| **REQ-014 / FR-05.06 subset** | Question Bank authoring | Expert / L&D | [REQ-014-question-bank.md](REQ-014-question-bank.md) | **16 domain + 3 catalog deadline + 3 architecture + 10 frontend checks passed; system separate** |
 | **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Review/order/repair/approval and safe own read | Assigned Expert / Employee | [Scoped methods and mocks](../system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping) | **Passed for mapped review/read scope; production owners separate** |
 | **REQ-060-F01-F03** | Registration, email and MFA/resume | Guest | [REQ-060-registration.md](REQ-060-registration.md) | **PASSED locally; live gate separate** |
 | **REQ-001-F01** | View Target Roles | `LEARNER` | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |

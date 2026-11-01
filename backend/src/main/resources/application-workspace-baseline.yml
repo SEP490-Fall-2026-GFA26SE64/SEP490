@@ -1,6 +1,6 @@
 spring:
   flyway:
-    locations: classpath:db/workspace-migration
+    locations: ${WORKSPACE_MIGRATION_LOCATION:classpath:db/workspace-migration}
 
 assessment:
   baseline:

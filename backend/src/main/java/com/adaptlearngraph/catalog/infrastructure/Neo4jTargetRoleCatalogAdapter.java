@@ -72,7 +72,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("organizationId", requireText(organizationId, "organizationId"));
         parameters.put("search", criteria.normalizedSearch());
-        
+
         try (var session = driver.session()) {
             return session.executeRead(transaction -> transaction.run(LIST_QUERY, parameters)
                     .list(mapper::toSummary))

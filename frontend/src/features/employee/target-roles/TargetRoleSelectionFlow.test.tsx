@@ -30,7 +30,6 @@ const ROLE = {
   code: 'JAVA_P3',
   name: 'Java Backend Developer',
   track: 'PROFESSIONAL' as const,
-  seniority: 'P3' as const,
   description: 'Builds backend services',
   requirementCount: 2,
 }
@@ -43,7 +42,6 @@ const CURRENT_SELECTION: TargetRoleSelection = {
     code: 'DATA_P3',
     name: 'Data Engineer',
     track: 'PROFESSIONAL',
-    seniority: 'P3',
   },
   selectedAt: '2026-10-02T01:00:00Z',
   targetRevision: 1,

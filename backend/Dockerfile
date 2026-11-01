@@ -2,6 +2,7 @@ FROM maven:3.9.11-eclipse-temurin-21 AS build
 WORKDIR /workspace/backend
 COPY backend/pom.xml ./
 COPY backend/src ./src
+COPY documents/dataset/import/content ../documents/dataset/import/content
 RUN mvn -B -ntp -Dmaven.test.skip=true package
 
 FROM eclipse-temurin:21-jre-alpine

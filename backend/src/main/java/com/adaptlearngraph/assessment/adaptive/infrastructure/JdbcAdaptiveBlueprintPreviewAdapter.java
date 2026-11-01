@@ -39,7 +39,7 @@ public final class JdbcAdaptiveBlueprintPreviewAdapter implements AdaptiveBluepr
                     FROM platform.item_version item
                     JOIN platform.question_bank bank ON bank.question_bank_id=item.question_bank_id
                     JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:org
-                    WHERE item.question_bank_id=:bank AND item.item_version_id IN (:ids) AND (item.publication_state='PUBLISHED' OR (:demoDraft AND item.publication_state='DRAFT'))
+                    WHERE item.question_bank_id=:bank AND item.item_version_id IN (:ids) AND (item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired) OR (:demoDraft AND item.publication_state='DRAFT'))
                       AND NOT EXISTS (SELECT 1 FROM platform.item_version newer WHERE newer.item_id=item.item_id AND newer.version>item.version)
                     ORDER BY item.item_version_id
                     """, new MapSqlParameterSource("demoDraft", demoDraft).addValue("org", scope.organizationId()).addValue("bank", bankId).addValue("ids", ids),

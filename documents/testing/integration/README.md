@@ -25,6 +25,7 @@ Integration testing validates real database round-trips, graph relationships, or
 
 | Requirement ID | Feature Name | Storage Engine | Test Document | Status |
 | :--- | :--- | :--- | :--- | :--- |
+| **REQ-014 / FR-05.06 subset** | Question Bank authoring | PostgreSQL Testcontainers | [REQ-014-question-bank.md](REQ-014-question-bank.md) | **1 scoped integration test passed; graph/browser separate** |
 | **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Review persistence/concurrency/compatibility and read | PostgreSQL17.6 / Neo4j5.26 Testcontainers | [Actual methods, actors and fixtures](../system/REQ-002-041-042-workspace-integration.md#real-integration-mapping) | **29 Passed for mapped scope; production owners Open** |
 | **REQ-060-F01-F03** | Registration, MFA, sessions and email jobs | PostgreSQL Testcontainers / real HTTP | [REQ-060-registration.md](REQ-060-registration.md) | **PASSED locally; live gate separate** |
 | **REQ-001-F01** | View Target Roles | Neo4j Testcontainers | [REQ-001-F01-view-target-roles.md](REQ-001-F01-view-target-roles.md) | **PASSED** |

@@ -15,6 +15,12 @@ class InitialPathwayAccessTest {
         when(f.actors.require()).thenReturn(new Actor(ReviewFixture.ORG,ReviewFixture.LEARNER,Role.EMPLOYEE));
         f.current=f.request(Review.APPROVED,f.revision);when(f.store.approved(f.scope,ReviewFixture.ID,4,f.revision.contentHash())).thenReturn(true);
         access=new InitialPathwayAccess(f.actors,f.coordination,f.store,f.assignments,f.bindings,availability,readiness,content);}
+    @Test void currentEntryReusesApprovalAndLiveGateChecks() {
+        when(content.requireEntry(any(),any(),any(),any())).thenReturn("/employee/modules/M-A");
+        assertThat(access.requireCurrentEntry("M-A")).isEqualTo("/employee/modules/M-A");
+        f.current=f.request(Review.AWAITING_EXPERT_REVIEW,f.revision);
+        assertThatThrownBy(()->access.requireCurrentEntry("M-A")).hasMessage("PATHWAY_NOT_APPROVED");
+    }
     @Test void E08_missingOwnerCapabilityNeverReturnsLearningEntry() {
         assertThatThrownBy(()->access.requireEntry(ReviewFixture.ID,"M-A")).hasMessage("CONTENT_ACCESS_UNAVAILABLE");
         verify(f.assignments).requireApprovalValid(f.scope,ReviewFixture.ID,4,f.revision.contentHash());

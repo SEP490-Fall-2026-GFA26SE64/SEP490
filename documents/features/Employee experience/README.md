@@ -14,7 +14,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | --- | --- | --- | --- |
 | [FR-06.01](#fr-06-01) | Prototype | The shared profile screen reads actor-specific browser profiles and offers local name/password changes. | These changes do not update the authenticated account/password or a persisted Employee work profile. Real administrator member edits are a separate feature. |
 | [FR-06.05](#fr-06-05) | Partial | The Role gap dialog uses persisted baseline evidence and the authorized Role+Level gap API; the separate legacy gap-analysis screen retains prototype behavior. | Later-learning profile processing and production compatibility/publication integration remain open. |
-| [FR-06.06](#fr-06-06) | API-backed slice | Role roadmap/timeline reads the Employee's own exact approved pathway, ordered Modules and safe frozen baseline context. | Protected learning access and assessment-driven remaining-pathway updates are incomplete. Limited own-approved HTTP observations are recorded separately from unverified new-order approval/Employee and executable acceptance. Independent-skill browser consumers remain separate. |
+| [FR-06.06](#fr-06-06) | API-backed slice | Role roadmap/timeline reads the Employee's own exact approved pathway, ordered Modules and safe frozen baseline context. | Generated entry access now checks current approval, content version and prerequisites before serving real lessons/progress. Unsupported internal gates, assessment-driven adaptation and full merged browser mutation acceptance remain separate; independent-skill prototype consumers are not recertified. |
 | [FR-06.07](#fr-06-07) | Partial | The Skills tab loads real micro-skills/macro competencies through catalog APIs and lets Employees track/untrack skills locally. | Duration/level metadata is synthesized in the browser; tracking and sample module/roadmap content are not a persisted independent-learning context with approved mapped content. |
 | [FR-06.09](#fr-06-09) | Prototype | Overview, history and assessment views show seeded/local completion, scores, previous roles/skills and pathway status. | No authoritative progress aggregation from persisted module completion, assessment evidence and pathway revisions is wired to these screens. |
 
@@ -24,7 +24,7 @@ Only the trusted Employee's approved/current or own archived revision is project
 
 **Entry points:** `/profile`, `/employee/overview`, `/employee/gap-analysis`, `/employee/pathway`, `/employee/upskilling?tab=skills`. Older skills-catalog routes redirect to the consolidated Skills tab.
 
-**Code references:** [profile prototype](../../../frontend/src/features/profile/ProfilePage.tsx), [browser learning state](../../../frontend/src/shared/hooks/useEmployeeLearningState.ts), [gap screen](../../../frontend/src/features/employee/gap-analysis/CompetencyGapAnalysisPage.tsx), [pathway screen](../../../frontend/src/features/employee/pathway/AdaptivePathwayPage.tsx), [real skill reads/local tracking](../../../frontend/src/features/employee/target-roles/UpskillSkillsPanel.tsx), [overview](../../../frontend/src/features/employee/overview/EmployeeOverviewPage.tsx). See [Assessment workflows](../Assessment%20workflows/README.md#current-implementation) for module-reader and quiz limitations.
+**Code references:** [profile prototype](../../../frontend/src/features/profile/ProfilePage.tsx), [browser learning state](../../../frontend/src/shared/hooks/useEmployeeLearningState.ts), [gap screen](../../../frontend/src/features/employee/components/CompetencyGapAnalysis.tsx), [pathway screen](../../../frontend/src/features/employee/pathway/AdaptivePathwayPage.tsx), [real skill reads/local tracking](../../../frontend/src/features/employee/target-roles/UpskillSkillsPanel.tsx), [overview](../../../frontend/src/features/employee/overview/EmployeeOverviewPage.tsx). See [Assessment workflows](../Assessment%20workflows/README.md#current-implementation) for module-reader and quiz limitations.
 
 ## Requirements
 
@@ -140,3 +140,38 @@ These anchors preserve existing references, not additional functional requiremen
 | <a id="req-055-f04"></a>REQ-055-F04 | [FR-06.07](#fr-06-07); [FR-06.08](../Assessment%20workflows/README.md#fr-06-08) |
 | <a id="req-070"></a>REQ-070 | [FR-06.09](#fr-06-09) |
 | <a id="req-070-f01"></a>REQ-070-F01 | [FR-06.09](#fr-06-09) |
+
+## Assigned Module roadmap/timeline — R5 (2026-10-29)
+
+Employees use the existing roadmap/timeline presentation to browse their actual Expert-confirmed assignments, view mapped skills and content completion, and open the real lesson reader. An assigned released module can be displayed before starting; simply viewing the pathway does not pin a version or create progress. Unavailable modules have a retry state; a successful empty assignment response leaves the pathway body blank (superseded by R6 below). Both English/Vietnamese and mobile layouts are supported.
+
+The page contains no simulated diagnostic unlock, recommendation score, sample Module or inferred mastery. Module ordering is manually confirmed by an Expert; generated/adaptive pathways remain outside this integration. Content completion is distinct from exam/mastery evidence. [Verification and manual checklist](../../testing/system/REQ-013-learning-content-R5.md).
+
+
+## Original pathway and lesson presentation — R6 (2026-10-29)
+
+The original roadmap/timeline and lesson-reader layouts now display actual assigned pathways, ordered Text/Video lessons and persisted content progress. Employees can inspect module/skill details, navigate the syllabus and resume real video playback using the restored player controls. Selecting a pathway loads fresh authorized snapshots for that pathway; unavailable modules in another pathway do not block it. A successful response with no assignments leaves the pathway body blank; loading and retry states remain distinct.
+
+The reader retains its original sidebar, large content area, next-item footer and progress bar. Video completion still requires 90% distinct watched coverage plus explicit confirmation. The exam action remains unavailable until real exam admission exists. This does not implement pathway generation or assessment-derived mastery. [Verification and manual checklist](../../testing/system/REQ-013-learning-content-R6.md).
+
+
+## Persisted Learning Content — 2026-10-29
+
+The existing reader layout now resolves approved assigned content for the requested Module instead of a fixed mock package. Lesson order is freely navigable. Text completion requires reaching the end; Video completion requires at least 90% distinct actual watched coverage, followed by explicit confirmation. Seeking/replay cannot add unseen coverage. Progress resumes across sessions; learners keep their pinned version until opting into the latest approval. Only unchanged stable lessons retain progress; historical rows remain.
+
+The reader supports unavailable-video retry/reporting and durable issue/new-version notifications. All lessons completed means **Content completed**, not passed assessment or verified mastery. Uploaded MP4 and YouTube were exercised live; Vimeo provider restrictions remain a documented acceptance blocker. [Test evidence/manual checklist](../../testing/system/REQ-013-learning-content.md).
+
+R4 media follow-up (2026-10-29): the existing private video reader passed actual playback, seeking/90% explicit completion and reload regression after correcting session revalidation on async media dispatch. This introduces no new completion/mastery rule. [Evidence](../../testing/system/REQ-013-learning-content-R4.md).
+
+
+## Adaptive Pathway component integration — R7 (2026-10-29)
+
+The Employee pathway now enters the existing roadmap/timeline component owners with actual assigned snapshots. The source presentation from target-roles-flow supplies the search toolbar, original graph geometry, Module/skill detail hierarchy and timeline track/cards. Module details expose actual duration, lesson progress, mapped skills and lesson navigation. Successful empty assignments remain blank. Role/Skill context, mastery, certification and simulated adaptation are not invented where persisted evidence is unavailable. The lesson reader and version/progress policies are preserved. [Verification and manual checks](../../testing/system/REQ-013-learning-content-R7.md).
+
+## Initial pathway and assigned learning content — 2026-10-29 integration
+
+The default pathway view uses main's server-generated initial role pathway and Expert review states. Existing manual Expert-confirmed learning remains available through Assigned modules when present. Both sources can open actual stored lesson content; manual lessons return to assigned mode, while generated entries return to the initial pathway. Generated access requires current exact approval and live prerequisite/content-version checks. Missing content or unsupported internal segment gates remain unavailable. Successful empty initial/manual responses do not show sample routes. Content completion remains separate from mastery/exams. [Verification and manual checks](../../testing/system/REQ-013-main-pathway-integration.md).
+
+## Manual test pathway retired — 2026-10-30
+
+This supersedes the manual selector/assignment and blank-empty-state behavior in R5–R7 and the integration notes above. Employee uses the real initial pathway; no R4 sample selector or Assigned modules entry is shown. Without an initial pathway, the page retains its roadmap/timeline frame and offers Review Roles guidance. The old assigned query does not open test mode. Historical assignments/progress remain stored but manual assignments no longer grant lesson access. Generated pathway approval/version/prerequisite checks and the existing lesson reader remain in place. [Verification and manual checklist](../../testing/system/REQ-013-retire-manual-pathway.md).

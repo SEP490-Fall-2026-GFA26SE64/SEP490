@@ -17,6 +17,29 @@ public final class OfficialQuestionBankImporter {
 
     public OfficialQuestionBankImporter(DataSource dataSource) { this.dataSource = dataSource; }
 
+    /** An existing frozen bank is independent of later current-catalog upgrades. Never insert missing items here. */
+    boolean verifyExistingManifest(OfficialQuestionBankManifest manifest, Owner owner, Mode mode) throws Exception {
+        require(mode != null, "Explicit operation mode required");
+        try (var connection = dataSource.getConnection()) {
+            require(owner.expectedJdbcUrl().equals(connection.getMetaData().getURL()), "Unexpected PostgreSQL target");
+            connection.setAutoCommit(false);
+            try {
+                try (var limits = connection.createStatement()) {
+                    limits.execute("SET LOCAL lock_timeout = '10s'");
+                    limits.execute("SET LOCAL statement_timeout = '60s'");
+                }
+                if (!preflightBank(connection, manifest.questionBank(), owner)) return false;
+                authorize(connection, owner, mode);
+                for (Item item : manifest.items()) {
+                    require(preflightItem(connection, manifest.questionBank().id(), item), "Existing bank is incomplete; explicit recovery required");
+                }
+                return true;
+            } finally {
+                connection.rollback();
+            }
+        }
+    }
+
     Result importManifest(OfficialQuestionBankManifest manifest, Owner owner, Mode mode) throws Exception {
         require(mode != null, "Explicit operation mode required");
         try (var connection = dataSource.getConnection()) {
