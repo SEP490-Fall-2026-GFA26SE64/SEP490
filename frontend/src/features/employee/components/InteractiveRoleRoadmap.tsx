@@ -1,3 +1,5 @@
+import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
+import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
 import * as React from 'react'
 import type { PathwayView } from '../../../shared/api/initialPathway'
 import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
@@ -39,6 +41,7 @@ import {
 import './InteractiveRoleRoadmap.css'
 
 export interface InteractiveRoleRoadmapProps {
+  assigned?: AssignedPathwayViewProps
   pathway?: PathwayView
   search?: string
   targetRole?: string
@@ -47,7 +50,7 @@ export interface InteractiveRoleRoadmapProps {
 }
 
 export function InteractiveRoleRoadmap(props: InteractiveRoleRoadmapProps = {}) {
-  return props.pathway ? <ApprovedRoleRoadmap pathway={props.pathway} search={props.search ?? ''} /> : <LegacyInteractiveRoleRoadmap {...props} />
+  return props.assigned ? <AssignedPathwayPresentation {...props.assigned} mode="roadmap" /> : props.pathway ? <ApprovedRoleRoadmap pathway={props.pathway} search={props.search ?? ''} /> : <LegacyInteractiveRoleRoadmap {...props} />
 }
 function ApprovedRoleRoadmap({ pathway, search }: { pathway: PathwayView; search: string }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key)

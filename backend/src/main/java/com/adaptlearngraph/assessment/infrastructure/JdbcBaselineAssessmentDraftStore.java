@@ -45,7 +45,7 @@ public class JdbcBaselineAssessmentDraftStore implements BaselineAssessmentDraft
                                micro_skill_name_snapshot, difficulty, content_hash,
                                prompt, response_schema
                         FROM platform.item_version
-                        WHERE publication_state = 'PUBLISHED'
+                        WHERE publication_state = 'PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item_version.item_id AND qb.retired)
                           AND micro_skill_id IN (:skillIds)
                         ORDER BY item_id, version DESC, item_version_id DESC
                     )

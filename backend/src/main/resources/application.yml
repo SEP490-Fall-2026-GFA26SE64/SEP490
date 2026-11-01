@@ -1,4 +1,9 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10240MB
+      max-request-size: 10241MB
+      file-size-threshold: 0
   application:
     name: adapt-learn-graph
   profiles:
@@ -70,3 +75,11 @@ management:
   endpoint:
     health:
       show-details: never
+learning:
+  assets:
+    endpoint: ${LEARNING_ASSETS_ENDPOINT:http://localhost:28190}
+    access-key: ${LEARNING_ASSETS_ACCESS_KEY:unconfigured}
+    secret-key: ${LEARNING_ASSETS_SECRET_KEY:unconfigured}
+    bucket: ${LEARNING_ASSETS_BUCKET:learning-content}
+  mail:
+    enabled: ${LEARNING_MAIL_ENABLED:false}

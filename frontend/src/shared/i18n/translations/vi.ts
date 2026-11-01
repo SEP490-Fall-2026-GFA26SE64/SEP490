@@ -14,6 +14,7 @@ export const vi: TranslationKeys = {
       warningHelp: 'Kế hoạch dùng nội dung hoặc độ khó thay thế. Hãy xem chi tiết học phần trước khi duyệt; các cảnh báo này tự chúng không chặn duyệt.',
     },
     display: {
+      assignedModules: 'Module được giao',
       roleMode: 'Vị trí', skillMode: 'Kỹ năng', chooseSkill: 'Chọn kỹ năng muốn học riêng',
       baselineTargets: 'Năng lực đầu vào', targetsMet: 'đạt ngưỡng', remaining: 'còn thiếu',
       snapshotHelp: 'Dựa trên đánh giá đầu vào dùng để lập kế hoạch này. Các số liệu này không phản ánh việc hoàn thành học.',

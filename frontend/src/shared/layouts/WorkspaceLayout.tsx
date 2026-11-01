@@ -258,6 +258,11 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <Sliders size={15} />,
       },
       {
+        label: t('nav.assessmentBank'),
+        href: '/ld-manager/question-bank',
+        icon: <FileQuestion size={15} />,
+      },
+      {
         label: t('nav.contentApprovals', 'Content Approvals'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
@@ -333,6 +338,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/platform-admin/subscriptions',
         icon: <CreditCard size={15} />,
       },
+      { label: t('nav.learningUploadLimits', 'Learning upload limits'), href: '/platform-admin/learning-upload-settings', icon: <Sliders size={15} /> },
       {
         label: t('nav.platformActivity', 'Platform Activity'),
         href: '/platform-admin/activity',
@@ -445,7 +451,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       return path === '/ld-manager/occupations' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
-      return path === '/ld-manager/approvals'
+      return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
     }
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
@@ -491,6 +497,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
 
   // Collapsible sidebar state (persisted per actor; default: collapsed for employee, expanded for other actors)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<boolean>(() => {
+    if (trusted && window.matchMedia('(max-width: 768px)').matches) return true
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (saved !== null) {
       return saved === 'true'
@@ -501,17 +508,32 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   // Synchronize state when switching actor roles
   React.useEffect(() => {
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
-    if (saved !== null) {
+    if (trusted && window.matchMedia('(max-width: 768px)').matches) {
+      setIsSidebarCollapsed(true)
+    } else if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true')
     } else {
       setIsSidebarCollapsed(isEmployee || (trusted && window.matchMedia('(max-width: 768px)').matches))
     }
   }, [activeActor, isEmployee, trusted])
 
+  React.useEffect(() => {
+    if (!trusted) return
+    const viewport = window.matchMedia('(max-width: 768px)')
+    const syncViewport = (event: MediaQueryListEvent) => {
+      const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
+      setIsSidebarCollapsed(trusted && event.matches || (saved === null ? isEmployee : saved === 'true'))
+    }
+    viewport.addEventListener('change', syncViewport)
+    return () => viewport.removeEventListener('change', syncViewport)
+  }, [activeActor, isEmployee, trusted])
+
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
       const next = !prev
-      localStorage.setItem(`sidebar_collapsed_${activeActor}`, String(next))
+      if (!trusted || !window.matchMedia('(max-width: 768px)').matches) {
+        localStorage.setItem(`sidebar_collapsed_${activeActor}`, String(next))
+      }
       return next
     })
   }
@@ -747,6 +769,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
                 <Link
                   key={item.href}
                   to={item.href}
+                  onClick={() => { if (trusted && window.matchMedia('(max-width: 768px)').matches) setIsSidebarCollapsed(true) }}
                   className={`workspace-sidebar-link ${active ? 'active' : ''}`}
                   title={isSidebarCollapsed ? item.label : undefined}
                   aria-label={item.label}

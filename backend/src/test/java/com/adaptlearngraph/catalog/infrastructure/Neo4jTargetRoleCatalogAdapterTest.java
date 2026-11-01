@@ -19,7 +19,13 @@ import org.neo4j.driver.GraphDatabase;
 import org.testcontainers.containers.Neo4jContainer;
 
 class Neo4jTargetRoleCatalogAdapterTest {
-    private static final Neo4jContainer<?> NEO4J = new Neo4jContainer<>("neo4j:5.26-community");
+    private static final Neo4jContainer<?> NEO4J = new Neo4jContainer<>("neo4j:5.26-community")
+            .withEnv("JAVA_TOOL_OPTIONS", "-XX:ActiveProcessorCount=2 -Xms64m -Xmx256m")
+            .withEnv("NEO4J_server_memory_heap_initial__size", "128m")
+            .withEnv("NEO4J_server_memory_heap_max__size", "384m")
+            .withEnv("NEO4J_server_memory_pagecache_size", "128m")
+            .withEnv("NEO4J_server_jvm_additional", "-XX:ActiveProcessorCount=2")
+            .withStartupTimeout(java.time.Duration.ofMinutes(5));
 
     private Driver driver;
     private Neo4jTargetRoleCatalogAdapter adapter;

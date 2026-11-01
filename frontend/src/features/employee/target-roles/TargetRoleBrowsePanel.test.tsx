@@ -22,7 +22,6 @@ const SUMMARY: TargetRoleSummary = {
   code: 'JAVA_P3',
   name: 'Java Backend Developer',
   track: 'PROFESSIONAL',
-  seniority: 'P3',
   description: 'Builds backend services',
   requirementCount: 2,
 }
@@ -72,14 +71,15 @@ describe('TargetRoleBrowsePanel', () => {
     render(<TargetRoleBrowsePanel />)
 
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: ' java ' } })
-    fireEvent.change(screen.getByRole('combobox', { name: /seniority/i }), { target: { value: 'P3' } })
+    expect(screen.queryByRole('combobox', { name: /seniority/i })).toBeNull()
+    fireEvent.change(screen.getByRole('combobox', { name: /status/i }), { target: { value: 'Active' } })
     act(() => vi.advanceTimersByTime(300))
 
-    expect(useTargetRoles).toHaveBeenLastCalledWith({ search: 'java', seniority: 'P3' })
+    expect(useTargetRoles).toHaveBeenLastCalledWith({ search: 'java' })
     expect(screen.getByText('No matching roles')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
-    expect(useTargetRoles).toHaveBeenLastCalledWith({ search: '', seniority: null })
+    expect(useTargetRoles).toHaveBeenLastCalledWith({ search: '' })
   })
 
   it('shows organization guidance when the permitted catalog is empty', () => {

@@ -24,7 +24,8 @@ function Protected({ path, children }: { path: string; children: ReactNode }) {
   const permitted = platform ? roles.includes('PLATFORM_ADMINISTRATOR') : path.startsWith('/admin') ? roles.includes('ORGANIZATION_ADMINISTRATOR') :
     path.startsWith('/employee') ? roles.includes('EMPLOYEE') : path.startsWith('/expert') ? roles.includes('DOMAIN_EXPERT') :
       /^\/(ld-manager|manager)/.test(path) ? roles.includes('LD_MANAGER') : true
-  const access = useQuery({ queryKey: ['workspace-entitlement', identity.data?.accountId, identity.data?.organizationId, path],
+  const accessScope = path === '/ld-manager/approvals' ? '/ld-manager/modules' : path
+  const access = useQuery({ queryKey: ['workspace-entitlement', identity.data?.accountId, identity.data?.organizationId, accessScope],
     queryFn: () => request('/api/v1/subscription/access'), enabled: authenticated && permitted && !billing && !platform && !users,
     staleTime: 0, refetchInterval: 5000 })
   const memberAccess = useQuery({ queryKey: ['subscription-summary', identity.data?.accountId, identity.data?.organizationId],

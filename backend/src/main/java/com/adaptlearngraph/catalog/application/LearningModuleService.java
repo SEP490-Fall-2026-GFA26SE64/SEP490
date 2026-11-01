@@ -27,11 +27,11 @@ public class LearningModuleService implements ManageLearningModuleUseCase {
 
     @Override
     public LearningModuleRecord saveModule(String organizationId, LearningModuleRecord module) {
-        return repository.save(organizationId, module);
+        throw new UnsupportedOperationException("Use /api/v1/module-management for scoped, reviewed revisions");
     }
 
     @Override
     public void deleteModule(String organizationId, String id) {
-        repository.delete(organizationId, id);
+        throw new UnsupportedOperationException("Use /api/v1/module-management for scoped archive or draft deletion");
     }
 }

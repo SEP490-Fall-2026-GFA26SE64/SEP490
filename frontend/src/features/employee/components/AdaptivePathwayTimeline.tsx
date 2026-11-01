@@ -1,3 +1,5 @@
+import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
+import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
 import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
 import * as React from 'react'
 import type { PathwayView } from '../../../shared/api/initialPathway'
@@ -164,8 +166,8 @@ const SKILL_PATHWAY: PathwayStep[] = [
   },
 ]
 
-export function AdaptivePathwayTimeline({ pathway, search = '' }: { pathway?: PathwayView; search?: string } = {}) {
-  return pathway ? <ApprovedPathwayTimeline pathway={pathway} search={search} /> : <LegacyAdaptivePathwayTimeline />
+export function AdaptivePathwayTimeline({ assigned, pathway, search = '' }: { assigned?: AssignedPathwayViewProps; pathway?: PathwayView; search?: string } = {}) {
+  return assigned ? <AssignedPathwayPresentation {...assigned} mode="timeline" /> : pathway ? <ApprovedPathwayTimeline pathway={pathway} search={search} /> : <LegacyAdaptivePathwayTimeline />
 }
 function ApprovedPathwayTimeline({ pathway, search }: { pathway: PathwayView; search: string }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key)

@@ -26,5 +26,10 @@ export function useLocalDemoSession() {
     window.location.assign(destination)
     return true
   }
-  return { enabled, establish, choose }
+  async function signOut(): Promise<boolean> {
+    if (!enabled) return true
+    try { return (await fetch('/api/v1/local-baseline-demo/session', { method: 'DELETE', credentials: 'same-origin' })).ok }
+    catch { return false }
+  }
+  return { enabled, establish, choose, signOut }
 }

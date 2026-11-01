@@ -9,7 +9,6 @@ export const targetRoleQueryKeys = {
     'list',
     {
       search: filters.search?.trim() || null,
-      seniority: filters.seniority ?? null,
     },
   ] as const,
   detail: (roleId: string) => [...targetRoleQueryKeys.all, 'detail', roleId] as const,
@@ -18,7 +17,6 @@ export const targetRoleQueryKeys = {
 export function useTargetRoles(filters: TargetRoleFilters) {
   const normalizedFilters = {
     search: filters.search?.trim() || undefined,
-    seniority: filters.seniority ?? undefined,
   }
   return useQuery({
     queryKey: targetRoleQueryKeys.list(normalizedFilters),
