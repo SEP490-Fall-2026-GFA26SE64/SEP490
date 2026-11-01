@@ -340,6 +340,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/platform-admin/subscriptions',
         icon: <CreditCard size={15} />,
       },
+      { label: t('nav.learningUploadLimits', 'Learning upload limits'), href: '/platform-admin/learning-upload-settings', icon: <Sliders size={15} /> },
       {
         label: t('nav.platformActivity', 'Platform Activity'),
         href: '/platform-admin/activity',
@@ -452,7 +453,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       return path === '/ld-manager/occupations' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
-      return path === '/ld-manager/approvals'
+      return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
     }
     if (itemHref === '/ld-manager/target-roles') {
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'

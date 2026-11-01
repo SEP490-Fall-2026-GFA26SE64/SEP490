@@ -21,6 +21,10 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/organizations/{organizationId}/modules")
 public class LearningModuleController {
+    @org.springframework.web.bind.annotation.ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<java.util.Map<String, String>> retiredWrite(UnsupportedOperationException error) {
+        return ResponseEntity.status(410).body(java.util.Map.of("message", error.getMessage()));
+    }
     private final ManageLearningModuleUseCase manageLearningModuleUseCase;
 
     public LearningModuleController(ManageLearningModuleUseCase manageLearningModuleUseCase) {

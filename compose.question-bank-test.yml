@@ -35,6 +35,7 @@ services:
       ISOLATED_QUESTION_BANK_TEST: 'true'
       SPRING_PROFILES_ACTIVE: local,workspace-baseline
       SPRING_FLYWAY_ENABLED: 'true'
+      PATHWAY_INITIAL_ENABLED: 'true'
       DB_URL: jdbc:postgresql://postgres:5432/question_bank_test
       DB_USER: question_bank_test
       DB_PASSWORD: question-bank-test-only

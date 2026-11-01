@@ -150,6 +150,7 @@ services:
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,workspace-baseline,workspace-development
+      WORKSPACE_MIGRATION_LOCATION: classpath:db/workspace-migration
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
       ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "false"
       PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: "false"

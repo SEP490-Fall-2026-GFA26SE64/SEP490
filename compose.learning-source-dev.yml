@@ -1,0 +1,18 @@
+# Optional local-only fallback when official MinIO image registries are unavailable.
+# Uses a binary built from the official tagged source; does not build a Docker image.
+services:
+  minio:
+    image: adapt-learn-graph-backend:dev
+    user: "0:0"
+    entrypoint: [/opt/minio]
+    command: [server, /data]
+    mem_limit: 320m
+    environment:
+      GOMAXPROCS: 2
+      GOMEMLIMIT: 256MiB
+      MINIO_BROWSER: off
+      MINIO_ROOT_USER: ${DEV_LEARNING_MINIO_USER:?Private dev settings required}
+      MINIO_ROOT_PASSWORD: ${DEV_LEARNING_MINIO_PASSWORD:?Private dev settings required}
+    volumes:
+      - ./local/dev-accounts/minio-build/minio:/opt/minio:ro
+      - accounts_learning_assets:/data

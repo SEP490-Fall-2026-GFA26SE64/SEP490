@@ -6,16 +6,16 @@ System initializes each assessed skill from finalized adaptive-baseline theta/SE
 ## Historical Specification
 Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
 
-**Function ID:** REQ-041-F01  
-**Actor:** Automated system  
-**Status:** Pending clarification  
+**Function ID:** REQ-041-F01
+**Actor:** Automated system
+**Status:** Pending clarification
 **Feature:** [Competency Profiling and Gap Analysis](README.md)
 
 ## Description
 
 Derive and update an employee's skill state using assessment evidence and question-to-skill mappings. Module viewing alone is not evidence of mastery.
 
-**Input:** Valid scored attempts, applicable mappings, and previous skill state.  
+**Input:** Valid scored attempts, applicable mappings, and previous skill state.
 **Outcome:** Updated competency evidence/state for the employee.
 
 ## Open Decisions

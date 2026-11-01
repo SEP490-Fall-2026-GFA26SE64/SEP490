@@ -45,7 +45,7 @@ function Pathway({ scope }: { scope: string }) {
         </div>
         <div className="flex max-w-full flex-wrap items-center gap-2"><TabsList className="h-auto w-auto max-w-full flex-wrap"><TabsTrigger value="roadmap" className="gap-1.5"><GitFork className="size-4 text-primary" />{t('pathway.interactiveRoadmap')}</TabsTrigger><TabsTrigger value="timeline" className="gap-1.5"><ListOrdered className="size-4 text-primary" />{t('pathway.adaptiveTimeline')}</TabsTrigger></TabsList><Button variant="ghost" size="icon" title={tr('refresh')} aria-label={tr('refresh')} disabled={path.isFetching} onClick={() => void path.refetch()}><RefreshCw className="size-4" /></Button></div>
       </div>
-      {!status && <EmptyState title={tr('empty')} action={<Link to="/employee/upskilling?tab=roles" className={buttonVariants({ variant: 'secondary' })}>{tr('roles')}</Link>} />}
+      {!status && <EmptyState data-testid="empty-initial-pathway" title={tr('empty')} action={<Link to="/employee/upskilling?tab=roles" className={buttonVariants({ variant: 'secondary' })}>{tr('roles')}</Link>} />}
       {status && status.displayState !== 'APPROVED' && !data.archived && <Card><CardContent className="p-4"><Text role="status">{status.displayState === 'NO_LEARNING_REQUIRED' ? tr('noLearningHelp') : ['BLOCKED', 'UNRESOLVED', 'STALE'].includes(status.displayState) ? tr(status.reasonCode === 'SEARCH_LIMIT' ? 'searchLimitNote' : status.displayState === 'STALE' ? 'stale' : 'setup') : tr('state.' + status.displayState)}</Text></CardContent></Card>}
       {data.modules.length > 0 && <>
         <Card><CardContent className="flex min-w-0 flex-wrap items-center justify-between gap-3 p-3 sm:p-4"><div className="flex min-w-0 flex-wrap items-center gap-2" title={ui('snapshotHelp')}>

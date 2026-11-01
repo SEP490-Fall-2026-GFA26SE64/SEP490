@@ -1,3 +1,6 @@
+import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
+import { LearningUploadSettingsPage } from '../features/platform-admin/LearningUploadSettingsPage'
+import { LearningModuleReaderPage } from '../features/employee/modules/LearningModuleReaderPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AdminDashboardPage } from '../features/administration/dashboard/AdminDashboardPage'
@@ -10,7 +13,6 @@ import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
 import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
 import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
-import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { EmployeeTargetRolesPage, EmployeeUpskillingPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { AdaptiveBaselineRoute } from '../features/manager/baseline-assessments/AdaptiveBaselinePage'
@@ -41,7 +43,7 @@ import { PlatformActivityMonitoringPage } from '../features/platform-admin/Platf
 import { DepartmentsManagementPage } from '../features/administration/departments/DepartmentsManagementPage'
 import { OrganizationSettingsPage } from '../features/administration/settings/OrganizationSettingsPage'
 import { OrganizationSubscriptionPage } from '../features/administration/subscription/OrganizationSubscriptionPage'
-import { LearningModuleReaderPage } from '../features/employee/modules/LearningModuleReaderPage'
+import { ModuleManagementWorkspace } from '../features/expert/modules/ModuleManagementWorkspace'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
@@ -132,6 +134,8 @@ export default function App() {
             <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
+            <Route path="/ld-manager/modules" element={<ModuleManagementWorkspace />} />
+            <Route path="/ld-manager/learning-content" element={<ModuleManagementWorkspace mode="content" />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
             <Route path="/ld-manager/dashboard" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />
@@ -146,10 +150,9 @@ export default function App() {
 
             {/* Redirects from old L&D Manager / Manager routes to new Expert and L&D locations */}
             <Route path="/ld-manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
-            <Route path="/ld-manager/modules" element={<Navigate to="/expert/modules" replace />} />
             <Route path="/manager/baseline-config" element={<Navigate to="/ld-manager/baseline-assessments" replace />} />
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
-            <Route path="/manager/modules" element={<Navigate to="/expert/modules" replace />} />
+            <Route path="/manager/modules" element={<Navigate to="/ld-manager/modules" replace />} />
             <Route path="/manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/manager/occupations" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
@@ -178,6 +181,7 @@ export default function App() {
             <Route path="/platform-admin" element={<Navigate to="/platform-admin/organizations" replace />} />
             <Route path="/platform-admin/organizations" element={<PlatformWorkspacePage />} />
             <Route path="/platform-admin/subscriptions" element={<PlatformSubscriptionsConfigPage />} />
+            <Route path="/platform-admin/learning-upload-settings" element={<LearningUploadSettingsPage />} />
             <Route path="/platform-admin/activity" element={<PlatformActivityMonitoringPage />} />
 
             {/* System Status route */}
