@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react'
 import type { CatalogModule } from '../../../shared/api/moduleAuthoringApi'
-import { Dialog, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Dialog, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 
-export function CatalogModuleDetails({ module, hasHistory, onClose }: { module: CatalogModule | null; hasHistory: boolean; onClose: () => void }) {
+export function CatalogModuleDetails({ module, hasHistory, onClose, actions }: { module: CatalogModule | null; hasHistory: boolean; onClose: () => void; actions?: ReactNode }) {
   const { language } = useTranslation()
   const copy = (en: string, vi: string) => language === 'vi' ? vi : en
   const labels: Record<string, string> = {
@@ -38,5 +39,6 @@ export function CatalogModuleDetails({ module, hasHistory, onClose }: { module: 
         {fields(Object.entries({ ...teaching.metadata, teachingFocus: teaching.teachingFocus, difficultyLevel: teaching.difficultyLevel }))}
       </section>)}
     </div>}
+    {actions && <DialogFooter>{actions}</DialogFooter>}
   </Dialog>
 }

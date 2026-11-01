@@ -606,3 +606,5 @@ The v0.11 catalog remains authoritative: six node types, seven relationship type
 TargetRole API/domain no longer exposes `domainCode` or role-wide `seniority`; actual Level definitions remain separate. No graph label/property/relationship, import or stored historical record is changed by this source merge. The V43 development-integration audit fields are PostgreSQL-owned; they add no graph schema. [Source contract and authorization](ARCHITECTURE.md#latest-main-source-alignment--2026-11-01).
 
 The subsequent authorized V43 API update retained the complete immediate pre-update graph (1030 nodes,5160 relationships), verified by exact node/relationship property and endpoint comparison after startup. No graph import, historical property cleanup or seed was performed; [current system receipt](testing/system/REQ-001-013-014-main-20261101.md).
+
+L&D catalog/approval separation (2026-11-01) adds no Neo4j fields or relationships. Pending selection uses PostgreSQL current Module workflow states; the catalog projection, lessons and historical review records are retained. [Runtime/read verification](testing/integration/REQ-013-ld-approval-queue.md).

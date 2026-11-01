@@ -18,7 +18,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | [FR-05.05](#fr-05-05) | API-backed module/content slice | The responsible Expert authors skill-mapped Modules and ordered Text/Video lessons through authenticated APIs; PostgreSQL owns versions/history and MinIO owns private assets. Excel/ZIP preview and atomic confirmation preserve ownership. | Vimeo live-provider acceptance and production delivery remain limited as recorded in dedicated evidence. |
 | [FR-05.08](#fr-05-08) | API-backed module/content slice | Owner-only submit/withdraw and L&D return/approval operate on exact persisted Module/content revisions; peers can inspect history. | This does not construct or submit a complete module assessment bundle. Question Bank has its own review workflow. |
 
-**Entry points:** `/expert/ontology`, `/expert/modules`, `/expert/assessment-bank`, `/ld-manager/modules`, `/ld-manager/learning-content`, `/ld-manager/approvals`.
+**Entry points:** `/expert/ontology`, `/expert/modules`, `/expert/assessment-bank`, `/ld-manager/modules`, `/ld-manager/approvals`.
 
 **Code references:** [ontology page](../../../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx), [micro-skill API](../../../backend/src/main/java/com/adaptlearngraph/competency/api/MicroSkillController.java), [prerequisite service](../../../backend/src/main/java/com/adaptlearngraph/competency/application/PrerequisiteService.java), [shared module workspace](../../../frontend/src/features/expert/modules/ModuleManagementWorkspace.tsx), [approval entry](../../../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). Module assessment authoring is separately described in [Assessment workflows](../Assessment%20workflows/README.md#current-implementation).
 
@@ -170,4 +170,26 @@ Expert Module Management retains import/authoring and removes the test assignmen
 
 ## Merge verification boundary — 2026-11-01
 
-The current router uses the shared API-backed workspace for Expert authoring and L&D modules/content/approvals. This supersedes prototype-only observations dated28 October above. [Current integration evidence](../../testing/integration/REQ-013-014-merge-resolution.md) and [deployment/manual checklist](../../testing/system/REQ-013-014-merge-resolution.md) distinguish verified stores, local8088 smoke checks and remaining full-browser acceptance. Existing IDs and unagreed requirements remain unchanged.
+The current router uses the shared API-backed workspace for Expert authoring and separate L&D module catalog/approval views. The retired standalone L&D content URL redirects to the module catalog; lessons remain inside module details/history. This supersedes prototype-only observations dated28 October above. [Current integration evidence](../../testing/integration/REQ-013-014-merge-resolution.md) and [deployment/manual checklist](../../testing/system/REQ-013-014-merge-resolution.md) distinguish verified stores, local8088 smoke checks and remaining full-browser acceptance. Existing IDs and unagreed requirements remain unchanged.
+
+### Module workspace navigation — 2026-11-01
+
+Expert Modules has no local Modules/Content Studio navigation or copy-existing-content selector. Create and Import actions sit in the page header with the same compact Plus/Upload button treatment as Target Roles; Import opens the existing Excel/ZIP upload, template, preview and confirmation flow in a shared dialog; no inline import section is displayed. Closing an idle dialog discards only its unconfirmed preview. Dismissal is blocked during upload or import confirmation. The Expert composes Text/Video lessons within the module editor; opening existing modules retains their saved lessons. The import template link uses the existing download endpoint with a highlighted, accessible icon treatment.
+
+L&D uses **Modules** for catalog lookup, lessons/history and responsible Expert information. Eligible unmanaged catalog modules offer intake assignment inside View module details. **Approvals** lists only submitted revisions, archive requests and publication/archive actions awaiting retry; filtering and totals are calculated before pagination. Approval/return/retry buttons appear only in this queue. The old intake-permission panel and standalone Learning content navigation are removed; the legacy content URL redirects to Modules. Module/content records, assets, version history and the existing owner/review rules remain intact. [Verification and manual checklist](../../testing/system/REQ-013-ld-approval-queue.md).
+
+Module statistics reuse the Target Roles gradient StatCard treatment, with contextual icons, semantic value colors and concise English/Vietnamese descriptions. Matching modules, available content and available skills retain their existing API-backed counts and filters.
+
+L&D Modules/Approvals navigation uses shared button styling inside a bordered card surface. The current section has a solid primary fill and `aria-current="page"`; the other section has a soft tint. Decorative icons distinguish catalog from review. Existing routes, pagination reset and permissions are unchanged.
+
+L&D navigation text uses medium weight, primary-foreground on the active button and muted-foreground on the inactive button. Pending actions counts submitted reviews, archive requests and pending publication/archive processing; it is not the catalog module total.
+
+Module workspace loading exposes a screen-reader-only status without a visual placeholder or progress bar. Navigation, pagination and dropdown filters request fresh data immediately; only search text is debounced180ms. L&D catalog/approval reads omit the unused content payload and fetch Expert choices in parallel with other reference data. No response cache is introduced; existing abort/error handling is retained.
+
+L&D Modules and Approvals routes render the same ModuleManagementWorkspace component with different mode props. Switching between them preserves the mounted session state rather than remounting through a separate page wrapper. List data is still re-requested for the selected mode; server-side identity and authorization remain unchanged. Leaving/re-entering the workspace still initializes its session normally.
+
+Both L&D module routes share a persistent parent route and the same workspace-entitlement query scope (account/organization scoped). Existing15-second identity and5-second entitlement polling, logout cache clearing, server request authorization and failure screens remain in place. Switching these two sections no longer unmounts the workspace while a new path-keyed access query starts. Other routes retain their existing scope.
+
+Module cards group View module first in the same wrapping action row as Details & history and available Edit/request/review actions. Button handlers and ownership/role eligibility are unchanged.
+
+Module status labels reuse shared Badge variants: Approved/Active/Released use success; submitted/review/publication/archive-pending and intake use warning; Rejected/Returned use destructive; Draft uses secondary; Archived/unknown remain neutral outline. Labels retain text and align at their natural height. Status data, decisions and action buttons are unchanged.

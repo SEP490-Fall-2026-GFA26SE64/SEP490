@@ -37,7 +37,7 @@ public class ModuleAuthoringController {
     @GetMapping("/modules") public Page list(@RequestParam(defaultValue="") String search,
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
             @RequestParam(defaultValue="") String type, @RequestParam(defaultValue="") String skill,
-            @RequestParam(defaultValue="1") int page) { return service.list(search, status, review, type, skill, page); }
+            @RequestParam(defaultValue="1") int page, @RequestParam(defaultValue="false") boolean pendingOnly) { return service.list(search, status, review, type, skill, page, pendingOnly); }
     @GetMapping("/modules/{id}") public Document detail(@PathVariable String id) { return service.detail(id); }
     @GetMapping("/module-list") public CatalogPage catalogList(@RequestParam(defaultValue="") String search,
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,

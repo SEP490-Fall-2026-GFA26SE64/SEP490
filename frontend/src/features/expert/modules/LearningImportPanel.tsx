@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Download } from 'lucide-react'
+import { cn } from '../../../shared/lib/utils'
 import {
   moduleRequest,
   uploadLearningFile,
   type ImportPreview,
 } from '../../../shared/api/moduleAuthoringApi'
-import { Button } from '../../../shared/components/ui/Button'
+import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Input } from '../../../shared/components/ui/Input'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { Heading } from '../../../shared/components/typography/Heading'
@@ -18,13 +20,21 @@ import { LessonVideo } from '../../../shared/components/learning/LessonVideo'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 export function LearningImportPanel({
   onImported,
+  showHeading = true,
+  onBusyChange,
 }: {
   onImported: () => void
+  showHeading?: boolean
+  onBusyChange?: (busy: boolean) => void
 }) {
   const { language } = useTranslation()
   const vi = language === 'vi'
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    onBusyChange?.(busy)
+    return () => onBusyChange?.(false)
+  }, [busy, onBusyChange])
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [confirm, setConfirm] = useState(false)
@@ -48,21 +58,27 @@ export function LearningImportPanel({
   return (
     <Card>
       <CardContent className="space-y-3 pt-4">
-        <Heading level={2} size="card">
+        {showHeading && <Heading level={2} size="card">
           {vi ? 'Import module và bài học' : 'Import modules and lessons'}
-        </Heading>
+        </Heading>}
         <p className="text-sm text-muted-foreground">
           {vi
             ? 'Dùng Excel theo mẫu, hoặc ZIP chứa modules.xlsx và tài nguyên. Kiểm tra toàn bộ trước khi xác nhận.'
             : 'Use the Excel template, or a ZIP containing modules.xlsx and assets. Review the entire batch before confirming.'}
         </p>
         <a
-          className="text-primary underline"
+          className={cn(
+            buttonVariants({ variant: 'secondary' }),
+            'h-auto min-h-10 w-full justify-start gap-2 whitespace-normal border border-primary/25 text-left font-semibold text-primary hover:bg-secondary-hover sm:w-fit',
+          )}
           href="/api/v1/module-management/imports/template"
         >
-          {vi
-            ? 'Tải mẫu Excel và hướng dẫn'
-            : 'Download Excel template and instructions'}
+          <Download className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span>
+            {vi
+              ? 'Tải mẫu Excel và hướng dẫn'
+              : 'Download Excel template and instructions'}
+          </span>
         </a>
         <Input
           type="file"

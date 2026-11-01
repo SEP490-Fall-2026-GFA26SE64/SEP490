@@ -165,3 +165,9 @@ These anchors preserve existing references, not additional functional requiremen
 | <a id="req-067-f01"></a>REQ-067-F01 | [FR-07.05](#fr-07-05) |
 | <a id="req-067-f02"></a>REQ-067-F02 | [FR-07.05](#fr-07-05) |
 | <a id="req-067-f03"></a>REQ-067-F03 | [FR-07.05](#fr-07-05) |
+
+Question Bank header alignment (2026-11-01): existing authorized Expert Create/Import actions use the compact primary-orange/soft-orange buttons and Plus/Upload icons from Target Roles. Existing dialogs, validation, skills eligibility and L&D review-only boundaries are unchanged. [UI checks](../../testing/system/REQ-013-014-header-actions.md).
+
+Question Bank statistics reuse the Target Roles gradient StatCard treatment, with semantic icons/value colors and concise English/Vietnamese descriptions. Total Bank Items, Published Questions, Awaiting review and Micro-Skills Assessed retain their existing calculations and organization scope.
+
+Question Bank list rows place state, version/difficulty and any pending availability request together at the right end of the question-code header. The code stays left; badges wrap right-aligned on narrow screens. Prompt, responsible Expert and actions remain below. Existing shared Badge colors, values, filtering and action permissions are unchanged.

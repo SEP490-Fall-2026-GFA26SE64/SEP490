@@ -24,7 +24,6 @@ import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertA
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
 import { ExpertPathwayDetailPage } from '../features/expert/pathway-review/ExpertPathwayDetailPage'
 import { OccupationsManagementPage } from '../features/manager/occupations/OccupationsManagementPage'
-import { ContentApprovalQueuePage } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { Dashboard } from '../features/manager/learning-outcomes/Dashboard'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
@@ -43,7 +42,7 @@ import { PlatformActivityMonitoringPage } from '../features/platform-admin/Platf
 import { DepartmentsManagementPage } from '../features/administration/departments/DepartmentsManagementPage'
 import { OrganizationSettingsPage } from '../features/administration/settings/OrganizationSettingsPage'
 import { OrganizationSubscriptionPage } from '../features/administration/subscription/OrganizationSubscriptionPage'
-import { ModuleManagementWorkspace } from '../features/expert/modules/ModuleManagementWorkspace'
+import { LdModuleWorkspaceRoute } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
@@ -133,9 +132,11 @@ export default function App() {
             <Route path="/ld-manager/occupations" element={<OccupationsManagementPage />} />
             <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/occupations" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
-            <Route path="/ld-manager/approvals" element={<ContentApprovalQueuePage />} />
-            <Route path="/ld-manager/modules" element={<ModuleManagementWorkspace />} />
-            <Route path="/ld-manager/learning-content" element={<ModuleManagementWorkspace mode="content" />} />
+            <Route element={<LdModuleWorkspaceRoute />}>
+              <Route path="/ld-manager/approvals" />
+              <Route path="/ld-manager/modules" />
+            </Route>
+            <Route path="/ld-manager/learning-content" element={<Navigate to="/ld-manager/modules" replace />} />
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
             <Route path="/ld-manager/dashboard" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />

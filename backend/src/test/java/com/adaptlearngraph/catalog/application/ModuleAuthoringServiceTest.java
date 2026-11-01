@@ -260,4 +260,30 @@ class ModuleAuthoringServiceTest {
         when(port.referenced(any())).thenReturn(true);
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.delete(draft.id(), draft.lockVersion()));
     }
+    @Test void pendingQueueFiltersWorkflowBeforePaginationAndKeepsCatalogUnchanged() {
+        Document base = service.create(input("Queue fixture"));
+        documents.clear();
+        List<String> states = new ArrayList<>(Collections.nCopies(9, "SUBMITTED"));
+        states.addAll(List.of("ARCHIVE_REQUESTED", "PUBLISH_PENDING", "ARCHIVE_PENDING", "DRAFT", "RETURNED", "RELEASED", "ARCHIVED"));
+        for (int i = 0; i < states.size(); i++) {
+            String id = String.format("module-%02d", i);
+            Revision revision = new Revision(1, states.get(i), base.current().payload(), "expert-a", base.createdAt(), null, null, null);
+            documents.put(id, new Document(id, "org", List.of("occ"), "expert-a", base.createdAt(), 1, false, false, null, List.of(revision), List.of()));
+        }
+        manager();
+        Page first = service.list("", "", "", "", "", 1, true);
+        Page second = service.list("", "", "", "", "", 2, true);
+        assertEquals(12, first.total()); assertEquals(10, first.items().size());
+        assertEquals(12, second.total()); assertEquals(2, second.items().size());
+        assertEquals(Set.of("ARCHIVE_REQUESTED", "PUBLISH_PENDING", "ARCHIVE_PENDING"),
+                java.util.stream.Stream.concat(first.items().stream(), second.items().stream()).map(d -> d.current().state()).filter(v -> !v.equals("SUBMITTED")).collect(java.util.stream.Collectors.toSet()));
+        assertEquals(16, service.list("", "", "", "", "", 1).total());
+        assertEquals(1, service.list("module-11", "", "", "", "", 1, true).total());
+        assertEquals(0, service.list("module-12", "", "", "", "", 1, true).total());
+    }
+    @Test void pendingQueueRequiresManagerEvenWhenExpertCanReadCatalog() {
+        assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class,
+                () -> service.list("", "", "", "", "", 1, true)).status());
+    }
+
 }

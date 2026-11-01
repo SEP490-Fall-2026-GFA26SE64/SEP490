@@ -4,12 +4,13 @@ import { LearningLessonsEditor } from '../../../shared/components/learning/Learn
 import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
 import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { BookOpen, ClipboardCheck, FileText, Layers, Plus, Upload } from 'lucide-react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
-import { Button } from '../../../shared/components/ui/Button'
-import { Badge } from '../../../shared/components/ui/Badge'
+import { Button, buttonVariants } from '../../../shared/components/ui/Button'
+import { Badge, type BadgeProps } from '../../../shared/components/ui/Badge'
 import { Input } from '../../../shared/components/ui/Input'
 import { Dialog, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { Pagination } from '../../../shared/components/ui/Pagination'
@@ -18,7 +19,7 @@ import { FormField as Field } from '../../../shared/components/ui/FormField'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave, type OccupationGrant, type TeachingInput } from '../../../shared/api/moduleAuthoringApi'
+import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave, type TeachingInput } from '../../../shared/api/moduleAuthoringApi'
 
 import { CatalogModuleDetails } from './CatalogModuleDetails'
 
@@ -26,6 +27,12 @@ type Mode = 'modules' | 'content' | 'approvals' | 'learning'
 const control = 'min-h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-[length:var(--text-body-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
 const latest = (doc: ModuleDocument) => doc.revisions[doc.revisions.length - 1]
 const initialForm = (): ModuleSave => ({ title: '', moduleType: 'LESSON_AND_PRACTICE', contentId: '', duration: 1, price: 1, teachings: [] })
+const statusVariant = (state: string | null | undefined): BadgeProps['variant'] => {
+  if (['APPROVED', 'ACTIVE', 'RELEASED'].includes(state ?? '')) return 'success'
+  if (['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state ?? '')) return 'warning'
+  if (['REJECTED', 'RETURNED'].includes(state ?? '')) return 'destructive'
+  return state === 'DRAFT' ? 'secondary' : 'outline'
+}
 const errorText = (error: unknown) => error instanceof Error ? error.message : 'Unable to complete the request.'
 
 export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode }) {
@@ -39,6 +46,8 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
   const [sessionAttempt, setSessionAttempt] = useState(0)
   const [busy, setBusy] = useState(false)
   const [contentBusy, setContentBusy] = useState(false)
+  const [moduleImportOpen, setModuleImportOpen] = useState(false)
+  const [moduleImportBusy, setModuleImportBusy] = useState(false)
   const mutation = useRef(false)
   const [loading, setLoading] = useState(false)
   const [catalogReady, setCatalogReady] = useState(false)
@@ -54,11 +63,14 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
   const [pageNumber, setPageNumber] = useState(1)
   const [filters, setFilters] = useState({ search: searchParams.get('search') ?? '', status: '', review: '', type: '', skill: '' })
   useEffect(() => { const query = searchParams.get('search'); if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) } }, [searchParams])
+  const [search, setSearch] = useState(filters.search)
+  useEffect(() => {
+    const timeout = setTimeout(() => setSearch(filters.search), 180)
+    return () => clearTimeout(timeout)
+  }, [filters.search])
   const [occupations, setOccupations] = useState<CatalogChoice[]>([])
   const [skills, setSkills] = useState<CatalogChoice[]>([])
   const [contents, setContents] = useState<ModuleContent[]>([])
-  const [grants, setGrants] = useState<OccupationGrant[]>([])
-  const [grantForm, setGrantForm] = useState({ expertId: '', occupationId: '' })
   const [experts, setExperts] = useState<CatalogChoice[]>([])
   const [selected, setSelected] = useState<ModuleDocument | null>(null)
   const [conflict, setConflict] = useState<ModuleDocument | null>(null)
@@ -107,31 +119,30 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
       if (mode === 'learning') {
         setLearning(await moduleRequest<ModuleRevision>(`/learning/${encodeURIComponent(moduleId ?? '')}`, 'GET', undefined, signal))
       } else {
-        const query = new URLSearchParams({ ...filters, page: String(pageNumber) })
+        const query = new URLSearchParams({ search, status: filters.status, review: filters.review, type: filters.type, skill: filters.skill, page: String(pageNumber) })
+        if (mode === 'approvals') { query.set('pendingOnly', 'true'); query.set('status', ''); query.set('review', '') }
         const listRequest = mode === 'modules'
           ? moduleRequest<ModuleCatalogPage>(`/module-list?${query}`, 'GET', undefined, signal).then(setCatalogPage)
           : mode === 'content' ? Promise.resolve() : moduleRequest<ModulePage>(`/modules?${query}`, 'GET', undefined, signal).then(setPage)
-        const [, nextOccupations, nextSkills, nextContents, nextStaff] = await Promise.all([
+        const [, nextOccupations, nextSkills, nextContents, nextStaff, nextExperts] = await Promise.all([
           listRequest,
           moduleRequest<CatalogChoice[]>('/catalog/Occupation', 'GET', undefined, signal),
           moduleRequest<CatalogChoice[]>('/catalog/MicroSkill', 'GET', undefined, signal),
-          moduleRequest<ModuleContent[]>('/contents', 'GET', undefined, signal),
+          actor.roles.includes('LD_MANAGER') && mode !== 'content' ? Promise.resolve(null) : moduleRequest<ModuleContent[]>('/contents', 'GET', undefined, signal),
           moduleRequest<CatalogChoice[]>('/catalog/Staff', 'GET', undefined, signal),
+          actor.roles.includes('LD_MANAGER') ? moduleRequest<CatalogChoice[]>('/catalog/Expert', 'GET', undefined, signal) : Promise.resolve([]),
         ])
-        setOccupations(nextOccupations); setSkills(nextSkills); setContents(nextContents); setStaff(Array.isArray(nextStaff) ? nextStaff : []); setCatalogReady(true)
-        if (actor.roles.includes('LD_MANAGER')) {
-          setExperts(await moduleRequest<CatalogChoice[]>('/catalog/Expert', 'GET', undefined, signal))
-          if (mode === 'approvals') setGrants(await moduleRequest<OccupationGrant[]>('/grants', 'GET', undefined, signal))
-        }
+        setOccupations(nextOccupations); setSkills(nextSkills); if (nextContents) setContents(nextContents); setStaff(Array.isArray(nextStaff) ? nextStaff : []); setCatalogReady(true)
+        setExperts(nextExperts)
       }
     } catch (failure) { if (!signal?.aborted) setError(errorText(failure)) }
     finally { if (!signal?.aborted) setLoading(false) }
-  }, [actor, mode, moduleId, filters, pageNumber])
+  }, [actor, mode, moduleId, search, filters.status, filters.review, filters.type, filters.skill, pageNumber])
 
   useEffect(() => {
     const controller = new AbortController()
-    const timeout = setTimeout(() => { void load(controller.signal) }, 180)
-    return () => { clearTimeout(timeout); controller.abort() }
+    void load(controller.signal)
+    return () => controller.abort()
   }, [load])
 
   async function run(work: () => Promise<void>) {
@@ -186,29 +197,32 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
       if (state === 'ARCHIVED') actions.push('restore')
       if (!doc.intake && !doc.everReleased && state === 'DRAFT') actions.push('delete')
     }
-    if (manager) {
+    if (manager && mode === 'approvals') {
       if (state === 'SUBMITTED') actions.push('approve', 'return')
       if (state === 'ARCHIVE_REQUESTED') actions.push('approve-archive', 'return')
       if (['PUBLISH_PENDING', 'ARCHIVE_PENDING'].includes(state)) actions.push('retry')
     }
-    return <div className="flex flex-wrap gap-2">
+    return <>
       <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })}>{copy('Details & history', 'Chi tiết và lịch sử')}</Button>
       {canManage(doc) && ['DRAFT', 'RETURNED', 'RELEASED'].includes(state) && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => openEditor(doc)}>{copy('Edit', 'Chỉnh sửa')}</Button>}
       {actions.map(action => <Button variant="outline" size="sm" disabled={busy || contentBusy} key={action} onClick={() => ask(doc, action)}>{actionLabels[action]}</Button>)}
-    </div>
+    </>
   }
   const scopeSelector = (value: string[], onChange: (values: string[]) => void, disabled = false) => <select multiple required className={control} disabled={disabled} value={value} onChange={e => onChange(Array.from(e.target.selectedOptions, option => option.value))}>
     {occupations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
   </select>
   const moduleHome = manager ? '/ld-manager/modules' : '/expert/modules'
-  const contentHome = manager ? '/ld-manager/learning-content' : '/expert/learning-content'
   const title = mode === 'content' ? manager ? copy('Learning content', 'Nội dung học tập') : copy('Content Studio', 'Biên soạn nội dung') : mode === 'approvals' ? copy('Learning approvals', 'Duyệt gói học') : mode === 'learning' ? copy('Module lessons', 'Nội dung bài học') : copy('Learning modules', 'Quản lý module học')
 
   const displayedPage = mode === 'modules' ? catalogPage : page
   const listItems: ModuleCatalogItem[] = mode === 'modules' ? catalogPage.items : page.items.map(doc => ({ module: latest(doc).payload, authoring: doc }))
 
-  return <WorkspaceLayout><div className="space-y-5 text-[length:var(--text-body)] text-foreground">
-    <PageHeader title={title} description={manager ? copy('Review learning packages, inspect revisions and manage approval decisions.', 'Xem xét gói học, kiểm tra các phiên bản và quản lý quyết định duyệt.') : copy('Create focused learning packages and keep every revision easy to review.', 'Xây dựng gói học tập trung và theo dõi rõ ràng từng lần chỉnh sửa.')}
+  return <WorkspaceLayout><div className="relative space-y-5 text-[length:var(--text-body)] text-foreground">
+    <PageHeader title={title} description={manager ? mode === 'approvals' ? copy('Review submitted modules, archive requests and publication actions that need your attention.', 'Xem xét module gửi duyệt, yêu cầu lưu trữ và các tác vụ phát hành cần xử lý.') : copy('Browse modules, inspect their lessons and history, and view the responsible Expert.', 'Tra cứu module, xem bài học, lịch sử và Expert phụ trách.') : copy('Create focused learning packages and keep every revision easy to review.', 'Xây dựng gói học tập trung và theo dõi rõ ràng từng lần chỉnh sửa.')}
+      actions={expert && mode === 'modules' ? <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" leftIcon={<Upload className="h-4 w-4" aria-hidden="true" />} disabled={busy || contentBusy} aria-haspopup="dialog" onClick={() => setModuleImportOpen(true)} className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs">{copy('Import', 'Nhập file')}</Button>
+        <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" aria-hidden="true" />} disabled={busy || contentBusy || loading || !catalogReady} onClick={() => openEditor()} className="font-semibold shadow-2xs">{copy('Create module', 'Tạo module')}</Button>
+      </div> : undefined}
       />
     {error && <div role="alert" tabIndex={-1} data-module-error className="rounded-lg border border-destructive bg-card p-3 text-[length:var(--text-body-sm)] text-destructive">{error}{actor && <Button variant="outline" size="sm" className="ml-3" disabled={busy || contentBusy || loading} onClick={() => void load()}>{copy('Reload latest data', 'Tải dữ liệu mới nhất')}</Button>}</div>}
     {notice && <p role="status" className="text-[length:var(--text-body-sm)] text-success">{notice}</p>}
@@ -219,59 +233,58 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
         <Button variant="outline" onClick={() => { setSessionLoading(true); setError(''); setSessionAttempt(value => value + 1) }}>{copy('Retry', 'Thử lại')}</Button>
       </>}
     </CardContent></Card> : <>
-      {mode !== 'learning' && <nav className="flex flex-wrap gap-4 text-[length:var(--text-body-sm)] text-primary" aria-label={copy('Learning workspace', 'Không gian học tập')}>
-        <Link to={moduleHome}>{copy('Modules', 'Module')}</Link><Link to={contentHome}>{manager ? copy('Learning content', 'Nội dung học tập') : copy('Content Studio', 'Biên soạn nội dung')}</Link>
-        {manager && <Link to="/ld-manager/approvals">{copy('Approvals & assignments', 'Duyệt và phân công')}</Link>}
+      {manager && mode !== 'learning' && <nav className="flex w-fit max-w-full flex-wrap gap-2 rounded-xl border border-border bg-card p-2 shadow-sm" aria-label={copy('Learning workspace', 'Không gian học tập')}>
+        <Link to={moduleHome} aria-current={mode === 'modules' ? 'page' : undefined} className={buttonVariants({ variant: mode === 'modules' ? 'primary' : 'secondary', className: 'gap-2 font-medium' })} style={{ color: mode === 'modules' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} onClick={() => setPageNumber(1)}><BookOpen className="h-4 w-4" aria-hidden="true" />{copy('Modules', 'Danh mục module')}</Link>
+        <Link to="/ld-manager/approvals" aria-current={mode === 'approvals' ? 'page' : undefined} className={buttonVariants({ variant: mode === 'approvals' ? 'primary' : 'secondary', className: 'gap-2 font-medium' })} style={{ color: mode === 'approvals' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} onClick={() => setPageNumber(1)}><ClipboardCheck className="h-4 w-4" aria-hidden="true" />{copy('Approvals', 'Chờ duyệt')}</Link>
       </nav>}
-      {loading ? <div role="status" aria-label={copy('Loading', 'Đang tải')} className="h-32 animate-pulse rounded-xl border border-border bg-muted" /> : null}
-      {expert && mode === 'modules' && <><details className="rounded-lg border border-border bg-card p-3"><summary className="cursor-pointer font-semibold">{copy('Import Excel / ZIP', 'Import Excel / ZIP')}</summary><div className="mt-3"><LearningImportPanel onImported={() => void load()} /></div></details></>}
+      {loading && <span role="status" className="sr-only">{copy('Loading', 'Đang tải')}</span>}
+      {expert && mode === 'modules' && <Dialog open={moduleImportOpen} onOpenChange={open => { if (!moduleImportBusy) setModuleImportOpen(open) }} className="max-w-3xl" ariaLabel={copy('Import modules', 'Nhập module')} closeLabel={copy('Close import', 'Đóng cửa sổ nhập')}>
+        <DialogHeader><DialogTitle>{copy('Import modules and lessons', 'Import module và bài học')}</DialogTitle></DialogHeader>
+        <div className="min-h-0 overflow-y-auto"><LearningImportPanel showHeading={false} onBusyChange={setModuleImportBusy} onImported={() => void load()} /></div>
+        <DialogFooter><Button variant="outline" disabled={moduleImportBusy} onClick={() => setModuleImportOpen(false)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
+      </Dialog>}
       {mode === 'learning' ? <Card><CardContent className="space-y-4 pt-6">
         {!learning ? <Button disabled={busy || contentBusy || loading} onClick={() => void run(async () => { setLearning(await moduleRequest<ModuleRevision>(`/learning/${encodeURIComponent(moduleId ?? '')}/start`, 'POST')) })}>{copy('Start learning', 'Bắt đầu học')}</Button>
           : <><Heading level={2}>{learning.payload.title}</Heading><Badge variant="outline">{copy('Revision', 'Phiên bản')} {learning.number}</Badge><ModuleMarkdown markdown={learning.payload.content.markdown} /></>}
       </CardContent></Card> : <>
-        {manager && mode === 'approvals' && <Card><CardContent className="space-y-4 pt-6">
-          <Heading level={2} size="subsection">{copy('Catalog intake permissions', 'Quyền tiếp nhận module từ danh mục')}</Heading>
-          <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{copy('Set permissions for designated Experts receiving existing catalog modules. These do not restrict new module creation.', 'Thiết lập quyền tiếp nhận module từ danh mục cho Expert được phân công. Quyền này không giới hạn việc tạo module mới.')}</p>
-          <form className="grid gap-3 sm:grid-cols-3" onSubmit={event => { event.preventDefault(); void run(async () => { await moduleRequest('/grants', 'PUT', { ...grantForm, active: true }); await load(); setNotice(copy('Intake permission saved.', 'Đã lưu quyền tiếp nhận.')) }) }}>
-            <Field label={copy('Expert account', 'Tài khoản chuyên gia')}><select required className={control} value={grantForm.expertId} onChange={e => setGrantForm({ ...grantForm, expertId: e.target.value })}><option value="">{copy('Select expert', 'Chọn chuyên gia')}</option>{experts.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></Field>
-            <Field label={copy('Occupation', 'Nghề')}><select required className={control} value={grantForm.occupationId} onChange={e => setGrantForm({ ...grantForm, occupationId: e.target.value })}><option value="">{copy('Select occupation', 'Chọn nghề')}</option>{occupations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select></Field>
-            <Button type="submit" disabled={busy || contentBusy} className="self-end">{copy('Allow intake', 'Cho phép tiếp nhận')}</Button>
-          </form>
-          {grants.map(g => <div key={`${g.expertId}:${g.occupationId}`} className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[length:var(--text-body-sm)]"><span>{person(g.expertId)} · {occupations.find(o => o.id === g.occupationId)?.name ?? g.occupationId}</span><Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => void run(async () => { await moduleRequest('/grants', 'PUT', { ...g, active: false }); await load() })}>{copy('Remove permission', 'Gỡ quyền')}</Button></div>)}
-        </CardContent></Card>}
         {mode === 'content' ? <>
           {expert && <Button disabled={busy || contentBusy || loading || !catalogReady} onClick={() => { setContentForm({ title: '', markdown: '', lessons: [newLesson('TEXT')] }); setContentOpen(true) }}>{copy('Create content', 'Tạo nội dung')}</Button>}
           {!loading && !contents.length && <Card><CardContent className="pt-6">{copy('No content yet. Create your first lesson after an occupation is assigned.', 'Chưa có nội dung. Hãy tạo bài học sau khi được phân công nghề.')}</CardContent></Card>}
           <div className="grid gap-4 md:grid-cols-2">{contents.map(content => <Card key={content.id}><CardContent className="space-y-3 pt-6"><Heading level={2} size="card" className="break-words">{content.title}</Heading><p className="text-[length:var(--text-body-sm)] text-muted-foreground">{copy('Created by', 'Người tạo')}: {content.createdBy ?? copy('Original creator unknown', 'Chưa xác định người tạo gốc')} · {!content.createdBy && <>{copy('Recorded at', 'Ghi nhận lúc')}: </>}{content.createdAt}</p><Button variant="outline" onClick={() => setPreview(content)}>{copy('Preview', 'Xem trước')}</Button></CardContent></Card>)}</div>
         </> : <>
-          <div className="grid gap-3 sm:grid-cols-3"><StatCard title={copy('Matching modules', 'Module phù hợp')} value={displayedPage.total} /><StatCard title={copy('Available content', 'Nội dung hiện có')} value={contents.length} /><StatCard title={copy('Available skills', 'Kỹ năng hiện có')} value={skills.length} /></div>
+          <div className={`grid grid-cols-1 gap-4 ${manager ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+            <StatCard variant="gradient" icon={<BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />} title={mode === 'approvals' ? copy('Pending actions', 'Yêu cầu cần xử lý') : copy('Matching modules', 'Module phù hợp')} value={displayedPage.total} valueClassName="text-primary" description={copy('Matching your current filters', 'Phù hợp với bộ lọc hiện tại')} />
+            {!manager && <StatCard variant="gradient" icon={<FileText className="h-4 w-4 text-success" aria-hidden="true" />} title={copy('Available content', 'Nội dung hiện có')} value={contents.length} valueClassName="text-success" description={copy('Learning content in your workspace', 'Nội dung học tập trong không gian làm việc')} />}
+            <StatCard variant="gradient" icon={<Layers className="h-4 w-4 text-warning" aria-hidden="true" />} title={copy('Available skills', 'Kỹ năng hiện có')} value={skills.length} valueClassName="text-warning" description={copy('Skills available for module authoring', 'Kỹ năng có thể chọn khi soạn module')} />
+          </div>
           <div className="flex flex-wrap items-end gap-3">
             <Field label={copy('Search name or ID', 'Tìm theo tên hoặc ID')}><Input value={filters.search} onChange={e => { setPageNumber(1); setFilters({ ...filters, search: e.target.value }) }} /></Field>
-            {(['status', 'review', 'type', 'skill'] as const).map(key => <Field key={key} label={key === 'status' ? copy('Lifecycle', 'Vòng đời') : key === 'review' ? copy('Review', 'Duyệt') : key === 'type' ? copy('Module type', 'Loại module') : copy('Skill', 'Kỹ năng')}><select className={control} value={filters[key]} onChange={e => { setPageNumber(1); setFilters({ ...filters, [key]: e.target.value }) }}><option value="">{copy('All', 'Tất cả')}</option>
+            {(mode === 'approvals' ? ['type', 'skill'] as const : ['status', 'review', 'type', 'skill'] as const).map(key => <Field key={key} label={key === 'status' ? copy('Lifecycle', 'Vòng đời') : key === 'review' ? copy('Review', 'Duyệt') : key === 'type' ? copy('Module type', 'Loại module') : copy('Skill', 'Kỹ năng')}><select className={control} value={filters[key]} onChange={e => { setPageNumber(1); setFilters({ ...filters, [key]: e.target.value }) }}><option value="">{copy('All', 'Tất cả')}</option>
               {(key === 'skill' ? skills.map(s => ({ value: s.id, label: s.name })) : (key === 'status' ? ['DRAFT', 'ACTIVE', 'ARCHIVED'] : key === 'review' ? ['NEEDS_EXPERT_REVIEW', 'APPROVED', 'REJECTED'] : ['LESSON_AND_PRACTICE', 'RESOURCE_GUIDED_PRACTICE']).map(value => ({ value, label: stateLabels[value] ?? value }))).map(option => <option value={option.value} key={option.value}>{option.label}</option>)}
             </select></Field>)}
-            {expert && <Button disabled={busy || contentBusy || loading || !catalogReady} onClick={() => openEditor()}>{copy('Create module', 'Tạo module')}</Button>}
           </div>
-          {!loading && !listItems.length && <Card><CardContent className="space-y-3 pt-6"><p>{copy('No modules match this view. Try changing your filters, or prepare content for a new module.', 'Chưa có module phù hợp. Hãy thử bộ lọc khác hoặc chuẩn bị nội dung cho module mới.')}</p>{expert && <Link className="text-primary underline" to="/expert/learning-content">{copy('Open Content Studio', 'Mở trình biên soạn nội dung')}</Link>}</CardContent></Card>}
+          {!loading && !listItems.length && <Card><CardContent className="space-y-3 pt-6"><p>{mode === 'approvals' ? copy('No requests need your attention. New submissions will appear here.', 'Chưa có yêu cầu cần xử lý. Các module được gửi duyệt sẽ xuất hiện tại đây.') : manager ? copy('No modules match your filters. Try another search.', 'Không có module phù hợp. Hãy thử tìm kiếm hoặc bộ lọc khác.') : copy('No modules match this view. Try changing your filters, or prepare content for a new module.', 'Chưa có module phù hợp. Hãy thử bộ lọc khác hoặc chuẩn bị nội dung cho module mới.')}</p></CardContent></Card>}
           {listItems.map(item => <Card key={item.module.metadata.id}><CardContent className="space-y-3 pt-5"><div className="flex flex-wrap justify-between gap-2"><div className="min-w-0"><Heading level={2} size="card" className="break-words">{item.module.title ?? item.module.metadata.id}</Heading><p className="break-all text-caption text-muted-foreground">{item.module.metadata.id}</p></div>
-            <div className="flex flex-wrap gap-2"><Badge variant="outline">{item.module.metadata.status ? stateLabels[item.module.metadata.status] ?? item.module.metadata.status : copy('Lifecycle not recorded', 'Chưa có vòng đời')}</Badge><Badge variant={item.module.metadata.reviewStatus === 'APPROVED' ? 'success' : 'outline'}>{item.module.metadata.reviewStatus ? stateLabels[item.module.metadata.reviewStatus] ?? item.module.metadata.reviewStatus : copy('Review not recorded', 'Chưa có thông tin duyệt')}</Badge>{!item.authoring && <Badge variant="outline">{item.intake ? copy('Awaiting Expert intake', 'Chờ Expert tiếp nhận') : copy('Not received', 'Chưa tiếp nhận')}</Badge>}{item.authoring && (!latest(item.authoring).payload.content.lessons?.length || latest(item.authoring).payload.content.lessons?.some(l => !l.title.trim() || !l.durationSeconds || l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim() || l.type === 'VIDEO' && !(l.assetId || l.videoUrl))) && <Badge variant="warning">{copy('Needs content', 'Cần bổ sung nội dung')}</Badge>}{item.authoring && <Badge variant="outline">{stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}</Badge>}</div></div>
+            <div className="flex flex-wrap items-start gap-2"><Badge variant={statusVariant(item.module.metadata.status)}>{item.module.metadata.status ? stateLabels[item.module.metadata.status] ?? item.module.metadata.status : copy('Lifecycle not recorded', 'Chưa có vòng đời')}</Badge><Badge variant={statusVariant(item.module.metadata.reviewStatus)}>{item.module.metadata.reviewStatus ? stateLabels[item.module.metadata.reviewStatus] ?? item.module.metadata.reviewStatus : copy('Review not recorded', 'Chưa có thông tin duyệt')}</Badge>{!item.authoring && <Badge variant="warning">{item.intake ? copy('Awaiting Expert intake', 'Chờ Expert tiếp nhận') : copy('Not received', 'Chưa tiếp nhận')}</Badge>}{item.authoring && (!latest(item.authoring).payload.content.lessons?.length || latest(item.authoring).payload.content.lessons?.some(l => !l.title.trim() || !l.durationSeconds || l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim() || l.type === 'VIDEO' && !(l.assetId || l.videoUrl))) && <Badge variant="warning">{copy('Needs content', 'Cần bổ sung nội dung')}</Badge>}{item.authoring && <Badge variant={statusVariant(latest(item.authoring).state)}>{stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}</Badge>}</div></div>
             <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{item.module.duration ?? '—'} {copy('minutes', 'phút')} · {item.module.price === null ? '—' : new Intl.NumberFormat(language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(item.module.price)} · {copy('Catalog version', 'Phiên bản danh mục')} {item.module.metadata.version ?? '—'}</p>
             {item.authoring && latest(item.authoring).payload.title !== item.module.title && <p className="break-words text-[length:var(--text-body-sm)]">{copy('Working revision', 'Phiên bản đang chỉnh sửa')}: {latest(item.authoring).payload.title}</p>}
-            <Button variant="outline" size="sm" onClick={() => setCatalogSelection(item)}>{copy('View module', 'Xem module')}</Button>
             {item.authoring && <div className="space-y-1 text-[length:var(--text-body-sm)] text-muted-foreground">
               <p>{copy('Created by / Responsible Expert', 'Người tạo / Expert phụ trách')}: {person(item.authoring.createdBy)}</p>
               <p>{copy('Last edited', 'Sửa gần nhất')}: {person(latest(item.authoring).editedBy)} · {formatTime(latest(item.authoring).editedAt)}</p>
               {latest(item.authoring).decidedBy && <p>{copy('Reviewed by', 'Người duyệt')}: {person(latest(item.authoring).decidedBy)} · {formatTime(latest(item.authoring).decidedAt)}</p>}
               {expert && !canManage(item.authoring) && <Badge variant="outline">{copy('View only', 'Chỉ xem')}</Badge>}
             </div>}
-            {item.authoring && controls(item.authoring)}
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCatalogSelection(item)}>{copy('View module', 'Xem module')}</Button>
+              {item.authoring && controls(item.authoring)}
+            </div>
             {!item.authoring && <div className="space-y-2">
               <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{item.intake ? copy('Waiting for an assigned Expert to receive this module.', 'Đang chờ chuyên gia được phân công tiếp nhận module.') : copy('Not received into the editing and approval workflow.', 'Chưa tiếp nhận vào quy trình chỉnh sửa và duyệt.')}</p>
               {item.intake && <p className="text-[length:var(--text-body-sm)]">{copy('Related occupations', 'Nghề liên quan')}: {item.intake.occupationIds.map(id => occupations.find(o => o.id === id)?.name ?? id).join(', ')}</p>}
-              {((manager && !item.intake?.acceptedBy) || (expert && item.intake?.expertId === actor?.id && !item.intake?.acceptedBy)) && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => { setIntakeSelection(item); setIntakeOccupations(item.intake?.occupationIds ?? []); setIntakeExpert(item.intake?.expertId ?? (experts.length === 1 ? experts[0].id : '')); setError('') }}>{manager ? item.intake ? copy('Update intake assignment', 'Cập nhật phân công tiếp nhận') : copy('Assign for intake', 'Phân công tiếp nhận') : copy('Receive for editing', 'Tiếp nhận chỉnh sửa')}</Button>}
+              {(expert && item.intake?.expertId === actor?.id && !item.intake?.acceptedBy) && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => { setIntakeSelection(item); setIntakeOccupations(item.intake?.occupationIds ?? []); setIntakeExpert(item.intake?.expertId ?? (experts.length === 1 ? experts[0].id : '')); setError('') }}>{manager ? item.intake ? copy('Update intake assignment', 'Cập nhật phân công tiếp nhận') : copy('Assign for intake', 'Phân công tiếp nhận') : copy('Receive for editing', 'Tiếp nhận chỉnh sửa')}</Button>}
             </div>}
           </CardContent></Card>)}
-          <Pagination currentPage={displayedPage.page} totalPages={Math.ceil(displayedPage.total / displayedPage.pageSize)} totalItems={displayedPage.total} pageSize={displayedPage.pageSize} onPageChange={setPageNumber} disabled={busy || contentBusy || loading} itemLabel={copy('modules', 'module')} labels={{ navigation: copy('Pagination', 'Phân trang'), first: copy('First page', 'Trang đầu'), previous: copy('Prev', 'Trước'), next: copy('Next', 'Tiếp'), last: copy('Last page', 'Trang cuối'), showing: copy('Showing', 'Hiển thị'), of: copy('of', 'trên') }} />
+          <Pagination className="max-w-full [&_nav]:max-w-full [&_nav]:flex-wrap [&_nav]:justify-center [&_nav>div]:flex-wrap [&_nav>div]:justify-center" currentPage={displayedPage.page} totalPages={Math.ceil(displayedPage.total / displayedPage.pageSize)} totalItems={displayedPage.total} pageSize={displayedPage.pageSize} onPageChange={setPageNumber} disabled={busy || contentBusy || loading} itemLabel={copy('modules', 'module')} labels={{ navigation: copy('Pagination', 'Phân trang'), first: copy('First page', 'Trang đầu'), previous: copy('Prev', 'Trước'), next: copy('Next', 'Tiếp'), last: copy('Last page', 'Trang cuối'), showing: copy('Showing', 'Hiển thị'), of: copy('of', 'trên') }} />
         </>}
       </>}
     </>}
@@ -294,7 +307,7 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
         <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => setIntakeSelection(null)}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || contentBusy}>{manager ? copy('Assign', 'Phân công') : copy('Receive module', 'Tiếp nhận module')}</Button></DialogFooter>
       </form>
     </Dialog>
-    <CatalogModuleDetails module={catalogSelection?.module ?? null} hasHistory={catalogSelection?.authoring !== null && catalogSelection !== null} onClose={() => setCatalogSelection(null)} />
+    <CatalogModuleDetails module={catalogSelection?.module ?? null} hasHistory={catalogSelection?.authoring !== null && catalogSelection !== null} onClose={() => setCatalogSelection(null)} actions={manager && catalogSelection && !catalogSelection.authoring && !catalogSelection.intake?.acceptedBy ? <Button disabled={busy || contentBusy} onClick={() => { const item = catalogSelection; setCatalogSelection(null); setIntakeSelection(item); setIntakeOccupations(item.intake?.occupationIds ?? []); setIntakeExpert(item.intake?.expertId ?? (experts.length === 1 ? experts[0].id : '')); setError('') }}>{catalogSelection.intake ? copy('Update intake assignment', 'Cập nhật phân công tiếp nhận') : copy('Assign for intake', 'Phân công tiếp nhận')}</Button> : undefined} />
     <Dialog open={editing} onOpenChange={open => { if (!busy && !contentBusy) { setEditing(open); if (!open) setSelected(null) } }} className="max-w-3xl" ariaLabel={copy('Module editor', 'Chỉnh sửa module')}>
       <DialogHeader><DialogTitle>{selected ? copy('Create a revised package', 'Chỉnh sửa gói học') : copy('Create module', 'Tạo module')}</DialogTitle></DialogHeader>
       <form className="space-y-4 overflow-y-auto px-1" onSubmit={event => { event.preventDefault(); void run(async () => {
@@ -316,7 +329,6 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
         </div>}
         <fieldset disabled={busy || contentBusy} className="space-y-4"><div className="grid gap-4 sm:grid-cols-2"><Field label={copy('Title', 'Tên module')}><Input required maxLength={240} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></Field>
           <Field label={copy('Module type', 'Loại module')}><select className={control} value={form.moduleType} onChange={e => setForm({ ...form, moduleType: e.target.value })}><option value="LESSON_AND_PRACTICE">{copy('Lesson and practice', 'Bài học và thực hành')}</option><option value="RESOURCE_GUIDED_PRACTICE">{copy('Resource-guided practice', 'Thực hành theo tài liệu')}</option></select></Field>
-          <Field label={copy('Copy lessons from existing content (optional)', 'Lấy bài học từ nội dung có sẵn (tùy chọn)')}><select className={control} value={form.contentId} onChange={e => { setForm({ ...form, contentId: e.target.value }); const content = contents.find(c => c.id === e.target.value); if (content) setModuleLessons(content.lessons ?? []) }}><option value="">{copy('Compose lessons below', 'Soạn bài học bên dưới')}</option>{contents.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}</select></Field>
           <Field label={copy('Duration (minutes)', 'Thời lượng (phút)')}><Input required type="number" min={1} step={1} value={form.duration} onChange={e => setForm({ ...form, duration: Number(e.target.value) })} /></Field>
           <Field label={copy('Package price (VND)', 'Giá gói học (VND)')}><Input required type="number" min={1} step={1} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></Field></div>
         <LearningLessonsEditor onBusyChange={setContentBusy} disabled={busy || contentBusy} lessons={moduleLessons} onChange={setModuleLessons} />

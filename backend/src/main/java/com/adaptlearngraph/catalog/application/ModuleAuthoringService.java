@@ -82,8 +82,14 @@ public final class ModuleAuthoringService {
         if (!actor.manager() && !port.occupations(actor).containsAll(occupations)) throw new Failure(403, "Cannot create membership outside assigned occupations");
     }
     public Page list(String search, String status, String review, String type, String skill, int page) {
-        Actor actor = staff(); String query = search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
+        return list(search, status, review, type, skill, page, false);
+    }
+    public Page list(String search, String status, String review, String type, String skill, int page, boolean pendingOnly) {
+        Actor actor = staff();
+        if (pendingOnly) manager(actor);
+        String query = search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
         List<Document> all = port.documents(actor.organizationId()).stream().filter(d -> visible(actor, d.occupationIds()))
+                .filter(d -> !pendingOnly || Set.of("SUBMITTED", "ARCHIVE_REQUESTED", "PUBLISH_PENDING", "ARCHIVE_PENDING").contains(d.current().state()))
                 .filter(d -> d.id().toLowerCase(Locale.ROOT).contains(query) || d.current().payload().title().toLowerCase(Locale.ROOT).contains(query))
                 .filter(d -> status == null || status.isBlank() || (d.current().state().equals("ARCHIVED") ? "ARCHIVED" : d.current().payload().metadata().status()).equals(status))
                 .filter(d -> review == null || review.isBlank() || d.current().payload().metadata().reviewStatus().equals(review))
