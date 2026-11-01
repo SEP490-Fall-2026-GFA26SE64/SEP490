@@ -14,6 +14,15 @@ import java.util.UUID;
 public interface AdaptiveAttemptPolicyPort {
     Policy load(VersionPins pins, Map<UUID, String> authorizedItemSkills);
 
+    default Policy load(com.adaptlearngraph.assessment.adaptive.attempt.domain.AdaptiveAttemptSnapshot snapshot) {
+        var base=load(snapshot.blueprint().pins(),snapshot.itemSkills());
+        if(snapshot.assessmentPolicy().isEmpty())return base;
+        var pin=snapshot.assessmentPolicy().orElseThrow();var v=base.versions();
+        var effective=new Versions(v.modelVersionId(),v.masteryMappingVersionId(),v.parameterSetId(),pin.values().apply(v.model()),
+                new com.adaptlearngraph.assessment.adaptive.psychometrics.AdaptiveIrtPolicy.Mapping(v.mapping().algorithm(),pin.values().k()));
+        return new Policy(effective,base.items());
+    }
+
     /** Items cover exactly the supplied identities/skills, in deterministic item UUID order. */
     record Policy(Versions versions, List<Item> items) {
         public Policy { items = List.copyOf(items); }

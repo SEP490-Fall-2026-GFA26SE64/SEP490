@@ -22,7 +22,7 @@ public final class AdaptiveAttemptFinalizationService implements AdaptiveAttempt
         AdaptiveItemSelector.Outcome decision;
         Instant observed;
         try {
-            var policy = policies.load(attempt.snapshot().blueprint().pins(), attempt.snapshot().itemSkills());
+            var policy = policies.load(attempt.snapshot());
             var positions = progress.items().stream().collect(Collectors.toMap(i -> i.position(), i -> i.itemVersionId()));
             var answers = progress.responses().stream().map(r -> new Irt3pl.Answer(positions.get(r.position()), r.correct())).toList();
             var selector = new AdaptiveItemSelector(policy.versions(), attempt.snapshot().microSkillIds(), policy.items(), attempt.snapshot().bounds().maxQuestions());

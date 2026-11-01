@@ -62,9 +62,11 @@ public final class JdbcAdaptiveAttemptStore extends JdbcAdaptiveAttemptState {
                 INSERT INTO platform.baseline_adaptive_attempt(attempt_id,organization_id,learner_id,occupation_id,attempt_purpose,
                     target_role_id,target_selection_revision,blueprint_id,blueprint_version,model_version_id,mastery_mapping_version_id,
                     parameter_set_id,catalog_fingerprint,max_questions,time_limit_seconds,state,revision,started_at,deadline_at,
-                    finished_at,completion_reason,replaces_attempt_id,scope_policy)
+                    finished_at,completion_reason,replaces_attempt_id,scope_policy,
+                    assessment_policy_mode,assessment_policy_version_id,assessment_policy_hash,assessment_policy_snapshot)
                 VALUES (:id,:org,:learner,:occupation,:purpose,:role,:selection,:blueprint,:version,:model,:mapping,
-                    :parameters,:fingerprint,:maximum,:duration,:state,:revision,:started,:deadline,:finished,:reason,:replaces,:policy)
+                    :parameters,:fingerprint,:maximum,:duration,:state,:revision,:started,:deadline,:finished,:reason,:replaces,:policy,
+                    :assessmentMode,:assessmentVersion,:assessmentHash,CAST(:assessmentSnapshot AS jsonb))
                 """, rows.parameters(attempt));
         initialize(attempt, skills, first);
     }

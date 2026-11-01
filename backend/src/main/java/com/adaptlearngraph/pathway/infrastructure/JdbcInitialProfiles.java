@@ -15,7 +15,8 @@ public final class JdbcInitialProfiles implements Profiles {
         var found=jdbc.query("""
                 SELECT p.*,a.state,a.model_version_id,a.mastery_mapping_version_id,a.parameter_set_id,
                     a.catalog_fingerprint AS attempt_fingerprint,a.blueprint_id AS attempt_blueprint,
-                    a.blueprint_version AS attempt_blueprint_version
+                    a.blueprint_version AS attempt_blueprint_version,
+                    a.assessment_policy_mode,a.assessment_policy_version_id,a.assessment_policy_hash,a.assessment_policy_snapshot
                 FROM platform.employee_occupation_profile p
                 LEFT JOIN platform.baseline_adaptive_attempt a ON a.attempt_id=p.attempt_id
                     AND a.organization_id=p.organization_id AND a.learner_id=p.learner_id AND a.occupation_id=p.occupation_id
@@ -27,6 +28,7 @@ public final class JdbcInitialProfiles implements Profiles {
                         || !rs.getObject("blueprint_id").equals(rs.getObject("attempt_blueprint"))
                         || rs.getInt("blueprint_version")!=rs.getInt("attempt_blueprint_version")) throw new Failure(503,"PROFILE_INTEGRITY_FAILURE");
                 UUID attempt=rs.getObject("attempt_id",UUID.class);
+                var policy=com.adaptlearngraph.assessment.adaptive.policy.infrastructure.AssessmentPolicyProvenance.read(rs,json,scope.organizationId());
                 var required=json.readTree(rs.getString("required_skills")); var mastery=json.readTree(rs.getString("mastery"));
                 if (!required.isArray() || required.isEmpty() || !mastery.isObject()) throw new Failure(503,"PROFILE_INTEGRITY_FAILURE");
                 Set<String> ids=new TreeSet<>();
@@ -34,19 +36,27 @@ public final class JdbcInitialProfiles implements Profiles {
                 if (ids.size()!=mastery.size()) throw new Failure(503,"PROFILE_INTEGRITY_FAILURE");
                 var evidence=new TreeMap<String,RoleGap.Evidence>();
                 jdbc.query("""
-                        SELECT micro_skill_id,mastery,confidence_label,mastery_mapping_version_id
-                        FROM platform.baseline_attempt_skill_result WHERE organization_id=:org AND attempt_id=:attempt
+                        SELECT s.micro_skill_id,s.mastery,s.confidence_label,s.mastery_mapping_version_id,s.policy_version_id,s.policy_hash,
+                               e.policy_version_id AS evidence_policy,e.policy_hash AS evidence_hash
+                        FROM platform.baseline_attempt_skill_result s JOIN platform.baseline_mastery_evidence e
+                          ON e.organization_id=s.organization_id AND e.attempt_id=s.attempt_id AND e.micro_skill_id=s.micro_skill_id
+                        WHERE s.organization_id=:org AND s.attempt_id=:attempt
                         """,Map.of("org",scope.organizationId(),"attempt",attempt),(row,i) -> {
                     String id=row.getString("micro_skill_id"); var value=mastery.get(id);
                     if (!ids.contains(id) || value==null || !value.isNumber()
                             || value.decimalValue().compareTo(row.getBigDecimal("mastery"))!=0
-                            || !row.getObject("mastery_mapping_version_id").equals(rs.getObject("mastery_mapping_version_id")))
+                            || !row.getObject("mastery_mapping_version_id").equals(rs.getObject("mastery_mapping_version_id"))
+                            || !Objects.equals(row.getObject("policy_version_id"),policy.map(p->p.versionId()).orElse(null))
+                            || !Objects.equals(row.getString("policy_hash"),policy.map(p->p.hash()).orElse(null))
+                            || !Objects.equals(row.getObject("evidence_policy"),row.getObject("policy_version_id"))
+                            || !Objects.equals(row.getString("evidence_hash"),row.getString("policy_hash")))
                         throw new Failure(503,"PROFILE_INTEGRITY_FAILURE");
                     evidence.put(id,new RoleGap.Evidence(value.decimalValue(),row.getString("confidence_label"))); return id;
                 });
                 if (!ids.equals(evidence.keySet())) throw new Failure(503,"PROFILE_INTEGRITY_FAILURE");
-                var pins=Map.of("blueprint",rs.getString("blueprint_id"),"blueprintVersion",rs.getString("blueprint_version"),
-                        "model",rs.getString("model_version_id"),"mapping",rs.getString("mastery_mapping_version_id"),"parameters",rs.getString("parameter_set_id"));
+                Map<String,String> pins=new TreeMap<>(Map.of("blueprint",rs.getString("blueprint_id"),"blueprintVersion",rs.getString("blueprint_version"),
+                        "model",rs.getString("model_version_id"),"mapping",rs.getString("mastery_mapping_version_id"),"parameters",rs.getString("parameter_set_id")));
+                policy.ifPresent(p->{pins.put("assessmentPolicy",p.versionId().toString());pins.put("assessmentPolicyHash",p.hash());});
                 var values=new TreeMap<String,Object>(); evidence.forEach((id,e)->values.put(id,e.mastery()));
                 String fingerprint=rs.getString("catalog_fingerprint");
                 String hash=InitialIdentity.hash("profile",List.of(scope.organizationId(),scope.learnerId(),occupation,attempt,fingerprint,pins,values));

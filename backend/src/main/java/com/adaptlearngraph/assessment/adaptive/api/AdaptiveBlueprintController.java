@@ -109,9 +109,9 @@ public final class AdaptiveBlueprintController {
             case FORBIDDEN -> HttpStatus.FORBIDDEN;
             case NOT_FOUND -> HttpStatus.NOT_FOUND;
             case INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
-            case CATALOG_REFERENCE_INVALID, INSUFFICIENT_CAPACITY, PARAMETER_COVERAGE_MISSING -> HttpStatus.UNPROCESSABLE_ENTITY;
+            case CATALOG_REFERENCE_INVALID, INSUFFICIENT_CAPACITY, PARAMETER_COVERAGE_MISSING, ASSESSMENT_POLICY_REQUIRED -> HttpStatus.UNPROCESSABLE_ENTITY;
             case BLUEPRINT_STALE, VERSION_CONFLICT, IDEMPOTENCY_CONFLICT -> HttpStatus.CONFLICT;
-            case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+            case DEPENDENCY_UNAVAILABLE, BASELINE_RESOURCES_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
         };
         return ResponseEntity.status(status).cacheControl(CacheControl.noStore()).body(new ApiError(failure.code().name(),
                 failure.getMessage(), failure.shortages().stream().map(ShortageResponse::from).toList()));
@@ -121,6 +121,10 @@ public final class AdaptiveBlueprintController {
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class})
     ResponseEntity<ApiError> invalid(Exception cause) {
         return failure(new Failure(Code.INVALID_REQUEST, "Invalid adaptive Blueprint request", List.of()));
+    }
+    @ExceptionHandler({IllegalStateException.class,org.springframework.dao.DataAccessException.class})
+    ResponseEntity<ApiError> unavailable(Exception cause) {
+        return failure(new Failure(Code.DEPENDENCY_UNAVAILABLE,"Baseline source temporarily unavailable",List.of()));
     }
 
     private <T> T decode(String body, Class<T> type) {

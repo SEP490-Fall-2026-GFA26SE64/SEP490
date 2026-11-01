@@ -54,7 +54,7 @@ public final class AdaptiveAttemptAnswerService implements Answering {
             AdaptiveItemSelector.Outcome decision;
             boolean correct;
             try {
-                var policy = policies.load(attempt.snapshot().blueprint().pins(), attempt.snapshot().itemSkills());
+                var policy = policies.load(attempt.snapshot());
                 correct = scoring.correct(attempt.scope(), command.itemVersionId(), command.selectedOptionId(), presented.optionOrder());
                 var byPosition = progress.items().stream().collect(Collectors.toMap(item -> item.position(), item -> item.itemVersionId()));
                 var answers = new ArrayList<>(progress.responses().stream().map(r -> new Irt3pl.Answer(byPosition.get(r.position()), r.correct())).toList());
