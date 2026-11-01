@@ -26,8 +26,7 @@ final class TargetRoleSelectionResponseMapper {
                         snapshot.id(),
                         snapshot.code(),
                         snapshot.name(),
-                        snapshot.track(),
-                        snapshot.seniority()),
+                        snapshot.track()),
                 selection.selectedAt(),
                 selection.targetRevision(),
                 changed);
@@ -45,6 +44,5 @@ final class TargetRoleSelectionResponseMapper {
             UUID id,
             String code,
             String name,
-            TargetRoleSnapshot.CareerTrack track,
-            TargetRoleSnapshot.Seniority seniority) {}
+            TargetRoleSnapshot.CareerTrack track) {}
 }

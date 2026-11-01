@@ -7,7 +7,6 @@ public record TargetRoleGraph(
         String roleCode,
         String roleName,
         String track,
-        String seniority,
         String status,
         List<RoleGraphSkill> requiredSkills,
         List<PrerequisiteEdge> prerequisites) {

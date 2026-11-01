@@ -69,9 +69,6 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
             String track = roleNode.containsKey("track") && !roleNode.get("track").isNull()
                     ? roleNode.get("track").asString()
                     : "PROFESSIONAL";
-            String seniority = roleNode.containsKey("seniority") && !roleNode.get("seniority").isNull()
-                    ? roleNode.get("seniority").asString()
-                    : "P3";
             String status = roleNode.containsKey("status") && !roleNode.get("status").isNull()
                     ? roleNode.get("status").asString()
                     : "ACTIVE";
@@ -160,7 +157,6 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                     code,
                     name,
                     track,
-                    seniority,
                     status,
                     requiredSkills,
                     prerequisites));

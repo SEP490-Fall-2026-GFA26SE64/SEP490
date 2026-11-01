@@ -21,7 +21,6 @@ import com.adaptlearngraph.learning.application.port.out.TargetSelectionStorePor
 import com.adaptlearngraph.learning.domain.TargetRoleSelection;
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot;
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.CareerTrack;
-import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.Seniority;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -299,8 +298,7 @@ class TargetRoleSelectionServiceTest {
                 roleId,
                 roleId.equals(ROLE_A_ID) ? "JAVA_P3" : "DATA_P3",
                 roleId.equals(ROLE_A_ID) ? "Java Developer" : "Data Engineer",
-                CareerTrack.PROFESSIONAL,
-                Seniority.P3);
+                CareerTrack.PROFESSIONAL);
     }
 
     @FunctionalInterface

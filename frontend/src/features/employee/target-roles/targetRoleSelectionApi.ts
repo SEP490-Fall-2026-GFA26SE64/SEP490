@@ -6,13 +6,12 @@ import type {
   TargetRoleSelection,
   TargetRoleSelectionSnapshot,
 } from './targetRoleSelectionTypes'
-import type { CareerTrack, Seniority } from './targetRoleTypes'
+import type { CareerTrack } from './targetRoleTypes'
 
 const TARGET_ROLE_SELECTION_URL = '/api/v1/employee/target-role-selection'
 const UUID_PATTERN = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
 const NIL_UUID = '00000000-0000-0000-0000-000000000000'
 const CAREER_TRACKS: ReadonlySet<string> = new Set(['PROFESSIONAL', 'MANAGEMENT'])
-const SENIORITIES: ReadonlySet<string> = new Set(['P1', 'P2', 'P3', 'P4', 'P5', 'M3', 'M4'])
 
 export class TargetRoleSelectionApiError extends Error {
   readonly status: number
@@ -106,15 +105,11 @@ function parseSelection(value: unknown): TargetRoleSelection {
 function parseSnapshot(value: unknown): TargetRoleSelectionSnapshot {
   if (!isRecord(value)) throw invalidResponse('roleSnapshot')
   const track = careerTrack(value.track)
-  const parsedSeniority = seniority(value.seniority)
-  const expectedTrack = parsedSeniority.startsWith('P') ? 'PROFESSIONAL' : 'MANAGEMENT'
-  if (track !== expectedTrack) throw invalidResponse('roleSnapshot seniority')
   return {
     id: requiredUuid(value.id, 'roleSnapshot.id'),
     code: requiredString(value.code, 'roleSnapshot.code'),
     name: requiredString(value.name, 'roleSnapshot.name'),
     track,
-    seniority: parsedSeniority,
   }
 }
 
@@ -167,11 +162,6 @@ function requiredBoolean(value: unknown, field: string): boolean {
 function careerTrack(value: unknown): CareerTrack {
   if (typeof value !== 'string' || !CAREER_TRACKS.has(value)) throw invalidResponse('track')
   return value as CareerTrack
-}
-
-function seniority(value: unknown): Seniority {
-  if (typeof value !== 'string' || !SENIORITIES.has(value)) throw invalidResponse('seniority')
-  return value as Seniority
 }
 
 function invalidResponse(field: string): TargetRoleSelectionApiError {

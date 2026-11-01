@@ -75,7 +75,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                 // REQ-023-F03: Update Target Role details in Neo4j
                 TargetRole updatedAlpha = roleAlpha.updateDetails(
                         "Principal Data Engineer",
-                        "DATA",
                         "PYTHON_DATA",
                         RoleTrack.MANAGEMENT,
                         "expert-99",
@@ -90,12 +89,12 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
 
                 // REQ-011-F01 & REQ-023-F05: Filter by assignedExpertId in Neo4j
                 List<TargetRole> expertRoles = roleRepo.findByOrganizationId("org-alpha",
-                        new TargetRoleFilter(null, null, null, null, "expert-99"));
+                        new TargetRoleFilter(null, null, null, "expert-99"));
                 assertEquals(1, expertRoles.size());
                 assertEquals("ROLE_DATA_ENG", expertRoles.getFirst().getCode());
 
                 List<TargetRole> unassignedExpertRoles = roleRepo.findByOrganizationId("org-alpha",
-                        new TargetRoleFilter(null, null, null, null, "expert-none"));
+                        new TargetRoleFilter(null, null, null, "expert-none"));
                 assertEquals(0, unassignedExpertRoles.size());
 
                 // REQ-023-F04: Delete Target Role with DETACH DELETE in Neo4j
@@ -129,7 +128,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "org-beta",
                         "ROLE_ML_ENG",
                         "Machine Learning Engineer",
-                        "AI",
                         "AI_ML",
                         RoleTrack.PROFESSIONAL,
                         "expert-chen",
@@ -159,7 +157,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "org-beta",
                         "ROLE_ML_ENG",
                         "Machine Learning Engineer",
-                        "AI",
                         "AI_ML",
                         RoleTrack.PROFESSIONAL,
                         "expert-chen",

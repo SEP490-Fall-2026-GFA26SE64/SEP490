@@ -17,7 +17,6 @@ const VALID_SELECTION = {
     code: 'JAVA_P3',
     name: 'Java Backend Developer',
     track: 'PROFESSIONAL',
-    seniority: 'P3',
   },
   selectedAt: '2026-10-02T01:00:00Z',
   targetRevision: 1,

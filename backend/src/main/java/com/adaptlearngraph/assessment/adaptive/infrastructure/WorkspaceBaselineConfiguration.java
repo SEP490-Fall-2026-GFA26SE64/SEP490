@@ -155,9 +155,9 @@ public class WorkspaceBaselineConfiguration {
     @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment) {
         return organization -> {
             var occupations = resources.occupations(organization);
-            if (occupations.isEmpty()) return List.of();
-            boolean development=enabled(environment) && ORGANIZATION.equals(organization) && Set.of(OCCUPATION,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION).containsAll(occupations);
-            return new CurrentRoleCatalog(driver, json, organization, occupations, development).roles(organization);
+            boolean development = enabled(environment);
+            // In development allow discovering roles when environment enabled
+            return new CurrentRoleCatalog(driver, json, organization, occupations.isEmpty() ? null : occupations, development).roles(organization);
         };
     }
     @Bean CurrentOccupationProfile workspaceOccupationProfiles(DataSource source, ObjectMapper json,

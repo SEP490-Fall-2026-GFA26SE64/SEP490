@@ -13,10 +13,8 @@ public record TargetRoleResponse(
         String organizationId,
         String code,
         String name,
-        String domainCode,
         String familyCode,
         String track,
-        String seniority,
         String assignedExpertId,
         String description,
         List<String> responsibilities,
@@ -35,10 +33,8 @@ public record TargetRoleResponse(
             String organizationId,
             String code,
             String name,
-            String domainCode,
             String familyCode,
             String track,
-            String seniority,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -49,7 +45,7 @@ public record TargetRoleResponse(
             Instant updatedAt,
             String rejectionReason,
             List<String> levels) {
-        this(id, organizationId, code, name, domainCode, familyCode, track, seniority, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, Map.of(), List.of());
+        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, Map.of(), List.of());
     }
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -79,10 +75,8 @@ public record TargetRoleResponse(
                 role.getOrganizationId(),
                 role.getCode(),
                 role.getName(),
-                role.getDomainCode(),
                 role.getFamilyCode(),
                 role.getTrack().name(),
-                role.getSeniority() != null ? role.getSeniority().name() : null,
                 role.getAssignedExpertId(),
                 role.getDescription(),
                 role.getResponsibilities() != null ? role.getResponsibilities() : List.of(),
@@ -97,4 +91,3 @@ public record TargetRoleResponse(
                 compIds);
     }
 }
-

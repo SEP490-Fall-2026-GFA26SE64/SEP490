@@ -7,15 +7,13 @@ public record TargetRoleFilter(
         String search,
         RoleTrack track,
         RoleStatus status,
-        String domainCode,
         String assignedExpertId) {
 
     public TargetRoleFilter(String search, RoleTrack track, RoleStatus status) {
-        this(search, track, status, null, null);
+        this(search, track, status, null);
     }
 
     public static TargetRoleFilter empty() {
-        return new TargetRoleFilter(null, null, null, null, null);
+        return new TargetRoleFilter(null, null, null, null);
     }
 }
-

@@ -61,7 +61,6 @@ import {
   findEligibleExpert,
   getOrganizationExperts,
   type EligibleExpert,
-  JOB_DOMAINS,
   resolveOccupationForRole,
   compareRoleVersions,
   formatDate,
@@ -292,12 +291,8 @@ export function ExpertAssignedRolesPage() {
             stableId: String(r.code || ''),
             code: String(r.code || ''),
             title: String(r.name || ''),
-            domainCode: String(r.domainCode || ''),
             familyCode: String(r.familyCode || ''),
             track: r.track as TargetRoleModel['track'],
-            seniority: String(
-              r.seniority || (r.track === 'MANAGEMENT' ? 'M3' : 'P3'),
-            ),
             assignedExpertId: r.assignedExpertId
               ? String(r.assignedExpertId)
               : undefined,
@@ -313,8 +308,8 @@ export function ExpertAssignedRolesPage() {
                 : '') ||
               String(r.assignedExpertId || ''),
             department:
-              JOB_DOMAINS.find((d) => d.code === r.domainCode)?.name ||
-              String(r.domainCode || 'Information Technology'),
+              resolveOccupationForRole({ title: String(r.name || ''), code: String(r.code || ''), familyCode: String(r.familyCode || '') }, orgId)?.name ||
+              'Software Engineering',
             description: String(r.description || ''),
             responsibilities: Array.isArray(r.responsibilities)
               ? (r.responsibilities as string[])
@@ -526,10 +521,8 @@ export function ExpertAssignedRolesPage() {
         role.title.toLowerCase().includes(q) ||
         role.code.toLowerCase().includes(q) ||
         (role.department && role.department.toLowerCase().includes(q)) ||
-        (role.domainCode && role.domainCode.toLowerCase().includes(q)) ||
         (role.familyCode && role.familyCode.toLowerCase().includes(q)) ||
         (role.description && role.description.toLowerCase().includes(q)) ||
-        (role.seniority && role.seniority.toLowerCase().includes(q)) ||
         (role.track && role.track.toLowerCase().includes(q)) ||
         (occ &&
           (occ.name.toLowerCase().includes(q) ||
@@ -708,10 +701,8 @@ export function ExpertAssignedRolesPage() {
     const successorPayload = {
       code: role.code,
       name: role.title,
-      domainCode: role.domainCode,
       familyCode: role.familyCode,
       track: role.track,
-      seniority: role.seniority,
       responsibilities: role.responsibilities || [],
       assignedExpertId: currentExpertId,
       description: role.description,
@@ -1591,10 +1582,8 @@ export function ExpertAssignedRolesPage() {
           },
           body: JSON.stringify({
             name: updatedRole.title,
-            domainCode: updatedRole.domainCode,
             familyCode: updatedRole.familyCode,
             track: updatedRole.track,
-            seniority: updatedRole.seniority,
             responsibilities: updatedRole.responsibilities,
             assignedExpertId: updatedRole.assignedExpertId,
             description: updatedRole.description,
@@ -1687,10 +1676,8 @@ export function ExpertAssignedRolesPage() {
         },
         body: JSON.stringify({
           name: role.title,
-          domainCode: role.domainCode,
           familyCode: role.familyCode,
           track: role.track,
-          seniority: role.seniority,
           responsibilities: role.responsibilities,
           assignedExpertId: role.assignedExpertId,
           description: role.description,

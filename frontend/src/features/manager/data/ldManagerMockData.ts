@@ -18,10 +18,8 @@ export interface TargetRoleModel {
   code: string
   title: string
   department?: string
-  domainCode?: string // 'ICT' | 'DATA' | 'AI'
   familyCode?: string // Local profile e.g. 'DEV' | 'DATAENG' | 'QAENG'
   track?: 'PROFESSIONAL' | 'MANAGEMENT'
-  seniority?: string
   assignedExpertId?: string
   assignedExpertName?: string
   description: string
@@ -117,7 +115,6 @@ export function resolveOccupationForRole(
   role: {
     code?: string
     title?: string
-    domainCode?: string
     familyCode?: string
     occupationCode?: string
   },
@@ -131,7 +128,6 @@ export function resolveOccupationForRole(
 
   const code = (role.code || '').toUpperCase()
   const title = (role.title || '').toLowerCase()
-  const domain = (role.domainCode || '').toUpperCase()
   const family = (role.familyCode || '').toUpperCase()
 
   // Match by keyword in title, code, or family
@@ -143,7 +139,7 @@ export function resolveOccupationForRole(
     const match = occupations.find((o) => o.code === '15-1253.00')
     if (match) return match
   }
-  if (title.includes('data') || title.includes('database') || title.includes('analytics') || domain === 'DATA' || code.includes('DATA') || family.includes('DATA')) {
+  if (title.includes('data') || title.includes('database') || title.includes('analytics') || code.includes('DATA') || family.includes('DATA')) {
     const match = occupations.find((o) => o.code === '15-1243.00')
     if (match) return match
   }
@@ -314,19 +310,13 @@ export function sortTargetRolesWithDraftsBelowPublished(
   return result
 }
 
-export const JOB_DOMAINS = [
-  { code: 'ICT', name: 'Information & Communication Technology' },
-  { code: 'DATA', name: 'Data Engineering & Analytics' },
-  { code: 'AI', name: 'Artificial Intelligence & Cognitive Computing' },
-] as const
-
 export const CAREER_FAMILIES = [
-  { code: 'JAVA_BACKEND', name: 'Java Backend Engineering', domain: 'ICT' },
-  { code: 'PYTHON_DATA', name: 'Python & Data Engineering', domain: 'DATA' },
-  { code: 'AI_ML', name: 'Machine Learning & LLM Systems', domain: 'AI' },
-  { code: 'CLOUD_DEVOPS', name: 'Cloud & Infrastructure DevOps', domain: 'ICT' },
-  { code: 'FRONTEND_WEB', name: 'Modern Web & UI Architecture', domain: 'ICT' },
-  { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust', domain: 'ICT' },
+  { code: 'JAVA_BACKEND', name: 'Java Backend Engineering' },
+  { code: 'PYTHON_DATA', name: 'Python & Data Engineering' },
+  { code: 'AI_ML', name: 'Machine Learning & LLM Systems' },
+  { code: 'CLOUD_DEVOPS', name: 'Cloud & Infrastructure DevOps' },
+  { code: 'FRONTEND_WEB', name: 'Modern Web & UI Architecture' },
+  { code: 'CYBERSECURITY', name: 'Enterprise Cybersecurity & Trust' },
 ] as const
 
 export const ELIGIBLE_EXPERTS = [

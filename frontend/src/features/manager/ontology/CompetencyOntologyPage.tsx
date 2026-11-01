@@ -1134,7 +1134,7 @@ export function CompetencyOntologyPage() {
           <StatCard
             variant="gradient"
             icon={<Filter className="h-4 w-4 text-primary" />}
-            title="Seniority Levels"
+            title="Mastery Levels"
             value="3 Tiers"
             valueClassName="text-primary"
             description="Junior · Middle · Senior"
@@ -2777,7 +2777,7 @@ export function CompetencyOntologyPage() {
               </div>
 
               <div className="text-[11px] text-muted-foreground leading-relaxed">
-                Competencies represent composite capabilities. A learner attains this competency when all associated micro-skills meet their target mastery at the designated seniority level.
+                Competencies represent composite capabilities. A learner attains this competency when all associated micro-skills meet their target mastery at the designated mastery level.
               </div>
 
               {/* Add Member Skill Row */}

@@ -126,7 +126,6 @@ class TargetRoleServiceTest {
                         "org-1",
                         created.getId(),
                         "Senior Cloud Architect",
-                        "ICT",
                         "CLOUD_DEVOPS",
                         RoleTrack.MANAGEMENT,
                         "expert-42",
@@ -142,16 +141,14 @@ class TargetRoleServiceTest {
     }
 
     @Test
-    @DisplayName("REQ-023-F01 & REQ-023-F03: Creates and updates TargetRole with seniority and responsibilities")
-    void createsAndUpdatesWithSeniorityAndResponsibilities() {
+    @DisplayName("REQ-023-F01 & REQ-023-F03: Creates and updates TargetRole with responsibilities")
+    void createsAndUpdatesWithResponsibilities() {
         CreateTargetRoleCommand createCmd = new CreateTargetRoleCommand(
                 "org-1",
                 "ROLE_AI_P4",
                 "AI Knowledge Architect",
-                "AI",
                 "AI_ML",
                 RoleTrack.PROFESSIONAL,
-                com.adaptlearngraph.catalog.domain.Seniority.P4,
                 "expert-chen",
                 "Enterprise knowledge graph role",
                 List.of("Model enterprise graphs", "Integrate DL pipelines"),
@@ -160,7 +157,6 @@ class TargetRoleServiceTest {
                 "[]");
 
         TargetRole created = service.createTargetRole(createCmd);
-        assertEquals(com.adaptlearngraph.catalog.domain.Seniority.P4, created.getSeniority());
         assertEquals(2, created.getResponsibilities().size());
         assertEquals("Model enterprise graphs", created.getResponsibilities().get(0));
 
@@ -169,10 +165,8 @@ class TargetRoleServiceTest {
                         "org-1",
                         created.getId(),
                         "AI Principal Architect",
-                        "AI",
                         "AI_ML",
                         RoleTrack.PROFESSIONAL,
-                        com.adaptlearngraph.catalog.domain.Seniority.P5,
                         "expert-chen",
                         "Principal knowledge graph role",
                         List.of("Model enterprise graphs", "Integrate DL pipelines", "Strategic AI governance"),
@@ -184,7 +178,6 @@ class TargetRoleServiceTest {
         Optional<TargetRole> updatedOpt = service.updateTargetRole(updateCmd);
         org.junit.jupiter.api.Assertions.assertTrue(updatedOpt.isPresent());
         TargetRole updated = updatedOpt.get();
-        assertEquals(com.adaptlearngraph.catalog.domain.Seniority.P5, updated.getSeniority());
         assertEquals(3, updated.getResponsibilities().size());
         assertEquals("Strategic AI governance", updated.getResponsibilities().get(2));
     }
@@ -192,12 +185,12 @@ class TargetRoleServiceTest {
     @Test
     @DisplayName("REQ-023-F02 & REQ-011-F01: Lists target roles filtered by assigned domain expert")
     void listsRolesFilteredByAssignedExpert() {
-        TargetRole role1 = TargetRole.createNew("org-1", "ROLE_AI", "AI Spec", "AI", "AI_ML", RoleTrack.PROFESSIONAL, "expert-1", "");
-        TargetRole role2 = TargetRole.createNew("org-1", "ROLE_DATA", "Data Spec", "DATA", "PYTHON_DATA", RoleTrack.PROFESSIONAL, "expert-2", "");
+        TargetRole role1 = TargetRole.createNew("org-1", "ROLE_AI", "AI Spec", "AI_ML", RoleTrack.PROFESSIONAL, "expert-1", "");
+        TargetRole role2 = TargetRole.createNew("org-1", "ROLE_DATA", "Data Spec", "PYTHON_DATA", RoleTrack.PROFESSIONAL, "expert-2", "");
         repository.save(role1);
         repository.save(role2);
 
-        TargetRoleFilter expert1Filter = new TargetRoleFilter(null, null, null, null, "expert-1");
+        TargetRoleFilter expert1Filter = new TargetRoleFilter(null, null, null, "expert-1");
         List<TargetRole> expert1Roles = service.listTargetRoles("org-1", expert1Filter);
 
         assertEquals(1, expert1Roles.size());
@@ -235,7 +228,6 @@ class TargetRoleServiceTest {
                     .filter(r -> r.getOrganizationId().equals(organizationId))
                     .filter(r -> filter.track() == null || r.getTrack() == filter.track())
                     .filter(r -> filter.status() == null || r.getStatus() == filter.status())
-                    .filter(r -> filter.domainCode() == null || r.getDomainCode().equalsIgnoreCase(filter.domainCode()))
                     .filter(r -> filter.assignedExpertId() == null || r.getAssignedExpertId().equalsIgnoreCase(filter.assignedExpertId()))
                     .filter(r -> filter.search() == null || r.getName().toLowerCase().contains(filter.search().toLowerCase()))
                     .toList();
@@ -261,4 +253,3 @@ class TargetRoleServiceTest {
         }
     }
 }
-
