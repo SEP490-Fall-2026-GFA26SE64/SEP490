@@ -23,7 +23,6 @@ import com.adaptlearngraph.assessment.domain.BaselineBlueprint.RoleConfig;
 import com.adaptlearngraph.assessment.domain.BaselineBlueprint.SkillConfig;
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import com.adaptlearngraph.catalog.domain.CareerTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleRequirement;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
@@ -339,7 +338,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     private TargetRoleCatalogPort catalog() {
         var detail = new TargetRoleDetail(
                 ROLE_ID, "JAVA_BACKEND_P3", "Java Backend Engineer", "ENGINEERING",
-                CareerTrack.PROFESSIONAL, Seniority.P3, null, List.of(),
+                CareerTrack.PROFESSIONAL, null, List.of(),
                 List.of(new TargetRoleRequirement(SKILL_ID, "JAVA_CORE", "Java Core", 0.8)));
         return new TargetRoleCatalogPort() {
             @Override

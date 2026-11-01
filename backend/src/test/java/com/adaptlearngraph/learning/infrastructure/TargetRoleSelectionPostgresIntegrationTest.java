@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.adaptlearngraph.catalog.application.port.out.TargetRoleCatalogPort;
 import com.adaptlearngraph.catalog.domain.CareerTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleRequirement;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
@@ -471,14 +470,13 @@ class TargetRoleSelectionPostgresIntegrationTest {
         String suffix = roleId.equals(ROLE_A_ID) ? "A" : roleId.equals(ROLE_B_ID) ? "B" : "C";
         return new TargetRoleSnapshot(
                 roleId, "ROLE_" + suffix, "Role " + suffix,
-                TargetRoleSnapshot.CareerTrack.PROFESSIONAL,
-                TargetRoleSnapshot.Seniority.P3);
+                TargetRoleSnapshot.CareerTrack.PROFESSIONAL);
     }
 
     private static TargetRoleDetail detail(UUID roleId) {
         return new TargetRoleDetail(
                 roleId.toString(), "ROLE_A", "Role A", "ENGINEERING",
-                CareerTrack.PROFESSIONAL, Seniority.P3, null, List.of(),
+                CareerTrack.PROFESSIONAL, null, List.of(),
                 List.of(new TargetRoleRequirement("skill-a", "SKILL_A", "Skill A", 0.8)));
     }
 

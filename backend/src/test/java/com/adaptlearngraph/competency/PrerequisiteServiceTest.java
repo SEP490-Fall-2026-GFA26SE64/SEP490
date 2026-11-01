@@ -103,8 +103,7 @@ class PrerequisiteServiceTest {
                 "JAVA_DEV",
                 "Java Developer",
                 "PROFESSIONAL",
-                "P3",
-                "ACTIVE",
+                                "ACTIVE",
                 List.of(
                         new RoleGraphSkill("skill-java", "JAVA_CORE", "Java Core", "KNOWLEDGE", 0.8, SkillStatus.ACTIVE),
                         new RoleGraphSkill("skill-spring", "SPRING_BOOT", "Spring Boot", "KNOWLEDGE", 0.7, SkillStatus.ACTIVE)),

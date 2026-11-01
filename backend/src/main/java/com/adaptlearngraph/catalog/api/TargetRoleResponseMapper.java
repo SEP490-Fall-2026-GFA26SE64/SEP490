@@ -1,7 +1,6 @@
 package com.adaptlearngraph.catalog.api;
 
 import com.adaptlearngraph.catalog.domain.CareerTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleRequirement;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
@@ -12,13 +11,13 @@ final class TargetRoleResponseMapper {
 
     static SummaryResponse toResponse(TargetRoleSummary role) {
         return new SummaryResponse(
-                role.id(), role.code(), role.name(), role.track(), role.seniority(),
+                role.id(), role.code(), role.name(), role.track(),
                 role.description(), role.requirementCount());
     }
 
     static DetailResponse toResponse(TargetRoleDetail role) {
         return new DetailResponse(
-                role.id(), role.code(), role.name(), role.familyCode(), role.track(), role.seniority(),
+                role.id(), role.code(), role.name(), role.familyCode(), role.track(),
                 role.description(), role.responsibilities(),
                 role.requirements().stream().map(TargetRoleResponseMapper::toResponse).toList());
     }
@@ -33,7 +32,6 @@ final class TargetRoleResponseMapper {
             String code,
             String name,
             CareerTrack track,
-            Seniority seniority,
             String description,
             int requirementCount) {}
 
@@ -43,7 +41,6 @@ final class TargetRoleResponseMapper {
             String name,
             String familyCode,
             CareerTrack track,
-            Seniority seniority,
             String description,
             List<String> responsibilities,
             List<RequirementResponse> requirements) {}

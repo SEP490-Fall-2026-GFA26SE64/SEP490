@@ -8,7 +8,6 @@ public record TargetRoleGraphResponse(
         String roleCode,
         String roleName,
         String track,
-        String seniority,
         String status,
         List<RoleGraphSkillResponse> requiredSkills,
         List<PrerequisiteResponse> prerequisites) {
@@ -43,7 +42,6 @@ public record TargetRoleGraphResponse(
                 graph.roleCode(),
                 graph.roleName(),
                 graph.track(),
-                graph.seniority(),
                 graph.status(),
                 skills,
                 edges);

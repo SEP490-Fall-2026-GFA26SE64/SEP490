@@ -229,7 +229,6 @@ export function TargetRolesPage() {
           const occ = resolveOccupationForRole({
             code: String(r.code || ''),
             title: String(r.name || ''),
-            domainCode: String(r.domainCode || ''),
             familyCode: String(r.familyCode || ''),
             occupationCode:
               typeof r.occupationCode === 'string'
@@ -259,10 +258,8 @@ export function TargetRolesPage() {
               M: 75,
               S: 90,
             },
-            domainCode: String(r.domainCode || 'ICT'),
             familyCode: String(r.familyCode || occ.profiles[0] || 'DEV'),
             track: (r.track as TargetRoleModel['track']) || 'PROFESSIONAL',
-            seniority: String(r.seniority || 'P3'),
             assignedExpertId: r.assignedExpertId
               ? String(r.assignedExpertId)
               : undefined,
@@ -555,9 +552,7 @@ export function TargetRolesPage() {
     scope:
       'Design, code, and test applications, systems software, and infrastructure pipelines.',
     familyCode: 'DEV',
-    domainCode: 'ICT' as 'ICT' | 'DATA' | 'AI',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
-    seniority: 'P3',
     levelNames: ['Junior', 'Middle', 'Senior'],
     assignedExpertId: ELIGIBLE_EXPERTS[0].id as string,
     description: '',
@@ -570,9 +565,7 @@ export function TargetRolesPage() {
     occupationCode: '15-1252.00',
     scope: '',
     familyCode: 'DEV',
-    domainCode: 'ICT' as 'ICT' | 'DATA' | 'AI',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
-    seniority: 'P3',
     levelNames: ['Junior', 'Middle', 'Senior'],
     assignedExpertId: '',
     description: '',
@@ -650,8 +643,6 @@ export function TargetRolesPage() {
         r.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (r.department &&
           r.department.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (r.domainCode &&
-          r.domainCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (r.familyCode &&
           r.familyCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (r.assignedExpertName &&
@@ -729,9 +720,7 @@ export function TargetRolesPage() {
       occupationCode: defaultOcc.code,
       scope: defaultOcc.description,
       familyCode: defaultOcc.profiles?.[0] || 'DEV',
-      domainCode: 'ICT',
       track: 'PROFESSIONAL',
-      seniority: 'P3',
       levelNames: ['Junior', 'Middle', 'Senior'],
       assignedExpertId: eligibleExperts[0]?.id || orgExperts[0]?.id || '',
       description: defaultOcc.description,
@@ -794,10 +783,8 @@ export function TargetRolesPage() {
         body: JSON.stringify({
           code: roleCode,
           name: roleForm.title.trim(),
-          domainCode: roleForm.domainCode,
           familyCode: roleForm.familyCode,
           track: roleForm.track,
-          seniority: roleForm.seniority,
           responsibilities: [],
           assignedExpertId: roleForm.assignedExpertId,
           description:
@@ -850,10 +837,8 @@ export function TargetRolesPage() {
       occupationTitle: selectedOcc.name,
       scope: roleForm.scope || selectedOcc.description,
       levels: roleForm.levelNames,
-      domainCode: roleForm.domainCode || 'ICT',
       familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
       track: roleForm.track || 'PROFESSIONAL',
-      seniority: roleForm.seniority || 'P3',
       responsibilities: [],
       assignedExpertId: roleForm.assignedExpertId,
       assignedExpertName: expertName,
@@ -963,9 +948,7 @@ export function TargetRolesPage() {
       occupationCode: occCode,
       scope: role.scope || role.description || occ.description,
       familyCode: role.familyCode || occ.profiles[0] || 'DEV',
-      domainCode: (role.domainCode || 'ICT') as 'ICT' | 'DATA' | 'AI',
       track: (role.track || 'PROFESSIONAL') as 'PROFESSIONAL' | 'MANAGEMENT',
-      seniority: role.seniority || 'P3',
       levelNames:
         role.levels && role.levels.length > 0
           ? [...role.levels]
@@ -1027,10 +1010,8 @@ export function TargetRolesPage() {
           },
           body: JSON.stringify({
             name: editRoleForm.title.trim(),
-            domainCode: editRoleForm.domainCode,
             familyCode: editRoleForm.familyCode,
             track: editRoleForm.track,
-            seniority: editRoleForm.seniority,
             responsibilities: [],
             assignedExpertId: editRoleForm.assignedExpertId,
             description:
@@ -1062,14 +1043,12 @@ export function TargetRolesPage() {
         editRoleForm.description ||
         selectedOcc.description,
       levels: editRoleForm.levelNames,
-      domainCode: editRoleForm.domainCode || selectedRole.domainCode || 'ICT',
       familyCode:
         editRoleForm.familyCode ||
         selectedRole.familyCode ||
         selectedOcc.profiles[0] ||
         'DEV',
       track: editRoleForm.track || selectedRole.track || 'PROFESSIONAL',
-      seniority: editRoleForm.seniority || selectedRole.seniority || 'P3',
       responsibilities: [],
       assignedExpertId: editRoleForm.assignedExpertId,
       assignedExpertName: expertName,
@@ -1126,10 +1105,8 @@ export function TargetRolesPage() {
           },
           body: JSON.stringify({
             name: role.title,
-            domainCode: role.domainCode,
             familyCode: role.familyCode,
             track: role.track,
-            seniority: role.seniority,
             responsibilities: role.responsibilities,
             assignedExpertId: role.assignedExpertId,
             description: role.description,
@@ -1214,10 +1191,8 @@ export function TargetRolesPage() {
           },
           body: JSON.stringify({
             name: managerRejectingRole.title,
-            domainCode: managerRejectingRole.domainCode,
             familyCode: managerRejectingRole.familyCode,
             track: managerRejectingRole.track,
-            seniority: managerRejectingRole.seniority,
             responsibilities: managerRejectingRole.responsibilities,
             assignedExpertId: managerRejectingRole.assignedExpertId,
             description: managerRejectingRole.description,
@@ -1360,7 +1335,6 @@ export function TargetRolesPage() {
         },
         body: JSON.stringify({
           name: role.title,
-          domainCode: role.domainCode,
           familyCode: role.familyCode,
           track: role.track,
           assignedExpertId: role.assignedExpertId,
@@ -2205,13 +2179,13 @@ export function TargetRolesPage() {
             })()}
           </div>
 
-          {/* Card 3: Role Seniority Levels */}
+          {/* Card 3: Role Mastery Levels */}
 
           <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-foreground block">
-                  Role Seniority Levels
+                  Role Mastery Levels
                 </span>
 
                 <span className="text-[10px] text-muted-foreground">
@@ -2885,13 +2859,13 @@ export function TargetRolesPage() {
                   })()}
                 </div>
 
-                {/* Card 3: Role Seniority Levels */}
+                {/* Card 3: Role Mastery Levels */}
 
                 <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs font-bold text-foreground block">
-                        Role Seniority Levels
+                        Role Mastery Levels
                       </span>
 
                       <span className="text-[10px] text-muted-foreground">
@@ -3581,12 +3555,12 @@ export function TargetRolesPage() {
                     </div>
                   </div>
 
-                  {/* Role Seniority Levels */}
+                  {/* Role Mastery Levels */}
 
                   <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-foreground">
-                        Role Seniority Levels
+                        Role Mastery Levels
                       </span>
 
                       <span className="text-[10px] text-muted-foreground font-semibold">

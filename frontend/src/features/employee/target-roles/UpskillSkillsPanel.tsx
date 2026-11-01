@@ -32,6 +32,7 @@ import {
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { getActiveCompanyId } from '../../../shared/stores/companyStore'
 import { TARGET_ROLE_ROADMAPS } from '../data/roadmapData'
 
@@ -106,6 +107,7 @@ export function UpskillSkillsPanel() {
   const { profile, isSkillTracked, trackSkill, untrackSkill } = useEmployeeLearningState()
   const [macroCompetencies, setMacroCompetencies] = React.useState<MacroCompetencyDto[]>([])
   const [skills, setSkills] = React.useState<EnrichedSkill[]>([])
+  const session = React.useContext(WorkspaceSessionContext)
   const [isLoading, setIsLoading] = React.useState(true)
   const [isError, setIsError] = React.useState(false)
 
@@ -191,7 +193,7 @@ export function UpskillSkillsPanel() {
     setIsLoading(true)
     setIsError(false)
     try {
-      const orgId = getActiveCompanyId() || '00000000-0000-0000-0000-000000000001'
+      const orgId = session?.identity?.organizationId || getActiveCompanyId() || 'e0000000-0000-0000-0000-000000000001'
       
       const [macrosData, skillsData] = await Promise.all([
         fetchMacroCompetencies(orgId).catch(() => [] as MacroCompetencyDto[]),

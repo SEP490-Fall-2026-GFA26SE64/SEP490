@@ -13,25 +13,14 @@ class TargetRoleDomainTest {
     void acceptsTrackCompatibleGradesAndNormalizesText() {
         var professional = new TargetRoleSummary(
                 " role-p3 ", " JAVA_P3 ", " Java Developer ",
-                CareerTrack.PROFESSIONAL, Seniority.P3, " Backend role ", 2);
+                CareerTrack.PROFESSIONAL, " Backend role ", 2);
         var management = new TargetRoleSummary(
                 "role-m3", "ENG_MANAGER", "Engineering Manager",
-                CareerTrack.MANAGEMENT, Seniority.M3, null, 1);
+                CareerTrack.MANAGEMENT, null, 1);
 
         assertThat(professional.id()).isEqualTo("role-p3");
         assertThat(professional.code()).isEqualTo("JAVA_P3");
-        assertThat(professional.description()).isEqualTo("Backend role");
-        assertThat(management.seniority().track()).isEqualTo(CareerTrack.MANAGEMENT);
-    }
-
-    @Test
-    void rejectsGradeFromAnotherCareerTrack() {
-        assertThatThrownBy(() -> new TargetRoleSummary(
-                "role-1", "ROLE_1", "Role 1",
-                CareerTrack.MANAGEMENT, Seniority.P3, null, 1))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("seniority must match track");
-    }
+        assertThat(professional.description()).isEqualTo("Backend role");    }
 
     @Test
     void detailCopiesCollectionsAndRequiresAtLeastOneSkill() {
@@ -39,7 +28,7 @@ class TargetRoleDomainTest {
         var requirement = new TargetRoleRequirement("skill-1", "JAVA", "Java", 0.7);
         var detail = new TargetRoleDetail(
                 "role-1", "JAVA_P3", "Java Developer", "JAVA",
-                CareerTrack.PROFESSIONAL, Seniority.P3, " ", responsibilities, List.of(requirement));
+                CareerTrack.PROFESSIONAL, " ", responsibilities, List.of(requirement));
 
         responsibilities.add("Mutated later");
 
@@ -48,7 +37,7 @@ class TargetRoleDomainTest {
         assertThat(detail.requirements()).containsExactly(requirement);
         assertThatThrownBy(() -> new TargetRoleDetail(
                 "role-1", "JAVA_P3", "Java Developer", "JAVA",
-                CareerTrack.PROFESSIONAL, Seniority.P3, null, List.of(), List.of()))
+                CareerTrack.PROFESSIONAL, null, List.of(), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("requirements must not be empty");
     }
@@ -76,7 +65,7 @@ class TargetRoleDomainTest {
                 .hasMessage("skillId must not be blank");
         assertThatThrownBy(() -> new TargetRoleSummary(
                 "role-1", "ROLE_1", "Role 1",
-                CareerTrack.PROFESSIONAL, Seniority.P1, null, 0))
+                CareerTrack.PROFESSIONAL, null, 0))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("requirementCount must be at least 1");
     }

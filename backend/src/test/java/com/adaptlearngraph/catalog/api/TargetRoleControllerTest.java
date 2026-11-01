@@ -11,7 +11,6 @@ import com.adaptlearngraph.catalog.application.TargetRoleQueryException;
 import com.adaptlearngraph.catalog.application.TargetRoleQueryException.Code;
 import com.adaptlearngraph.catalog.application.port.in.TargetRoleQueryUseCase;
 import com.adaptlearngraph.catalog.domain.CareerTrack;
-import com.adaptlearngraph.catalog.domain.Seniority;
 import com.adaptlearngraph.catalog.domain.TargetRoleDetail;
 import com.adaptlearngraph.catalog.domain.TargetRoleRequirement;
 import com.adaptlearngraph.catalog.domain.TargetRoleSummary;
@@ -39,19 +38,17 @@ class TargetRoleControllerTest {
 
     @Test
     void returnsListContractAndForwardsOnlyDiscoveryCriteria() throws Exception {
-        when(queries.listTargetRoles(" Java ", Seniority.P3)).thenReturn(List.of(summary()));
+        when(queries.listTargetRoles(" Java ")).thenReturn(List.of(summary()));
 
         mvc.perform(get("/api/v1/employee/target-roles")
                         .param("search", " Java ")
-                        .param("seniority", "P3")
                         .param("organizationId", "untrusted-org"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value("role-1"))
                 .andExpect(jsonPath("$[0].track").value("PROFESSIONAL"))
-                .andExpect(jsonPath("$[0].seniority").value("P3"))
                 .andExpect(jsonPath("$[0].requirementCount").value(1));
 
-        verify(queries).listTargetRoles(" Java ", Seniority.P3);
+        verify(queries).listTargetRoles(" Java ");
     }
 
     @Test
@@ -67,22 +64,10 @@ class TargetRoleControllerTest {
     }
 
     @Test
-    void mapsInvalidDiscoveryParametersToPublicBadRequest() throws Exception {
-        mvc.perform(get("/api/v1/employee/target-roles").param("seniority", "L9"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
-                .andExpect(jsonPath("$.message").value("Request parameters are invalid"));
-
-        mvc.perform(get("/api/v1/employee/target-roles").param("search", "x".repeat(101)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
-    }
-
-    @Test
     void mapsUnavailableAndDependencyFailuresWithoutLeakingCatalogDetails() throws Exception {
         when(queries.getTargetRole("hidden-role")).thenThrow(
                 new TargetRoleQueryException(Code.ROLE_NOT_AVAILABLE, "Target role is not available"));
-        when(queries.listTargetRoles(null, null)).thenThrow(
+        when(queries.listTargetRoles(null)).thenThrow(
                 new TargetRoleQueryException(Code.CATALOG_UNAVAILABLE, "Target-role catalog is unavailable"));
 
         mvc.perform(get("/api/v1/employee/target-roles/hidden-role"))
@@ -95,7 +80,7 @@ class TargetRoleControllerTest {
 
     @Test
     void mapsActorFailuresToUnauthorizedAndForbidden() throws Exception {
-        when(queries.listTargetRoles(null, null))
+        when(queries.listTargetRoles(null))
                 .thenThrow(new TargetRoleQueryException(Code.UNAUTHENTICATED, "Authentication is required"))
                 .thenThrow(new TargetRoleQueryException(Code.FORBIDDEN, "Active employee is required"));
 
@@ -109,7 +94,7 @@ class TargetRoleControllerTest {
 
     @Test
     void localSecurityAllowsOnlyGetForTargetRoleRoutes() throws Exception {
-        when(queries.listTargetRoles(null, null)).thenReturn(List.of());
+        when(queries.listTargetRoles(null)).thenReturn(List.of());
 
         mvc.perform(get("/api/v1/employee/target-roles")).andExpect(status().isOk());
         mvc.perform(post("/api/v1/employee/target-roles")).andExpect(status().isForbidden());
@@ -117,14 +102,14 @@ class TargetRoleControllerTest {
 
     private static TargetRoleSummary summary() {
         return new TargetRoleSummary(
-                "role-1", "JAVA_P3", "Java Developer", CareerTrack.PROFESSIONAL, Seniority.P3,
+                "role-1", "JAVA_P3", "Java Developer", CareerTrack.PROFESSIONAL,
                 "Backend role", 1);
     }
 
     private static TargetRoleDetail detail() {
         return new TargetRoleDetail(
                 "role-1", "JAVA_P3", "Java Developer", "JAVA",
-                CareerTrack.PROFESSIONAL, Seniority.P3, "Backend role", List.of("Build APIs"),
+                CareerTrack.PROFESSIONAL, "Backend role", List.of("Build APIs"),
                 List.of(new TargetRoleRequirement("skill-1", "JAVA", "Java", 0.7)));
     }
 }

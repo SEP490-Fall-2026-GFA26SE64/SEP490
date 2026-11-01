@@ -5,7 +5,6 @@ import com.adaptlearngraph.learning.application.port.out.TargetSelectionStorePor
 import com.adaptlearngraph.learning.domain.TargetRoleSelection;
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot;
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.CareerTrack;
-import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.Seniority;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,8 +60,7 @@ final class JdbcTargetSelectionRowMapper implements RowMapper<TargetRoleSelectio
                     UUID.fromString(requiredText(snapshot, "id")),
                     requiredText(snapshot, "code"),
                     requiredText(snapshot, "name"),
-                    CareerTrack.valueOf(requiredText(snapshot, "track")),
-                    Seniority.valueOf(requiredText(snapshot, "seniority")));
+                    CareerTrack.valueOf(requiredText(snapshot, "track")));
         } catch (JsonProcessingException | IllegalArgumentException invalid) {
             throw invalidSnapshot("role_snapshot does not match the F02 snapshot contract", invalid);
         }

@@ -45,7 +45,7 @@ class TargetRoleGraphControllerTest {
 
         TargetRoleGraph graph = new TargetRoleGraph(
                 "role-1", "BACKEND_DEV", "Backend Developer", "Engineering",
-                "SENIOR", "DRAFT", List.of(s1, s2), List.of(edge)
+                "DRAFT", List.of(s1, s2), List.of(edge)
         );
 
         when(getTargetRoleGraphUseCase.getTargetRoleGraph("org-1", "role-1")).thenReturn(Optional.of(graph));
@@ -56,7 +56,6 @@ class TargetRoleGraphControllerTest {
                 .andExpect(jsonPath("$.roleCode").value("BACKEND_DEV"))
                 .andExpect(jsonPath("$.roleName").value("Backend Developer"))
                 .andExpect(jsonPath("$.track").value("Engineering"))
-                .andExpect(jsonPath("$.seniority").value("SENIOR"))
                 .andExpect(jsonPath("$.status").value("DRAFT"))
                 .andExpect(jsonPath("$.requiredSkills[0].skillId").value("s1"))
                 .andExpect(jsonPath("$.requiredSkills[0].targetMastery").value(0.70))

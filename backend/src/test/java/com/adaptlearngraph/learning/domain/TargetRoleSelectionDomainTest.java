@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.CareerTrack;
-import com.adaptlearngraph.learning.domain.TargetRoleSnapshot.Seniority;
 import com.adaptlearngraph.learning.domain.TargetSelectionDecision.Kind;
 import java.time.Instant;
 import java.util.UUID;
@@ -17,18 +16,13 @@ class TargetRoleSelectionDomainTest {
     private static final UUID ROLE_B_ID = UUID.fromString("30000000-0000-0000-0000-000000000002");
     private static final UUID SELECTION_ID = UUID.fromString("40000000-0000-0000-0000-000000000001");
     private static final Instant SELECTED_AT = Instant.parse("2026-10-01T01:00:00Z");
-
     @Test
-    void snapshotNormalizesTextAndRequiresTrackCompatibleSeniority() {
+    void snapshotNormalizesText() {
         var snapshot = new TargetRoleSnapshot(
-                ROLE_A_ID, " JAVA_P3 ", " Java Developer ", CareerTrack.PROFESSIONAL, Seniority.P3);
+                ROLE_A_ID, " JAVA_P3 ", " Java Developer ", CareerTrack.PROFESSIONAL);
 
         assertThat(snapshot.code()).isEqualTo("JAVA_P3");
         assertThat(snapshot.name()).isEqualTo("Java Developer");
-        assertThatThrownBy(() -> new TargetRoleSnapshot(
-                ROLE_A_ID, "JAVA_P3", "Java Developer", CareerTrack.MANAGEMENT, Seniority.P3))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("seniority must match track");
     }
 
     @Test
@@ -100,6 +94,6 @@ class TargetRoleSelectionDomainTest {
 
     private static TargetRoleSnapshot role(UUID roleId) {
         return new TargetRoleSnapshot(
-                roleId, "JAVA_P3", "Java Developer", CareerTrack.PROFESSIONAL, Seniority.P3);
+                roleId, "JAVA_P3", "Java Developer", CareerTrack.PROFESSIONAL);
     }
 }

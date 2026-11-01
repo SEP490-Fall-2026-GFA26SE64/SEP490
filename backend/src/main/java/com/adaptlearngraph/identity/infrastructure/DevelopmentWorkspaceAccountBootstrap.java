@@ -193,7 +193,7 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         // 7. Workspace Baseline Resource
         jdbc.update("""
                 INSERT INTO platform.workspace_baseline_resource(organization_id, occupation_reference_id, graph_occupation_id)
-                VALUES (?, ?, '15-1252.00')
+                VALUES (?, ?, 'OCC-15-1252.00')
                 ON CONFLICT (organization_id, graph_occupation_id) DO NOTHING
                 """, TECHNOVA_ORG_ID, TECHNOVA_OCC_REF_ID);
     }
