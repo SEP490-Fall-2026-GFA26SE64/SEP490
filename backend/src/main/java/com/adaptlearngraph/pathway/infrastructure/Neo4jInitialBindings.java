@@ -12,17 +12,33 @@ import static com.adaptlearngraph.pathway.infrastructure.InitialCatalogMetadata.
 public final class Neo4jInitialBindings implements Bindings {
     private final RoleReferences references;private final Neo4jInitialGraph.PublishedSessions sessions;private final IntSupplier maximumRows;
     private final boolean localReview;
+    private final com.adaptlearngraph.learning.application.AuthoredCatalogPort authored;
     public Neo4jInitialBindings(RoleReferences references,Neo4jInitialGraph.PublishedSessions sessions,IntSupplier maximumRows) {
         this(references,sessions,maximumRows,false);
     }
     public Neo4jInitialBindings(RoleReferences references,Neo4jInitialGraph.PublishedSessions sessions,IntSupplier maximumRows,boolean localReview) {
+        this(references,sessions,maximumRows,localReview,com.adaptlearngraph.learning.application.AuthoredCatalogPort.NONE);
+    }
+    public Neo4jInitialBindings(RoleReferences references,Neo4jInitialGraph.PublishedSessions sessions,IntSupplier maximumRows,boolean localReview,
+                               com.adaptlearngraph.learning.application.AuthoredCatalogPort authored) {
         this.references=references;this.sessions=sessions;this.maximumRows=maximumRows;this.localReview=localReview;
+        this.authored=Objects.requireNonNull(authored);
     }
     @Override public Binding require(Actor actor,String roleId,String levelId) {
         actor.require(Role.EMPLOYEE);var scope=Scope.own(actor);var ref=references.require(actor,roleId,levelId);
         if(!ref.organizationId().equals(scope.organizationId()) || !ref.roleId().equals(roleId) || !ref.levelId().equals(levelId)
                 || !ref.businessRoleId().equals(com.adaptlearngraph.pathway.application.InitialCatalogPort.choiceId(roleId,levelId)))throw new Failure(503,"INVALID_ROLE_BINDING",false);
         int maximum=maximumRows.getAsInt();if(maximum<1 || maximum==Integer.MAX_VALUE)throw new Failure(503,"CATALOG_READ_LIMIT_NOT_CONFIGURED",false);
+        if("authored-role-level-member-v1".equals(ref.versions().get("binding"))) {
+            var p=com.adaptlearngraph.learning.application.AuthoredCatalogPort.scoped(authored.find(scope.organizationId(),ref.occupationId()).orElseThrow(()->new Failure(503,"CATALOG_BINDING_UNAVAILABLE",false)),scope.organizationId(),ref.occupationId());
+            if(!p.fingerprint().equals(ref.catalogFingerprint()) || !p.bindingRevision().equals(ref.versions().get("catalogBinding")))throw new Failure(409,"CATALOG_SOURCE_CHANGED",false);
+            var role=p.roles().stream().filter(r->r.id().equals(roleId)).findFirst().orElseThrow(()->new Failure(404,"ROLE_NOT_AVAILABLE",false));
+            var level=role.levels().stream().filter(l->l.id().equals(levelId)).findFirst().orElseThrow(()->new Failure(404,"LEVEL_NOT_AVAILABLE",false));
+            if(level.skills().size()>maximum)throw new Failure(422,"CATALOG_REQUIREMENTS_LIMIT",false);
+            var requirements=level.skills().stream().map(s->new RoleGap.Requirement(s.id(),s.name(),java.math.BigDecimal.valueOf(s.requiredScore()),true)).toList();
+            references.assertCurrent(scope,ref);
+            return new Binding(ref.businessRoleId(),roleId,levelId,ref.occupationId(),role.name(),level.name(),ref.catalogFingerprint(),ref.releaseToken(),ref.versions(),requirements);
+        }
         try(var session=sessions.open(scope,ref)) {
             var binding=session.executeRead(tx->read(tx,scope,ref,maximum));
             references.assertCurrent(scope,ref);return binding;

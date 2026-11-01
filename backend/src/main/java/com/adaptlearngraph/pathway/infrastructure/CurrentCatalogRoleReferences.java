@@ -9,7 +9,9 @@ import java.util.*;
 /** Current string-ID Role + explicitly selected member Level; no separate business mapping or inferred rank. */
 public final class CurrentCatalogRoleReferences implements RoleReferences {
     private final Catalog catalog;private final ReleaseAuthority releases;
-    public CurrentCatalogRoleReferences(Catalog catalog,ReleaseAuthority releases){this.catalog=catalog;this.releases=releases;}
+    private final com.adaptlearngraph.learning.application.AuthoredCatalogPort authored;
+    public CurrentCatalogRoleReferences(Catalog catalog,ReleaseAuthority releases){this(catalog,releases,com.adaptlearngraph.learning.application.AuthoredCatalogPort.NONE);}
+    public CurrentCatalogRoleReferences(Catalog catalog,ReleaseAuthority releases,com.adaptlearngraph.learning.application.AuthoredCatalogPort authored){this.catalog=catalog;this.releases=releases;this.authored=authored;}
     @Override public RoleReference require(Actor actor,String roleId,String levelId) {
         var scope=Scope.own(actor);var release=releases.require(scope);
         if(!release.organizationId().equals(scope.organizationId()))throw new Failure(503,"CATALOG_SCOPE_INVALID",false);
@@ -19,6 +21,11 @@ public final class CurrentCatalogRoleReferences implements RoleReferences {
         if(role.levels().stream().filter(l->l.id().equals(levelId)).count()!=1)throw new Failure(404,"LEVEL_NOT_AVAILABLE",false);
         if(!role.catalogVersion().equals(release.versions().get("catalog")))throw new Failure(503,"INCOHERENT_CATALOG_VERSION",false);
         var versions=new TreeMap<>(release.versions());versions.put("binding","role-level-choice-v1");
+        if(authored.occupations(scope.organizationId()).contains(role.occupationId())) {
+            var projection=com.adaptlearngraph.learning.application.AuthoredCatalogPort.scoped(authored.find(scope.organizationId(),role.occupationId()).orElseThrow(()->new Failure(503,"CATALOG_BINDING_UNAVAILABLE",false)),scope.organizationId(),role.occupationId());
+            if(!projection.fingerprint().equals(role.fingerprint()))throw new Failure(409,"CATALOG_SOURCE_CHANGED",false);
+            versions.put("binding","authored-role-level-member-v1");versions.put("catalogBinding",projection.bindingRevision());
+        }
         if(releases instanceof LocalReviewCatalogRelease local && local.hasSoftwareDevelopment() && com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.OCCUPATION.equals(role.occupationId()))
             versions.put("developmentSeed",com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.MODULES_HASH);
         return new RoleReference(scope.organizationId(),InitialCatalogPort.choiceId(roleId,levelId),roleId,levelId,role.occupationId(),
@@ -27,5 +34,11 @@ public final class CurrentCatalogRoleReferences implements RoleReferences {
     @Override public void assertCurrent(Scope scope,RoleReference reference){
         if(!scope.organizationId().equals(reference.organizationId()))throw new Failure(503,"CATALOG_SCOPE_INVALID",false);
         releases.assertCurrent(scope,reference);
+        if("authored-role-level-member-v1".equals(reference.versions().get("binding"))) {
+            var p=com.adaptlearngraph.learning.application.AuthoredCatalogPort.scoped(authored.find(scope.organizationId(),reference.occupationId()).orElseThrow(()->new Failure(503,"CATALOG_BINDING_UNAVAILABLE",false)),scope.organizationId(),reference.occupationId());
+            if(!p.fingerprint().equals(reference.catalogFingerprint()) || !p.bindingRevision().equals(reference.versions().get("catalogBinding"))
+                    || p.roles().stream().noneMatch(r->r.id().equals(reference.roleId()) && r.levels().stream().anyMatch(l->l.id().equals(reference.levelId()))))
+                throw new Failure(409,"CATALOG_SOURCE_CHANGED",false);
+        }
     }
 }

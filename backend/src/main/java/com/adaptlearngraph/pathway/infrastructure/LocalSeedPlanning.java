@@ -16,14 +16,19 @@ final class LocalSeedPlanning implements ReadinessDefinitions, Availability {
     private final Semantics semantics;
     private final Map<String,String> modules;
     private final Set<Edge> edges;
+    private final UUID organization;
 
     LocalSeedPlanning(ObjectMapper json,byte[] seed,Profiles profiles,Semantics semantics) throws java.io.IOException {
         this(json,seed,profiles,semantics,false);
     }
     LocalSeedPlanning(ObjectMapper json,byte[] seed,Profiles profiles,Semantics semantics,boolean softwareDevelopment) throws java.io.IOException {
+        this(json,seed,profiles,semantics,softwareDevelopment,LocalDemoIdentity.ORG);
+    }
+    LocalSeedPlanning(ObjectMapper json,byte[] seed,Profiles profiles,Semantics semantics,boolean softwareDevelopment,UUID organization) throws java.io.IOException {
         // Constructor checks the exact source hash and catalog invariants; no DB mutation.
         new LocalCatalogBootstrap(seed);
         this.profiles=profiles;this.semantics=semantics;
+        this.organization=Objects.requireNonNull(organization);
         var root=json.readTree(seed);
         if(softwareDevelopment) for(var edge:com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.supplement().path("relationships"))
             ((com.fasterxml.jackson.databind.node.ArrayNode)root.path("relationships")).add(edge);
@@ -36,7 +41,7 @@ final class LocalSeedPlanning implements ReadinessDefinitions, Availability {
         modules=Map.copyOf(inventory);edges=Set.copyOf(prerequisites);
     }
     private void authorize(Scope scope) {
-        if(!LocalDemoIdentity.ORG.equals(scope.organizationId()))throw new Failure(403,"FORBIDDEN",false);
+        if(!organization.equals(scope.organizationId()))throw new Failure(403,"FORBIDDEN",false);
     }
     private void require(Scope scope,Binding binding,Edge edge) {
         authorize(scope);
@@ -51,7 +56,7 @@ final class LocalSeedPlanning implements ReadinessDefinitions, Availability {
     }
     @Override public PrerequisiteNeed prerequisite(Scope scope,Binding binding,Edge edge) {
         require(scope,binding,edge);
-        var profile=profiles.require(scope,binding.occupationId());var compatible=semantics.resolve(binding,profile);
+        var profile=profiles.require(scope,binding.occupationId());var compatible=semantics.resolve(scope,binding,profile);
         var evidence=compatible.compatible().get(edge.prerequisiteSkillId());
         var mastery=evidence==null?null:evidence.mastery();
         String reason=mastery==null?compatible.unknownReasons().getOrDefault(edge.prerequisiteSkillId(),"NOT_IN_ORIGINAL_PROFILE"):null;

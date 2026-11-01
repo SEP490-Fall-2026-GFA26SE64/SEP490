@@ -25,17 +25,46 @@ final class LocalSeedSemantics implements Semantics {
     static LocalSeedSemantics softwareDevelopment(ObjectMapper json,UUID organization,byte[] current) throws java.io.IOException {
         return new LocalSeedSemantics(json,organization,current,current,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.bankBytes(),current,true);
     }
+    static LocalSeedSemantics workspace(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment,UUID ownedBank,Map<String,Map<String,Object>> metadata) throws java.io.IOException {
+        return new LocalSeedSemantics(json,organization,current,historical,bank,previous,softwareDevelopment,ownedBank,metadata);
+    }
+    static LocalSeedSemantics mainDevelopment(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment,Map<String,Map<String,Object>> metadata) throws java.io.IOException {
+        return new LocalSeedSemantics(json,organization,current,historical,bank,previous,softwareDevelopment,null,metadata,true);
+    }
     private LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment) throws java.io.IOException {
+        this(json,organization,current,historical,bank,previous,softwareDevelopment,null,Map.of());
+    }
+    private LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment,UUID ownedBank,Map<String,Map<String,Object>> metadata) throws java.io.IOException {
+        this(json,organization,current,historical,bank,previous,softwareDevelopment,ownedBank,metadata,false);
+    }
+    private LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment,UUID ownedBank,Map<String,Map<String,Object>> metadata,boolean mainDevelopment) throws java.io.IOException {
         this.json=json;
         requireHash(current,com.adaptlearngraph.assessment.infrastructure.LocalCatalogBootstrap.SOURCE_HASH);
         if(softwareDevelopment)requireHash(bank,com.adaptlearngraph.assessment.infrastructure.SoftwareDevelopmentSeed.BANK_HASH);
         else {requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);requireHash(previous,V010_HASH);}
         var manifest=json.readTree(bank);occupation=manifest.path("occupationId").asText();
-        var now=snapshot(current,organization);var old=snapshot(historical,organization);var v010=snapshot(previous,organization);
+        if(mainDevelopment) {
+            if(!com.adaptlearngraph.assessment.infrastructure.MainDevelopmentBankSeed.ORGANIZATION.equals(organization) || ownedBank!=null)
+                throw new IllegalStateException("Main development semantic scope mismatch");
+            manifest=com.adaptlearngraph.assessment.infrastructure.MainDevelopmentBankSeed.projectedManifest(occupation);
+        }
+        if(ownedBank!=null) {
+            ((ObjectNode)manifest.path("questionBank")).put("id",ownedBank.toString());
+            for(var item:manifest.path("items")) ((ObjectNode)item).put("itemVersionId",
+                    com.adaptlearngraph.learning.infrastructure.WorkspaceCatalogFixture.identity(organization,"item-version:"+item.path("itemVersionId").asText()).toString());
+        }
+        var now=snapshot(current,organization,metadata);var base=snapshot(current,organization);var old=snapshot(historical,organization);var v010=snapshot(previous,organization);
         currentFingerprint=now.fingerprint();currentSkills=now.skills();
-        originalSkills=softwareDevelopment ? Map.of(eligibility(now.fingerprint(),organization,manifest),now.skills()) : Map.of(eligibility(old.fingerprint(),organization,manifest),old.skills(),
-                eligibility(v010.fingerprint(),organization,manifest),v010.skills(),eligibility(now.fingerprint(),organization,manifest),now.skills());
+        var origins=new HashMap<String,Map<String,String>>();
+        origins.put(eligibility(base.fingerprint(),organization,manifest),base.skills());
+        origins.put(eligibility(now.fingerprint(),organization,manifest),now.skills());
+        if(!softwareDevelopment) {
+            origins.put(eligibility(old.fingerprint(),organization,manifest),old.skills());
+            origins.put(eligibility(v010.fingerprint(),organization,manifest),v010.skills());
+        }
+        originalSkills=Map.copyOf(origins);
     }
+    String fingerprint(){return currentFingerprint;}
     @Override public Compatibility resolve(Binding binding,Profile profile) {
         if(!occupation.equals(binding.occupationId()) || !currentFingerprint.equals(binding.catalogFingerprint())
                 || !VERSION.equals(binding.versions().get("compatibility")))throw new Failure(503,"SEMANTIC_SOURCE_NOT_SUPPORTED",false);
@@ -58,10 +87,17 @@ final class LocalSeedSemantics implements Semantics {
         return new Compatibility(compatible,unknown,VERSION);
     }
     private Snapshot snapshot(byte[] bytes,UUID organization)throws java.io.IOException {
+        return snapshot(bytes,organization,Map.of());
+    }
+    private Snapshot snapshot(byte[] bytes,UUID organization,Map<String,Map<String,Object>> metadata)throws java.io.IOException {
         var data=json.readTree(bytes);var nodes=new HashMap<String,Map<String,Object>>();
+        var fingerprintNodes=new HashMap<String,Map<String,Object>>();
         for(String group:List.of("Occupations","TargetRoles","Levels","MicroSkills"))for(var row:data.path(group)) {
             var properties=properties(row);properties.remove("occupationId");properties.remove("targetRoleId");properties.remove("levelId");
             if(nodes.put((String)properties.get("id"),properties)!=null)throw new IllegalStateException("Duplicate source identity");
+            var fingerprintProperties=new TreeMap<>(properties);
+            fingerprintProperties.putAll(metadata.getOrDefault(group.substring(0,group.length()-1),Map.of()));
+            fingerprintNodes.put((String)properties.get("id"),fingerprintProperties);
         }
         var edges=new ArrayList<Edge>();
         for(var row:data.path("relationships")) {
@@ -69,14 +105,14 @@ final class LocalSeedSemantics implements Semantics {
             edges.add(new Edge((String)properties.remove("type"),(String)properties.remove("fromId"),(String)properties.remove("toId"),properties));
         }
         var paths=new TreeSet<String>();var skills=new TreeMap<String,String>();
-        paths.add(encode(Map.of("occupation",nodes.get(occupation))));
+        paths.add(encode(Map.of("occupation",fingerprintNodes.get(occupation))));
         for(var membership:edges)if(membership.kind().equals("HAS_ROLE") && membership.from().equals(occupation)) {
-            String role=membership.to();paths.add(encode(Map.of("role",nodes.get(role),"membership",membership.properties())));
+            String role=membership.to();paths.add(encode(Map.of("role",fingerprintNodes.get(role),"membership",membership.properties())));
             for(var roleLevel:edges)if(roleLevel.kind().equals("HAS_LEVEL") && roleLevel.from().equals(role))
                 for(var requirement:edges)if(requirement.kind().equals("REQUIRES_SKILL") && requirement.from().equals(roleLevel.to())) {
                     var skill=nodes.get(requirement.to());
-                    paths.add(encode(Map.of("roleId",role,"level",nodes.get(roleLevel.to()),"roleLevel",roleLevel.properties(),
-                            "requirement",requirement.properties(),"skill",skill)));
+                    paths.add(encode(Map.of("roleId",role,"level",fingerprintNodes.get(roleLevel.to()),"roleLevel",roleLevel.properties(),
+                            "requirement",requirement.properties(),"skill",fingerprintNodes.get(requirement.to()))));
                     var semanticProperties=new TreeMap<>(skill);semanticProperties.remove("version");
                     skills.put(requirement.to(),encode(semanticProperties));
                 }

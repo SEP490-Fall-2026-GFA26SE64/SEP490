@@ -50,7 +50,11 @@ public final class InitialPathwayPorts {
         void assertCurrent(Scope scope, Binding binding);
     }
     public interface Profiles { Profile require(Scope scope, String occupationId); }
-    public interface Semantics { Compatibility resolve(Binding binding, Profile profile); }
+    public interface Semantics {
+        Compatibility resolve(Binding binding, Profile profile);
+        /** Trusted request/stored scope for workspace adapters; legacy implementations keep their exact behavior. */
+        default Compatibility resolve(Scope scope,Binding binding,Profile profile){return resolve(binding,profile);}
+    }
     public interface ReviewAssignments {
         Assignment require(Actor expert, UUID pathwayId);
         Set<UUID> assignedPathways(Actor expert);

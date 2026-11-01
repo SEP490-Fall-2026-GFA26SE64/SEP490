@@ -22,7 +22,7 @@ public final class RoleGapPreview {
         if (!binding.roleId().equals(roleId) || !binding.levelId().equals(levelId)
                 || !binding.businessRoleId().equals(InitialCatalogPort.choiceId(roleId,levelId))) throw new Failure(503,"INVALID_ROLE_BINDING");
         var profile=profiles.require(scope,binding.occupationId());
-        var compatible=semantics.resolve(binding,profile);
+        var compatible=semantics.resolve(scope,binding,profile);
         if (!compatible.version().equals(binding.versions().get("compatibility"))) throw new Failure(503,"INCOHERENT_SOURCE");
         // A semantics adapter cannot replace stored mastery, relabel an original absence as corruption,
         // or turn a known record into a different numeric evidence value.
