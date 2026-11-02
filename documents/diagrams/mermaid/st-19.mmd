@@ -1,38 +1,44 @@
 ---
-title: "ST-19 - Recommendation run and pathway revision (schema foundation/target)"
+title: "ST-19 - Initial pathway generation and review"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
 ---
 stateDiagram-v2
-  state "Recommendation run" as SDD_ST_19_Run {
-    state "PENDING" as SDD_ST_19_PENDING
-    state "RUNNING" as SDD_ST_19_RUNNING
-    state "SUCCEEDED" as SDD_ST_19_SUCCEEDED
-    state "FAILED" as SDD_ST_19_FAILED
-    state "BLOCKED" as SDD_ST_19_BLOCKED
-    [*] --> SDD_ST_19_PENDING
-    SDD_ST_19_PENDING --> SDD_ST_19_RUNNING
-    SDD_ST_19_RUNNING --> SDD_ST_19_SUCCEEDED : coherent candidate output
-    SDD_ST_19_RUNNING --> SDD_ST_19_FAILED : recorded processing failure
-    SDD_ST_19_RUNNING --> SDD_ST_19_BLOCKED : missing prerequisites/content/evidence
+  state "Pathway Request: Generation Status" as Group0 {
+    state "PENDING" as pending
+    state "GENERATING" as generating
+    state "SUCCEEDED" as success
+    state "NO_LEARNING_REQUIRED" as noLearn
+    state "UNRESOLVED" as unresolved
+    state "BLOCKED" as blocked
+    state "FAILED_RETRYABLE" as retry
+    state "STALE" as stale
+    [*] --> pending : explicit confirmation
+    pending --> generating : System starts processing
+    generating --> success : Valid pathway found; search completed
+    generating --> noLearn : no mandatory need
+    generating --> unresolved : infeasible / cycle / search limit, not proved
+    generating --> blocked : missing configuration / invalid input / retry exhausted
+    generating --> retry : transient failure; attempts remain
+    retry --> generating : backoff + System starts processing
+    retry --> blocked : Retry limit reached
+    generating --> stale : Source or selection changed
   }
-  state "Pathway revision" as SDD_ST_19_Pathway {
-    state "GENERATED" as SDD_ST_19_GENERATED
-    state "IN_REVIEW" as SDD_ST_19_IN_REVIEW
-    state "APPROVED" as SDD_ST_19_APPROVED
-    state "PUBLISHED_CURRENT" as SDD_ST_19_PUBLISHED_CURRENT
-    state "SUPERSEDED" as SDD_ST_19_SUPERSEDED
-    [*] --> SDD_ST_19_GENERATED
-    SDD_ST_19_GENERATED --> SDD_ST_19_IN_REVIEW : initial Expert review requested
-    SDD_ST_19_IN_REVIEW --> SDD_ST_19_APPROVED : Expert confirms exact revision
-    SDD_ST_19_APPROVED --> SDD_ST_19_PUBLISHED_CURRENT : valid current publication
-    SDD_ST_19_PUBLISHED_CURRENT --> SDD_ST_19_SUPERSEDED : valid successor replaces current
+  state "Pathway Request: Review and Validation" as Group1 {
+    state "AWAITING_EXPERT_REVIEW<br/>validation = VALID" as valid
+    state "AWAITING_EXPERT_REVIEW<br/>validation = UNRESOLVED" as invalidDraft
+    state "APPROVED<br/>exact revision + content hash" as approved
+    state "NONE<br/>no current proposal" as none
+    valid --> invalidDraft : save edit with uncovered need
+    invalidDraft --> valid : save eligible repair; fixed set validates
+    valid --> approved : assigned Expert confirms the reviewed valid version
+    [*] --> none
+    none --> valid : Initial pathway generated; first revision saved
   }
-
   classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_19_SUCCEEDED,SDD_ST_19_APPROVED,SDD_ST_19_PUBLISHED_CURRENT accepted
-
   classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_19_FAILED,SDD_ST_19_BLOCKED attention
-
   classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_19_PENDING,SDD_ST_19_RUNNING working
+  class pending working
+  class generating working
+  class success accepted
+  class blocked attention
+  class approved accepted

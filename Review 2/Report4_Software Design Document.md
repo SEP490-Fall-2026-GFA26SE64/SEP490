@@ -5927,7 +5927,7 @@ The last read arrow is a logical persistence path through an authorized applicat
 
 [Mermaid source: ST-13](../documents/diagrams/mermaid/st-13.mmd)
 
-![ST-13 - Adaptive blueprint working row and released availability](../documents/diagrams/mermaid/st-13.png)
+![ST-13 - Baseline Draft and released version](../documents/diagrams/mermaid/st-13.png)
 
 **Diagram notes (ST-13):**
 
@@ -5935,7 +5935,7 @@ The last read arrow is a logical persistence path through an authorized applicat
 
 [Mermaid source: ST-14](../documents/diagrams/mermaid/st-14.mmd)
 
-![ST-14 - Adaptive attempt (persisted state and reason)](../documents/diagrams/mermaid/st-14.png)
+![ST-14 - Employee baseline attempt](../documents/diagrams/mermaid/st-14.png)
 
 **Diagram notes (ST-14):**
 
@@ -5951,7 +5951,7 @@ The last read arrow is a logical persistence path through an authorized applicat
 
 [Mermaid source: ST-16](../documents/diagrams/mermaid/st-16.mmd)
 
-![ST-16 - Question/assessment version publication (physical foundation)](../documents/diagrams/mermaid/st-16.png)
+![ST-16 - Question review and version publication](../documents/diagrams/mermaid/st-16.png)
 
 **Diagram notes (ST-16):**
 
@@ -6005,7 +6005,7 @@ Logical database arrows from actors stand for authorized use-case calls, not dir
 
 [Mermaid source: ST-17](../documents/diagrams/mermaid/st-17.mmd)
 
-![ST-17 - Employee role selection (derived from history)](../documents/diagrams/mermaid/st-17.png)
+![ST-17 - Employee Role and Level selection](../documents/diagrams/mermaid/st-17.png)
 
 **Diagram notes (ST-17):**
 
@@ -6013,7 +6013,7 @@ Logical database arrows from actors stand for authorized use-case calls, not dir
 
 [Mermaid source: ST-18](../documents/diagrams/mermaid/st-18.mmd)
 
-![ST-18 - Competency profile and evidence lifecycle](../documents/diagrams/mermaid/st-18.png)
+![ST-18 - Baseline skill profile and gap evidence](../documents/diagrams/mermaid/st-18.png)
 
 **Diagram notes (ST-18):**
 
@@ -6021,7 +6021,7 @@ Logical database arrows from actors stand for authorized use-case calls, not dir
 
 [Mermaid source: ST-19](../documents/diagrams/mermaid/st-19.mmd)
 
-![ST-19 - Recommendation run and pathway revision (schema foundation/target)](../documents/diagrams/mermaid/st-19.png)
+![ST-19 - Initial pathway generation and review](../documents/diagrams/mermaid/st-19.png)
 
 **Diagram notes (ST-19):**
 

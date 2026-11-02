@@ -217,15 +217,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 [Mermaid source: ACT-05](../documents/diagrams/mermaid/act-05.mmd)
 
-![ACT-05A - Baseline configuration](../documents/diagrams/mermaid/act-05a.png)
-
-![ACT-05B - Employee baseline assessment](../documents/diagrams/mermaid/act-05b.png)
-
-[Mermaid source: ACT-06](../documents/diagrams/mermaid/act-06.mmd)
-
-![ACT-06A - Skill gaps and initial pathway generation](../documents/diagrams/mermaid/act-06a.png)
-
-![ACT-06B - Expert pathway review and learning access](../documents/diagrams/mermaid/act-06b.png)
+![ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation](../documents/diagrams/mermaid/act-05.png)
 
 **Ordering boundary:** ACT-06 expresses the Version 2 guidance journey. The currently connected ACT-05 slice asks for a role selection to establish Occupation scope before baseline admission. It does not yet generate AI guidance or require an initial RIASEC result. A future guidance integration must reconcile these entry paths without rewriting existing selections or assessment history.
 

@@ -1,18 +1,24 @@
 ---
-title: "ST-17 - Employee role selection (derived from history)"
+title: "ST-17 - Employee Role and Level selection"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
 ---
 stateDiagram-v2
-  state "NoSelection" as SDD_ST_17_NoSelection
-  state "Current" as SDD_ST_17_Current
-  state "Ended" as SDD_ST_17_Ended
-  [*] --> SDD_ST_17_NoSelection
-  SDD_ST_17_NoSelection --> SDD_ST_17_Current : explicit available role choice
-  SDD_ST_17_Current --> SDD_ST_17_Current : same-role no-op / exact replay
-  SDD_ST_17_Current --> SDD_ST_17_Ended : successful different-role selection
-  SDD_ST_17_Ended --> [*]
-  state "New Current selection" as SDD_ST_17_NewCurrent
-  SDD_ST_17_Current --> SDD_ST_17_NewCurrent : commit successor and end predecessor<br/>atomically
-
+  state "Employee current choice (derived)" as Group0 {
+    state "NoSelection" as noSelection
+    state "Current" as currentChoice
+    [*] --> noSelection
+    noSelection --> currentChoice : Confirm an available Role and Level
+    currentChoice --> currentChoice : Same pair: keep the selection; new pair: replace the selection
+  }
+  state "Selection record history (derived)" as Group1 {
+    state "Current" as currentRecord
+    state "Ended" as endedRecord
+    [*] --> currentRecord : First choice or replacement commit
+    currentRecord --> endedRecord : Different Role or Level confirmed; end the old record and create its successor in the same transaction
+    endedRecord --> [*]
+  }
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
   classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_17_Current working
+  class currentChoice working
+  class currentRecord working
