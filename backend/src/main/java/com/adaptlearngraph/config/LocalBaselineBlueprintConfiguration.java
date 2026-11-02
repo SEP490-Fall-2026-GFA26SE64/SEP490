@@ -4,7 +4,7 @@ import com.adaptlearngraph.repository.BaselineBlueprintValidationAdapter;
 import com.adaptlearngraph.repository.JpaBaselineAnswerReviewStore;
 import com.adaptlearngraph.repository.JdbcBaselineAssessmentDraftStore;
 import com.adaptlearngraph.repository.JdbcBaselineAssessmentManagementStore;
-import com.adaptlearngraph.repository.JdbcBaselineBlueprintStore;
+import com.adaptlearngraph.repository.JpaBaselineBlueprintStore;
 import com.adaptlearngraph.repository.Neo4jBaselineOccupationCatalogAdapter;
 import com.adaptlearngraph.services.TransactionalBaselineAssessmentManagementUseCase;
 import com.adaptlearngraph.services.BaselineAssessmentDraftService;
@@ -49,8 +49,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 @org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalBaselineBlueprintConfiguration {
     @Bean
-    BaselineBlueprintStore baselineBlueprintStore(NamedParameterJdbcTemplate jdbc) {
-        return new JdbcBaselineBlueprintStore(jdbc);
+    BaselineBlueprintStore baselineBlueprintStore(com.adaptlearngraph.repository.BaselineBlueprintJpaRepository identities,
+            com.adaptlearngraph.repository.BaselineBlueprintVersionJpaRepository versions,
+            com.adaptlearngraph.repository.BaselineBlueprintRoleJpaRepository roles,
+            com.adaptlearngraph.repository.BaselineBlueprintSkillJpaRepository skills) {
+        return new JpaBaselineBlueprintStore(identities, versions, roles, skills);
     }
 
     @Bean

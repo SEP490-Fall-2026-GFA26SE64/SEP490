@@ -4,7 +4,7 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintActorPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.services.AdaptiveBlueprintService;
 import com.adaptlearngraph.responseDto.AdaptiveBlueprintPayloads;
@@ -49,7 +49,7 @@ public class LocalAdaptiveBlueprintApiConfiguration {
     @Bean
     AdaptiveBlueprintActorPort adaptiveBlueprintActorPort(DataSource dataSource,
             @Value("${assessment.baseline.adaptive.local-actor-id:#{null}}") UUID actorId,
-            JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
+            JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
         var jdbc = new NamedParameterJdbcTemplate(dataSource);
         AdaptiveBlueprintActorPort identity = () -> {
             if (actorId == null) return Optional.empty();
@@ -76,7 +76,7 @@ public class LocalAdaptiveBlueprintApiConfiguration {
 
     @Bean
     AdaptiveBlueprintPreviewPort adaptiveBlueprintPreviewPort(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper mapper,
-            JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
+            JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
         return new JpaAdaptiveBlueprintPreviewAdapter(itemVersions, mapper, settings.questionBankId());
     }
 

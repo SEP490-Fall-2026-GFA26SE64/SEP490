@@ -102,4 +102,49 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
             GROUP BY micro_skill_id, difficulty
             """, nativeQuery = true)
     List<Object[]> publishedCoverage(@Param("skillIds") java.util.Collection<String> microSkillIds);
+
+    @Query("""
+            select count(bank) > 0 from QuestionBankEntity bank join AccountEntity owner on owner.accountId = bank.createdBy
+            where bank.questionBankId = :bank and owner.organizationId = :organization
+            """)
+    boolean bankOwnedBy(@Param("bank") UUID bankId, @Param("organization") UUID organizationId);
+
+    /**
+     * Adaptive eligibility pool of the organization's own bank. Latest identity first: a draft/remapped/incomplete successor
+     * never resurrects an older published version; drafts are admitted only when {@code demoDraft} is set. Protected data
+     * is inspected only inside PostgreSQL; no answer/key/text leaves this query. Native: DISTINCT ON, LATERAL
+     * jsonb_array_elements and jsonb operators. Rows: [item_version_id, micro_skill_id, content_hash].
+     */
+    @Query(value = """
+            WITH latest AS (
+                SELECT DISTINCT ON (item.item_id) item.* FROM platform.item_version item
+                WHERE EXISTS (SELECT 1 FROM platform.item_version original
+                    WHERE original.item_id=item.item_id AND original.question_bank_id=:bank)
+                ORDER BY item.item_id,item.version DESC,item.item_version_id
+            )
+            SELECT item.item_version_id,item.micro_skill_id,item.content_hash
+            FROM latest item
+            JOIN platform.question_bank bank ON bank.question_bank_id=item.question_bank_id
+            JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:organization
+            CROSS JOIN LATERAL (
+                SELECT count(*) AS total,count(DISTINCT option->>'id') AS distinct_ids,
+                    bool_and(coalesce(jsonb_typeof(option->'id')='string' AND btrim(option->>'id')<>''
+                        AND option->>'id'=btrim(option->>'id') AND jsonb_typeof(option->'text')='string'
+                        AND btrim(option->>'text')<>'',false)) AS valid,
+                    bool_or(option->>'id'=item.protected_key->>'correctOptionId') AS has_key
+                FROM jsonb_array_elements(CASE WHEN jsonb_typeof(item.response_schema->'options')='array'
+                    THEN item.response_schema->'options' ELSE '[]'::jsonb END) option
+            ) options
+            WHERE item.question_bank_id=:bank
+                AND (CASE WHEN :demoDraft THEN item.publication_state IN ('DRAFT','PUBLISHED')
+                     ELSE item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired) END)
+                AND item.micro_skill_id IN (:skills) AND btrim(item.prompt)<>''
+                AND btrim(item.micro_skill_name_snapshot)<>'' AND item.difficulty IN ('EASY','MEDIUM','HARD')
+                AND item.response_schema->>'type'='SINGLE_CHOICE'
+                AND jsonb_typeof(item.protected_key->'correctOptionId')='string'
+                AND options.total>=2 AND options.total=options.distinct_ids AND options.valid AND options.has_key
+            ORDER BY item.item_version_id
+            """, nativeQuery = true)
+    List<Object[]> eligiblePool(@Param("organization") UUID organizationId, @Param("bank") UUID bankId,
+            @Param("skills") java.util.Collection<String> microSkillIds, @Param("demoDraft") boolean demoDraft);
 }

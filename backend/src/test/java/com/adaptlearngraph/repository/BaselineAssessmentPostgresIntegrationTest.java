@@ -99,12 +99,16 @@ class BaselineAssessmentPostgresIntegrationTest {
         jdbc = new JdbcTemplate(dataSource);
         var namedJdbc = new NamedParameterJdbcTemplate(dataSource);
         var transactions = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
-        blueprints = new TransactionalBlueprintStore(
-                new JdbcBaselineBlueprintStore(namedJdbc), transactions);
-        drafts = new TransactionalDraftStore(
-                new JdbcBaselineAssessmentDraftStore(namedJdbc), transactions);
         if (persistence != null) persistence.close();
         persistence = com.adaptlearngraph.support.JpaTestContext.start(dataSource);
+        blueprints = new TransactionalBlueprintStore(
+                new JpaBaselineBlueprintStore(persistence.bean(BaselineBlueprintJpaRepository.class),
+                        persistence.bean(BaselineBlueprintVersionJpaRepository.class),
+                        persistence.bean(BaselineBlueprintRoleJpaRepository.class),
+                        persistence.bean(BaselineBlueprintSkillJpaRepository.class)),
+                new TransactionTemplate(persistence.transactionManager()));
+        drafts = new TransactionalDraftStore(
+                new JdbcBaselineAssessmentDraftStore(namedJdbc), transactions);
         answerReviews = new JpaBaselineAnswerReviewStore(persistence.bean(AssessmentVersionJpaRepository.class),
                 persistence.bean(BaselineAnswerRevealAuditJpaRepository.class));
         var actor = (BaselineBlueprintStore.ActorPort) () -> Optional.of(

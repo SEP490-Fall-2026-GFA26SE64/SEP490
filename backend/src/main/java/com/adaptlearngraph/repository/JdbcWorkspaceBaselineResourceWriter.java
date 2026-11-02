@@ -12,24 +12,25 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** Explicit existing-resource binding only; it never creates/promotes a bank, model or parameter set. */
 public final class JdbcWorkspaceBaselineResourceWriter implements WorkspaceBaselineResourcePort {
     private final NamedParameterJdbcTemplate jdbc;
+    private final ItemVersionJpaRepository itemVersions;
     private final TransactionTemplate transactions;
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveTechnicalVersionPort technical;
     private final ObjectMapper json;
     private final java.util.function.BiPredicate<Scope,Tuple> fixture;
     private final java.util.function.Predicate<Scope> ownedCatalog;
-    public JdbcWorkspaceBaselineResourceWriter(NamedParameterJdbcTemplate jdbc, TransactionTemplate transactions,
+    public JdbcWorkspaceBaselineResourceWriter(NamedParameterJdbcTemplate jdbc, ItemVersionJpaRepository itemVersions, TransactionTemplate transactions,
             AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper json) {
-        this(jdbc,transactions,catalog,technical,json,(scope,tuple)->false);
+        this(jdbc,itemVersions,transactions,catalog,technical,json,(scope,tuple)->false);
     }
-    public JdbcWorkspaceBaselineResourceWriter(NamedParameterJdbcTemplate jdbc, TransactionTemplate transactions,
+    public JdbcWorkspaceBaselineResourceWriter(NamedParameterJdbcTemplate jdbc, ItemVersionJpaRepository itemVersions, TransactionTemplate transactions,
             AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper json,java.util.function.BiPredicate<Scope,Tuple> fixture) {
-        this(jdbc,transactions,catalog,technical,json,fixture,scope->false);
+        this(jdbc,itemVersions,transactions,catalog,technical,json,fixture,scope->false);
     }
-    public JdbcWorkspaceBaselineResourceWriter(NamedParameterJdbcTemplate jdbc, TransactionTemplate transactions,
+    public JdbcWorkspaceBaselineResourceWriter(NamedParameterJdbcTemplate jdbc, ItemVersionJpaRepository itemVersions, TransactionTemplate transactions,
             AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper json,
             java.util.function.BiPredicate<Scope,Tuple> fixture,java.util.function.Predicate<Scope> ownedCatalog) {
-        this.jdbc=jdbc;this.transactions=transactions;this.catalog=catalog;this.technical=technical;this.json=json;
+        this.jdbc=jdbc;this.itemVersions=itemVersions;this.transactions=transactions;this.catalog=catalog;this.technical=technical;this.json=json;
         this.fixture=fixture;
         this.ownedCatalog=ownedCatalog;
     }
@@ -60,10 +61,10 @@ public final class JdbcWorkspaceBaselineResourceWriter implements WorkspaceBasel
                 });
     }
     @Override public Optional<AdaptiveBlueprintEligibilityPort.Snapshot> candidate(Scope scope, Tuple tuple) {
-        var settings=new JdbcAdaptiveBlueprintEligibilityAdapter.Properties(true,scope.organizationId(),Set.of(scope.occupationId()),
+        var settings=new JpaAdaptiveBlueprintEligibilityAdapter.Properties(true,scope.organizationId(),Set.of(scope.occupationId()),
                 tuple.bankId(),tuple.modelId(),tuple.mappingId());
         // Only the exact explicitly declared own-bank fixture can admit draft inputs; default remains operational.
-        return new JdbcAdaptiveBlueprintEligibilityAdapter(jdbc,catalog,technical,json,settings,fixture.test(scope,tuple)).resolve(scope);
+        return new JpaAdaptiveBlueprintEligibilityAdapter(itemVersions,catalog,technical,json,settings,fixture.test(scope,tuple)).resolve(scope);
     }
     @Override public void replace(Scope scope, Tuple expected, Tuple desired, UUID actor) {
         var p=new org.springframework.jdbc.core.namedparam.MapSqlParameterSource(key(scope))

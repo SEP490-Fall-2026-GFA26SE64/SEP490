@@ -12,9 +12,9 @@ public final class WorkspaceBaselineResources {
     public record Binding(UUID organizationId, String occupationId, String name, UUID bankId,
                           UUID modelId, UUID mappingId) {
         public boolean ready() { return bankId != null && modelId != null && mappingId != null; }
-        public JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings() {
+        public JpaAdaptiveBlueprintEligibilityAdapter.Properties settings() {
             if (!ready()) throw new IllegalStateException("Baseline question bank/model is not configured");
-            return new JdbcAdaptiveBlueprintEligibilityAdapter.Properties(true, organizationId,
+            return new JpaAdaptiveBlueprintEligibilityAdapter.Properties(true, organizationId,
                     Set.of(occupationId), bankId, modelId, mappingId);
         }
     }

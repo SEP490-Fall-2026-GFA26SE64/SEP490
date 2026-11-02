@@ -15,10 +15,11 @@ import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository;
 import com.adaptlearngraph.repository.AdaptiveAttemptRepositories;
+import com.adaptlearngraph.repository.AdaptiveBlueprintRepositories;
 import com.adaptlearngraph.repository.BaselineAttemptResultJpaRepository;
 import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.PinnedAdaptiveAttemptPolicyAdapter;
 import static org.assertj.core.api.Assertions.*;
@@ -47,7 +48,7 @@ class RoleBaselinePostgresIntegrationTest {
  static final PostgreSQLContainer<?> PG=new PostgreSQLContainer<>("postgres:17.6-alpine");
  static final ObjectMapper JSON=new ObjectMapper().findAndRegisterModules();
  JdbcTemplate sql; NamedParameterJdbcTemplate jdbc; DataSourceTransactionManager manager;
- JdbcAdaptiveBlueprintStore blueprints; JpaAdaptiveAttemptStore attempts; CurrentOccupationProfile profiles;
+ JpaAdaptiveBlueprintStore blueprints; JpaAdaptiveAttemptStore attempts; CurrentOccupationProfile profiles;
  AdaptiveBlueprintEligibilityPort eligibility; AdaptiveBlueprintService authoring; Version version;
  AdaptiveAttemptContextPort context; AdaptiveAttemptStartService starts; AdaptiveAttemptSubmitService submits;
  AdaptiveAttemptAnswerService answers; JpaAdaptiveAttemptResultQuery results; CurrentRoleSelectionStore selections;
@@ -83,7 +84,7 @@ class RoleBaselinePostgresIntegrationTest {
    sql.update("UPDATE platform.irt_parameter_set SET status='PROMOTED',activated_by=?,activated_at=now() WHERE parameter_set_id=?",MANAGER,PINS.parameterSetId());
    return null;
   });
-  blueprints=new JdbcAdaptiveBlueprintStore(jdbc,JSON,manager);
+  blueprints=new JpaAdaptiveBlueprintStore(AdaptiveBlueprintRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),JSON,persistence.transactionManager());
   eligibility=mock(AdaptiveBlueprintEligibilityPort.class);
   when(eligibility.resolve(SCOPE)).thenReturn(Optional.of(eligible()));
   when(eligibility.resolvePinned(SCOPE,PINS)).thenReturn(Optional.of(eligible()));
@@ -198,7 +199,17 @@ class RoleBaselinePostgresIntegrationTest {
   assertThat(count("baseline_adaptive_attempt")).isOne();
   assertThatThrownBy(()->answers.answer(new AdaptiveAttemptUseCase.Answer(v.id(),v.revision(),99,id(100),"a","wrong-position"))).isInstanceOf(AdaptiveAttemptUseCase.Failure.class);
  }
- @Test void rb15EarlyManualInvalidationAndLinkedReplacementRetainOldVersion(){
+ @Test void abC15VersionStatusActiveRetiringInactiveAndTenantScoped(){
+  var scope=new Scope(ORG,OCC);
+  assertThat(blueprints.versionStatus(scope,version.id())).isEqualTo(AdaptiveBlueprintListing.Status.ACTIVE);
+  assertThat(blueprints.versionStatus(new Scope(id(2),OCC),version.id())).isEqualTo(AdaptiveBlueprintListing.Status.INACTIVE);
+  selectionFlow(ORG,EMP).choose("role-a",null,"status-role");var v=start();
+  authoring.disable(new Disable(OCC,1,"status-disable","test",version.id(),true));
+  assertThat(blueprints.versionStatus(scope,version.id())).isEqualTo(AdaptiveBlueprintListing.Status.RETIRING);
+  finish();
+  assertThat(blueprints.versionStatus(scope,version.id())).isEqualTo(AdaptiveBlueprintListing.Status.INACTIVE);
+  assertThat(v.state()).isEqualTo("IN_PROGRESS");
+ } @Test void rb15EarlyManualInvalidationAndLinkedReplacementRetainOldVersion(){
   var v=start();var terminal=submits.submit(new AdaptiveAttemptUseCase.Submit(v.id(),v.revision(),"early"));
   assertThat(terminal.state()).isEqualTo("INVALIDATED");
   assertThat(results.result(v.id()).completionReason()).isEqualTo("MANUAL");

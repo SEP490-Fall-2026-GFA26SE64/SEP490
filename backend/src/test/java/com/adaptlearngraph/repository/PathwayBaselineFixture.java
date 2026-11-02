@@ -19,7 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** Isolated input setup: real baseline stores/policy/answers/results; no mock, development seed or outcome oracle. */
 final class PathwayBaselineFixture {
     final JdbcTemplate sql;final NamedParameterJdbcTemplate jdbc;final DataSourceTransactionManager manager;final com.adaptlearngraph.support.JpaTestContext persistence;
-    final ObjectMapper json;final JdbcAdaptiveBlueprintStore blueprints;final Version version;
+    final ObjectMapper json;final JpaAdaptiveBlueprintStore blueprints;final Version version;
     PathwayBaselineFixture(DataSource ds,ObjectMapper json) {
         this.json=json;sql=new JdbcTemplate(ds);jdbc=new NamedParameterJdbcTemplate(ds);manager=new DataSourceTransactionManager(ds);persistence=com.adaptlearngraph.support.JpaTestContext.startUnvalidated(ds);
         sql.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'C3_FULL_A','C3 Full A'),(?,'C3_FULL_B','C3 Full B')",ORG,id(2));
@@ -39,7 +39,7 @@ final class PathwayBaselineFixture {
             sql.update("UPDATE platform.irt_parameter_set SET status='CANDIDATE' WHERE parameter_set_id=?",PINS.parameterSetId());
             sql.update("UPDATE platform.irt_parameter_set SET status='PROMOTED',activated_by=?,activated_at=now() WHERE parameter_set_id=?",MANAGER,PINS.parameterSetId());
         });
-        blueprints=new JdbcAdaptiveBlueprintStore(jdbc,json,manager);
+        blueprints=new JpaAdaptiveBlueprintStore(AdaptiveBlueprintRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),json,persistence.transactionManager());
         version=blueprints.inTransaction(SCOPE,()->{
             blueprints.ensureIdentity(SCOPE,MANAGER);var v=new Version(SCOPE,blueprints.nextVersion(SCOPE),config(),"Fixture Occupation","fixture-f3-v1",PINS,roles(),MANAGER,NOW);
             blueprints.insertVersion(SCOPE,v);

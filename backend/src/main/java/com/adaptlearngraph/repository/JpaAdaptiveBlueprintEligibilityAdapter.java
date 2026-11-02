@@ -18,60 +18,28 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** TMP-REQ002-03/05/07: read-only local integration, pending the owner's tenant/release/item-availability contract. */
-public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBlueprintEligibilityPort {
+public final class JpaAdaptiveBlueprintEligibilityAdapter implements AdaptiveBlueprintEligibilityPort {
     @ConfigurationProperties("assessment.baseline.adaptive.eligibility")
     public record Properties(boolean enabled, UUID organizationId, Set<String> occupationIds, UUID questionBankId,
                              UUID modelVersionId, UUID masteryMappingVersionId) {
         public Properties { if (occupationIds != null) occupationIds = Set.copyOf(occupationIds); }
     }
 
-    // Latest identity first: a draft/remapped/incomplete successor never resurrects an older published version.
-    // Protected data is inspected only inside PostgreSQL; no answer/key/text leaves this query.
-    private static final String ITEMS = """
-            WITH latest AS (
-                SELECT DISTINCT ON (item.item_id) item.* FROM platform.item_version item
-                WHERE EXISTS (SELECT 1 FROM platform.item_version original
-                    WHERE original.item_id=item.item_id AND original.question_bank_id=:bank)
-                ORDER BY item.item_id,item.version DESC,item.item_version_id
-            )
-            SELECT item.item_version_id,item.micro_skill_id,item.content_hash
-            FROM latest item
-            JOIN platform.question_bank bank ON bank.question_bank_id=item.question_bank_id
-            JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:organization
-            CROSS JOIN LATERAL (
-                SELECT count(*) AS total,count(DISTINCT option->>'id') AS distinct_ids,
-                    bool_and(coalesce(jsonb_typeof(option->'id')='string' AND btrim(option->>'id')<>''
-                        AND option->>'id'=btrim(option->>'id') AND jsonb_typeof(option->'text')='string'
-                        AND btrim(option->>'text')<>'',false)) AS valid,
-                    bool_or(option->>'id'=item.protected_key->>'correctOptionId') AS has_key
-                FROM jsonb_array_elements(CASE WHEN jsonb_typeof(item.response_schema->'options')='array'
-                    THEN item.response_schema->'options' ELSE '[]'::jsonb END) option
-            ) options
-            WHERE item.question_bank_id=:bank AND item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired)
-                AND item.micro_skill_id IN (:skills) AND btrim(item.prompt)<>''
-                AND btrim(item.micro_skill_name_snapshot)<>'' AND item.difficulty IN ('EASY','MEDIUM','HARD')
-                AND item.response_schema->>'type'='SINGLE_CHOICE'
-                AND jsonb_typeof(item.protected_key->'correctOptionId')='string'
-                AND options.total>=2 AND options.total=options.distinct_ids AND options.valid AND options.has_key
-            ORDER BY item.item_version_id
-            """;
     private final boolean demoDraft;
-    private final NamedParameterJdbcTemplate jdbc;
+    private final ItemVersionJpaRepository itemVersions;
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveTechnicalVersionPort technical;
     private final AdaptiveBlueprintJson json;
     private final ObjectMapper policies;
     private final Properties settings;
 
-    public JdbcAdaptiveBlueprintEligibilityAdapter(NamedParameterJdbcTemplate jdbc, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings) { this(jdbc, catalog, technical, mapper, settings, false); }
+    public JpaAdaptiveBlueprintEligibilityAdapter(ItemVersionJpaRepository items, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings) { this(items, catalog, technical, mapper, settings, false); }
 
-    public JdbcAdaptiveBlueprintEligibilityAdapter(NamedParameterJdbcTemplate jdbc, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings, boolean demoDraft) {
+    public JpaAdaptiveBlueprintEligibilityAdapter(ItemVersionJpaRepository items, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical, ObjectMapper mapper, Properties settings, boolean demoDraft) {
         this.demoDraft = demoDraft;
-        this.jdbc = Objects.requireNonNull(jdbc);
+        this.itemVersions = Objects.requireNonNull(items);
         this.catalog = Objects.requireNonNull(catalog);
         this.technical = Objects.requireNonNull(technical);
         this.json = new AdaptiveBlueprintJson(mapper);
@@ -107,12 +75,7 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
             if (found.isEmpty()) return Optional.empty();
             var snapshot = found.get();
             if (!scope.equals(snapshot.scope())) throw new IllegalStateException("Catalog scope mismatch");
-            var params = new MapSqlParameterSource("bank", settings.questionBankId()).addValue("organization", scope.organizationId());
-            Boolean allowed = jdbc.queryForObject("""
-                    SELECT EXISTS (SELECT 1 FROM platform.question_bank bank JOIN platform.account owner ON owner.account_id=bank.created_by
-                    WHERE bank.question_bank_id=:bank AND owner.organization_id=:organization)
-                    """, params, Boolean.class);
-            if (!Boolean.TRUE.equals(allowed)) return Optional.empty();
+            if (!itemVersions.bankOwnedBy(settings.questionBankId(), scope.organizationId())) return Optional.empty();
             var versions = pins.isPresent() ? technical.findPinned(pins.get())
                     : technical.findEffective(scope.organizationId(), settings.questionBankId(), settings.modelVersionId(), settings.masteryMappingVersionId());
             var technicalVersions = versions.orElseThrow(() -> new DependencyUnavailable("Approved technical versions unavailable", null));
@@ -122,8 +85,8 @@ public final class JdbcAdaptiveBlueprintEligibilityAdapter implements AdaptiveBl
             var parameterRows = technical.findParameters(selected, skills);
             var parameters = parameterRows.stream().collect(Collectors.toMap(
                     AdaptiveTechnicalVersionPort.ItemParameter::itemVersionId, AdaptiveTechnicalVersionPort.ItemParameter::microSkillId));
-            List<Item> items = skills.isEmpty() ? List.of() : jdbc.query(demoDraft ? ITEMS.replace("item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired)", "item.publication_state IN ('DRAFT','PUBLISHED')") : ITEMS, params.addValue("skills", skills),
-                    (rs, row) -> new Item(rs.getObject("item_version_id", UUID.class), rs.getString("micro_skill_id"), rs.getString("content_hash")));
+            List<Item> items = skills.isEmpty() ? List.of() : itemVersions.eligiblePool(scope.organizationId(), settings.questionBankId(),
+                    skills, demoDraft).stream().map(row -> new Item((UUID) row[0], (String) row[1], (String) row[2])).toList();
             Set<UUID> published = items.stream().map(Item::id).collect(Collectors.toSet());
             parameterRows.stream().filter(item -> published.contains(item.itemVersionId())).forEach(item -> model.validate(
                     new Irt3pl.Item(item.itemVersionId(), item.microSkillId(), selected.parameterSetId(),

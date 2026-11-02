@@ -21,7 +21,7 @@ import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.services.AdaptiveAttemptAnswerService;
 import com.adaptlearngraph.services.AdaptiveAttemptSnapshotResolver;
 import com.adaptlearngraph.services.AdaptiveAttemptStartService;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.StartRead;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.Answering;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,13 +54,13 @@ public class LocalAdaptiveAttemptConfiguration {
     @Bean
     AdaptiveAttemptPolicyPort adaptiveAttemptPolicy(AdaptiveTechnicalVersionPort technical) { return new PinnedAdaptiveAttemptPolicyAdapter(technical); }
     @Bean
-    AdaptiveAttemptContentPort adaptiveAttemptContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
+    AdaptiveAttemptContentPort adaptiveAttemptContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
         return new JpaAdaptiveAttemptContent(itemVersions, settings.questionBankId());
     }
     @Bean
     AdaptiveAttemptContextPort adaptiveAttemptContext(AdaptiveAttemptContextJpaRepository identities, AdaptiveBlueprintStore blueprints,
             AdaptiveBlueprintEligibilityPort eligibility, AdaptiveTechnicalVersionPort technical, AdaptiveBaselineCatalogPort catalog,
-            JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings,
+            JpaAdaptiveBlueprintEligibilityAdapter.Properties settings,
             @Value("${assessment.baseline.adaptive.attempts.local-employee-id:#{null}}") UUID employeeId) {
         return new LocalAdaptiveAttemptContext(identities, employeeId, settings.organizationId(),
                 settings.occupationIds(), catalog, new AdaptiveAttemptSnapshotResolver(blueprints, eligibility, technical));
@@ -72,7 +72,7 @@ public class LocalAdaptiveAttemptConfiguration {
     }
     @Bean
     @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.attempts.answers", name = "enabled", havingValue = "true")
-    AdaptiveAttemptScoringPort adaptiveAttemptScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
+    AdaptiveAttemptScoringPort adaptiveAttemptScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
         return new JpaAdaptiveAttemptScoring(itemVersions, settings.questionBankId());
     }
     @Bean

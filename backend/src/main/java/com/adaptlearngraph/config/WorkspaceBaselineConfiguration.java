@@ -24,9 +24,9 @@ import com.adaptlearngraph.repository.JpaAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository;
 import com.adaptlearngraph.repository.AdaptiveAttemptRepositories;
 import com.adaptlearngraph.repository.BaselineAttemptResultJpaRepository;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.JdbcWorkspaceBaselineResourceWriter;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.MainDevelopmentTechnicalVersions;
@@ -135,16 +135,19 @@ public class WorkspaceBaselineConfiguration {
         return new WorkspaceBaselineResources(new NamedParameterJdbcTemplate(source),occupations);
     }
     @Bean com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase workspaceResourceProvisioning(
-            DataSource source, PlatformTransactionManager transactions, ObjectMapper json, AdaptiveBlueprintActorPort actors,
+            DataSource source, com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, PlatformTransactionManager transactions, ObjectMapper json, AdaptiveBlueprintActorPort actors,
             AdaptiveBaselineCatalogPort catalog,AdaptiveTechnicalVersionPort technical,WorkspaceCatalogFixture fixture,WorkspaceBaselineResources resources) {
         return new com.adaptlearngraph.services.WorkspaceBaselineResourceService(actors,
-                new JdbcWorkspaceBaselineResourceWriter(new NamedParameterJdbcTemplate(source),new TransactionTemplate(transactions),catalog,
+                new JdbcWorkspaceBaselineResourceWriter(new NamedParameterJdbcTemplate(source),itemVersions,new TransactionTemplate(transactions),catalog,
                         technical,json,(scope,tuple)->fixture.bank(scope.organizationId(),scope.occupationId())
                                 .filter(bank->bank.bankId().equals(tuple.bankId()) && bank.modelId().equals(tuple.modelId()) && bank.mappingId().equals(tuple.mappingId())).isPresent(),
                         scope->resources.owned(scope.organizationId(),scope.occupationId())));
     }
-    @Bean AdaptiveBlueprintStore workspaceBlueprintStore(DataSource source, ObjectMapper json, PlatformTransactionManager transactions) {
-        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(source), json, transactions, true);
+    @Bean AdaptiveBlueprintStore workspaceBlueprintStore(org.springframework.beans.factory.BeanFactory beans,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager transactions) {
+        return new JpaAdaptiveBlueprintStore(com.adaptlearngraph.repository.AdaptiveBlueprintRepositories.from(beans::getBean, locks),
+                json, transactions, true);
     }
     @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
         AdaptiveTechnicalVersionPort delegate=new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);
@@ -173,13 +176,12 @@ public class WorkspaceBaselineConfiguration {
                     });
         };
     }
-    @Bean AdaptiveBlueprintEligibilityPort workspaceBlueprintEligibility(DataSource source, ObjectMapper json,
+    @Bean AdaptiveBlueprintEligibilityPort workspaceBlueprintEligibility(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper json,
             WorkspaceBaselineResources resources, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical,Environment environment,WorkspaceCatalogFixture fixture) {
-        var jdbc = new NamedParameterJdbcTemplate(source);
         return new AdaptiveBlueprintEligibilityPort() {
-            private Optional<JdbcAdaptiveBlueprintEligibilityAdapter> adapter(AdaptiveBlueprint.Scope scope) {
+            private Optional<JpaAdaptiveBlueprintEligibilityAdapter> adapter(AdaptiveBlueprint.Scope scope) {
                 return resources.find(scope.organizationId(), scope.occupationId()).filter(WorkspaceBaselineResources.Binding::ready)
-                        .map(binding -> new JdbcAdaptiveBlueprintEligibilityAdapter(jdbc, catalog, technical, json, binding.settings(),
+                        .map(binding -> new JpaAdaptiveBlueprintEligibilityAdapter(itemVersions, catalog, technical, json, binding.settings(),
                                 developmentBank(environment,scope.organizationId(),scope.occupationId(),binding.bankId(),fixture)));
             }
             public Optional<Snapshot> resolve(AdaptiveBlueprint.Scope scope) {

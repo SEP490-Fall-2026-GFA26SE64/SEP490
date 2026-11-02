@@ -3,7 +3,7 @@ package com.adaptlearngraph.config;
 import com.adaptlearngraph.repository.AdaptiveAttemptFinalizationPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore;
 import com.adaptlearngraph.services.AdaptiveAttemptDeadlineWorker;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import java.time.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,7 +20,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class LocalAdaptiveAttemptDeadlineConfiguration {
     @Bean
     AdaptiveAttemptDeadlineWorker adaptiveAttemptDeadlineWorker(AdaptiveAttemptStore store, AdaptiveAttemptFinalizationPort finalization,
-            JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings,
+            JpaAdaptiveBlueprintEligibilityAdapter.Properties settings,
             @Value("${assessment.baseline.adaptive.attempts.deadline-worker.batch-size:10}") int batchSize) {
         return new AdaptiveAttemptDeadlineWorker(store, finalization, settings.organizationId(), batchSize);
     }
