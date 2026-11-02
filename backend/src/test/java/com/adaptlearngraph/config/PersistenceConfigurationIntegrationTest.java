@@ -3,6 +3,9 @@ package com.adaptlearngraph.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.entities.MicroSkillNode;
+import com.adaptlearngraph.entities.OccupationNode;
+import com.adaptlearngraph.repository.MicroSkillNodeRepository;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -18,6 +21,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
 import org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -48,6 +52,8 @@ class PersistenceConfigurationIntegrationTest {
     @Autowired private EntityManager entityManager;
     @Autowired private Neo4jClient neo4j;
     @Autowired private ModelMapper mapper;
+    @Autowired private Neo4jMappingContext graphMapping;
+    @Autowired private MicroSkillNodeRepository microSkills;
 
     @Configuration(proxyBeanMethods = false)
     @TestComponent
@@ -106,6 +112,21 @@ class PersistenceConfigurationIntegrationTest {
         transactions.executeWithoutResult(status -> createProbe(committed));
         assertThat(probes(rolledBack)).isZero();
         assertThat(probes(committed)).isEqualTo(1);
+    }
+
+    @Test
+    void graphRepositoriesAreScannedForNodeClassesAndJoinTheGraphTransaction() {
+        assertThat(graphMapping.hasPersistentEntityFor(MicroSkillNode.class)).isTrue();
+        assertThat(graphMapping.hasPersistentEntityFor(OccupationNode.class)).isTrue();
+        String organization = UUID.randomUUID().toString();
+        new TransactionTemplate(graph).executeWithoutResult(status -> {
+            neo4j.query("CREATE (:MicroSkill {id: $id, organizationId: $organization, code: 'PROBE'})")
+                    .bindAll(java.util.Map.of("id", UUID.randomUUID().toString(), "organization", organization)).run();
+            assertThat(microSkills.existsByOrganizationIdAndCode(organization, "PROBE"))
+                    .as("repository sees the uncommitted write of the surrounding graph transaction").isTrue();
+            status.setRollbackOnly();
+        });
+        assertThat(microSkills.existsByOrganizationIdAndCode(organization, "PROBE")).isFalse();
     }
 
     @Test

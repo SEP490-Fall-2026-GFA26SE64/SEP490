@@ -14,8 +14,16 @@ import com.adaptlearngraph.repository.TargetRoleCatalogPort;
 import com.adaptlearngraph.repository.TargetRoleRepository;
 import com.adaptlearngraph.entities.TargetRole;
 import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.repository.CompetencyNodeRepository;
+import com.adaptlearngraph.repository.OccupationNodeRepository;
+import com.adaptlearngraph.repository.TargetRoleNodeRepository;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -30,10 +38,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CatalogConfiguration {
 
     @Bean
-    public TargetRoleRepository targetRoleRepository(ObjectProvider<Driver> driverProvider) {
+    public TargetRoleRepository targetRoleRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<TargetRoleNodeRepository> roles, ObjectProvider<Neo4jClient> client,
+            ObjectProvider<Neo4jMappingContext> mappingContext,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jTargetRoleRepository(driver);
+            return new Neo4jTargetRoleRepository(roles.getObject(), client.getObject(), mappingContext.getObject(),
+                    transactions.getObject());
         }
         return new InMemoryFallbackTargetRoleRepository();
     }
@@ -65,10 +77,12 @@ public class CatalogConfiguration {
     }
 
     @Bean
-    public com.adaptlearngraph.repository.OccupationRepository occupationRepository(ObjectProvider<Driver> driverProvider) {
+    public com.adaptlearngraph.repository.OccupationRepository occupationRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<OccupationNodeRepository> occupations, ObjectProvider<Neo4jClient> client,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jOccupationRepository(driver);
+            return new Neo4jOccupationRepository(occupations.getObject(), client.getObject(), transactions.getObject());
         }
         return new com.adaptlearngraph.repository.OccupationRepository() {
             @Override public java.util.List<com.adaptlearngraph.entities.Occupation> findAllOccupations(String organizationId) { return java.util.List.of(); }
@@ -85,10 +99,12 @@ public class CatalogConfiguration {
     }
 
     @Bean
-    public com.adaptlearngraph.repository.CompetencyRepository competencyRepository(ObjectProvider<Driver> driverProvider) {
+    public com.adaptlearngraph.repository.CompetencyRepository competencyRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<CompetencyNodeRepository> competencies, ObjectProvider<Neo4jClient> client,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jCompetencyRepository(driver);
+            return new Neo4jCompetencyRepository(competencies.getObject(), client.getObject(), transactions.getObject());
         }
         return new com.adaptlearngraph.repository.CompetencyRepository() {
             @Override public java.util.List<com.adaptlearngraph.entities.CompetencyRecord> findAllCompetencies(String organizationId, String search) { return java.util.List.of(); }

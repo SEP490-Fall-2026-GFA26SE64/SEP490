@@ -5,12 +5,9 @@ import com.adaptlearngraph.entities.RoleStatus;
 import com.adaptlearngraph.entities.RoleTrack;
 import com.adaptlearngraph.entities.TargetRole;
 import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.entities.TargetRoleNode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.types.Node;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,49 +16,84 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.types.MapAccessor;
+import org.neo4j.driver.types.TypeSystem;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jTargetRoleRepository implements TargetRoleRepository {
-    private final Driver driver;
+    private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
+    private static final String GRAPH_SKILLS = """
+            OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+            WITH r, collect(CASE WHEN s IS NOT NULL THEN {
+                skillId: s.id,
+                skillCode: s.code,
+                skillName: s.name,
+                threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
+                level: coalesce(req.level, '')
+            } END) AS graphSkills
+            """;
+    // Neo4jClient: the role node is mapped by SDN; its REQUIRES_SKILL targets are collected into one extra column.
+    private static final String BY_ID = """
+            MATCH (r:TargetRole)
+            WHERE r.organizationId = $organizationId
+              AND (r.id = $id
+                   OR r.code = $id
+                   OR r.baseCode = $id
+                   OR (r.baseCode IS NOT NULL AND $id STARTS WITH r.baseCode AND coalesce(r.version, '1.0') = substring($id, size(r.baseCode) + 2, 3))
+                   OR (r.baseCode IS NOT NULL AND $id CONTAINS r.baseCode AND (r.version IS NOT NULL AND $id CONTAINS r.version)))
+              AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
+            """ + GRAPH_SKILLS + """
+            RETURN r, graphSkills
+            """;
+    private static final String BY_CODE = """
+            MATCH (r:TargetRole)
+            WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
+            """ + GRAPH_SKILLS + """
+            RETURN r, graphSkills
+            """;
+
+    private final TargetRoleNodeRepository roles;
+    private final Neo4jClient client;
+    private final Neo4jMappingContext mappingContext;
+    private final TransactionTemplate reads;
+    private final TransactionTemplate writes;
     private final ObjectMapper objectMapper;
 
-    public Neo4jTargetRoleRepository(Driver driver) {
-        this.driver = Objects.requireNonNull(driver, "Driver cannot be null");
+    public Neo4jTargetRoleRepository(TargetRoleNodeRepository roles, Neo4jClient client, Neo4jMappingContext mappingContext,
+            PlatformTransactionManager transactions) {
+        this.roles = Objects.requireNonNull(roles, "roles cannot be null");
+        this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
+        this.mappingContext = Objects.requireNonNull(mappingContext, "mapping context cannot be null");
+        mappingContext.getRequiredPersistentEntity(TargetRoleNode.class);
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.writes = Neo4jCatalogTransactions.readWrite(transactions);
         this.objectMapper = new ObjectMapper();
+    }
+
+    // SDN mapping functions keep an identity cache for one result set; obtain a fresh one per query.
+    private BiFunction<TypeSystem, MapAccessor, TargetRoleNode> nodes() {
+        return mappingContext.getRequiredMappingFunctionFor(TargetRoleNode.class);
     }
 
     @Override
     public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
-        String cypher = """
-                MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
-                RETURN count(r) > 0 AS exists
-                """;
-        try (var session = driver.session()) {
-            return session.run(cypher, Map.of("organizationId", organizationId, "code", code))
-                    .single()
-                    .get("exists")
-                    .asBoolean();
-        }
+        Objects.requireNonNull(organizationId, "organizationId");
+        Objects.requireNonNull(code, "code");
+        return Boolean.TRUE.equals(reads.execute(status -> roles.existsByCode(organizationId, code)));
     }
 
     @Override
     public boolean existsByOrganizationIdAndCodeAndVersion(String organizationId, String code, String version) {
-        String cypher = """
-                MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId
-                  AND (r.code = $code OR r.baseCode = $code)
-                  AND coalesce(r.version, '1.0') = $version
-                RETURN count(r) > 0 AS exists
-                """;
-        try (var session = driver.session()) {
-            return session.run(cypher, Map.of(
-                    "organizationId", organizationId,
-                    "code", code,
-                    "version", (version != null && !version.isBlank()) ? version.trim() : "1.0"))
-                    .single()
-                    .get("exists")
-                    .asBoolean();
-        }
+        Objects.requireNonNull(organizationId, "organizationId");
+        Objects.requireNonNull(code, "code");
+        String normalizedVersion = (version != null && !version.isBlank()) ? version.trim() : "1.0";
+        return Boolean.TRUE.equals(reads.execute(status -> roles.existsByCodeAndVersion(organizationId, code, normalizedVersion)));
     }
 
     @Override
@@ -71,147 +103,55 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         String version = (targetRole.getVersion() != null && !targetRole.getVersion().isBlank())
                 ? targetRole.getVersion().trim()
                 : "1.0";
+        String organizationId = targetRole.getOrganizationId();
 
-        // If client passed a generated or alias ID, locate existing persisted node ID
-        String matchedId = roleIdStr;
-        String findExistingCypher = """
-                MATCH (existing:TargetRole)
-                WHERE existing.organizationId = $organizationId
-                  AND (existing.id = $id OR existing.code = $id OR (existing.baseCode = $rawCode AND coalesce(existing.version, '1.0') = $version))
-                  AND coalesce(existing.status, 'ACTIVE') <> 'SUPERSEDED'
-                RETURN existing.id AS existingId LIMIT 1
-                """;
-        try (var session = driver.session()) {
-            var res = session.run(findExistingCypher, Map.of(
-                    "organizationId", targetRole.getOrganizationId(),
-                    "id", roleIdStr,
-                    "rawCode", rawCode,
-                    "version", version));
-            if (res.hasNext()) {
-                matchedId = res.next().get("existingId").asString();
-            }
-        }
+        writes.executeWithoutResult(status -> {
+            // If client passed a generated or alias ID, locate existing persisted node ID
+            String matchedId = roles.findPersistedId(organizationId, roleIdStr, rawCode, version).orElse(roleIdStr);
 
-        // Determine unique graph code to satisfy Neo4j's target_role_code constraint when versions or orgs differ
-        String graphCode = resolveGraphCode(matchedId, targetRole.getOrganizationId(), rawCode, version);
+            // Determine unique graph code to satisfy Neo4j's target_role_code constraint when versions or orgs differ
+            String graphCode = resolveGraphCode(matchedId, organizationId, rawCode, version);
+            String updatedAt = targetRole.getUpdatedAt().toString();
 
-        String cypher = """
-                MERGE (r:TargetRole {id: $id})
-                ON CREATE SET
-                    r.organizationId = $organizationId,
-                    r.code = $graphCode,
-                    r.baseCode = $rawCode,
-                    r.name = $name,
-                    r.familyCode = $familyCode,
-                    r.track = $track,
-                    r.assignedExpertId = $assignedExpertId,
-                    r.description = $description,
-                    r.responsibilities = $responsibilities,
-                    r.status = $status,
-                    r.version = $version,
-                    r.skillTargets = $skillTargets,
-                    r.levels = $levels,
-                    r.levelCompetencies = $levelCompetencies,
-                    r.competencyIds = $competencyIds,
-                    r.createdAt = datetime($createdAt),
-                    r.updatedAt = datetime($updatedAt),
-                    r.rejectionReason = $rejectionReason
-                ON MATCH SET
-                    r.code = $graphCode,
-                    r.baseCode = $rawCode,
-                    r.name = $name,
-                    r.familyCode = $familyCode,
-                    r.track = $track,
-                    r.assignedExpertId = $assignedExpertId,
-                    r.description = $description,
-                    r.responsibilities = $responsibilities,
-                    r.status = $status,
-                    r.version = $version,
-                    r.skillTargets = $skillTargets,
-                    r.levels = $levels,
-                    r.levelCompetencies = $levelCompetencies,
-                    r.competencyIds = $competencyIds,
-                    r.updatedAt = datetime($updatedAt),
-                    r.rejectionReason = $rejectionReason
-                RETURN r
-                """;
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("id", matchedId);
-        params.put("organizationId", targetRole.getOrganizationId());
-        params.put("graphCode", graphCode);
-        params.put("rawCode", rawCode);
-        params.put("name", targetRole.getName());
-        params.put("familyCode", targetRole.getFamilyCode());
-        params.put("track", targetRole.getTrack().name());
-        params.put("assignedExpertId", targetRole.getAssignedExpertId());
-        params.put("description", targetRole.getDescription());
-        params.put("responsibilities", targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of());
-        params.put("status", targetRole.getStatus().name());
-        params.put("version", version);
-        params.put("skillTargets", targetRole.getSkillTargets());
-        params.put("levels", targetRole.getLevels());
-        params.put("levelCompetencies", targetRole.getLevelCompetencies());
-        params.put("competencyIds", targetRole.getCompetencyIds() != null ? targetRole.getCompetencyIds() : List.of());
-        params.put("createdAt", targetRole.getCreatedAt().toString());
-        params.put("updatedAt", targetRole.getUpdatedAt().toString());
-        params.put("rejectionReason", targetRole.getRejectionReason());
-
-        try (var session = driver.session()) {
-            Neo4jTenantGuard.requireOwnedOrAbsent(session, "TargetRole", matchedId, targetRole.getOrganizationId());
-            session.run(cypher, params).consume();
+            Neo4jTenantGuard.requireOwnedOrAbsent(client, "TargetRole", matchedId, organizationId);
+            roles.merge(matchedId, organizationId, graphCode, rawCode, targetRole.getName(), targetRole.getFamilyCode(),
+                    targetRole.getTrack().name(), targetRole.getAssignedExpertId(), targetRole.getDescription(),
+                    targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of(),
+                    targetRole.getStatus().name(), version, targetRole.getSkillTargets(), targetRole.getLevels(),
+                    targetRole.getLevelCompetencies(),
+                    targetRole.getCompetencyIds() != null ? targetRole.getCompetencyIds() : List.of(),
+                    targetRole.getCreatedAt().toString(), updatedAt, targetRole.getRejectionReason());
 
             // When publishing, override and supersede any previous version of this role
             if (targetRole.getStatus() == RoleStatus.PUBLISHED || targetRole.getStatus() == RoleStatus.ACTIVE) {
-                String supersedeCypher = """
-                        MATCH (old:TargetRole)
-                        WHERE old.organizationId = $organizationId
-                          AND old.id <> $id
-                          AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
-                        SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
-                        """;
-                session.run(supersedeCypher, params).consume();
+                roles.supersedeOtherVersions(organizationId, matchedId, targetRole.getName(), rawCode, graphCode, updatedAt);
             }
 
             // Synchronize REQUIRES_SKILL graph edges
-            syncSkillRelationships(session, targetRole.getOrganizationId(), roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
-
-            return targetRole;
-        }
+            syncSkillRelationships(organizationId, roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
+        });
+        return targetRole;
     }
 
     private String resolveGraphCode(String roleId, String orgId, String rawCode, String version) {
-        String checkCypher = """
-                MATCH (r:TargetRole)
-                WHERE r.code = $code AND r.id <> $roleId
-                RETURN count(r) AS count
-                """;
-        try (var session = driver.session()) {
-            int collisionCount = session.run(checkCypher, Map.of("code", rawCode, "roleId", roleId))
-                    .single()
-                    .get("count")
-                    .asInt();
-            if (collisionCount == 0) {
-                return rawCode;
-            }
-            // Code is already claimed by another node, append unique suffix for this version/tenant
-            return rawCode + "#" + orgId + "#v" + version;
+        if (roles.countCodeHolders(rawCode, roleId) == 0) {
+            return rawCode;
         }
+        // Code is already claimed by another node, append unique suffix for this version/tenant
+        return rawCode + "#" + orgId + "#v" + version;
     }
 
-    private void syncSkillRelationships(org.neo4j.driver.Session session, String organizationId, String roleId, String skillTargetsJson, Instant updatedAt) {
+    private void syncSkillRelationships(String organizationId, String roleId, String skillTargetsJson, Instant updatedAt) {
         List<Map<String, Object>> skillItems = parseSkillTargetsJson(skillTargetsJson);
-        List<String> activeCodes = new ArrayList<>();
         List<Map<String, Object>> processedSkills = new ArrayList<>();
 
         for (Map<String, Object> item : skillItems) {
             String code = Objects.toString(item.get("skillCode"), "").trim();
             if (!code.isBlank()) {
-                activeCodes.add(code);
                 Map<String, Object> skillData = new HashMap<>();
                 skillData.put("skillCode", code);
                 skillData.put("skillName", Objects.toString(item.get("skillName"), code));
-                skillData.put("skillId", Objects.toString(item.get("skillId"), java.util.UUID.randomUUID().toString()));
+                skillData.put("skillId", Objects.toString(item.get("skillId"), UUID.randomUUID().toString()));
                 String level = Objects.toString(item.get("level"), "");
                 skillData.put("level", level);
                 Number threshold = 70;
@@ -224,33 +164,11 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
 
         // 1. Delete existing REQUIRES_SKILL edges for this role to prevent stale or duplicate edges
-        String deleteOldRelCypher = """
-                MATCH (r:TargetRole {id: $roleId})-[oldRel:REQUIRES_SKILL]->()
-                WHERE r.organizationId = $organizationId
-                DELETE oldRel
-                """;
-        session.run(deleteOldRelCypher, Map.of("roleId", roleId, "organizationId", organizationId)).consume();
+        roles.deleteRequiredSkills(roleId, organizationId);
 
         // 2. Merge current REQUIRES_SKILL edges distinguishing per-level assignments
         if (!processedSkills.isEmpty()) {
-            String mergeRelCypher = """
-                    UNWIND $skills AS item
-                    MATCH (r:TargetRole {id: $roleId}) WHERE r.organizationId = $organizationId
-                    MATCH (s:MicroSkill)
-                    WHERE s.organizationId = $organizationId
-                      AND (s.id = item.skillId OR s.code = item.skillCode OR s.id = item.skillCode)
-                    MERGE (r)-[req:REQUIRES_SKILL {level: item.level}]->(s)
-                    ON CREATE SET req.createdAt = datetime($updatedAt)
-                    SET req.targetMastery = toFloat(item.threshold) / 100.0,
-                        req.status = 'ACTIVE',
-                        req.updatedAt = datetime($updatedAt)
-                    """;
-            session.run(mergeRelCypher, Map.of(
-                    "organizationId", organizationId,
-                    "roleId", roleId,
-                    "skills", processedSkills,
-                    "updatedAt", updatedAt.toString()
-            )).consume();
+            roles.mergeRequiredSkills(organizationId, roleId, processedSkills, updatedAt.toString());
         }
     }
 
@@ -272,6 +190,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         return List.of(trimmed);
     }
 
+    // Neo4jClient: optional filters are appended to one statement (one query per list, never per row).
     @Override
     public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
         StringBuilder cypher = new StringBuilder("""
@@ -300,98 +219,41 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             params.put("search", filter.search().trim());
         }
 
-        cypher.append("""
-                 OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
-                 WITH r, collect(CASE WHEN s IS NOT NULL THEN {
-                     skillId: s.id,
-                     skillCode: s.code,
-                     skillName: s.name,
-                     threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
-                     level: coalesce(req.level, '')
-                 } END) AS graphSkills
+        cypher.append("\n").append(GRAPH_SKILLS).append("""
                  RETURN r, graphSkills ORDER BY coalesce(r.updatedAt, r.createdAt) DESC, r.name ASC
                 """);
 
-        try (var session = driver.session()) {
-            var result = session.run(cypher.toString(), params);
-            List<TargetRole> roles = new ArrayList<>();
-            while (result.hasNext()) {
-                Record record = result.next();
-                roles.add(mapRecordToTargetRole(record));
-            }
-            return roles;
-        }
+        return reads.execute(status -> new ArrayList<>(client.query(cypher.toString()).bindAll(params)
+                .fetchAs(TargetRole.class).mappedBy(roleMapper()).all()));
     }
 
     @Override
     public Optional<TargetRole> findById(String organizationId, TargetRoleId id) {
-        String rawId = id.toString();
-        String cypher = """
-                MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId
-                  AND (r.id = $id
-                       OR r.code = $id
-                       OR r.baseCode = $id
-                       OR (r.baseCode IS NOT NULL AND $id STARTS WITH r.baseCode AND coalesce(r.version, '1.0') = substring($id, size(r.baseCode) + 2, 3))
-                       OR (r.baseCode IS NOT NULL AND $id CONTAINS r.baseCode AND (r.version IS NOT NULL AND $id CONTAINS r.version)))
-                  AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
-                OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
-                WITH r, collect(CASE WHEN s IS NOT NULL THEN {
-                    skillId: s.id,
-                    skillCode: s.code,
-                    skillName: s.name,
-                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
-                    level: coalesce(req.level, '')
-                } END) AS graphSkills
-                RETURN r, graphSkills
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("organizationId", organizationId, "id", rawId));
-            if (result.hasNext()) {
-                return Optional.of(mapRecordToTargetRole(result.next()));
-            }
-            return Optional.empty();
-        }
+        Map<String, Object> parameters = Map.of("organizationId", organizationId, "id", id.toString());
+        return reads.execute(status -> client.query(BY_ID).bindAll(parameters)
+                .fetchAs(TargetRole.class).mappedBy(roleMapper()).first());
     }
 
     @Override
     public Optional<TargetRole> findByCode(String organizationId, String code) {
-        String cypher = """
-                MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
-                OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
-                WITH r, collect(CASE WHEN s IS NOT NULL THEN {
-                    skillId: s.id,
-                    skillCode: s.code,
-                    skillName: s.name,
-                    threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
-                    level: coalesce(req.level, '')
-                } END) AS graphSkills
-                RETURN r, graphSkills
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("organizationId", organizationId, "code", code));
-            if (result.hasNext()) {
-                return Optional.of(mapRecordToTargetRole(result.next()));
-            }
-            return Optional.empty();
-        }
+        Map<String, Object> parameters = Map.of("organizationId", organizationId, "code", code);
+        return reads.execute(status -> client.query(BY_CODE).bindAll(parameters)
+                .fetchAs(TargetRole.class).mappedBy(roleMapper()).first());
     }
 
     @Override
     public void deleteById(String organizationId, TargetRoleId id) {
-        String cypher = """
-                MATCH (r:TargetRole)
-                WHERE r.organizationId = $organizationId AND r.id = $id
-                DETACH DELETE r
-                """;
-        try (var session = driver.session()) {
-            session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString())).consume();
-        }
+        Objects.requireNonNull(organizationId, "organizationId");
+        String roleId = id.toString();
+        writes.executeWithoutResult(status -> roles.detachDelete(organizationId, roleId));
     }
 
-    private TargetRole mapRecordToTargetRole(Record record) {
-        Node node = record.get("r").asNode();
+    private BiFunction<TypeSystem, Record, TargetRole> roleMapper() {
+        var nodes = nodes();
+        return (types, record) -> mapRecordToTargetRole(nodes.apply(types, record.get("r")), record);
+    }
+
+    private TargetRole mapRecordToTargetRole(TargetRoleNode node, Record record) {
         List<Object> rawGraphSkills = record.get("graphSkills").asList();
         List<Map<String, Object>> graphSkills = new ArrayList<>();
         for (Object item : rawGraphSkills) {
@@ -404,76 +266,30 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         return mapNodeToTargetRole(node, graphSkills);
     }
 
-    private TargetRole mapNodeToTargetRole(Node node, List<Map<String, Object>> graphSkills) {
-        String idStr = node.containsKey("id") && !node.get("id").isNull()
-                ? node.get("id").asString()
-                : (node.containsKey("code") && !node.get("code").isNull() ? node.get("code").asString() : java.util.UUID.randomUUID().toString());
-        String orgId = node.containsKey("organizationId") && !node.get("organizationId").isNull()
-                ? node.get("organizationId").asString()
-                : "comp-technova";
-        String code = node.containsKey("baseCode") && !node.get("baseCode").isNull()
-                ? node.get("baseCode").asString()
-                : (node.containsKey("code") && !node.get("code").isNull() ? node.get("code").asString() : idStr);
+    private TargetRole mapNodeToTargetRole(TargetRoleNode node, List<Map<String, Object>> graphSkills) {
+        String idStr = node.id() != null ? node.id()
+                : (node.code() != null ? node.code() : UUID.randomUUID().toString());
+        String orgId = node.organizationId() != null ? node.organizationId() : "comp-technova";
+        String code = node.baseCode() != null ? node.baseCode() : (node.code() != null ? node.code() : idStr);
         // Strip synthetic unique suffix if present
         if (code.contains("#")) {
             code = code.substring(0, code.indexOf("#"));
         }
 
-        String name = node.containsKey("name") && !node.get("name").isNull()
-                ? node.get("name").asString()
-                : (node.containsKey("title") && !node.get("title").isNull() ? node.get("title").asString() : code);
-        String familyCode = node.containsKey("familyCode") && !node.get("familyCode").isNull()
-                ? node.get("familyCode").asString()
-                : "SOFTWARE_ENGINEERING";
-        String trackStr = node.containsKey("track") && !node.get("track").isNull()
-                ? node.get("track").asString()
-                : "PROFESSIONAL";
-        String assignedExpertId = node.containsKey("assignedExpertId") && !node.get("assignedExpertId").isNull()
-                ? node.get("assignedExpertId").asString()
-                : "";
-        String desc = node.containsKey("description") && !node.get("description").isNull()
-                ? node.get("description").asString()
-                : (node.containsKey("scope") && !node.get("scope").isNull() ? node.get("scope").asString() : "");
-        List<String> responsibilities = node.containsKey("responsibilities") && !node.get("responsibilities").isNull()
-                ? node.get("responsibilities").asList(org.neo4j.driver.Value::asString)
-                : List.of();
-        String statusStr = node.containsKey("status") && !node.get("status").isNull()
-                ? node.get("status").asString()
-                : "ACTIVE";
+        String name = node.name() != null ? node.name() : (node.title() != null ? node.title() : code);
+        String familyCode = node.familyCode() != null ? node.familyCode() : "SOFTWARE_ENGINEERING";
+        String trackStr = node.track() != null ? node.track() : "PROFESSIONAL";
+        String assignedExpertId = node.assignedExpertId() != null ? node.assignedExpertId() : "";
+        String desc = node.description() != null ? node.description() : (node.scope() != null ? node.scope() : "");
+        List<String> responsibilities = node.responsibilities() != null ? node.responsibilities() : List.of();
+        String statusStr = node.status() != null ? node.status() : "ACTIVE";
 
-        Instant baseline = Instant.parse("2026-01-01T00:00:00Z");
-        Instant createdAt = baseline;
-        if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
-            try {
-                createdAt = node.get("createdAt").asZonedDateTime().toInstant();
-            } catch (Exception e) {
-                try {
-                    createdAt = Instant.parse(node.get("createdAt").asString());
-                } catch (Exception ignored) {}
-            }
-        }
-        Instant updatedAt = createdAt;
-        if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
-            try {
-                updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
-            } catch (Exception e) {
-                try {
-                    updatedAt = Instant.parse(node.get("updatedAt").asString());
-                } catch (Exception ignored) {}
-            }
-        }
+        Instant createdAt = node.createdAt() != null ? node.createdAt() : BASELINE;
+        Instant updatedAt = node.updatedAt() != null ? node.updatedAt() : createdAt;
 
-        String version = node.containsKey("version") && !node.get("version").isNull()
-                ? node.get("version").asString()
-                : "1.0";
-
-        String rejectionReason = node.containsKey("rejectionReason") && !node.get("rejectionReason").isNull()
-                ? node.get("rejectionReason").asString()
-                : null;
-
-        String skillTargets = node.containsKey("skillTargets") && !node.get("skillTargets").isNull()
-                ? node.get("skillTargets").asString().trim()
-                : "";
+        String version = node.version() != null ? node.version() : "1.0";
+        String rejectionReason = node.rejectionReason();
+        String skillTargets = node.skillTargets() != null ? node.skillTargets().trim() : "";
 
         // Only fall back to graphSkills if node.skillTargets property is empty or missing
         if (skillTargets.isBlank() || skillTargets.equals("[]")) {
@@ -488,17 +304,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             }
         }
 
-        List<String> levels = node.containsKey("levels") && !node.get("levels").isNull()
-                ? node.get("levels").asList(org.neo4j.driver.Value::asString)
-                : List.of("Junior", "Middle", "Senior");
-
-        String levelCompetencies = node.containsKey("levelCompetencies") && !node.get("levelCompetencies").isNull()
-                ? node.get("levelCompetencies").asString().trim()
-                : "{}";
-
-        List<String> competencyIds = node.containsKey("competencyIds") && !node.get("competencyIds").isNull()
-                ? node.get("competencyIds").asList(org.neo4j.driver.Value::asString)
-                : List.of();
+        List<String> levels = node.levels() != null ? node.levels() : List.of("Junior", "Middle", "Senior");
+        String levelCompetencies = node.levelCompetencies() != null ? node.levelCompetencies().trim() : "{}";
+        List<String> competencyIds = node.competencyIds() != null ? node.competencyIds() : List.of();
 
         return new TargetRole(
                 TargetRoleId.fromString(idStr),

@@ -1,192 +1,116 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.Occupation;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Record;
-
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import org.neo4j.driver.Record;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jOccupationRepository implements OccupationRepository {
-    private final Driver driver;
+    private static final String PROJECTION = """
+            OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
+            OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
+            RETURN o.id AS id,
+                   o.code AS code,
+                   o.name AS name,
+                   coalesce(o.jobZone, 4) AS jobZone,
+                   coalesce(o.interestRealistic, 0.0) AS interestRealistic,
+                   coalesce(o.interestInvestigative, 0.0) AS interestInvestigative,
+                   coalesce(o.interestArtistic, 0.0) AS interestArtistic,
+                   coalesce(o.interestSocial, 0.0) AS interestSocial,
+                   coalesce(o.interestEnterprising, 0.0) AS interestEnterprising,
+                   coalesce(o.interestConventional, 0.0) AS interestConventional,
+                   coalesce(o.status, 'ACTIVE') AS status,
+                   coalesce(o.version, '0.9.0') AS version,
+                   count(DISTINCT r) AS roleCount,
+                   count(DISTINCT s) AS microSkillCount
+            """;
+    // Neo4jClient: one aggregate statement per list (role and micro-skill counts), mapped to a non-entity row.
+    private static final String LIST = """
+            MATCH (o:Occupation)
+            WHERE o.organizationId = $organizationId
+            """ + PROJECTION + """
+            ORDER BY o.code ASC
+            """;
+    private static final String DETAIL = """
+            MATCH (o:Occupation)
+            WHERE o.organizationId = $organizationId
+              AND (o.id = $idOrCode OR o.code = $idOrCode)
+            """ + PROJECTION;
 
-    public Neo4jOccupationRepository(Driver driver) {
-        this.driver = Objects.requireNonNull(driver, "Driver cannot be null");
+    private final OccupationNodeRepository occupations;
+    private final Neo4jClient client;
+    private final TransactionTemplate reads;
+    private final TransactionTemplate writes;
+
+    public Neo4jOccupationRepository(OccupationNodeRepository occupations, Neo4jClient client,
+            PlatformTransactionManager transactions) {
+        this.occupations = Objects.requireNonNull(occupations, "occupations cannot be null");
+        this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.writes = Neo4jCatalogTransactions.readWrite(transactions);
     }
 
     @Override
     public List<Occupation> findAllOccupations(String organizationId) {
-        return queryOccupations(organizationId);
-    }
-
-    private List<Occupation> queryOccupations(String organizationId) {
-        String cypher = """
-                MATCH (o:Occupation)
-                WHERE o.organizationId = $organizationId
-                OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
-                OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
-                RETURN o.id AS id,
-                       o.code AS code,
-                       o.name AS name,
-                       coalesce(o.jobZone, 4) AS jobZone,
-                       coalesce(o.interestRealistic, 0.0) AS interestRealistic,
-                       coalesce(o.interestInvestigative, 0.0) AS interestInvestigative,
-                       coalesce(o.interestArtistic, 0.0) AS interestArtistic,
-                       coalesce(o.interestSocial, 0.0) AS interestSocial,
-                       coalesce(o.interestEnterprising, 0.0) AS interestEnterprising,
-                       coalesce(o.interestConventional, 0.0) AS interestConventional,
-                       coalesce(o.status, 'ACTIVE') AS status,
-                       coalesce(o.version, '0.9.0') AS version,
-                       count(DISTINCT r) AS roleCount,
-                       count(DISTINCT s) AS microSkillCount
-                ORDER BY o.code ASC
-                """;
-
-        try (var session = driver.session()) {
-            var result = session.run(cypher, java.util.Map.of("organizationId", organizationId != null ? organizationId : ""));
-            List<Occupation> occupations = new ArrayList<>();
-            while (result.hasNext()) {
-                Record record = result.next();
-                occupations.add(new Occupation(
-                        record.get("id").asString(),
-                        record.get("code").asString(),
-                        record.get("name").asString(),
-                        record.get("jobZone").asInt(),
-                        record.get("interestRealistic").asDouble(),
-                        record.get("interestInvestigative").asDouble(),
-                        record.get("interestArtistic").asDouble(),
-                        record.get("interestSocial").asDouble(),
-                        record.get("interestEnterprising").asDouble(),
-                        record.get("interestConventional").asDouble(),
-                        record.get("status").asString(),
-                        record.get("version").asString(),
-                        record.get("roleCount").asInt(),
-                        record.get("microSkillCount").asInt()
-                ));
-            }
-            return occupations;
-        }
+        return reads.execute(status -> new ArrayList<>(client.query(LIST)
+                .bindAll(Map.of("organizationId", organizationId != null ? organizationId : ""))
+                .fetchAs(Occupation.class).mappedBy((types, row) -> toOccupation(row)).all()));
     }
 
     @Override
-    public java.util.Optional<Occupation> findByIdOrCode(String organizationId, String idOrCode) {
-        String cypher = """
-                MATCH (o:Occupation)
-                WHERE o.organizationId = $organizationId
-                  AND (o.id = $idOrCode OR o.code = $idOrCode)
-                OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
-                OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
-                RETURN o.id AS id,
-                       o.code AS code,
-                       o.name AS name,
-                       coalesce(o.jobZone, 4) AS jobZone,
-                       coalesce(o.interestRealistic, 0.0) AS interestRealistic,
-                       coalesce(o.interestInvestigative, 0.0) AS interestInvestigative,
-                       coalesce(o.interestArtistic, 0.0) AS interestArtistic,
-                       coalesce(o.interestSocial, 0.0) AS interestSocial,
-                       coalesce(o.interestEnterprising, 0.0) AS interestEnterprising,
-                       coalesce(o.interestConventional, 0.0) AS interestConventional,
-                       coalesce(o.status, 'ACTIVE') AS status,
-                       coalesce(o.version, '0.9.0') AS version,
-                       count(DISTINCT r) AS roleCount,
-                       count(DISTINCT s) AS microSkillCount
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, java.util.Map.of(
-                    "organizationId", organizationId != null ? organizationId : "",
-                    "idOrCode", idOrCode));
-            if (result.hasNext()) {
-                Record record = result.next();
-                return java.util.Optional.of(new Occupation(
-                        record.get("id").asString(),
-                        record.get("code").asString(),
-                        record.get("name").asString(),
-                        record.get("jobZone").asInt(),
-                        record.get("interestRealistic").asDouble(),
-                        record.get("interestInvestigative").asDouble(),
-                        record.get("interestArtistic").asDouble(),
-                        record.get("interestSocial").asDouble(),
-                        record.get("interestEnterprising").asDouble(),
-                        record.get("interestConventional").asDouble(),
-                        record.get("status").asString(),
-                        record.get("version").asString(),
-                        record.get("roleCount").asInt(),
-                        record.get("microSkillCount").asInt()
-                ));
-            }
-            return java.util.Optional.empty();
-        }
+    public Optional<Occupation> findByIdOrCode(String organizationId, String idOrCode) {
+        Map<String, Object> parameters = Map.of(
+                "organizationId", organizationId != null ? organizationId : "",
+                "idOrCode", idOrCode);
+        return reads.execute(status -> client.query(DETAIL).bindAll(parameters)
+                .fetchAs(Occupation.class).mappedBy((types, row) -> toOccupation(row)).first());
     }
 
     @Override
     public Occupation save(String organizationId, Occupation o) {
-        String cypher = """
-                MERGE (o:Occupation {organizationId: $organizationId, code: $code})
-                ON CREATE SET
-                    o.id = $id,
-                    o.code = $code,
-                    o.name = $name,
-                    o.jobZone = $jobZone,
-                    o.interestRealistic = $interestRealistic,
-                    o.interestInvestigative = $interestInvestigative,
-                    o.interestArtistic = $interestArtistic,
-                    o.interestSocial = $interestSocial,
-                    o.interestEnterprising = $interestEnterprising,
-                    o.interestConventional = $interestConventional,
-                    o.status = $status,
-                    o.version = $version
-                ON MATCH SET
-                    o.name = $name,
-                    o.jobZone = $jobZone,
-                    o.interestRealistic = $interestRealistic,
-                    o.interestInvestigative = $interestInvestigative,
-                    o.interestArtistic = $interestArtistic,
-                    o.interestSocial = $interestSocial,
-                    o.interestEnterprising = $interestEnterprising,
-                    o.interestConventional = $interestConventional,
-                    o.status = $status,
-                    o.version = $version
-                RETURN o.id AS id
-                """;
-        java.util.Map<String, Object> params = new java.util.HashMap<>();
         String organization = Neo4jTenantGuard.requireOrganization(organizationId);
         String id = o.id() != null && !o.id().isBlank() ? o.id()
-                : java.util.UUID.nameUUIDFromBytes((organization + ":occupation:" + o.code()).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
-        params.put("id", id);
-        params.put("organizationId", organization);
-        params.put("code", o.code());
-        params.put("name", o.name());
-        params.put("jobZone", o.jobZone() > 0 ? o.jobZone() : 4);
-        params.put("interestRealistic", o.interestRealistic());
-        params.put("interestInvestigative", o.interestInvestigative());
-        params.put("interestArtistic", o.interestArtistic());
-        params.put("interestSocial", o.interestSocial());
-        params.put("interestEnterprising", o.interestEnterprising());
-        params.put("interestConventional", o.interestConventional());
-        params.put("status", o.status() != null ? o.status() : "ACTIVE");
-        params.put("version", o.version() != null ? o.version() : "0.9.0");
-
-        try (var session = driver.session()) {
-            Neo4jTenantGuard.requireOwnedOrAbsent(session, "Occupation", id, organization);
-            session.run(cypher, params).consume();
-            return o;
-        }
+                : UUID.nameUUIDFromBytes((organization + ":occupation:" + o.code()).getBytes(StandardCharsets.UTF_8)).toString();
+        writes.executeWithoutResult(status -> {
+            Neo4jTenantGuard.requireOwnedOrAbsent(client, "Occupation", id, organization);
+            occupations.merge(id, organization, o.code(), o.name(), o.jobZone() > 0 ? o.jobZone() : 4,
+                    o.interestRealistic(), o.interestInvestigative(), o.interestArtistic(), o.interestSocial(),
+                    o.interestEnterprising(), o.interestConventional(),
+                    o.status() != null ? o.status() : "ACTIVE", o.version() != null ? o.version() : "0.9.0");
+        });
+        return o;
     }
 
     @Override
     public void delete(String organizationId, String idOrCode) {
-        String cypher = """
-                MATCH (o:Occupation)
-                WHERE o.organizationId = $organizationId
-                  AND (o.id = $idOrCode OR o.code = $idOrCode)
-                DETACH DELETE o
-                """;
-        try (var session = driver.session()) {
-            session.run(cypher, java.util.Map.of(
-                    "organizationId", organizationId != null ? organizationId : "",
-                    "idOrCode", idOrCode)).consume();
-        }
+        Objects.requireNonNull(idOrCode, "idOrCode");
+        writes.executeWithoutResult(status ->
+                occupations.deleteByIdOrCode(organizationId != null ? organizationId : "", idOrCode));
+    }
+
+    private static Occupation toOccupation(Record row) {
+        return new Occupation(
+                row.get("id").asString(),
+                row.get("code").asString(),
+                row.get("name").asString(),
+                row.get("jobZone").asInt(),
+                row.get("interestRealistic").asDouble(),
+                row.get("interestInvestigative").asDouble(),
+                row.get("interestArtistic").asDouble(),
+                row.get("interestSocial").asDouble(),
+                row.get("interestEnterprising").asDouble(),
+                row.get("interestConventional").asDouble(),
+                row.get("status").asString(),
+                row.get("version").asString(),
+                row.get("roleCount").asInt(),
+                row.get("microSkillCount").asInt());
     }
 }
-

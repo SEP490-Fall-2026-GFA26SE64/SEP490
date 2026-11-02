@@ -2,188 +2,118 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.CompetencyRecord;
 import com.adaptlearngraph.entities.CompetencyRecord.MemberSkill;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Record;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.neo4j.driver.Record;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jCompetencyRepository implements CompetencyRepository {
-    private final Driver driver;
+    private static final String PROJECTION = """
+            OPTIONAL MATCH (l:Level)-[:HAS_COMPETENCY]->(c)
+            OPTIONAL MATCH (r:TargetRole)-[:HAS_LEVEL]->(l)
+            OPTIONAL MATCH (c)-[:HAS_SKILL]->(s:MicroSkill)
+            WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
+            RETURN c.id AS id,
+                   coalesce(c.code, c.id) AS code,
+                   c.name AS name,
+                   coalesce(c.description, '') AS description,
+                   coalesce(c.attainmentRule, 'ALL_MEMBER_SKILLS_AT_OWNING_LEVEL') AS attainmentRule,
+                   coalesce(c.status, 'ACTIVE') AS status,
+                   coalesce(c.version, '0.11.0') AS version,
+                   l.id AS levelId,
+                   coalesce(l.name, '') AS levelName,
+                   coalesce(r.name, '') AS roleName,
+                   skills
+            """;
+    // Neo4jClient: one statement per list joining the owning level/role and collecting member skills into a row.
+    private static final String LIST = """
+            MATCH (c:Competency)
+            WHERE c.organizationId = $organizationId
+              AND ($search IS NULL OR $search = ''
+               OR toLower(c.name) CONTAINS toLower($search)
+               OR toLower(c.id) CONTAINS toLower($search)
+               OR toLower(coalesce(c.code, '')) CONTAINS toLower($search)
+               OR toLower(coalesce(c.description, '')) CONTAINS toLower($search))
+            """ + PROJECTION + """
+            ORDER BY coalesce(c.code, c.name) ASC
+            """;
+    private static final String DETAIL = """
+            MATCH (c:Competency {id: $id})
+            WHERE c.organizationId = $organizationId
+            """ + PROJECTION;
 
-    public Neo4jCompetencyRepository(Driver driver) {
-        this.driver = Objects.requireNonNull(driver, "Driver cannot be null");
+    private final CompetencyNodeRepository competencies;
+    private final Neo4jClient client;
+    private final TransactionTemplate reads;
+    private final TransactionTemplate writes;
+
+    public Neo4jCompetencyRepository(CompetencyNodeRepository competencies, Neo4jClient client,
+            PlatformTransactionManager transactions) {
+        this.competencies = Objects.requireNonNull(competencies, "competencies cannot be null");
+        this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.writes = Neo4jCatalogTransactions.readWrite(transactions);
     }
 
     @Override
     public List<CompetencyRecord> findAllCompetencies(String organizationId, String search) {
-        String cypher = """
-                MATCH (c:Competency)
-                WHERE c.organizationId = $organizationId
-                  AND ($search IS NULL OR $search = ''
-                   OR toLower(c.name) CONTAINS toLower($search)
-                   OR toLower(c.id) CONTAINS toLower($search)
-                   OR toLower(coalesce(c.code, '')) CONTAINS toLower($search)
-                   OR toLower(coalesce(c.description, '')) CONTAINS toLower($search))
-                OPTIONAL MATCH (l:Level)-[:HAS_COMPETENCY]->(c)
-                OPTIONAL MATCH (r:TargetRole)-[:HAS_LEVEL]->(l)
-                OPTIONAL MATCH (c)-[:HAS_SKILL]->(s:MicroSkill)
-                WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
-                RETURN c.id AS id,
-                       coalesce(c.code, c.id) AS code,
-                       c.name AS name,
-                       coalesce(c.description, '') AS description,
-                       coalesce(c.attainmentRule, 'ALL_MEMBER_SKILLS_AT_OWNING_LEVEL') AS attainmentRule,
-                       coalesce(c.status, 'ACTIVE') AS status,
-                       coalesce(c.version, '0.11.0') AS version,
-                       l.id AS levelId,
-                       coalesce(l.name, '') AS levelName,
-                       coalesce(r.name, '') AS roleName,
-                       skills
-                ORDER BY coalesce(c.code, c.name) ASC
-                """;
-
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of(
-                    "organizationId", organizationId != null ? organizationId : "",
-                    "search", search != null ? search.trim() : ""));
-            List<CompetencyRecord> competencies = new ArrayList<>();
-            while (result.hasNext()) {
-                competencies.add(mapRecord(result.next()));
-            }
-            return competencies;
-        }
+        Map<String, Object> parameters = Map.of(
+                "organizationId", organizationId != null ? organizationId : "",
+                "search", search != null ? search.trim() : "");
+        return reads.execute(status -> new ArrayList<>(client.query(LIST).bindAll(parameters)
+                .fetchAs(CompetencyRecord.class).mappedBy((types, row) -> mapRecord(row)).all()));
     }
 
     @Override
     public Optional<CompetencyRecord> findById(String organizationId, String id) {
-        String cypher = """
-                MATCH (c:Competency {id: $id})
-                WHERE c.organizationId = $organizationId
-                OPTIONAL MATCH (l:Level)-[:HAS_COMPETENCY]->(c)
-                OPTIONAL MATCH (r:TargetRole)-[:HAS_LEVEL]->(l)
-                OPTIONAL MATCH (c)-[:HAS_SKILL]->(s:MicroSkill)
-                WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
-                RETURN c.id AS id,
-                       coalesce(c.code, c.id) AS code,
-                       c.name AS name,
-                       coalesce(c.description, '') AS description,
-                       coalesce(c.attainmentRule, 'ALL_MEMBER_SKILLS_AT_OWNING_LEVEL') AS attainmentRule,
-                       coalesce(c.status, 'ACTIVE') AS status,
-                       coalesce(c.version, '0.11.0') AS version,
-                       l.id AS levelId,
-                       coalesce(l.name, '') AS levelName,
-                       coalesce(r.name, '') AS roleName,
-                       skills
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of(
-                    "organizationId", organizationId != null ? organizationId : "",
-                    "id", id));
-            if (result.hasNext()) {
-                return Optional.of(mapRecord(result.next()));
-            }
-            return Optional.empty();
-        }
+        Map<String, Object> parameters = Map.of(
+                "organizationId", organizationId != null ? organizationId : "",
+                "id", id);
+        return reads.execute(status -> queryById(parameters));
     }
 
     @Override
     public CompetencyRecord save(String organizationId, CompetencyRecord record, List<String> skillIds, String levelId) {
-        String mergeCypher = """
-                MERGE (c:Competency {id: $id})
-                ON CREATE SET c.organizationId = $organizationId,
-                              c.code = $code,
-                              c.name = $name,
-                              c.description = $description,
-                              c.attainmentRule = $attainmentRule,
-                              c.status = $status,
-                              c.version = $version,
-                              c.reviewStatus = 'APPROVED'
-                ON MATCH SET c.code = $code,
-                             c.name = $name,
-                             c.description = $description,
-                             c.attainmentRule = $attainmentRule,
-                             c.status = $status
-                """;
+        String organization = Neo4jTenantGuard.requireOrganization(organizationId);
+        return writes.execute(status -> {
+            Neo4jTenantGuard.requireOwnedOrAbsent(client, "Competency", record.id(), organization);
+            competencies.merge(record.id(), organization, record.code(), record.name(), record.description(),
+                    record.attainmentRule(), record.status(), record.version());
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("id", record.id());
-        params.put("organizationId", Neo4jTenantGuard.requireOrganization(organizationId));
-        params.put("code", record.code());
-        params.put("name", record.name());
-        params.put("description", record.description());
-        params.put("attainmentRule", record.attainmentRule());
-        params.put("status", record.status());
-        params.put("version", record.version());
-
-        try (var session = driver.session()) {
-            Neo4jTenantGuard.requireOwnedOrAbsent(session, "Competency", record.id(), organizationId);
-            session.run(mergeCypher, params).consume();
-
-            // Link to Level if provided
             if (levelId != null && !levelId.isBlank()) {
-                String linkLevelCypher = """
-                        MATCH (l:Level {id: $levelId}), (c:Competency {id: $compId})
-                        WHERE l.organizationId = $organizationId AND c.organizationId = $organizationId
-                        MERGE (l)-[r:HAS_COMPETENCY]->(c)
-                        ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
-                        """;
-                session.run(linkLevelCypher, Map.of("levelId", levelId, "compId", record.id(), "organizationId", organizationId)).consume();
+                competencies.linkLevel(levelId, Objects.requireNonNull(record.id()), organization);
             }
 
-            // Sync HAS_SKILL relationships
             if (skillIds != null) {
                 if (skillIds.isEmpty()) {
-                    String deleteAllSkills = """
-                            MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(:MicroSkill)
-                            WHERE c.organizationId = $organizationId
-                            DELETE r
-                            """;
-                    session.run(deleteAllSkills, Map.of("id", record.id(), "organizationId", organizationId)).consume();
+                    competencies.unlinkAllSkills(Objects.requireNonNull(record.id()), organization);
                 } else {
-                    String deleteOldSkills = """
-                            MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(s:MicroSkill)
-                            WHERE c.organizationId = $organizationId
-                              AND NOT (s.id IN $skillIds OR coalesce(s.code, '') IN $skillIds)
-                            DELETE r
-                            """;
-                    session.run(deleteOldSkills, Map.of("id", record.id(), "skillIds", skillIds, "organizationId", organizationId)).consume();
-
-                    String linkSkills = """
-                            UNWIND $skillIds AS sid
-                            MATCH (c:Competency {id: $id}) WHERE c.organizationId = $organizationId
-                            MATCH (s:MicroSkill) WHERE s.organizationId = $organizationId AND (s.id = sid OR coalesce(s.code, '') = sid)
-                            WITH DISTINCT c, s
-                            MERGE (c)-[r:HAS_SKILL]->(s)
-                            ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
-                            """;
-                    session.run(linkSkills, Map.of("id", record.id(), "skillIds", skillIds, "organizationId", organizationId)).consume();
+                    competencies.unlinkSkillsExcept(Objects.requireNonNull(record.id()), skillIds, organization);
+                    competencies.linkSkills(record.id(), skillIds, organization);
                 }
             }
 
-            return findById(organizationId, record.id()).orElse(record);
-        }
+            return queryById(Map.of("organizationId", organization, "id", record.id())).orElse(record);
+        });
     }
 
     @Override
     public void deleteById(String organizationId, String id) {
-        String cypher = """
-                MATCH (c:Competency {id: $id})
-                WHERE c.organizationId = $organizationId
-                DETACH DELETE c
-                """;
-        try (var session = driver.session()) {
-            session.run(cypher, Map.of(
-                    "organizationId", organizationId != null ? organizationId : "",
-                    "id", id)).consume();
-        }
+        Objects.requireNonNull(id, "id");
+        writes.executeWithoutResult(status -> competencies.detachDelete(organizationId != null ? organizationId : "", id));
     }
 
-    private CompetencyRecord mapRecord(Record record) {
+    private Optional<CompetencyRecord> queryById(Map<String, Object> parameters) {
+        return client.query(DETAIL).bindAll(parameters)
+                .fetchAs(CompetencyRecord.class).mappedBy((types, row) -> mapRecord(row)).first();
+    }
+
+    private static CompetencyRecord mapRecord(Record record) {
         List<MemberSkill> skills = new ArrayList<>();
         var rawSkills = record.get("skills").asList();
         for (var obj : rawSkills) {

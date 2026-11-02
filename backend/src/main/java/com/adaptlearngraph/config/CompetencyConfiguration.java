@@ -21,8 +21,15 @@ import com.adaptlearngraph.entities.MicroSkillId;
 import com.adaptlearngraph.entities.PrerequisiteEdge;
 import com.adaptlearngraph.entities.SkillStatus;
 import com.adaptlearngraph.entities.TargetRoleGraph;
+import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.repository.MacroCompetencyNodeRepository;
+import com.adaptlearngraph.repository.MicroSkillNodeRepository;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,10 +45,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class CompetencyConfiguration {
 
     @Bean
-    public MicroSkillRepository microSkillRepository(ObjectProvider<Driver> driverProvider) {
+    public MicroSkillRepository microSkillRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<MicroSkillNodeRepository> skills, ObjectProvider<Neo4jClient> client,
+            ObjectProvider<Neo4jMappingContext> mappingContext,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jMicroSkillRepository(driver);
+            return new Neo4jMicroSkillRepository(skills.getObject(), client.getObject(), mappingContext.getObject(),
+                    transactions.getObject());
         }
         return new InMemoryFallbackMicroSkillRepository();
     }
@@ -72,10 +83,12 @@ public class CompetencyConfiguration {
     }
 
     @Bean
-    public MacroCompetencyRepository macroCompetencyRepository(ObjectProvider<Driver> driverProvider) {
+    public MacroCompetencyRepository macroCompetencyRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<MacroCompetencyNodeRepository> macros,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jMacroCompetencyRepository(driver);
+            return new Neo4jMacroCompetencyRepository(macros.getObject(), transactions.getObject());
         }
         return new InMemoryFallbackMacroCompetencyRepository();
     }
@@ -93,10 +106,14 @@ public class CompetencyConfiguration {
     }
 
     @Bean
-    public PrerequisiteRepository prerequisiteRepository(ObjectProvider<Driver> driverProvider) {
+    public PrerequisiteRepository prerequisiteRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<MicroSkillNodeRepository> skills, ObjectProvider<Neo4jClient> client,
+            ObjectProvider<Neo4jMappingContext> mappingContext,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jPrerequisiteRepository(driver);
+            return new Neo4jPrerequisiteRepository(skills.getObject(), client.getObject(), mappingContext.getObject(),
+                    transactions.getObject());
         }
         return new InMemoryFallbackPrerequisiteRepository();
     }

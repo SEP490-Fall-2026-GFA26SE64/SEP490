@@ -7,6 +7,7 @@ import com.adaptlearngraph.entities.Occupation;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
 import com.adaptlearngraph.services.PlatformCatalogService;
 import com.adaptlearngraph.services.WorkspaceCatalogImportWorker;
+import com.adaptlearngraph.support.Neo4jTestContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.time.Instant;
@@ -30,6 +31,7 @@ import org.testcontainers.containers.Neo4jContainer;
 class WorkspaceCatalogImportNeo4jIntegrationTest {
     private final Neo4jContainer<?> graph = new Neo4jContainer<>("neo4j:5.26-community");
     private Driver driver;
+    private Neo4jTestContext persistence;
     private PlatformCatalogTemplate template;
     private PlatformCatalogService catalog;
     private Neo4jWorkspaceCatalogWriter writer;
@@ -47,10 +49,12 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         }
         catalog = new PlatformCatalogService(() -> Optional.of(template));
         writer = new Neo4jWorkspaceCatalogWriter(() -> driver);
+        persistence = Neo4jTestContext.start(driver);
     }
 
     @AfterAll
     void stop() {
+        if (persistence != null) persistence.close();
         if (driver != null) driver.close();
         graph.stop();
     }
@@ -90,12 +94,16 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
             assertThat(role.get("code").asString()).isEqualTo("ROLE_A");
         }
 
-        var occupations = new Neo4jOccupationRepository(driver);
+        var occupations = new Neo4jOccupationRepository(persistence.bean(OccupationNodeRepository.class),
+                persistence.client(), persistence.transactionManager());
         assertThat(occupations.findAllOccupations(a)).extracting(Occupation::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(a, "OCC-1"));
         assertThat(occupations.findAllOccupations(b)).extracting(Occupation::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(b, "OCC-1"));
         assertThat(occupations.findAllOccupations("")).isEmpty();
-        assertThat(new Neo4jMicroSkillRepository(driver).findAll(b)).hasSize(3);
-        assertThat(new Neo4jPrerequisiteRepository(driver).findAll(a)).hasSize(1);
+        var skills = persistence.bean(MicroSkillNodeRepository.class);
+        assertThat(new Neo4jMicroSkillRepository(skills, persistence.client(), persistence.mappingContext(),
+                persistence.transactionManager()).findAll(b)).hasSize(3);
+        assertThat(new Neo4jPrerequisiteRepository(skills, persistence.client(), persistence.mappingContext(),
+                persistence.transactionManager()).findAll(a)).hasSize(1);
 
         var foreign = occupations.findAllOccupations(a).getFirst();
         assertThatThrownBy(() -> occupations.save(b, foreign)).isInstanceOf(CrossTenantWriteException.class);

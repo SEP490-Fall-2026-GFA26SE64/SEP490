@@ -2,10 +2,8 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.MicroSkill;
 import com.adaptlearngraph.entities.MicroSkillId;
+import com.adaptlearngraph.entities.MicroSkillNode;
 import com.adaptlearngraph.entities.SkillStatus;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.types.Node;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,121 +11,87 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import org.neo4j.driver.types.MapAccessor;
+import org.neo4j.driver.types.TypeSystem;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jMicroSkillRepository implements MicroSkillRepository {
-    private final Driver driver;
+    private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
+    // Neo4jClient: the node is mapped by SDN, the owning MacroCompetency code is an extra aggregated column.
+    private static final String BY_ID = """
+            MATCH (s:MicroSkill {id: $id})
+            WHERE s.organizationId = $organizationId
+            OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
+            RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+            """;
+    private static final String BY_CODE = """
+            MATCH (s:MicroSkill)
+            WHERE s.organizationId = $organizationId AND s.code = $code
+            OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
+            RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+            """;
 
-    public Neo4jMicroSkillRepository(Driver driver) {
-        this.driver = Objects.requireNonNull(driver, "Driver cannot be null");
+    private final MicroSkillNodeRepository skills;
+    private final Neo4jClient client;
+    private final Neo4jMappingContext mappingContext;
+    private final TransactionTemplate reads;
+    private final TransactionTemplate writes;
+
+    public Neo4jMicroSkillRepository(MicroSkillNodeRepository skills, Neo4jClient client, Neo4jMappingContext mappingContext,
+            PlatformTransactionManager transactions) {
+        this.skills = Objects.requireNonNull(skills, "skills cannot be null");
+        this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
+        this.mappingContext = Objects.requireNonNull(mappingContext, "mapping context cannot be null");
+        mappingContext.getRequiredPersistentEntity(MicroSkillNode.class);
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.writes = Neo4jCatalogTransactions.readWrite(transactions);
+    }
+
+    // SDN mapping functions keep an identity cache for one result set; obtain a fresh one per query.
+    private BiFunction<TypeSystem, MapAccessor, MicroSkillNode> nodes() {
+        return mappingContext.getRequiredMappingFunctionFor(MicroSkillNode.class);
     }
 
     @Override
     public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
-        String cypher = """
-                MATCH (s:MicroSkill)
-                WHERE s.organizationId = $organizationId AND s.code = $code
-                RETURN count(s) > 0 AS exists
-                """;
-        try (var session = driver.session()) {
-            return session.run(cypher, Map.of("organizationId", organizationId, "code", code))
-                    .single()
-                    .get("exists")
-                    .asBoolean();
-        }
+        Objects.requireNonNull(organizationId, "organizationId");
+        Objects.requireNonNull(code, "code");
+        return Boolean.TRUE.equals(reads.execute(status -> skills.existsByOrganizationIdAndCode(organizationId, code)));
     }
 
     @Override
     public MicroSkill save(MicroSkill microSkill) {
-        String cypher = """
-                MERGE (s:MicroSkill {id: $id})
-                ON CREATE SET
-                    s.organizationId = $organizationId,
-                    s.code = $code,
-                    s.name = $name,
-                    s.description = $description,
-                    s.definition = $description,
-                    s.macroCompetencyCode = $macroCompetencyCode,
-                    s.status = $status,
-                    s.version = '0.10.0',
-                    s.reviewStatus = 'APPROVED',
-                    s.createdAt = datetime($createdAt),
-                    s.updatedAt = datetime($updatedAt)
-                ON MATCH SET
-                    s.name = $name,
-                    s.description = $description,
-                    s.definition = $description,
-                    s.macroCompetencyCode = $macroCompetencyCode,
-                    s.status = $status,
-                    s.updatedAt = datetime($updatedAt)
-                WITH s
-                OPTIONAL MATCH (oldMacro:MacroCompetency)-[oldRel:HAS_SKILL]->(s)
-                WHERE oldMacro.code <> $macroCompetencyCode OR coalesce(oldMacro.organizationId, '') <> $organizationId
-                DELETE oldRel
-                WITH s
-                MERGE (macro:MacroCompetency {code: $macroCompetencyCode, organizationId: $organizationId})
-                ON CREATE SET macro.id = randomUUID(), macro.name = $macroCompetencyCode,
-                    macro.status = 'ACTIVE', macro.createdAt = datetime(), macro.updatedAt = datetime()
-                MERGE (macro)-[rel:HAS_SKILL]->(s)
-                ON CREATE SET rel.status = 'ACTIVE', rel.createdAt = datetime(), rel.updatedAt = datetime()
-                RETURN s
-                """;
-
-        Map<String, Object> params = Map.of(
-                "id", microSkill.getId().toString(),
-                "organizationId", microSkill.getOrganizationId(),
-                "code", microSkill.getCode(),
-                "name", microSkill.getName(),
-                "description", microSkill.getDescription(),
-                "macroCompetencyCode", microSkill.getMacroCompetencyCode(),
-                "status", microSkill.getStatus().name(),
-                "createdAt", microSkill.getCreatedAt().toString(),
-                "updatedAt", microSkill.getUpdatedAt().toString());
-
-        try (var session = driver.session()) {
-            Neo4jTenantGuard.requireOwnedOrAbsent(session, "MicroSkill", microSkill.getId().toString(), microSkill.getOrganizationId());
-            session.run(cypher, params).consume();
-            return microSkill;
-        }
+        writes.executeWithoutResult(status -> {
+            Neo4jTenantGuard.requireOwnedOrAbsent(client, "MicroSkill", microSkill.getId().toString(), microSkill.getOrganizationId());
+            skills.merge(
+                    microSkill.getId().toString(),
+                    microSkill.getOrganizationId(),
+                    microSkill.getCode(),
+                    microSkill.getName(),
+                    microSkill.getDescription(),
+                    microSkill.getMacroCompetencyCode(),
+                    microSkill.getStatus().name(),
+                    microSkill.getCreatedAt().toString(),
+                    microSkill.getUpdatedAt().toString());
+        });
+        return microSkill;
     }
 
     @Override
     public Optional<MicroSkill> findById(String organizationId, MicroSkillId id) {
-        String cypher = """
-                MATCH (s:MicroSkill {id: $id})
-                WHERE s.organizationId = $organizationId
-                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString()));
-            if (result.hasNext()) {
-                var record = result.next();
-                Node node = record.get("s").asNode();
-                String macroCode = record.get("macroCode").asString();
-                return Optional.of(mapNodeToMicroSkill(node, organizationId, macroCode));
-            }
-            return Optional.empty();
-        }
+        Map<String, Object> parameters = Map.of("organizationId", organizationId, "id", id.toString());
+        return reads.execute(status -> findOne(BY_ID, parameters, organizationId));
     }
 
     @Override
     public Optional<MicroSkill> findByCode(String organizationId, String code) {
-        String cypher = """
-                MATCH (s:MicroSkill)
-                WHERE s.organizationId = $organizationId AND s.code = $code
-                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("organizationId", organizationId, "code", code));
-            if (result.hasNext()) {
-                var record = result.next();
-                Node node = record.get("s").asNode();
-                String macroCode = record.get("macroCode").asString();
-                return Optional.of(mapNodeToMicroSkill(node, organizationId, macroCode));
-            }
-            return Optional.empty();
-        }
+        Map<String, Object> parameters = Map.of("organizationId", organizationId, "code", code);
+        return reads.execute(status -> findOne(BY_CODE, parameters, organizationId));
     }
 
     @Override
@@ -135,6 +99,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         return search(organizationId, null, null, null);
     }
 
+    // Neo4jClient: optional filters are appended to one statement (one query per list, never per row).
     @Override
     public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
         StringBuilder cypher = new StringBuilder("""
@@ -169,98 +134,48 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
 
         cypher.append(" RETURN s, macroCode ORDER BY coalesce(s.code, s.id) ASC");
 
-        try (var session = driver.session()) {
-            var result = session.run(cypher.toString(), params);
-            List<MicroSkill> list = new ArrayList<>();
-            while (result.hasNext()) {
-                var record = result.next();
-                Node node = record.get("s").asNode();
-                String resolvedMacro = record.get("macroCode").asString();
-                list.add(mapNodeToMicroSkill(node, organizationId, resolvedMacro));
-            }
-            return list;
-        }
+        var nodes = nodes();
+        return reads.execute(tx -> new ArrayList<>(client.query(cypher.toString()).bindAll(params)
+                .fetchAs(MicroSkill.class)
+                .mappedBy((types, row) -> toDomain(nodes.apply(types, row.get("s")), organizationId, row.get("macroCode").asString()))
+                .all()));
     }
 
     @Override
     public int countDependencies(String organizationId, MicroSkillId id) {
-        String cypher = """
-                MATCH (s:MicroSkill {id: $id})
-                WHERE s.organizationId = $organizationId
-                OPTIONAL MATCH (role:TargetRole)-[r:REQUIRES_SKILL]->(s)
-                OPTIONAL MATCH (s)-[p1:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->()
-                OPTIONAL MATCH ()-[p2:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(s)
-                OPTIONAL MATCH (:LearningModule)-[t:TEACHES]->(s)
-                RETURN count(r) + count(p1) + count(p2) + count(t) AS totalDeps
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("id", id.toString(), "organizationId", Neo4jTenantGuard.requireOrganization(organizationId)));
-            if (result.hasNext()) {
-                return result.next().get("totalDeps").asInt();
-            }
-            return 0;
-        }
+        String skillId = id.toString();
+        String organization = Neo4jTenantGuard.requireOrganization(organizationId);
+        Long total = reads.execute(status -> skills.countDependencies(skillId, organization));
+        return total == null ? 0 : Math.toIntExact(total);
     }
 
     @Override
     public void delete(String organizationId, MicroSkillId id) {
-        String cypher = """
-                MATCH (s:MicroSkill {id: $id})
-                WHERE s.organizationId = $organizationId
-                DETACH DELETE s
-                """;
-        try (var session = driver.session()) {
-            session.run(cypher, Map.of("organizationId", organizationId, "id", id.toString())).consume();
-        }
+        Objects.requireNonNull(organizationId, "organizationId");
+        String skillId = id.toString();
+        writes.executeWithoutResult(status -> skills.detachDelete(organizationId, skillId));
     }
 
-    private MicroSkill mapNodeToMicroSkill(Node node, String defaultOrgId, String explicitMacroCode) {
-        String idStr = node.containsKey("id") && !node.get("id").isNull()
-                ? node.get("id").asString()
-                : java.util.UUID.randomUUID().toString();
-        String orgId = node.containsKey("organizationId") && !node.get("organizationId").isNull()
-                ? node.get("organizationId").asString()
-                : defaultOrgId;
-        String code = node.containsKey("code") && !node.get("code").isNull()
-                ? node.get("code").asString()
-                : idStr;
-        String name = node.containsKey("name") && !node.get("name").isNull()
-                ? node.get("name").asString()
-                : idStr;
-        String desc = node.containsKey("description") && !node.get("description").isNull()
-                ? node.get("description").asString()
-                : (node.containsKey("definition") && !node.get("definition").isNull()
-                        ? node.get("definition").asString()
-                        : "");
+    private Optional<MicroSkill> findOne(String cypher, Map<String, Object> parameters, String organizationId) {
+        var nodes = nodes();
+        return client.query(cypher).bindAll(parameters).fetchAs(MicroSkill.class)
+                .mappedBy((types, row) -> toDomain(nodes.apply(types, row.get("s")), organizationId, row.get("macroCode").asString()))
+                .first();
+    }
+
+    private static MicroSkill toDomain(MicroSkillNode node, String defaultOrgId, String explicitMacroCode) {
+        String idStr = node.id() != null ? node.id() : UUID.randomUUID().toString();
+        String orgId = node.organizationId() != null ? node.organizationId() : defaultOrgId;
+        String code = node.code() != null ? node.code() : idStr;
+        String name = node.name() != null ? node.name() : idStr;
+        String desc = node.description() != null ? node.description()
+                : (node.definition() != null ? node.definition() : "");
         String macroCode = explicitMacroCode != null && !explicitMacroCode.isBlank()
                 ? explicitMacroCode
-                : (node.containsKey("macroCompetencyCode") && !node.get("macroCompetencyCode").isNull()
-                        ? node.get("macroCompetencyCode").asString()
-                        : "KNOWLEDGE");
-        String statusStr = node.containsKey("status") && !node.get("status").isNull()
-                ? node.get("status").asString()
-                : "ACTIVE";
-
-        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
-        if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
-            try {
-                createdAt = node.get("createdAt").asZonedDateTime().toInstant();
-            } catch (Exception e1) {
-                try {
-                    createdAt = Instant.parse(node.get("createdAt").asString());
-                } catch (Exception ignored) {}
-            }
-        }
-        Instant updatedAt = createdAt;
-        if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
-            try {
-                updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
-            } catch (Exception e1) {
-                try {
-                    updatedAt = Instant.parse(node.get("updatedAt").asString());
-                } catch (Exception ignored) {}
-            }
-        }
+                : (node.macroCompetencyCode() != null ? node.macroCompetencyCode() : "KNOWLEDGE");
+        String statusStr = node.status() != null ? node.status() : "ACTIVE";
+        Instant createdAt = node.createdAt() != null ? node.createdAt() : BASELINE;
+        Instant updatedAt = node.updatedAt() != null ? node.updatedAt() : createdAt;
 
         return new MicroSkill(
                 MicroSkillId.fromString(idStr),

@@ -9,6 +9,9 @@ import com.adaptlearngraph.repository.Neo4jTargetRoleRepository;
 import com.adaptlearngraph.entities.MicroSkill;
 import com.adaptlearngraph.entities.SkillStatus;
 import com.adaptlearngraph.repository.Neo4jMicroSkillRepository;
+import com.adaptlearngraph.repository.MicroSkillNodeRepository;
+import com.adaptlearngraph.repository.TargetRoleNodeRepository;
+import com.adaptlearngraph.support.Neo4jTestContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.AuthTokens;
@@ -30,12 +33,15 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
     void testNeo4jPersistenceAndIsolation() throws Exception {
         try (var neo4j = new Neo4jContainer<>("neo4j:5.26-community")) {
             neo4j.start();
-            try (var driver = GraphDatabase.driver(neo4j.getBoltUrl(), AuthTokens.basic("neo4j", neo4j.getAdminPassword()))) {
+            try (var driver = GraphDatabase.driver(neo4j.getBoltUrl(), AuthTokens.basic("neo4j", neo4j.getAdminPassword()));
+                 var graph = Neo4jTestContext.start(driver)) {
                 var migrator = new GraphSchemaMigrator(driver);
                 migrator.migrate();
 
-                var roleRepo = new Neo4jTargetRoleRepository(driver);
-                var skillRepo = new Neo4jMicroSkillRepository(driver);
+                var roleRepo = new Neo4jTargetRoleRepository(graph.bean(TargetRoleNodeRepository.class), graph.client(),
+                        graph.mappingContext(), graph.transactionManager());
+                var skillRepo = new Neo4jMicroSkillRepository(graph.bean(MicroSkillNodeRepository.class), graph.client(),
+                        graph.mappingContext(), graph.transactionManager());
 
                 // REQ-023-F01: Create Target Role in org-alpha
                 TargetRole roleAlpha = TargetRole.createNew(

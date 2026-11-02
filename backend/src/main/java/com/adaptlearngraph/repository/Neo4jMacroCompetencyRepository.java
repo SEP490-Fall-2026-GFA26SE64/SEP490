@@ -1,70 +1,43 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.MacroCompetency;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.types.Node;
-
+import com.adaptlearngraph.entities.MacroCompetencyNode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jMacroCompetencyRepository implements MacroCompetencyRepository {
+    private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
 
-    private final Driver driver;
+    private final MacroCompetencyNodeRepository macros;
+    private final TransactionTemplate reads;
 
-    public Neo4jMacroCompetencyRepository(Driver driver) {
-        this.driver = driver;
+    public Neo4jMacroCompetencyRepository(MacroCompetencyNodeRepository macros, PlatformTransactionManager transactions) {
+        this.macros = Objects.requireNonNull(macros, "macros cannot be null");
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
     }
 
     @Override
     public List<MacroCompetency> findAll(String organizationId) {
-        String cypher = """
-                MATCH (m:MacroCompetency)
-                WHERE m.organizationId = $organizationId
-                RETURN m
-                ORDER BY m.code ASC
-                """;
-        try (var session = driver.session()) {
-            var result = session.run(cypher, java.util.Map.of("organizationId", organizationId));
-            List<MacroCompetency> list = new ArrayList<>();
-            while (result.hasNext()) {
-                Node node = result.next().get("m").asNode();
-                String id = node.containsKey("id") && !node.get("id").isNull()
-                        ? node.get("id").asString()
-                        : java.util.UUID.randomUUID().toString();
-                String code = node.get("code").asString();
-                String name = node.containsKey("name") && !node.get("name").isNull()
-                        ? node.get("name").asString()
-                        : code;
-                String desc = node.containsKey("description") && !node.get("description").isNull()
-                        ? node.get("description").asString()
-                        : "";
-                String status = node.containsKey("status") && !node.get("status").isNull()
-                        ? node.get("status").asString()
-                        : "ACTIVE";
-                Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
-                if (node.containsKey("createdAt") && !node.get("createdAt").isNull()) {
-                    try {
-                        createdAt = node.get("createdAt").asZonedDateTime().toInstant();
-                    } catch (Exception e1) {
-                        try {
-                            createdAt = Instant.parse(node.get("createdAt").asString());
-                        } catch (Exception ignored) {}
-                    }
-                }
-                Instant updatedAt = createdAt;
-                if (node.containsKey("updatedAt") && !node.get("updatedAt").isNull()) {
-                    try {
-                        updatedAt = node.get("updatedAt").asZonedDateTime().toInstant();
-                    } catch (Exception e1) {
-                        try {
-                            updatedAt = Instant.parse(node.get("updatedAt").asString());
-                        } catch (Exception ignored) {}
-                    }
-                }
-                list.add(new MacroCompetency(id, code, name, desc, status, createdAt, updatedAt));
-            }
-            return list;
-        }
+        Objects.requireNonNull(organizationId, "organizationId");
+        List<MacroCompetencyNode> nodes = reads.execute(status -> macros.findAllByOrganizationIdOrderByCodeAsc(organizationId));
+        return nodes.stream().map(Neo4jMacroCompetencyRepository::toDomain).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private static MacroCompetency toDomain(MacroCompetencyNode node) {
+        String id = node.id() != null ? node.id() : UUID.randomUUID().toString();
+        // The driver rendered a missing code as the literal "null"; keep that observable value.
+        String code = node.code() != null ? node.code() : "null";
+        String name = node.name() != null ? node.name() : code;
+        String description = node.description() != null ? node.description() : "";
+        String status = node.status() != null ? node.status() : "ACTIVE";
+        Instant createdAt = node.createdAt() != null ? node.createdAt() : BASELINE;
+        Instant updatedAt = node.updatedAt() != null ? node.updatedAt() : createdAt;
+        return new MacroCompetency(id, code, name, description, status, createdAt, updatedAt);
     }
 }
