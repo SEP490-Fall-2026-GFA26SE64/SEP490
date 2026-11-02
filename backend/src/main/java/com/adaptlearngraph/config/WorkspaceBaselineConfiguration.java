@@ -76,6 +76,7 @@ import static com.adaptlearngraph.constants.DevelopmentWorkspace.*;
 @Configuration(proxyBeanMethods = false)
 @Profile("workspace-baseline & local & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class WorkspaceBaselineConfiguration {
     @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(com.adaptlearngraph.repository.CalibrationPorts.BankSource.class)
     @Profile("workspace-development")
@@ -91,8 +92,13 @@ public class WorkspaceBaselineConfiguration {
         return new com.adaptlearngraph.helper.AssessmentPolicyJson(json);
     }
     @Bean com.adaptlearngraph.repository.AssessmentPolicyStore assessmentPolicyStore(
-            DataSource source,PlatformTransactionManager tx,com.adaptlearngraph.helper.AssessmentPolicyJson json) {
-        return new com.adaptlearngraph.repository.JdbcAssessmentPolicyStore(new NamedParameterJdbcTemplate(source),tx,json);
+            com.adaptlearngraph.repository.AssessmentPolicyJpaRepository policies,
+            com.adaptlearngraph.repository.AssessmentPolicyCommandJpaRepository commands,
+            com.adaptlearngraph.repository.AssessmentPolicyActivationEventJpaRepository events,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager tx,
+            com.adaptlearngraph.helper.AssessmentPolicyJson json) {
+        return new com.adaptlearngraph.repository.JpaAssessmentPolicyStore(policies,commands,events,locks,tx,json);
     }
     @Bean com.adaptlearngraph.services.AssessmentPolicyService assessmentPolicyService(
             AdaptiveBlueprintActorPort actors,com.adaptlearngraph.repository.AssessmentPolicyStore store,
