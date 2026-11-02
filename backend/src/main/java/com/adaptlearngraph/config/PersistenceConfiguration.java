@@ -1,6 +1,8 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
@@ -44,5 +46,18 @@ public class PersistenceConfiguration {
         return Neo4jTransactionManager.with(driver)
                 .withDatabaseSelectionProvider(databases.getIfAvailable(DatabaseSelectionProvider::getDefaultSelectionProvider))
                 .build();
+    }
+
+    @Bean
+    PostgresAdvisoryLocks postgresAdvisoryLocks(EntityManager entityManager) {
+        return new PostgresAdvisoryLocks(entityManager);
+    }
+
+    @Bean
+    com.adaptlearngraph.repository.PlatformAdministratorSeeds platformAdministratorSeeds(
+            com.adaptlearngraph.repository.AccountJpaRepository accounts,
+            com.adaptlearngraph.repository.PlatformAdministratorJpaRepository administrators,
+            com.adaptlearngraph.repository.AuditEventJpaRepository audit, PostgresAdvisoryLocks locks) {
+        return new com.adaptlearngraph.repository.PlatformAdministratorSeeds(accounts, administrators, audit, locks);
     }
 }

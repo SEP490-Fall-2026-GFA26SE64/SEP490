@@ -40,7 +40,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import com.adaptlearngraph.support.JpaTestContext;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -49,8 +49,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class RegistrationPostgresIntegrationTest {
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.6-alpine");
     private static final String PASSWORD = "correct registration password";
+    private static JpaTestContext persistence;
     private JdbcTemplate jdbc;
-    private JdbcRegistrationStore store;
+    private JpaRegistrationStore store;
     private RegistrationCryptography crypto;
     private RegistrationService service;
     private MutableClock clock;
@@ -61,16 +62,31 @@ class RegistrationPostgresIntegrationTest {
         POSTGRES.start();
         Flyway.configure().dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
                 .locations("classpath:db/workspace-migration").load().migrate();
+        persistence = JpaTestContext.start(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
     }
 
     @AfterAll
-    static void stopDatabase() { POSTGRES.stop(); }
+    static void stopDatabase() {
+        persistence.close();
+        POSTGRES.stop();
+    }
+
+    static JpaRegistrationStore registrationStore(JpaTestContext context) {
+        return new JpaRegistrationStore(new JpaRegistrationStore.Repositories(context.bean(AccountJpaRepository.class),
+                context.bean(OrganizationRegistrationJpaRepository.class),
+                context.bean(RegistrationCatalogSelectionJpaRepository.class),
+                context.bean(RegistrationEmailVerificationJpaRepository.class), context.bean(AccountTotpJpaRepository.class),
+                context.bean(AccountRecoveryCodeJpaRepository.class), context.bean(RegistrationRateLimitJpaRepository.class),
+                context.bean(OutboxEventJpaRepository.class), context.bean(ProcessingJobJpaRepository.class),
+                context.bean(AuditEventJpaRepository.class),
+                new PostgresAdvisoryLocks(context.bean(jakarta.persistence.EntityManager.class))),
+                new TransactionTemplate(context.transactionManager()));
+    }
 
     @BeforeEach
     void setUp() {
-        var source = new DriverManagerDataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
-        jdbc = new JdbcTemplate(source);
-        store = new JdbcRegistrationStore(jdbc, new TransactionTemplate(new DataSourceTransactionManager(source)));
+        jdbc = new JdbcTemplate(persistence.dataSource());
+        store = registrationStore(persistence);
         crypto = new RegistrationCryptography(key('e'), key('h'));
         clock = new MutableClock();
         service = new RegistrationService(store, crypto, () -> {}, clock);

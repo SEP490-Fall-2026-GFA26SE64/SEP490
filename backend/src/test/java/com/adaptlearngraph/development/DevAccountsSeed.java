@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** Explicit local fixture command, never component-scanned or included in the application JAR. */
@@ -35,7 +34,8 @@ public final class DevAccountsSeed {
         }
         var source = new DriverManagerDataSource(url, env("DEV_ACCOUNTS_DB_USER"), env("DEV_ACCOUNTS_DB_PASSWORD"));
         var jdbc = new JdbcTemplate(source);
-        var manager = new DataSourceTransactionManager(source);
+        var persistence = com.adaptlearngraph.support.JpaTestContext.start(source);
+        var manager = persistence.transactionManager();
         var tx = new TransactionTemplate(manager);
         var secrets = new RegistrationCryptography("", "");
         UUID organization = id("organization"), registration = id("registration"), owner = id(EMAILS.get(1));
@@ -56,7 +56,7 @@ public final class DevAccountsSeed {
                 }
                 return;
             }
-            new PlatformAdministratorBootstrap(jdbc, manager, EMAILS.getFirst(), env("DEV_ACCOUNT_PASSWORD_0")).run(null);
+            new PlatformAdministratorBootstrap(com.adaptlearngraph.repository.IdentityTestFixtures.platformSeeds(persistence), manager, EMAILS.getFirst(), env("DEV_ACCOUNT_PASSWORD_0")).run(null);
             jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'SEP490_DEV_ACCOUNTS','SEP490 Development Workspace')", organization);
             jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Development',true)", id("department"), organization);
             jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Development occupation fixture',true)", id("occupation-reference"), id("occupation"), organization, id("department"));

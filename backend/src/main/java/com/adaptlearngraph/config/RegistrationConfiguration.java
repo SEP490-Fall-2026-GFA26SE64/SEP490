@@ -2,7 +2,7 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.helper.RegistrationMailDelivery;
 import com.adaptlearngraph.jwt.ScopedSessionCookieSerializer;
-import com.adaptlearngraph.repository.JdbcRegistrationStore;
+import com.adaptlearngraph.repository.JpaRegistrationStore;
 import com.adaptlearngraph.services.RegistrationMailWorker;
 import com.adaptlearngraph.utility.RegistrationCryptography;
 import com.adaptlearngraph.services.RegistrationService;
@@ -32,7 +32,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Profile("!starter")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableScheduling
-@org.springframework.context.annotation.Import(com.adaptlearngraph.config.IntegrationPolicyConfiguration.class)
+@org.springframework.context.annotation.Import({com.adaptlearngraph.config.IntegrationPolicyConfiguration.class,
+        PersistenceConfiguration.class})
 public class RegistrationConfiguration {
     @Bean
     RegistrationSecrets registrationSecrets(
@@ -42,8 +43,26 @@ public class RegistrationConfiguration {
     }
 
     @Bean
-    RegistrationStore registrationStore(JdbcTemplate jdbc, PlatformTransactionManager manager) {
-        return new JdbcRegistrationStore(jdbc, new TransactionTemplate(manager));
+    RegistrationStore registrationStore(JpaRegistrationStore.Repositories repositories,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            PlatformTransactionManager manager) {
+        return new JpaRegistrationStore(repositories, new TransactionTemplate(manager));
+    }
+
+    @Bean
+    JpaRegistrationStore.Repositories registrationRepositories(com.adaptlearngraph.repository.AccountJpaRepository accounts,
+            com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository registrations,
+            com.adaptlearngraph.repository.RegistrationCatalogSelectionJpaRepository catalogSelections,
+            com.adaptlearngraph.repository.RegistrationEmailVerificationJpaRepository emailProofs,
+            com.adaptlearngraph.repository.AccountTotpJpaRepository totp,
+            com.adaptlearngraph.repository.AccountRecoveryCodeJpaRepository recoveryCodes,
+            com.adaptlearngraph.repository.RegistrationRateLimitJpaRepository rates,
+            com.adaptlearngraph.repository.OutboxEventJpaRepository outbox,
+            com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs,
+            com.adaptlearngraph.repository.AuditEventJpaRepository audit,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks) {
+        return new JpaRegistrationStore.Repositories(accounts, registrations, catalogSelections, emailProofs, totp,
+                recoveryCodes, rates, outbox, jobs, audit, locks);
     }
 
     @Bean

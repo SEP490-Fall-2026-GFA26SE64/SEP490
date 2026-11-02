@@ -112,13 +112,14 @@ public final class SubscriptionTestRuntime {
     static final class FixtureController {
         private final JdbcTemplate jdbc; private final RegistrationSecrets secrets; private final Provider provider;
         private final org.springframework.transaction.PlatformTransactionManager manager;
+        @org.springframework.beans.factory.annotation.Autowired private com.adaptlearngraph.repository.PlatformAdministratorSeeds platformSeeds;
         FixtureController(JdbcTemplate jdbc,RegistrationSecrets secrets,Provider provider,
                 org.springframework.transaction.PlatformTransactionManager manager) { this.jdbc=jdbc;this.secrets=secrets;this.provider=provider;this.manager=manager; }
         @PostMapping("/api/v1/__subscription-test/platform-seed")
         Map<String,Object> seededPlatform() {
             String email="seed-"+UUID.randomUUID()+"@example.test";
             String password=UUID.randomUUID().toString();
-            var seed=new com.adaptlearngraph.config.PlatformAdministratorBootstrap(jdbc,manager,email,password);
+            var seed=new com.adaptlearngraph.config.PlatformAdministratorBootstrap(platformSeeds,manager,email,password);
             seed.run(null);
             seed.run(null);
             return Map.of("email",email,"password",password);

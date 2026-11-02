@@ -37,6 +37,7 @@ class PaymentOrderPostgresIntegrationTest {
     private static JdbcPaymentProcessingStore processing;
     private static JdbcSubscriptionWorkspaceStore workspaces;
     private static TransactionTemplate transactions;
+    private static com.adaptlearngraph.support.JpaTestContext persistence;
 
     @BeforeAll
     static void start() {
@@ -48,9 +49,10 @@ class PaymentOrderPostgresIntegrationTest {
         orders = new JdbcPaymentOrderStore(jdbc, transactions);
         processing = new JdbcPaymentProcessingStore(jdbc, transactions, orders);
         workspaces = new JdbcSubscriptionWorkspaceStore(jdbc,transactions);
+        persistence = com.adaptlearngraph.support.JpaTestContext.start(source);
     }
 
-    @AfterAll static void stop() { POSTGRES.stop(); }
+    @AfterAll static void stop() { persistence.close(); POSTGRES.stop(); }
 
     @Test
     void developmentBypassProvisionsOnceWithoutProviderEvidenceOrPaymentEmail() {
@@ -295,8 +297,7 @@ class PaymentOrderPostgresIntegrationTest {
                 SELECT count(*) FROM platform.workspace_account_profile p JOIN platform.organization_registration r USING(account_id)
                 WHERE p.account_id=? AND p.email_verified_at IS DISTINCT FROM r.email_verified_at
                 """,Integer.class,member.accountId()));
-        var identityStore=new com.adaptlearngraph.repository.JdbcWorkspaceIdentityStore(jdbc,
-                new com.adaptlearngraph.repository.JdbcRegistrationStore(jdbc,transactions));
+        var identityStore=IdentityTestFixtures.identityStore(persistence);
         assertEquals("Updated Administrator",identityStore.findByEmail(member.email()).orElseThrow().fullName());
         assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,member.membershipId(),
@@ -519,7 +520,7 @@ class PaymentOrderPostgresIntegrationTest {
 
     @Test
     void catalogSelectionKeepsWorkspaceProvisioningUntilTheCopySucceedsOrFails() {
-        var registrations = new JdbcRegistrationStore(jdbc, transactions);
+        var registrations = RegistrationPostgresIntegrationTest.registrationStore(persistence);
         var imports = new JdbcWorkspaceCatalogImportStore(jdbc, transactions);
         String sha = "b".repeat(64);
 
@@ -539,7 +540,7 @@ class PaymentOrderPostgresIntegrationTest {
         assertTrue(imports.claim(NOW.plusSeconds(2)).isEmpty(), "A leased job is not claimed twice");
         imports.succeed(job, "0.11.0", sha, 12, 20, NOW.plusSeconds(3));
         assertEquals("READY", workspaces.setup(copied.registrationId()).state());
-        var identity = new JdbcWorkspaceIdentityStore(jdbc, registrations)
+        var identity = IdentityTestFixtures.identityStore(persistence)
                 .findByEmail(copied.actor().accountId() + "@example.test").orElseThrow();
         assertEquals("order-" + copied.registrationId(), identity.workspaceSlug());
         assertEquals(setup.organizationId(), identity.organizationId());
@@ -569,6 +570,68 @@ class PaymentOrderPostgresIntegrationTest {
         assertEquals("READY", workspaces.setup(empty.registrationId()).state(), "No selection keeps immediate readiness");
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.workspace_catalog_import WHERE registration_id=?",
                 Integer.class, empty.registrationId()));
+    }
+
+    @Test
+    void memberInvitationAndActivationStayInsideTheInvitingOrganization() {
+        var ownerA = provisioned();
+        var ownerB = provisioned();
+        UUID orgA = ownerA.actor().organizationId();
+        UUID orgB = ownerB.actor().organizationId();
+        UUID department = UUID.randomUUID();
+        UUID occupation = UUID.randomUUID();
+        jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Activation department',true)", department, orgA);
+        jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Activation occupation',true)",
+                occupation, UUID.randomUUID(), orgA, department);
+        var crypto = new com.adaptlearngraph.utility.RegistrationCryptography(
+                java.util.Base64.getEncoder().encodeToString("e".repeat(32).getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                java.util.Base64.getEncoder().encodeToString("h".repeat(32).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        var current = new java.util.concurrent.atomic.AtomicReference<Context>(ownerA);
+        var security = RegistrationPostgresIntegrationTest.registrationStore(persistence);
+        var activation = new JpaMemberActivationAdapter(new JpaMemberActivationAdapter.Repositories(
+                persistence.bean(OrganizationJpaRepository.class), persistence.bean(WorkspaceActivationJpaRepository.class),
+                persistence.bean(DepartmentReferenceJpaRepository.class), persistence.bean(AccountJpaRepository.class),
+                persistence.bean(WorkspaceAccountProfileJpaRepository.class), persistence.bean(OrganizationMembershipJpaRepository.class),
+                persistence.bean(OrganizationMembershipRoleJpaRepository.class), persistence.bean(LearnerStateJpaRepository.class),
+                persistence.bean(OutboxEventJpaRepository.class), persistence.bean(ProcessingJobJpaRepository.class)),
+                new TransactionTemplate(persistence.transactionManager()), current::get, workspaces, crypto, security,
+                org.mockito.Mockito.mock(com.adaptlearngraph.helper.RegistrationMailDelivery.class),
+                java.time.Clock.fixed(NOW.plusSeconds(10), java.time.ZoneOffset.UTC));
+        String email = "member-" + UUID.randomUUID() + "@example.test";
+
+        var invitation = activation.invite(orgA, new com.adaptlearngraph.services.MemberActivationUseCase.Input(
+                "Invited Member", email, Set.of("EMPLOYEE"), department, occupation));
+        assertEquals("PENDING", invitation.deliveryStatus());
+        assertEquals(List.of(invitation.activationId()),
+                activation.pending(orgA).stream().map(com.adaptlearngraph.services.MemberActivationUseCase.PendingActivation::activationId).toList());
+
+        current.set(ownerB);
+        assertTrue(activation.pending(orgB).isEmpty(), "Organization B never sees A's invitations");
+        assertThrows(SubscriptionFailure.class, () -> activation.pending(orgA));
+        assertEquals(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED, assertThrows(SubscriptionFailure.class, () ->
+                activation.invite(orgB, new com.adaptlearngraph.services.MemberActivationUseCase.Input(
+                        "Foreign Reference", "b-" + email, Set.of("EMPLOYEE"), department, occupation))).code());
+
+        String encrypted = jdbc.queryForObject("""
+                SELECT payload->>'encryptedToken' FROM platform.outbox_event
+                WHERE event_type='MEMBER_ACTIVATION' AND aggregate_id=? AND source_revision=1
+                """, String.class, invitation.activationId());
+        String token = crypto.decrypt(encrypted, "activation:" + invitation.activationId() + ":1");
+        activation.activate(token, "Activated member password!", "127.0.0.1");
+
+        var member = jdbc.queryForMap("""
+                SELECT a.organization_id AS account_org, m.organization_id AS member_org, r.role_code,
+                    EXISTS(SELECT 1 FROM platform.learner_state l WHERE l.learner_id=a.account_id) AS learner
+                FROM platform.account a JOIN platform.organization_membership m USING(account_id)
+                JOIN platform.organization_membership_role r USING(membership_id) WHERE a.normalized_identifier=?
+                """, email);
+        assertEquals(orgA, member.get("account_org"));
+        assertEquals(orgA, member.get("member_org"));
+        assertEquals("EMPLOYEE", member.get("role_code"));
+        assertEquals(Boolean.TRUE, member.get("learner"));
+        assertEquals(com.adaptlearngraph.exception.RegistrationFailure.Code.INVALID_PROOF,
+                assertThrows(com.adaptlearngraph.exception.RegistrationFailure.class,
+                        () -> activation.activate(token, "Activated member password!", "127.0.0.1")).code());
     }
 
     private static Context provisioned() {
@@ -613,12 +676,11 @@ class PaymentOrderPostgresIntegrationTest {
     void platformSeedIsIdempotentWithoutVerificationOrTotpAndCannotPromoteAnOrganizationAccount() {
         String email="seed-"+UUID.randomUUID()+"@example.test";
         String secret="isolated-platform-password";
-        var seed=new com.adaptlearngraph.config.PlatformAdministratorBootstrap(jdbc,
-                transactions.getTransactionManager(),email,secret);
+        var seed=new com.adaptlearngraph.config.PlatformAdministratorBootstrap(IdentityTestFixtures.platformSeeds(persistence),
+                persistence.transactionManager(),email,secret);
         seed.run(null);
         seed.run(null);
-        var identity=new com.adaptlearngraph.repository.JdbcWorkspaceIdentityStore(jdbc,
-                new com.adaptlearngraph.repository.JdbcRegistrationStore(jdbc,transactions))
+        var identity=IdentityTestFixtures.identityStore(persistence)
                 .findByEmail(email).orElseThrow();
         assertEquals(Set.of("PLATFORM_ADMINISTRATOR"),identity.roles());
         assertNull(identity.emailVerifiedAt());
@@ -631,7 +693,7 @@ class PaymentOrderPostgresIntegrationTest {
         var org=provisioned();
         String orgEmail=jdbc.queryForObject("SELECT identifier FROM platform.account WHERE account_id=?",String.class,org.actor().accountId());
         assertThrows(IllegalStateException.class,()->new com.adaptlearngraph.config.PlatformAdministratorBootstrap(
-                jdbc,transactions.getTransactionManager(),orgEmail,secret).run(null));
+                IdentityTestFixtures.platformSeeds(persistence),persistence.transactionManager(),orgEmail,secret).run(null));
     }
 
     @Test

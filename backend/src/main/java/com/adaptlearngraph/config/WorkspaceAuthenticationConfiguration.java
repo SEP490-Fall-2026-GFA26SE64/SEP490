@@ -1,8 +1,8 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.helper.RegistrationMailDelivery;
-import com.adaptlearngraph.repository.JdbcMemberActivationAdapter;
-import com.adaptlearngraph.repository.JdbcWorkspaceIdentityStore;
+import com.adaptlearngraph.repository.JpaMemberActivationAdapter;
+import com.adaptlearngraph.repository.JpaWorkspaceIdentityStore;
 import com.adaptlearngraph.services.MemberActivationMailWorker;
 import com.adaptlearngraph.services.WorkspaceAuthenticationService;
 import com.adaptlearngraph.services.RegistrationUseCase;
@@ -24,19 +24,41 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration(proxyBeanMethods = false)
 @Profile("!starter")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class WorkspaceAuthenticationConfiguration {
     @Bean
-    WorkspaceIdentityStore workspaceIdentityStore(JdbcTemplate jdbc, RegistrationStore security) {
-        return new JdbcWorkspaceIdentityStore(jdbc, security);
+    WorkspaceIdentityStore workspaceIdentityStore(com.adaptlearngraph.repository.AccountJpaRepository accounts,
+            com.adaptlearngraph.repository.OrganizationMembershipRoleJpaRepository roles,
+            com.adaptlearngraph.repository.PlatformAdministratorJpaRepository platformAdministrators,
+            com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository registrations,
+            com.adaptlearngraph.repository.WorkspaceAccountProfileJpaRepository profiles, RegistrationStore security) {
+        return new JpaWorkspaceIdentityStore(accounts, roles, platformAdministrators, registrations, profiles, security);
     }
 
     @Bean
-    com.adaptlearngraph.services.MemberActivationUseCase memberActivation(JdbcTemplate jdbc,
+    JpaMemberActivationAdapter.Repositories memberActivationRepositories(
+            com.adaptlearngraph.repository.OrganizationJpaRepository organizations,
+            com.adaptlearngraph.repository.WorkspaceActivationJpaRepository activations,
+            com.adaptlearngraph.repository.DepartmentReferenceJpaRepository references,
+            com.adaptlearngraph.repository.AccountJpaRepository accounts,
+            com.adaptlearngraph.repository.WorkspaceAccountProfileJpaRepository profiles,
+            com.adaptlearngraph.repository.OrganizationMembershipJpaRepository memberships,
+            com.adaptlearngraph.repository.OrganizationMembershipRoleJpaRepository roles,
+            com.adaptlearngraph.repository.LearnerStateJpaRepository learners,
+            com.adaptlearngraph.repository.OutboxEventJpaRepository outbox,
+            com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs) {
+        return new JpaMemberActivationAdapter.Repositories(organizations, activations, references, accounts, profiles,
+                memberships, roles, learners, outbox, jobs);
+    }
+
+    @Bean
+    com.adaptlearngraph.services.MemberActivationUseCase memberActivation(JpaMemberActivationAdapter.Repositories repositories,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
             org.springframework.transaction.PlatformTransactionManager manager,
             com.adaptlearngraph.repository.SubscriptionIdentity identity,
             com.adaptlearngraph.repository.SubscriptionWorkspaceStore workspaces,
             RegistrationSecrets secrets,RegistrationStore security,RegistrationMailDelivery mail) {
-        return new JdbcMemberActivationAdapter(jdbc,new org.springframework.transaction.support.TransactionTemplate(manager),
+        return new JpaMemberActivationAdapter(repositories,new org.springframework.transaction.support.TransactionTemplate(manager),
                 identity,workspaces,secrets,security,mail,Clock.systemUTC());
     }
     @Bean
