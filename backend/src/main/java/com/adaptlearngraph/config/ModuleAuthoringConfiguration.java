@@ -1,7 +1,14 @@
 package com.adaptlearngraph.config;
 
-import com.adaptlearngraph.repository.JdbcLearningContentAdapter;
-import com.adaptlearngraph.repository.JdbcModuleAuthoringAdapter;
+import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.repository.JpaLearningContentAdapter;
+import com.adaptlearngraph.repository.JpaModuleAuthoringAdapter;
+import com.adaptlearngraph.repository.LearningContentRepositories;
+import com.adaptlearngraph.repository.LearningImportJpaRepository;
+import com.adaptlearngraph.repository.LearningNotificationJpaRepository;
+import com.adaptlearngraph.repository.LearningVideoVerificationJpaRepository;
+import com.adaptlearngraph.repository.ModuleAuthoringRepositories;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.repository.PrivateLearningAssets;
 import com.adaptlearngraph.services.ExcelLearningImport;
 import com.adaptlearngraph.services.LearningMailWorker;
@@ -12,41 +19,46 @@ import com.adaptlearngraph.repository.LearningAssetPort;
 import com.adaptlearngraph.services.LearningContentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.neo4j.driver.Driver;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("local")
+@Import(PersistenceConfiguration.class)
 public class ModuleAuthoringConfiguration {
-    @Bean ModuleAuthoringPort moduleAuthoringPort(JdbcTemplate jdbc, PlatformTransactionManager manager,
+    @Bean ModuleAuthoringPort moduleAuthoringPort(ListableBeanFactory beans, PostgresAdvisoryLocks locks,
+            @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
             ObjectMapper mapper, Driver driver, @Value("${module-authoring.organization-id:comp-technova}") String organization) {
-        return new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(manager), mapper, driver, organization);
+        return new JpaModuleAuthoringAdapter(ModuleAuthoringRepositories.from(beans::getBean, locks), new TransactionTemplate(manager),
+                mapper, driver, organization);
     }
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="learning.mail.enabled",havingValue="true")
-    LearningMailWorker learningMailWorker(JdbcTemplate jdbc, PlatformTransactionManager manager,
+    LearningMailWorker learningMailWorker(LearningNotificationJpaRepository notifications,
+            @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
             com.adaptlearngraph.helper.TransactionalMailSender mail,
             @Value("${subscription.public-url:http://localhost:8088}") String publicUrl) {
-        return new LearningMailWorker(jdbc, new TransactionTemplate(manager), mail, publicUrl);
+        return new LearningMailWorker(notifications, new TransactionTemplate(manager), mail, publicUrl);
     }
-    @Bean LearningAssetPort learningAssetPort(LearningContentPort content, JdbcTemplate jdbc,
+    @Bean LearningAssetPort learningAssetPort(LearningContentPort content, LearningVideoVerificationJpaRepository verifications,
             @Value("${learning.assets.endpoint:http://localhost:28190}") String endpoint,
             @Value("${learning.assets.access-key:unconfigured}") String access,
             @Value("${learning.assets.secret-key:unconfigured}") String secret,
             @Value("${learning.assets.bucket:learning-content}") String bucket) {
-        return new PrivateLearningAssets(endpoint, access, secret, bucket, content, jdbc);
+        return new PrivateLearningAssets(endpoint, access, secret, bucket, content, verifications);
     }
     @Bean com.adaptlearngraph.services.LearningImportUseCase learningImport(
             ModuleAuthoringPort modules, LearningContentPort content, LearningAssetPort files,
-            ModuleAuthoringService service, JdbcTemplate jdbc, ObjectMapper mapper) {
-        return new ExcelLearningImport(modules, content, files, service, jdbc, mapper);
+            ModuleAuthoringService service, LearningImportJpaRepository imports, ObjectMapper mapper) {
+        return new ExcelLearningImport(modules, content, files, service, imports, mapper);
     }
-    @Bean LearningContentPort learningContentPort(JdbcTemplate jdbc, ObjectMapper mapper, ModuleAuthoringPort modules,
+    @Bean LearningContentPort learningContentPort(ListableBeanFactory beans, ObjectMapper mapper, ModuleAuthoringPort modules,
             org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.InitialPathwayAccess> pathways) {
-        return new JdbcLearningContentAdapter(jdbc,mapper,(organization,learner,module)->{
+        return new JpaLearningContentAdapter(LearningContentRepositories.from(beans::getBean),mapper,(organization,learner,module)->{
             var actor=modules.actor();
             if(!organization.equals(actor.organizationId()) || !learner.equals(actor.id()) || !actor.roles().contains("EMPLOYEE")) return false;
             var access=pathways.getIfAvailable();if(access==null)return false;

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.*;
 import java.nio.file.*;
@@ -22,13 +21,14 @@ import java.util.zip.*;
 class PrivateLearningAssetsTest {
     @TempDir Path temp;
     private final LearningContentPort content = mock(LearningContentPort.class);
-    private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
+    private final LearningVideoVerificationJpaRepository verifications = mock(LearningVideoVerificationJpaRepository.class);
+    private final LearningImportJpaRepository imports = mock(LearningImportJpaRepository.class);
 
     @Test
     void renderedRichTextDropsExecutableContentAndRemoteImagesButKeepsTablesCodeAndPrivateImages() {
         var assets =
                 new PrivateLearningAssets(
-                        "http://localhost:9000", "test-key", "test-secret", "test", content, jdbc);
+                        "http://localhost:9000", "test-key", "test-secret", "test", content, verifications);
         String html =
                 assets.sanitizedHtml(
                         "<script>alert(1)</script><table><tr><td>Cell</td></tr></table><pre><code>RETURN"
@@ -67,7 +67,7 @@ class PrivateLearningAssetsTest {
                         content,
                         mock(LearningAssetPort.class),
                         mock(ModuleAuthoringService.class),
-                        jdbc,
+                        imports,
                         new ObjectMapper());
         var out = new ByteArrayOutputStream();
         try (var zip = new ZipOutputStream(out)) {
@@ -82,7 +82,7 @@ class PrivateLearningAssetsTest {
                                 "content.zip",
                                 out.size(),
                                 new ByteArrayInputStream(out.toByteArray())));
-        verifyNoInteractions(jdbc);
+        verifyNoInteractions(imports);
     }
 
     @Test

@@ -2,7 +2,10 @@ package com.adaptlearngraph.development;
 
 import com.adaptlearngraph.services.ModuleAuthoringService;
 import com.adaptlearngraph.entities.ModuleAuthoring.*;
-import com.adaptlearngraph.repository.JdbcModuleAuthoringAdapter;
+import com.adaptlearngraph.repository.JpaModuleAuthoringAdapter;
+import com.adaptlearngraph.repository.ModuleAuthoringRepositories;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
+import com.adaptlearngraph.support.JpaTestContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,7 +13,6 @@ import java.util.*;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,7 +33,7 @@ public final class DevModulesAdoption {
         return result;
     }
     private static void restorePendingHistory(com.fasterxml.jackson.databind.JsonNode saved, ObjectMapper json,
-            JdbcModuleAuthoringAdapter port, String organization, String manager) {
+            JpaModuleAuthoringAdapter port, String organization, String manager) {
         for (var row : saved.get("module_catalog_intake")) {
             try {
                 Intake old = json.treeToValue(row.get("document"), Intake.class);
@@ -53,13 +55,16 @@ public final class DevModulesAdoption {
         String url = env("DEV_ACCOUNTS_DB_URL");
         if (!"true".equals(env("DEV_ACCOUNTS_SEED_ALLOWED")) || !url.matches("jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/adapt_learn_graph_dev_accounts")) throw new IllegalStateException("Dedicated local database required");
         var ds = new DriverManagerDataSource(url, env("DEV_ACCOUNTS_DB_USER"), env("DEV_ACCOUNTS_DB_PASSWORD"));
-        var jdbc = new JdbcTemplate(ds); var tx = new TransactionTemplate(new DataSourceTransactionManager(ds));
+        var jdbc = new JdbcTemplate(ds);
+        // JdbcTemplate on the same DataSource joins the JPA transaction, so the adoption stays one atomic unit.
+        var persistence = JpaTestContext.start(ds); var tx = new TransactionTemplate(persistence.transactionManager());
         String expert = jdbc.queryForObject("SELECT account_id::text FROM platform.account WHERE normalized_identifier='expert@example.test'", String.class);
         String manager = jdbc.queryForObject("SELECT account_id::text FROM platform.account WHERE normalized_identifier='ld.manager@example.test'", String.class);
         String org = jdbc.queryForObject("SELECT organization_id::text FROM platform.account WHERE account_id::text=?", String.class, expert);
         var json = new ObjectMapper(); var saved = json.readTree(Files.readString(Path.of(env("DEV_MODULE_SNAPSHOT"))));
         try (var driver = GraphDatabase.driver("bolt://127.0.0.1:28187", AuthTokens.basic("neo4j", env("DEV_ACCOUNTS_NEO4J_PASSWORD")))) {
-            var port = new JdbcModuleAuthoringAdapter(jdbc, tx, json, driver, org);
+            var port = new JpaModuleAuthoringAdapter(ModuleAuthoringRepositories.from(persistence::bean,
+                    new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))), tx, json, driver, org);
             var service = new ModuleAuthoringService(port);
             actor(expert, org, "EXPERT");
             tx.executeWithoutResult(outer -> {
@@ -106,6 +111,6 @@ public final class DevModulesAdoption {
             jdbc.update("INSERT INTO platform.audit_event(audit_event_id,service_name,action,resource_id,occurred_at,outcome,correlation_id) VALUES (?,'LOCAL_DEV_MIGRATION','DEV_MODULES_ADOPTED',?,now(),'SUCCEEDED',?)", UUID.randomUUID(), UUID.fromString(org), UUID.randomUUID());
             System.out.println("Preserved " + saved.get("module_authoring").size() + " historical documents; received " + imported + " catalog modules. Owner: expert@example.test. Graph and prior revisions unchanged.");
             });
-        } finally { SecurityContextHolder.clearContext(); }
+        } finally { SecurityContextHolder.clearContext(); persistence.close(); }
     }
 }

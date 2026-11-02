@@ -1,9 +1,11 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.entities.LearningContent;
+import com.adaptlearngraph.entities.LearningImportEntity;
 import com.adaptlearngraph.entities.ModuleAuthoring;
 import com.adaptlearngraph.repository.LearningAssetPort;
 import com.adaptlearngraph.repository.LearningContentPort;
+import com.adaptlearngraph.repository.LearningImportJpaRepository;
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
 import com.adaptlearngraph.entities.LearningContent.Lesson;
@@ -12,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -26,7 +28,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
     private final LearningContentPort content;
     private final LearningAssetPort files;
     private final ModuleAuthoringService modules;
-    private final JdbcTemplate jdbc;
+    private final LearningImportJpaRepository imports;
     private final ObjectMapper json;
     private static final List<String> MODULE_COLUMNS =
             List.of("moduleId", "title", "moduleType", "durationMinutes", "priceVnd", "teachings");
@@ -49,13 +51,13 @@ public final class ExcelLearningImport implements LearningImportUseCase {
             LearningContentPort content,
             LearningAssetPort files,
             ModuleAuthoringService modules,
-            JdbcTemplate jdbc,
+            LearningImportJpaRepository imports,
             ObjectMapper json) {
         this.port = port;
         this.content = content;
         this.files = files;
         this.modules = modules;
-        this.jdbc = jdbc;
+        this.imports = imports;
         this.json = json;
     }
 
@@ -187,7 +189,9 @@ public final class ExcelLearningImport implements LearningImportUseCase {
     @Override
     public Preview preview(String filename, long size, InputStream input) {
         Actor a = actor();
-        if (size <= 0 || size > content.limits().zipBytes())
+        // Read once per import: the per-chunk size guards below must not query the settings row repeatedly.
+        var limits = content.limits();
+        if (size <= 0 || size > limits.zipBytes())
             throw new Failure(413, "Import exceeds configured package size");
         if (!previews.tryAcquire())
             throw new Failure(429, "Another import is being checked. Retry shortly.");
@@ -215,7 +219,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                             int n;
                             while ((n = zip.read(buffer)) != -1) {
                                 total += n;
-                                if (total > content.limits().zipBytes() * 2)
+                                if (total > limits.zipBytes() * 2)
                                     throw new Failure(413, "Expanded ZIP is too large");
                                 out.write(buffer, 0, n);
                             }
@@ -229,7 +233,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                     int n;
                     while ((n = input.read(buffer)) != -1) {
                         total += n;
-                        if (total > Math.min(content.limits().zipBytes(), 20 * 1024 * 1024))
+                        if (total > Math.min(limits.zipBytes(), 20 * 1024 * 1024))
                             throw new Failure(413, "Workbook exceeds supported size");
                         out.write(buffer, 0, n);
                     }
@@ -243,6 +247,8 @@ public final class ExcelLearningImport implements LearningImportUseCase {
             List<LearningImportUseCase.Row> rows = new ArrayList<>();
             Map<String, List<Map<String, String>>> grouped = new LinkedHashMap<>();
             Set<String> ids = new HashSet<>();
+            // Organization documents are read once (on the first module row), not once per row.
+            Map<String, Document> documents = null;
             checkWorkbook(workbook);
             try (var book = new XSSFWorkbook(workbook.toFile())) {
                 Sheet moduleSheet = book.getSheet("Modules"),
@@ -314,10 +320,12 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                         new BigDecimal(v.get("priceVnd")),
                                         List.of(),
                                         skills);
-                        var existing =
-                                port.documents(a.organizationId()).stream()
-                                        .filter(d -> d.id().equals(v.get("moduleId")))
-                                        .findFirst();
+                        if (documents == null) {
+                            documents = new HashMap<>();
+                            for (Document d : port.documents(a.organizationId()))
+                                documents.putIfAbsent(d.id(), d);
+                        }
+                        var existing = Optional.ofNullable(documents.get(v.get("moduleId")));
                         rows.add(
                                 new LearningImportUseCase.Row(
                                         id,
@@ -342,14 +350,15 @@ public final class ExcelLearningImport implements LearningImportUseCase {
             if (rows.isEmpty()) errors.add(new Problem("", 0, "Include at least one module"));
             String id = UUID.randomUUID().toString();
             Preview p = new Preview(id, rows, errors, List.of(), false);
-            jdbc.update(
-                    "INSERT INTO"
-                        + " platform.learning_import(id,organization_id,actor_id,document,state)"
-                        + " VALUES (?::uuid,?,?,?::jsonb,'PREVIEW')",
-                    id,
-                    a.organizationId(),
-                    a.id(),
-                    json.writeValueAsString(p));
+            imports.insert(
+                    new LearningImportEntity(
+                            UUID.fromString(id),
+                            a.organizationId(),
+                            a.id(),
+                            json.writeValueAsString(p),
+                            "PREVIEW",
+                            null,
+                            null));
             return validate(id);
         } catch (Failure e) {
             throw e;
@@ -540,15 +549,17 @@ public final class ExcelLearningImport implements LearningImportUseCase {
 
     private Preview load(String id, boolean lock) {
         Actor a = actor();
+        UUID importId;
+        try {
+            importId = UUID.fromString(id);
+        } catch (RuntimeException e) {
+            // PostgreSQL rejected a malformed id cast before; keep it a data-access failure.
+            throw new InvalidDataAccessApiUsageException("Invalid import id", e);
+        }
         var found =
-                jdbc.queryForList(
-                        "SELECT document::text FROM platform.learning_import WHERE id=?::uuid AND"
-                                + " organization_id=? AND actor_id=?"
-                                + (lock ? " FOR UPDATE" : ""),
-                        String.class,
-                        id,
-                        a.organizationId(),
-                        a.id());
+                lock
+                        ? imports.lockDocument(importId, a.organizationId(), a.id())
+                        : imports.document(importId, a.organizationId(), a.id());
         if (found.isEmpty()) throw new Failure(404, "Import not found");
         try {
             return json.readValue(found.getFirst(), Preview.class);
@@ -657,18 +668,18 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                         row.expectedVersion()));
                     }
                     try {
-                        jdbc.update(
-                                "UPDATE platform.learning_import SET"
-                                        + " state='COMMITTED',committed_at=now(),document=?::jsonb"
-                                        + " WHERE id=?::uuid",
+                        Actor a = actor();
+                        imports.commit(
+                                UUID.fromString(id),
+                                a.organizationId(),
+                                a.id(),
                                 json.writeValueAsString(
                                         new Preview(
                                                 p.id(),
                                                 p.modules(),
                                                 p.errors(),
                                                 p.ownedDuplicates(),
-                                                true)),
-                                id);
+                                                true)));
                     } catch (Exception e) {
                         throw new IllegalStateException(e);
                     }

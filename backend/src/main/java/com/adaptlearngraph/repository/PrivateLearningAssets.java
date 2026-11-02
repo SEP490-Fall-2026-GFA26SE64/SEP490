@@ -12,7 +12,6 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.*;
 import java.nio.file.*;
@@ -24,7 +23,7 @@ public final class PrivateLearningAssets implements LearningAssetPort {
     private final MinioClient minio;
     private final String bucket;
     private final LearningContentPort content;
-    private final JdbcTemplate jdbc;
+    private final LearningVideoVerificationJpaRepository verifications;
 
     public PrivateLearningAssets(
             String endpoint,
@@ -32,11 +31,11 @@ public final class PrivateLearningAssets implements LearningAssetPort {
             String secret,
             String bucket,
             LearningContentPort content,
-            JdbcTemplate jdbc) {
+            LearningVideoVerificationJpaRepository verifications) {
         this.minio = MinioClient.builder().endpoint(endpoint).credentials(key, secret).build();
         this.bucket = bucket;
         this.content = content;
-        this.jdbc = jdbc;
+        this.verifications = verifications;
     }
 
     @Override
@@ -254,13 +253,6 @@ public final class PrivateLearningAssets implements LearningAssetPort {
         if (!Double.isFinite(seconds) || seconds <= 0 || seconds > 604800)
             throw new Failure(400, "Invalid video duration");
         ExternalLearningVideo.check(provider, url);
-        jdbc.update(
-                "INSERT INTO platform.learning_video_verification VALUES (?,?,?, ?,now()) ON"
-                    + " CONFLICT(organization_id,actor_id,video_url) DO UPDATE SET"
-                    + " duration_seconds=EXCLUDED.duration_seconds,verified_at=now()",
-                org,
-                actor,
-                url,
-                seconds);
+        verifications.verify(org, actor, url, seconds);
     }
 }

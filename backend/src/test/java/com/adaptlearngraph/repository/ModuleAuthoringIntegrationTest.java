@@ -3,12 +3,12 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.entities.MicroSkill;
 import com.adaptlearngraph.services.ModuleAuthoringService;
 import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.support.JpaTestContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +22,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModuleAuthoringIntegrationTest {
+    /** The tests use a minimal hand-made schema (text account keys), so the JPA context is not schema-validated. */
+    private static JpaModuleAuthoringAdapter adapter(JpaTestContext persistence, Driver driver, String organization) {
+        return new JpaModuleAuthoringAdapter(ModuleAuthoringRepositories.from(persistence::bean,
+                new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),
+                new TransactionTemplate(persistence.transactionManager()), new ObjectMapper(), driver, organization);
+    }
     private void actor(String id, String role) {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(id, "test", List.of(new SimpleGrantedAuthority("ROLE_" + role))));
     }
@@ -44,7 +50,8 @@ class ModuleAuthoringIntegrationTest {
             jdbc.execute("INSERT INTO platform.organization_membership VALUES ('expert-a','expert-a','org',true)");
             jdbc.execute("INSERT INTO platform.organization_membership_role VALUES ('expert-a','DOMAIN_EXPERT')");
             new ResourceDatabasePopulator(new ClassPathResource("db/module-migration/V33__module_authoring.sql"), new ClassPathResource("db/module-migration/V34__module_catalog_intake.sql")).execute(ds);
-            try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()))) {
+            try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
+                    var persistence = JpaTestContext.startUnvalidated(ds)) {
                 try (var session = driver.session()) {
                     session.run("""
                         CREATE (s:MicroSkill {id:'skill',name:'Existing skill',organizationId:'org'})
@@ -58,7 +65,7 @@ class ModuleAuthoringIntegrationTest {
                         CREATE (:LearningModule {id:'foreign',organizationId:'foreign-org',title:'Private'})
                         """).consume();
                 }
-                var adapter = new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(new DataSourceTransactionManager(ds)), new ObjectMapper(), driver, "org");
+                var adapter = adapter(persistence, driver, "org");
                 var service = new ModuleAuthoringService(adapter);
                 actor("expert-a", "EXPERT");
                 CatalogPage result = service.catalogList("Existing", "ACTIVE", "APPROVED", "RESOURCE_GUIDED_PRACTICE", "skill", 1);
@@ -142,11 +149,12 @@ class ModuleAuthoringIntegrationTest {
             jdbc.execute("INSERT INTO platform.organization_membership SELECT account_id,account_id,organization_id,true FROM platform.account");
             jdbc.execute("INSERT INTO platform.organization_membership_role VALUES ('expert-a','DOMAIN_EXPERT'),('expert-b','DOMAIN_EXPERT'),('foreign-expert','DOMAIN_EXPERT'),('inactive-expert','DOMAIN_EXPERT')");
             new ResourceDatabasePopulator(new ClassPathResource("db/module-migration/V33__module_authoring.sql"), new ClassPathResource("db/module-migration/V34__module_catalog_intake.sql")).execute(ds);
-            try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()))) {
+            try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
+                    var persistence = JpaTestContext.startUnvalidated(ds)) {
                 try (var session = driver.session()) {
                     session.run("CREATE (:Occupation {id:'occ',name:'Occupation',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE',organizationId:'org'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE',organizationId:'org'})").consume();
                 }
-                var adapter = new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(new DataSourceTransactionManager(ds)), new ObjectMapper(), driver, "org");
+                var adapter = adapter(persistence, driver, "org");
                 var service = new ModuleAuthoringService(adapter);
                 actor("reviewer", "LD_MANAGER"); assertEquals(Set.of("expert-a", "expert-b"), new HashSet<>(adapter.catalog("Expert").stream().map(Choice::id).toList())); service.grant("expert-a", "occ", true); service.grant("expert-b", "occ", true);
                 actor("expert-a", "EXPERT");
@@ -202,8 +210,27 @@ class ModuleAuthoringIntegrationTest {
                 actor("reviewer", "LD_MANAGER"); service.grant("expert-b", "occ", false);
                 actor("expert-b", "EXPERT"); assertEquals(id, service.detail(id).id());
                 assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM platform.module_grant_audit", Integer.class));
-                var foreign = new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(new DataSourceTransactionManager(ds)), new ObjectMapper(), driver, "foreign-org");
+                var foreign = adapter(persistence, driver, "foreign-org");
                 assertTrue(foreign.documents("foreign-org").isEmpty());
+                // Organization B can neither read nor overwrite/delete organization A's module, content, grants or pins.
+                String ownedId = id;
+                assertTrue(foreign.lock("foreign-org", ownedId).isEmpty());
+                assertTrue(foreign.contents("foreign-org").isEmpty());
+                assertTrue(foreign.grants("foreign-org").isEmpty());
+                assertTrue(foreign.intakes("foreign-org").isEmpty());
+                assertTrue(foreign.pinned("foreign-org", "learner", ownedId).isEmpty());
+                assertEquals(List.of("foreign-expert"), foreign.catalog("Expert").stream().map(Choice::id).toList());
+                Document owned = adapter.lock("org", ownedId).orElseThrow();
+                Document hijack = new Document(owned.id(), "foreign-org", owned.occupationIds(), "foreign-expert", owned.createdAt(),
+                        owned.lockVersion() + 1, owned.everReleased(), owned.archived(), owned.releasedRevision(), owned.revisions(),
+                        owned.history(), owned.intake());
+                assertThrows(org.springframework.dao.DataAccessException.class, () -> foreign.save(hijack));
+                foreign.delete(hijack);
+                assertEquals(owned, adapter.lock("org", ownedId).orElseThrow());
+                assertTrue(adapter.pinned("org", "learner", ownedId).isPresent());
+                foreign.saveContent("foreign-org", content);
+                assertEquals(content, adapter.contents("org").stream().filter(c -> c.id().equals(content.id())).findFirst().orElseThrow());
+                assertEquals(1, foreign.contents("foreign-org").size());
             } finally { SecurityContextHolder.clearContext(); }
         }
     }
