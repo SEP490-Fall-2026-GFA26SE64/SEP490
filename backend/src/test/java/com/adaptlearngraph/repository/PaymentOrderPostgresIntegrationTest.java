@@ -521,7 +521,8 @@ class PaymentOrderPostgresIntegrationTest {
     @Test
     void catalogSelectionKeepsWorkspaceProvisioningUntilTheCopySucceedsOrFails() {
         var registrations = RegistrationPostgresIntegrationTest.registrationStore(persistence);
-        var imports = new JdbcWorkspaceCatalogImportStore(jdbc, transactions);
+        var imports = new JpaWorkspaceCatalogImportStore(persistence.bean(WorkspaceCatalogImportJpaRepository.class),
+                persistence.bean(OrganizationWorkspaceJpaRepository.class), new TransactionTemplate(persistence.transactionManager()));
         String sha = "b".repeat(64);
 
         var copied = registrant();

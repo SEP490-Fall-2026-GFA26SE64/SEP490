@@ -20,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("!starter")
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class PlatformCatalogConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(PlatformCatalogConfiguration.class);
 
@@ -45,8 +46,11 @@ public class PlatformCatalogConfiguration {
 
     @Bean
     com.adaptlearngraph.repository.WorkspaceCatalogImportStore workspaceCatalogImportStore(
-            org.springframework.jdbc.core.JdbcTemplate jdbc, org.springframework.transaction.PlatformTransactionManager manager) {
-        return new com.adaptlearngraph.repository.JdbcWorkspaceCatalogImportStore(jdbc,
+            com.adaptlearngraph.repository.WorkspaceCatalogImportJpaRepository imports,
+            com.adaptlearngraph.repository.OrganizationWorkspaceJpaRepository workspaces,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager manager) {
+        return new com.adaptlearngraph.repository.JpaWorkspaceCatalogImportStore(imports, workspaces,
                 new org.springframework.transaction.support.TransactionTemplate(manager));
     }
 
