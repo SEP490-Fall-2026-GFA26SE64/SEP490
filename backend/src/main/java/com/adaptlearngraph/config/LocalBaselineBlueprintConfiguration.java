@@ -1,7 +1,7 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.BaselineBlueprintValidationAdapter;
-import com.adaptlearngraph.repository.JdbcBaselineAnswerReviewStore;
+import com.adaptlearngraph.repository.JpaBaselineAnswerReviewStore;
 import com.adaptlearngraph.repository.JdbcBaselineAssessmentDraftStore;
 import com.adaptlearngraph.repository.JdbcBaselineAssessmentManagementStore;
 import com.adaptlearngraph.repository.JdbcBaselineBlueprintStore;
@@ -46,6 +46,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Profile("local")
 @ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalBaselineBlueprintConfiguration {
     @Bean
     BaselineBlueprintStore baselineBlueprintStore(NamedParameterJdbcTemplate jdbc) {
@@ -66,8 +67,9 @@ public class LocalBaselineBlueprintConfiguration {
     @Bean
     @ConditionalOnProperty(
             prefix = "assessment.baseline.answer-review", name = "enabled", havingValue = "true")
-    BaselineAnswerReviewStore baselineAnswerReviewStore(NamedParameterJdbcTemplate jdbc) {
-        return new JdbcBaselineAnswerReviewStore(jdbc);
+    BaselineAnswerReviewStore baselineAnswerReviewStore(com.adaptlearngraph.repository.AssessmentVersionJpaRepository assessments,
+            com.adaptlearngraph.repository.BaselineAnswerRevealAuditJpaRepository audit) {
+        return new JpaBaselineAnswerReviewStore(assessments, audit);
     }
 
     @Bean

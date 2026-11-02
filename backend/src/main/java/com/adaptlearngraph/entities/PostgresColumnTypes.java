@@ -9,6 +9,9 @@ public final class PostgresColumnTypes {
     /** {@code platform.content_hash}: 64 lowercase hex characters (CHECK enforced by the domain). */
     public static final String CONTENT_HASH = "\"platform\".\"content_hash\"";
 
+    /** {@code platform.unit_interval}: numeric in [0, 1] (CHECK enforced by the domain). */
+    public static final String UNIT_INTERVAL = "\"platform\".\"unit_interval\"";
+
     private PostgresColumnTypes() {
     }
 }

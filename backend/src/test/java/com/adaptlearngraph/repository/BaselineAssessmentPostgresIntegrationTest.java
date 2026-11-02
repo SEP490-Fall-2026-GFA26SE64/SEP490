@@ -80,6 +80,8 @@ class BaselineAssessmentPostgresIntegrationTest {
         }
     }
 
+    private static com.adaptlearngraph.support.JpaTestContext persistence;
+
     @BeforeEach
     void migrateAndSeedDisposableDatabase() {
         assumeTrue(dockerAvailable, "Docker Desktop Linux engine is required for baseline integration");
@@ -101,7 +103,10 @@ class BaselineAssessmentPostgresIntegrationTest {
                 new JdbcBaselineBlueprintStore(namedJdbc), transactions);
         drafts = new TransactionalDraftStore(
                 new JdbcBaselineAssessmentDraftStore(namedJdbc), transactions);
-        answerReviews = new JdbcBaselineAnswerReviewStore(namedJdbc);
+        if (persistence != null) persistence.close();
+        persistence = com.adaptlearngraph.support.JpaTestContext.start(dataSource);
+        answerReviews = new JpaBaselineAnswerReviewStore(persistence.bean(AssessmentVersionJpaRepository.class),
+                persistence.bean(BaselineAnswerRevealAuditJpaRepository.class));
         var actor = (BaselineBlueprintStore.ActorPort) () -> Optional.of(
                 new Actor(ACTOR_ID, ORGANIZATION_ID.toString(), true, Set.of("LD_MANAGER")));
         var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(), namedJdbc);

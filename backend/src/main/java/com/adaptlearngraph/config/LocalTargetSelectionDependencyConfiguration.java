@@ -1,6 +1,6 @@
 package com.adaptlearngraph.config;
 
-import com.adaptlearngraph.repository.AdaptiveBaselineAssessmentActivityGuardAdapter;
+import com.adaptlearngraph.repository.JpaAssessmentActivityGuardAdapter;
 import com.adaptlearngraph.repository.JdbcProvisionalPathwayArchiveAdapter;
 import com.adaptlearngraph.repository.AssessmentActivityGuardPort;
 import com.adaptlearngraph.repository.PathwayArchivePort;
@@ -16,11 +16,12 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
         prefix = "learning.target-selection.local-dependencies",
         name = "enabled",
         havingValue = "true")
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalTargetSelectionDependencyConfiguration {
     @Bean
     AssessmentActivityGuardPort adaptiveBaselineAssessmentActivityGuard(
-            NamedParameterJdbcTemplate jdbc) {
-        return new AdaptiveBaselineAssessmentActivityGuardAdapter(jdbc);
+            com.adaptlearngraph.repository.BaselineAdaptiveAttemptJpaRepository attempts) {
+        return new JpaAssessmentActivityGuardAdapter(attempts);
     }
 
     @Bean
