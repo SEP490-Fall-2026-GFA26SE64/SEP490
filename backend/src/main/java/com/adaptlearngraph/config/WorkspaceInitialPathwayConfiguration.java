@@ -2,6 +2,7 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.CatalogRoleReviewAssignments;
 import com.adaptlearngraph.repository.CurrentCatalogRoleReferences;
+import com.adaptlearngraph.repository.InitialPathwayRepositories;
 import com.adaptlearngraph.repository.LocalSeedPlanning;
 import com.adaptlearngraph.repository.MainDevelopmentCatalogRelease;
 import com.adaptlearngraph.repository.Neo4jInitialBindings;
@@ -30,16 +31,15 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.neo4j.driver.Driver;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.sql.DataSource;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** Real workspace identity only. Local persona configuration is mutually excluded. */
 @Configuration(proxyBeanMethods=false)
 @Profile("local & workspace-baseline & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name={"pathway.initial.enabled","assessment.baseline.workspace.enabled"},havingValue="true")
+@Import(PersistenceConfiguration.class)
 public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponents {
     private final WorkspaceCatalogFixture fixture;
     @Autowired private ObjectProvider<WorkspacePathwayFixtures> fixtureInputs;
@@ -84,8 +84,8 @@ public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponen
         return new Neo4jInitialGraph(sessions,sessions instanceof WorkspaceFixtureCatalogRelease.Sessions || sessions instanceof MainDevelopmentCatalogRelease.Sessions);
     }
     @Bean @ConditionalOnProperty(name="pathway.initial.workspace-fixture.enabled",havingValue="true")
-    WorkspacePathwayFixtures workspacePathwayFixtures(ReleaseAuthority releases,DataSource source,ObjectMapper json,Profiles profiles,Environment env) {
-        return new WorkspacePathwayFixtures(fixture,releases,new NamedParameterJdbcTemplate(source),json,profiles,env);
+    WorkspacePathwayFixtures workspacePathwayFixtures(ReleaseAuthority releases,InitialPathwayRepositories data,ObjectMapper json,Profiles profiles,Environment env) {
+        return new WorkspacePathwayFixtures(fixture,releases,data,json,profiles,env);
     }
     @Bean @Override @ConditionalOnMissingBean(Semantics.class)
     Semantics initialSemantics(ReleaseAuthority releases,ObjectMapper json,Environment env) {
@@ -127,13 +127,13 @@ public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponen
         catch(java.io.IOException invalid){throw new IllegalStateException("Main development planning source unavailable",invalid);}
     }
     @Bean @Override @ConditionalOnMissingBean(ReviewAssignments.class)
-    ReviewAssignments initialAssignments(DataSource source,Environment env) {
+    ReviewAssignments initialAssignments(InitialPathwayRepositories data,Environment env) {
         if(fixture.active())return fixtureInputs.getObject().reviews();
         if(releaseInputs.getObject() instanceof MainDevelopmentCatalogRelease
                 && env.getProperty("pathway.initial.local-assignment.enabled",Boolean.class,false)) {
             var roles=java.util.Arrays.stream(env.getProperty("pathway.initial.local-assignment.role-ids","").split(","))
                     .map(String::strip).filter(value->!value.isEmpty()).collect(java.util.stream.Collectors.toSet());
-            return new CatalogRoleReviewAssignments(catalogDriver,new NamedParameterJdbcTemplate(source),integer(env,"local-assignment.max-pathways"),roles);
+            return new CatalogRoleReviewAssignments(catalogDriver,data,integer(env,"local-assignment.max-pathways"),roles);
         }
         return new ReviewAssignments(){
             public Assignment require(Actor actor,java.util.UUID id){throw missing("REVIEW_ASSIGNMENT_NOT_CONFIGURED");}

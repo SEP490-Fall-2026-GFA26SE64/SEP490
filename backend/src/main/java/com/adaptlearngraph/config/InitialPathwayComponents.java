@@ -8,9 +8,12 @@ import com.adaptlearngraph.repository.InitialCatalogPort;
 import com.adaptlearngraph.repository.InitialPathwayPorts;
 import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPlanningPorts;
-import com.adaptlearngraph.repository.JdbcInitialPathways;
-import com.adaptlearngraph.repository.JdbcInitialProfiles;
-import com.adaptlearngraph.repository.JdbcInitialReceipts;
+import com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository;
+import com.adaptlearngraph.repository.InitialPathwayReceiptJpaRepository;
+import com.adaptlearngraph.repository.InitialPathwayRepositories;
+import com.adaptlearngraph.repository.JpaInitialPathways;
+import com.adaptlearngraph.repository.JpaInitialProfiles;
+import com.adaptlearngraph.repository.JpaInitialReceipts;
 import com.adaptlearngraph.repository.LocalPathwayAssignments;
 import com.adaptlearngraph.repository.LocalReviewCatalogRelease;
 import com.adaptlearngraph.repository.LocalSeedPlanning;
@@ -31,14 +34,13 @@ import com.adaptlearngraph.repository.InitialCatalogPort.RoleReferences;
 import com.adaptlearngraph.repository.InitialCatalogPort.ReleaseAuthority;
 import com.adaptlearngraph.constants.LocalDemoIdentity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.sql.DataSource;
 import java.util.*;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -48,12 +50,13 @@ public abstract class InitialPathwayComponents {
         return new InitialRevisionCodec(mapper);
     }
     @Bean Coordination initialCoordination(CurrentRoleSelectionStore store,com.adaptlearngraph.services.RoleBaselineFlow.Catalog catalog) { return new CurrentSelectionCoordination(store,catalog); }
-    @Bean Profiles initialProfiles(DataSource source,ObjectMapper mapper) { return new JdbcInitialProfiles(new NamedParameterJdbcTemplate(source),mapper); }
-    @Bean InitialPathwayStore initialStore(DataSource source,Codec codec,PlatformTransactionManager manager,Environment environment) {
-        return new JdbcInitialPathways(new NamedParameterJdbcTemplate(source),codec,new TransactionTemplate(manager),
+    @Bean InitialPathwayRepositories initialPathwayRepositories(BeanFactory beans) { return InitialPathwayRepositories.from(beans::getBean); }
+    @Bean Profiles initialProfiles(EmployeeOccupationProfileJpaRepository profiles,ObjectMapper mapper) { return new JpaInitialProfiles(profiles,mapper); }
+    @Bean InitialPathwayStore initialStore(InitialPathwayRepositories data,Codec codec,PlatformTransactionManager manager,Environment environment) {
+        return new JpaInitialPathways(data,codec,new TransactionTemplate(manager),
                 environment.acceptsProfiles(org.springframework.core.env.Profiles.of("workspace-baseline & !local-baseline-demo & !prod")));
     }
-    @Bean Receipts initialReceipts(DataSource source) { return new JdbcInitialReceipts(new NamedParameterJdbcTemplate(source)); }
+    @Bean Receipts initialReceipts(InitialPathwayReceiptJpaRepository receipts) { return new JpaInitialReceipts(receipts); }
     @Bean @ConditionalOnMissingBean(ReleaseAuthority.class) ReleaseAuthority initialReleaseAuthority(org.neo4j.driver.Driver driver,Environment env) {
         if(localFixtures(env) && env.getProperty("pathway.initial.catalog.allow-review-seed",Boolean.class,false)) {
             try{return new LocalReviewCatalogRelease(driver,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(
@@ -121,7 +124,7 @@ public abstract class InitialPathwayComponents {
             public Optional<com.adaptlearngraph.entities.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.entities.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
         };
     }
-    @Bean @ConditionalOnMissingBean(ReviewAssignments.class) ReviewAssignments initialAssignments(DataSource source,Environment env){
+    @Bean @ConditionalOnMissingBean(ReviewAssignments.class) ReviewAssignments initialAssignments(InitialPathwayRepositories data,Environment env){
         if(localFixtures(env) && env.getProperty("pathway.initial.local-assignment.enabled",Boolean.class,false)) {
             try {
                 boolean workspace=com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(env);
@@ -129,7 +132,7 @@ public abstract class InitialPathwayComponents {
                         : UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id"));
                 var roles=new TreeSet<String>();
                 for(String role:env.getProperty("pathway.initial.local-assignment.role-ids","").split(","))if(!role.isBlank())roles.add(role.trim());
-                return new LocalPathwayAssignments(new NamedParameterJdbcTemplate(source),LocalDemoIdentity.ORG,expert,roles,integer(env,"local-assignment.max-pathways"),workspace);
+                return new LocalPathwayAssignments(data,LocalDemoIdentity.ORG,expert,roles,integer(env,"local-assignment.max-pathways"),workspace);
             }catch(IllegalArgumentException invalid){throw new IllegalStateException("Local pathway assignment configuration invalid",invalid);}
         }
         return new ReviewAssignments(){

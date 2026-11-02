@@ -1,22 +1,21 @@
 package com.adaptlearngraph.repository;
 
+import com.adaptlearngraph.entities.AuditEventEntity;
 import com.adaptlearngraph.services.RoleBaselineFlow.*;
 import com.adaptlearngraph.entities.AdaptiveBlueprint;
 import com.adaptlearngraph.entities.AdaptiveAttempt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.*;
-import org.springframework.jdbc.core.namedparam.*;
 
 /** TMP-REQ002-13 local profile-owner substitute; only real sufficient-evidence outcomes initialize it. */
 public final class CurrentOccupationProfile implements Baseline {
-    private final NamedParameterJdbcTemplate jdbc; private final ObjectMapper json;
+    private final EmployeeOccupationProfileJpaRepository profiles; private final AuditEventJpaRepository audit; private final ObjectMapper json;
     private final AdaptiveAttemptStore attempts; private final AdaptiveBlueprintStore blueprints;
     private final com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort eligibility;
-    public CurrentOccupationProfile(NamedParameterJdbcTemplate jdbc,ObjectMapper json,AdaptiveAttemptStore attempts,AdaptiveBlueprintStore blueprints,
-            com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort eligibility) {
-        this.jdbc=jdbc;this.json=json;this.attempts=attempts;this.blueprints=blueprints;this.eligibility=eligibility;
+    public CurrentOccupationProfile(EmployeeOccupationProfileJpaRepository profiles,AuditEventJpaRepository audit,ObjectMapper json,
+            AdaptiveAttemptStore attempts,AdaptiveBlueprintStore blueprints,com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort eligibility) {
+        this.profiles=profiles;this.audit=audit;this.json=json;this.attempts=attempts;this.blueprints=blueprints;this.eligibility=eligibility;
     }
     public void initialize(AdaptiveAttemptOutcomePort.Completion completion) {
         var a=completion.terminal();
@@ -26,78 +25,54 @@ public final class CurrentOccupationProfile implements Baseline {
         Map<String,BigDecimal> mastery=new TreeMap<>();
         completion.skills().forEach((id,s)-> { if(s.mastery()==null || s.mastery().signum()<0 || s.mastery().compareTo(BigDecimal.ONE)>0)
             throw new IllegalStateException("Invalid mastery"); mastery.put(id,s.mastery()); });
-        var version=a.snapshot().blueprint();
-        var p=key(a.scope()).addValue("attempt",a.id()).addValue("blueprint",version.id().blueprintId()).addValue("version",version.id().version())
-                .addValue("fingerprint",version.catalogFingerprint()).addValue("skills",write(new TreeSet<>(mastery.keySet())))
-                .addValue("mastery",write(mastery)).addValue("time",Timestamp.from(a.finishedAt().orElseThrow()));
-        int inserted=jdbc.update("""
-                INSERT INTO platform.employee_occupation_profile(organization_id,learner_id,occupation_id,attempt_id,blueprint_id,
-                    blueprint_version,catalog_fingerprint,required_skills,mastery,initialized_at)
-                VALUES(:org,:learner,:occupation,:attempt,:blueprint,:version,:fingerprint,CAST(:skills AS jsonb),CAST(:mastery AS jsonb),:time)
-                ON CONFLICT(organization_id,learner_id,occupation_id) DO NOTHING
-                """,p);
-        if(inserted==1) jdbc.update("""
-                INSERT INTO platform.audit_event(audit_event_id,service_name,action,resource_id,resource_revision,occurred_at,outcome,correlation_id)
-                VALUES(:audit,'local-occupation-profile','BASELINE_PROFILE_INITIALIZED',:attempt,'1',:time,'SUCCEEDED',:attempt)
-                """,p.addValue("audit",UUID.randomUUID()));
+        var version=a.snapshot().blueprint();var scope=a.scope();var time=a.finishedAt().orElseThrow();
+        int inserted=profiles.insertIfAbsent(scope.organizationId(),scope.learnerId(),scope.occupationId(),a.id(),version.id().blueprintId(),
+                version.id().version(),version.catalogFingerprint(),write(new TreeSet<>(mastery.keySet())),write(mastery),time);
+        if(inserted==1) audit.insert(new AuditEventEntity(UUID.randomUUID(),null,"local-occupation-profile","BASELINE_PROFILE_INITIALIZED",
+                a.id(),"1",time,"SUCCEEDED",a.id()));
     }
     @Override public List<MasteryProfile> mastery(Actor actor) {
-        return jdbc.query("""
-                SELECT p.*,v.occupation_name_snapshot FROM platform.employee_occupation_profile p
-                JOIN platform.baseline_adaptive_blueprint_version v
-                  ON v.blueprint_id=p.blueprint_id AND v.version=p.blueprint_version
-                 AND v.organization_id=p.organization_id AND v.occupation_id=p.occupation_id
-                WHERE p.organization_id=:org AND p.learner_id=:learner
-                ORDER BY p.initialized_at DESC,p.occupation_id
-                """,Map.of("org",actor.organizationId(),"learner",actor.learnerId()),(rs,n)-> {
+        var rows=profiles.mastery(actor.organizationId(),actor.learnerId());
+        if(rows.isEmpty()) return new ArrayList<>();
+        Map<UUID,List<EmployeeOccupationProfileJpaRepository.MasterySkillRow>> skills=new HashMap<>();
+        try {
+            // One batched read for every profile's evidence; names come from each profile's own blueprint version.
+            for(var skill:profiles.masterySkills(actor.organizationId(),actor.learnerId(),rows.stream().map(r->r.attemptId()).toList()))
+                skills.computeIfAbsent(skill.attemptId(),id->new ArrayList<>()).add(skill);
+        } catch(Exception e) { throw new IllegalStateException("Profile unavailable",e); }
+        var result=new ArrayList<MasteryProfile>();
+        for(var row:rows) {
             try {
-                var values=json.readTree(rs.getString("mastery"));
-                attempts.findOwned(actor.organizationId(),actor.learnerId(),rs.getObject("attempt_id",UUID.class)).orElseThrow(()->new IllegalStateException("Profile attempt unavailable"));
-                var skills=jdbc.query("""
-                        SELECT s.micro_skill_id,s.confidence_label,
-                          (SELECT MIN(b.micro_skill_name_snapshot) FROM platform.baseline_adaptive_blueprint_skill b
-                           WHERE b.blueprint_id=:blueprint AND b.blueprint_version=:version
-                             AND b.micro_skill_id=s.micro_skill_id) AS name
-                        FROM platform.baseline_attempt_skill_result s
-                        WHERE s.organization_id=:org AND s.attempt_id=:attempt ORDER BY s.micro_skill_id
-                        """,Map.of("org",actor.organizationId(),"attempt",rs.getObject("attempt_id",UUID.class),
-                                "blueprint",rs.getObject("blueprint_id",UUID.class),"version",rs.getInt("blueprint_version")),
-                        (skill,i)-> {
-                            var value=values.get(skill.getString("micro_skill_id"));
-                            if(value==null || !value.isNumber()) throw new IllegalStateException("Profile mastery missing");
-                            return new MasterySkill(skill.getString("micro_skill_id"),skill.getString("name"),
-                                    value.doubleValue(),skill.getString("confidence_label"));
-                        });
-                if(skills.size()!=values.size()) throw new IllegalStateException("Profile evidence incomplete");
-                return new MasteryProfile(rs.getString("occupation_id"),rs.getString("occupation_name_snapshot"),
-                        rs.getObject("attempt_id",UUID.class),rs.getInt("blueprint_version"),rs.getTimestamp("initialized_at").toInstant(),skills);
-            } catch(java.sql.SQLException e) { throw e; }
-            catch(Exception e) { throw new IllegalStateException("Profile unavailable",e); }
-        });
+                var values=json.readTree(row.mastery());
+                attempts.findOwned(actor.organizationId(),actor.learnerId(),row.attemptId()).orElseThrow(()->new IllegalStateException("Profile attempt unavailable"));
+                var list=new ArrayList<MasterySkill>();
+                for(var skill:skills.getOrDefault(row.attemptId(),List.of())) {
+                    var value=values.get(skill.microSkillId());
+                    if(value==null || !value.isNumber()) throw new IllegalStateException("Profile mastery missing");
+                    list.add(new MasterySkill(skill.microSkillId(),skill.name(),value.doubleValue(),skill.confidenceLabel()));
+                }
+                if(list.size()!=values.size()) throw new IllegalStateException("Profile evidence incomplete");
+                result.add(new MasteryProfile(row.occupationId(),row.occupationName(),row.attemptId(),row.blueprintVersion(),row.initializedAt(),list));
+            } catch(Exception e) { throw new IllegalStateException("Profile unavailable",e); }
+        }
+        return result;
     }
     @Override public Optional<Progress> active(Actor actor) {
-        var ids=jdbc.query("""
-                SELECT attempt_id FROM platform.baseline_adaptive_attempt
-                WHERE organization_id=:org AND learner_id=:learner AND state='IN_PROGRESS'
-                ORDER BY started_at,attempt_id LIMIT 1
-                """,Map.of("org",actor.organizationId(),"learner",actor.learnerId()),(rs,n)->rs.getObject(1,UUID.class));
+        var ids=profiles.inProgressAttempts(actor.organizationId(),actor.learnerId(),new OffsetPage(0,1));
         return ids.stream().findFirst().flatMap(id->attempts.findOwned(actor.organizationId(),actor.learnerId(),id))
                 .map(a->new Progress("RESUME",a.snapshot().microSkillIds().size(),0,a.id(),a.snapshot().blueprint().id().version()));
     }
     @Override public Progress progress(Actor actor,Role role,Set<String> requiredSkills) {
         var scope=new AdaptiveAttempt.Scope(actor.organizationId(),actor.learnerId(),role.occupationId());
-        var profile=jdbc.query("""
-                SELECT required_skills,mastery,blueprint_version,attempt_id FROM platform.employee_occupation_profile
-                WHERE organization_id=:org AND learner_id=:learner AND occupation_id=:occupation
-                """,key(scope),(rs,n)-> {
+        var profile=profiles.progress(scope.organizationId(),scope.learnerId(),scope.occupationId()).stream().map(row-> {
                     try {
-                        var required=json.readTree(rs.getString(1));var mastery=json.readTree(rs.getString(2));int covered=0;
-                        attempts.findOwned(actor.organizationId(),actor.learnerId(),rs.getObject(4,UUID.class)).orElseThrow(()->new IllegalStateException("Profile attempt unavailable"));
+                        var required=json.readTree(row.requiredSkills());var mastery=json.readTree(row.mastery());int covered=0;
+                        attempts.findOwned(actor.organizationId(),actor.learnerId(),row.attemptId()).orElseThrow(()->new IllegalStateException("Profile attempt unavailable"));
                         for(var id:required) { var value=mastery.get(id.asText()); if(value!=null && value.isNumber()
                                 && value.decimalValue().signum()>=0 && value.decimalValue().compareTo(BigDecimal.ONE)<=0) covered++; }
-                        return new Progress(covered==required.size()?"COMPLETE":"PROFILE_INCOMPLETE",required.size(),covered,rs.getObject(4,UUID.class),rs.getInt(3));
+                        return new Progress(covered==required.size()?"COMPLETE":"PROFILE_INCOMPLETE",required.size(),covered,row.attemptId(),row.blueprintVersion());
                     }catch(Exception e){throw new IllegalStateException("Profile invalid",e);}
-                });
+                }).toList();
         if(!profile.isEmpty()) return profile.getFirst();
         var prior=attempts.findLatest(scope);
         if(prior.isPresent()) {
@@ -117,8 +92,7 @@ public final class CurrentOccupationProfile implements Baseline {
         return new Progress(ready && v.configuration().occupationBounds()!=null?"BASELINE_REQUIRED":"BASELINE_UNAVAILABLE",required,0,null,v.id().version());
     }
     public boolean exists(AdaptiveAttempt.Scope scope) {
-        return Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.employee_occupation_profile WHERE organization_id=:org AND learner_id=:learner AND occupation_id=:occupation)",key(scope),Boolean.class));
+        return profiles.exists(scope.organizationId(),scope.learnerId(),scope.occupationId());
     }
-    private MapSqlParameterSource key(AdaptiveAttempt.Scope s) { return new MapSqlParameterSource("org",s.organizationId()).addValue("learner",s.learnerId()).addValue("occupation",s.occupationId()); }
     private String write(Object value) { try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalStateException(e);} }
 }

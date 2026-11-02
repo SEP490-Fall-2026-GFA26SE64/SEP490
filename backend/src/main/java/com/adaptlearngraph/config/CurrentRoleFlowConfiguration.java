@@ -15,13 +15,11 @@ import com.adaptlearngraph.services.RoleBaselineFlow;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
-import javax.sql.DataSource;
 import org.neo4j.driver.Driver;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.*;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** TMP-REQ002-13; current Employee routes only in the enabled local demo, no history import. */
 @Configuration(proxyBeanMethods=false)
@@ -31,11 +29,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @Import(PersistenceConfiguration.class)
 public class CurrentRoleFlowConfiguration {
     @Bean CurrentRoleCatalog currentRoleCatalog(Driver driver,ObjectMapper json) { return new CurrentRoleCatalog(driver,json,LocalDemoIdentity.ORG); }
-    @Bean CurrentRoleSelectionStore currentRoleSelectionStore(DataSource source,ObjectMapper json,PlatformTransactionManager manager) {
-        return new CurrentRoleSelectionStore(new NamedParameterJdbcTemplate(source),json,new TransactionTemplate(manager));
+    @Bean CurrentRoleSelectionStore currentRoleSelectionStore(org.springframework.beans.factory.BeanFactory beans,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,PlatformTransactionManager manager) {
+        return new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(beans::getBean,locks),json,new TransactionTemplate(manager));
     }
-    @Bean CurrentOccupationProfile currentOccupationProfile(DataSource source,ObjectMapper json,AdaptiveAttemptStore attempts,AdaptiveBlueprintStore blueprints,AdaptiveBlueprintEligibilityPort eligibility) {
-        return new CurrentOccupationProfile(new NamedParameterJdbcTemplate(source),json,attempts,blueprints,eligibility);
+    @Bean CurrentOccupationProfile currentOccupationProfile(com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository profiles,
+            com.adaptlearngraph.repository.AuditEventJpaRepository audit,ObjectMapper json,AdaptiveAttemptStore attempts,AdaptiveBlueprintStore blueprints,AdaptiveBlueprintEligibilityPort eligibility) {
+        return new CurrentOccupationProfile(profiles,audit,json,attempts,blueprints,eligibility);
     }
     @Bean AdaptiveSelectedRolePort currentAdaptiveSelectedRole(CurrentRoleSelectionStore store,CurrentRoleCatalog catalog) {
         return (org,learner)-> {

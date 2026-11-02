@@ -41,8 +41,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -68,12 +66,12 @@ class TargetRoleSelectionPostgresIntegrationTest {
     private static boolean dockerAvailable;
 
     private JdbcTemplate jdbc;
-    private NamedParameterJdbcTemplate namedJdbc;
     private ObjectMapper objectMapper;
-    private JdbcTargetSelectionPersistence store;
-    private JdbcTargetSelectionEventAdapter events;
+    private static com.adaptlearngraph.support.JpaTestContext persistence;
+    private JpaTargetSelectionPersistence store;
+    private JpaTargetSelectionEventAdapter events;
     private TransactionTemplateSelectionTransactionAdapter transactions;
-    private JdbcProvisionalPathwayArchiveAdapter pathways;
+    private JpaProvisionalPathwayArchiveAdapter pathways;
     private AtomicLong identifiers;
 
     @BeforeAll
@@ -86,6 +84,9 @@ class TargetRoleSelectionPostgresIntegrationTest {
 
     @AfterAll
     static void stopPostgres() {
+        if (persistence != null) {
+            persistence.close();
+        }
         if (POSTGRES.isRunning()) {
             POSTGRES.stop();
         }
@@ -106,14 +107,18 @@ class TargetRoleSelectionPostgresIntegrationTest {
         flyway.migrate();
 
         jdbc = new JdbcTemplate(dataSource);
-        namedJdbc = new NamedParameterJdbcTemplate(dataSource);
+        if (persistence == null) {
+            persistence = com.adaptlearngraph.support.JpaTestContext.start(dataSource);
+        }
         objectMapper = new ObjectMapper().findAndRegisterModules();
-        var rowMapper = new JdbcTargetSelectionRowMapper(objectMapper);
-        store = new JdbcTargetSelectionPersistence(namedJdbc, rowMapper, objectMapper);
-        events = new JdbcTargetSelectionEventAdapter(namedJdbc, objectMapper);
-        transactions = new TransactionTemplateSelectionTransactionAdapter(
-                new DataSourceTransactionManager(dataSource));
-        pathways = new JdbcProvisionalPathwayArchiveAdapter(namedJdbc);
+        var rowMapper = new JpaTargetSelectionRowMapper(objectMapper);
+        store = new JpaTargetSelectionPersistence(persistence.bean(SelectionLearnerJpaRepository.class),
+                persistence.bean(TargetSelectionJpaRepository.class), persistence.bean(TargetSelectionRequestJpaRepository.class),
+                rowMapper, objectMapper);
+        events = new JpaTargetSelectionEventAdapter(persistence.bean(AuditEventJpaRepository.class),
+                persistence.bean(OutboxEventJpaRepository.class), objectMapper);
+        transactions = new TransactionTemplateSelectionTransactionAdapter(persistence.transactionManager());
+        pathways = new JpaProvisionalPathwayArchiveAdapter(persistence.bean(PathwayRevisionJpaRepository.class));
         identifiers = new AtomicLong(10_000);
         seedIdentityAndCatalog();
     }
@@ -285,7 +290,7 @@ class TargetRoleSelectionPostgresIntegrationTest {
     @Test
     void f01BridgeUsesTrustedOrganizationAndRequiresOnePublishedPostgresReference() {
         var catalog = new RecordingF01Catalog();
-        var adapter = new F01TargetRoleSelectionCatalogAdapter(catalog, namedJdbc);
+        var adapter = new F01TargetRoleSelectionCatalogAdapter(catalog, persistence.bean(CatalogGuardJpaRepository.class));
 
         var available = adapter.findSelectableRole(ORGANIZATION_A, ROLE_A_ID).orElseThrow();
 

@@ -4,36 +4,22 @@ import com.adaptlearngraph.exception.TargetRoleQueryException;
 import com.adaptlearngraph.entities.TargetRoleDetail;
 import com.adaptlearngraph.entities.TargetRoleSnapshot;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.data.domain.PageRequest;
 
 /** Joins the F01 availability view with the published PostgreSQL catalog reference. */
 public final class F01TargetRoleSelectionCatalogAdapter implements TargetRoleSelectionCatalogPort {
-    private static final String FIND_REFERENCE_SQL = """
-            SELECT reference.catalog_ref_id
-            FROM platform.catalog_guard guard
-            JOIN platform.catalog_reference reference
-              ON reference.release_id = guard.release_id
-            WHERE guard.guard_id = 1
-              AND guard.state = 'OPEN'
-              AND reference.kind = 'TARGET_ROLE'
-              AND reference.entity_id = :roleId
-            ORDER BY reference.confirmed_at DESC, reference.catalog_ref_id
-            LIMIT 2
-            """;
-
     private final TargetRoleCatalogPort catalog;
-    private final NamedParameterJdbcTemplate jdbc;
+    private final CatalogGuardJpaRepository references;
 
     public F01TargetRoleSelectionCatalogAdapter(
             TargetRoleCatalogPort catalog,
-            NamedParameterJdbcTemplate jdbc) {
+            CatalogGuardJpaRepository references) {
         this.catalog = Objects.requireNonNull(catalog, "catalog must not be null");
-        this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
+        this.references = Objects.requireNonNull(references, "references must not be null");
     }
 
     @Override
@@ -60,10 +46,7 @@ public final class F01TargetRoleSelectionCatalogAdapter implements TargetRoleSel
 
     private UUID resolveReference(UUID roleId) {
         try {
-            List<UUID> references = jdbc.query(
-                    FIND_REFERENCE_SQL,
-                    Map.of("roleId", roleId),
-                    (resultSet, rowNumber) -> resultSet.getObject("catalog_ref_id", UUID.class));
+            List<UUID> references = this.references.openTargetRoleReferences(roleId, PageRequest.of(0, 2));
             if (references.size() != 1) {
                 throw unavailable(
                         "Published catalog reference does not uniquely match the available target role",

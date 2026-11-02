@@ -37,7 +37,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.neo4j.driver.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.*;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.*;
@@ -50,15 +49,17 @@ class InitialReviewPersistenceIntegrationTest {
     final ObjectMapper json=new ObjectMapper().findAndRegisterModules();
     final UUID expert=new UUID(0,2001);final Limits limits=new Limits("c3-fixture-limits",20,20,30,10,10000);
     final AtomicLong preparedStatements=new AtomicLong();
-    Driver driver;JdbcTemplate sql;NamedParameterJdbcTemplate jdbc;TransactionTemplate tx;InitialRevisionCodec codec;
-    JdbcInitialPathways store;JdbcInitialReceipts receipts;CurrentRoleSelectionStore selections;PathwayBaselineFixture baseline;
+    Driver driver;JdbcTemplate sql;TransactionTemplate tx;InitialRevisionCodec codec;
+    JpaInitialPathways store;JpaInitialReceipts receipts;InitialPathwayRepositories repos;CurrentRoleSelectionStore selections;PathwayBaselineFixture baseline;
     Fixture retained;Map<String,String> before35,after35;List<Map<String,Object>> oldChecksums;Flyway flyway;
     final Map<String,String> versions=Map.of("catalog","fixture-v1","binding","fixture-binding-v1","publication","fixture-publication-v1","requirements","fixture-requirements-v1","compatibility","fixture-compatibility-v1","suitability",InitialSuitability.VERSION,"readiness","fixture-readiness-v1");
     @BeforeAll void setup(){
         pg.start();graph.start();driver=GraphDatabase.driver(graph.getBoltUrl(),AuthTokens.basic("neo4j",graph.getAdminPassword()));
-        var ds=new CountingTestDataSource(new DriverManagerDataSource(pg.getJdbcUrl(),pg.getUsername(),pg.getPassword()),preparedStatements);sql=new JdbcTemplate(ds);jdbc=new NamedParameterJdbcTemplate(ds);tx=new TransactionTemplate(new DataSourceTransactionManager(ds));codec=new InitialRevisionCodec(json);
+        var ds=new CountingTestDataSource(new DriverManagerDataSource(pg.getJdbcUrl(),pg.getUsername(),pg.getPassword()),preparedStatements);sql=new JdbcTemplate(ds);codec=new InitialRevisionCodec(json);
         Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").target("44").load().migrate();
-        baseline=new PathwayBaselineFixture(ds,json);store=new JdbcInitialPathways(jdbc,codec,tx);receipts=new JdbcInitialReceipts(jdbc);selections=new CurrentRoleSelectionStore(jdbc,json,tx);seedGraph();
+        baseline=new PathwayBaselineFixture(ds,json);var persistence=baseline.persistence;tx=new TransactionTemplate(persistence.transactionManager());repos=InitialPathwayRepositories.from(persistence::bean);
+        store=new JpaInitialPathways(repos,codec,tx);receipts=new JpaInitialReceipts(persistence.bean(InitialPathwayReceiptJpaRepository.class));
+        selections=new CurrentRoleSelectionStore(RoleSelectionRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),json,tx);seedGraph();
         sql.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,'c3-foreign-employee','c3-foreign-employee','test-only')",new UUID(0,2002),new UUID(0,2));
         sql.update("INSERT INTO platform.learner_state(learner_id) VALUES (?)",new UUID(0,2002));
         retained=new Fixture(true);retained.review.edit(retained.id,"retained-include",retained.edit("ALT"),true);retained.review.edit(retained.id,"retained-exclude",retained.edit("B"),false);retained.review.confirm(retained.id,"retained-confirm",retained.expected());
@@ -92,7 +93,7 @@ class InitialReviewPersistenceIntegrationTest {
         Fixture(boolean publish){this(publish,"level-a");}
         Fixture(boolean publish,String selectedLevel){
             scope=new Scope(ORG,baseline.learner());actor.set(new Actor(ORG,scope.learnerId(),Role.EMPLOYEE));
-            var profiles=new JdbcInitialProfiles(jdbc,json);
+            var profiles=new JpaInitialProfiles(baseline.persistence.bean(EmployeeOccupationProfileJpaRepository.class),json);
             var references=new RoleReferences(){public RoleReference require(Actor a,String role,String level){if(!ORG.equals(a.organizationId()) || !role.equals("role-a") || !Set.of("level-a","level-no-gap").contains(level))throw new Failure(404,"ROLE_NOT_AVAILABLE");return new RoleReference(ORG,InitialCatalogPort.choiceId(role,level),role,level,OCC,"fixture-f3-v1","fixture-release",versions);}
                 public void assertCurrent(Scope s,RoleReference r){if(!sourceCurrent.get() || !ORG.equals(s.organizationId()) || !r.releaseToken().equals("fixture-release"))throw new Failure(503,"FIXTURE_SOURCE_DRIFT");}};
             bindings=new Neo4jInitialBindings(references,(s,r)->driver.session(),()->20);
@@ -112,7 +113,7 @@ class InitialReviewPersistenceIntegrationTest {
             actor.set(new Actor(ORG,expert,Role.DOMAIN_EXPERT));review=reviewWith(builder,coordination);
             if(publish){dispatch(coordination).runOne();assertThat(current().generation()).isEqualTo(selectedLevel.equals("level-no-gap")?Generation.NO_LEARNING_REQUIRED:Generation.SUCCEEDED);}
         }
-        InitialPathwayReview reviewWith(InitialProblemBuilder p,Coordination c){return new InitialPathwayReview(actor::get,new LocalPathwayAssignments(jdbc,ORG,expert,Set.of("role-a"),1000),store,c,bindings,p,receipts,codec,()->limits);}
+        InitialPathwayReview reviewWith(InitialProblemBuilder p,Coordination c){return new InitialPathwayReview(actor::get,new LocalPathwayAssignments(repos,ORG,expert,Set.of("role-a"),1000),store,c,bindings,p,receipts,codec,()->limits);}
         InitialPathwayDispatch dispatch(Coordination c){return new InitialPathwayDispatch(store,c,bindings,builder,new InitialPathwayDispatch.Settings("fixture-dispatch",limits,Duration.ofMinutes(5),3,Duration.ofMillis(1),Duration.ofSeconds(1)));}
         InitialPathwayReview synchronizedReview(){var barrier=new CyclicBarrier(2);Graphs synchronizedGraph=(s,b,n,l)->{var result=graphs.load(s,b,n,l);try{barrier.await(15,TimeUnit.SECONDS);}catch(Exception failure){throw new IllegalStateException("planning barrier failed",failure);}return result;};return reviewWith(new InitialProblemBuilder(synchronizedGraph,new MasterySuitabilityPolicy(),definitions,availability,limits),coordination);}
         Request current(){return store.request(scope,id).orElseThrow();}Revision revision(){var r=current();return store.revision(scope,id,r.revision());}
@@ -196,7 +197,7 @@ class InitialReviewPersistenceIntegrationTest {
         var f=new Fixture(true);var command=f.edit("ALT");f.review.edit(f.id,"accepted-before-revoke",command,true);var before=digest();
         var foreign=new Scope(new UUID(0,2),new UUID(0,2002));assertThat(store.request(foreign,f.id)).isEmpty();assertThatThrownBy(()->store.revision(foreign,f.id,1)).hasMessage("PATHWAY_NOT_FOUND");
         var empty=new InitialPathwayView(()->new Actor(foreign.organizationId(),foreign.learnerId(),Role.EMPLOYEE),store,f.coordination,access(f)).current();assertThat(empty.status()).isNull();assertThat(empty.modules()).isEmpty();
-        var assignments=new LocalPathwayAssignments(jdbc,ORG,expert,Set.of("foreign-role"),1000);assertThat(assignments.assignedPathways(f.actor.get())).isEmpty();assertThatThrownBy(()->assignments.require(f.actor.get(),f.id)).hasMessage("PATHWAY_NOT_FOUND");
+        var assignments=new LocalPathwayAssignments(repos,ORG,expert,Set.of("foreign-role"),1000);assertThat(assignments.assignedPathways(f.actor.get())).isEmpty();assertThatThrownBy(()->assignments.require(f.actor.get(),f.id)).hasMessage("PATHWAY_NOT_FOUND");
         f.actor.set(new Actor(foreign.organizationId(),expert,Role.DOMAIN_EXPERT));assertThatThrownBy(()->f.review.detail(f.id)).hasMessage("FORBIDDEN");f.actor.set(new Actor(ORG,expert,Role.DOMAIN_EXPERT));
         sql.update("UPDATE platform.account SET active=false WHERE account_id=?",expert);
         try {assertThatThrownBy(()->f.review.edit(f.id,"accepted-before-revoke",command,true)).hasMessage("FORBIDDEN");}
@@ -234,9 +235,9 @@ class InitialReviewPersistenceIntegrationTest {
         String hash="156e69acb943fc9957797da9a5f86555336ae655fd0230f952178ecf2bab3974";
         var revision=new Revision(f.id,1,run,plan,Set.of("A","P"),List.of(),hash,Validation.VALID);
         tx.executeWithoutResult(status->{sql.update("INSERT INTO platform.initial_pathway_run(run_id,request_id,claim_token,worker_version,generation_status,diagnostics) VALUES (?,?,?,'legacy-fixture','SUCCEEDED','[]'::jsonb)",run,f.id,UUID.randomUUID());
-            new JdbcInitialRevisions(new InitialJdbc(jdbc,codec)).insert(f.scope,f.current().selection(),revision);
+            new JpaInitialRevisions(new InitialJpa(repos,codec)).insert(f.scope,f.current().selection(),revision);
             sql.update("UPDATE platform.initial_pathway_request SET generation_status='SUCCEEDED' WHERE request_id=?",f.id);sql.update("UPDATE platform.initial_pathway_current SET current_revision=1,review_status='AWAITING_EXPERT_REVIEW' WHERE request_id=?",f.id);
-            store.approve(f.scope,revision,f.actor.get(),new LocalPathwayAssignments(jdbc,ORG,expert,Set.of("role-a"),1000).require(f.actor.get(),f.id));});
+            store.approve(f.scope,revision,f.actor.get(),new LocalPathwayAssignments(repos,ORG,expert,Set.of("role-a"),1000).require(f.actor.get(),f.id));});
         var before=digest();var loaded=store.revision(f.scope,f.id,1);assertThat(loaded.contentHash()).isEqualTo(hash);assertThat(loaded.plan().formatVersion()).isNull();assertThat(loaded.plan().modules()).extracting(InitialPlanning.Module::id).containsExactly("P","A");assertThat(loaded.plan().modules().getFirst().targets().getFirst().teachingFocus()).isNull();assertThat(loaded.plan().modules().getFirst().targets().getFirst().instructionLevel()).isEqualTo(InstructionLevel.FOUNDATIONAL);
         assertThat(sql.queryForObject("SELECT count(*) FROM platform.initial_pathway_target WHERE request_id=?",Long.class,f.id)).isEqualTo(2);assertThat(sql.queryForObject("SELECT count(*) FROM platform.initial_pathway_teaching_v2 WHERE request_id=?",Long.class,f.id)).isZero();assertThat(store.approved(f.scope,f.id,1,hash)).isTrue();assertThat(digest()).isEqualTo(before);
     }
@@ -274,7 +275,36 @@ class InitialReviewPersistenceIntegrationTest {
         f.dispatch(f.coordination).runOne();var after=digest();var result=view.current();assertThat(result.status().displayState()).isEqualTo("NO_LEARNING_REQUIRED");assertThat(result.status().reviewStatus()).isEqualTo(Review.NONE);assertThat(result.modules()).isEmpty();assertThat(result.baseline()).isNull();assertThat(count("initial_pathway_approval",f.id)).isZero();assertThat(count("initial_pathway_revision",f.id)).isZero();assertThat(digest()).isEqualTo(after);
         assertThat(after.get("employee_occupation_profile")).isEqualTo(before.get("employee_occupation_profile"));assertThat(after.get("baseline_attempt_skill_result")).isEqualTo(before.get("baseline_attempt_skill_result"));
     }
-    InitialPathwayAccess access(Fixture f){return new InitialPathwayAccess(f.actor::get,f.coordination,store,new LocalPathwayAssignments(jdbc,ORG,expert,Set.of("role-a"),1000),f.bindings,f.availability,(s,g)->{throw new Failure(503,"LIVE_READINESS_NOT_CONFIGURED");},(s,m,v,g)->{throw new Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED");});}
+    @Test void R13_catalogOwnerAssignmentsApprovalAndLearnerLabelStayInsideTrustedTenant(){
+        var f=new Fixture(true);var foreignOrg=new UUID(0,2);var membership=UUID.randomUUID();var revision=f.revision();
+        tx.executeWithoutResult(s->{sql.update("INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,created_at,updated_at) VALUES (?,?,?,true,now(),now())",membership,expert,ORG);
+            sql.update("INSERT INTO platform.organization_membership_role(membership_id,role_code) VALUES (?,'DOMAIN_EXPERT')",membership);});
+        try(var session=driver.session()){session.executeWrite(t->t.run("MATCH (r:TargetRole {id:'role-a'}) SET r.assignedExpertId=$expert",Map.of("expert",expert.toString())).consume());}
+        try {
+            var catalog=new CatalogRoleReviewAssignments(driver,repos,1000,Set.of());var owner=new Actor(ORG,expert,Role.DOMAIN_EXPERT);
+            var assignment=catalog.require(owner,f.id);assertThat(assignment.expertId()).isEqualTo(expert);assertThat(assignment.id()).isEqualTo("catalog-role-review:"+ORG+":role-a");
+            assertThat(catalog.assignedPathways(owner)).contains(f.id);
+            assertThat(new CatalogRoleReviewAssignments(driver,repos,1000,Set.of("foreign-role")).assignedPathways(owner)).doesNotContain(f.id);
+            var foreign=new Actor(foreignOrg,expert,Role.DOMAIN_EXPERT);
+            assertThatThrownBy(()->catalog.require(foreign,f.id)).hasMessage("FORBIDDEN");assertThatThrownBy(()->catalog.assignedPathways(foreign)).hasMessage("FORBIDDEN");
+            tx.executeWithoutResult(s->store.approve(f.scope,revision,owner,assignment));
+            catalog.requireApprovalValid(f.scope,f.id,revision.revision(),revision.contentHash());
+            assertThatThrownBy(()->catalog.requireApprovalValid(new Scope(foreignOrg,f.scope.learnerId()),f.id,revision.revision(),revision.contentHash())).hasMessage("PATHWAY_APPROVAL_INVALID");
+            assertThatThrownBy(()->new LocalPathwayAssignments(repos,ORG,expert,Set.of(),1000).requireApprovalValid(f.scope,f.id,revision.revision(),revision.contentHash())).hasMessage("PATHWAY_APPROVAL_INVALID");
+            assertThat(store.approved(f.scope,f.id,revision.revision(),revision.contentHash())).isTrue();
+            assertThat(store.approved(new Scope(foreignOrg,f.scope.learnerId()),f.id,revision.revision(),revision.contentHash())).isFalse();
+        } finally {
+            try(var session=driver.session()){session.executeWrite(t->t.run("MATCH (r:TargetRole {id:'role-a'}) REMOVE r.assignedExpertId").consume());}
+            tx.executeWithoutResult(s->{sql.update("DELETE FROM platform.organization_membership_role WHERE membership_id=?",membership);sql.update("DELETE FROM platform.organization_membership WHERE membership_id=?",membership);});
+        }
+        sql.update("INSERT INTO platform.workspace_account_profile(account_id,full_name,email_verified_at) VALUES (?,'Fixture Learner',now())",f.scope.learnerId());
+        var workspace=new JpaInitialPathways(repos,codec,tx,true);var foreignScope=new Scope(foreignOrg,f.scope.learnerId());
+        assertThat(workspace.learnerLabel(f.scope)).contains("Fixture Learner");assertThat(workspace.learnerLabel(foreignScope)).isEmpty();
+        assertThat(store.learnerLabel(f.scope)).contains("c3-"+f.scope.learnerId());assertThat(store.learnerLabel(foreignScope)).isEmpty();
+        assertThat(store.assignedScope(foreignOrg,f.id)).isEmpty();assertThat(store.assignedScope(ORG,f.id)).contains(f.scope);
+        assertThat(store.assigned(foreignOrg,Set.of(f.id),0,10)).isEmpty();assertThat(store.assigned(ORG,Set.of(f.id),0,10)).extracting(Request::id).containsExactly(f.id);
+    }
+    InitialPathwayAccess access(Fixture f){return new InitialPathwayAccess(f.actor::get,f.coordination,store,new LocalPathwayAssignments(repos,ORG,expert,Set.of("role-a"),1000),f.bindings,f.availability,(s,g)->{throw new Failure(503,"LIVE_READINESS_NOT_CONFIGURED");},(s,m,v,g)->{throw new Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED");});}
     Coordination beforeSecondTransaction(Fixture f,Runnable change){return beforeTransaction(f,2,change);}
     Coordination beforeTransaction(Fixture f,int index,Runnable change){return new Coordination(){final AtomicInteger calls=new AtomicInteger();public <T>T transaction(Scope s,Supplier<T> work){if(calls.incrementAndGet()==index)change.run();return f.coordination.transaction(s,work);}public Optional<Selection> current(Scope s){return f.coordination.current(s);}public boolean assessmentActive(Scope s){return f.coordination.assessmentActive(s);}public PreparedSelection prepare(Scope s,Binding b){return f.coordination.prepare(s,b);}};}
     void changeSelection(Fixture f){var actor=new RoleBaselineFlow.Actor(ORG,f.scope.learnerId());var role=new RoleBaselineFlow.Role("role-b","role-b","Role B","Fixture",OCC,"Fixture Occupation","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-b","level-b","Other Level",1,"Fixture","ALL_MANDATORY_SKILLS",List.of(new RoleBaselineFlow.Skill("s2","s2","Skill s2",1,true),new RoleBaselineFlow.Skill("s3","s3","Skill s3",1,true)))));selections.transaction(actor,()->selections.selectForPathway(actor,role,"level-b"));}

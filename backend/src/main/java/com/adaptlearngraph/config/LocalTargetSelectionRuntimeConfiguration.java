@@ -1,5 +1,6 @@
 package com.adaptlearngraph.config;
 
+import com.adaptlearngraph.repository.CatalogGuardJpaRepository;
 import com.adaptlearngraph.repository.F01TargetRoleSelectionCatalogAdapter;
 import com.adaptlearngraph.repository.F01TargetSelectionActorAdapter;
 import com.adaptlearngraph.repository.EmployeeContextPort;
@@ -19,13 +20,14 @@ import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** Local-only vertical wiring while real identity and downstream adapters remain pending. */
 @Configuration(proxyBeanMethods = false)
 @Profile("local")
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
+@Import(PersistenceConfiguration.class)
 public class LocalTargetSelectionRuntimeConfiguration {
     @Bean
     TargetSelectionActorPort targetSelectionActorPort(EmployeeContextPort employeeContext) {
@@ -35,8 +37,8 @@ public class LocalTargetSelectionRuntimeConfiguration {
     @Bean
     TargetRoleSelectionCatalogPort targetRoleSelectionCatalogPort(
             TargetRoleCatalogPort catalog,
-            NamedParameterJdbcTemplate jdbc) {
-        return new F01TargetRoleSelectionCatalogAdapter(catalog, jdbc);
+            CatalogGuardJpaRepository references) {
+        return new F01TargetRoleSelectionCatalogAdapter(catalog, references);
     }
 
     @Bean

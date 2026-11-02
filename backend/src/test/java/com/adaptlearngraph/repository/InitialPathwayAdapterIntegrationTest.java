@@ -10,7 +10,6 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.*;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -20,15 +19,18 @@ class InitialPathwayAdapterIntegrationTest {
     static final PostgreSQLContainer<?> PG=new PostgreSQLContainer<>("postgres:17.6-alpine");
     static final UUID ORG=new UUID(0,701), OTHER=new UUID(0,702), EXPERT=new UUID(0,703);
     static final Actor ACTOR=new Actor(ORG,EXPERT,Role.DOMAIN_EXPERT);
-    static JdbcTemplate sql;static TransactionTemplate tx;static JdbcInitialReceipts receipts;static InitialJdbc db;
+    static JdbcTemplate sql;static TransactionTemplate tx;static JpaInitialReceipts receipts;static InitialJpa db;
+    static com.adaptlearngraph.support.JpaTestContext persistence;
     static Map<String,Object> retained;static List<Map<String,Object>> checksums;
     static Flyway flyway;
     @BeforeAll static void setup() {
         // No assumption/disabledWithoutDocker: missing Docker is an explicit setup error, never a skip/pass.
         PG.start();var ds=new DriverManagerDataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword());
-        sql=new JdbcTemplate(ds);tx=new TransactionTemplate(new DataSourceTransactionManager(ds));
-        var jdbc=new NamedParameterJdbcTemplate(ds);receipts=new JdbcInitialReceipts(jdbc);db=new InitialJdbc(jdbc,new InitialRevisionCodec(new ObjectMapper().findAndRegisterModules()));
+        sql=new JdbcTemplate(ds);
         Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").target("34").load().migrate();
+        persistence=com.adaptlearngraph.support.JpaTestContext.startUnvalidated(ds);tx=new TransactionTemplate(persistence.transactionManager());
+        receipts=new JpaInitialReceipts(persistence.bean(InitialPathwayReceiptJpaRepository.class));
+        db=new InitialJpa(InitialPathwayRepositories.from(persistence::bean),new InitialRevisionCodec(new ObjectMapper().findAndRegisterModules()));
         sql.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'C3_A','C3 Org A'),(?,'C3_B','C3 Org B')",ORG,OTHER);
         sql.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,'c3-expert','c3-expert','test-only')",EXPERT,ORG);
         tx.executeWithoutResult(s->receipts.save(ACTOR,"INCLUDE","migration-retention","pre35",new Receipt(200,"a".repeat(64),"{\"revision\":4}")));
@@ -36,7 +38,7 @@ class InitialPathwayAdapterIntegrationTest {
         checksums=sql.queryForList("SELECT version,checksum FROM public.flyway_schema_history WHERE success ORDER BY installed_rank");
         flyway=Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").load();flyway.migrate();
     }
-    @AfterAll static void stop(){if(PG.isRunning())PG.stop();}
+    @AfterAll static void stop(){if(persistence!=null)persistence.close();if(PG.isRunning())PG.stop();}
     @Test void R03_workspaceV34ToV47RetainsExistingReceiptAndAppliedChecksumsAndRerunsNoop() {
         assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("47");flyway.validate();
         assertThat(sql.queryForMap("SELECT * FROM platform.initial_pathway_receipt WHERE resource='migration-retention'")).isEqualTo(retained);

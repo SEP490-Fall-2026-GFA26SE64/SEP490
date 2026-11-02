@@ -1,5 +1,6 @@
 package com.adaptlearngraph.config;
 
+import com.adaptlearngraph.repository.InitialPathwayRepositories;
 import com.adaptlearngraph.repository.LocalPathwayAssignments;
 import com.adaptlearngraph.repository.LocalSeedPlanning;
 import com.adaptlearngraph.repository.LocalSeedSemantics;
@@ -11,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.*;
 import java.util.*;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** Temporary owner inputs selected by trusted tenant. No planner, scores, approvals or learner state are fabricated. */
 public final class WorkspacePathwayFixtures {
@@ -21,7 +21,7 @@ public final class WorkspacePathwayFixtures {
     private final Map<Key,List<Semantics>> semantics;
     private final Map<UUID,LocalSeedPlanning> planning;
     private final Map<UUID,LocalPathwayAssignments> assignments;
-    WorkspacePathwayFixtures(WorkspaceCatalogFixture fixture,ReleaseAuthority releases,NamedParameterJdbcTemplate jdbc,
+    WorkspacePathwayFixtures(WorkspaceCatalogFixture fixture,ReleaseAuthority releases,InitialPathwayRepositories data,
             ObjectMapper json,Profiles profiles,Environment env) {
         this.fixture=fixture;this.releases=releases;
         var semantics=new HashMap<Key,List<Semantics>>();var assignments=new HashMap<UUID,LocalPathwayAssignments>();
@@ -46,7 +46,7 @@ public final class WorkspacePathwayFixtures {
                 UUID org=entry.getKey();var roleIds=new HashSet<String>();
                 for(var role:root.path("TargetRoles"))if(fixture.permits(org,role.path("occupationId").asText()))roleIds.add(role.path("id").asText());
                 if(roleIds.isEmpty())throw new IllegalStateException("Workspace fixture has no exact Role membership");
-                assignments.put(org,new LocalPathwayAssignments(jdbc,org,entry.getValue().expertId(),roleIds,
+                assignments.put(org,new LocalPathwayAssignments(data,org,entry.getValue().expertId(),roleIds,
                         InitialPathwayComponents.integer(env,"local-assignment.max-pathways"),true));
                 planning.put(org,new LocalSeedPlanning(json,seed,profiles,semantics(),true,org));
             }

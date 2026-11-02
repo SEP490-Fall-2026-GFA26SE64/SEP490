@@ -263,8 +263,10 @@ public class WorkspaceBaselineConfiguration {
                     developmentBank(environment,scope.organizationId(),scope.occupationId(),bank,fixture)).correct(scope,item,option,presented);
         };
     }
-    @Bean CurrentRoleSelectionStore workspaceRoleSelections(DataSource source, ObjectMapper json, PlatformTransactionManager transactions) {
-        return new CurrentRoleSelectionStore(new NamedParameterJdbcTemplate(source), json, new TransactionTemplate(transactions));
+    @Bean CurrentRoleSelectionStore workspaceRoleSelections(org.springframework.beans.factory.BeanFactory beans,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json, PlatformTransactionManager transactions) {
+        return new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(beans::getBean, locks), json,
+                new TransactionTemplate(transactions));
     }
     @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
             com.adaptlearngraph.repository.AuthoredCatalogPort authored) {
@@ -280,9 +282,10 @@ public class WorkspaceBaselineConfiguration {
             return roles;
         };
     }
-    @Bean CurrentOccupationProfile workspaceOccupationProfiles(DataSource source, ObjectMapper json,
+    @Bean CurrentOccupationProfile workspaceOccupationProfiles(com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository profiles,
+            com.adaptlearngraph.repository.AuditEventJpaRepository audit, ObjectMapper json,
             AdaptiveAttemptStore attempts, AdaptiveBlueprintStore blueprints, AdaptiveBlueprintEligibilityPort eligibility) {
-        return new CurrentOccupationProfile(new NamedParameterJdbcTemplate(source), json, attempts, blueprints, eligibility);
+        return new CurrentOccupationProfile(profiles, audit, json, attempts, blueprints, eligibility);
     }
     @Bean AdaptiveSelectedRolePort workspaceSelectedRole(CurrentRoleSelectionStore store, RoleBaselineFlow.Catalog catalog) {
         return (organization, learner) -> {

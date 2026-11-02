@@ -98,7 +98,7 @@ class RoleBaselinePostgresIntegrationTest {
   var draft=authoring.save(new Save(OCC,0,"fixture-save",config()));
   version=authoring.finalizeBlueprint(new Finalize(OCC,draft.workingRevisionId(),draft.revision(),0,"fixture-activate",null,true));
   attempts=new JpaAdaptiveAttemptStore(repos,JSON,persistence.transactionManager(),blueprints);
-  profiles=new CurrentOccupationProfile(jdbc,JSON,attempts,blueprints,eligibility);
+  profiles=new CurrentOccupationProfile(persistence.bean(com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.AuditEventJpaRepository.class),JSON,attempts,blueprints,eligibility);
   context=mock(AdaptiveAttemptContextPort.class);
   when(context.requireEmployee()).thenReturn(new AdaptiveAttemptContextPort.Employee(ORG,EMP));
   when(context.resolveScope(any(),any())).thenReturn(new AdaptiveAttempt.Scope(ORG,EMP,OCC));
@@ -111,7 +111,7 @@ class RoleBaselinePostgresIntegrationTest {
   submits=new AdaptiveAttemptSubmitService(context,attempts,finalization,content);
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalization));
   results=new JpaAdaptiveAttemptResultQuery(persistence.bean(BaselineAttemptResultJpaRepository.class),context);
-  selections=new CurrentRoleSelectionStore(jdbc,JSON,new TransactionTemplate(manager));
+  selections=new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),JSON,new TransactionTemplate(persistence.transactionManager()));
  }
  AdaptiveAttemptUseCase.View start(){return starts.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"start");}
  AdaptiveAttemptUseCase.View answer(AdaptiveAttemptUseCase.View view,String key) {
@@ -141,6 +141,10 @@ class RoleBaselinePostgresIntegrationTest {
   assertThat(count("employee_role_selection_request")).isEqualTo(3);
   assertThatThrownBy(()->flow.choose("other",changed.selectionId(),"one")).hasMessage("IDEMPOTENCY_CONFLICT");
   assertThat(selections.current(new RoleBaselineFlow.Actor(id(2),EMP))).isEmpty();
+  assertThat(selections.replay(new RoleBaselineFlow.Actor(id(2),EMP),"one","f".repeat(64))).isEmpty();
+  assertThat(selections.replay(new RoleBaselineFlow.Actor(ORG,OTHER),"one","f".repeat(64))).isEmpty();
+  assertThatThrownBy(()->selections.replay(new RoleBaselineFlow.Actor(ORG,EMP),"one","f".repeat(64))).hasMessage("IDEMPOTENCY_CONFLICT");
+  assertThat(selections.hasLegacySelection(new RoleBaselineFlow.Actor(ORG,EMP))).isFalse();
  }
  @Test void rb05SelectionRaceOneWinnerAndRollbackNoPartialWrites() throws Exception {
   var flow=selectionFlow(ORG,EMP);var barrier=new CountDownLatch(1);
@@ -196,6 +200,10 @@ class RoleBaselinePostgresIntegrationTest {
   var v=start();var replay=start();assertThat(replay).isEqualTo(v);
   assertThat(starts.resume(v.id()).deadlineAt()).isEqualTo(v.deadlineAt());
   assertThatThrownBy(()->flow.choose("role-b",selected.selectionId(),"blocked")).hasMessage("ASSESSMENT_IN_PROGRESS");
+  assertThat(selections.assessmentActive(new RoleBaselineFlow.Actor(ORG,EMP))).isTrue();
+  assertThat(selections.assessmentActive(new RoleBaselineFlow.Actor(id(2),EMP))).isFalse();
+  assertThat(profiles.active(new RoleBaselineFlow.Actor(ORG,EMP))).hasValueSatisfying(p->assertThat(p.attemptId()).isEqualTo(v.id()));
+  assertThat(profiles.active(new RoleBaselineFlow.Actor(id(2),EMP))).isEmpty();
   assertThat(count("baseline_adaptive_attempt")).isOne();
   assertThatThrownBy(()->answers.answer(new AdaptiveAttemptUseCase.Answer(v.id(),v.revision(),99,id(100),"a","wrong-position"))).isInstanceOf(AdaptiveAttemptUseCase.Failure.class);
  }
@@ -229,6 +237,9 @@ class RoleBaselinePostgresIntegrationTest {
   assertThat(progress.state()).isEqualTo("COMPLETE");assertThat(progress.requiredCount()).isEqualTo(3);
   assertThat(profiles.mastery(new RoleBaselineFlow.Actor(ORG,OTHER))).isEmpty();
   assertThat(profiles.mastery(new RoleBaselineFlow.Actor(id(2),EMP))).isEmpty();
+  assertThat(profiles.exists(new AdaptiveAttempt.Scope(ORG,EMP,OCC))).isTrue();
+  assertThat(profiles.exists(new AdaptiveAttempt.Scope(id(2),EMP,OCC))).isFalse();
+  assertThat(profiles.exists(new AdaptiveAttempt.Scope(ORG,OTHER,OCC))).isFalse();
   var before=digest();assertThat(results.history()).hasSize(1);profiles.mastery(actor);results.result(terminal.id());
   assertThat(digest()).isEqualTo(before);
   assertThatThrownBy(()->starts.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"retake")).isInstanceOf(AdaptiveAttemptUseCase.Failure.class);
@@ -383,6 +394,9 @@ class RoleBaselinePostgresIntegrationTest {
   assertThat(own).extracting(RoleBaselineFlow.MasteryProfile::occupationId).containsExactlyInAnyOrder(OCC,"other-occupation");
   assertThat(own).extracting(RoleBaselineFlow.MasteryProfile::attemptId).containsExactlyInAnyOrder(first.id(),second.id());
   assertThat(profiles.mastery(new RoleBaselineFlow.Actor(id(2),EMP))).isEmpty();
+  assertThat(profiles.exists(new AdaptiveAttempt.Scope(ORG,EMP,OCC))).isTrue();
+  assertThat(profiles.exists(new AdaptiveAttempt.Scope(id(2),EMP,OCC))).isFalse();
+  assertThat(profiles.exists(new AdaptiveAttempt.Scope(ORG,OTHER,OCC))).isFalse();
  }
  @Test void abC15ListBoundsLiteralWildcardTenantAndNoWriteDuringCatalogOutage(){
   var draft=authoring.save(new Save(OCC,0,"search-draft",Configuration.occupation("Tên %_ fixture",new Bounds(9,540))));

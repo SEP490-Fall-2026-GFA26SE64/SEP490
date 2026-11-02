@@ -8,46 +8,42 @@ import com.adaptlearngraph.entities.TargetRoleSnapshot.CareerTrack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /** Maps the persisted F02 selection snapshot without consulting the mutable catalog. */
-public final class JdbcTargetSelectionRowMapper implements RowMapper<TargetRoleSelection> {
+public final class JpaTargetSelectionRowMapper {
     private final ObjectMapper objectMapper;
 
-    public JdbcTargetSelectionRowMapper(ObjectMapper objectMapper) {
+    public JpaTargetSelectionRowMapper(ObjectMapper objectMapper) {
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
     }
 
-    @Override
-    public TargetRoleSelection mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
-        OffsetDateTime endedAt = resultSet.getObject("ended_at", OffsetDateTime.class);
+    public TargetRoleSelection map(TargetSelectionJpaRepository.Row row) {
         return new TargetRoleSelection(
-                resultSet.getObject("selection_id", UUID.class),
-                resultSet.getObject("learner_id", UUID.class),
-                resultSet.getObject("role_ref_id", UUID.class),
-                readSnapshot(resultSet.getString("role_snapshot")),
-                resultSet.getObject("selected_at", OffsetDateTime.class).toInstant(),
-                endedAt == null ? null : endedAt.toInstant(),
-                resultSet.getLong("target_revision"));
+                row.selectionId(),
+                row.learnerId(),
+                row.roleRefId(),
+                readSnapshot(row.roleSnapshot()),
+                row.selectedAt(),
+                row.endedAt(),
+                row.targetRevision());
     }
 
-    StoredSelectionRequest mapRequest(ResultSet resultSet, int rowNumber) throws SQLException {
+    StoredSelectionRequest mapRequest(TargetSelectionRequestJpaRepository.Row row) {
         return new StoredSelectionRequest(
-                resultSet.getObject("request_id", UUID.class),
-                resultSet.getString("request_hash"),
-                RequestStatus.valueOf(resultSet.getString("status")),
-                resultSet.getObject("result_selection_id", UUID.class),
-                resultSet.getObject("result_target_revision", Long.class),
-                resultSet.getObject("result_changed", Boolean.class),
-                resultSet.getString("outcome_code"));
+                row.requestId(),
+                row.requestHash(),
+                RequestStatus.valueOf(row.status()),
+                row.resultSelectionId(),
+                row.resultTargetRevision(),
+                row.resultChanged(),
+                row.outcomeCode());
     }
 
-    private TargetRoleSnapshot readSnapshot(String json) throws SQLException {
+    private TargetRoleSnapshot readSnapshot(String json) {
         if (json == null) {
             throw invalidSnapshot("role_snapshot is missing", null);
         }
@@ -74,7 +70,8 @@ public final class JdbcTargetSelectionRowMapper implements RowMapper<TargetRoleS
         return value.textValue();
     }
 
-    private static SQLException invalidSnapshot(String message, Throwable cause) {
-        return new SQLException(message, "22000", cause);
+    /** Same translation the former JDBC row mapper received for its SQLState 22000 data exception. */
+    private static DataIntegrityViolationException invalidSnapshot(String message, Throwable cause) {
+        return new DataIntegrityViolationException(message, new SQLException(message, "22000", cause));
     }
 }
