@@ -5,7 +5,7 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.services.AdaptiveBlueprintService;
 import com.adaptlearngraph.responseDto.AdaptiveBlueprintPayloads;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase;
@@ -44,6 +44,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled"}, havingValue = "true")
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalAdaptiveBlueprintApiConfiguration {
     @Bean
     AdaptiveBlueprintActorPort adaptiveBlueprintActorPort(DataSource dataSource,
@@ -74,9 +75,9 @@ public class LocalAdaptiveBlueprintApiConfiguration {
     }
 
     @Bean
-    AdaptiveBlueprintPreviewPort adaptiveBlueprintPreviewPort(DataSource dataSource, ObjectMapper mapper,
+    AdaptiveBlueprintPreviewPort adaptiveBlueprintPreviewPort(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper mapper,
             JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
-        return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(dataSource), mapper, settings.questionBankId());
+        return new JpaAdaptiveBlueprintPreviewAdapter(itemVersions, mapper, settings.questionBankId());
     }
 
     @Bean

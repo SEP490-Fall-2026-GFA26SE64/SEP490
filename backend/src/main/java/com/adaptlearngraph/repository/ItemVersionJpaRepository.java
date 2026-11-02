@@ -66,4 +66,22 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
             """)
     List<Owned> owned(@Param("org") UUID organizationId, @Param("bank") UUID bankId, @Param("item") UUID itemVersionId,
             @Param("demoDraft") boolean demoDraft);
+
+    /** Answer-safe preview row: deliberately excludes the protected answer key. */
+    record Preview(UUID itemVersionId, String microSkillId, String prompt, String responseSchema) {}
+
+    @Query("""
+            select new com.adaptlearngraph.repository.ItemVersionJpaRepository$Preview(item.itemVersionId, item.microSkillId, item.prompt,
+                item.responseSchema)
+            from ItemVersionEntity item join QuestionBankEntity bank on bank.questionBankId = item.questionBankId
+            join AccountEntity owner on owner.accountId = bank.createdBy and owner.organizationId = :org
+            where item.questionBankId = :bank and item.itemVersionId in :ids
+              and ((item.publicationState = 'PUBLISHED'
+                    and not exists (select 1 from QuestionBankIdentityEntity qb where qb.questionId = item.itemId and qb.retired = true))
+                   or (:demoDraft = true and item.publicationState = 'DRAFT'))
+              and not exists (select 1 from ItemVersionEntity newer where newer.itemId = item.itemId and newer.version > item.version)
+            order by item.itemVersionId
+            """)
+    List<Preview> preview(@Param("org") UUID organizationId, @Param("bank") UUID bankId, @Param("ids") java.util.Collection<UUID> ids,
+            @Param("demoDraft") boolean demoDraft);
 }

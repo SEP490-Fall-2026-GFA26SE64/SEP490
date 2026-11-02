@@ -13,7 +13,7 @@ import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
@@ -85,7 +85,7 @@ class RoleBaselinePostgresIntegrationTest {
    public Optional<Actor> currentActor(){return Optional.of(new Actor(MANAGER,ORG,true,Set.of("LD_MANAGER")));}
    public Set<String> authorizedOccupations(Actor a){return Set.of(OCC);}
   };
-  var preview=new JdbcAdaptiveBlueprintPreviewAdapter(jdbc,JSON,id(50));
+  var preview=new JpaAdaptiveBlueprintPreviewAdapter(items,JSON,id(50));
   // Organization Assessment Policy enforcement is covered separately; this fixture models an active policy.
   authoring=new AdaptiveBlueprintService(actors,blueprints,eligibility,preview,Clock.systemUTC(),scope->{});
   var draft=authoring.save(new Save(OCC,0,"fixture-save",config()));

@@ -22,7 +22,7 @@ import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.JdbcWorkspaceBaselineResourceWriter;
@@ -215,11 +215,11 @@ public class WorkspaceBaselineConfiguration {
         return () -> resources.configurable(identity.currentActor().orElseThrow().organizationId()).stream()
                 .map(binding -> new WorkspaceBaselineCatalogUseCase.Occupation(binding.occupationId(), binding.name())).toList();
     }
-    @Bean AdaptiveBlueprintPreviewPort workspaceBlueprintPreview(DataSource source, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
+    @Bean AdaptiveBlueprintPreviewPort workspaceBlueprintPreview(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
         return (scope, items) -> {
             var binding = resources.find(scope.organizationId(), scope.occupationId()).filter(WorkspaceBaselineResources.Binding::ready)
                     .orElseThrow(() -> new AdaptiveBlueprintEligibilityPort.DependencyUnavailable("Baseline resources are not configured", null));
-            return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(source), json, binding.bankId(),
+            return new JpaAdaptiveBlueprintPreviewAdapter(itemVersions, json, binding.bankId(),
                     developmentBank(environment,scope.organizationId(),scope.occupationId(),binding.bankId(),fixture)).read(scope, items);
         };
     }

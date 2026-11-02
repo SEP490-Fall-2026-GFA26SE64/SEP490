@@ -10,21 +10,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** TMP-REQ002-03: explicit bank + tenant, no component/bean registration until A6's authorized gated API wiring. */
-public final class JdbcAdaptiveBlueprintPreviewAdapter implements AdaptiveBlueprintPreviewPort {
+public final class JpaAdaptiveBlueprintPreviewAdapter implements AdaptiveBlueprintPreviewPort {
     private final boolean demoDraft;
-    private final NamedParameterJdbcTemplate jdbc;
+    private final ItemVersionJpaRepository items;
     private final ObjectMapper mapper;
     private final UUID bankId;
 
-    public JdbcAdaptiveBlueprintPreviewAdapter(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper, UUID bankId) { this(jdbc, mapper, bankId, false); }
+    public JpaAdaptiveBlueprintPreviewAdapter(ItemVersionJpaRepository items, ObjectMapper mapper, UUID bankId) { this(items, mapper, bankId, false); }
 
-    public JdbcAdaptiveBlueprintPreviewAdapter(NamedParameterJdbcTemplate jdbc, ObjectMapper mapper, UUID bankId, boolean demoDraft) {
+    public JpaAdaptiveBlueprintPreviewAdapter(ItemVersionJpaRepository items, ObjectMapper mapper, UUID bankId, boolean demoDraft) {
         this.demoDraft = demoDraft;
-        this.jdbc = Objects.requireNonNull(jdbc);
+        this.items = Objects.requireNonNull(items);
         this.mapper = Objects.requireNonNull(mapper).copy();
         this.bankId = Objects.requireNonNull(bankId, "Explicit server question bank required");
     }
@@ -33,20 +31,19 @@ public final class JdbcAdaptiveBlueprintPreviewAdapter implements AdaptiveBluepr
         Set<UUID> ids = Set.copyOf(authorizedItemVersionIds);
         if (ids.isEmpty()) return List.of();
         try {
-            return jdbc.query("""
-                    SELECT item.item_version_id,item.micro_skill_id,item.prompt,item.response_schema->'options' AS options
-                    FROM platform.item_version item
-                    JOIN platform.question_bank bank ON bank.question_bank_id=item.question_bank_id
-                    JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:org
-                    WHERE item.question_bank_id=:bank AND item.item_version_id IN (:ids) AND (item.publication_state='PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item.item_id AND qb.retired) OR (:demoDraft AND item.publication_state='DRAFT'))
-                      AND NOT EXISTS (SELECT 1 FROM platform.item_version newer WHERE newer.item_id=item.item_id AND newer.version>item.version)
-                    ORDER BY item.item_version_id
-                    """, new MapSqlParameterSource("demoDraft", demoDraft).addValue("org", scope.organizationId()).addValue("bank", bankId).addValue("ids", ids),
-                    (rs, row) -> new Item(rs.getObject("item_version_id", UUID.class), rs.getString("micro_skill_id"),
-                            rs.getString("prompt"), options(rs.getString("options"))));
+            return items.preview(scope.organizationId(), bankId, ids, demoDraft).stream()
+                    .map(row -> new Item(row.itemVersionId(), row.microSkillId(), row.prompt(), options(optionsOf(row.responseSchema())))).toList();
         } catch (DataAccessException | IllegalArgumentException | IllegalStateException cause) {
             throw new DependencyUnavailable("Answer-safe preview items unavailable", cause);
         }
+    }
+
+    /** Former {@code response_schema->'options'}: the options as JSON text, or null when absent. */
+    private String optionsOf(String responseSchema) {
+        try {
+            var options = mapper.readTree(responseSchema).get("options");
+            return options == null ? null : mapper.writeValueAsString(options);
+        } catch (JsonProcessingException failure) { throw new IllegalArgumentException("Invalid preview options", failure); }
     }
 
     private java.util.Map<String, String> options(String payload) {

@@ -16,7 +16,7 @@ import com.adaptlearngraph.repository.CurrentOccupationProfile;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
-import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
+import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.Neo4jAdaptiveBaselineCatalogAdapter;
@@ -71,7 +71,7 @@ public class LocalDemoConfiguration {
     @Bean @Primary AdaptiveBlueprintEligibilityPort demoEligibility(DataSource source,AdaptiveBaselineCatalogPort catalog,AdaptiveTechnicalVersionPort technical,ObjectMapper json,JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings) {
         return new JdbcAdaptiveBlueprintEligibilityAdapter(new NamedParameterJdbcTemplate(source),catalog,technical,json,settings,true);
     }
-    @Bean @Primary AdaptiveBlueprintPreviewPort demoPreview(DataSource source,ObjectMapper json) { return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(source),json,LocalDemoIdentity.BANK,true); }
+    @Bean @Primary AdaptiveBlueprintPreviewPort demoPreview(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions,ObjectMapper json) { return new JpaAdaptiveBlueprintPreviewAdapter(itemVersions,json,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptContentPort demoContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptContent(itemVersions,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptScoringPort demoScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptScoring(itemVersions,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptContextPort demoContext(DataSource source,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog,
