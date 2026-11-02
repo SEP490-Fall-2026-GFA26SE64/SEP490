@@ -209,7 +209,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 [Mermaid source: ACT-03](../documents/diagrams/mermaid/act-03.mmd)
 
-![ACT-03 - Organization structure and role publication (target)](../documents/diagrams/mermaid/act-03.png)
+![ACT-03 - Target role management](../documents/diagrams/mermaid/act-03.png)
 
 [Mermaid source: ACT-04](../documents/diagrams/mermaid/act-04.mmd)
 
