@@ -82,6 +82,17 @@ public interface BaselineBlueprintVersionJpaRepository
             """)
     List<Key> byRequest(@Param("actorId") UUID actorId, @Param("idempotencyKey") String idempotencyKey);
 
+    /** Locks every version of a Blueprint whose identity the caller already locked within its organization scope. */
+    // Native: row locks (FOR UPDATE) in version order.
+    @Query(value = """
+            SELECT version
+            FROM platform.baseline_blueprint_version
+            WHERE blueprint_id = :blueprintId
+            ORDER BY version
+            FOR UPDATE
+            """, nativeQuery = true)
+    List<Integer> lockVersions(@Param("blueprintId") UUID blueprintId);
+
     // Native: SET CONSTRAINTS (checks the deferred role/skill total constraint triggers now) has no JPQL form.
     @Modifying(flushAutomatically = true)
     @Transactional(TransactionManagers.JPA)

@@ -2,8 +2,8 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.BaselineBlueprintValidationAdapter;
 import com.adaptlearngraph.repository.JpaBaselineAnswerReviewStore;
-import com.adaptlearngraph.repository.JdbcBaselineAssessmentDraftStore;
-import com.adaptlearngraph.repository.JdbcBaselineAssessmentManagementStore;
+import com.adaptlearngraph.repository.JpaBaselineAssessmentDraftStore;
+import com.adaptlearngraph.repository.JpaBaselineAssessmentManagementStore;
 import com.adaptlearngraph.repository.JpaBaselineBlueprintStore;
 import com.adaptlearngraph.repository.Neo4jBaselineOccupationCatalogAdapter;
 import com.adaptlearngraph.services.TransactionalBaselineAssessmentManagementUseCase;
@@ -39,7 +39,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration(proxyBeanMethods = false)
@@ -57,14 +56,25 @@ public class LocalBaselineBlueprintConfiguration {
     }
 
     @Bean
-    BaselineAssessmentDraftStore baselineAssessmentDraftStore(NamedParameterJdbcTemplate jdbc) {
-        return new JdbcBaselineAssessmentDraftStore(jdbc);
+    BaselineAssessmentDraftStore baselineAssessmentDraftStore(com.adaptlearngraph.repository.ItemVersionJpaRepository items,
+            com.adaptlearngraph.repository.AssessmentVersionJpaRepository assessments,
+            com.adaptlearngraph.repository.AssessmentItemJpaRepository manifests,
+            com.adaptlearngraph.repository.BaselineAssessmentSeriesJpaRepository series,
+            com.adaptlearngraph.repository.BaselineBlueprintJpaRepository identities,
+            com.adaptlearngraph.repository.BaselineBlueprintVersionJpaRepository versions) {
+        return new JpaBaselineAssessmentDraftStore(items, assessments, manifests, series, identities, versions);
     }
 
     @Bean
     BaselineAssessmentManagementStore baselineAssessmentManagementStore(
-            NamedParameterJdbcTemplate jdbc, ObjectMapper objectMapper) {
-        return new JdbcBaselineAssessmentManagementStore(jdbc, objectMapper);
+            com.adaptlearngraph.repository.BaselineAssessmentSeriesJpaRepository series,
+            com.adaptlearngraph.repository.BaselineBlueprintWorkingRevisionJpaRepository workings,
+            com.adaptlearngraph.repository.BaselineAssessmentTransitionJpaRepository transitions,
+            com.adaptlearngraph.repository.BaselineManagementCommandJpaRepository commands,
+            com.adaptlearngraph.repository.BaselineBlueprintJpaRepository identities,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper objectMapper) {
+        return new JpaBaselineAssessmentManagementStore(series, workings, transitions, commands, identities, locks,
+                objectMapper);
     }
 
     @Bean

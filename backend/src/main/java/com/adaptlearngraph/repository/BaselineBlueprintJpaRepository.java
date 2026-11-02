@@ -31,6 +31,19 @@ public interface BaselineBlueprintJpaRepository
             """, nativeQuery = true)
     List<UUID> lockIdentity(@Param("org") UUID organizationId, @Param("occupation") String occupationId);
 
+    /** Locks a Blueprint identity for assessment generation, scoped to the generating actor's organization. */
+    // Native: row lock (FOR UPDATE OF identity) joined to the actor account row.
+    @Query(value = """
+            SELECT identity.blueprint_id
+            FROM platform.baseline_blueprint identity
+            JOIN platform.account actor
+              ON actor.account_id = :createdBy
+             AND actor.organization_id = identity.organization_id
+            WHERE identity.blueprint_id = :blueprintId
+            FOR UPDATE OF identity
+            """, nativeQuery = true)
+    List<UUID> lockForActor(@Param("blueprintId") UUID blueprintId, @Param("createdBy") UUID createdBy);
+
     @Query("""
             select count(a) > 0 from AccountEntity a
             where a.accountId = :actor and a.organizationId = :org and a.active = true

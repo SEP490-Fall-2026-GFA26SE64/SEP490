@@ -110,6 +110,40 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
     boolean bankOwnedBy(@Param("bank") UUID bankId, @Param("organization") UUID organizationId);
 
     /**
+     * Answer-safe fixed baseline generation candidates: each item's latest published, non-retired version among the
+     * requested skills. Native: PostgreSQL DISTINCT ON has no exact JPQL equivalent. Rows: [item_version_id,
+     * micro_skill_id, micro_skill_name_snapshot, difficulty, content_hash, prompt, response_schema_json].
+     */
+    @Query(value = """
+            WITH latest_published AS (
+                SELECT DISTINCT ON (item_id)
+                       item_version_id, item_id, version, micro_skill_id,
+                       micro_skill_name_snapshot, difficulty, content_hash,
+                       prompt, response_schema
+                FROM platform.item_version
+                WHERE publication_state = 'PUBLISHED' AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity qb WHERE qb.question_id=item_version.item_id AND qb.retired)
+                  AND micro_skill_id IN (:skillIds)
+                ORDER BY item_id, version DESC, item_version_id DESC
+            )
+            SELECT item_version_id, micro_skill_id, micro_skill_name_snapshot,
+                   difficulty, content_hash, prompt, response_schema::text AS response_schema_json
+            FROM latest_published
+            ORDER BY micro_skill_id, difficulty, item_version_id
+            """, nativeQuery = true)
+    List<Object[]> publishedCandidates(@Param("skillIds") java.util.Collection<String> microSkillIds);
+
+    /** Published replacement candidates for an assessment manifest edit; deliberately excludes the answer key. */
+    record Editable(UUID itemVersionId, String microSkillId, String difficulty, String contentHash) {}
+
+    @Query("""
+            select new com.adaptlearngraph.repository.ItemVersionJpaRepository$Editable(item.itemVersionId, item.microSkillId,
+                item.difficulty, item.contentHash)
+            from ItemVersionEntity item
+            where item.itemVersionId in :ids and item.publicationState = 'PUBLISHED'
+            """)
+    List<Editable> editable(@Param("ids") java.util.Collection<UUID> itemVersionIds);
+
+    /**
      * Adaptive eligibility pool of the organization's own bank. Latest identity first: a draft/remapped/incomplete successor
      * never resurrects an older published version; drafts are admitted only when {@code demoDraft} is set. Protected data
      * is inspected only inside PostgreSQL; no answer/key/text leaves this query. Native: DISTINCT ON, LATERAL
