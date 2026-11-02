@@ -60,4 +60,33 @@ public class PersistenceConfiguration {
             com.adaptlearngraph.repository.AuditEventJpaRepository audit, PostgresAdvisoryLocks locks) {
         return new com.adaptlearngraph.repository.PlatformAdministratorSeeds(accounts, administrators, audit, locks);
     }
+
+    @Bean
+    com.adaptlearngraph.repository.SubscriptionRepositories subscriptionRepositories(
+            org.springframework.beans.factory.ListableBeanFactory beans, PostgresAdvisoryLocks locks) {
+        return new com.adaptlearngraph.repository.SubscriptionRepositories(
+                beans.getBean(com.adaptlearngraph.repository.OrganizationJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.OrganizationWorkspaceJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.OrganizationMembershipJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.OrganizationMembershipRoleJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.AccountJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.PlatformAdministratorJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.WorkspaceAccountProfileJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.LearnerStateJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.DepartmentReferenceJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.RegistrationCatalogSelectionJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.WorkspaceCatalogImportJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.SubscriptionJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.SubscriptionPeriodJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.SubscriptionIntentJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.PaymentOrderJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.PaymentObservationJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.PaymentApplicationJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.SubscriptionPlanJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.SubscriptionPlanVersionJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.OutboxEventJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.ProcessingJobJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.AuditEventJpaRepository.class), locks);
+    }
 }

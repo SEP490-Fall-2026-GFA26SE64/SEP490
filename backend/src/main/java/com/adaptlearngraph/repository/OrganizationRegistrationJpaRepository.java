@@ -102,4 +102,17 @@ public interface OrganizationRegistrationJpaRepository
 
     @Query("select r.authVersion from OrganizationRegistrationEntity r where r.accountId = :accountId")
     Optional<Long> authVersion(@Param("accountId") UUID accountId);
-}
+
+    record Owner(UUID accountId, String state, Boolean accountActive, Boolean recoveryRequired) {}
+
+    record Provisioning(String organizationName, String workspaceSlug, UUID accountId, String state) {}
+
+    @Query(value = "SELECT registration_id FROM platform.organization_registration WHERE registration_id = :id FOR UPDATE",
+            nativeQuery = true)
+    Optional<UUID> lockById(@Param("id") UUID registrationId);
+
+    @Query("select new com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository$Owner(r.accountId, r.state, a.active, r.recoveryRequired) from OrganizationRegistrationEntity r join r.account a where r.registrationId = :id")
+    Optional<Owner> owner(@Param("id") UUID registrationId);
+
+    @Query("select new com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository$Provisioning(r.organizationName, r.workspaceSlug, r.accountId, r.state) from OrganizationRegistrationEntity r where r.registrationId = :id")
+    Optional<Provisioning> provisioning(@Param("id") UUID registrationId);}

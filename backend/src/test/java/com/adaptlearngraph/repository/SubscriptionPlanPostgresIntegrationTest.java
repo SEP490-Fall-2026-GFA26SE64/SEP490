@@ -23,7 +23,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class SubscriptionPlanPostgresIntegrationTest {
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.6-alpine");
     private static JdbcTemplate jdbc;
-    private static JdbcSubscriptionPlanStore store;
+    private static JpaSubscriptionPlanStore store;
+    private static com.adaptlearngraph.support.JpaTestContext persistence;
     private static UUID administrator;
 
     @BeforeAll
@@ -32,7 +33,10 @@ class SubscriptionPlanPostgresIntegrationTest {
         var source = new DriverManagerDataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
         Flyway.configure().dataSource(source).locations("classpath:db/migration").load().migrate();
         jdbc = new JdbcTemplate(source);
-        store = new JdbcSubscriptionPlanStore(jdbc, new TransactionTemplate(new DataSourceTransactionManager(source)));
+        persistence = com.adaptlearngraph.support.JpaTestContext.start(source);
+        store = new JpaSubscriptionPlanStore(persistence.bean(SubscriptionPlanJpaRepository.class),
+                persistence.bean(SubscriptionPlanVersionJpaRepository.class), persistence.bean(AuditEventJpaRepository.class),
+                IdentityTestFixtures.jpaTransactions(persistence));
         administrator = UUID.randomUUID();
         jdbc.update("""
                 INSERT INTO platform.account(account_id, identifier, normalized_identifier, password_hash)
@@ -41,7 +45,7 @@ class SubscriptionPlanPostgresIntegrationTest {
     }
 
     @AfterAll
-    static void stop() { POSTGRES.stop(); }
+    static void stop() { persistence.close(); POSTGRES.stop(); }
 
     @Test
     void editsAllCommercialFieldsAndPreservesHistoricalVersionAndAudit() {

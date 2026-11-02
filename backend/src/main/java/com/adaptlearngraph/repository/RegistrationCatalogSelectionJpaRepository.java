@@ -6,4 +6,6 @@ import org.springframework.data.repository.Repository;
 
 public interface RegistrationCatalogSelectionJpaRepository
         extends Repository<RegistrationCatalogSelectionEntity, UUID>, InsertOnlyRepository<RegistrationCatalogSelectionEntity> {
+
+    boolean existsByRegistrationId(UUID registrationId);
 }

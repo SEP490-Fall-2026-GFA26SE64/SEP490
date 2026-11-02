@@ -6,8 +6,8 @@ import com.adaptlearngraph.helper.PaymentGateway;
 import com.adaptlearngraph.repository.PaymentOrderStore;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.repository.JdbcPaymentOrderStore;
-import com.adaptlearngraph.repository.JdbcPaymentProcessingStore;
+import com.adaptlearngraph.repository.JpaPaymentOrderStore;
+import com.adaptlearngraph.repository.JpaPaymentProcessingStore;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -76,8 +76,8 @@ public final class DevAccountsSeed {
                     """, registration, owner);
             jdbc.update("INSERT INTO platform.organization_workspace(workspace_id,organization_id,registration_id,slug,setup_state,created_at,ready_at) VALUES (?,?,?,'sep490-dev-accounts','READY',now(),now())", id("workspace"), organization, registration);
             jdbc.update("INSERT INTO platform.subscription(subscription_id,organization_id,created_at) VALUES (?,?,now())", id("subscription"), organization);
-            var orders = new JdbcPaymentOrderStore(jdbc, tx);
-            var payments = new JdbcPaymentProcessingStore(jdbc, tx, orders);
+            var orders = new JpaPaymentOrderStore(com.adaptlearngraph.repository.IdentityTestFixtures.subscriptionRepositories(persistence), tx);
+            var payments = new JpaPaymentProcessingStore(com.adaptlearngraph.repository.IdentityTestFixtures.subscriptionRepositories(persistence), tx, orders);
             var plan = jdbc.queryForMap("SELECT plan_id,current_version_id FROM platform.subscription_plan WHERE code='starter'");
             var now = Instant.now();
             var order = orders.create(new SubscriptionIdentity.Context(new Actor(owner, null, true, false, Set.of(), true), registration),

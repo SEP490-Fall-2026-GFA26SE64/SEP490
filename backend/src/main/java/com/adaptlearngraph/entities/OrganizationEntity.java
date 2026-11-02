@@ -30,6 +30,13 @@ public class OrganizationEntity {
     protected OrganizationEntity() {
     }
 
+    public OrganizationEntity(UUID organizationId, String code, String name, Instant createdAt) {
+        this.organizationId = organizationId;
+        this.code = code;
+        this.name = name;
+        this.createdAt = createdAt;
+    }
+
     public UUID getOrganizationId() { return organizationId; }
     public String getCode() { return code; }
     public String getName() { return name; }

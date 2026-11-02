@@ -53,6 +53,15 @@ public class WorkspaceCatalogImportEntity {
     protected WorkspaceCatalogImportEntity() {
     }
 
+    public WorkspaceCatalogImportEntity(UUID organizationId, UUID registrationId, Instant now) {
+        this.organizationId = organizationId;
+        this.registrationId = registrationId;
+        this.state = "PENDING";
+        this.nextAttemptAt = now;
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
     public UUID getOrganizationId() { return organizationId; }
     public UUID getRegistrationId() { return registrationId; }
     public String getState() { return state; }

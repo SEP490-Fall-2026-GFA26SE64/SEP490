@@ -36,6 +36,15 @@ public class OrganizationWorkspaceEntity {
     protected OrganizationWorkspaceEntity() {
     }
 
+    public OrganizationWorkspaceEntity(UUID workspaceId, UUID organizationId, UUID registrationId, String slug, Instant createdAt) {
+        this.workspaceId = workspaceId;
+        this.organizationId = organizationId;
+        this.registrationId = registrationId;
+        this.slug = slug;
+        this.setupState = "PROVISIONING";
+        this.createdAt = createdAt;
+    }
+
     public UUID getWorkspaceId() { return workspaceId; }
     public UUID getOrganizationId() { return organizationId; }
     public UUID getRegistrationId() { return registrationId; }

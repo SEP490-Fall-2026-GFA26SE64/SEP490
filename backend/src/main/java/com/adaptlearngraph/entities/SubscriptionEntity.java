@@ -28,6 +28,12 @@ public class SubscriptionEntity {
     protected SubscriptionEntity() {
     }
 
+    public SubscriptionEntity(UUID subscriptionId, UUID organizationId, Instant createdAt) {
+        this.subscriptionId = subscriptionId;
+        this.organizationId = organizationId;
+        this.createdAt = createdAt;
+    }
+
     public UUID getSubscriptionId() { return subscriptionId; }
     public UUID getOrganizationId() { return organizationId; }
     public Long getRevision() { return revision; }

@@ -33,9 +33,9 @@ class PaymentOrderPostgresIntegrationTest {
     private static final UUID VERSION = UUID.fromString("20000000-0000-4000-8000-000000000001");
     private static final Instant NOW = Instant.parse("2026-10-22T12:00:00.123456Z");
     private static JdbcTemplate jdbc;
-    private static JdbcPaymentOrderStore orders;
-    private static JdbcPaymentProcessingStore processing;
-    private static JdbcSubscriptionWorkspaceStore workspaces;
+    private static JpaPaymentOrderStore orders;
+    private static JpaPaymentProcessingStore processing;
+    private static JpaSubscriptionWorkspaceStore workspaces;
     private static TransactionTemplate transactions;
     private static com.adaptlearngraph.support.JpaTestContext persistence;
 
@@ -46,10 +46,10 @@ class PaymentOrderPostgresIntegrationTest {
         Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load().migrate();
         jdbc = new JdbcTemplate(source);
         transactions=new TransactionTemplate(new DataSourceTransactionManager(source));
-        orders = new JdbcPaymentOrderStore(jdbc, transactions);
-        processing = new JdbcPaymentProcessingStore(jdbc, transactions, orders);
-        workspaces = new JdbcSubscriptionWorkspaceStore(jdbc,transactions);
         persistence = com.adaptlearngraph.support.JpaTestContext.start(source);
+        orders = new JpaPaymentOrderStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence));
+        processing = new JpaPaymentProcessingStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence), orders);
+        workspaces = new JpaSubscriptionWorkspaceStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence));
     }
 
     @AfterAll static void stop() { persistence.close(); POSTGRES.stop(); }
@@ -58,7 +58,7 @@ class PaymentOrderPostgresIntegrationTest {
     void developmentBypassProvisionsOnceWithoutProviderEvidenceOrPaymentEmail() {
         var context = registrant();
         var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
-        var development = new JdbcPaymentProcessingStore(jdbc, transactions, orders,
+        var development = new JpaPaymentProcessingStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence), orders,
                 new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
         development.bypassForDevelopment(order.orderId(), NOW);
         development.apply(order.orderId(), NOW);
@@ -85,7 +85,7 @@ class PaymentOrderPostgresIntegrationTest {
 
     @Test
     void developmentBypassCannotOverwriteAnExternallyPendingOrPaidOrder() {
-        var development = new JdbcPaymentProcessingStore(jdbc, transactions, orders,
+        var development = new JpaPaymentProcessingStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence), orders,
                 new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
         var order = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
         processing.record(observation(order, "PENDING", 0L, "VND", "QUERY"), NOW);
@@ -633,6 +633,29 @@ class PaymentOrderPostgresIntegrationTest {
         assertEquals(com.adaptlearngraph.exception.RegistrationFailure.Code.INVALID_PROOF,
                 assertThrows(com.adaptlearngraph.exception.RegistrationFailure.class,
                         () -> activation.activate(token, "Activated member password!", "127.0.0.1")).code());
+    }
+
+    @Test
+    void concurrentPaymentWorkersNeverClaimTheSameJob() throws Exception {
+        orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
+        orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
+        Instant later = NOW.plus(java.time.Duration.ofDays(3650));
+        var barrier = new java.util.concurrent.CyclicBarrier(2);
+        var pool = java.util.concurrent.Executors.newFixedThreadPool(2);
+        try {
+            var a = pool.submit(() -> { barrier.await(); return processing.claim(later); });
+            var b = pool.submit(() -> { barrier.await(); return processing.claim(later); });
+            var first = a.get(30, java.util.concurrent.TimeUnit.SECONDS).orElseThrow();
+            var second = b.get(30, java.util.concurrent.TimeUnit.SECONDS).orElseThrow();
+            assertNotEquals(first.jobId(), second.jobId());
+            assertNotEquals(first.lease(), second.lease());
+            processing.finish(new com.adaptlearngraph.repository.PaymentProcessingStore.Work(first.jobId(), "stale-lease",
+                    first.handler(), first.attempt(), first.order()), later);
+            assertEquals("RUNNING", jdbc.queryForObject("SELECT status FROM platform.processing_job WHERE job_id=?", String.class,
+                    first.jobId()), "Only the lease owner can finish a job");
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     private static Context provisioned() {

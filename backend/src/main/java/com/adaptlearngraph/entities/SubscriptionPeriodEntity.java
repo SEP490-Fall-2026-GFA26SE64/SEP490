@@ -36,6 +36,18 @@ public class SubscriptionPeriodEntity {
     protected SubscriptionPeriodEntity() {
     }
 
+    public SubscriptionPeriodEntity(UUID periodId, UUID subscriptionId, UUID orderId, Instant startsAt, Instant endsAt,
+            String billingZone, int anniversaryDay, Instant createdAt) {
+        this.periodId = periodId;
+        this.subscriptionId = subscriptionId;
+        this.orderId = orderId;
+        this.startsAt = startsAt;
+        this.endsAt = endsAt;
+        this.billingZone = billingZone;
+        this.anniversaryDay = anniversaryDay;
+        this.createdAt = createdAt;
+    }
+
     public UUID getPeriodId() { return periodId; }
     public UUID getSubscriptionId() { return subscriptionId; }
     public UUID getOrderId() { return orderId; }

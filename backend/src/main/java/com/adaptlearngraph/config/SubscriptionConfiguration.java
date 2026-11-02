@@ -2,10 +2,11 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.helper.PayOsPaymentGateway;
 import com.adaptlearngraph.jwt.ServletSubscriptionIdentity;
-import com.adaptlearngraph.repository.JdbcPaymentOrderStore;
-import com.adaptlearngraph.repository.JdbcPaymentProcessingStore;
-import com.adaptlearngraph.repository.JdbcSubscriptionPlanStore;
-import com.adaptlearngraph.repository.JdbcSubscriptionWorkspaceStore;
+import com.adaptlearngraph.repository.JpaPaymentOrderStore;
+import com.adaptlearngraph.repository.JpaPaymentProcessingStore;
+import com.adaptlearngraph.repository.JpaSubscriptionPlanStore;
+import com.adaptlearngraph.repository.SubscriptionRepositories;
+import com.adaptlearngraph.repository.JpaSubscriptionWorkspaceStore;
 import com.adaptlearngraph.services.PaymentConfirmationMailWorker;
 import com.adaptlearngraph.services.SubscriptionPaymentWorker;
 import com.adaptlearngraph.services.RegistrationUseCase;
@@ -41,6 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Configuration(proxyBeanMethods = false)
 @Profile("!starter")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class SubscriptionConfiguration {
     @Bean
     SubscriptionIdentity subscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace,
@@ -49,8 +51,10 @@ public class SubscriptionConfiguration {
     }
 
     @Bean
-    SubscriptionPlanStore subscriptionPlanStore(JdbcTemplate jdbc, PlatformTransactionManager transactions) {
-        return new JdbcSubscriptionPlanStore(jdbc, new TransactionTemplate(transactions));
+    SubscriptionPlanStore subscriptionPlanStore(SubscriptionRepositories data,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            PlatformTransactionManager transactions) {
+        return new JpaSubscriptionPlanStore(data.plans(), data.planVersions(), data.audit(), new TransactionTemplate(transactions));
     }
 
     @Bean
@@ -59,17 +63,23 @@ public class SubscriptionConfiguration {
     }
 
     @Bean
-    PaymentOrderStore paymentOrders(JdbcTemplate jdbc, PlatformTransactionManager manager) {
-        return new JdbcPaymentOrderStore(jdbc,new TransactionTemplate(manager));
+    PaymentOrderStore paymentOrders(SubscriptionRepositories data,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            PlatformTransactionManager manager) {
+        return new JpaPaymentOrderStore(data,new TransactionTemplate(manager));
     }
     @Bean
-    PaymentProcessingStore paymentProcessing(JdbcTemplate jdbc,PlatformTransactionManager manager,PaymentOrderStore orders,
+    PaymentProcessingStore paymentProcessing(SubscriptionRepositories data,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            PlatformTransactionManager manager,PaymentOrderStore orders,
             com.adaptlearngraph.entities.IntegrationPolicy policy) {
-        return new JdbcPaymentProcessingStore(jdbc,new TransactionTemplate(manager),orders,policy);
+        return new JpaPaymentProcessingStore(data,new TransactionTemplate(manager),orders,policy);
     }
     @Bean
-    SubscriptionWorkspaceStore subscriptionWorkspaces(JdbcTemplate jdbc,PlatformTransactionManager manager,org.springframework.core.env.Environment environment) {
-        return new JdbcSubscriptionWorkspaceStore(jdbc,new TransactionTemplate(manager),
+    SubscriptionWorkspaceStore subscriptionWorkspaces(SubscriptionRepositories data,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            PlatformTransactionManager manager,org.springframework.core.env.Environment environment) {
+        return new JpaSubscriptionWorkspaceStore(data,new TransactionTemplate(manager),
                 com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment));
     }
     @Bean(destroyMethod="close")

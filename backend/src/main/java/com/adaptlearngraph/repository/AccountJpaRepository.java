@@ -59,4 +59,13 @@ public interface AccountJpaRepository extends Repository<AccountEntity, UUID>, I
             from AccountEntity a where a.accountId = :accountId
             """)
     Optional<Seed> findSeed(@Param("accountId") UUID accountId);
-}
+
+    /** First organization binding of a registered owner; guarded in the database by account_role_boundary. */
+    @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true, clearAutomatically = true)
+    @org.springframework.transaction.annotation.Transactional(com.adaptlearngraph.constants.TransactionManagers.JPA)
+    @Query(value = "UPDATE platform.account SET organization_id = :organization WHERE account_id = :account AND organization_id IS NULL",
+            nativeQuery = true)
+    int bindOrganization(@Param("account") UUID accountId, @Param("organization") UUID organizationId);
+
+    @Query("select a.active from AccountEntity a where a.accountId = :account")
+    Optional<Boolean> active(@Param("account") UUID accountId);}

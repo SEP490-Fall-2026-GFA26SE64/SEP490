@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Leased catalog-import jobs. Claiming keeps native {@code FOR UPDATE OF c SKIP LOCKED} so concurrent workers never
  * claim the same job; every completion is fenced by the claiming lease and the PENDING state.
  */
-public interface WorkspaceCatalogImportJpaRepository extends Repository<WorkspaceCatalogImportEntity, UUID> {
+public interface WorkspaceCatalogImportJpaRepository extends Repository<WorkspaceCatalogImportEntity, UUID>, InsertOnlyRepository<WorkspaceCatalogImportEntity> {
     record Claimed(UUID organizationId, UUID registrationId, Integer attempts, List<String> selectedNodeIds) {}
 
     @Query(value = """
