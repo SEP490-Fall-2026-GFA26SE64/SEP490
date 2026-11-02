@@ -2,20 +2,21 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.constants.LocalDemoIdentity;
 import java.util.*;
-import javax.sql.DataSource;
 import org.springframework.boot.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** Explicit local fixture, not a password login, assignment row or approval. */
 public final class LocalExpertProvisioning implements ApplicationRunner {
-    private final DataSource source;private final UUID expert;
-    LocalExpertProvisioning(DataSource source,UUID expert){this.source=source;this.expert=expert;}
+    private final javax.sql.DataSource source;private final PlatformTransactionManager transactions;private final UUID expert;
+    LocalExpertProvisioning(javax.sql.DataSource source,PlatformTransactionManager transactions,UUID expert){
+        this.source=source;this.transactions=transactions;this.expert=expert;
+    }
     @Override public void run(ApplicationArguments arguments) {
         var jdbc=new NamedParameterJdbcTemplate(source);
         var parameters=Map.of("org",LocalDemoIdentity.ORG,"expert",expert);
-        new TransactionTemplate(new JdbcTransactionManager(source)).executeWithoutResult(status->{
+        new TransactionTemplate(transactions).executeWithoutResult(status->{
             jdbc.update("""
                     INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash)
                     VALUES(:expert,:org,'local-pathway-demo-expert','local-pathway-demo-expert','DEMO_NO_PASSWORD_LOGIN')

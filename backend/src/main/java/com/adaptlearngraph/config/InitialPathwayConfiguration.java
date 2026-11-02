@@ -30,8 +30,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnProperty(name={"pathway.initial.enabled","pathway.local-auth-bypass.enabled","assessment.baseline.local-demo.enabled"},havingValue="true")
 public class InitialPathwayConfiguration extends InitialPathwayComponents {
     @Bean @ConditionalOnProperty(name={"pathway.initial.local-assignment.enabled","pathway.initial.local-assignment.provision-expert-enabled"},havingValue="true")
-    LocalExpertProvisioning initialExpertFixture(DataSource source,Environment env) {
-        return new LocalExpertProvisioning(source,UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id")));
+    LocalExpertProvisioning initialExpertFixture(DataSource source,Environment env,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager transactionManager) {
+        return new LocalExpertProvisioning(source,transactionManager,UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id")));
     }
     @Bean Actors initialActors(LocalDemoIdentity identity,DataSource source) { return new LocalPathwayActors(identity,new NamedParameterJdbcTemplate(source)); }
 }

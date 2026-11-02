@@ -17,7 +17,6 @@ import org.springframework.context.annotation.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import static com.adaptlearngraph.config.SoftwareDevelopmentSeed.*;
 import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
@@ -27,7 +26,9 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 @Profile("local & workspace-development & software-development-seed & !prod & !local-baseline-demo")
 @ConditionalOnProperty(name="workspace.development-fixtures.enabled",havingValue="true")
 public class SoftwareDevelopmentSeedConfiguration {
-    @Bean ApplicationRunner softwareDevelopmentSeed(DataSource source,Driver driver,Environment env,ConfigurableApplicationContext context) {
+    @Bean ApplicationRunner softwareDevelopmentSeed(DataSource source,Driver driver,Environment env,ConfigurableApplicationContext context,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager transactionManager) {
         return args -> {
             if(!DevelopmentWorkspace.enabled(env))throw new IllegalStateException("Development fixture gate required");
             var graph=Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
@@ -41,7 +42,7 @@ public class SoftwareDevelopmentSeedConfiguration {
             String url;try(var connection=source.getConnection()){url=connection.getMetaData().getURL();}
             new OfficialQuestionBankImporter(source).importManifest(manifest,new OfficialQuestionBankImporter.Owner(
                     MainDevelopmentBankSeed.id("bank-owner"),MainDevelopmentBankSeed.ORGANIZATION,url),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
-            new TransactionTemplate(new JdbcTransactionManager(source)).executeWithoutResult(tx -> {
+            new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
                 jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended('WORKSPACE_SE',0))",(rs,n)->true);
                 provision(jdbc,manifest,env.getRequiredProperty("workspace.development-fixtures.password"));
             });

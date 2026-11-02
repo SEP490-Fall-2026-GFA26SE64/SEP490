@@ -13,7 +13,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** Insert-only development workspace. No learner outcomes, publication, real payment or readiness is seeded. */
@@ -22,14 +21,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnProperty(name="workspace.development-fixtures.enabled",havingValue="true")
 public class DevelopmentWorkspaceSeedConfiguration {
     @Bean ApplicationRunner developmentWorkspaceSeed(DataSource source,ObjectMapper json,Environment environment,
-            ConfigurableApplicationContext context) {
+            ConfigurableApplicationContext context,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager transactionManager) {
         return args -> {
             if(!DevelopmentWorkspace.enabled(environment)) throw new IllegalStateException("Development fixture gate required");
             var password=environment.getRequiredProperty("workspace.development-fixtures.password");
             if(password.length()<12) throw new IllegalStateException("Development password must contain at least twelve characters");
             var jdbc=new JdbcTemplate(source);
             var secrets=new RegistrationCryptography("","");
-            new TransactionTemplate(new JdbcTransactionManager(source)).executeWithoutResult(status -> {
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                 jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended('WORKSPACE_DEVELOPMENT_V1',0))",(rs,n)->true);
                 var org=MainDevelopmentBankSeed.ORGANIZATION;
                 if(!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.organization WHERE organization_id=? AND code='TECHNOVA')",Boolean.class,org)))
@@ -91,7 +92,7 @@ public class DevelopmentWorkspaceSeedConfiguration {
                         """,org,reference,DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank(),null,null);
             });
             // Reuse the exact validated synthetic artifact, without provisioning persona accounts or learner state.
-            new LocalDemoProvisioning(source,json,false,MainDevelopmentBankSeed.id("ld"),MainDevelopmentBankSeed.securityProjection()).run(args);
+            new LocalDemoProvisioning(source,json,transactionManager,false,MainDevelopmentBankSeed.id("ld"),MainDevelopmentBankSeed.securityProjection()).run(args);
             jdbc.update("""
                     UPDATE platform.workspace_baseline_resource SET model_version_id=?,mastery_mapping_version_id=?
                     WHERE organization_id=? AND graph_occupation_id=? AND question_bank_id=?

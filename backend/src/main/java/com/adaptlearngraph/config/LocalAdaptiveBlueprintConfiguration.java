@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 
 /** Both gates default off. Even local+prod explicitly excludes this provisional runtime wiring. */
 @Configuration(proxyBeanMethods = false)
@@ -26,8 +25,10 @@ import org.springframework.jdbc.support.JdbcTransactionManager;
 @EnableConfigurationProperties(JdbcAdaptiveBlueprintEligibilityAdapter.Properties.class)
 public class LocalAdaptiveBlueprintConfiguration {
     @Bean
-    AdaptiveBlueprintStore adaptiveBlueprintStore(DataSource dataSource, ObjectMapper mapper) {
-        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(dataSource), mapper, new JdbcTransactionManager(dataSource));
+    AdaptiveBlueprintStore adaptiveBlueprintStore(DataSource dataSource, ObjectMapper mapper,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager transactionManager) {
+        return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(dataSource), mapper, transactionManager);
     }
 
     @Bean

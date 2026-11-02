@@ -26,7 +26,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @ConditionalOnProperty(prefix="assessment.baseline.irt-administration",name="enabled",havingValue="true")
 public class IrtAdministrationConfiguration {
     @Bean CalibrationJson calibrationJson() { return new CalibrationJson(CalibrationPolicy.syntheticV2()); }
-    @Bean JdbcCalibrationStore calibrationStore(DataSource dataSource,CalibrationJson json) { return new JdbcCalibrationStore(dataSource,json); }
+    @Bean JdbcCalibrationStore calibrationStore(DataSource dataSource,CalibrationJson json,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager transactionManager) {
+        return new JdbcCalibrationStore(dataSource,json,transactionManager);
+    }
     @Bean InputSource calibrationInputSource(DataSource dataSource,DatasetSource datasets,CalibrationJson json,
             @Value("${assessment.baseline.irt-administration.repository-root:}") String repositoryRoot,
             org.springframework.beans.factory.ObjectProvider<BankSource> banks) {

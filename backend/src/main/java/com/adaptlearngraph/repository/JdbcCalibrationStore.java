@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -25,9 +24,9 @@ public final class JdbcCalibrationStore implements Store {
     private final CalibrationJson json;
     private final JdbcCalibrationCandidates candidates;
     private final ThreadLocal<Scope> active=new ThreadLocal<>();
-    public JdbcCalibrationStore(DataSource dataSource,CalibrationJson json) {
+    public JdbcCalibrationStore(DataSource dataSource,CalibrationJson json,org.springframework.transaction.PlatformTransactionManager transactionManager) {
         this.dataSource=dataSource; this.json=json; jdbc=new NamedParameterJdbcTemplate(dataSource);
-        transactions=new TransactionTemplate(new JdbcTransactionManager(dataSource));
+        transactions=new TransactionTemplate(transactionManager);
         transactions.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED); transactions.setTimeout(10);
         candidates=new JdbcCalibrationCandidates(jdbc,json);
     }

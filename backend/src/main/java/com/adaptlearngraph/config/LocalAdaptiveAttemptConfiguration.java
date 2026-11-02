@@ -32,7 +32,6 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -44,8 +43,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled", "attempts.enabled"}, havingValue = "true")
 public class LocalAdaptiveAttemptConfiguration {
     @Bean
-    AdaptiveAttemptStore adaptiveAttemptStore(DataSource source, ObjectMapper mapper, AdaptiveBlueprintStore blueprints) {
-        return new JdbcAdaptiveAttemptStore(new NamedParameterJdbcTemplate(source), mapper, new JdbcTransactionManager(source), blueprints);
+    AdaptiveAttemptStore adaptiveAttemptStore(DataSource source, ObjectMapper mapper, AdaptiveBlueprintStore blueprints,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager transactionManager) {
+        return new JdbcAdaptiveAttemptStore(new NamedParameterJdbcTemplate(source), mapper, transactionManager, blueprints);
     }
     @Bean
     AdaptiveAttemptPolicyPort adaptiveAttemptPolicy(AdaptiveTechnicalVersionPort technical) { return new PinnedAdaptiveAttemptPolicyAdapter(technical); }

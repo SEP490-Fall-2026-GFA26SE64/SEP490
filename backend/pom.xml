@@ -16,6 +16,8 @@
     <java.version>21</java.version>
     <archunit.version>1.4.1</archunit.version>
     <jackson-bom.version>2.21.8</jackson-bom.version>
+    <modelmapper.version>3.2.4</modelmapper.version>
+    <modelmapper-module-record.version>1.0.0</modelmapper-module-record.version>
   </properties>
   <dependencies>
     <dependency><groupId>io.minio</groupId><artifactId>minio</artifactId><version>8.5.17</version></dependency>
@@ -60,6 +62,20 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-neo4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.modelmapper</groupId>
+      <artifactId>modelmapper</artifactId>
+      <version>${modelmapper.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.modelmapper</groupId>
+      <artifactId>modelmapper-module-record</artifactId>
+      <version>${modelmapper-module-record.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

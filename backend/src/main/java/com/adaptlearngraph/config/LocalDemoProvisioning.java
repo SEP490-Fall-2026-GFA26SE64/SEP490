@@ -10,7 +10,6 @@ import java.security.MessageDigest;
 import org.springframework.boot.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.namedparam.*;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** Idempotent explicit demo provisioning. No official content, old account or historical pin is updated. */
@@ -25,14 +24,16 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
     private final TransactionTemplate transaction;
     private final boolean seedPersonaAccounts;
     private final UUID technicalActor;
-    public LocalDemoProvisioning(DataSource source,ObjectMapper json) {
-        this(source,json,true,LocalDemoIdentity.id("admin"));
+    public LocalDemoProvisioning(DataSource source,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions) {
+        this(source,json,transactions,true,LocalDemoIdentity.id("admin"));
     }
-    public LocalDemoProvisioning(DataSource source,ObjectMapper json,boolean seedPersonaAccounts,UUID technicalActor) {
-        this(source,json,seedPersonaAccounts,technicalActor,null);
+    public LocalDemoProvisioning(DataSource source,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions,
+            boolean seedPersonaAccounts,UUID technicalActor) {
+        this(source,json,transactions,seedPersonaAccounts,technicalActor,null);
     }
-    public LocalDemoProvisioning(DataSource source,ObjectMapper json,boolean seedPersonaAccounts,UUID technicalActor,Projection projection) {
-        this.jdbc=new NamedParameterJdbcTemplate(source); this.json=json; this.transaction=new TransactionTemplate(new JdbcTransactionManager(source));
+    public LocalDemoProvisioning(DataSource source,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions,
+            boolean seedPersonaAccounts,UUID technicalActor,Projection projection) {
+        this.jdbc=new NamedParameterJdbcTemplate(source); this.json=json; this.transaction=new TransactionTemplate(transactions);
         this.seedPersonaAccounts=seedPersonaAccounts;this.technicalActor=Objects.requireNonNull(technicalActor);
         this.projection=projection;
         if(projection!=null && seedPersonaAccounts)throw new IllegalArgumentException("Projected seed does not create demo personas");
