@@ -1,33 +1,38 @@
 package com.adaptlearngraph.services;
 
+import com.adaptlearngraph.exception.RegistrationFailure;
 import com.adaptlearngraph.helper.RegistrationMailDelivery;
+import com.adaptlearngraph.repository.AccountJpaRepository;
+import com.adaptlearngraph.repository.OutboxEventJpaRepository;
+import com.adaptlearngraph.repository.ProcessingJobJpaRepository;
 import com.adaptlearngraph.repository.RegistrationSecrets;
 import com.adaptlearngraph.repository.RegistrationStore;
-import com.adaptlearngraph.exception.RegistrationFailure;
 import jakarta.mail.MessagingException;
-import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Scheduled;
 
 public final class RegistrationMailWorker {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationMailWorker.class);
-    private final JdbcTemplate jdbc;
+    private final ProcessingJobJpaRepository jobs;
+    private final OutboxEventJpaRepository outbox;
+    private final AccountJpaRepository accounts;
     private final RegistrationStore store;
     private final RegistrationSecrets secrets;
     private final RegistrationMailDelivery mail;
     private final Clock clock;
     private final String leaseOwner = UUID.randomUUID().toString();
 
-    public RegistrationMailWorker(JdbcTemplate jdbc, RegistrationStore store, RegistrationSecrets secrets,
-                                  RegistrationMailDelivery mail, Clock clock) {
-        this.jdbc = jdbc;
+    public RegistrationMailWorker(ProcessingJobJpaRepository jobs, OutboxEventJpaRepository outbox, AccountJpaRepository accounts,
+                                  RegistrationStore store, RegistrationSecrets secrets, RegistrationMailDelivery mail, Clock clock) {
+        this.jobs = jobs;
+        this.outbox = outbox;
+        this.accounts = accounts;
         this.store = store;
         this.secrets = secrets;
         this.mail = mail;
@@ -59,49 +64,27 @@ public final class RegistrationMailWorker {
     }
 
     private Optional<Job> claim(Instant now) {
-        var jobs = jdbc.query("""
-                SELECT j.job_id, j.event_id, j.attempts, e.aggregate_id, e.source_revision,
-                    e.payload ->> 'encryptedCode' AS encrypted_code, a.identifier
-                FROM platform.processing_job j
-                JOIN platform.outbox_event e ON e.event_id = j.event_id
-                JOIN platform.account a ON a.account_id = e.aggregate_id
-                WHERE j.handler = 'REGISTRATION_EMAIL'
-                    AND ((j.status IN ('PENDING', 'RETRY') AND j.attempts < 5 AND j.next_retry_at <= ?)
-                        OR (j.status = 'RUNNING' AND j.lease_expires_at <= ?))
-                ORDER BY j.created_at LIMIT 1 FOR UPDATE OF j SKIP LOCKED
-                """, (rs, row) -> new Job(rs.getObject("job_id", UUID.class), rs.getObject("event_id", UUID.class),
-                rs.getObject("aggregate_id", UUID.class), rs.getLong("source_revision"),
-                rs.getString("encrypted_code"), rs.getString("identifier"), rs.getInt("attempts") + 1),
-                Timestamp.from(now), Timestamp.from(now));
-        if (jobs.isEmpty()) return Optional.empty();
-        Job job = jobs.getFirst();
+        var locked = jobs.lockNextRegistrationEmail(now).flatMap(jobs::mailJob);
+        if (locked.isEmpty()) return Optional.empty();
+        var row = locked.get();
+        Job job = new Job(row.jobId(), row.eventId(), row.aggregateId(), row.sourceRevision(),
+                (String) row.payload().get("encryptedCode"), accounts.identifier(row.aggregateId()).orElseThrow(), row.attempts() + 1);
         if (job.attempts() > 5) {
-            jdbc.update("""
-                    UPDATE platform.processing_job SET status = 'FAILED', failure_code = 'DELIVERY_RETRIES_EXHAUSTED',
-                        lease_owner = NULL, lease_expires_at = NULL WHERE job_id = ?
-                    """, job.id());
+            jobs.failUnleased(job.id(), "DELIVERY_RETRIES_EXHAUSTED");
             store.audit(job.accountId(), "REGISTRATION_EMAIL_DELIVERY", "FAILED", now);
             return Optional.empty();
         }
-        jdbc.update("""
-                UPDATE platform.processing_job SET status = 'RUNNING', attempts = attempts + 1,
-                    lease_owner = ?, lease_expires_at = ? WHERE job_id = ?
-                """, leaseOwner, Timestamp.from(now.plusSeconds(120)), job.id());
+        jobs.lease(job.id(), leaseOwner, now.plusSeconds(120));
         return Optional.of(job);
     }
 
     private void finish(Job job, boolean sent, boolean retry, String failureCode) {
         store.transaction(() -> {
             Instant now = clock.instant();
-            int changed = jdbc.update("""
-                    UPDATE platform.processing_job SET status = ?, failure_code = ?, next_retry_at = ?,
-                        lease_owner = NULL, lease_expires_at = NULL
-                    WHERE job_id = ? AND status = 'RUNNING' AND lease_owner = ?
-                    """, sent ? "SUCCEEDED" : retry ? "RETRY" : "FAILED", failureCode,
-                    Timestamp.from(now.plusSeconds(15L << Math.min(job.attempts(), 5))), job.id(), leaseOwner);
+            int changed = jobs.release(job.id(), leaseOwner, sent ? "SUCCEEDED" : retry ? "RETRY" : "FAILED", failureCode,
+                    now.plusSeconds(15L << Math.min(job.attempts(), 5)));
             if (changed == 1) {
-                if (sent) jdbc.update("UPDATE platform.outbox_event SET delivered_at = ? WHERE event_id = ?",
-                        Timestamp.from(now), job.eventId());
+                if (sent) outbox.delivered(job.eventId(), now);
                 store.audit(job.accountId(), "REGISTRATION_EMAIL_DELIVERY",
                         sent ? "SMTP_ACCEPTED" : retry ? "RETRY" : "FAILED", now);
             }

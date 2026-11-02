@@ -73,4 +73,57 @@ public interface ProcessingJobJpaRepository extends Repository<ProcessingJobEnti
             where e.aggregateId = :aggregate and j.handler = :handler and j.status in ('PENDING', 'RUNNING', 'RETRY')
             """)
     boolean active(@Param("aggregate") UUID aggregateId, @Param("handler") String handler);
-}
+
+    /** A claimed mail job with its outbox event; the payload is the event's jsonb object. */
+    record MailJob(UUID jobId, UUID eventId, Integer attempts, UUID aggregateId, Long sourceRevision,
+                   java.util.Map<String, Object> payload) {
+        @Override public String toString() { return "MailJob[id=" + jobId + "]"; }
+    }
+
+    @Query("""
+            select new com.adaptlearngraph.repository.ProcessingJobJpaRepository$MailJob(j.jobId, e.eventId, j.attempts,
+                e.aggregateId, e.sourceRevision, e.payload)
+            from ProcessingJobEntity j join OutboxEventEntity e on e.eventId = j.eventId where j.jobId = :job
+            """)
+    Optional<MailJob> mailJob(@Param("job") UUID jobId);
+
+    @Query(value = """
+            SELECT j.job_id FROM platform.processing_job j
+            JOIN platform.outbox_event e ON e.event_id = j.event_id
+            JOIN platform.account a ON a.account_id = e.aggregate_id
+            WHERE j.handler = 'REGISTRATION_EMAIL'
+                AND ((j.status IN ('PENDING', 'RETRY') AND j.attempts < 5 AND j.next_retry_at <= :now)
+                    OR (j.status = 'RUNNING' AND j.lease_expires_at <= :now))
+            ORDER BY j.created_at LIMIT 1 FOR UPDATE OF j SKIP LOCKED
+            """, nativeQuery = true)
+    Optional<UUID> lockNextRegistrationEmail(@Param("now") Instant now);
+
+    @Query(value = """
+            SELECT j.job_id FROM platform.processing_job j JOIN platform.outbox_event e USING(event_id)
+            JOIN platform.workspace_activation a ON a.activation_id = e.aggregate_id
+            WHERE j.handler = 'MEMBER_ACTIVATION_EMAIL' AND
+              ((j.status IN ('PENDING','RETRY') AND j.next_retry_at <= :now) OR (j.status = 'RUNNING' AND j.lease_expires_at <= :now))
+            ORDER BY j.created_at LIMIT 1 FOR UPDATE OF j SKIP LOCKED
+            """, nativeQuery = true)
+    Optional<UUID> lockNextActivationEmail(@Param("now") Instant now);
+
+    @Query(value = """
+            SELECT j.job_id FROM platform.processing_job j JOIN platform.outbox_event e USING(event_id)
+            JOIN platform.payment_order o ON o.order_id = e.aggregate_id
+            JOIN platform.subscription_intent i USING(intent_id)
+            JOIN platform.account a ON a.account_id = o.created_by
+            WHERE j.handler = 'PAYMENT_CONFIRMATION_EMAIL' AND o.payment_status = 'PAID'
+              AND ((j.status IN ('PENDING','RETRY') AND j.next_retry_at <= :now)
+                OR (j.status = 'RUNNING' AND j.lease_expires_at <= :now))
+            ORDER BY j.created_at LIMIT 1 FOR UPDATE OF j SKIP LOCKED
+            """, nativeQuery = true)
+    Optional<UUID> lockNextPaymentConfirmationEmail(@Param("now") Instant now);
+
+    /** Retries exhausted before a lease was taken (claim-time decision, as before). */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query("""
+            update ProcessingJobEntity j set j.status = 'FAILED', j.failureCode = :failure, j.leaseOwner = null,
+                j.leaseExpiresAt = null where j.jobId = :job
+            """)
+    int failUnleased(@Param("job") UUID jobId, @Param("failure") String failureCode);}

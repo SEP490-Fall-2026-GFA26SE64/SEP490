@@ -116,10 +116,12 @@ public class SubscriptionConfiguration {
 
     @Bean
     @ConditionalOnProperty(name="subscription.worker.enabled",havingValue="true",matchIfMissing=true)
-    PaymentConfirmationMailWorker paymentConfirmationMailWorker(JdbcTemplate jdbc, PlatformTransactionManager manager,
+    PaymentConfirmationMailWorker paymentConfirmationMailWorker(SubscriptionRepositories data,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,
             com.adaptlearngraph.helper.TransactionalMailSender mail,
             @Value("${subscription.public-url:http://127.0.0.1:8088}") String publicUrl) {
-        return new PaymentConfirmationMailWorker(jdbc, new TransactionTemplate(manager), mail, Clock.systemUTC(), publicUrl);
+        return new PaymentConfirmationMailWorker(data.jobs(), data.outbox(), data.orders(), new TransactionTemplate(manager), mail,
+                Clock.systemUTC(), publicUrl);
     }
 
     @Bean

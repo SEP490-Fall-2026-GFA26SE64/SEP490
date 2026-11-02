@@ -91,4 +91,11 @@ public interface WorkspaceActivationJpaRepository
             """)
     int consume(@Param("organization") UUID organization, @Param("id") UUID activationId, @Param("account") UUID account,
             @Param("now") Instant now);
-}
+
+    record Delivery(String email, Long generation, Instant consumedAt, Instant expiresAt) {}
+
+    @Query("""
+            select new com.adaptlearngraph.repository.WorkspaceActivationJpaRepository$Delivery(a.email, a.generation, a.consumedAt,
+                a.expiresAt) from WorkspaceActivationEntity a where a.activationId = :id
+            """)
+    Optional<Delivery> delivery(@Param("id") UUID activationId);}

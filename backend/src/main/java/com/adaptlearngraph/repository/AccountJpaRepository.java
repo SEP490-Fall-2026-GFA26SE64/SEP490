@@ -68,4 +68,6 @@ public interface AccountJpaRepository extends Repository<AccountEntity, UUID>, I
     int bindOrganization(@Param("account") UUID accountId, @Param("organization") UUID organizationId);
 
     @Query("select a.active from AccountEntity a where a.accountId = :account")
-    Optional<Boolean> active(@Param("account") UUID accountId);}
+    Optional<Boolean> active(@Param("account") UUID accountId);
+    @Query("select a.identifier from AccountEntity a where a.accountId = :account")
+    Optional<String> identifier(@Param("account") UUID accountId);}

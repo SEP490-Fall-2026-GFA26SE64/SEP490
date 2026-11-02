@@ -88,9 +88,11 @@ public class RegistrationConfiguration {
     @Bean
     @ConditionalOnProperty(name = {"registration.mail-worker.enabled", "registration.email-verification-enabled"},
             havingValue = "true", matchIfMissing = true)
-    RegistrationMailWorker registrationMailWorker(JdbcTemplate jdbc, RegistrationStore store,
+    RegistrationMailWorker registrationMailWorker(com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs,
+            com.adaptlearngraph.repository.OutboxEventJpaRepository outbox,
+            com.adaptlearngraph.repository.AccountJpaRepository accounts, RegistrationStore store,
             RegistrationSecrets secrets, RegistrationMailDelivery delivery) {
-        return new RegistrationMailWorker(jdbc, store, secrets, delivery, Clock.systemUTC());
+        return new RegistrationMailWorker(jobs, outbox, accounts, store, secrets, delivery, Clock.systemUTC());
     }
 
     @Bean

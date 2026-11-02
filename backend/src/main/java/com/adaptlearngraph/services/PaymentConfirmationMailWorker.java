@@ -2,29 +2,36 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.helper.TransactionalEmail;
 import com.adaptlearngraph.helper.TransactionalMailSender;
+import com.adaptlearngraph.repository.OutboxEventJpaRepository;
+import com.adaptlearngraph.repository.PaymentOrderJpaRepository;
+import com.adaptlearngraph.repository.ProcessingJobJpaRepository;
 import jakarta.mail.MessagingException;
-import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public final class PaymentConfirmationMailWorker {
-    private final JdbcTemplate jdbc;
+    private final ProcessingJobJpaRepository jobs;
+    private final OutboxEventJpaRepository outbox;
+    private final PaymentOrderJpaRepository orders;
     private final TransactionTemplate transactions;
     private final TransactionalMailSender mail;
     private final Clock clock;
     private final String publicUrl;
 
-    public PaymentConfirmationMailWorker(JdbcTemplate jdbc, TransactionTemplate transactions,
-            TransactionalMailSender mail, Clock clock, String publicUrl) {
-        this.jdbc = jdbc;
+    public PaymentConfirmationMailWorker(ProcessingJobJpaRepository jobs, OutboxEventJpaRepository outbox,
+            PaymentOrderJpaRepository orders, TransactionTemplate transactions, TransactionalMailSender mail, Clock clock,
+            String publicUrl) {
+        this.jobs = jobs;
+        this.outbox = outbox;
+        this.orders = orders;
         this.transactions = transactions;
         this.mail = mail;
         this.clock = clock;
@@ -34,29 +41,13 @@ public final class PaymentConfirmationMailWorker {
     @Scheduled(fixedDelayString = "${registration.mail-worker.delay-ms:1000}")
     public void deliver() {
         Job job = transactions.execute(tx -> {
-            var now = Timestamp.from(clock.instant());
-            var jobs = jdbc.query("""
-                    SELECT j.job_id,j.event_id,j.attempts,o.order_id,o.provider_order_code,o.name,o.price_vnd,
-                      o.duration_months,o.employee_seats,o.paid_at,i.kind,a.identifier,
-                      (SELECT w.slug FROM platform.organization_workspace w WHERE w.organization_id=a.organization_id) AS slug
-                    FROM platform.processing_job j JOIN platform.outbox_event e USING(event_id)
-                    JOIN platform.payment_order o ON o.order_id=e.aggregate_id
-                    JOIN platform.subscription_intent i USING(intent_id)
-                    JOIN platform.account a ON a.account_id=o.created_by
-                    WHERE j.handler='PAYMENT_CONFIRMATION_EMAIL' AND o.payment_status='PAID'
-                      AND ((j.status IN ('PENDING','RETRY') AND j.next_retry_at<=?)
-                        OR (j.status='RUNNING' AND j.lease_expires_at<=?))
-                    ORDER BY j.created_at LIMIT 1 FOR UPDATE OF j SKIP LOCKED
-                    """, (rs, index) -> new Job(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class),
-                    rs.getInt(3) + 1, rs.getObject(4, UUID.class), rs.getLong(5), rs.getString(6),
-                    rs.getLong(7), rs.getInt(8), rs.getInt(9), rs.getTimestamp(10),
-                    rs.getString(11), rs.getString(12), UUID.randomUUID().toString(), rs.getString(13)), now, now);
-            if (jobs.isEmpty()) return null;
-            var value = jobs.getFirst();
-            jdbc.update("""
-                    UPDATE platform.processing_job SET status='RUNNING',attempts=attempts+1,lease_owner=?,lease_expires_at=?
-                    WHERE job_id=?
-                    """, value.lease(), Timestamp.from(clock.instant().plusSeconds(120)), value.id());
+            var row = jobs.lockNextPaymentConfirmationEmail(clock.instant()).flatMap(jobs::mailJob).orElse(null);
+            if (row == null) return null;
+            var order = orders.confirmation(row.aggregateId()).orElseThrow();
+            var value = new Job(row.jobId(), row.eventId(), row.attempts() + 1, order.orderId(), order.providerOrderCode(),
+                    order.name(), order.priceVnd(), order.durationMonths(), order.employeeSeats(), order.paidAt(), order.kind(),
+                    order.email(), UUID.randomUUID().toString(), order.slug());
+            jobs.lease(value.id(), value.lease(), clock.instant().plusSeconds(120));
             return value;
         });
         if (job == null) return;
@@ -71,7 +62,7 @@ public final class PaymentConfirmationMailWorker {
             details.put("Purchased period", job.months() + " calendar month(s)");
             details.put("Employee seats", Integer.toString(job.seats()));
             details.put("Payment confirmed", DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm z", java.util.Locale.ENGLISH)
-                    .withZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(job.confirmed().toInstant()));
+                    .withZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(job.confirmed()));
             String route = "PURCHASE".equals(job.kind()) ? "/guest/payment-result"
                     : com.adaptlearngraph.helper.WorkspaceLinks.path(job.slug(), "/admin/subscription/payment-result");
             try {
@@ -91,17 +82,13 @@ public final class PaymentConfirmationMailWorker {
         String outcome = sent ? "SUCCEEDED" : "SMTP_UNAVAILABLE".equals(failure) && job.attempt() < 5 ? "RETRY" : "FAILED";
         String reason = failure;
         transactions.executeWithoutResult(tx -> {
-            int updated = jdbc.update("""
-                    UPDATE platform.processing_job SET status=?,failure_code=?,next_retry_at=?,lease_owner=NULL,lease_expires_at=NULL
-                    WHERE job_id=? AND lease_owner=? AND status='RUNNING'
-                    """, outcome, reason, Timestamp.from(clock.instant().plusSeconds(30L * job.attempt())), job.id(), job.lease());
-            if (updated == 1 && "SUCCEEDED".equals(outcome)) jdbc.update(
-                    "UPDATE platform.outbox_event SET delivered_at=? WHERE event_id=?", Timestamp.from(clock.instant()), job.event());
+            int updated = jobs.release(job.id(), job.lease(), outcome, reason, clock.instant().plusSeconds(30L * job.attempt()));
+            if (updated == 1 && "SUCCEEDED".equals(outcome)) outbox.delivered(job.event(), clock.instant());
         });
     }
 
     private record Job(UUID id, UUID event, int attempt, UUID order, long code, String plan, long amount,
-                       int months, int seats, Timestamp confirmed, String kind, String email, String lease, String slug) {
+                       int months, int seats, Instant confirmed, String kind, String email, String lease, String slug) {
         @Override public String toString() { return "PaymentMailJob[redacted]"; }
     }
 }

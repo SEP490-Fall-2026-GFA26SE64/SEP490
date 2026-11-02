@@ -63,9 +63,12 @@ public class WorkspaceAuthenticationConfiguration {
     }
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="registration.mail-worker.enabled",havingValue="true",matchIfMissing=true)
-    MemberActivationMailWorker activationMailWorker(JdbcTemplate jdbc,org.springframework.transaction.PlatformTransactionManager manager,
+    MemberActivationMailWorker activationMailWorker(com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs,
+            com.adaptlearngraph.repository.WorkspaceActivationJpaRepository activations,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            org.springframework.transaction.PlatformTransactionManager manager,
             RegistrationSecrets secrets,RegistrationMailDelivery mail,@org.springframework.beans.factory.annotation.Value("${subscription.public-url:http://127.0.0.1:8088}") String publicUrl) {
-        return new MemberActivationMailWorker(jdbc,new org.springframework.transaction.support.TransactionTemplate(manager),secrets,mail,Clock.systemUTC(),publicUrl);
+        return new MemberActivationMailWorker(jobs,activations,new org.springframework.transaction.support.TransactionTemplate(manager),secrets,mail,Clock.systemUTC(),publicUrl);
     }
 
     @Bean

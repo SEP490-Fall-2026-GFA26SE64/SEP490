@@ -115,11 +115,13 @@ class PaymentOrderPostgresIntegrationTest {
                 SELECT j.job_id FROM platform.processing_job j JOIN platform.outbox_event e USING(event_id)
                 WHERE e.aggregate_id=? AND j.handler='PAYMENT_CONFIRMATION_EMAIL'
                 """, UUID.class, order.orderId());
-        new PaymentConfirmationMailWorker(jdbc, transactions, mail,
+        new PaymentConfirmationMailWorker(persistence.bean(ProcessingJobJpaRepository.class), persistence.bean(OutboxEventJpaRepository.class),
+                persistence.bean(PaymentOrderJpaRepository.class), IdentityTestFixtures.jpaTransactions(persistence), mail,
                 java.time.Clock.fixed(NOW, java.time.ZoneOffset.UTC), "https://example.test").deliver();
         assertEquals("RETRY", jdbc.queryForObject("SELECT status FROM platform.processing_job WHERE job_id=?", String.class, job));
         processing.apply(order.orderId(), NOW.plusSeconds(2));
-        var retry = new PaymentConfirmationMailWorker(jdbc, transactions, mail,
+        var retry = new PaymentConfirmationMailWorker(persistence.bean(ProcessingJobJpaRepository.class), persistence.bean(OutboxEventJpaRepository.class),
+                persistence.bean(PaymentOrderJpaRepository.class), IdentityTestFixtures.jpaTransactions(persistence), mail,
                 java.time.Clock.fixed(NOW.plusSeconds(31), java.time.ZoneOffset.UTC), "https://example.test");
         retry.deliver();
         assertEquals("SUCCEEDED", jdbc.queryForObject("SELECT status FROM platform.processing_job WHERE job_id=?", String.class, job));

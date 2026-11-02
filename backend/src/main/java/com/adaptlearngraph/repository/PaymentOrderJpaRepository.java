@@ -175,4 +175,17 @@ public interface PaymentOrderJpaRepository extends Repository<PaymentOrderEntity
             order by o.createdAt
             """)
     List<UUID> dueForCheck(@Param("checkedBefore") Instant checkedBefore, Pageable limit);
-}
+
+    record Confirmation(UUID orderId, Long providerOrderCode, String name, Long priceVnd, Integer durationMonths,
+                        Integer employeeSeats, Instant paidAt, String kind, String email, String slug) {
+        @Override public String toString() { return "PaymentConfirmation[redacted]"; }
+    }
+
+    @Query("""
+            select new com.adaptlearngraph.repository.PaymentOrderJpaRepository$Confirmation(o.orderId, o.providerOrderCode, o.name,
+                o.priceVnd, o.durationMonths, o.employeeSeats, o.paidAt, i.kind, a.identifier,
+                (select w.slug from OrganizationWorkspaceEntity w where w.organizationId = a.organizationId))
+            from PaymentOrderEntity o join SubscriptionIntentEntity i on i.intentId = o.intentId
+            join AccountEntity a on a.accountId = o.createdBy where o.orderId = :orderId
+            """)
+    Optional<Confirmation> confirmation(@Param("orderId") UUID orderId);}

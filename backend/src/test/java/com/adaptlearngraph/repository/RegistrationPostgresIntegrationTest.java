@@ -541,7 +541,8 @@ class RegistrationPostgresIntegrationTest {
                 UPDATE platform.processing_job SET next_retry_at = ?
                 WHERE handler = 'REGISTRATION_EMAIL' AND status IN ('PENDING', 'RETRY')
                 """, Timestamp.from(clock.instant().plusSeconds(86400)));
-        return new RegistrationMailWorker(jdbc, store, crypto, mail, clock);
+        return new RegistrationMailWorker(persistence.bean(ProcessingJobJpaRepository.class), persistence.bean(OutboxEventJpaRepository.class),
+                persistence.bean(AccountJpaRepository.class), store, crypto, mail, clock);
     }
 
     private java.util.Map<String, Object> mailJob(RegistrationActor actor) {

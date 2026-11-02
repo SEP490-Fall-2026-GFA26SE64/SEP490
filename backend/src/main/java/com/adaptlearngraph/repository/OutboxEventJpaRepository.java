@@ -40,4 +40,8 @@ public interface OutboxEventJpaRepository extends Repository<OutboxEventEntity, 
             where e.eventId = (select j.eventId from ProcessingJobEntity j where j.jobId = :job)
             """)
     int deliveredByJob(@Param("job") UUID jobId, @Param("now") Instant now);
-}
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query("update OutboxEventEntity e set e.deliveredAt = :now where e.eventId = :event")
+    int delivered(@Param("event") UUID eventId, @Param("now") Instant now);}
