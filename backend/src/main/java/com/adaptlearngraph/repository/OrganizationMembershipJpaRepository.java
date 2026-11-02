@@ -84,4 +84,19 @@ public interface OrganizationMembershipJpaRepository
             """)
     int changeActive(@Param("organization") UUID organizationId, @Param("member") UUID membershipId,
             @Param("active") boolean active, @Param("now") Instant now);
+
+    record Staff(UUID accountId, String name) {}
+
+    /** Active staff of one organization with the given role, ordered by display name as before. */
+    @Query("""
+            select new com.adaptlearngraph.repository.OrganizationMembershipJpaRepository$Staff(a.accountId,
+                coalesce(p.fullName, a.identifier))
+            from AccountEntity a join OrganizationMembershipEntity m on m.accountId = a.accountId
+            join OrganizationMembershipRoleEntity r on r.membershipId = m.membershipId
+            left join WorkspaceAccountProfileEntity p on p.accountId = a.accountId
+            where a.organizationId = :organization and m.organizationId = :organization and a.active = true and m.active = true
+              and r.roleCode = :role
+            order by coalesce(p.fullName, a.identifier), a.accountId
+            """)
+    List<Staff> staff(@Param("organization") UUID organizationId, @Param("role") String roleCode);
 }

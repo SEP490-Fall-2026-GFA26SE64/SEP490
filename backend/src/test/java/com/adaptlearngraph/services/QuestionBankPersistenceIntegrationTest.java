@@ -3,7 +3,7 @@ package com.adaptlearngraph.services;
 import com.adaptlearngraph.services.QuestionBankUseCase.*;
 import com.adaptlearngraph.repository.QuestionBankPorts.*;
 import com.adaptlearngraph.entities.QuestionBank.*;
-import com.adaptlearngraph.repository.JdbcQuestionBankStore;
+import com.adaptlearngraph.repository.JpaQuestionBankStore;
 import com.adaptlearngraph.repository.Neo4jQuestionBankSkillReader;
 import com.adaptlearngraph.repository.JdbcBaselineAssessmentDraftStore;
 import com.adaptlearngraph.helper.TransactionalMailSender;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 
 class QuestionBankPersistenceIntegrationTest {
     final UUID org=UUID.randomUUID(),foreign=UUID.randomUUID(),expert=UUID.randomUUID(),peer=UUID.randomUUID(),ld=UUID.randomUUID(),foreignExpert=UUID.randomUUID();
-    JdbcTemplate jdbc;JdbcQuestionBankStore store;TransactionTemplate transactions;
+    JdbcTemplate jdbc;JpaQuestionBankStore store;TransactionTemplate transactions;com.adaptlearngraph.support.JpaTestContext persistence;
     Content body(String prompt){return new Content(prompt,List.of("One","Two","Three","Four"),0,"skill","Skill","EASY","Explanation");}
     Catalog catalog=new Catalog(){public List<Choice>skills(Actor a){return List.of(new Choice("skill","Skill"));}public String requireSkill(Actor a,String id){if(!"skill".equals(id))throw new Failure(400,"Invalid skill");return "Skill";}public List<Choice>experts(Actor a){return List.of(new Choice(expert.toString(),"Expert"),new Choice(peer.toString(),"Peer"));}public List<Choice>managers(Actor a){return List.of(new Choice(ld.toString(),"L&D"));}public void requireExpert(Actor a,UUID id){if(!List.of(expert,peer).contains(id))throw new Failure(409,"Invalid Expert");}};
     QuestionBankService service(UUID id,UUID organization,String role){return new QuestionBankService(()->new Actor(id,organization,role),catalog,store,Clock.systemUTC());}
@@ -63,7 +63,7 @@ class QuestionBankPersistenceIntegrationTest {
             var legacyBytes=jdbc.queryForObject("SELECT row_to_json(i)::text FROM platform.item_version i WHERE item_version_id=?",String.class,legacy);
             var flyway=Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load();assertEquals(12,flyway.migrate().migrationsExecuted);assertEquals(0,flyway.migrate().migrationsExecuted);
             assertEquals(before,jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=35 ORDER BY installed_rank"));
-            var tx=new TransactionTemplate(new DataSourceTransactionManager(source));store=new JdbcQuestionBankStore(jdbc,tx,new ObjectMapper().findAndRegisterModules());
+            persistence=com.adaptlearngraph.support.JpaTestContext.start(source);var tx=new TransactionTemplate(persistence.transactionManager());store=new JpaQuestionBankStore(persistence.bean(com.adaptlearngraph.repository.QuestionBankJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),new com.adaptlearngraph.repository.PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class)),tx,new ObjectMapper().findAndRegisterModules());
             var author=service(expert,org,"DOMAIN_EXPERT");var manager=service(ld,org,"LD_MANAGER");
             var adopted=author.read();assertEquals(bank,adopted.id());var old=adopted.questions().getFirst();assertEquals("Q-"+legacy.toString().toUpperCase(Locale.ROOT),old.code);assertNull(old.owner);assertNull(old.createdBy);assertNull(old.createdAt);
             assertCatalogDeadlineReleasesTransaction(author);
@@ -102,7 +102,7 @@ class QuestionBankPersistenceIntegrationTest {
             var invalid=author.preview(new Preview(List.of(new Row(null,body("Valid")),new Row(null,body("")))));assertFalse(invalid.errors.isEmpty());int count=author.read().questions().size();assertThrows(Failure.class,()->author.confirm(new Confirmation(invalid.id,true,true)));assertEquals(count,author.read().questions().size());
             assertTrue(jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail",Integer.class)>0);
             var mail=mock(TransactionalMailSender.class);doThrow(new org.springframework.mail.MailPreparationException("Test SMTP down")).when(mail).send(anyString(),any(),anyString(),any());
-            new QuestionBankMailWorker(jdbc,tx,mail,"http://localhost").deliver();assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail WHERE status='RETRY' AND attempts=1 AND lease_owner IS NULL",Integer.class));assertNotNull(author.read());
+            new QuestionBankMailWorker(persistence.bean(com.adaptlearngraph.repository.QuestionBankJpaRepository.class),tx,mail,"http://localhost").deliver();assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail WHERE status='RETRY' AND attempts=1 AND lease_owner IS NULL",Integer.class));assertNotNull(author.read());
             var oldDraft=author.read().questions().stream().filter(q->q.id.equals(legacy)).findFirst().orElseThrow();
             author.save(new Save(oldDraft.id,oldDraft.revision,oldDraft.code,body("Repaired legacy draft"),false));action(author,legacy,"SUBMIT");action(manager,legacy,"VIEW");action(manager,legacy,"APPROVE");
             assertEquals("PUBLISHED",jdbc.queryForObject("SELECT publication_state FROM platform.item_version WHERE item_version_id=?",String.class,legacy));
