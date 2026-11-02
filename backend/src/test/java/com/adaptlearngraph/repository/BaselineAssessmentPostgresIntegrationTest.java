@@ -109,7 +109,8 @@ class BaselineAssessmentPostgresIntegrationTest {
                 persistence.bean(BaselineAnswerRevealAuditJpaRepository.class));
         var actor = (BaselineBlueprintStore.ActorPort) () -> Optional.of(
                 new Actor(ACTOR_ID, ORGANIZATION_ID.toString(), true, Set.of("LD_MANAGER")));
-        var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(), namedJdbc);
+        var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(),
+                persistence.bean(ItemVersionJpaRepository.class));
         blueprintService = new BaselineBlueprintService(actor, blueprints, validation);
         capacityService = new BaselineBlueprintCapacityService(
                 actor, occupationCatalog(), validation);

@@ -100,8 +100,8 @@ public class LocalBaselineBlueprintConfiguration {
     BaselineBlueprintValidationPort baselineBlueprintValidation(
             TargetRoleCatalogPort catalog,
             ObjectProvider<BaselineOccupationCatalogPort> occupationCatalog,
-            NamedParameterJdbcTemplate jdbc) {
-        return new BaselineBlueprintValidationAdapter(catalog, occupationCatalog.getIfAvailable(), jdbc);
+            com.adaptlearngraph.repository.ItemVersionJpaRepository items) {
+        return new BaselineBlueprintValidationAdapter(catalog, occupationCatalog.getIfAvailable(), items);
     }
 
     @Bean

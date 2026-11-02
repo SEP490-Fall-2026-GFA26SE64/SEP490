@@ -84,4 +84,22 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
             """)
     List<Preview> preview(@Param("org") UUID organizationId, @Param("bank") UUID bankId, @Param("ids") java.util.Collection<UUID> ids,
             @Param("demoDraft") boolean demoDraft);
+
+    /**
+     * Published coverage per micro-skill and difficulty, counting only each item's latest published version among the
+     * requested skills. Native: PostgreSQL DISTINCT ON has no exact JPQL equivalent. Rows: [micro_skill_id, difficulty, count].
+     */
+    @Query(value = """
+            WITH latest_published AS (
+                SELECT DISTINCT ON (item_id) item_id, micro_skill_id, difficulty
+                FROM platform.item_version
+                WHERE publication_state = 'PUBLISHED'
+                  AND micro_skill_id IN (:skillIds)
+                ORDER BY item_id, version DESC, item_version_id DESC
+            )
+            SELECT micro_skill_id, difficulty, count(*) AS available_count
+            FROM latest_published
+            GROUP BY micro_skill_id, difficulty
+            """, nativeQuery = true)
+    List<Object[]> publishedCoverage(@Param("skillIds") java.util.Collection<String> microSkillIds);
 }

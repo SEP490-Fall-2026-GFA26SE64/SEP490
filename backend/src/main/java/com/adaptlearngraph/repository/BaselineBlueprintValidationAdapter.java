@@ -12,25 +12,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public final class BaselineBlueprintValidationAdapter implements BaselineBlueprintValidationPort {
     private final TargetRoleCatalogPort catalog;
     private final BaselineOccupationCatalogPort occupationCatalog;
-    private final NamedParameterJdbcTemplate jdbc;
+    private final ItemVersionJpaRepository items;
 
-    public BaselineBlueprintValidationAdapter(TargetRoleCatalogPort catalog, NamedParameterJdbcTemplate jdbc) {
-        this(catalog, null, jdbc);
+    public BaselineBlueprintValidationAdapter(TargetRoleCatalogPort catalog, ItemVersionJpaRepository items) {
+        this(catalog, null, items);
     }
 
     public BaselineBlueprintValidationAdapter(
             TargetRoleCatalogPort catalog,
             BaselineOccupationCatalogPort occupationCatalog,
-            NamedParameterJdbcTemplate jdbc) {
+            ItemVersionJpaRepository items) {
         this.catalog = catalog;
         this.occupationCatalog = occupationCatalog;
-        this.jdbc = jdbc;
+        this.items = items;
     }
 
     @Override
@@ -72,22 +70,10 @@ public final class BaselineBlueprintValidationAdapter implements BaselineBluepri
         }
         try {
             Map<CoverageKey, Integer> coverage = new HashMap<>();
-            jdbc.query("""
-                    WITH latest_published AS (
-                        SELECT DISTINCT ON (item_id) item_id, micro_skill_id, difficulty
-                        FROM platform.item_version
-                        WHERE publication_state = 'PUBLISHED'
-                          AND micro_skill_id IN (:skillIds)
-                        ORDER BY item_id, version DESC, item_version_id DESC
-                    )
-                    SELECT micro_skill_id, difficulty, count(*) AS available_count
-                    FROM latest_published
-                    GROUP BY micro_skill_id, difficulty
-                    """, new MapSqlParameterSource("skillIds", microSkillIds), result -> {
-                CoverageKey key = new CoverageKey(
-                        result.getString("micro_skill_id"), Difficulty.valueOf(result.getString("difficulty")));
-                coverage.put(key, Math.toIntExact(result.getLong("available_count")));
-            });
+            for (Object[] row : items.publishedCoverage(microSkillIds)) {
+                CoverageKey key = new CoverageKey((String) row[0], Difficulty.valueOf((String) row[1]));
+                coverage.put(key, Math.toIntExact(((Number) row[2]).longValue()));
+            }
             return Map.copyOf(coverage);
         } catch (DataAccessException failure) {
             throw new DependencyUnavailable("Question coverage is unavailable", failure);
