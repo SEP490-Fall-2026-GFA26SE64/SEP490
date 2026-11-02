@@ -6,6 +6,7 @@ export interface WorkspaceLayoutIdentity {
   email: string
   organizationId: string | null
   organizationName: string | null
+  workspaceSlug?: string | null
   roles?: string[]
 }
 

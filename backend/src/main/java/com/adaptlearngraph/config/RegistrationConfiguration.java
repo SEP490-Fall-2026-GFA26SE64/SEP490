@@ -61,8 +61,9 @@ public class RegistrationConfiguration {
     @Bean
     RegistrationUseCase registrationUseCase(RegistrationStore store, RegistrationSecrets secrets,
                                            RegistrationMailDelivery delivery,
-                                           com.adaptlearngraph.entities.IntegrationPolicy policy) {
-        return new RegistrationService(store, secrets, delivery, Clock.systemUTC(), policy);
+                                           com.adaptlearngraph.entities.IntegrationPolicy policy,
+                                           org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.PlatformCatalogService> catalog) {
+        return new RegistrationService(store, secrets, delivery, Clock.systemUTC(), policy, catalog.getIfAvailable());
     }
 
     @Bean
@@ -88,7 +89,8 @@ public class RegistrationConfiguration {
                                 "/api/v1/registration/sign-out", "/api/v1/registration/email/resend",
                                 "/api/v1/registration/email/verify", "/api/v1/registration/totp/setup",
                                 "/api/v1/registration/totp/confirm", "/api/v1/registration/totp/verify",
-                                "/api/v1/registration/recovery", "/api/v1/registration/workspace-session").permitAll()
+                                "/api/v1/registration/recovery", "/api/v1/registration/workspace-session",
+                                "/api/v1/registration/catalog-closure").permitAll()
                         .anyRequest().denyAll())
                 .exceptionHandling(exceptions -> exceptions.accessDeniedHandler((request, response, exception) -> {
                     response.setStatus(403);

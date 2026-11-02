@@ -158,6 +158,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         params.put("rejectionReason", targetRole.getRejectionReason());
 
         try (var session = driver.session()) {
+            Neo4jTenantGuard.requireOwnedOrAbsent(session, "TargetRole", matchedId, targetRole.getOrganizationId());
             session.run(cypher, params).consume();
 
             // When publishing, override and supersede any previous version of this role
@@ -173,7 +174,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             }
 
             // Synchronize REQUIRES_SKILL graph edges
-            syncSkillRelationships(session, roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
+            syncSkillRelationships(session, targetRole.getOrganizationId(), roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
 
             return targetRole;
         }
@@ -198,7 +199,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
     }
 
-    private void syncSkillRelationships(org.neo4j.driver.Session session, String roleId, String skillTargetsJson, Instant updatedAt) {
+    private void syncSkillRelationships(org.neo4j.driver.Session session, String organizationId, String roleId, String skillTargetsJson, Instant updatedAt) {
         List<Map<String, Object>> skillItems = parseSkillTargetsJson(skillTargetsJson);
         List<String> activeCodes = new ArrayList<>();
         List<Map<String, Object>> processedSkills = new ArrayList<>();
@@ -225,17 +226,19 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         // 1. Delete existing REQUIRES_SKILL edges for this role to prevent stale or duplicate edges
         String deleteOldRelCypher = """
                 MATCH (r:TargetRole {id: $roleId})-[oldRel:REQUIRES_SKILL]->()
+                WHERE r.organizationId = $organizationId
                 DELETE oldRel
                 """;
-        session.run(deleteOldRelCypher, Map.of("roleId", roleId)).consume();
+        session.run(deleteOldRelCypher, Map.of("roleId", roleId, "organizationId", organizationId)).consume();
 
         // 2. Merge current REQUIRES_SKILL edges distinguishing per-level assignments
         if (!processedSkills.isEmpty()) {
             String mergeRelCypher = """
                     UNWIND $skills AS item
-                    MATCH (r:TargetRole {id: $roleId})
+                    MATCH (r:TargetRole {id: $roleId}) WHERE r.organizationId = $organizationId
                     MATCH (s:MicroSkill)
-                    WHERE s.id = item.skillId OR s.code = item.skillCode OR s.id = item.skillCode
+                    WHERE s.organizationId = $organizationId
+                      AND (s.id = item.skillId OR s.code = item.skillCode OR s.id = item.skillCode)
                     MERGE (r)-[req:REQUIRES_SKILL {level: item.level}]->(s)
                     ON CREATE SET req.createdAt = datetime($updatedAt)
                     SET req.targetMastery = toFloat(item.threshold) / 100.0,
@@ -243,6 +246,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                         req.updatedAt = datetime($updatedAt)
                     """;
             session.run(mergeRelCypher, Map.of(
+                    "organizationId", organizationId,
                     "roleId", roleId,
                     "skills", processedSkills,
                     "updatedAt", updatedAt.toString()

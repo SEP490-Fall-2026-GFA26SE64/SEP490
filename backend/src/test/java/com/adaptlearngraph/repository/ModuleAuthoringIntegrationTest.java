@@ -47,14 +47,14 @@ class ModuleAuthoringIntegrationTest {
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()))) {
                 try (var session = driver.session()) {
                     session.run("""
-                        CREATE (s:MicroSkill {id:'skill',name:'Existing skill'})
-                        CREATE (m:LearningModule {id:'legacy',title:'Existing lesson',version:'0.11.0',status:'ACTIVE',
+                        CREATE (s:MicroSkill {id:'skill',name:'Existing skill',organizationId:'org'})
+                        CREATE (m:LearningModule {id:'legacy',organizationId:'org',title:'Existing lesson',version:'0.11.0',status:'ACTIVE',
                           reviewStatus:'APPROVED',reviewedBy:'reviewer',reviewedAt:'2026-10-28T00:00:00Z',
                           moduleType:'RESOURCE_GUIDED_PRACTICE',contentUri:'https://example.org/existing.md',
                           contentType:'text/markdown',contentVersion:'1.3',duration:37,price:123456.5})
                         CREATE (m)-[:TEACHES {id:'edge',version:'0.11.0',status:'ACTIVE',reviewStatus:'APPROVED',
                           reviewedBy:'reviewer',reviewedAt:'2026-10-28T00:00:00Z',teachingFocus:'PRIMARY',difficultyLevel:'MEDIUM'}]->(s)
-                        CREATE (:LearningModule {id:'incomplete'})
+                        CREATE (:LearningModule {id:'incomplete',organizationId:'org'})
                         CREATE (:LearningModule {id:'foreign',organizationId:'foreign-org',title:'Private'})
                         """).consume();
                 }
@@ -113,7 +113,7 @@ class ModuleAuthoringIntegrationTest {
                 assertEquals(published, service.detail("legacy"));
                 try (var session = driver.session()) { session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.organizationId='foreign-org'").consume(); }
                 assertThrows(ModuleAuthoringService.Failure.class, () -> adapter.project(submitted, published.current(), false));
-                try (var session = driver.session()) { session.run("MATCH (m:LearningModule {id:'legacy'}) REMOVE m.organizationId").consume(); }
+                try (var session = driver.session()) { session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.organizationId='org'").consume(); }
 
                 assertThrows(ModuleAuthoringService.Failure.class, () -> adapter.importedMarkdown("content/modules/../../secret.md"));
                 assertThrows(ModuleAuthoringService.Failure.class, () -> adapter.importedMarkdown("https://example.org/source.md"));
@@ -144,7 +144,7 @@ class ModuleAuthoringIntegrationTest {
             new ResourceDatabasePopulator(new ClassPathResource("db/module-migration/V33__module_authoring.sql"), new ClassPathResource("db/module-migration/V34__module_catalog_intake.sql")).execute(ds);
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()))) {
                 try (var session = driver.session()) {
-                    session.run("CREATE (:Occupation {id:'occ',name:'Occupation',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE'})").consume();
+                    session.run("CREATE (:Occupation {id:'occ',name:'Occupation',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE',organizationId:'org'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE',organizationId:'org'})").consume();
                 }
                 var adapter = new JdbcModuleAuthoringAdapter(jdbc, new TransactionTemplate(new DataSourceTransactionManager(ds)), new ObjectMapper(), driver, "org");
                 var service = new ModuleAuthoringService(adapter);
@@ -172,7 +172,7 @@ class ModuleAuthoringIntegrationTest {
                 try (var session = driver.session()) {
                     var row = session.run("MATCH (m:LearningModule {id:$id})-[t:TEACHES]->(s) RETURN properties(m) AS m,collect(properties(t)) AS edges", Map.of("id", doc.id())).single();
                     var m = row.get("m");
-                    assertEquals(13, m.size());
+                    assertEquals(14, m.size()); assertEquals("org", m.get("organizationId").asString());
                     assertEquals(doc.id(), m.get("id").asString()); assertEquals("0.11.0", m.get("version").asString());
                     assertEquals("ACTIVE", m.get("status").asString()); assertEquals("APPROVED", m.get("reviewStatus").asString());
                     assertEquals("reviewer", m.get("reviewedBy").asString()); assertFalse(m.get("reviewedAt").asString().isBlank());

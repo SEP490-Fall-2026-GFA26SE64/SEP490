@@ -1,0 +1,44 @@
+{
+  "Occupations": [
+    {"id": "OCC-1", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "11-0000.00", "name": "Occupation One"},
+    {"id": "OCC-2", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "22-0000.00", "name": "Occupation Two"}
+  ],
+  "TargetRoles": [
+    {"id": "ROLE-A", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "ROLE_A", "name": "Role A"},
+    {"id": "ROLE-B", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "ROLE_B", "name": "Role B"}
+  ],
+  "Levels": [
+    {"id": "LV-A1", "version": "fixture-1", "status": "ACTIVE", "targetRoleId": "ROLE-A", "code": "J", "name": "Junior", "rank": 1},
+    {"id": "LV-B1", "version": "fixture-1", "status": "ACTIVE", "targetRoleId": "ROLE-B", "code": "J", "name": "Junior", "rank": 1}
+  ],
+  "Competencies": [
+    {"id": "CMP-A1", "version": "fixture-1", "status": "ACTIVE", "levelId": "LV-A1", "name": "Competency A1"}
+  ],
+  "MicroSkills": [
+    {"id": "MS-A", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "name": "Skill A"},
+    {"id": "MS-B", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "name": "Skill B"},
+    {"id": "MS-P", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "name": "Prerequisite P"},
+    {"id": "MS-X", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "name": "Skill X"}
+  ],
+  "LearningModules": [
+    {"id": "MOD-A", "version": "fixture-1", "status": "ACTIVE", "title": "Module A", "duration": 30},
+    {"id": "MOD-P", "version": "fixture-1", "status": "ACTIVE", "title": "Module P", "duration": 20},
+    {"id": "MOD-X", "version": "fixture-1", "status": "ACTIVE", "title": "Module X", "duration": 40}
+  ],
+  "relationships": [
+    {"id": "REL-1", "type": "HAS_ROLE", "fromId": "OCC-1", "toId": "ROLE-A", "status": "ACTIVE"},
+    {"id": "REL-2", "type": "HAS_ROLE", "fromId": "OCC-2", "toId": "ROLE-B", "status": "ACTIVE"},
+    {"id": "REL-3", "type": "HAS_LEVEL", "fromId": "ROLE-A", "toId": "LV-A1", "status": "ACTIVE"},
+    {"id": "REL-4", "type": "HAS_LEVEL", "fromId": "ROLE-B", "toId": "LV-B1", "status": "ACTIVE"},
+    {"id": "REL-5", "type": "HAS_COMPETENCY", "fromId": "LV-A1", "toId": "CMP-A1", "status": "ACTIVE"},
+    {"id": "REL-6", "type": "HAS_SKILL", "fromId": "CMP-A1", "toId": "MS-A", "status": "ACTIVE"},
+    {"id": "REL-7", "type": "REQUIRES_SKILL", "fromId": "LV-A1", "toId": "MS-A", "status": "ACTIVE", "requiredScore": 0.7, "isMandatory": true},
+    {"id": "REL-8", "type": "REQUIRES_SKILL", "fromId": "LV-A1", "toId": "MS-B", "status": "ACTIVE", "requiredScore": 0.6, "isMandatory": true},
+    {"id": "REL-9", "type": "REQUIRES_SKILL", "fromId": "LV-B1", "toId": "MS-X", "status": "ACTIVE", "requiredScore": 0.5, "isMandatory": true},
+    {"id": "REL-10", "type": "HAS_SKILL_PREREQUISITE", "fromId": "MS-A", "toId": "MS-P", "status": "ACTIVE", "requiredScore": 0.5},
+    {"id": "REL-11", "type": "TEACHES", "fromId": "MOD-A", "toId": "MS-A", "status": "ACTIVE", "teachingFocus": "PRIMARY"},
+    {"id": "REL-12", "type": "TEACHES", "fromId": "MOD-P", "toId": "MS-P", "status": "ACTIVE", "teachingFocus": "PRIMARY"},
+    {"id": "REL-13", "type": "TEACHES", "fromId": "MOD-X", "toId": "MS-X", "status": "ACTIVE", "teachingFocus": "PRIMARY"},
+    {"id": "REL-14", "type": "TEACHES", "fromId": "MOD-X", "toId": "MS-B", "status": "ACTIVE", "teachingFocus": "SUPPORTING"}
+  ]
+}

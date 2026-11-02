@@ -28,15 +28,6 @@ public class OccupationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/v1/occupations")
-    public ResponseEntity<List<OccupationResponse>> listOccupations() {
-        List<OccupationResponse> response = getOccupationsUseCase.listOccupations()
-                .stream()
-                .map(OccupationResponse::fromDomain)
-                .toList();
-        return ResponseEntity.ok(response);
-    }
-
     public record SaveOccupationRequest(
             String id,
             String code,

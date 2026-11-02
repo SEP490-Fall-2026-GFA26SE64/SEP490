@@ -223,11 +223,12 @@ export function resolveWorkspaceOrgId(contextOrgId?: string | null): string {
   if (contextOrgId && contextOrgId !== 'comp-technova' && contextOrgId !== 'default-org') {
     return contextOrgId
   }
-  const activeId = getActiveCompanyId()
+  const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY)
   if (activeId && activeId !== 'comp-technova' && activeId !== 'default-org') {
     return activeId
   }
-  return SEED_COMPANY_TECHNOVA.id
+  // No signed-in organization: tenant APIs reject an empty id instead of falling back to a demo tenant.
+  return ''
 }
 
 export function loadCompanies(): CompanyRecord[] {

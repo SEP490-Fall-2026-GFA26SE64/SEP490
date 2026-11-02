@@ -129,7 +129,7 @@ public class CompetencyConfiguration {
 
     private static class InMemoryFallbackMacroCompetencyRepository implements MacroCompetencyRepository {
         @Override
-        public List<com.adaptlearngraph.entities.MacroCompetency> findAll() {
+        public List<com.adaptlearngraph.entities.MacroCompetency> findAll(String organizationId) {
             Instant now = Instant.now();
             return List.of(
                     new com.adaptlearngraph.entities.MacroCompetency("30000000-0000-0000-0000-000000000001", "KNOWLEDGE", "Knowledge", "Core technical and conceptual domain knowledge", "ACTIVE", now, now),

@@ -25,8 +25,8 @@ class MigrationConfigurationTest {
                     assertTrue(versions.add(version), directory + " duplicate V" + version);
                 }
             }
-            assertEquals(46, versions.size(), directory);
-            for (int version = 1; version <= 46; version++) assertTrue(versions.contains(version), directory);
+            assertEquals(47, versions.size(), directory);
+            for (int version = 1; version <= 47; version++) assertTrue(versions.contains(version), directory);
         }
     }
 

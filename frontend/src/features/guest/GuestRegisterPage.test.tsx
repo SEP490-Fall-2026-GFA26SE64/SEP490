@@ -6,6 +6,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageProvider } from '../../shared/i18n/LanguageContext'
 import { GuestRegisterPage } from './GuestRegisterPage'
 import * as api from './registrationApi'
+import * as catalogApi from './platformCatalogApi'
+
+vi.mock('vis-network', () => ({
+  Network: vi.fn(function Network() { return { on: vi.fn(), once: vi.fn(), destroy: vi.fn() } }),
+}))
+vi.mock('./platformCatalogApi', async importOriginal => ({
+  ...await importOriginal<typeof import('./platformCatalogApi')>(),
+  getPlatformCatalog: vi.fn(),
+  previewCatalogClosure: vi.fn(),
+}))
 
 vi.mock('./registrationApi', async importOriginal => ({
   ...await importOriginal<typeof import('./registrationApi')>(),
@@ -29,6 +39,10 @@ beforeEach(() => {
   vi.mocked(api.getRegistration).mockResolvedValue(null)
   vi.mocked(api.registerOrganization).mockResolvedValue(pending)
   vi.mocked(api.signOutRegistration).mockResolvedValue()
+  vi.mocked(catalogApi.getPlatformCatalog).mockResolvedValue({ version: 'v1', edges: [], nodes: [
+    { id: 'role-1', label: 'TargetRole', name: 'Backend Developer', code: 'BE' }] })
+  vi.mocked(catalogApi.previewCatalogClosure).mockImplementation(async ids => ({
+    templateVersion: 'v1', selected: ids, nodeCount: 3, relationshipCount: 2, nodesByLabel: { TargetRole: 1 } }))
 })
 
 afterEach(() => {
@@ -90,10 +104,32 @@ describe('registration flow', () => {
     await screen.findByRole('heading', { name: 'Verify your email' })
     expect(api.registerOrganization).toHaveBeenCalledWith({
       organizationName: 'Acme Learning', subdomain: null, industry: null, headcount: null,
-      adminName: 'Test Owner', adminEmail: 'owner@example.test', password: 'long test password',
+      adminName: 'Test Owner', adminEmail: 'owner@example.test', password: 'long test password', catalogSelection: [],
     })
     expect(screen.queryByText('Auto-fill Demo Code')).toBeNull()
     expect(localStorage.getItem('adaptlearn_guest_registration_draft')).toBeNull()
+  })
+
+  it('submits the catalog items picked during the organization step', async () => {
+    page()
+    const user = userEvent.setup()
+    await screen.findByLabelText(/Organization Legal Name/)
+    await user.type(screen.getByLabelText(/Organization Legal Name/), 'Acme Learning')
+    await user.click(await screen.findByRole('button', { name: 'Add Backend Developer' }))
+    expect((await screen.findByTestId('catalog-closure-summary')).textContent).toBe('3 items and 2 relationships will be copied')
+    await user.click(screen.getByRole('button', { name: 'Continue to account' }))
+    for (const [label, value] of [
+      [/Administrator Full Name/, 'Test Owner'],
+      [/Work Email Address/, 'owner@example.test'],
+      [/^Password/, 'long test password'],
+      [/Confirm Password/, 'long test password'],
+    ] as const) {
+      await user.click(screen.getByLabelText(label))
+      await user.paste(value)
+    }
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await screen.findByRole('heading', { name: 'Verify your email' })
+    expect(api.registerOrganization).toHaveBeenCalledWith(expect.objectContaining({ catalogSelection: ['role-1'] }))
   })
 
   it('preserves entered values and focuses the error summary for invalid password confirmation', async () => {

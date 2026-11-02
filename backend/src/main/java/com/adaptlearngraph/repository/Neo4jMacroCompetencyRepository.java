@@ -17,14 +17,15 @@ public class Neo4jMacroCompetencyRepository implements MacroCompetencyRepository
     }
 
     @Override
-    public List<MacroCompetency> findAll() {
+    public List<MacroCompetency> findAll(String organizationId) {
         String cypher = """
                 MATCH (m:MacroCompetency)
+                WHERE m.organizationId = $organizationId
                 RETURN m
                 ORDER BY m.code ASC
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher);
+            var result = session.run(cypher, java.util.Map.of("organizationId", organizationId));
             List<MacroCompetency> list = new ArrayList<>();
             while (result.hasNext()) {
                 Node node = result.next().get("m").asNode();

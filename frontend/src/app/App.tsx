@@ -46,6 +46,7 @@ import { LdModuleWorkspaceRoute } from '../features/manager/approvals/ContentApp
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
+import { WorkspaceSlugContext, workspaceBase } from '../shared/auth/workspacePaths'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
@@ -54,11 +55,14 @@ const queryClient = new QueryClient({
 const GuestLandingPage = lazy(() => import('../features/guest/GuestLandingPage').then(module => ({ default: module.GuestLandingPage })))
 
 export default function App() {
+  // Workspace pages live under /workspace/{slug}; the router basename keeps in-app paths workspace-relative.
+  const workspace = workspaceBase(window.location.pathname)
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <LanguageProvider>
-          <BrowserRouter>
+          <BrowserRouter basename={workspace?.basename}>
+          <WorkspaceSlugContext.Provider value={workspace?.slug ?? null}>
           <WorkspaceBoundary><Routes>
             {/* Auth routes */}
             <Route path="/" element={<Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><GuestLandingPage /></Suspense>} />
@@ -191,6 +195,7 @@ export default function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/employee/overview" replace />} />
           </Routes></WorkspaceBoundary>
+          </WorkspaceSlugContext.Provider>
           <Toaster />
         </BrowserRouter>
         </LanguageProvider>

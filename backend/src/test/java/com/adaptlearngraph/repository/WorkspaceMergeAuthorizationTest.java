@@ -116,4 +116,16 @@ class WorkspaceMergeAuthorizationTest {
         assertEquals(403, response.getStatus());
         verifyNoInteractions(chain);
     }
+
+    @Test void legacyOrganizationAliasesNoLongerResolveToADevelopmentOrganization() throws Exception {
+        actor(Role.LD_MANAGER);
+        for (var alias : new String[]{"comp-technova", "default-org", "technova"}) {
+            var chain = mock(FilterChain.class);
+            var response = new MockHttpServletResponse();
+            filter.doFilter(new MockHttpServletRequest("GET", "/api/v1/organizations/" + alias + "/modules"), response, chain);
+            assertEquals(400, response.getStatus(), alias);
+            verifyNoInteractions(chain);
+        }
+        verifyNoInteractions(workspaces);
+    }
 }

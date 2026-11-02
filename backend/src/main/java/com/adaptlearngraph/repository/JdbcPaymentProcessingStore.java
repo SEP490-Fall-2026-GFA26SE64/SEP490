@@ -232,6 +232,8 @@ public final class JdbcPaymentProcessingStore implements PaymentProcessingStore 
             jdbc.update("""
                     UPDATE platform.organization_workspace SET setup_state='READY',ready_at=coalesce(ready_at,?),failure_code=NULL
                     WHERE organization_id=? AND setup_state <> 'READY'
+                      AND NOT EXISTS(SELECT 1 FROM platform.workspace_catalog_import c
+                                     WHERE c.organization_id=organization_workspace.organization_id AND c.state<>'SUCCEEDED')
                     """, time(now), organization);
             audit(order.ownerAccountId(), "DEV_BYPASSED".equals(order.paymentStatus())
                     ? "SUBSCRIPTION_DEVELOPMENT_APPLIED" : "SUBSCRIPTION_PAYMENT_APPLIED", orderId, "SUCCEEDED", now);
@@ -270,6 +272,10 @@ public final class JdbcPaymentProcessingStore implements PaymentProcessingStore 
                 INSERT INTO platform.organization_workspace(workspace_id,organization_id,registration_id,slug,setup_state,created_at)
                 VALUES (?,?,?,?,'PROVISIONING',?)
                 """, UUID.randomUUID(), organization, order.registrationId(), registration.slug(), time(now));
+        jdbc.update("""
+                INSERT INTO platform.workspace_catalog_import(organization_id,registration_id,state,next_attempt_at,created_at,updated_at)
+                SELECT ?,registration_id,'PENDING',?,?,? FROM platform.registration_catalog_selection WHERE registration_id=?
+                """, organization, time(now), time(now), time(now), order.registrationId());
         jdbc.update("INSERT INTO platform.subscription(subscription_id,organization_id,created_at) VALUES (?,?,?)",
                 UUID.randomUUID(), organization, time(now));
         return organization;
@@ -354,6 +360,12 @@ public final class JdbcPaymentProcessingStore implements PaymentProcessingStore 
                 ORDER BY o.created_at LIMIT 20
                 """, (rs, i) -> rs.getObject(1, UUID.class), time(now.minusSeconds(60)));
         ids.forEach(id -> schedule(id, now));
+    }
+
+    @Override
+    public Optional<String> workspaceSlug(UUID organizationId) {
+        return jdbc.query("SELECT slug FROM platform.organization_workspace WHERE organization_id=?",
+                (rs, i) -> rs.getString(1), organizationId).stream().findFirst();
     }
 
     private void queue(UUID orderId, String handler, Instant now) {

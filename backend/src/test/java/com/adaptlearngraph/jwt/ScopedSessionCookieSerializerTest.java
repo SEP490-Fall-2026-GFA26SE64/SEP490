@@ -52,6 +52,15 @@ class ScopedSessionCookieSerializerTest {
         assertTrue(response.getHeader("Set-Cookie").startsWith("WORKSPACE_SESSION="));
     }
 
+    @Test
+    void guestCatalogClosurePreviewUsesTheRegistrationSessionThatIssuedItsCsrfToken() {
+        var serializer = new ScopedSessionCookieSerializer(true);
+        assertEquals(List.of("registration"), serializer.readCookieValues(request(
+                com.adaptlearngraph.endpoints.ApiEndpoints.REGISTRATION_CATALOG_CLOSURE)));
+        assertEquals(List.of("workspace"), serializer.readCookieValues(request(
+                com.adaptlearngraph.endpoints.ApiEndpoints.PLATFORM_CATALOG)));
+    }
+
     private static MockHttpServletRequest request(String path) {
         var request = new MockHttpServletRequest("GET", path);
         request.setCookies(new Cookie("REGISTRATION_SESSION", encoded("registration")),

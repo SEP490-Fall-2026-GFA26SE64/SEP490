@@ -123,7 +123,14 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                     assertEquals(1, relCount);
                 }
 
-                // Verify REQUIRES_SKILL graph relationship synchronization
+                // Verify REQUIRES_SKILL graph relationship synchronization stays inside the role's organization
+                // The legacy test graph enforces globally unique skill and macro codes, so Beta owns distinct codes.
+                skillRepo.save(MicroSkill.createNew(
+                        "org-beta",
+                        "SPARK_STREAMING",
+                        "Spark Streaming",
+                        "Distributed processing framework",
+                        "COMMUNICATION"));
                 TargetRole roleWithSkills = TargetRole.createNew(
                         "org-beta",
                         "ROLE_ML_ENG",
@@ -134,22 +141,24 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "ML and Deep learning role",
                         "1.0",
                         RoleStatus.ACTIVE,
-                        "[{\"skillCode\":\"APACHE_SPARK\",\"skillName\":\"Apache Spark\",\"threshold\":85}]");
+                        "[{\"skillCode\":\"SPARK_STREAMING\",\"skillName\":\"Spark Streaming\",\"threshold\":85},"
+                                + "{\"skillCode\":\"APACHE_SPARK\",\"skillName\":\"Alpha-owned Apache Spark\",\"threshold\":70}]");
                 roleRepo.save(roleWithSkills);
 
                 try (var session = driver.session()) {
                     var reqCount = session.run("""
-                            MATCH (r:TargetRole {id: $id})-[req:REQUIRES_SKILL]->(s:MicroSkill {code: 'APACHE_SPARK'})
-                            RETURN count(req) AS count, req.targetMastery AS mastery
+                            MATCH (r:TargetRole {id: $id})-[req:REQUIRES_SKILL]->(s:MicroSkill)
+                            RETURN count(req) AS count, req.targetMastery AS mastery, collect(s.organizationId) AS owners
                             """, Map.of("id", roleWithSkills.getId().toString())).single();
                     assertEquals(1, reqCount.get("count").asInt());
                     assertEquals(0.85, reqCount.get("mastery").asDouble(), 0.001);
+                    assertEquals(List.of("org-beta"), reqCount.get("owners").asList(org.neo4j.driver.Value::asString));
                 }
 
                 // Verify reading back TargetRole reconstructs skillTargets from Neo4j graph relationships
                 var loadedBetaRole = roleRepo.findById("org-beta", roleWithSkills.getId());
                 assertTrue(loadedBetaRole.isPresent());
-                assertTrue(loadedBetaRole.get().getSkillTargets().contains("APACHE_SPARK"));
+                assertTrue(loadedBetaRole.get().getSkillTargets().contains("SPARK_STREAMING"));
                 assertTrue(loadedBetaRole.get().getSkillTargets().contains("85"));
 
                 // Verify Successor Draft (v1.1) persists alongside v1.0 without Neo4j constraint collision

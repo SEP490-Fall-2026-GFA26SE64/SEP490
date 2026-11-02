@@ -112,7 +112,7 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
 
         Map<String, Object> params = new HashMap<>();
         params.put("id", record.id());
-        params.put("organizationId", organizationId != null ? organizationId : "");
+        params.put("organizationId", Neo4jTenantGuard.requireOrganization(organizationId));
         params.put("code", record.code());
         params.put("name", record.name());
         params.put("description", record.description());
@@ -121,16 +121,18 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
         params.put("version", record.version());
 
         try (var session = driver.session()) {
+            Neo4jTenantGuard.requireOwnedOrAbsent(session, "Competency", record.id(), organizationId);
             session.run(mergeCypher, params).consume();
 
             // Link to Level if provided
             if (levelId != null && !levelId.isBlank()) {
                 String linkLevelCypher = """
                         MATCH (l:Level {id: $levelId}), (c:Competency {id: $compId})
+                        WHERE l.organizationId = $organizationId AND c.organizationId = $organizationId
                         MERGE (l)-[r:HAS_COMPETENCY]->(c)
                         ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
                         """;
-                session.run(linkLevelCypher, Map.of("levelId", levelId, "compId", record.id())).consume();
+                session.run(linkLevelCypher, Map.of("levelId", levelId, "compId", record.id(), "organizationId", organizationId)).consume();
             }
 
             // Sync HAS_SKILL relationships
@@ -138,26 +140,28 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                 if (skillIds.isEmpty()) {
                     String deleteAllSkills = """
                             MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(:MicroSkill)
+                            WHERE c.organizationId = $organizationId
                             DELETE r
                             """;
-                    session.run(deleteAllSkills, Map.of("id", record.id())).consume();
+                    session.run(deleteAllSkills, Map.of("id", record.id(), "organizationId", organizationId)).consume();
                 } else {
                     String deleteOldSkills = """
                             MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(s:MicroSkill)
-                            WHERE NOT (s.id IN $skillIds OR coalesce(s.code, '') IN $skillIds)
+                            WHERE c.organizationId = $organizationId
+                              AND NOT (s.id IN $skillIds OR coalesce(s.code, '') IN $skillIds)
                             DELETE r
                             """;
-                    session.run(deleteOldSkills, Map.of("id", record.id(), "skillIds", skillIds)).consume();
+                    session.run(deleteOldSkills, Map.of("id", record.id(), "skillIds", skillIds, "organizationId", organizationId)).consume();
 
                     String linkSkills = """
                             UNWIND $skillIds AS sid
-                            MATCH (c:Competency {id: $id})
-                            MATCH (s:MicroSkill) WHERE s.id = sid OR coalesce(s.code, '') = sid
+                            MATCH (c:Competency {id: $id}) WHERE c.organizationId = $organizationId
+                            MATCH (s:MicroSkill) WHERE s.organizationId = $organizationId AND (s.id = sid OR coalesce(s.code, '') = sid)
                             WITH DISTINCT c, s
                             MERGE (c)-[r:HAS_SKILL]->(s)
                             ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
                             """;
-                    session.run(linkSkills, Map.of("id", record.id(), "skillIds", skillIds)).consume();
+                    session.run(linkSkills, Map.of("id", record.id(), "skillIds", skillIds, "organizationId", organizationId)).consume();
                 }
             }
 

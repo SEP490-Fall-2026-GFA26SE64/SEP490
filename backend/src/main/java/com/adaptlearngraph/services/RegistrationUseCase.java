@@ -8,6 +8,13 @@ import java.util.UUID;
 
 public interface RegistrationUseCase {
     RegistrationActor register(RegistrationFields fields, String password, String address);
+
+    /** Registers and records the platform catalog items to copy into the workspace after provisioning. */
+    default RegistrationActor register(RegistrationFields fields, String password, String address, List<String> catalogSelection) {
+        if (catalogSelection != null && !catalogSelection.isEmpty())
+            throw new UnsupportedOperationException("Catalog selection is not supported");
+        return register(fields, password, address);
+    }
     RegistrationActor signIn(String email, String password, String address);
     View current(RegistrationActor actor);
     void resend(RegistrationActor actor, String address);

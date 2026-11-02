@@ -19,6 +19,7 @@ public final class JdbcWorkspaceIdentityStore implements WorkspaceIdentityStore 
                 coalesce(r.recovery_required, p.recovery_required, false) AS recovery_required,
                 coalesce(m.active, false) AS membership_active,
                 coalesce(w.setup_state = 'READY', false) AS workspace_ready,
+                w.slug AS workspace_slug,
                 EXISTS (SELECT 1 FROM platform.account_totp t WHERE t.account_id = a.account_id) AS has_totp
             FROM platform.account a
             LEFT JOIN platform.organization_registration r ON r.account_id = a.account_id
@@ -86,6 +87,6 @@ public final class JdbcWorkspaceIdentityStore implements WorkspaceIdentityStore 
                 row.getString("full_name"), row.getString("password_hash"), row.getBoolean("active"),
                 row.getBoolean("membership_active"), roles, verified == null ? null : verified.toInstant(),
                 row.getLong("auth_version"), row.getBoolean("recovery_required"), row.getBoolean("has_totp"),
-                row.getBoolean("workspace_ready"));
+                row.getBoolean("workspace_ready"), row.getString("workspace_slug"));
     }
 }

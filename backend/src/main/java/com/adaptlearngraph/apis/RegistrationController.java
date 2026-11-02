@@ -1,6 +1,7 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
+import com.adaptlearngraph.services.PlatformCatalogService;
 import com.adaptlearngraph.services.RegistrationUseCase;
 import com.adaptlearngraph.entities.RegistrationActor;
 import com.adaptlearngraph.exception.RegistrationFailure;
@@ -49,7 +50,8 @@ public class RegistrationController {
     RegistrationUseCase.View register(@Valid @RequestBody Signup input, HttpServletRequest request) {
         var fields = new RegistrationFields(input.organizationName(), input.subdomain(), input.industry(),
                 input.headcount(), input.adminName(), input.adminEmail());
-        var actor = registration.register(fields, input.password(), request.getRemoteAddr());
+        var actor = registration.register(fields, input.password(), request.getRemoteAddr(),
+                input.catalogSelection() == null ? List.of() : input.catalogSelection());
         establish(request, actor);
         return registration.current(actor);
     }
@@ -134,7 +136,8 @@ public class RegistrationController {
     record Signup(@NotNull @Size(max = 200) String organizationName, @Size(max = 63) String subdomain,
                   @Size(max = 100) String industry, @Size(max = 100) String headcount,
                   @NotNull @Size(max = 120) String adminName, @NotNull @Size(max = 254) String adminEmail,
-                  @NotNull @Size(max = 256) String password) {
+                  @NotNull @Size(max = 256) String password,
+                  @Size(max = PlatformCatalogService.MAX_SELECTION) List<@NotNull @Size(max = 128) String> catalogSelection) {
         @Override public String toString() { return "Signup[redacted]"; }
     }
     record SignIn(@NotNull @Size(max = 254) String email, @NotNull @Size(max = 256) String password) {

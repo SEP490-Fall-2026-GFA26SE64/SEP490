@@ -71,13 +71,9 @@ public class CatalogConfiguration {
             return new Neo4jOccupationRepository(driver);
         }
         return new com.adaptlearngraph.repository.OccupationRepository() {
-            @Override public java.util.List<com.adaptlearngraph.entities.Occupation> findAllOccupations() { return java.util.List.of(); }
             @Override public java.util.List<com.adaptlearngraph.entities.Occupation> findAllOccupations(String organizationId) { return java.util.List.of(); }
-            @Override public java.util.Optional<com.adaptlearngraph.entities.Occupation> findByIdOrCode(String idOrCode) { return java.util.Optional.empty(); }
             @Override public java.util.Optional<com.adaptlearngraph.entities.Occupation> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
-            @Override public com.adaptlearngraph.entities.Occupation save(com.adaptlearngraph.entities.Occupation occupation) { return occupation; }
             @Override public com.adaptlearngraph.entities.Occupation save(String organizationId, com.adaptlearngraph.entities.Occupation occupation) { return occupation; }
-            @Override public void delete(String idOrCode) {}
             @Override public void delete(String organizationId, String idOrCode) {}
         };
     }

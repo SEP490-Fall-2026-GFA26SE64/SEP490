@@ -16,6 +16,7 @@ public interface RegistrationStore {
     Registration lockRegistration(UUID accountId);
     void insertAccount(UUID accountId, String email, String passwordHash, Instant now);
     boolean insertRegistration(UUID id, UUID accountId, RegistrationFields fields, String slug, Instant now);
+    void saveCatalogSelection(UUID registrationId, String templateVersion, String templateSha256, List<String> nodeIds, Instant now);
     Optional<EmailProof> emailProof(UUID accountId);
     void saveEmailProof(UUID accountId, EmailProof proof);
     void markEmailVerified(UUID accountId, Instant now);

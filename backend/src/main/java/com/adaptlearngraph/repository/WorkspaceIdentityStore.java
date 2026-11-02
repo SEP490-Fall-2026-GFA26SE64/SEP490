@@ -13,8 +13,15 @@ public interface WorkspaceIdentityStore {
 
     record Credential(UUID accountId, UUID organizationId, String email, String fullName, String passwordHash,
                       boolean active, boolean membershipActive, Set<String> roles, Instant emailVerifiedAt,
-                      long authVersion, boolean recoveryRequired, boolean hasTotp, boolean workspaceReady) {
+                      long authVersion, boolean recoveryRequired, boolean hasTotp, boolean workspaceReady,
+                      String workspaceSlug) {
         public Credential { roles = Set.copyOf(roles); }
+        public Credential(UUID accountId, UUID organizationId, String email, String fullName, String passwordHash,
+                          boolean active, boolean membershipActive, Set<String> roles, Instant emailVerifiedAt,
+                          long authVersion, boolean recoveryRequired, boolean hasTotp, boolean workspaceReady) {
+            this(accountId, organizationId, email, fullName, passwordHash, active, membershipActive, roles, emailVerifiedAt,
+                    authVersion, recoveryRequired, hasTotp, workspaceReady, null);
+        }
         public boolean requiresMfa() {
             return roles.contains("ORGANIZATION_ADMINISTRATOR");
         }

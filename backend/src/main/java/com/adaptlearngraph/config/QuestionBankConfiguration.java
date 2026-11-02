@@ -44,8 +44,8 @@ public class QuestionBankConfiguration {
             public List<Choice> experts(Actor a){return members(a,"DOMAIN_EXPERT");}
             public List<Choice> managers(Actor a){return members(a,"LD_MANAGER");}
             public void requireExpert(Actor a,UUID id){if(experts(a).stream().noneMatch(x->x.id().equals(id.toString())))throw new Failure(409,"Responsible Expert is not active in this organization");}
-            public List<Choice> skills(Actor a){return skills.skills();}
-            public String requireSkill(Actor a,String id){return skills.requireSkill(id);}
+            public List<Choice> skills(Actor a){return skills.skills(a.organization().toString());}
+            public String requireSkill(Actor a,String id){return skills.requireSkill(a.organization().toString(),id);}
 
         };
     }

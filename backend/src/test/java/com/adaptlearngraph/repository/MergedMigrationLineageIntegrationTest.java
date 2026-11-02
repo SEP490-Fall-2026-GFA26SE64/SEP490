@@ -24,7 +24,7 @@ class MergedMigrationLineageIntegrationTest {
             var flyway=Flyway.configure().dataSource(source).locations(location).load();flyway.migrate();flyway.validate();
             assertEquals(0,flyway.migrate().migrationsExecuted);
             assertEquals(before,jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=? ORDER BY installed_rank",before.size()));
-            assertEquals("46",jdbc.queryForObject("SELECT version FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 1",String.class));
+            assertEquals("47",jdbc.queryForObject("SELECT version FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 1",String.class));
             assertEquals("NO", jdbc.queryForObject("SELECT is_nullable FROM information_schema.columns WHERE table_schema='platform' AND table_name='organization_registration' AND column_name='email_verification_bypassed'", String.class));
             assertEquals("false", jdbc.queryForObject("SELECT column_default FROM information_schema.columns WHERE table_schema='platform' AND table_name='organization_registration' AND column_name='mfa_bypassed'", String.class));
             assertEquals("timestamp with time zone", jdbc.queryForObject("SELECT data_type FROM information_schema.columns WHERE table_schema='platform' AND table_name='payment_order' AND column_name='development_bypassed_at'", String.class));

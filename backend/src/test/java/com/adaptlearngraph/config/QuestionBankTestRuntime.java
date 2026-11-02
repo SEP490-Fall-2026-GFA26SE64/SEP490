@@ -48,7 +48,7 @@ public final class QuestionBankTestRuntime {
                 jdbc.update("INSERT INTO platform.subscription(subscription_id,organization_id,created_at) VALUES (?,?,now())",subscription,org);
                 jdbc.update("INSERT INTO platform.subscription_period(period_id,subscription_id,order_id,starts_at,ends_at,billing_zone,anniversary_day,created_at) VALUES (?,?,?,now()-interval '1 day',now()+interval '30 days','Asia/Ho_Chi_Minh',1,now())",id(orgName+"period"),subscription,order);
             }});
-            try(var session=graph.session()){session.executeWrite(t->t.run("MERGE (s:MicroSkill {id:'QB-TEST-SQL'}) SET s.name='Question Bank Test SQL',s.definition='Isolated fixture skill for authoring tests',s.version='1',s.status='ACTIVE',s.reviewStatus='APPROVED',s.reviewedBy=$reviewer,s.reviewedAt='2026-10-30T00:00:00Z'",Map.of("reviewer",id("Ald").toString())).consume());}
+            try(var session=graph.session()){session.executeWrite(t->t.run("MERGE (s:MicroSkill {id:'QB-TEST-SQL'}) SET s.organizationId=$organization,s.name='Question Bank Test SQL',s.definition='Isolated fixture skill for authoring tests',s.version='1',s.status='ACTIVE',s.reviewStatus='APPROVED',s.reviewedBy=$reviewer,s.reviewedAt='2026-10-30T00:00:00Z'",Map.of("reviewer",id("Ald").toString(),"organization",id("A").toString())).consume());}
         };}
     }
 }

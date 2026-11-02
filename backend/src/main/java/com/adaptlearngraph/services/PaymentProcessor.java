@@ -50,7 +50,9 @@ public final class PaymentProcessor {
                 if (observed.isPresent()) {
                     store.record(observed.get(), clock.instant());
                 } else if ("PAYMENT_CREATE".equals(work.handler()) && clock.instant().isBefore(order.expiresAt())) {
-                    String route = order.organizationId() == null ? "/guest/payment-result" : "/admin/subscription/payment-result";
+                    String route = order.organizationId() == null ? "/guest/payment-result"
+                            : com.adaptlearngraph.helper.WorkspaceLinks.path(
+                                    store.workspaceSlug(order.organizationId()).orElse(null), "/admin/subscription/payment-result");
                     String callback = publicUrl + route + "?order=" + order.orderId();
                     store.record(gateway.create(new PaymentGateway.CreateRequest(order.providerOrderCode(),
                             order.terms().priceVnd(), order.terms().name(), order.expiresAt(), callback, callback)), clock.instant());

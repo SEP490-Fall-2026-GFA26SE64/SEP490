@@ -15,7 +15,9 @@ export function GuestSubscriptionPage({ mode }: { mode: 'plans' | 'status' | 're
   const principal = registration.data?.registrationId
   const base = '/api/v1/registration/subscription'
   const order = useQuery({ queryKey: ['purchase-status', principal, search.get('order')],
-    queryFn: () => getStatus(base, search.get('order') ?? undefined), enabled: !!principal && registration.data?.stage === 'COMPLETE' && (mode !== 'result' || !!search.get('order')), refetchInterval: 3000 })
+    queryFn: () => getStatus(base, search.get('order') ?? undefined), enabled: !!principal && registration.data?.stage === 'COMPLETE' && (mode !== 'result' || !!search.get('order')),
+    // Stop once the workspace is ready: the handoff then exchanges this registration session for a workspace session.
+    refetchInterval: query => query.state.data?.applicationState === 'APPLIED' && query.state.data.workspace?.state === 'READY' ? false : 3000 })
   return <GuestLayout currentStep={order.data?.order ? ['PAID', 'DEV_BYPASSED'].includes(order.data.order.paymentStatus) ? 7 : 6 : 5}
     onSignOut={principal ? () => request('/api/v1/registration/sign-out', 'POST') : undefined}>
     <PageHeader title={mode === 'result' ? c('Your payment summary', 'Kết quả thanh toán') : order.data?.order ? c('Payment and workspace status', 'Thanh toán và thiết lập không gian') : c('Choose a subscription', 'Chọn gói đăng ký')}

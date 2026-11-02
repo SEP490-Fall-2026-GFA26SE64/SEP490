@@ -150,6 +150,35 @@ class RegistrationPostgresIntegrationTest {
     }
 
     @Test
+    void catalogSelectionIsPersistedWithTheRegistrationAndInvalidSelectionsCreateNothing() throws Exception {
+        PlatformCatalogTemplate template;
+        try (var input = getClass().getResourceAsStream("/platform-catalog/template-fixture.json")) {
+            template = new PlatformCatalogTemplate(input.readAllBytes(), new com.fasterxml.jackson.databind.ObjectMapper());
+        }
+        var catalog = new com.adaptlearngraph.services.PlatformCatalogService(() -> java.util.Optional.of(template));
+        var selecting = new RegistrationService(store, crypto, () -> {}, clock,
+                com.adaptlearngraph.entities.IntegrationPolicy.ENABLED, catalog);
+        var actor = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of("ROLE-A", "MOD-X", "ROLE-A"));
+        var row = jdbc.queryForMap("""
+                SELECT s.template_version, s.template_sha256, array_to_string(s.selected_node_ids, ',') AS ids
+                FROM platform.registration_catalog_selection s JOIN platform.organization_registration r USING (registration_id)
+                WHERE r.account_id = ?
+                """, actor.accountId());
+        assertThat(row).containsEntry("template_version", "fixture-1").containsEntry("template_sha256", template.sha256())
+                .containsEntry("ids", "ROLE-A,MOD-X");
+
+        var empty = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of());
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM platform.registration_catalog_selection s JOIN platform.organization_registration r USING (registration_id)
+                WHERE r.account_id = ?
+                """, Integer.class, empty.accountId())).isZero();
+
+        String rejected = email();
+        assertFailure(Code.INVALID_INPUT, () -> selecting.register(fields(rejected, null), PASSWORD, address, java.util.List.of("LV-A1")));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.account WHERE normalized_identifier=?", Integer.class, rejected)).isZero();
+    }
+
+    @Test
     void commitsEveryFieldAndPreservesNullsWithoutProvisioning() {
         String email = email();
         var fields = new RegistrationFields("Acme Learning", null, "Software Engineering & AI",

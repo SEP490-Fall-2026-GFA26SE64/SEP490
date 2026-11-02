@@ -32,12 +32,19 @@ class MacroCompetencyServiceTest {
                 new MacroCompetency("id-1", "KNOWLEDGE", "Knowledge", "Technical knowledge", "ACTIVE", now, now)
         );
 
-        when(repository.findAll()).thenReturn(expected);
+        when(repository.findAll("org-test")).thenReturn(expected);
 
         List<MacroCompetency> actual = service.listMacroCompetencies("org-test");
 
         assertEquals(1, actual.size());
         assertEquals("KNOWLEDGE", actual.get(0).code());
         assertEquals("Technical knowledge", actual.get(0).description());
+    }
+
+    @Test
+    @DisplayName("listMacroCompetencies never lists another tenant's data without an organization")
+    void listMacroCompetencies_requiresOrganization() {
+        assertEquals(List.of(), service.listMacroCompetencies(" "));
+        org.mockito.Mockito.verifyNoInteractions(repository);
     }
 }

@@ -15,6 +15,7 @@ export interface Identity {
   roles: string[]
   stage: string
   workspaceReady: boolean
+  workspaceSlug: string | null
 }
 export interface Order {
   orderId: string; terms: Terms; paymentStatus: string; checkoutUrl: string | null
@@ -85,7 +86,8 @@ export function parsePlan(value: unknown): Plan {
 function parseIdentity(value: unknown): Identity {
   const v = object(value)
   return { accountId: nullable(v.accountId, text), organizationId: nullable(v.organizationId, text), email: text(v.email),
-    fullName: nullable(v.fullName, text), roles: list(v.roles, text), stage: text(v.stage), workspaceReady: boolean(v.workspaceReady) }
+    fullName: nullable(v.fullName, text), roles: list(v.roles, text), stage: text(v.stage), workspaceReady: boolean(v.workspaceReady),
+    workspaceSlug: v.workspaceSlug === undefined ? null : nullable(v.workspaceSlug, text) }
 }
 function parseOrder(value: unknown): Order {
   const v = object(value)

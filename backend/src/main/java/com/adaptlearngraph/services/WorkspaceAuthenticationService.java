@@ -87,7 +87,8 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
             return new Identity(full ? account.accountId() : null, full ? account.organizationId() : null,
                     account.email(), full ? account.fullName() : null, account.active(),
                     full && account.membershipActive(), full ? account.roles() : java.util.Set.of(),
-                    full && principal.mfaVerified(), full && account.workspaceReady(), stage);
+                    full && principal.mfaVerified(), full && account.workspaceReady(), stage,
+                    full ? account.workspaceSlug() : null);
         });
     }
 

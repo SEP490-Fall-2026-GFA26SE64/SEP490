@@ -1,4 +1,5 @@
 import { workspaceFetch as fetch } from './workspaceFetch'
+import { requireOrganizationId } from './organizationScope'
 
 export interface OccupationDto {
   id: string
@@ -32,16 +33,11 @@ export interface SaveOccupationPayload {
   version?: string
 }
 
-const DEFAULT_ORG_ID = 'e0000000-0000-0000-0000-000000000001'
-
 function normalizeOrg(orgId?: string): string {
-  if (!orgId || orgId === 'comp-technova' || orgId === 'default-org') {
-    return DEFAULT_ORG_ID
-  }
-  return orgId
+  return requireOrganizationId(orgId)
 }
 
-export async function fetchOccupations(orgId: string = DEFAULT_ORG_ID): Promise<OccupationDto[]> {
+export async function fetchOccupations(orgId: string): Promise<OccupationDto[]> {
   const effectiveOrg = normalizeOrg(orgId)
   const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/occupations`, {
     headers: { Accept: 'application/json' },
@@ -53,7 +49,7 @@ export async function fetchOccupations(orgId: string = DEFAULT_ORG_ID): Promise<
 }
 
 export async function createOccupation(
-  orgId: string = DEFAULT_ORG_ID,
+  orgId: string,
   payload: SaveOccupationPayload
 ): Promise<OccupationDto> {
   const effectiveOrg = normalizeOrg(orgId)
@@ -72,7 +68,7 @@ export async function createOccupation(
 }
 
 export async function updateOccupation(
-  orgId: string = DEFAULT_ORG_ID,
+  orgId: string,
   id: string,
   payload: SaveOccupationPayload
 ): Promise<OccupationDto> {
@@ -91,7 +87,7 @@ export async function updateOccupation(
   return res.json()
 }
 
-export async function deleteOccupation(orgId: string = DEFAULT_ORG_ID, id: string): Promise<void> {
+export async function deleteOccupation(orgId: string, id: string): Promise<void> {
   const effectiveOrg = normalizeOrg(orgId)
   const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/occupations/${encodeURIComponent(id)}`, {
     method: 'DELETE',

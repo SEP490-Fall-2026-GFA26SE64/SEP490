@@ -104,9 +104,6 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
     }
     private static UUID organization(String path) {
         String raw = path.substring("/api/v1/organizations/".length()).split("/",2)[0];
-        if ("comp-technova".equalsIgnoreCase(raw) || "default-org".equalsIgnoreCase(raw)) {
-            return UUID.fromString("00000000-0000-0000-0000-000000000001");
-        }
         return UUID.fromString(raw);
     }
     private void fail(HttpServletResponse response,int status,String code,String message) throws IOException {

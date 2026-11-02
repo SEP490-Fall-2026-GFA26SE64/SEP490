@@ -30,14 +30,14 @@ public final class Neo4jQuestionBankSkillReader {
         this.timeout = timeout;
     }
 
-    public List<Choice> skills() {
-        return read("MATCH (s:MicroSkill) WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN DISTINCT s.id AS id,s.name AS name ORDER BY name,id",
-                Map.of(), row -> new Choice(row.get("id").asString(), row.get("name").asString()));
+    public List<Choice> skills(String organizationId) {
+        return read("MATCH (s:MicroSkill) WHERE s.organizationId=$organization AND s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN DISTINCT s.id AS id,s.name AS name ORDER BY name,id",
+                Map.of("organization", organization(organizationId)), row -> new Choice(row.get("id").asString(), row.get("name").asString()));
     }
 
-    public String requireSkill(String id) {
-        var names = read("MATCH (s:MicroSkill {id:$id}) WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN s.name AS name",
-                Map.of("id", id), row -> row.get("name").asString());
+    public String requireSkill(String organizationId, String id) {
+        var names = read("MATCH (s:MicroSkill {id:$id}) WHERE s.organizationId=$organization AND s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN s.name AS name",
+                Map.of("id", id, "organization", organization(organizationId)), row -> row.get("name").asString());
         if (names.size() != 1) throw new Failure(400, "Select a currently active approved MicroSkill");
         return names.getFirst();
     }
@@ -67,6 +67,11 @@ public final class Neo4jQuestionBankSkillReader {
                 catch (RuntimeException disconnected) { /* Driver connection is already unusable. */ }
             }
         }
+    }
+
+    private static String organization(String organizationId) {
+        if (organizationId == null || organizationId.isBlank()) throw new Failure(403, "Organization staff required");
+        return organizationId;
     }
 
     private Failure unavailable() { return new Failure(503, "MicroSkill catalog is unavailable. Retry later."); }

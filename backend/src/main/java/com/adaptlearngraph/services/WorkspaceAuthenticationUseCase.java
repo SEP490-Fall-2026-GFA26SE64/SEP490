@@ -17,8 +17,14 @@ public interface WorkspaceAuthenticationUseCase {
 
     record Identity(UUID accountId, UUID organizationId, String email, String fullName,
                     boolean accountActive, boolean membershipActive, Set<String> roles,
-                    boolean mfaVerified, boolean workspaceReady, String stage) {
+                    boolean mfaVerified, boolean workspaceReady, String stage, String workspaceSlug) {
         public Identity { roles = Set.copyOf(roles); }
+        public Identity(UUID accountId, UUID organizationId, String email, String fullName,
+                        boolean accountActive, boolean membershipActive, Set<String> roles,
+                        boolean mfaVerified, boolean workspaceReady, String stage) {
+            this(accountId, organizationId, email, fullName, accountActive, membershipActive, roles,
+                    mfaVerified, workspaceReady, stage, null);
+        }
     }
     record Enrollment(String encryptedSecret, String manualSecret, String email) {
         @Override public String toString() { return "WorkspaceEnrollment[redacted]"; }

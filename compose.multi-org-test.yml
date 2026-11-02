@@ -1,0 +1,37 @@
+# Isolated multi-organization workspace system test (REQ-060-F04 / REQ-061-F01). Use with compose.dev.yml:
+#   docker compose -f compose.dev.yml -f compose.multi-org-test.yml up -d --build
+# Integrations are disabled so a Guest can register and provision a second organization locally.
+name: alg-multi-org-smoke
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:15447:5432"
+  neo4j:
+    ports: !override
+      - "127.0.0.1:7484:7474"
+      - "127.0.0.1:7694:7687"
+  migrate:
+    image: alg-multi-org-smoke-backend:dev
+  seed:
+    image: alg-multi-org-smoke-backend:dev
+  workspace-seed:
+    image: alg-multi-org-smoke-backend:dev
+  se-seed:
+    image: alg-multi-org-smoke-backend:dev
+  platform-seed:
+    image: alg-multi-org-smoke-backend:dev
+  api:
+    image: alg-multi-org-smoke-backend:dev
+    environment:
+      PAYOS_ENABLED: "false"
+      EMAIL_VERIFICATION_ENABLED: "false"
+      MFA_ENABLED: "false"
+      SUBSCRIPTION_PUBLIC_URL: http://127.0.0.1:8096
+      SMTP_HOST: ""
+      SMTP_FROM: ""
+    ports: !override
+      - "127.0.0.1:18096:8080"
+  web:
+    image: alg-multi-org-smoke-web:dev
+    ports: !override
+      - "127.0.0.1:8096:5173"

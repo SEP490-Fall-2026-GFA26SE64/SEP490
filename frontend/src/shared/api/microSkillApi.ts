@@ -1,12 +1,8 @@
 import { workspaceFetch as fetch } from './workspaceFetch'
-
-const DEFAULT_ORG_UUID = 'e0000000-0000-0000-0000-000000000001'
+import { requireOrganizationId } from './organizationScope'
 
 function normalizeOrg(orgId?: string): string {
-  if (!orgId || orgId === 'default-org' || orgId === 'comp-technova') {
-    return DEFAULT_ORG_UUID
-  }
-  return orgId
+  return requireOrganizationId(orgId)
 }
 
 export interface MicroSkillDto {

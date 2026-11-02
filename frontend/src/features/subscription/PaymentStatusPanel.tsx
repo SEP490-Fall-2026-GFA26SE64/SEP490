@@ -8,6 +8,7 @@ import { enterWorkspace, reconcileOrder, type Status } from './subscriptionApi'
 import { Failure, StateLabel, useCopy } from './SubscriptionFeedback'
 import { PlanCatalog } from './PlanCatalog'
 import { PaymentReceipt } from './PaymentReceipt'
+import { isWorkspaceSlug, workspaceUrl } from '../../shared/auth/workspacePaths'
 
 export function PaymentStatusPanel({ status, guest, principal, base, refresh }:
   { status: Status; guest: boolean; principal: string; base: string; refresh: () => void }) {
@@ -23,7 +24,12 @@ export function PaymentStatusPanel({ status, guest, principal, base, refresh }:
     if (!status.order) throw new Error('No order to reconcile.')
     return reconcileOrder(guest, status.order.orderId)
   }, onSuccess: refresh })
-  const enter = useMutation({ mutationFn: enterWorkspace, onSuccess: () => { cache.clear(); navigate('/admin/subscription') } })
+  const enter = useMutation({ mutationFn: enterWorkspace, onSuccess: identity => {
+    cache.clear()
+    // The workspace lives under its own router basename, so crossing into it needs a full page load.
+    if (isWorkspaceSlug(identity.workspaceSlug)) window.location.assign(workspaceUrl(identity.workspaceSlug, '/admin/subscription'))
+    else navigate('/admin/subscription')
+  } })
   if (!status.order) return <p>{c('No payment order has been created.', 'Chưa tạo đơn thanh toán.')}</p>
   const order = status.order
   const paid = order.paymentStatus === 'PAID'

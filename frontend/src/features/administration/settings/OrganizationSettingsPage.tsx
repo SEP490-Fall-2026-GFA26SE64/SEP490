@@ -18,6 +18,8 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { workspaceUrl } from '../../../shared/auth/workspacePaths'
 import {
   getActiveCompany,
   updateActiveCompany,
@@ -58,7 +60,8 @@ export function OrganizationSettingsPage() {
   // Profile fields
   const [companyName, setCompanyName] = React.useState(activeCompany.name)
   const [ownerEmail, setOwnerEmail] = React.useState(activeCompany.ownerEmail)
-  const [subdomain, setSubdomain] = React.useState(activeCompany.id.replace('comp-', ''))
+  const workspaceSlug = React.useContext(WorkspaceSessionContext)?.identity.workspaceSlug ?? null
+  const workspaceAddress = workspaceSlug ? `${window.location.origin}${workspaceUrl(workspaceSlug)}` : null
   const [industryDomain, setIndustryDomain] = React.useState('Software Engineering & AI Architecture')
   const [headquarters, setHeadquarters] = React.useState('District 9 High-Tech Park, Ho Chi Minh City, VN')
 
@@ -168,7 +171,7 @@ export function OrganizationSettingsPage() {
           <TabsContent value="profile" className="mt-4 space-y-4">
             <Card className="shadow-xs border-border bg-card">
               <CardHeader className="pb-3 border-b border-border/70">
-                <CardTitle className="text-base font-bold">Corporate Identity & Subdomain</CardTitle>
+                <CardTitle className="text-base font-bold">Corporate Identity & Workspace URL</CardTitle>
                 <CardDescription className="text-xs text-muted-foreground">
                   Official registered entity details and public workspace routing slug.
                 </CardDescription>
@@ -181,17 +184,12 @@ export function OrganizationSettingsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-foreground">Tenant Subdomain</label>
-                    <div className="flex items-center rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs">
-                      <Globe size={14} className="text-muted-foreground mr-1.5" />
-                      <input
-                        type="text"
-                        className="bg-transparent text-foreground font-mono focus:outline-none flex-1"
-                        value={subdomain}
-                        onChange={(e) => setSubdomain(e.target.value)}
-                      />
-                      <span className="text-muted-foreground font-mono">.adaptlearn.io</span>
+                    <span id="workspace-url-label" className="font-semibold text-foreground">Workspace URL</span>
+                    <div aria-labelledby="workspace-url-label" className="flex min-w-0 items-center rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs">
+                      <Globe size={14} aria-hidden="true" className="text-muted-foreground mr-1.5 shrink-0" />
+                      <span data-testid="workspace-url" className="min-w-0 truncate font-mono text-foreground">{workspaceAddress ?? 'Not provisioned'}</span>
                     </div>
+                    <p className="text-muted-foreground">Workspace slug {workspaceSlug ? <code className="font-mono text-foreground">{workspaceSlug}</code> : 'unavailable'} is fixed after registration.</p>
                   </div>
 
                   <div className="space-y-1.5">

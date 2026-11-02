@@ -1,3 +1,5 @@
+import { requireOrganizationId } from './organizationScope'
+
 export interface LearningModuleDto {
   id: string
   code: string
@@ -14,8 +16,8 @@ export interface LearningModuleDto {
   teachesSkillNames?: string[]
 }
 
-export async function fetchLearningModules(orgId: string = 'comp-technova'): Promise<LearningModuleDto[]> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/modules`, {
+export async function fetchLearningModules(orgId: string): Promise<LearningModuleDto[]> {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(requireOrganizationId(orgId))}/modules`, {
     headers: {
       Accept: 'application/json',
     },
@@ -27,10 +29,10 @@ export async function fetchLearningModules(orgId: string = 'comp-technova'): Pro
 }
 
 export async function createLearningModule(
-  orgId: string = 'comp-technova',
+  orgId: string,
   payload: Partial<LearningModuleDto>
 ): Promise<LearningModuleDto> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/modules`, {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(requireOrganizationId(orgId))}/modules`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -45,11 +47,11 @@ export async function createLearningModule(
 }
 
 export async function updateLearningModule(
-  orgId: string = 'comp-technova',
+  orgId: string,
   id: string,
   payload: Partial<LearningModuleDto>
 ): Promise<LearningModuleDto> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/modules/${encodeURIComponent(id)}`, {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(requireOrganizationId(orgId))}/modules/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -63,8 +65,8 @@ export async function updateLearningModule(
   return res.json()
 }
 
-export async function deleteLearningModule(orgId: string = 'comp-technova', id: string): Promise<void> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/modules/${encodeURIComponent(id)}`, {
+export async function deleteLearningModule(orgId: string, id: string): Promise<void> {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(requireOrganizationId(orgId))}/modules/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   })
   if (!res.ok) {

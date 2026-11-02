@@ -89,6 +89,22 @@ public final class JdbcRegistrationStore implements RegistrationStore {
     }
 
     @Override
+    public void saveCatalogSelection(UUID registrationId, String templateVersion, String templateSha256,
+                                     List<String> nodeIds, Instant now) {
+        jdbc.update("""
+                INSERT INTO platform.registration_catalog_selection(
+                    registration_id, template_version, template_sha256, selected_node_ids, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """, ps -> {
+            ps.setObject(1, registrationId);
+            ps.setString(2, templateVersion);
+            ps.setString(3, templateSha256);
+            ps.setArray(4, ps.getConnection().createArrayOf("text", nodeIds.toArray()));
+            ps.setTimestamp(5, timestamp(now));
+        });
+    }
+
+    @Override
     public Optional<EmailProof> emailProof(UUID accountId) {
         return jdbc.query("""
                 SELECT * FROM platform.registration_email_verification WHERE account_id = ?

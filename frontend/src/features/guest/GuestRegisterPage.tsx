@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { GuestLayout } from './GuestLayout'
+import { GuestCatalogPicker } from './GuestCatalogPicker'
 import { useCopy } from '../subscription/SubscriptionFeedback'
 import {
   confirmRegistrationTotp, getRegistration, HEADCOUNTS, INDUSTRIES, recoverRegistrationTotp,
@@ -31,6 +32,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
   const client = useQueryClient()
   const [form, setForm] = React.useState<RegistrationFields>(EMPTY_FORM)
   const [password, setPassword] = React.useState('')
+  const [catalogSelection, setCatalogSelection] = React.useState<string[]>([])
   const [confirmation, setConfirmation] = React.useState('')
   const [signInEmail, setSignInEmail] = React.useState('')
   const [code, setCode] = React.useState('')
@@ -104,7 +106,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       const failure = error instanceof RegistrationApiError ? error
         : new RegistrationApiError(0, 'NETWORK_ERROR', 'Cannot reach the registration service. Check your connection and retry.')
       setFailure(failure)
-      if (failure.field && ['organizationName', 'subdomain', 'industry', 'headcount'].includes(failure.field)) setEntryStep(1)
+      if (failure.field && ['organizationName', 'subdomain', 'industry', 'headcount', 'catalogSelection'].includes(failure.field)) setEntryStep(1)
       if (failure.status === 401) {
         clearSecrets()
         client.setQueryData(SESSION_QUERY, null)
@@ -119,6 +121,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     client.setQueryData(SESSION_QUERY, next)
     clearSecrets()
     setForm(EMPTY_FORM)
+    setCatalogSelection([])
     setFailure(null)
     setFieldErrors({})
     setEntryStep(1)
@@ -163,7 +166,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       setFailure(new RegistrationApiError(400, 'INVALID_INPUT', c('Use a password with 12-128 characters.', 'Sử dụng mật khẩu từ 12 đến 128 ký tự.'), 'password'))
       return
     }
-    command.mutate(async () => accept(await registerOrganization({ ...form, password })))
+    command.mutate(async () => accept(await registerOrganization({ ...form, password, catalogSelection })))
   }
 
   function submitProof(event: React.FormEvent) {
@@ -217,7 +220,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     <GuestLayout currentStep={step}>
       <FieldErrors.Provider value={{ ...fieldErrors, ...(failure?.field ? { [`registration-${failure.field}`]: failure.message } : {}),
         ...(failure && ['INVALID_PROOF', 'EXPIRED_PROOF'].includes(failure.code) ? { 'registration-proof': failure.message } : {}) }}>
-      <div className="mx-auto max-w-3xl space-y-5">
+      <div className={`mx-auto space-y-5 ${!view && entryStep === 1 && mode === 'register' ? 'max-w-5xl' : 'max-w-3xl'}`}>
         <div ref={headingRef} tabIndex={-1} className="outline-none">
           <PageHeader title={title} icon={<ShieldCheck aria-hidden="true" size={24} />}
             description={entryStep === 1 && !view ? c('Tell us about your organization. Next, create the account that will manage your workspace.', 'Nhập thông tin tổ chức. Tiếp theo, tạo tài khoản quản lý không gian làm việc.')
@@ -278,6 +281,9 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
                         {HEADCOUNTS.map(choice => <option key={choice}>{choice}</option>)}
                       </select>
                     </Field>
+                  </div>
+                  <div id="registration-catalogSelection">
+                    <GuestCatalogPicker value={catalogSelection} onChange={setCatalogSelection} />
                   </div>
                 </CardContent>
                 </>}

@@ -21,7 +21,7 @@ class Neo4jQuestionBankSkillReaderTest {
         when(session.closeAsync()).thenReturn(new CompletableFuture<>());
         var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofMillis(40));
         assertTimeoutPreemptively(Duration.ofSeconds(3),()->{
-            var failure=assertThrows(Failure.class,()->reader.requireSkill("skill"));
+            var failure=assertThrows(Failure.class,()->reader.requireSkill("org-a","skill"));
             assertEquals(503,failure.status());
         });
         assertTrue(pending.isCancelled());verify(session).closeAsync();
@@ -35,9 +35,9 @@ class Neo4jQuestionBankSkillReaderTest {
         when(failed.closeAsync()).thenReturn(CompletableFuture.completedFuture(null));
         when(healthy.closeAsync()).thenReturn(CompletableFuture.completedFuture(null));
         var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofSeconds(1));
-        var failure=assertThrows(Failure.class,()->reader.requireSkill("skill"));
+        var failure=assertThrows(Failure.class,()->reader.requireSkill("org-a","skill"));
         assertEquals(503,failure.status());assertFalse(failure.getMessage().contains("transport detail"));
-        assertEquals("Approved skill",reader.requireSkill("skill"));
+        assertEquals("Approved skill",reader.requireSkill("org-a","skill"));
         verify(failed).closeAsync();verify(healthy).closeAsync();
     }
 
@@ -48,7 +48,15 @@ class Neo4jQuestionBankSkillReaderTest {
                 .thenReturn(CompletableFuture.completedFuture(List.of()),CompletableFuture.completedFuture(List.of("One","Two")));
         when(session.closeAsync()).thenReturn(CompletableFuture.completedFuture(null));
         var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofSeconds(1));
-        assertEquals(400,assertThrows(Failure.class,()->reader.requireSkill("missing")).status());
-        assertEquals(400,assertThrows(Failure.class,()->reader.requireSkill("ambiguous")).status());
+        assertEquals(400,assertThrows(Failure.class,()->reader.requireSkill("org-a","missing")).status());
+        assertEquals(400,assertThrows(Failure.class,()->reader.requireSkill("org-a","ambiguous")).status());
+    }
+
+    @Test void organizationIsRequiredBeforeAnyCatalogRead() {
+        var driver=mock(Driver.class);
+        var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofSeconds(1));
+        assertEquals(403,assertThrows(Failure.class,()->reader.skills(" ")).status());
+        assertEquals(403,assertThrows(Failure.class,()->reader.requireSkill(null,"skill")).status());
+        verifyNoInteractions(driver);
     }
 }

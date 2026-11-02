@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice(assignableTypes = {
-        RegistrationController.class, WorkspaceAuthenticationController.class, RegistrationWorkspaceEntryController.class,MemberActivationController.class})
+        RegistrationController.class, WorkspaceAuthenticationController.class, RegistrationWorkspaceEntryController.class,MemberActivationController.class,
+        com.adaptlearngraph.apis.PlatformCatalogController.class})
 public class RegistrationExceptionHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationExceptionHandler.class);
 

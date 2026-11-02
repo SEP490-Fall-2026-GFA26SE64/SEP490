@@ -34,7 +34,9 @@ public final class LearningMailWorker {
                 status -> {
                     var jobs =
                             jdbc.query(
-                                    "SELECT n.id,n.kind,n.module_id,n.title,n.body,a.identifier"
+                                    "SELECT n.id,n.kind,n.module_id,n.title,n.body,a.identifier,"
+                                        + " (SELECT w.slug FROM platform.organization_workspace w"
+                                        + " WHERE w.organization_id::text=n.organization_id) AS slug"
                                         + " FROM platform.learning_notification n JOIN"
                                         + " platform.account a ON a.account_id::text=n.recipient_id"
                                         + " AND a.organization_id::text=n.organization_id WHERE"
@@ -48,7 +50,8 @@ public final class LearningMailWorker {
                                                     r.getString(3),
                                                     r.getString(4),
                                                     r.getString(5),
-                                                    r.getString(6)));
+                                                    r.getString(6),
+                                                    r.getString(7)));
                     if (jobs.isEmpty()) return null;
                     Job j = jobs.getFirst();
                     try {
@@ -67,7 +70,7 @@ public final class LearningMailWorker {
                                         null,
                                         Map.of("Module", j.module()),
                                         "Open / Mở nội dung",
-                                        publicUrl + path,
+                                        publicUrl + com.adaptlearngraph.helper.WorkspaceLinks.path(j.slug(), path),
                                         "Sign in to review this update. / Đăng nhập để xem thông"
                                             + " báo."),
                                 "X-Learning-Event",
@@ -90,5 +93,5 @@ public final class LearningMailWorker {
     }
 
     private record Job(
-            UUID id, String kind, String module, String title, String body, String recipient) {}
+            UUID id, String kind, String module, String title, String body, String recipient, String slug) {}
 }

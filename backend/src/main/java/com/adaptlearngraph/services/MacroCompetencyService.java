@@ -15,6 +15,7 @@ public class MacroCompetencyService implements GetMacroCompetenciesUseCase {
 
     @Override
     public List<MacroCompetency> listMacroCompetencies(String organizationId) {
-        return repository.findAll();
+        if (organizationId == null || organizationId.isBlank()) return List.of();
+        return repository.findAll(organizationId);
     }
 }

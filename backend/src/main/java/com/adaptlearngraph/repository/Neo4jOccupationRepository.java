@@ -16,11 +16,6 @@ public class Neo4jOccupationRepository implements OccupationRepository {
     }
 
     @Override
-    public List<Occupation> findAllOccupations() {
-        return queryOccupations(null);
-    }
-
-    @Override
     public List<Occupation> findAllOccupations(String organizationId) {
         return queryOccupations(organizationId);
     }
@@ -28,7 +23,7 @@ public class Neo4jOccupationRepository implements OccupationRepository {
     private List<Occupation> queryOccupations(String organizationId) {
         String cypher = """
                 MATCH (o:Occupation)
-                WHERE ($organizationId IS NULL OR $organizationId = '' OR o.organizationId = $organizationId)
+                WHERE o.organizationId = $organizationId
                 OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
                 OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
                 RETURN o.id AS id,
@@ -75,15 +70,10 @@ public class Neo4jOccupationRepository implements OccupationRepository {
     }
 
     @Override
-    public java.util.Optional<Occupation> findByIdOrCode(String idOrCode) {
-        return findByIdOrCode(null, idOrCode);
-    }
-
-    @Override
     public java.util.Optional<Occupation> findByIdOrCode(String organizationId, String idOrCode) {
         String cypher = """
                 MATCH (o:Occupation)
-                WHERE ($organizationId IS NULL OR $organizationId = '' OR o.organizationId = $organizationId)
+                WHERE o.organizationId = $organizationId
                   AND (o.id = $idOrCode OR o.code = $idOrCode)
                 OPTIONAL MATCH (o)-[:HAS_ROLE]->(r:TargetRole)
                 OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)-[:REQUIRES_SKILL]->(s:MicroSkill)
@@ -130,17 +120,11 @@ public class Neo4jOccupationRepository implements OccupationRepository {
     }
 
     @Override
-    public Occupation save(Occupation o) {
-        return save(null, o);
-    }
-
-    @Override
     public Occupation save(String organizationId, Occupation o) {
         String cypher = """
-                MERGE (o:Occupation {code: $code})
+                MERGE (o:Occupation {organizationId: $organizationId, code: $code})
                 ON CREATE SET
-                    o.id = coalesce($id, $code),
-                    o.organizationId = $organizationId,
+                    o.id = $id,
                     o.code = $code,
                     o.name = $name,
                     o.jobZone = $jobZone,
@@ -153,7 +137,6 @@ public class Neo4jOccupationRepository implements OccupationRepository {
                     o.status = $status,
                     o.version = $version
                 ON MATCH SET
-                    o.organizationId = coalesce(o.organizationId, $organizationId),
                     o.name = $name,
                     o.jobZone = $jobZone,
                     o.interestRealistic = $interestRealistic,
@@ -167,8 +150,11 @@ public class Neo4jOccupationRepository implements OccupationRepository {
                 RETURN o.id AS id
                 """;
         java.util.Map<String, Object> params = new java.util.HashMap<>();
-        params.put("id", o.id() != null ? o.id() : o.code());
-        params.put("organizationId", organizationId != null ? organizationId : "");
+        String organization = Neo4jTenantGuard.requireOrganization(organizationId);
+        String id = o.id() != null && !o.id().isBlank() ? o.id()
+                : java.util.UUID.nameUUIDFromBytes((organization + ":occupation:" + o.code()).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+        params.put("id", id);
+        params.put("organizationId", organization);
         params.put("code", o.code());
         params.put("name", o.name());
         params.put("jobZone", o.jobZone() > 0 ? o.jobZone() : 4);
@@ -182,21 +168,17 @@ public class Neo4jOccupationRepository implements OccupationRepository {
         params.put("version", o.version() != null ? o.version() : "0.9.0");
 
         try (var session = driver.session()) {
+            Neo4jTenantGuard.requireOwnedOrAbsent(session, "Occupation", id, organization);
             session.run(cypher, params).consume();
             return o;
         }
     }
 
     @Override
-    public void delete(String idOrCode) {
-        delete(null, idOrCode);
-    }
-
-    @Override
     public void delete(String organizationId, String idOrCode) {
         String cypher = """
                 MATCH (o:Occupation)
-                WHERE ($organizationId IS NULL OR $organizationId = '' OR o.organizationId = $organizationId)
+                WHERE o.organizationId = $organizationId
                   AND (o.id = $idOrCode OR o.code = $idOrCode)
                 DETACH DELETE o
                 """;

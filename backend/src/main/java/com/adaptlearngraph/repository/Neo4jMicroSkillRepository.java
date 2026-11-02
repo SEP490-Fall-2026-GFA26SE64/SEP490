@@ -61,10 +61,10 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                     s.updatedAt = datetime($updatedAt)
                 WITH s
                 OPTIONAL MATCH (oldMacro:MacroCompetency)-[oldRel:HAS_SKILL]->(s)
-                WHERE oldMacro.code <> $macroCompetencyCode
+                WHERE oldMacro.code <> $macroCompetencyCode OR coalesce(oldMacro.organizationId, '') <> $organizationId
                 DELETE oldRel
                 WITH s
-                MERGE (macro:MacroCompetency {code: $macroCompetencyCode})
+                MERGE (macro:MacroCompetency {code: $macroCompetencyCode, organizationId: $organizationId})
                 ON CREATE SET macro.id = randomUUID(), macro.name = $macroCompetencyCode,
                     macro.status = 'ACTIVE', macro.createdAt = datetime(), macro.updatedAt = datetime()
                 MERGE (macro)-[rel:HAS_SKILL]->(s)
@@ -84,6 +84,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 "updatedAt", microSkill.getUpdatedAt().toString());
 
         try (var session = driver.session()) {
+            Neo4jTenantGuard.requireOwnedOrAbsent(session, "MicroSkill", microSkill.getId().toString(), microSkill.getOrganizationId());
             session.run(cypher, params).consume();
             return microSkill;
         }
@@ -185,6 +186,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public int countDependencies(String organizationId, MicroSkillId id) {
         String cypher = """
                 MATCH (s:MicroSkill {id: $id})
+                WHERE s.organizationId = $organizationId
                 OPTIONAL MATCH (role:TargetRole)-[r:REQUIRES_SKILL]->(s)
                 OPTIONAL MATCH (s)-[p1:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->()
                 OPTIONAL MATCH ()-[p2:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(s)
@@ -192,7 +194,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 RETURN count(r) + count(p1) + count(p2) + count(t) AS totalDeps
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("id", id.toString()));
+            var result = session.run(cypher, Map.of("id", id.toString(), "organizationId", Neo4jTenantGuard.requireOrganization(organizationId)));
             if (result.hasNext()) {
                 return result.next().get("totalDeps").asInt();
             }
@@ -204,7 +206,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public void delete(String organizationId, MicroSkillId id) {
         String cypher = """
                 MATCH (s:MicroSkill {id: $id})
-                WHERE s.organizationId = $organizationId OR s.organizationId IS NULL
+                WHERE s.organizationId = $organizationId
                 DETACH DELETE s
                 """;
         try (var session = driver.session()) {

@@ -8,9 +8,10 @@ import { ToastProvider } from '../../../shared/hooks/useToast'
 import { UserManagementPage } from './UserManagementPage'
 import { OrganizationSubscriptionPage } from '../subscription/OrganizationSubscriptionPage'
 import { WorkspaceBoundary } from '../../subscription/WorkspaceBoundary'
+import { WorkspaceSlugContext } from '../../../shared/auth/workspacePaths'
 
 const identity = { accountId: 'admin', organizationId: 'organization', email: 'actual-admin@example.test',
-  fullName: 'Actual Administrator', roles: ['ORGANIZATION_ADMINISTRATOR'], stage: 'COMPLETE', workspaceReady: true }
+  fullName: 'Actual Administrator', roles: ['ORGANIZATION_ADMINISTRATOR'], stage: 'COMPLETE', workspaceReady: true, workspaceSlug: 'actual' }
 const terms = { name: 'Starter', description: 'Purchased plan', priceVnd: 4900000, currency: 'VND', durationMonths: 1, employeeSeats: 20 }
 const summary = { organizationId: 'organization', organizationName: 'Actual Organization', workspaceStatus: 'ACTIVE',
   subscriptionStatus: 'ACTIVE', current: { periodId: 'period', startsAt: '2026-10-01T00:00:00Z', endsAt: '2026-11-01T00:00:00Z', terms },
@@ -42,9 +43,9 @@ const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
 })
 function show(subscription = false) {
   return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-    <ToastProvider><LanguageProvider><MemoryRouter initialEntries={[subscription ? '/admin/subscription' : '/admin/users']}>
+    <ToastProvider><LanguageProvider><WorkspaceSlugContext.Provider value="actual"><MemoryRouter initialEntries={[subscription ? '/admin/subscription' : '/admin/users']}>
       <WorkspaceBoundary>{subscription ? <OrganizationSubscriptionPage /> : <UserManagementPage />}</WorkspaceBoundary>
-    </MemoryRouter></LanguageProvider></ToastProvider>
+    </MemoryRouter></WorkspaceSlugContext.Provider></LanguageProvider></ToastProvider>
   </QueryClientProvider>)
 }
 beforeEach(() => {

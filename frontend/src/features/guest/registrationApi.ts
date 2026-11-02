@@ -21,6 +21,8 @@ export interface RegistrationFields {
 
 export interface RegistrationInput extends RegistrationFields {
   password: string
+  /** Platform catalog node ids to copy into the workspace after provisioning; empty starts with no catalog. */
+  catalogSelection?: string[]
 }
 
 export type RegistrationStage =

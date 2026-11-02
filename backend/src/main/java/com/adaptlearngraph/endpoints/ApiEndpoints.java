@@ -24,9 +24,12 @@ public final class ApiEndpoints {
     public static final String MICRO_SKILL = API_V1 + "/organizations/{organizationId}/micro-skills";
     public static final String MODULE_AUTHORING = API_V1 + "/module-management";
     public static final String ORGANIZATION_TARGET_ROLE = API_V1 + "/organizations/{organizationId}/target-roles";
+    public static final String PLATFORM_CATALOG = API_V1 + "/platform-catalog";
     public static final String PREREQUISITE = API_V1 + "/organizations/{organizationId}/prerequisites";
     public static final String QUESTION_BANK = API_V1 + "/question-bank";
     public static final String REGISTRATION = API_V1 + "/registration";
+    /** Guest-only closure preview; lives under the registration session scope so its CSRF token applies. */
+    public static final String REGISTRATION_CATALOG_CLOSURE = REGISTRATION + "/catalog-closure";
     public static final String SYSTEM_STATUS = API_V1 + "/system";
     public static final String TARGET_ROLE = API_V1 + "/employee/target-roles";
     public static final String TARGET_ROLE_GRAPH = API_V1 + "/organizations/{organizationId}/target-roles/{roleId}/graph";

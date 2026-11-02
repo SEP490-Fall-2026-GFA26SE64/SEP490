@@ -16,5 +16,10 @@ public interface PaymentProcessingStore {
     void schedule(UUID orderId, Instant now);
     void scheduleDue(Instant now);
 
+    /** Workspace URL slug of an existing organization, if provisioned. */
+    default Optional<String> workspaceSlug(UUID organizationId) {
+        return Optional.empty();
+    }
+
     record Work(UUID jobId, String lease, String handler, int attempt, PaymentOrder order) {}
 }

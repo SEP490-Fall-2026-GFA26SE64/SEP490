@@ -107,12 +107,13 @@ public class Neo4jLearningModuleRepository implements LearningModuleRepository {
                 WITH mod
                 UNWIND $teachesSkillIds AS skillId
                 MATCH (s:MicroSkill {id: skillId})
+                WHERE s.organizationId = $organizationId
                 MERGE (mod)-[:TEACHES]->(s)
                 RETURN mod.id AS id
                 """;
         Map<String, Object> params = new java.util.HashMap<>();
         params.put("id", m.id());
-        params.put("organizationId", organizationId != null ? organizationId : "");
+        params.put("organizationId", Neo4jTenantGuard.requireOrganization(organizationId));
         params.put("title", m.title() != null ? m.title() : m.id());
         params.put("moduleType", m.moduleType() != null ? m.moduleType() : "LESSON_AND_PRACTICE");
         params.put("contentUri", m.contentUri() != null ? m.contentUri() : "");
@@ -125,6 +126,7 @@ public class Neo4jLearningModuleRepository implements LearningModuleRepository {
         params.put("teachesSkillIds", m.teachesSkillIds() != null ? m.teachesSkillIds() : List.of());
 
         try (var session = driver.session()) {
+            Neo4jTenantGuard.requireOwnedOrAbsent(session, "LearningModule", m.id(), organizationId);
             session.run(cypher, params).consume();
             return m;
         }
@@ -134,10 +136,11 @@ public class Neo4jLearningModuleRepository implements LearningModuleRepository {
     public void delete(String organizationId, String id) {
         String cypher = """
                 MATCH (m:LearningModule {id: $id})
+                WHERE m.organizationId = $organizationId
                 DETACH DELETE m
                 """;
         try (var session = driver.session()) {
-            session.run(cypher, Map.of("id", id)).consume();
+            session.run(cypher, Map.of("id", id, "organizationId", Neo4jTenantGuard.requireOrganization(organizationId))).consume();
         }
     }
 

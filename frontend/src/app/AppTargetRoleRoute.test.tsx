@@ -15,10 +15,10 @@ vi.mock('../shared/hooks/useEmployeeLearningState', () => ({
 
 describe('target-role application route', () => {
   beforeEach(() => {
-    window.history.pushState({}, '', '/employee/target-roles')
+    window.history.pushState({}, '', '/workspace/acme/employee/target-roles')
     vi.stubGlobal('fetch', vi.fn(async (url: string) => url.endsWith('/current') ? new Response(JSON.stringify({
       accountId: 'employee', organizationId: 'organization', email: 'employee@example.test', fullName: 'Test Employee',
-      roles: ['EMPLOYEE'], stage: 'COMPLETE', workspaceReady: true,
+      roles: ['EMPLOYEE'], stage: 'COMPLETE', workspaceReady: true, workspaceSlug: 'acme',
     })) : new Response(null, { status: 204 })))
   })
 
@@ -28,14 +28,14 @@ describe('target-role application route', () => {
     window.history.pushState({}, '', '/')
   })
 
-  it.each(['/employee/target-roles?search=Security&other=kept#catalog', '/employee/target-roles?tab=skills&search=Security&other=kept#catalog'])('RB01 redirects an authenticated employee from %s preserving query/hash without writes', async (path) => {
+  it.each(['/workspace/acme/employee/target-roles?search=Security&other=kept#catalog', '/workspace/acme/employee/target-roles?tab=skills&search=Security&other=kept#catalog'])('RB01 redirects an authenticated employee from %s preserving query/hash without writes', async (path) => {
     window.history.replaceState({}, '', path)
     const storageWrite = vi.spyOn(Storage.prototype, 'setItem')
 
     render(<App />)
 
     expect(await screen.findByText('Upskilling page')).toBeTruthy()
-    expect(window.location.pathname).toBe('/employee/upskilling')
+    expect(window.location.pathname).toBe('/workspace/acme/employee/upskilling')
     expect(new URLSearchParams(window.location.search).get('tab')).toBe('roles')
     expect(new URLSearchParams(window.location.search).get('search')).toBe('Security')
     expect(new URLSearchParams(window.location.search).get('other')).toBe('kept')

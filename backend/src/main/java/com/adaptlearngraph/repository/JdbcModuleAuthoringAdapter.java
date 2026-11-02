@@ -90,8 +90,8 @@ public final class JdbcModuleAuthoringAdapter implements ModuleAuthoringPort {
         try (var session = driver.session()) {
             return session.run("""
                     MATCH (m:LearningModule)
-                    WHERE m.id IS NOT NULL AND (m.organizationId IS NULL OR m.organizationId=$organization)
-                    OPTIONAL MATCH (m)-[t:TEACHES]->(s:MicroSkill)
+                    WHERE m.id IS NOT NULL AND m.organizationId=$organization
+                    OPTIONAL MATCH (m)-[t:TEACHES]->(s:MicroSkill) WHERE s.organizationId=$organization
                     WITH m, s, t ORDER BY s.id, t.id
                     RETURN m AS module, collect(CASE WHEN s IS NULL THEN null ELSE
                       {metadata: properties(t), skillId: s.id, skillName: s.name,
@@ -184,7 +184,8 @@ public final class JdbcModuleAuthoringAdapter implements ModuleAuthoringPort {
                     boolean alreadyPublished = matchesSnapshot(tx, doc.id(), doc.organizationId(), properties, teachings);
                     if (!original && !alreadyPublished) throw new Failure(409, "Catalog changed since intake; publication requires reconciliation");
                 }
-                long endpoints = tx.run("MATCH (s:MicroSkill) WHERE s.id IN $ids RETURN count(DISTINCT s.id) AS n", Map.of("ids", p.teachings().stream().map(Teaching::skillId).toList())).single().get("n").asLong();
+                Neo4jTenantGuard.requireOwnedOrAbsent(tx, "LearningModule", doc.id(), doc.organizationId());
+                long endpoints = tx.run("MATCH (s:MicroSkill) WHERE s.id IN $ids AND s.organizationId=$organization RETURN count(DISTINCT s.id) AS n", Map.of("ids", p.teachings().stream().map(Teaching::skillId).toList(), "organization", doc.organizationId())).single().get("n").asLong();
                 if (endpoints != teachings.size()) throw new Failure(409, "A mapped skill no longer exists");
                 if (!archived) {
                     boolean removesProvider = tx.run("""
@@ -199,9 +200,9 @@ public final class JdbcModuleAuthoringAdapter implements ModuleAuthoringPort {
                     if (removesProvider) throw new Failure(409, "Revision would remove a required primary skill provider");
                 }
                 // Graph and PostgreSQL snapshots deliberately keep independent revision identities.
-                tx.run("MERGE (m:LearningModule {id:$id}) SET m=$props", Map.of("id", doc.id(), "props", properties)).consume();
+                tx.run("MERGE (m:LearningModule {id:$id}) SET m=$props, m.organizationId=$organization", Map.of("id", doc.id(), "props", properties, "organization", doc.organizationId())).consume();
                 tx.run("MATCH (m:LearningModule {id:$id})-[t:TEACHES]->(s:MicroSkill) WHERE NOT s.id IN $ids DELETE t", Map.of("id", doc.id(), "ids", p.teachings().stream().map(Teaching::skillId).toList())).consume();
-                tx.run("MATCH (m:LearningModule {id:$id}) UNWIND $teachings AS item MATCH (s:MicroSkill {id:item.skillId}) MERGE (m)-[t:TEACHES]->(s) SET t=item.props", Map.of("id", doc.id(), "teachings", teachings)).consume();
+                tx.run("MATCH (m:LearningModule {id:$id}) WHERE m.organizationId=$organization UNWIND $teachings AS item MATCH (s:MicroSkill {id:item.skillId}) WHERE s.organizationId=$organization MERGE (m)-[t:TEACHES]->(s) SET t=item.props", Map.of("id", doc.id(), "teachings", teachings, "organization", doc.organizationId())).consume();
                 return null;
             });
         }
@@ -209,7 +210,7 @@ public final class JdbcModuleAuthoringAdapter implements ModuleAuthoringPort {
     private boolean matchesSnapshot(org.neo4j.driver.TransactionContext tx, String id, String organization, Map<String, Object> props, List<Map<String, Object>> teachings) {
         return tx.run("""
                 MATCH (m:LearningModule {id:$id})
-                WHERE (m.organizationId IS NULL OR m.organizationId=$organization) AND all(k IN keys($props) WHERE m[k]=$props[k] OR (m[k] IS NULL AND $props[k] IS NULL))
+                WHERE m.organizationId=$organization AND all(k IN keys($props) WHERE m[k]=$props[k] OR (m[k] IS NULL AND $props[k] IS NULL))
                 OPTIONAL MATCH (m)-[t:TEACHES]->(s:MicroSkill)
                 WITH collect(CASE WHEN t IS NULL THEN null ELSE {skillId:s.id,props:properties(t)} END) AS actual
                 RETURN size(actual)=size($teachings) AND all(item IN $teachings WHERE any(a IN actual WHERE a.skillId=item.skillId

@@ -57,6 +57,11 @@ interface NavTabItem {
 
 export type ActorRole = 'learner' | 'employee' | 'expert' | 'ld-manager' | 'admin' | 'platform-admin'
 
+const TRUSTED_ACTOR: Record<string, ActorRole | undefined> = {
+  PLATFORM_ADMINISTRATOR: 'platform-admin', ORGANIZATION_ADMINISTRATOR: 'admin', DOMAIN_EXPERT: 'expert',
+  LD_MANAGER: 'ld-manager', EMPLOYEE: 'employee',
+}
+
 export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOut: suppliedSignOut }: {
   children: ReactNode
   identity?: WorkspaceLayoutIdentity
@@ -158,6 +163,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     }
 
     const savedActor = localStorage.getItem('active_actor') as ActorRole | null
+    // A real session decides the portal of shared pages from its single role, not from demo state.
+    const sessionActor = trusted ? TRUSTED_ACTOR[identity?.roles?.length === 1 ? identity.roles[0] : ''] : undefined
+    if (sessionActor) return sessionActor
     if (savedActor === 'platform-admin' || savedActor === 'expert' || savedActor === 'ld-manager' || savedActor === 'admin') {
       return savedActor
     }

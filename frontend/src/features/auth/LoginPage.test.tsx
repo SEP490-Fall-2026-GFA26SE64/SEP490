@@ -7,15 +7,15 @@ import { LoginPage } from './LoginPage'
 import { MemberActivationPage } from '../subscription/WorkspaceLoginPage'
 import { LanguageProvider } from '../../shared/i18n/LanguageContext'
 
-function renderPage(component = <LoginPage />) {
+function renderPage(component = <LoginPage />, path = '/login') {
   return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-    <LanguageProvider><MemoryRouter>{component}</MemoryRouter></LanguageProvider>
+    <LanguageProvider><MemoryRouter initialEntries={[path]}>{component}</MemoryRouter></LanguageProvider>
   </QueryClientProvider>)
 }
 
 const signedIn = {
   accountId: 'test-account', organizationId: 'test-organization', email: 'admin@example.test', fullName: 'Test Administrator',
-  roles: ['ORGANIZATION_ADMINISTRATOR'], stage: 'COMPLETE', workspaceReady: true,
+  roles: ['ORGANIZATION_ADMINISTRATOR'], stage: 'COMPLETE', workspaceReady: true, workspaceSlug: 'acme',
 }
 const partial = { ...signedIn, accountId: null, organizationId: null, fullName: null, roles: [], workspaceReady: false }
 const csrf = { headerName: 'X-CSRF-TOKEN', token: 'isolated-csrf' }
@@ -156,6 +156,20 @@ describe('Workspace login appearance and authentication', () => {
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Sign in again' }))
     expect(await screen.findByLabelText('Password')).toHaveProperty('value', '')
     expect(fetcher).toHaveBeenCalledWith('/api/v1/workspace-auth/sign-out', expect.objectContaining({ method: 'POST' }))
+  })
+
+  it.each([
+    ['/workspace/acme/admin/users?tab=invites', '/workspace/acme/admin/users?tab=invites'],
+    ['/admin/users', '/workspace/acme/admin/users'],
+    ['/workspace/other-org/admin/users', '/workspace/acme/admin/subscription'],
+    ['https://evil.example/admin', '/workspace/acme/admin/subscription'],
+  ])('continues from next=%s only into the member workspace (%s)', async (next, expected) => {
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/csrf') ? response(csrf) : response(signedIn)))
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
+    renderPage(<LoginPage />, `/login?next=${encodeURIComponent(next)}`)
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Continue to workspace' }))
+    expect(assign).toHaveBeenCalledWith(expected)
   })
 
   it('reuses the workspace login frame for member activation', () => {

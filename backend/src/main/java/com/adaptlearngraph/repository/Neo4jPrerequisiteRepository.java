@@ -24,7 +24,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     public List<PrerequisiteEdge> findAll(String organizationId) {
         String cypher = """
                 MATCH (source:MicroSkill)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target:MicroSkill)
-                WHERE source.organizationId = $organizationId
+                WHERE source.organizationId = $organizationId AND target.organizationId = $organizationId
                 RETURN source, target, rel
                 ORDER BY coalesce(source.code, source.id) ASC, coalesce(target.code, target.id) ASC
                 """;
@@ -63,13 +63,14 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     public boolean hasPath(String organizationId, String fromSkillId, String toSkillId) {
         String cypher = """
                 MATCH (source:MicroSkill), (target:MicroSkill)
-                WHERE (source.id = $fromSkillId OR source.code = $fromSkillId)
+                WHERE source.organizationId = $organizationId AND target.organizationId = $organizationId
+                  AND (source.id = $fromSkillId OR source.code = $fromSkillId)
                   AND (target.id = $toSkillId OR target.code = $toSkillId)
                 MATCH p = (source)-[:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF*1..25]->(target)
                 RETURN count(p) > 0 AS hasPath
                 """;
         try (var session = driver.session()) {
-            var result = session.run(cypher, Map.of("fromSkillId", fromSkillId, "toSkillId", toSkillId));
+            var result = session.run(cypher, Map.of("fromSkillId", fromSkillId, "toSkillId", toSkillId, "organizationId", Neo4jTenantGuard.requireOrganization(organizationId)));
             if (result.hasNext()) {
                 return result.next().get("hasPath").asBoolean();
             }
@@ -86,7 +87,8 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
             SkillStatus status) {
         String cypher = """
                 MATCH (source:MicroSkill), (target:MicroSkill)
-                WHERE (source.id = $sourceSkillId OR source.code = $sourceSkillId)
+                WHERE source.organizationId = $organizationId AND target.organizationId = $organizationId
+                  AND (source.id = $sourceSkillId OR source.code = $sourceSkillId)
                   AND (target.id = $targetSkillId OR target.code = $targetSkillId)
                 MERGE (source)-[rel:HAS_SKILL_PREREQUISITE]->(target)
                 ON CREATE SET
@@ -105,6 +107,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 RETURN source, target, rel
                 """;
         Map<String, Object> params = Map.of(
+                "organizationId", Neo4jTenantGuard.requireOrganization(organizationId),
                 "sourceSkillId", sourceSkillId,
                 "targetSkillId", targetSkillId,
                 "minMastery", minMastery,
@@ -123,12 +126,14 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     public void deletePrerequisite(String organizationId, String sourceSkillId, String targetSkillId) {
         String cypher = """
                 MATCH (source:MicroSkill)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(target:MicroSkill)
-                WHERE (source.id = $sourceSkillId OR source.code = $sourceSkillId)
+                WHERE source.organizationId = $organizationId AND target.organizationId = $organizationId
+                  AND (source.id = $sourceSkillId OR source.code = $sourceSkillId)
                   AND (target.id = $targetSkillId OR target.code = $targetSkillId)
                 DELETE rel
                 """;
         try (var session = driver.session()) {
-            session.run(cypher, Map.of("sourceSkillId", sourceSkillId, "targetSkillId", targetSkillId)).consume();
+            session.run(cypher, Map.of("sourceSkillId", sourceSkillId, "targetSkillId", targetSkillId,
+                    "organizationId", Neo4jTenantGuard.requireOrganization(organizationId))).consume();
         }
     }
 

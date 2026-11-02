@@ -32,6 +32,10 @@ Documentation-only checks do not establish backend/frontend behavior. Revised ru
 
 ## Existing Test Guides and Evidence
 
+### Multi-organization Workspaces and Starter Catalog, 2026-11-02
+
+[Unit/API/frontend](unit/REQ-060-061-multi-org-workspace-20261102.md), [real persistence](integration/REQ-060-061-multi-org-workspace-20261102.md) and [system/screenshots/manual checks](system/REQ-060-061-multi-org-workspace-20261102.md) cover `/workspace/{slug}` routing, legacy redirects, foreign/unknown slug isolation without tenant requests, organization-scoped catalog APIs, the registration catalog picker and the post-payment catalog copy that gates workspace readiness. Results: **659 backend tests** passed; frontend 292 passed with 6 unrelated failures (5 identical on unmodified HEAD, 1 load-only timeout that passes alone); build and lint passed; **8 real-API Playwright journeys** passed at desktop and mobile.
+
 ### Layered Backend Architecture Refactor, 2026-11-01
 
 [Refactor evidence](unit/layered-architecture-refactor-20261101.md) covers the move to layer packages (`apis`, `services`, `repository`, `entities`, `dtos` and infrastructure packages), the new [layer rules](unit/architecture-boundaries.md#current-layered-architecture-checks-2026-11-01), repair of stale pre-existing backend tests and an identical HTTP status sweep against the unmodified code.
@@ -100,6 +104,7 @@ All runnable test code is kept next to its source code (`backend/src/test/java` 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **REQ-019-F01 / REQ-020-F01/F02; direct REQ-042-F01 / REQ-004-F01** | Initial pathway review and own approved read | [Unit/API/component](system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping) | [Real integration](system/REQ-002-041-042-workspace-integration.md#real-integration-mapping) | [Real system](system/REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) | [Current procedure / retained history](system/REQ-019-REQ-020-manual-browser-check.md) |
 | **REQ-060-F01-F03** | Registration, email, MFA and secure resume | [unit/REQ-060](unit/REQ-060-registration.md) | [integration/REQ-060](integration/REQ-060-registration.md) | [system/REQ-060](system/REQ-060-registration.md) | [Manual/Gmail checklist](system/REQ-060-registration-manual-check.md) |
+| **REQ-060-F04, REQ-061-F01** | Workspace URLs, organization isolation and starter catalog copy | [unit](unit/REQ-060-061-multi-org-workspace-20261102.md) | [integration](integration/REQ-060-061-multi-org-workspace-20261102.md) | [system](system/REQ-060-061-multi-org-workspace-20261102.md) | [Manual checks](system/REQ-060-061-multi-org-workspace-20261102.md#manual-checks-still-recommended) |
 | **REQ-001-F01** | View Target Roles | [unit/REQ-001-F01](unit/REQ-001-F01-view-target-roles.md) | [integration/REQ-001-F01](integration/REQ-001-F01-view-target-roles.md) | [system/REQ-001-F01](system/REQ-001-F01-view-target-roles.md) | [Manual Check](system/REQ-001-F01-manual-browser-check.md) |
 | **REQ-001-F02** | Choose Target Role | [Master Plan](REQ-001-F02-choose-target-role.md#t1-t3-unit--mvc) | [Master Plan](REQ-001-F02-choose-target-role.md#t4-postgresql-integration) | [Master Plan](REQ-001-F02-choose-target-role.md#t6-full-stack-system) | [Playwright Spec](../../frontend/system-tests/REQ-001-F02-target-role-selection.spec.ts) |
 | **REQ-011** | Assigned Target Roles | [unit/REQ-011](unit/REQ-011-assigned-target-roles.md) | [integration/REQ-011](integration/REQ-011-assigned-target-roles.md) | [system/REQ-011](system/REQ-011-assigned-target-roles.md) | [Manual Check](system/REQ-023-manual-browser-check.md#4-domain-expert-perspective--queue-isolation-req-011--req-023-f05) |

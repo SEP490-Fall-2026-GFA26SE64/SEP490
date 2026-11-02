@@ -37,7 +37,8 @@ public final class PaymentConfirmationMailWorker {
             var now = Timestamp.from(clock.instant());
             var jobs = jdbc.query("""
                     SELECT j.job_id,j.event_id,j.attempts,o.order_id,o.provider_order_code,o.name,o.price_vnd,
-                      o.duration_months,o.employee_seats,o.paid_at,i.kind,a.identifier
+                      o.duration_months,o.employee_seats,o.paid_at,i.kind,a.identifier,
+                      (SELECT w.slug FROM platform.organization_workspace w WHERE w.organization_id=a.organization_id) AS slug
                     FROM platform.processing_job j JOIN platform.outbox_event e USING(event_id)
                     JOIN platform.payment_order o ON o.order_id=e.aggregate_id
                     JOIN platform.subscription_intent i USING(intent_id)
@@ -49,7 +50,7 @@ public final class PaymentConfirmationMailWorker {
                     """, (rs, index) -> new Job(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class),
                     rs.getInt(3) + 1, rs.getObject(4, UUID.class), rs.getLong(5), rs.getString(6),
                     rs.getLong(7), rs.getInt(8), rs.getInt(9), rs.getTimestamp(10),
-                    rs.getString(11), rs.getString(12), UUID.randomUUID().toString()), now, now);
+                    rs.getString(11), rs.getString(12), UUID.randomUUID().toString(), rs.getString(13)), now, now);
             if (jobs.isEmpty()) return null;
             var value = jobs.getFirst();
             jdbc.update("""
@@ -71,7 +72,8 @@ public final class PaymentConfirmationMailWorker {
             details.put("Employee seats", Integer.toString(job.seats()));
             details.put("Payment confirmed", DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm z", java.util.Locale.ENGLISH)
                     .withZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(job.confirmed().toInstant()));
-            String route = "PURCHASE".equals(job.kind()) ? "/guest/payment-result" : "/admin/subscription/payment-result";
+            String route = "PURCHASE".equals(job.kind()) ? "/guest/payment-result"
+                    : com.adaptlearngraph.helper.WorkspaceLinks.path(job.slug(), "/admin/subscription/payment-result");
             try {
                 mail.send(job.email(), TransactionalEmail.render("Payment received - Adapt-Learn-Graph",
                         "Thank you. Your subscription payment has been verified. Keep this confirmation for your records.",
@@ -99,7 +101,7 @@ public final class PaymentConfirmationMailWorker {
     }
 
     private record Job(UUID id, UUID event, int attempt, UUID order, long code, String plan, long amount,
-                       int months, int seats, Timestamp confirmed, String kind, String email, String lease) {
+                       int months, int seats, Timestamp confirmed, String kind, String email, String lease, String slug) {
         @Override public String toString() { return "PaymentMailJob[redacted]"; }
     }
 }

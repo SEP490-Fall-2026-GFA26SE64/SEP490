@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { CheckCircle2 } from 'lucide-react'
 import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
@@ -9,11 +9,12 @@ import { Button } from '../../shared/components/ui/Button'
 import { authenticate, completeTotp, getIdentity, setupTotp, request, type Identity } from './subscriptionApi'
 import { Failure, Loading, useCopy } from './SubscriptionFeedback'
 import { ROLE_HOME, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
+import { isWorkspaceSlug, safeReturnPath, workspaceUrl } from '../../shared/auth/workspacePaths'
 import { setActiveCompanyId } from '../../shared/stores/companyStore'
 
 export function WorkspaceLoginPage() {
   const c = useCopy()
-  const navigate = useNavigate()
+  const next = new URLSearchParams(useLocation().search).get('next')
   const cache = useQueryClient()
   const current = useQuery({ queryKey: ['workspace-identity'], queryFn: getIdentity, staleTime: 0 })
   const [identity, setIdentity] = useState<Identity | null>(null)
@@ -38,7 +39,9 @@ export function WorkspaceLoginPage() {
   const confirm = useMutation({ mutationFn: () => completeTotp(code), onSuccess: result => { finish(result.identity); setSecret(null); setCodes(result.recoveryCodes) } })
   const ready = session?.stage === 'COMPLETE'
   const role = singleWorkspaceRole(session?.roles ?? [])
-  const destination = role ? ROLE_HOME[role] : null
+  const slug = session?.workspaceSlug ?? null
+  const destination = !role ? null : role === 'PLATFORM_ADMINISTRATOR' ? ROLE_HOME[role]
+    : isWorkspaceSlug(slug) ? safeReturnPath(next, slug) ?? workspaceUrl(slug, ROLE_HOME[role]) : null
   const enrolling = session?.stage === 'SETUP_MFA' || session?.stage === 'SETUP_MFA_RECOVERY'
   const errors = [current.error, signIn.error, verify.error, setup.error, confirm.error, restart.error].filter(Boolean)
   return <WorkspaceAuthLayout title={c('Enterprise Sign In', 'Đăng nhập doanh nghiệp')}
@@ -51,8 +54,10 @@ export function WorkspaceLoginPage() {
           <pre className="overflow-x-auto rounded border border-border bg-muted p-3 text-caption">{codes.join('\n')}</pre>
           <Button onClick={() => setCodes([])}>{c('I saved the recovery codes', 'Tôi đã lưu mã khôi phục')}</Button>
         </div>}
-        {!destination && <Failure error={new Error(c('Your account must have exactly one recognized role. Contact your administrator.', 'Tài khoản phải có đúng một vai trò hợp lệ. Liên hệ quản trị viên.'))} />}
-        <Button className="razor-submit-btn" disabled={codes.length > 0 || !destination} onClick={() => { if (destination) navigate(destination) }}>
+        {!destination && <Failure error={new Error(!role
+          ? c('Your account must have exactly one recognized role. Contact your administrator.', 'Tài khoản phải có đúng một vai trò hợp lệ. Liên hệ quản trị viên.')
+          : c('Your organization workspace address is unavailable. Contact your administrator.', 'Địa chỉ không gian của tổ chức không khả dụng. Liên hệ quản trị viên.'))} />}
+        <Button className="razor-submit-btn" disabled={codes.length > 0 || !destination} onClick={() => { if (destination) window.location.assign(destination) }}>
           {c('Continue to workspace', 'Tiếp tục vào không gian')}
         </Button>
       </> : !session ? <form className="razor-form" onSubmit={event => { event.preventDefault(); signIn.mutate() }}>
