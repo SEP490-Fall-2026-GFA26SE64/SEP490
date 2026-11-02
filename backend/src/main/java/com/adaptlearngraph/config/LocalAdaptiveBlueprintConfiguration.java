@@ -2,7 +2,6 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.Neo4jAdaptiveBaselineCatalogAdapter;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort;
@@ -23,6 +22,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.persistence", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(JdbcAdaptiveBlueprintEligibilityAdapter.Properties.class)
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalAdaptiveBlueprintConfiguration {
     @Bean
     AdaptiveBlueprintStore adaptiveBlueprintStore(DataSource dataSource, ObjectMapper mapper,
@@ -32,8 +32,8 @@ public class LocalAdaptiveBlueprintConfiguration {
     }
 
     @Bean
-    AdaptiveTechnicalVersionPort adaptiveTechnicalVersionPort(DataSource dataSource) {
-        return new JdbcAdaptiveTechnicalVersionStore(new NamedParameterJdbcTemplate(dataSource));
+    AdaptiveTechnicalVersionPort adaptiveTechnicalVersionPort(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions) {
+        return new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);
     }
 
     @Bean

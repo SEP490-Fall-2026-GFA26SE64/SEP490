@@ -15,7 +15,6 @@ import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.PinnedAdaptiveAttemptPolicyAdapter;
 import static org.assertj.core.api.Assertions.*;
@@ -96,7 +95,7 @@ class RoleBaselinePostgresIntegrationTest {
   when(context.requireEmployee()).thenReturn(new AdaptiveAttemptContextPort.Employee(ORG,EMP));
   when(context.resolveScope(any(),any())).thenReturn(new AdaptiveAttempt.Scope(ORG,EMP,OCC));
   when(context.resolveStartingSnapshot(any(),any())).thenAnswer(i->snapshot(version));
-  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
+  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
   var content=new JpaAdaptiveAttemptContent(items,id(50));
   var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalization=new AdaptiveAttemptFinalizationService(attempts,policy,c->{outcome.persist(c);profiles.initialize(c);});
@@ -275,7 +274,7 @@ class RoleBaselinePostgresIntegrationTest {
   var before=digest();
   assertThatThrownBy(()->answers.answer(new AdaptiveAttemptUseCase.Answer(old.id(),1,1,id(100),"a","late"))).isInstanceOfSatisfying(AdaptiveAttemptUseCase.Failure.class,e->assertThat(e.code()).isEqualTo(AdaptiveAttemptUseCase.Code.DEADLINE_REACHED));
   assertThat(digest()).isEqualTo(before);
-  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
+  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
   var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,c->{out.persist(c);profiles.initialize(c);});
   var worker=new AdaptiveAttemptDeadlineWorker(attempts,finalizer,ORG,10);
@@ -290,7 +289,7 @@ class RoleBaselinePostgresIntegrationTest {
   assertThat(count("baseline_mastery_evidence")).isZero();assertThat(count("employee_occupation_profile")).isZero();
  }
  @Test void rb15ValidHistoricalOutcomeWithoutProfileRemainsPendingAndDoesNotUnlockRetake(){
-  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
+  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
   var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,out);
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));
@@ -303,7 +302,7 @@ class RoleBaselinePostgresIntegrationTest {
  }
 
  AdaptiveAttemptContextPort trustedContext(UUID employee) {
-  var technical=new JdbcAdaptiveTechnicalVersionStore(jdbc);
+  var technical=new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class));
   var resolver=new AdaptiveAttemptSnapshotResolver(blueprints,eligibility,technical);
   AdaptiveSelectedRolePort selected=(org,learner)->{
    var current=selections.current(new RoleBaselineFlow.Actor(org,learner)).orElseThrow();
@@ -315,7 +314,7 @@ class RoleBaselinePostgresIntegrationTest {
   var real=trustedContext(EMP);var stale=org.mockito.Mockito.spy(real);
   org.mockito.Mockito.doAnswer(i->{var scope=real.resolveScope(i.getArgument(0),i.getArgument(1));flow.choose("other",first.selectionId(),"changed-before-start");return scope;})
     .when(stale).resolveScope(any(),any());
-  var usecase=new AdaptiveAttemptStartService(stale,attempts,new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc)),new JpaAdaptiveAttemptContent(items,id(50)));
+  var usecase=new AdaptiveAttemptStartService(stale,attempts,new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class))),new JpaAdaptiveAttemptContent(items,id(50)));
   assertThatThrownBy(()->usecase.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"stale-start")).isInstanceOfSatisfying(AdaptiveAttemptUseCase.Failure.class,e->assertThat(e.code()).isEqualTo(AdaptiveAttemptUseCase.Code.SELECTION_UNAVAILABLE));
   assertThat(count("baseline_adaptive_attempt")).isZero();assertThat(count("baseline_attempt_command")).isZero();
   assertThat(selections.current(new RoleBaselineFlow.Actor(ORG,EMP)).orElseThrow().role().occupationId()).isEqualTo("other-occ");
@@ -323,7 +322,7 @@ class RoleBaselinePostgresIntegrationTest {
  @Test void abA08DeactivateStartRacePreservesExistingPinsAndDeniesLaterNewStart() throws Exception {
   selectionFlow(ORG,EMP).choose("role-a",null,"role");
   selectionFlow(ORG,OTHER).choose("role-a",null,"other-role");
-  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
+  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
   var content=new JpaAdaptiveAttemptContent(items,id(50));
   var start=new AdaptiveAttemptStartService(trustedContext(EMP),attempts,policy,content);
   var gate=new CountDownLatch(1);
@@ -430,7 +429,7 @@ class RoleBaselinePostgresIntegrationTest {
  @org.junit.jupiter.params.ParameterizedTest
  @org.junit.jupiter.params.provider.ValueSource(strings={"{\"s1\":0,\"s2\":0}","{\"s1\":0,\"s2\":null,\"s3\":\"UNKNOWN\"}"})
  void rb06PartialAndInvalidProfileValuesNeverClaimCompleteCoverage(String mastery){
-  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
+  var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
   var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,out);
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));

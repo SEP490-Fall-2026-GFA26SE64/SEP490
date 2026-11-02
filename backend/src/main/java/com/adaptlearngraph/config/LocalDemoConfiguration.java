@@ -17,7 +17,6 @@ import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
-import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.Neo4jAdaptiveBaselineCatalogAdapter;
 import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
@@ -56,8 +55,8 @@ public class LocalDemoConfiguration {
     @Bean @Primary AdaptiveBaselineCatalogPort demoCatalog(Driver driver,ObjectMapper json) {
         return new Neo4jAdaptiveBaselineCatalogAdapter(driver,json,LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),true);
     }
-    @Bean @Primary AdaptiveTechnicalVersionPort demoTechnical(DataSource source) {
-        var delegate = new JdbcAdaptiveTechnicalVersionStore(new NamedParameterJdbcTemplate(source));
+    @Bean @Primary AdaptiveTechnicalVersionPort demoTechnical(DataSource source,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions) {
+        var delegate = new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);
         var pin = new VersionPins(LocalDemoIdentity.id("model-v1"),LocalDemoIdentity.id("mapping-v1"),LocalDemoIdentity.id("fitted-v1"));
         return new AdaptiveTechnicalVersionPort() {
             public Optional<TechnicalVersions> findPromoted(UUID model,UUID mapping) { return Optional.empty(); }

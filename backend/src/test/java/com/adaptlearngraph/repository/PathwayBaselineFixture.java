@@ -59,7 +59,7 @@ final class PathwayBaselineFixture {
             public AdaptiveAttemptSnapshot resolveStartingSnapshot(AdaptiveAttempt.Scope s,AdaptiveAttemptUseCase.StartTarget target){authorizeScope(requireEmployee(),s);return snapshot;}
         };
         var attempts=new JdbcAdaptiveAttemptStore(jdbc,json,manager,blueprints);
-        var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
+        var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
         var content=new com.adaptlearngraph.repository.JpaAdaptiveAttemptContent(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),id(50));var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,json,attempts);
         var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,outcome);
         var start=new AdaptiveAttemptStartService(context,attempts,policy,content);

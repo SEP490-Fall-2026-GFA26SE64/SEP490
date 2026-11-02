@@ -24,7 +24,6 @@ import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
 import com.adaptlearngraph.repository.JdbcWorkspaceBaselineResourceWriter;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.MainDevelopmentTechnicalVersions;
@@ -144,8 +143,8 @@ public class WorkspaceBaselineConfiguration {
     @Bean AdaptiveBlueprintStore workspaceBlueprintStore(DataSource source, ObjectMapper json, PlatformTransactionManager transactions) {
         return new JdbcAdaptiveBlueprintStore(new NamedParameterJdbcTemplate(source), json, transactions, true);
     }
-    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
-        AdaptiveTechnicalVersionPort delegate=new JdbcAdaptiveTechnicalVersionStore(new NamedParameterJdbcTemplate(source));
+    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
+        AdaptiveTechnicalVersionPort delegate=new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);
         if(enabled(environment))delegate=new MainDevelopmentTechnicalVersions(source,json,new DevelopmentTechnicalVersions(new SoftwareDevelopmentTechnicalVersions(source,json,delegate)));
         return fixture.active()?new WorkspaceFixtureTechnicalVersions(new NamedParameterJdbcTemplate(source),fixture,delegate):delegate;
     }
