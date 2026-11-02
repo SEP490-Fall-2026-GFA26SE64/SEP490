@@ -257,7 +257,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         }
     }
 
-    /** Header + ordered role/skill membership rows to the immutable version (former ResultSet mapping, same null handling). */
+    /** Header + ordered role/skill membership rows to the immutable version (same null handling as the former row mapping). */
     private static Version version(BaselineAdaptiveBlueprintVersionJpaRepository.Header header, Scope scope,
                                    List<BaselineAdaptiveBlueprintVersionJpaRepository.Member> rows) {
         String policy = header.scopePolicy();
@@ -283,7 +283,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
                         header.parameterSetId()), roles, header.createdBy(), header.createdAt());
     }
 
-    /** JDBC getInt semantics: SQL NULL reads as 0. */
+    /** Former getInt semantics: SQL NULL reads as 0. */
     private static int orZero(Integer value) { return value == null ? 0 : value; }
 
     private static void sameScope(Scope expected, Scope actual) {

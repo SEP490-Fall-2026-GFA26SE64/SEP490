@@ -1,15 +1,16 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.constants.LocalDemoIdentity;
+import com.adaptlearngraph.entities.IrtItemParameterEntity;
+import com.adaptlearngraph.entities.IrtParameterSetEntity;
+import com.adaptlearngraph.repository.DevelopmentSeedRepositories;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy;
 import com.fasterxml.jackson.databind.*;
-import javax.sql.DataSource;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import org.springframework.boot.*;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.namedparam.*;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** Idempotent explicit demo provisioning. No official content, old account or historical pin is updated. */
@@ -18,22 +19,24 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
             Map<UUID,UUID> itemIds,Map<UUID,String> originalHashes,Map<UUID,String> projectedHashes){
         public Projection { itemIds=Map.copyOf(itemIds);originalHashes=Map.copyOf(originalHashes);projectedHashes=Map.copyOf(projectedHashes); }
     }
+    private record Key(UUID org,UUID bank,UUID model,UUID mapping,UUID set,UUID admin,String hash,String mappingHash,
+            String modelJson,String mappingJson,String artifact){}
     private final Projection projection;
-    private final NamedParameterJdbcTemplate jdbc;
+    private final DevelopmentSeedRepositories seeds;
     private final ObjectMapper json;
     private final TransactionTemplate transaction;
     private final boolean seedPersonaAccounts;
     private final UUID technicalActor;
-    public LocalDemoProvisioning(DataSource source,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions) {
-        this(source,json,transactions,true,LocalDemoIdentity.id("admin"));
+    public LocalDemoProvisioning(DevelopmentSeedRepositories seeds,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions) {
+        this(seeds,json,transactions,true,LocalDemoIdentity.id("admin"));
     }
-    public LocalDemoProvisioning(DataSource source,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions,
+    public LocalDemoProvisioning(DevelopmentSeedRepositories seeds,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions,
             boolean seedPersonaAccounts,UUID technicalActor) {
-        this(source,json,transactions,seedPersonaAccounts,technicalActor,null);
+        this(seeds,json,transactions,seedPersonaAccounts,technicalActor,null);
     }
-    public LocalDemoProvisioning(DataSource source,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions,
+    public LocalDemoProvisioning(DevelopmentSeedRepositories seeds,ObjectMapper json,org.springframework.transaction.PlatformTransactionManager transactions,
             boolean seedPersonaAccounts,UUID technicalActor,Projection projection) {
-        this.jdbc=new NamedParameterJdbcTemplate(source); this.json=json; this.transaction=new TransactionTemplate(transactions);
+        this.seeds=seeds; this.json=json; this.transaction=new TransactionTemplate(transactions);
         this.seedPersonaAccounts=seedPersonaAccounts;this.technicalActor=Objects.requireNonNull(technicalActor);
         this.projection=projection;
         if(projection!=null && seedPersonaAccounts)throw new IllegalArgumentException("Projected seed does not create demo personas");
@@ -53,40 +56,46 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
         catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
     }
     private void provision(JsonNode fitted,String hash,String model,String mapping) {
-        jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended('LOCAL_BASELINE_DEMO_V1',0))",Map.of(),(rs,row)->true);
-        var base=new MapSqlParameterSource("org",projection==null?LocalDemoIdentity.ORG:projection.organization()).addValue("bank",projection==null?LocalDemoIdentity.BANK:projection.bank());
-        if (!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.question_bank b JOIN platform.account a ON a.account_id=b.created_by WHERE b.question_bank_id=:bank AND a.organization_id=:org)",base,Boolean.class))) throw new IllegalStateException("Provision official bank first");
-        var pins=jdbc.query("SELECT item_version_id,content_hash FROM platform.item_version WHERE question_bank_id=:bank",base,(rs,row)->Map.entry(rs.getObject(1,UUID.class),rs.getString(2)));
+        seeds.locks().lock("LOCAL_BASELINE_DEMO_V1");
+        var identities=seeds.identities();var technical=seeds.technical();
+        UUID org=projection==null?LocalDemoIdentity.ORG:projection.organization(),bank=projection==null?LocalDemoIdentity.BANK:projection.bank();
+        if (!technical.bankOwnedBy(bank,org)) throw new IllegalStateException("Provision official bank first");
+        var pins=technical.itemPins(bank);
         var expected=new HashMap<UUID,String>(); fitted.path("items").forEach(i->expected.put(UUID.fromString(i.path("pin").path("itemVersionId").asText()),i.path("pin").path("contentHash").asText()));
         if(projection!=null){
             if(!expected.equals(projection.originalHashes()))throw new IllegalStateException("Source fitted/content projection drift");
             expected.clear();expected.putAll(projection.projectedHashes());
         }
-        if (pins.size()!=135 || expected.size()!=135 || pins.stream().anyMatch(i->!i.getValue().equals(expected.get(i.getKey())))) throw new IllegalStateException("Official bank pins drift");
+        if (pins.size()!=135 || expected.size()!=135 || pins.stream().anyMatch(i->!i.contentHash().equals(expected.get(i.itemVersionId())))) throw new IllegalStateException("Official bank pins drift");
         for (String persona:seedPersonaAccounts?LocalDemoIdentity.PERSONAS:Set.<String>of()) {
             String role=persona.equals("ld")?"LD_MANAGER":persona.equals("admin")?"ADMINISTRATOR":"EMPLOYEE";
-            var a=new MapSqlParameterSource("id",LocalDemoIdentity.id(persona)).addValue("org",LocalDemoIdentity.ORG).addValue("name", "local-baseline-demo-"+persona).addValue("role",role);
-            jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES(:id,:org,:name,:name,'DEMO_NO_PASSWORD_LOGIN') ON CONFLICT(account_id) DO NOTHING",a);
-            if (!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.account WHERE account_id=:id AND organization_id=:org AND identifier=:name AND active AND password_hash='DEMO_NO_PASSWORD_LOGIN')",a,Boolean.class))) throw new IllegalStateException("Demo actor identity drift");
-            jdbc.update("INSERT INTO platform.account_role(account_id,role_code) VALUES(:id,:role) ON CONFLICT DO NOTHING",a);
-            if (role.equals("EMPLOYEE")) jdbc.update("INSERT INTO platform.learner_state(learner_id) VALUES(:id) ON CONFLICT DO NOTHING",a);
+            UUID id=LocalDemoIdentity.id(persona);String name="local-baseline-demo-"+persona;
+            identities.insertAccountIfAbsent(id,LocalDemoIdentity.ORG,name,name,"DEMO_NO_PASSWORD_LOGIN");
+            if (!identities.fixtureAccountExists(id,LocalDemoIdentity.ORG,name,"DEMO_NO_PASSWORD_LOGIN")) throw new IllegalStateException("Demo actor identity drift");
+            identities.insertAccountRoleIfAbsent(id,role);
+            if (role.equals("EMPLOYEE")) identities.insertLearnerStateIfAbsent(id);
         }
-        var key=base.addValue("model",projection==null?LocalDemoIdentity.id("model-v1"):projection.model()).addValue("mapping",projection==null?LocalDemoIdentity.id("mapping-v1"):projection.mapping()).addValue("set",projection==null?LocalDemoIdentity.id("fitted-v1"):projection.parameters()).addValue("admin",technicalActor).addValue("hash",hash).addValue("mappingHash",sha256(mapping)).addValue("modelJson",model).addValue("mappingJson",mapping);
-        key.addValue("artifact",projection==null?"local-demo:SYNTHETIC:fixed-c-MML-EM-v1":"development:TechNova:Security:SYNTHETIC:"+projection.hash());
-        jdbc.update("INSERT INTO platform.model_version(model_version_id,algorithm,version,parameter_hash,configuration,artifact_ref) VALUES(:model,'IRT_3PL','LOCAL_DEMO_SYNTHETIC_V1',:hash,CAST(:modelJson AS jsonb),:artifact) ON CONFLICT(model_version_id) DO NOTHING",key);
-        jdbc.update("INSERT INTO platform.mastery_mapping_version(mastery_mapping_version_id,mapping_type,configuration,configuration_hash) VALUES(:mapping,'LOGISTIC_CONSERVATIVE_V1',CAST(:mappingJson AS jsonb),:mappingHash) ON CONFLICT DO NOTHING",key);
-        if (!Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.model_version WHERE model_version_id=:model AND configuration=CAST(:modelJson AS jsonb) AND parameter_hash=:hash AND approved_by IS NULL AND artifact_ref=:artifact)",key,Boolean.class)) || !Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.mastery_mapping_version WHERE mastery_mapping_version_id=:mapping AND configuration=CAST(:mappingJson AS jsonb) AND configuration_hash=:mappingHash)",key,Boolean.class))) throw new IllegalStateException("Demo policy drift");
-        var sets=jdbc.queryForList("SELECT parameter_hash,source,status FROM platform.irt_parameter_set WHERE parameter_set_id=:set",key);
+        var key=new Key(org,bank,projection==null?LocalDemoIdentity.id("model-v1"):projection.model(),projection==null?LocalDemoIdentity.id("mapping-v1"):projection.mapping(),
+                projection==null?LocalDemoIdentity.id("fitted-v1"):projection.parameters(),technicalActor,hash,sha256(mapping),model,mapping,
+                projection==null?"local-demo:SYNTHETIC:fixed-c-MML-EM-v1":"development:TechNova:Security:SYNTHETIC:"+projection.hash());
+        technical.insertModelIfAbsent(key.model(),"LOCAL_DEMO_SYNTHETIC_V1",key.hash(),key.modelJson(),key.artifact());
+        technical.insertMappingIfAbsent(key.mapping(),key.mappingJson(),key.mappingHash());
+        if (!technical.unapprovedModelMatches(key.model(),key.modelJson(),key.hash(),key.artifact())
+                || !technical.mappingMatches(key.mapping(),key.mappingJson(),key.mappingHash())) throw new IllegalStateException("Demo policy drift");
+        var sets=technical.setState(key.set());
         if (sets.isEmpty()) {
-            jdbc.update("INSERT INTO platform.irt_parameter_set(parameter_set_id,model_version_id,source,status,parameter_hash) VALUES(:set,:model,'SEEDED','BUILDING',:hash)",key);
+            technical.insert(new IrtParameterSetEntity(key.set(),key.model(),"SEEDED","BUILDING",key.hash(),null,null,null));
+            var parameters=new ArrayList<IrtItemParameterEntity>();
             for (var item:fitted.path("items")) {
-                jdbc.update("INSERT INTO platform.irt_item_parameter(parameter_set_id,item_version_id,micro_skill_id,discrimination_a,difficulty_b,guessing_c,fit_diagnostics) VALUES(:set,:item,:skill,:a,:b,:c,CAST(:diagnostics AS jsonb))",new MapSqlParameterSource(key.getValues()).addValue("item",projectedItem(UUID.fromString(item.path("pin").path("itemVersionId").asText()))).addValue("skill",item.path("pin").path("skillId").asText()).addValue("a",item.path("a").decimalValue()).addValue("b",item.path("b").decimalValue()).addValue("c",item.path("c").decimalValue()).addValue("diagnostics",diagnostics(item)));
+                parameters.add(new IrtItemParameterEntity(key.set(),projectedItem(UUID.fromString(item.path("pin").path("itemVersionId").asText())),
+                        item.path("pin").path("skillId").asText(),item.path("a").decimalValue(),item.path("b").decimalValue(),item.path("c").decimalValue(),diagnostics(item)));
             }
-            jdbc.update("UPDATE platform.irt_parameter_set SET status='CANDIDATE' WHERE parameter_set_id=:set",key);
-            jdbc.update("UPDATE platform.irt_parameter_set SET status='PROMOTED',activated_by=:admin,activated_at=clock_timestamp() WHERE parameter_set_id=:set",key);
-        } else if (!hash.equals(sets.getFirst().get("parameter_hash")) || !"SEEDED".equals(sets.getFirst().get("source")) || !"PROMOTED".equals(sets.getFirst().get("status"))) throw new IllegalStateException("Demo parameter pin drift");
-        Integer count=jdbc.queryForObject("SELECT count(*) FROM platform.irt_item_parameter WHERE parameter_set_id=:set",key,Integer.class);
-        if (count==null || count!=135) throw new IllegalStateException("Demo parameter coverage drift");
+            seeds.itemParameters().insertAll(parameters);
+            technical.markCandidate(key.set());
+            technical.promote(key.set(),key.admin());
+        } else if (!hash.equals(sets.getFirst().parameterHash()) || !"SEEDED".equals(sets.getFirst().source()) || !"PROMOTED".equals(sets.getFirst().status())) throw new IllegalStateException("Demo parameter pin drift");
+        long count=technical.parameterCount(key.set());
+        if (count!=135) throw new IllegalStateException("Demo parameter coverage drift");
         if(projection!=null)verifyProjectedParameters(fitted,key);
     }
     private UUID projectedItem(UUID original){
@@ -99,16 +108,16 @@ public final class LocalDemoProvisioning implements ApplicationRunner {
                 "seedProjectionHash",projection.hash(),"sourceItemVersionId",item.path("pin").path("itemVersionId").asText(),"sourceContentHash",item.path("pin").path("contentHash").asText()));}
         catch(java.io.IOException invalid){throw new IllegalStateException(invalid);}
     }
-    private void verifyProjectedParameters(JsonNode fitted,MapSqlParameterSource key){
+    private void verifyProjectedParameters(JsonNode fitted,Key key){
         var expected=new HashMap<UUID,JsonNode>();fitted.path("items").forEach(item->expected.put(projectedItem(UUID.fromString(item.path("pin").path("itemVersionId").asText())),item));
-        jdbc.query("SELECT * FROM platform.irt_item_parameter WHERE parameter_set_id=:set",key,rs->{
-            var item=expected.remove(rs.getObject("item_version_id",UUID.class));
-            if(item==null || !item.path("pin").path("skillId").asText().equals(rs.getString("micro_skill_id"))
-                    || item.path("a").decimalValue().compareTo(rs.getBigDecimal("discrimination_a"))!=0
-                    || item.path("b").decimalValue().compareTo(rs.getBigDecimal("difficulty_b"))!=0
-                    || item.path("c").decimalValue().compareTo(rs.getBigDecimal("guessing_c"))!=0)
+        for(var row:seeds.technical().parameters(key.set())){
+            var item=expected.remove(row.itemVersionId());
+            if(item==null || !item.path("pin").path("skillId").asText().equals(row.microSkillId())
+                    || item.path("a").decimalValue().compareTo(row.discriminationA())!=0
+                    || item.path("b").decimalValue().compareTo(row.difficultyB())!=0
+                    || item.path("c").decimalValue().compareTo(row.guessingC())!=0)
                 throw new IllegalStateException("Projected fitted parameter drift");
-        });
+        }
         if(!expected.isEmpty())throw new IllegalStateException("Projected fitted coverage drift");
     }
 }

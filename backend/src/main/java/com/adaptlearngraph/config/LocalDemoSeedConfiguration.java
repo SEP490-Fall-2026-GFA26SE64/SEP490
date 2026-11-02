@@ -2,25 +2,29 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.dtos.OfficialQuestionBankManifest;
 import com.adaptlearngraph.helper.OfficialQuestionBankCatalog;
+import com.adaptlearngraph.repository.DevelopmentSeedRepositories;
 import com.adaptlearngraph.services.OfficialQuestionBankImporter;
 import com.fasterxml.jackson.databind.*;
 import java.nio.file.*;
 import java.util.*;
-import javax.sql.DataSource;
 import org.neo4j.driver.Driver;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
 import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 
 /** Insert-only local bootstrap. Never creates learner state, blueprints or assessment history. */
 @Configuration(proxyBeanMethods=false)
 @Profile("local-demo-seed & local & !prod & !migrate")
 @ConditionalOnProperty(name="assessment.baseline.local-demo.seed-enabled",havingValue="true")
+@Import(PersistenceConfiguration.class)
 public class LocalDemoSeedConfiguration {
-    @Bean ApplicationRunner localDemoSeed(DataSource source, Driver driver, ConfigurableApplicationContext context,org.springframework.core.env.Environment environment) {
+    @Bean ApplicationRunner localDemoSeed(BeanFactory beans, Driver driver, ConfigurableApplicationContext context,org.springframework.core.env.Environment environment,
+            @Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager transactionManager) {
         return args -> {
             byte[] graph=Files.readAllBytes(Path.of(environment.getProperty("assessment.baseline.local-demo.catalog-seed-file","/seed/ontology_seed.json")));
             byte[] scope=Files.readAllBytes(Path.of(environment.getProperty("assessment.baseline.local-demo.bank-scope-file","/seed/catalog-scope.json")));
@@ -33,23 +37,22 @@ public class LocalDemoSeedConfiguration {
             var latest=com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)
                     ? LocalCatalogBootstrap.withSoftwareDevelopment(graph) : new LocalCatalogBootstrap(graph);
             latest.requireBaselineCompatibility(catalog);
-            var jdbc=new NamedParameterJdbcTemplate(source);
-            if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment))MainDevelopmentBankSeed.requireFreshOrProjected(jdbc);
+            var seeds=DevelopmentSeedRepositories.from(beans::getBean);
+            var importer=new OfficialQuestionBankImporter(seeds.imports(),seeds.banks(),seeds.items(),seeds.locks(),transactionManager);
+            if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment))MainDevelopmentBankSeed.requireFreshOrProjected(seeds.technical());
             latest.bootstrap(driver);
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)){
-                MainDevelopmentBankSeed.prepareOwner(jdbc);
+                MainDevelopmentBankSeed.prepareOwner(seeds.identities());
                 var projected=MainDevelopmentBankSeed.project(bank);
                 projected.validate(catalog);
-                String url;try(var connection=source.getConnection()){url=connection.getMetaData().getURL();}
-                new OfficialQuestionBankImporter(source).importManifest(projected,new OfficialQuestionBankImporter.Owner(
-                        MainDevelopmentBankSeed.id("bank-owner"),MainDevelopmentBankSeed.ORGANIZATION,url),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
+                importer.importManifest(projected,new OfficialQuestionBankImporter.Owner(
+                        MainDevelopmentBankSeed.id("bank-owner"),MainDevelopmentBankSeed.ORGANIZATION,importer.targetUrl()),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
                 context.close();return;
             }
             var id=UUID.fromString("00000000-0000-0000-0000-000000000001");
-            jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES(:id,'LOCAL-DEMO','Local Demo') ON CONFLICT(organization_id) DO NOTHING",Map.of("id",id));
-            jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES(:id,:id,'local-demo-bank-owner','local-demo-bank-owner','DEMO_NO_PASSWORD_LOGIN') ON CONFLICT(account_id) DO NOTHING",Map.of("id",id));
-            String url;try(var connection=source.getConnection()){url=connection.getMetaData().getURL();}
-            new OfficialQuestionBankImporter(source).importManifest(bank,new OfficialQuestionBankImporter.Owner(id,id,url),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
+            seeds.identities().insertOrganizationIfAbsent(id,"LOCAL-DEMO","Local Demo");
+            seeds.identities().insertAccountIfAbsent(id,id,"local-demo-bank-owner","local-demo-bank-owner","DEMO_NO_PASSWORD_LOGIN");
+            importer.importManifest(bank,new OfficialQuestionBankImporter.Owner(id,id,importer.targetUrl()),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
             context.close();
         };
     }

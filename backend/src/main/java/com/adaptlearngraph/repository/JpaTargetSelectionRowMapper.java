@@ -8,7 +8,6 @@ import com.adaptlearngraph.entities.TargetRoleSnapshot.CareerTrack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -70,8 +69,8 @@ public final class JpaTargetSelectionRowMapper {
         return value.textValue();
     }
 
-    /** Same translation the former JDBC row mapper received for its SQLState 22000 data exception. */
+    /** Same exception type the former row mapper surfaced for a corrupt snapshot (a data exception, not a lookup miss). */
     private static DataIntegrityViolationException invalidSnapshot(String message, Throwable cause) {
-        return new DataIntegrityViolationException(message, new SQLException(message, "22000", cause));
+        return new DataIntegrityViolationException(message, cause);
     }
 }

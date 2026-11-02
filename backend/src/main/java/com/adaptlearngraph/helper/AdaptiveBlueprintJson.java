@@ -10,13 +10,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /** Explicit record allowlist for receipts; no default polymorphic typing or protected-answer DTOs. */
 public final class AdaptiveBlueprintJson {
@@ -68,35 +63,6 @@ public final class AdaptiveBlueprintJson {
                 case DISABLE -> new Disabled(mapper.treeToValue(value, Activation.class));
             };
         } catch (JsonProcessingException failure) { throw new IllegalStateException("Cannot decode receipt", failure); }
-    }
-
-    public Version version(ResultSet header, Scope scope, List<Map<String, Object>> rows) throws SQLException {
-        String policy = header.getString("scope_policy");
-        boolean full = ScopePolicy.FULL_OCCUPATION_V2.name().equals(policy);
-        if (policy != null && !full) throw new IllegalStateException("Unknown Blueprint scope policy");
-        Map<String, Bounds> bounds = new LinkedHashMap<>();
-        Map<String, RoleSnapshot> roles = new LinkedHashMap<>();
-        Map<String, Map<String, SkillSnapshot>> skills = new LinkedHashMap<>();
-        for (Map<String, Object> row : rows) {
-            String role = (String) row.get("role_id");
-            skills.computeIfAbsent(role, ignored -> new LinkedHashMap<>()).put((String) row.get("micro_skill_id"),
-                    new SkillSnapshot((String) row.get("micro_skill_name_snapshot"), (String) row.get("skill_version")));
-            if (!full) bounds.put(role, new Bounds(((Number) row.get("max_questions")).intValue(),
-                    ((Number) row.get("time_limit_seconds")).intValue()));
-        }
-        for (Map<String, Object> row : rows) {
-            String role = (String) row.get("role_id");
-            roles.putIfAbsent(role, new RoleSnapshot((String) row.get("role_name_snapshot"),
-                    (String) row.get("role_version"), skills.get(role)));
-        }
-        return new Version(scope, new VersionId(header.getObject("blueprint_id", UUID.class), header.getInt("version")),
-                full ? Configuration.occupation(header.getString("name"), new Bounds(header.getInt("occupation_max_questions"),
-                        header.getInt("occupation_time_limit_seconds")))
-                     : new Configuration(header.getString("name"), new Bounds(header.getInt("exploration_max_questions"),
-                        header.getInt("exploration_time_limit_seconds")), bounds), header.getString("occupation_name_snapshot"),
-                header.getString("catalog_fingerprint"), new VersionPins(header.getObject("model_version_id", UUID.class),
-                        header.getObject("mastery_mapping_version_id", UUID.class), header.getObject("parameter_set_id", UUID.class)),
-                roles, header.getObject("created_by", UUID.class), header.getTimestamp("created_at").toInstant());
     }
 
     public String canonicalObject(String json) {

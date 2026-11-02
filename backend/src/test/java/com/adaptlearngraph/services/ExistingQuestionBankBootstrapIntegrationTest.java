@@ -1,6 +1,11 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.dtos.OfficialQuestionBankManifest;
+import com.adaptlearngraph.repository.ItemVersionJpaRepository;
+import com.adaptlearngraph.repository.OfficialQuestionBankImportJpaRepository;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
+import com.adaptlearngraph.repository.QuestionBankJpaRepository;
+import com.adaptlearngraph.support.JpaTestContext;
 import java.util.ArrayList;
 import java.util.UUID;
 import org.flywaydb.core.Flyway;
@@ -18,13 +23,16 @@ class ExistingQuestionBankBootstrapIntegrationTest {
             pg.start();
             var ds = new DriverManagerDataSource(pg.getJdbcUrl(), pg.getUsername(), pg.getPassword());
             Flyway.configure().dataSource(ds).locations("classpath:db/migration").load().migrate();
+            try (var persistence = JpaTestContext.start(ds)) {
             var jdbc = new JdbcTemplate(ds);
             byte[] bytes;
             try (var input = new ClassPathResource("db/seed/question-bank-15-1212.00-v1-ontology-v09.json").getInputStream()) { bytes = input.readAllBytes(); }
             var manifest = parse(bytes, OfficialQuestionBankManifest.class);
             var id = UUID.fromString("00000000-0000-0000-0000-000000000001");
             var owner = new OfficialQuestionBankImporter.Owner(id, id, pg.getJdbcUrl());
-            var importer = new OfficialQuestionBankImporter(ds);
+            var importer = new OfficialQuestionBankImporter(persistence.bean(OfficialQuestionBankImportJpaRepository.class),
+                    persistence.bean(QuestionBankJpaRepository.class), persistence.bean(ItemVersionJpaRepository.class),
+                    new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class)), persistence.transactionManager());
             assertFalse(importer.verifyExistingManifest(manifest, owner, OfficialQuestionBankImporter.Mode.LOCAL_SEED));
             assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.account", Integer.class));
             jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'LOCAL-DEMO','Local Demo')", id);
@@ -48,6 +56,7 @@ class ExistingQuestionBankBootstrapIntegrationTest {
             jdbc.update("UPDATE platform.account SET active=false WHERE account_id=?", id);
             assertThrows(IllegalStateException.class, () -> importer.verifyExistingManifest(manifest, owner, OfficialQuestionBankImporter.Mode.LOCAL_SEED));
             assertEquals(before, fingerprint(jdbc));
+            }
         }
     }
     private String fingerprint(JdbcTemplate jdbc) {

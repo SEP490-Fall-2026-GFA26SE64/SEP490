@@ -4,7 +4,6 @@ import com.adaptlearngraph.dtos.OfficialQuestionBankManifest;
 import com.adaptlearngraph.constants.LocalDemoIdentity;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 
 /** Explicit fresh-main development projection. Never a generic tenant resolver or live bank transfer. */
@@ -108,16 +107,15 @@ public final class MainDevelopmentBankSeed {
         }
         return new LocalDemoProvisioning.Projection(ORGANIZATION,securityBank(),securityId("model-v1"),securityId("mapping-v1"),securityId("fitted-v1"),projectionHash(LocalDemoIdentity.OCC),ids,original,projected);
     }
-    static void prepareOwner(NamedParameterJdbcTemplate jdbc){
-        var p=Map.of("org",ORGANIZATION,"actor",id("bank-owner"));
-        jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES(:org,'TECHNOVA','TechNova Cognitive Labs') ON CONFLICT DO NOTHING",p);
-        require(Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.organization WHERE organization_id=:org AND code='TECHNOVA' AND status='ACTIVE')",p,Boolean.class)),"TechNova owner tenant drift");
-        jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES(:actor,:org,'technova-bank-seed-owner.invalid','technova-bank-seed-owner.invalid','DEVELOPMENT_NO_LOGIN') ON CONFLICT DO NOTHING",p);
-        require(Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.account WHERE account_id=:actor AND organization_id=:org AND active AND identifier='technova-bank-seed-owner.invalid' AND password_hash='DEVELOPMENT_NO_LOGIN')",p,Boolean.class)),"TechNova seed creator drift");
+    static void prepareOwner(com.adaptlearngraph.repository.DevelopmentSeedJpaRepository seeds){
+        UUID actor=id("bank-owner");
+        seeds.insertOrganizationIgnoringConflicts(ORGANIZATION,"TECHNOVA","TechNova Cognitive Labs");
+        require(seeds.activeOrganizationExists(ORGANIZATION,"TECHNOVA"),"TechNova owner tenant drift");
+        seeds.insertAccountIgnoringConflicts(actor,ORGANIZATION,"technova-bank-seed-owner.invalid","technova-bank-seed-owner.invalid","DEVELOPMENT_NO_LOGIN");
+        require(seeds.fixtureAccountExists(actor,ORGANIZATION,"technova-bank-seed-owner.invalid","DEVELOPMENT_NO_LOGIN"),"TechNova seed creator drift");
     }
-    static void requireFreshOrProjected(NamedParameterJdbcTemplate jdbc){
-        if(Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.question_bank WHERE question_bank_id IN(:security,:se))",
-                Map.of("security",LocalDemoIdentity.BANK,"se",SoftwareDevelopmentSeed.id("bank")),Boolean.class)))
+    static void requireFreshOrProjected(com.adaptlearngraph.repository.TechnicalVersionSeedJpaRepository technical){
+        if(technical.anyQuestionBank(List.of(LocalDemoIdentity.BANK,SoftwareDevelopmentSeed.id("bank"))))
             throw new IllegalStateException("Fresh main seed refuses legacy-bank ownership drift; existing banks/data are retained");
     }
 }

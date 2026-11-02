@@ -40,10 +40,10 @@ public class LocalDemoConfiguration {
         boolean enabled=environment.getProperty("pathway.local-auth-bypass.enabled",Boolean.class,false);
         return new LocalDemoIdentity(enabled && expert!=null ? Map.of("expert",expert) : Map.of());
     }
-    @Bean LocalDemoProvisioning localDemoProvisioning(DataSource source, ObjectMapper json,
+    @Bean LocalDemoProvisioning localDemoProvisioning(org.springframework.beans.factory.BeanFactory beans, ObjectMapper json,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
             org.springframework.transaction.PlatformTransactionManager transactionManager) {
-        return new LocalDemoProvisioning(source,json,transactionManager);
+        return new LocalDemoProvisioning(com.adaptlearngraph.repository.DevelopmentSeedRepositories.from(beans::getBean),json,transactionManager);
     }
     @Bean @Primary AdaptiveBlueprintActorPort demoBlueprintActor(LocalDemoIdentity identity) {
         return new AdaptiveBlueprintActorPort() {

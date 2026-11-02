@@ -111,13 +111,14 @@ public final class AdaptiveAttemptRows {
         catch (JsonProcessingException cause) { throw new IllegalStateException("Cannot decode attempt state", cause); }
     }
 
-    /** timestamptz scalar of a native query, whichever java.time/java.sql type the driver/Hibernate produced. */
+    /** timestamptz scalar of a native query, whichever java.time/legacy Date type the driver/Hibernate produced. */
     static Instant instant(Object value) {
         if (value == null) return null;
         if (value instanceof Instant instant) return instant;
         if (value instanceof OffsetDateTime offset) return offset.toInstant();
         if (value instanceof ZonedDateTime zoned) return zoned.toInstant();
-        if (value instanceof java.sql.Timestamp timestamp) return timestamp.toInstant();
+        // A driver Timestamp is a java.util.Date subclass whose toInstant() keeps nanosecond precision.
+        if (value instanceof java.util.Date date) return date.toInstant();
         throw new IllegalStateException("Unexpected timestamp type " + value.getClass().getName());
     }
 }

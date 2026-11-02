@@ -5,9 +5,13 @@ import com.adaptlearngraph.helper.OfficialQuestionBankCatalog;
 import com.adaptlearngraph.services.OfficialQuestionBankImporter;
 import java.io.IOException;
 import java.util.UUID;
-import javax.sql.DataSource;
+import com.adaptlearngraph.repository.ItemVersionJpaRepository;
+import com.adaptlearngraph.repository.OfficialQuestionBankImportJpaRepository;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
+import com.adaptlearngraph.repository.QuestionBankJpaRepository;
 import org.neo4j.driver.Driver;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,16 +20,20 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springframework.transaction.PlatformTransactionManager;
+import com.adaptlearngraph.constants.TransactionManagers;
 import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("question-bank-import & !migrate & !prod")
 @ConditionalOnProperty(prefix = "question-bank.import", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(OfficialQuestionBankImportConfiguration.Properties.class)
+@Import(PersistenceConfiguration.class)
 public class OfficialQuestionBankImportConfiguration {
     @ConfigurationProperties("question-bank.import")
     public record Properties(boolean enabled, String manifestResource, String manifestVersion, String expectedManifestSha256,
@@ -33,7 +41,9 @@ public class OfficialQuestionBankImportConfiguration {
             UUID bankId, UUID ownerAccountId, UUID organizationId, String expectedJdbcUrl, boolean localSeed) {}
 
     @Bean
-    ApplicationRunner officialQuestionBankImport(DataSource source, Driver driver, ResourceLoader resources,
+    ApplicationRunner officialQuestionBankImport(OfficialQuestionBankImportJpaRepository imports, QuestionBankJpaRepository banks,
+            ItemVersionJpaRepository items, PostgresAdvisoryLocks locks,
+            @Qualifier(TransactionManagers.JPA) PlatformTransactionManager transactions, Driver driver, ResourceLoader resources,
             ConfigurableApplicationContext context, Properties settings, Environment environment,
             @Value("${spring.data.neo4j.database:}") String database) {
         return args -> {
@@ -58,7 +68,7 @@ public class OfficialQuestionBankImportConfiguration {
                     && settings.expectedScopeSha256().equals(manifest.scopeSha256()), "Configured import scope mismatch");
             manifest.validate(scope);
             new OfficialQuestionBankCatalog().verify(driver, database, scope);
-            var result = new OfficialQuestionBankImporter(source).importManifest(manifest,
+            var result = new OfficialQuestionBankImporter(imports, banks, items, locks, transactions).importManifest(manifest,
                     new OfficialQuestionBankImporter.Owner(settings.ownerAccountId(), settings.organizationId(), settings.expectedJdbcUrl()),
                     settings.localSeed() ? OfficialQuestionBankImporter.Mode.LOCAL_SEED : OfficialQuestionBankImporter.Mode.ADMINISTRATOR);
             LoggerFactory.getLogger(OfficialQuestionBankImportConfiguration.class).info(

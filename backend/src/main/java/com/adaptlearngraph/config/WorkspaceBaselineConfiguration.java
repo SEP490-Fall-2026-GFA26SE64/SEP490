@@ -27,7 +27,7 @@ import com.adaptlearngraph.repository.BaselineAttemptResultJpaRepository;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintStore;
-import com.adaptlearngraph.repository.JdbcWorkspaceBaselineResourceWriter;
+import com.adaptlearngraph.repository.JpaWorkspaceBaselineResourceWriter;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.MainDevelopmentTechnicalVersions;
 import com.adaptlearngraph.repository.Neo4jAdaptiveBaselineCatalogAdapter;
@@ -63,12 +63,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.*;
-import javax.sql.DataSource;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -131,14 +129,15 @@ public class WorkspaceBaselineConfiguration {
     @Bean WorkspaceBaselineOccupationPort workspaceBaselineOccupations(Driver driver,Environment environment) {
         return new Neo4jWorkspaceBaselineOccupations(driver,environment.getProperty("assessment.baseline.workspace.catalog.max-occupations",Integer.class,1000));
     }
-    @Bean WorkspaceBaselineResources workspaceBaselineResources(DataSource source,WorkspaceBaselineOccupationPort occupations) {
-        return new WorkspaceBaselineResources(new NamedParameterJdbcTemplate(source),occupations);
+    @Bean WorkspaceBaselineResources workspaceBaselineResources(com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository bindings,WorkspaceBaselineOccupationPort occupations) {
+        return new WorkspaceBaselineResources(bindings,occupations);
     }
     @Bean com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase workspaceResourceProvisioning(
-            DataSource source, com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, PlatformTransactionManager transactions, ObjectMapper json, AdaptiveBlueprintActorPort actors,
+            com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository bindings, com.adaptlearngraph.repository.AuditEventJpaRepository audit,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, PlatformTransactionManager transactions, ObjectMapper json, AdaptiveBlueprintActorPort actors,
             AdaptiveBaselineCatalogPort catalog,AdaptiveTechnicalVersionPort technical,WorkspaceCatalogFixture fixture,WorkspaceBaselineResources resources) {
         return new com.adaptlearngraph.services.WorkspaceBaselineResourceService(actors,
-                new JdbcWorkspaceBaselineResourceWriter(new NamedParameterJdbcTemplate(source),itemVersions,new TransactionTemplate(transactions),catalog,
+                new JpaWorkspaceBaselineResourceWriter(bindings,audit,locks,itemVersions,new TransactionTemplate(transactions),catalog,
                         technical,json,(scope,tuple)->fixture.bank(scope.organizationId(),scope.occupationId())
                                 .filter(bank->bank.bankId().equals(tuple.bankId()) && bank.modelId().equals(tuple.modelId()) && bank.mappingId().equals(tuple.mappingId())).isPresent(),
                         scope->resources.owned(scope.organizationId(),scope.occupationId())));
@@ -149,10 +148,10 @@ public class WorkspaceBaselineConfiguration {
         return new JpaAdaptiveBlueprintStore(com.adaptlearngraph.repository.AdaptiveBlueprintRepositories.from(beans::getBean, locks),
                 json, transactions, true);
     }
-    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(DataSource source,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
+    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(com.adaptlearngraph.repository.DevelopmentTechnicalVersionJpaRepository developmentVersions,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
         AdaptiveTechnicalVersionPort delegate=new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);
-        if(enabled(environment))delegate=new MainDevelopmentTechnicalVersions(source,json,new DevelopmentTechnicalVersions(new SoftwareDevelopmentTechnicalVersions(source,json,delegate)));
-        return fixture.active()?new WorkspaceFixtureTechnicalVersions(new NamedParameterJdbcTemplate(source),fixture,delegate):delegate;
+        if(enabled(environment))delegate=new MainDevelopmentTechnicalVersions(developmentVersions,json,new DevelopmentTechnicalVersions(new SoftwareDevelopmentTechnicalVersions(developmentVersions,json,delegate)));
+        return fixture.active()?new WorkspaceFixtureTechnicalVersions(developmentVersions,fixture,delegate):delegate;
     }
     @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(com.adaptlearngraph.repository.AuthoredCatalogPort.class)
     com.adaptlearngraph.repository.AuthoredCatalogPort workspaceAuthoredCatalog(Driver driver,ObjectMapper json,Environment environment) {
@@ -371,12 +370,10 @@ public class WorkspaceBaselineConfiguration {
         scheduler.setPoolSize(1); scheduler.setThreadNamePrefix("workspace-baseline-deadline-");
         return scheduler;
     }
-    @Bean SmartInitializingSingleton workspaceBaselineDeadlines(DataSource source, AdaptiveAttemptStore attempts,
+    @Bean SmartInitializingSingleton workspaceBaselineDeadlines(com.adaptlearngraph.repository.WorkspaceBaselineDeadlineJpaRepository deadlines, AdaptiveAttemptStore attempts,
             AdaptiveAttemptFinalizationPort finalization, ThreadPoolTaskScheduler workspaceBaselineScheduler) {
-        var jdbc = new NamedParameterJdbcTemplate(source);
         return () -> workspaceBaselineScheduler.scheduleWithFixedDelay(() -> {
-            var organizations = jdbc.query("SELECT DISTINCT organization_id FROM platform.baseline_adaptive_attempt WHERE state='IN_PROGRESS'",
-                    Map.of(), (rs, row) -> rs.getObject(1, UUID.class));
+            var organizations = deadlines.organizationsWithAttemptsInProgress();
             for (var organization : organizations) new AdaptiveAttemptDeadlineWorker(attempts, finalization, organization, 10).run();
         }, Duration.ofSeconds(5));
     }

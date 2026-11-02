@@ -5,7 +5,12 @@ import com.adaptlearngraph.entities.Calibration.*;
 import java.sql.Connection;
 import javax.sql.DataSource;
 
-/** Global session lock bounds concurrent computation across application instances, without a long transaction. */
+/**
+ * Global session lock bounds concurrent computation across application instances, without a long transaction.
+ * Deliberately plain JDBC (not JPA): {@code pg_try_advisory_lock} is a session-level lock that must stay held on one
+ * dedicated pooled connection outside any transaction for the whole computation, which a transaction-scoped
+ * EntityManager cannot provide.
+ */
 public final class JdbcCalibrationWorker {
     private static final long KEY=726490002018L;
     public static WorkerLease acquire(DataSource dataSource) {

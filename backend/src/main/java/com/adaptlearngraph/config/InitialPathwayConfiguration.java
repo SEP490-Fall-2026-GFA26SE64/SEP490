@@ -13,7 +13,6 @@ import com.adaptlearngraph.repository.InitialCatalogPort.RoleReferences;
 import com.adaptlearngraph.repository.InitialCatalogPort.ReleaseAuthority;
 import com.adaptlearngraph.constants.LocalDemoIdentity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.sql.DataSource;
 import java.util.*;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.Bean;
@@ -32,9 +31,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(PersistenceConfiguration.class)
 public class InitialPathwayConfiguration extends InitialPathwayComponents {
     @Bean @ConditionalOnProperty(name={"pathway.initial.local-assignment.enabled","pathway.initial.local-assignment.provision-expert-enabled"},havingValue="true")
-    LocalExpertProvisioning initialExpertFixture(DataSource source,Environment env,
+    LocalExpertProvisioning initialExpertFixture(com.adaptlearngraph.repository.DevelopmentSeedJpaRepository seeds,Environment env,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager transactionManager) {
-        return new LocalExpertProvisioning(source,transactionManager,UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id")));
+        return new LocalExpertProvisioning(seeds,transactionManager,UUID.fromString(env.getRequiredProperty("pathway.local-auth-bypass.expert-account-id")));
     }
     @Bean Actors initialActors(LocalDemoIdentity identity,PathwayActorJpaRepository actors) { return new LocalPathwayActors(identity,actors); }
 }

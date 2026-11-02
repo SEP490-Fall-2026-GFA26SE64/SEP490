@@ -3,11 +3,11 @@ package com.adaptlearngraph.repository;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.UUID;
+import com.adaptlearngraph.support.JpaTestContext;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -36,7 +36,8 @@ class WorkspaceBaselineResourcesIntegrationTest {
             assertThat(jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=12 ORDER BY installed_rank")).isEqualTo(checksums);
             assertThat(jdbc.queryForObject("SELECT organization_id FROM platform.account WHERE account_id=?",UUID.class,owner)).isEqualTo(other);
             jdbc.update("INSERT INTO platform.workspace_baseline_resource(organization_id,occupation_reference_id,graph_occupation_id) VALUES (?,?,'occupation-a')", org,reference);
-            var resources = new WorkspaceBaselineResources(new NamedParameterJdbcTemplate(source));
+            var persistence = JpaTestContext.start(source);
+            var resources = new WorkspaceBaselineResources(persistence.bean(WorkspaceBaselineResourceJpaRepository.class));
             var binding = resources.find(org,"occupation-a").orElseThrow();
             assertThat(binding.ready()).isFalse();
             assertThat(binding.bankId()).isNull();
@@ -55,6 +56,7 @@ class WorkspaceBaselineResourcesIntegrationTest {
             jdbc.update("UPDATE platform.department_reference SET active=false WHERE department_id=?",department);
             assertThat(resources.occupations(org)).isEmpty();
             assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.workspace_baseline_resource",Long.class)).isOne();
+            persistence.close();
         }
     }
 }

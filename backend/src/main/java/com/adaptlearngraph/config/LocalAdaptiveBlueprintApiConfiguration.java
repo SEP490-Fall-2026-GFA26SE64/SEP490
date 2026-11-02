@@ -6,6 +6,7 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
+import com.adaptlearngraph.repository.LocalBlueprintActorJpaRepository;
 import com.adaptlearngraph.services.AdaptiveBlueprintService;
 import com.adaptlearngraph.responseDto.AdaptiveBlueprintPayloads;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase;
@@ -17,10 +18,8 @@ import java.lang.reflect.Type;
 import java.time.Clock;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -33,7 +32,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -47,18 +45,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalAdaptiveBlueprintApiConfiguration {
     @Bean
-    AdaptiveBlueprintActorPort adaptiveBlueprintActorPort(DataSource dataSource,
+    AdaptiveBlueprintActorPort adaptiveBlueprintActorPort(LocalBlueprintActorJpaRepository accounts,
             @Value("${assessment.baseline.adaptive.local-actor-id:#{null}}") UUID actorId,
             JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
-        var jdbc = new NamedParameterJdbcTemplate(dataSource);
         AdaptiveBlueprintActorPort identity = () -> {
             if (actorId == null) return Optional.empty();
             try {
-                var params = Map.of("actor", actorId);
-                return jdbc.query("SELECT account_id,organization_id,active FROM platform.account WHERE account_id=:actor AND organization_id IS NOT NULL",
-                        params, (rs, row) -> new Actor(rs.getObject("account_id", UUID.class), rs.getObject("organization_id", UUID.class),
-                                rs.getBoolean("active"), new HashSet<>(jdbc.queryForList(
-                                        "SELECT role_code FROM platform.account_role WHERE account_id=:actor", params, String.class)))).stream().findFirst();
+                return accounts.account(actorId).stream().map(account -> new Actor(account.accountId(), account.organizationId(),
+                        Boolean.TRUE.equals(account.active()), new HashSet<>(accounts.roles(actorId)))).findFirst();
             } catch (DataAccessException cause) {
                 Failure failure = new Failure(Code.DEPENDENCY_UNAVAILABLE, "Actor context unavailable", List.of());
                 failure.initCause(cause);
