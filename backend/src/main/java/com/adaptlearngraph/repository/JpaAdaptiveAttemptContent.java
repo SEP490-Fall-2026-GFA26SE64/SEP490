@@ -5,33 +5,37 @@ import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** Exact immutable content, including superseded publications; never query latest/current on resume. */
-public final class JdbcAdaptiveAttemptContent implements AdaptiveAttemptContentPort {
+public final class JpaAdaptiveAttemptContent implements AdaptiveAttemptContentPort {
     private final boolean demoDraft;
-    private final NamedParameterJdbcTemplate jdbc;
+    private final ItemVersionJpaRepository items;
     private final UUID bankId;
     private final ObjectMapper json = new ObjectMapper();
-    public JdbcAdaptiveAttemptContent(NamedParameterJdbcTemplate jdbc, UUID bankId) { this(jdbc, bankId, false); }
+    public JpaAdaptiveAttemptContent(ItemVersionJpaRepository items, UUID bankId) { this(items, bankId, false); }
 
-    public JdbcAdaptiveAttemptContent(NamedParameterJdbcTemplate jdbc, UUID bankId, boolean demoDraft) {
+    public JpaAdaptiveAttemptContent(ItemVersionJpaRepository items, UUID bankId, boolean demoDraft) {
         this.demoDraft = demoDraft;
-        this.jdbc = jdbc; this.bankId = Objects.requireNonNull(bankId);
+        this.items = items; this.bankId = Objects.requireNonNull(bankId);
     }
     @Override public Item read(Scope scope, UUID itemVersionId) {
-        var items = jdbc.query("""
-                SELECT item.item_version_id,item.prompt,item.response_schema->'options' AS options
-                FROM platform.item_version item JOIN platform.question_bank bank USING(question_bank_id)
-                JOIN platform.account owner ON owner.account_id=bank.created_by AND owner.organization_id=:org
-                WHERE item.item_version_id=:item AND item.question_bank_id=:bank AND (item.publication_state='PUBLISHED' OR (:demoDraft AND item.publication_state='DRAFT'))
-                """, Map.of("demoDraft", demoDraft, "org", scope.organizationId(), "item", itemVersionId, "bank", bankId),
-                (rs, row) -> new Item(rs.getObject(1, UUID.class), rs.getString(2), options(rs.getString(3))));
-        if (items.size() != 1 || items.getFirst().prompt() == null || items.getFirst().prompt().isBlank()) {
+        var rows = items.owned(scope.organizationId(), bankId, itemVersionId, demoDraft).stream()
+                .map(row -> new Item(row.itemVersionId(), row.prompt(), options(optionsOf(row.responseSchema())))).toList();
+        if (rows.size() != 1 || rows.getFirst().prompt() == null || rows.getFirst().prompt().isBlank()) {
             throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
         }
-        return items.getFirst();
+        return rows.getFirst();
     }
+    /** Former {@code response_schema->'options'}: the options value as JSON text, or null when absent. */
+    private String optionsOf(String responseSchema) {
+        try {
+            var options = json.readTree(responseSchema).get("options");
+            return options == null ? null : json.writeValueAsString(options);
+        } catch (JsonProcessingException | IllegalArgumentException invalid) {
+            throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
+        }
+    }
+
     private Map<String, String> options(String payload) {
         try {
             var nodes = json.readTree(payload);

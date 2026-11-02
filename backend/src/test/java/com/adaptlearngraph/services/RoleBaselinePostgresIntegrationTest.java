@@ -8,10 +8,10 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintActorPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptContent;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptScoring;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
@@ -49,12 +49,14 @@ class RoleBaselinePostgresIntegrationTest {
  AdaptiveAttemptContextPort context; AdaptiveAttemptStartService starts; AdaptiveAttemptSubmitService submits;
  AdaptiveAttemptAnswerService answers; JdbcAdaptiveAttemptResultQuery results; CurrentRoleSelectionStore selections;
  @BeforeAll static void startContainer(){PG.start();}
- @AfterAll static void stop(){PG.stop();}
+ @AfterAll static void stop(){if(persistence!=null)persistence.close();PG.stop();}
+ static com.adaptlearngraph.support.JpaTestContext persistence; com.adaptlearngraph.repository.ItemVersionJpaRepository items;
  @BeforeEach void setup() {
   var ds=new DriverManagerDataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword());
   sql=new JdbcTemplate(ds);jdbc=new NamedParameterJdbcTemplate(ds);manager=new DataSourceTransactionManager(ds);
   sql.execute("DROP SCHEMA IF EXISTS platform CASCADE");sql.execute("DROP TABLE IF EXISTS public.flyway_schema_history");
   Flyway.configure().dataSource(ds).load().migrate();
+  if(persistence==null)persistence=com.adaptlearngraph.support.JpaTestContext.start(ds);items=persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class);
   sql.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'A','Org A'),(?,'B','Org B')",ORG,id(2));
   for(var who:List.of(EMP,OTHER,MANAGER,id(6))) {
    var org=who.equals(id(6))?id(2):ORG;
@@ -95,12 +97,12 @@ class RoleBaselinePostgresIntegrationTest {
   when(context.resolveScope(any(),any())).thenReturn(new AdaptiveAttempt.Scope(ORG,EMP,OCC));
   when(context.resolveStartingSnapshot(any(),any())).thenAnswer(i->snapshot(version));
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
-  var content=new JdbcAdaptiveAttemptContent(jdbc,id(50));
+  var content=new JpaAdaptiveAttemptContent(items,id(50));
   var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalization=new AdaptiveAttemptFinalizationService(attempts,policy,c->{outcome.persist(c);profiles.initialize(c);});
   starts=new AdaptiveAttemptStartService(context,attempts,policy,content);
   submits=new AdaptiveAttemptSubmitService(context,attempts,finalization,content);
-  answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new JdbcAdaptiveAttemptScoring(jdbc,id(50)),Optional.of(finalization));
+  answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalization));
   results=new JdbcAdaptiveAttemptResultQuery(jdbc,context);
   selections=new CurrentRoleSelectionStore(jdbc,JSON,new TransactionTemplate(manager));
  }
@@ -291,7 +293,7 @@ class RoleBaselinePostgresIntegrationTest {
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
   var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,out);
-  answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JdbcAdaptiveAttemptContent(jdbc,id(50)),new JdbcAdaptiveAttemptScoring(jdbc,id(50)),Optional.of(finalizer));
+  answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));
   var terminal=finish();assertThat(results.result(terminal.id()).skills()).hasSize(3);
   var before=digest();
   assertThat(profiles.progress(new RoleBaselineFlow.Actor(ORG,EMP),role("role-a",OCC),Set.of("s1","s2","s3")).state()).isEqualTo("PROFILE_PENDING");
@@ -313,7 +315,7 @@ class RoleBaselinePostgresIntegrationTest {
   var real=trustedContext(EMP);var stale=org.mockito.Mockito.spy(real);
   org.mockito.Mockito.doAnswer(i->{var scope=real.resolveScope(i.getArgument(0),i.getArgument(1));flow.choose("other",first.selectionId(),"changed-before-start");return scope;})
     .when(stale).resolveScope(any(),any());
-  var usecase=new AdaptiveAttemptStartService(stale,attempts,new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc)),new JdbcAdaptiveAttemptContent(jdbc,id(50)));
+  var usecase=new AdaptiveAttemptStartService(stale,attempts,new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc)),new JpaAdaptiveAttemptContent(items,id(50)));
   assertThatThrownBy(()->usecase.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"stale-start")).isInstanceOfSatisfying(AdaptiveAttemptUseCase.Failure.class,e->assertThat(e.code()).isEqualTo(AdaptiveAttemptUseCase.Code.SELECTION_UNAVAILABLE));
   assertThat(count("baseline_adaptive_attempt")).isZero();assertThat(count("baseline_attempt_command")).isZero();
   assertThat(selections.current(new RoleBaselineFlow.Actor(ORG,EMP)).orElseThrow().role().occupationId()).isEqualTo("other-occ");
@@ -322,7 +324,7 @@ class RoleBaselinePostgresIntegrationTest {
   selectionFlow(ORG,EMP).choose("role-a",null,"role");
   selectionFlow(ORG,OTHER).choose("role-a",null,"other-role");
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
-  var content=new JdbcAdaptiveAttemptContent(jdbc,id(50));
+  var content=new JpaAdaptiveAttemptContent(items,id(50));
   var start=new AdaptiveAttemptStartService(trustedContext(EMP),attempts,policy,content);
   var gate=new CountDownLatch(1);
   try(var executor=Executors.newFixedThreadPool(2)){
@@ -431,7 +433,7 @@ class RoleBaselinePostgresIntegrationTest {
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
   var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,out);
-  answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JdbcAdaptiveAttemptContent(jdbc,id(50)),new JdbcAdaptiveAttemptScoring(jdbc,id(50)),Optional.of(finalizer));
+  answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));
   var terminal=finish();
   // Explicit incomplete owner-profile fixture, not a runtime importer or a retake/remediation policy.
   sql.update("INSERT INTO platform.employee_occupation_profile(organization_id,learner_id,occupation_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,required_skills,mastery,initialized_at) SELECT organization_id,learner_id,occupation_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,'[\"s1\",\"s2\",\"s3\"]'::jsonb,CAST(? AS jsonb),finished_at FROM platform.baseline_adaptive_attempt WHERE attempt_id=?",mastery,terminal.id());

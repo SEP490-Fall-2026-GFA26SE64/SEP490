@@ -36,8 +36,18 @@ public final class JpaTestContext implements AutoCloseable {
     }
 
     public static JpaTestContext start(DataSource dataSource) {
+        return start(dataSource, true);
+    }
+
+    /** For tests that deliberately migrate to an older target version; head schema validation is covered elsewhere. */
+    public static JpaTestContext startUnvalidated(DataSource dataSource) {
+        return start(dataSource, false);
+    }
+
+    private static JpaTestContext start(DataSource dataSource, boolean validate) {
         var context = new AnnotationConfigApplicationContext();
         context.registerBean("dataSource", DataSource.class, () -> dataSource);
+        context.registerBean(Settings.class, () -> new Settings(validate));
         context.register(Config.class);
         context.refresh();
         return new JpaTestContext(context);
@@ -89,13 +99,17 @@ public final class JpaTestContext implements AutoCloseable {
                 .collect(Collectors.toSet());
     }
 
+    record Settings(boolean validate) {}
+
     /** Registered explicitly (lite mode) so full-application tests' component scanning never picks it up. */
     @EnableTransactionManagement
     @EnableJpaRepositories(basePackages = "com.adaptlearngraph.repository", transactionManagerRef = TransactionManagers.JPA)
     static class Config {
         @Bean
-        LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
-            return JpaTestContext.entityManagerFactory(dataSource);
+        LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Settings settings) {
+            var factory = JpaTestContext.entityManagerFactory(dataSource);
+            if (!settings.validate()) factory.getJpaPropertyMap().put("hibernate.hbm2ddl.auto", "none");
+            return factory;
         }
 
         @Bean(TransactionManagers.JPA)

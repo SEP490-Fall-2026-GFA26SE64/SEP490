@@ -13,8 +13,8 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
 import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
 import com.adaptlearngraph.repository.CurrentOccupationProfile;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptContent;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptScoring;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveTechnicalVersionStore;
@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @Profile("local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
+@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalDemoConfiguration {
     @Bean LocalDemoIdentity localDemoIdentity(org.springframework.core.env.Environment environment) {
         var expert=environment.getProperty("pathway.local-auth-bypass.expert-account-id",UUID.class);
@@ -71,8 +72,8 @@ public class LocalDemoConfiguration {
         return new JdbcAdaptiveBlueprintEligibilityAdapter(new NamedParameterJdbcTemplate(source),catalog,technical,json,settings,true);
     }
     @Bean @Primary AdaptiveBlueprintPreviewPort demoPreview(DataSource source,ObjectMapper json) { return new JdbcAdaptiveBlueprintPreviewAdapter(new NamedParameterJdbcTemplate(source),json,LocalDemoIdentity.BANK,true); }
-    @Bean @Primary AdaptiveAttemptContentPort demoContent(DataSource source) { return new JdbcAdaptiveAttemptContent(new NamedParameterJdbcTemplate(source),LocalDemoIdentity.BANK,true); }
-    @Bean @Primary AdaptiveAttemptScoringPort demoScoring(DataSource source) { return new JdbcAdaptiveAttemptScoring(new NamedParameterJdbcTemplate(source),LocalDemoIdentity.BANK,true); }
+    @Bean @Primary AdaptiveAttemptContentPort demoContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptContent(itemVersions,LocalDemoIdentity.BANK,true); }
+    @Bean @Primary AdaptiveAttemptScoringPort demoScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptScoring(itemVersions,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptContextPort demoContext(DataSource source,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog,
             AdaptiveSelectedRolePort selected,AdaptiveAttemptStore attempts,CurrentOccupationProfile profiles) {
         return new LocalAdaptiveAttemptContext(identity::actor,new NamedParameterJdbcTemplate(source),LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),catalog,new AdaptiveAttemptSnapshotResolver(store,eligibility,technical),selected,attempts,profiles::exists);

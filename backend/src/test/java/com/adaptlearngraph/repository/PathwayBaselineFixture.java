@@ -18,10 +18,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** Isolated input setup: real baseline stores/policy/answers/results; no mock, development seed or outcome oracle. */
 final class PathwayBaselineFixture {
-    final JdbcTemplate sql;final NamedParameterJdbcTemplate jdbc;final DataSourceTransactionManager manager;
+    final JdbcTemplate sql;final NamedParameterJdbcTemplate jdbc;final DataSourceTransactionManager manager;final com.adaptlearngraph.support.JpaTestContext persistence;
     final ObjectMapper json;final JdbcAdaptiveBlueprintStore blueprints;final Version version;
     PathwayBaselineFixture(DataSource ds,ObjectMapper json) {
-        this.json=json;sql=new JdbcTemplate(ds);jdbc=new NamedParameterJdbcTemplate(ds);manager=new DataSourceTransactionManager(ds);
+        this.json=json;sql=new JdbcTemplate(ds);jdbc=new NamedParameterJdbcTemplate(ds);manager=new DataSourceTransactionManager(ds);persistence=com.adaptlearngraph.support.JpaTestContext.startUnvalidated(ds);
         sql.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'C3_FULL_A','C3 Full A'),(?,'C3_FULL_B','C3 Full B')",ORG,id(2));
         for(var account:List.of(MANAGER,id(2001))) {
             sql.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,?,?,'test-only')",account,ORG,"c3-"+account,"c3-"+account);
@@ -60,10 +60,10 @@ final class PathwayBaselineFixture {
         };
         var attempts=new JdbcAdaptiveAttemptStore(jdbc,json,manager,blueprints);
         var policy=new PinnedAdaptiveAttemptPolicyAdapter(new JdbcAdaptiveTechnicalVersionStore(jdbc));
-        var content=new JdbcAdaptiveAttemptContent(jdbc,id(50));var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,json,attempts);
+        var content=new com.adaptlearngraph.repository.JpaAdaptiveAttemptContent(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),id(50));var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,json,attempts);
         var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,outcome);
         var start=new AdaptiveAttemptStartService(context,attempts,policy,content);
-        var answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new JdbcAdaptiveAttemptScoring(jdbc,id(50)),Optional.of(finalizer));
+        var answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),id(50)),Optional.of(finalizer));
         var view=start.startOrResume(new AdaptiveAttemptUseCase.Exploration(OCC),"fixture-start");int count=0;
         while(view.state().equals("IN_PROGRESS") && count++<20) {
             var item=view.items().getLast();view=answers.answer(new AdaptiveAttemptUseCase.Answer(view.id(),view.revision(),item.position(),item.itemVersionId(),"a","fixture-answer-"+view.revision()));

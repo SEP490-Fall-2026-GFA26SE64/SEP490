@@ -50,4 +50,20 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
     int publishDraft(@Param("id") UUID itemVersionId, @Param("prompt") String prompt, @Param("schema") String responseSchema,
             @Param("key") String protectedKey, @Param("hash") String contentHash, @Param("skill") String microSkillId,
             @Param("skillName") String microSkillName, @Param("difficulty") String difficulty);
+
+    /** Exact (possibly superseded) definition of an item in the organization's own bank; drafts only when explicitly allowed. */
+    record Owned(UUID itemVersionId, String prompt, String responseSchema, String protectedKey) {
+        @Override public String toString() { return "OwnedItem[" + itemVersionId + "]"; }
+    }
+
+    @Query("""
+            select new com.adaptlearngraph.repository.ItemVersionJpaRepository$Owned(item.itemVersionId, item.prompt,
+                item.responseSchema, item.protectedKey)
+            from ItemVersionEntity item join QuestionBankEntity bank on bank.questionBankId = item.questionBankId
+            join AccountEntity owner on owner.accountId = bank.createdBy and owner.organizationId = :org
+            where item.itemVersionId = :item and item.questionBankId = :bank
+              and (item.publicationState = 'PUBLISHED' or (:demoDraft = true and item.publicationState = 'DRAFT'))
+            """)
+    List<Owned> owned(@Param("org") UUID organizationId, @Param("bank") UUID bankId, @Param("item") UUID itemVersionId,
+            @Param("demoDraft") boolean demoDraft);
 }

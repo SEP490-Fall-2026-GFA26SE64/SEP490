@@ -16,10 +16,10 @@ import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
 import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
 import com.adaptlearngraph.repository.AuthoredBaselineCatalog;
 import com.adaptlearngraph.repository.DevelopmentTechnicalVersions;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptContent;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptScoring;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintPreviewAdapter;
@@ -244,17 +244,17 @@ public class WorkspaceBaselineConfiguration {
     @Bean AdaptiveAttemptPolicyPort workspaceAttemptPolicy(AdaptiveTechnicalVersionPort technical) {
         return new PinnedAdaptiveAttemptPolicyAdapter(technical);
     }
-    @Bean AdaptiveAttemptContentPort workspaceAttemptContent(DataSource source, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
+    @Bean AdaptiveAttemptContentPort workspaceAttemptContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
         return (scope, item) -> {
             var bank=resources.itemBank(scope.organizationId(),item);
-            return new JdbcAdaptiveAttemptContent(new NamedParameterJdbcTemplate(source),bank,
+            return new JpaAdaptiveAttemptContent(itemVersions,bank,
                     developmentBank(environment,scope.organizationId(),scope.occupationId(),bank,fixture)).read(scope,item);
         };
     }
-    @Bean AdaptiveAttemptScoringPort workspaceAttemptScoring(DataSource source, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
+    @Bean AdaptiveAttemptScoringPort workspaceAttemptScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
         return (scope, item, option, presented) -> {
             var bank=resources.itemBank(scope.organizationId(),item);
-            return new JdbcAdaptiveAttemptScoring(new NamedParameterJdbcTemplate(source),bank,
+            return new JpaAdaptiveAttemptScoring(itemVersions,bank,
                     developmentBank(environment,scope.organizationId(),scope.occupationId(),bank,fixture)).correct(scope,item,option,presented);
         };
     }
