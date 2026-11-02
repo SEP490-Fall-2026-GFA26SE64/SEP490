@@ -2,6 +2,30 @@
 
 ## Current Scope Alignment
 
+## Learning and Question Bank state machines — 2026-11-02
+
+| Activity | State machine | Scope |
+| --- | --- | --- |
+| ACT-04 Module / Learning Content | [ST-11 source](mermaid/st-11.mmd), [SVG](mermaid/st-11.svg), [PNG](mermaid/st-11.png) | Current Module document revision: DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING, RELEASED. Lessons are reviewed with the Module; published history remains immutable. Archive/restore omitted from this main-flow view. |
+| ACT-07 independent skill learning | [ST-23 source](mermaid/st-23.mmd), [SVG](mermaid/st-23.svg), [PNG](mermaid/st-23.png) | Target business states only; not new persisted enum values. Distinguishes content progress, assessment evidence and independent progress. Independent-learning/assessment integration remains incomplete. |
+| ACT-10 Question Bank | [ST-16 source](mermaid/st-16.mmd), [SVG](mermaid/st-16.svg), [PNG](mermaid/st-16.png) | Current question-candidate states: DRAFT, SUBMITTED, PUBLISHED. Return/withdraw goes to DRAFT; a successor is a new draft without changing the immutable published predecessor. Availability is a separate lifecycle. |
+
+ST-11 and ST-16 describe the current document/candidate pointer, not mutations of an already published immutable version. Rejected/stale/unauthorized commands do not transition state. References: `ModuleAuthoringService`, `QuestionBankService`, [Learning catalog](../features/Learning%20catalog/README.md), [Question Bank rules](../features/Assessment%20workflows/README.md#fr-05-06) and [independent learning target](../features/Employee%20experience/README.md#fr-06-07). ST-11 and ST-16 are updated in place for Module/Content and Question Bank; duplicate ST-22/ST-24 files and rendered images were removed. ACT diagrams are unchanged. ST-23 remains the separate independent-learning target.
+
+Presentation follows the existing state-machine style (including ST-18): identical theme/state configuration, SDD_ST identifiers, short state/transition labels, working/accepted/attention palette and no large explanatory note boxes. State meanings/transitions are retained; scope and caveats stay here. Content completion alone is not mastery; ST-23 states are target business concepts, not persisted enums.
+
+Validation: all three Mermaid sources parsed/rendered locally; generated SVGs parsed as XML; PNGs visually inspected. Documentation only: no application/database tests or new implementation claims.
+
+## Question Bank activity — 2026-11-02
+
+**ACT-10:** [Mermaid source](mermaid/act-10.mmd) · [SVG](mermaid/act-10.svg) · [PNG](mermaid/act-10.png).
+
+Documents the concise main flow of the organization-wide Question Bank subset of [FR-05.06](../features/Assessment%20workflows/README.md#fr-05-06): responsible Expert creates/imports drafts, completes content and submits; L&D acknowledges the exact version and returns with feedback or approves immutable publication. The return branch restores DRAFT and loops through editing and resubmission. Each organization has one bank spanning MicroSkills. This is not module exam construction or calibration.
+
+Preconditions and omitted secondary flows remain in the feature specification: trusted organization/access and ownership, valid submission/import content, fresh expected revision, duplicate acknowledgement, atomic import/bulk review, withdrawal, successor versions, responsibility transfer and retirement/reactivation. They are intentionally omitted from this overview, not removed from the product.
+
+Source-inspected against `QuestionBankService` and feature rules. The diagram was simplified to the user-approved main flow on2026-11-02. Start/End sizing was aligned with ACT-04/07: classic rendering, no minimum node width and32px flowchart padding; entry borders retain1.5px stroke. Local rendering uses Mermaid12.0.0 with ELK1.0.1. SVG circle radii match ACT-04/07 within1px (approximately37px/35px rather than93px). Validation: local Mermaid parse/render, SVG XML validation, approval/return-loop checks and visual PNG inspection. Documentation only; no application/database tests or new runtime claims. Existing ACT-04/ACT-06/ACT-07 are unchanged.
+
 ## Planned initial gap/pathway — 2026-10-27
 
 [Mermaid flow/sequence/state/logical-data source and rendered Markdown view](gap-pathway-initial-flow.md) accompanies the [Cluster1 design](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md). It is **Planned**, not DB inventory, deployed topology or runtime evidence. It does not replace the verified V26 metadata images or member-owned Neo4j diagram. A supporting Mermaid viewer is required to render the inline diagrams.

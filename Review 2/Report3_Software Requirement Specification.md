@@ -57,6 +57,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-02 | M | Documentation preparation with AI assistance | Added ACT-10 Question Bank activity and clarified current versus target boundaries for ACT-04/07; linked the matching ST-11/ST-16/ST-23 in the SDD without changing requirement IDs or unrelated diagrams. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected all four conceptual ERD borders by replacing Neo gradient/shadow styling with Classic solid 1.5px borders. Preserved entity and relationship content and regenerated SVG/PNG previews. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Replaced table-level SRS ERDs with four conceptual overviews of 25 core business entities. Aligned entity descriptions with the overviews and retained the detailed relationship views in SDD logical design. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Rewrote Entities Description as conceptual business descriptions, removing migration versions, physical database names and code references while preserving all 76 entity names. |
@@ -215,6 +216,9 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 ![ACT-04 - Learning offering authoring and approval (target)](../documents/diagrams/mermaid/act-04.png)
 
+**Diagram scope (ACT-04):** This remains the target learning-offering bundle, including module assessment configuration. The current implemented slice lets the responsible Expert create/import skill-mapped Modules and ordered Text/Video lessons, save drafts and submit complete content; L&D returns or approves the exact Module revision, followed by retryable catalog publication. Other Experts are read-only. Module assessment construction is separate from Question Bank management. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See the current Module/Content state machine ST-11 in the SDD.
+
+
 [Mermaid source: ACT-05](../documents/diagrams/mermaid/act-05.mmd)
 
 ![ACT-05A - Baseline configuration](../documents/diagrams/mermaid/act-05a.png)
@@ -233,6 +237,9 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 ![ACT-07 - Independent skill learning (target)](../documents/diagrams/mermaid/act-07.png)
 
+**Diagram scope (ACT-07):** This is a target independent-learning journey, not a claim that the full context/assessment workflow is implemented. The current reader persists authorized lesson/video progress; the independent-skill surface is not yet a complete persisted learning context. Content completion alone does not establish assessment success or mastery. Valid assessment evidence and the separate independent-learning integration are required before competency/progress updates; the selected Role pathway must remain unchanged. ST-23 in the SDD describes the corresponding target business states, not a new database enum.
+
+
 [Mermaid source: ACT-08](../documents/diagrams/mermaid/act-08.mmd)
 
 ![ACT-08 - Development reporting and financial accountability (target)](../documents/diagrams/mermaid/act-08.png)
@@ -240,6 +247,13 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 [Mermaid source: ACT-09](../documents/diagrams/mermaid/act-09.mmd)
 
 ![ACT-09 - Notifications and scoped activity review](../documents/diagrams/mermaid/act-09.png)
+
+[Mermaid source: ACT-10](../documents/diagrams/mermaid/act-10.mmd)
+
+![ACT-10 - Question Bank authoring and approval](../documents/diagrams/mermaid/act-10.png)
+
+**Diagram scope (ACT-10):** The organization has one Question Bank spanning approved MicroSkills. The responsible Expert creates/imports drafts, completes question content and submits for review. L&D acknowledges the exact submitted version and either returns it with a reason to DRAFT or approves immutable publication. Server-generated codes, ownership, valid content, organization scope and current revision are enforced by the service. Import validation, withdrawal, successor drafts and retirement/reactivation remain specified in the [Question Bank rules](../documents/features/Assessment%20workflows/README.md#fr-05-06); the concise activity diagram shows the main flow only. This is not complete module-exam construction or IRT calibration. ST-16 in the SDD describes the current question-candidate lifecycle.
+
 
 #### 2.2.2 Descriptions
 
