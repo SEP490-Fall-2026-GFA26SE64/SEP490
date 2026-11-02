@@ -1,50 +1,89 @@
 ---
-title: "ACT-05 - Baseline configuration and Employee completion"
+title: "ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
 ---
 flowchart TD
-    SRS_ACT_05_N1(("Start"))
-    SRS_ACT_05_N2["<b>L and D Manager</b><br/>Select authorized Occupation"]
-    SRS_ACT_05_N3["<b>L and D Manager</b><br/>Save baseline Draft with<br/>question and time bounds"]
-    SRS_ACT_05_N4["<b>L and D Manager</b><br/>Preview saved Draft"]
-    SRS_ACT_05_N5{"<b>L and D Manager</b><br/>Ready and satisfactory?"}
-    SRS_ACT_05_N6["<b>L and D Manager</b><br/>Confirm activation or<br/>replacement"]
-    SRS_ACT_05_N7["<b>System</b><br/>Activate immutable version;<br/>retain historical attempts"]
-    SRS_ACT_05_N13{"<b>System</b><br/>Sufficient valid evidence?"}
-    SRS_ACT_05_N14["<b>System</b><br/>Store result and initialize<br/>applicable mastery profile"]
-    SRS_ACT_05_N8["<b>Employee</b><br/>Select a published role and<br/>review next step"]
-    SRS_ACT_05_N9{"<b>Employee</b><br/>Applicable mastery coverage<br/>complete?"}
-    SRS_ACT_05_N10["<b>Employee</b><br/>Continue without unnecessary<br/>baseline"]
-    SRS_ACT_05_N11["<b>Employee</b><br/>Start or resume required<br/>Occupation baseline"]
-    SRS_ACT_05_N12["<b>Employee</b><br/>Answer questions and submit"]
-    SRS_ACT_05_N15["<b>Employee</b><br/>View own result and mastery"]
-    SRS_ACT_05_N16["<b>Employee</b><br/>Explain invalidation and<br/>permitted recovery"]
-    SRS_ACT_05_N17["<b>Employee</b><br/>Correct Draft or resolve<br/>resource readiness"]
-    SRS_ACT_05_N18(("End"))
-  SRS_ACT_05_N1 --> SRS_ACT_05_N2
-  SRS_ACT_05_N2 --> SRS_ACT_05_N3
-  SRS_ACT_05_N3 --> SRS_ACT_05_N4
-  SRS_ACT_05_N4 --> SRS_ACT_05_N5
-  SRS_ACT_05_N5 -->|"yes"| SRS_ACT_05_N6
-  SRS_ACT_05_N6 --> SRS_ACT_05_N7
-  SRS_ACT_05_N7 --> SRS_ACT_05_N8
-  SRS_ACT_05_N8 --> SRS_ACT_05_N9
-  SRS_ACT_05_N9 -->|"yes"| SRS_ACT_05_N10
-  SRS_ACT_05_N9 -->|"no"| SRS_ACT_05_N11
-  SRS_ACT_05_N11 --> SRS_ACT_05_N12
-  SRS_ACT_05_N12 --> SRS_ACT_05_N13
-  SRS_ACT_05_N13 -->|"yes"| SRS_ACT_05_N14
-  SRS_ACT_05_N14 --> SRS_ACT_05_N15
-  SRS_ACT_05_N13 -->|"no"| SRS_ACT_05_N16
-  SRS_ACT_05_N5 -->|"no"| SRS_ACT_05_N17
-  SRS_ACT_05_N10 --> SRS_ACT_05_N18
-  SRS_ACT_05_N15 --> SRS_ACT_05_N18
-  SRS_ACT_05_N16 --> SRS_ACT_05_N18
-  SRS_ACT_05_N17 --> SRS_ACT_05_N18
-
+  start(("Start"))
+  choose["<b>Employee</b><br/>Choose target Role and Level"]
+  coverage{"<b>System</b><br/>Valid results for<br/>all required skills?"}
+  admission{"<b>System</b><br/>Can baseline start<br/>or resume?"}
+  baseline["<b>Employee</b><br/>Take or resume the Occupation baseline;<br/>answer questions and submit"]
+  baselineScore["<b>System</b><br/>Apply time and stop rules; score baseline;<br/>initialize mastery only from valid results"]
+  validBaseline{"<b>System</b><br/>Baseline results<br/>valid?"}
+  gaps["<b>System</b><br/>Calculate skill gaps from current mastery<br/>for the chosen Role and Level"]
+  request["<b>Employee</b><br/>Review skill gaps and confirm<br/>the pathway request"]
+  learningNeeded{"<b>System</b><br/>Any skill gaps<br/>to address?"}
+  generate["<b>System</b><br/>Validate the request and generate a pathway;<br/>check skill coverage and prerequisites"]
+  generated{"<b>System</b><br/>Pathway generated<br/>successfully?"}
+  expertReview["<b>Expert</b><br/>Review skill coverage, modules<br/>and learning order; adjust if needed"]
+  ready{"<b>System</b><br/>Pathway ready<br/>for approval?"}
+  approve["<b>Expert</b><br/>Approve the reviewed pathway version"]
+  selectModule["<b>Employee</b><br/>Choose a module from<br/>the approved pathway"]
+  access{"<b>System</b><br/>Can this module<br/>be opened?"}
+  studyAssess["<b>Employee</b><br/>Study module content; complete the<br/>Micro Skill assessment and submit answers"]
+  masteryGap["<b>System</b><br/>Score answers; update mastery from valid results<br/>and recalculate gaps for the same Role/Level"]
+  remaining{"<b>System</b><br/>Any skill gaps<br/>remaining?"}
+  adapt["<b>System</b><br/>Automatically update the remaining pathway;<br/>show recommended modules and approved content<br/>without another Expert review"]
+  end(("End"))
+  unavailable["<b>System</b><br/>Explain why baseline<br/>cannot be started or resumed"]
+  unavailableEnd(("End"))
+  invalid["<b>System</b><br/>Explain why baseline<br/>results are invalid"]
+  invalidEnd(("End"))
+  generationFailed["<b>System</b><br/>Explain why no pathway<br/>was generated"]
+  generationFailedEnd(("End"))
+  locked["<b>System</b><br/>Keep the module closed;<br/>explain the access restriction"]
+  lockedEnd(("End"))
+  learningNeededEnd(("End"))
+  remainingEnd(("End"))
+  start --> choose
+  choose --> coverage
+  coverage -->|"no"| admission
+  admission -->|"yes"| baseline
+  baseline --> baselineScore
+  baselineScore --> validBaseline
+  validBaseline -->|"yes"| gaps
+  coverage -->|"yes"| gaps
+  gaps --> request
+  request --> learningNeeded
+  learningNeeded -->|"yes"| generate
+  generate --> generated
+  generated -->|"yes"| expertReview
+  expertReview --> ready
+  ready -->|"no"| expertReview
+  ready -->|"yes"| approve
+  approve --> selectModule
+  selectModule --> access
+  access -->|"yes"| studyAssess
+  studyAssess --> masteryGap
+  masteryGap --> remaining
+  remaining -->|"yes"| adapt
+  adapt --> end
+  admission -->|"no"| unavailable
+  unavailable --> unavailableEnd
+  validBaseline -->|"no"| invalid
+  invalid --> invalidEnd
+  generated -->|"no"| generationFailed
+  generationFailed --> generationFailedEnd
+  access -->|"no"| locked
+  locked --> lockedEnd
+  learningNeeded -->|"no"| learningNeededEnd
+  remaining -->|"no"| remainingEnd
   classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
   classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class SRS_ACT_05_N5,SRS_ACT_05_N13,SRS_ACT_05_N9 decision
   classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
-  class SRS_ACT_05_N1,SRS_ACT_05_N18 entry
-
+  class start entry
+  class coverage decision
+  class admission decision
+  class validBaseline decision
+  class learningNeeded decision
+  class generated decision
+  class ready decision
+  class access decision
+  class remaining decision
+  class end entry
+  class unavailableEnd entry
+  class invalidEnd entry
+  class generationFailedEnd entry
+  class lockedEnd entry
+  class learningNeededEnd entry
+  class remainingEnd entry
