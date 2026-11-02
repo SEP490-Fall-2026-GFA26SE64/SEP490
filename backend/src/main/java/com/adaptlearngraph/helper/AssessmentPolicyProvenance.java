@@ -10,8 +10,10 @@ import java.util.*;
 public final class AssessmentPolicyProvenance {
     private AssessmentPolicyProvenance(){}
     public static Optional<Pin> read(ResultSet row,ObjectMapper json,UUID organization)throws Exception{
-        String mode=row.getString("assessment_policy_mode");UUID id=row.getObject("assessment_policy_version_id",UUID.class);
-        String hash=row.getString("assessment_policy_hash"),body=row.getString("assessment_policy_snapshot");
+        return read(row.getString("assessment_policy_mode"),row.getObject("assessment_policy_version_id",UUID.class),
+                row.getString("assessment_policy_hash"),row.getString("assessment_policy_snapshot"),json,organization);
+    }
+    public static Optional<Pin> read(String mode,UUID id,String hash,String body,ObjectMapper json,UUID organization)throws Exception{
         if(mode==null){if(id!=null || hash!=null || body!=null)throw new IllegalStateException("Corrupt legacy policy");return Optional.empty();}
         if(!OrganizationAssessmentPolicy.SCHEMA.equals(mode))throw new IllegalStateException("Unsupported policy mode");
         var values=json.readTree(body);

@@ -6,12 +6,11 @@ import com.adaptlearngraph.entities.AdaptiveBlueprint;
 import com.adaptlearngraph.services.AdaptiveAttemptSnapshotResolver;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
 import java.util.*;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /** TMP-REQ002-08: explicit server-configured Employee, never client headers or production identity. */
 public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContextPort {
-    private final NamedParameterJdbcTemplate jdbc;
+    private final AdaptiveAttemptContextJpaRepository identities;
     private final java.util.function.Supplier<UUID> actor;
     private final UUID organizationId;
     private final Set<String> occupations;
@@ -21,21 +20,21 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
     private com.adaptlearngraph.repository.AdaptiveAttemptStore priorAttempts;
     private java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists;
     private java.util.function.Supplier<Employee> authenticatedEmployee;
-    public LocalAdaptiveAttemptContext(NamedParameterJdbcTemplate jdbc, UUID actorId, UUID organizationId,
+    public LocalAdaptiveAttemptContext(AdaptiveAttemptContextJpaRepository identities, UUID actorId, UUID organizationId,
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
-        this(() -> actorId, jdbc, organizationId, occupations, catalog, snapshots);
+        this(() -> actorId, identities, organizationId, occupations, catalog, snapshots);
     }
-    public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, NamedParameterJdbcTemplate jdbc, UUID organizationId,
+    public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, AdaptiveAttemptContextJpaRepository identities, UUID organizationId,
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
-        this.jdbc = jdbc; this.actor = actor; this.organizationId = Objects.requireNonNull(organizationId);
+        this.identities = identities; this.actor = actor; this.organizationId = Objects.requireNonNull(organizationId);
         this.occupations = Set.copyOf(occupations); this.catalog = catalog; this.snapshots = snapshots;
     }
-    public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, NamedParameterJdbcTemplate jdbc, UUID organizationId,
+    public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, AdaptiveAttemptContextJpaRepository identities, UUID organizationId,
             Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
             com.adaptlearngraph.repository.AdaptiveSelectedRolePort currentRoles,
             com.adaptlearngraph.repository.AdaptiveAttemptStore priorAttempts,
             java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists) {
-        this(actor,jdbc,organizationId,occupations,catalog,snapshots);
+        this(actor,identities,organizationId,occupations,catalog,snapshots);
         this.currentRoles=Objects.requireNonNull(currentRoles);this.priorAttempts=Objects.requireNonNull(priorAttempts);
         this.profileExists=Objects.requireNonNull(profileExists);
     }
@@ -47,22 +46,20 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         }
         UUID actorId = actor.get();
         if (actorId == null) throw new Failure(Code.UNAUTHENTICATED);
-        var accounts = jdbc.query("SELECT organization_id,active FROM platform.account WHERE account_id=:actor", Map.of("actor", actorId),
-                (rs, row) -> new Object[]{rs.getObject(1, UUID.class), rs.getBoolean(2)});
+        var accounts = identities.account(actorId);
         if (accounts.isEmpty()) throw new Failure(Code.UNAUTHENTICATED);
         var account = accounts.getFirst();
-        boolean employee = Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM platform.account_role WHERE account_id=:actor AND role_code='EMPLOYEE')",
-                Map.of("actor", actorId), Boolean.class));
-        if (!Boolean.TRUE.equals(account[1]) || !organizationId.equals(account[0]) || !employee) throw new Failure(Code.FORBIDDEN);
+        boolean employee = identities.isEmployee(actorId);
+        if (!Boolean.TRUE.equals(account.active()) || !organizationId.equals(account.organizationId()) || !employee) throw new Failure(Code.FORBIDDEN);
         return new Employee(organizationId, actorId);
     }
     public static LocalAdaptiveAttemptContext authenticated(java.util.function.Supplier<Employee> identity,
-            NamedParameterJdbcTemplate jdbc, UUID organization, Set<String> occupations,
+            AdaptiveAttemptContextJpaRepository identities, UUID organization, Set<String> occupations,
             AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
             com.adaptlearngraph.repository.AdaptiveSelectedRolePort roles,
             com.adaptlearngraph.repository.AdaptiveAttemptStore attempts,
             java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists) {
-        var context = new LocalAdaptiveAttemptContext(() -> identity.get().learnerId(), jdbc, organization,
+        var context = new LocalAdaptiveAttemptContext(() -> identity.get().learnerId(), identities, organization,
                 occupations, catalog, snapshots, roles, attempts, profileExists);
         context.authenticatedEmployee = Objects.requireNonNull(identity);
         return context;
@@ -86,10 +83,8 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
     @Override public AdaptiveAttemptSnapshot resolveStartingSnapshot(AdaptiveAttempt.Scope scope, StartTarget target) {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) throw new IllegalStateException("Attempt transaction required");
         authorizeScope(requireEmployee(), scope);
-        var params = Map.of("actor", scope.learnerId(), "org", scope.organizationId(), "occupation", scope.occupationId());
         // REQ-001 serializes selection on learner_state; share lock keeps provenance stable until commit.
-        var learners = jdbc.query("SELECT learner_id FROM platform.learner_state WHERE learner_id=:actor FOR SHARE", params,
-                (rs, row) -> rs.getObject(1, UUID.class));
+        var learners = identities.shareLockLearner(scope.learnerId());
         if (learners.isEmpty()) throw new Failure(Code.SELECTION_UNAVAILABLE);
         if(currentRoles!=null) {
             var selected=currentRoles.current(scope.organizationId(),scope.learnerId());
@@ -107,24 +102,16 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         }
         // Same scope key as management, shared until attempt/pool/first item/receipt commit.
         // Advisory coordination also covers an absent identity/activation row.
-        jdbc.queryForObject("SELECT pg_advisory_xact_lock_shared(hashtextextended(:coordination,0))",
-                Map.of("coordination", scope.organizationId() + "\n" + scope.occupationId()), (rs, row) -> true);
-        jdbc.query("SELECT blueprint_id FROM platform.baseline_blueprint_activation WHERE organization_id=:org AND occupation_id=:occupation FOR SHARE",
-                params, (rs, row) -> rs.getObject(1, UUID.class));
+        identities.shareLockScope(scope.organizationId() + "\n" + scope.occupationId());
+        identities.shareLockActivation(scope.organizationId(), scope.occupationId());
         return snapshots.resolve(scope, role, revision);
     }
     private Selection selection(Employee employee) {
         if(currentRoles!=null) {
             var s=currentRoles.current(employee.organizationId(),employee.learnerId());return new Selection(s.roleId(),s.revision());
         }
-        var rows = jdbc.query("""
-                SELECT reference.entity_id,learner.target_revision FROM platform.target_selection selection
-                JOIN platform.learner_state learner ON learner.learner_id=selection.learner_id
-                JOIN platform.account actor ON actor.account_id=selection.learner_id
-                JOIN platform.catalog_reference reference ON reference.catalog_ref_id=selection.role_ref_id AND reference.kind='TARGET_ROLE'
-                WHERE selection.learner_id=:actor AND actor.organization_id=:org AND selection.ended_at IS NULL
-                """, Map.of("actor", employee.learnerId(), "org", employee.organizationId()),
-                (rs, row) -> new Selection(rs.getString(1), rs.getLong(2)));
+        var rows = identities.currentSelection(employee.organizationId(), employee.learnerId()).stream()
+                .map(row -> new Selection(row.roleId().toString(), row.targetRevision())).toList();
         if (rows.size() != 1 || rows.getFirst().revision() < 1) throw new Failure(Code.SELECTION_UNAVAILABLE);
         return rows.getFirst();
     }

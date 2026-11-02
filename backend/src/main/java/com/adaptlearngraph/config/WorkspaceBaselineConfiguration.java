@@ -17,10 +17,13 @@ import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
 import com.adaptlearngraph.repository.AuthoredBaselineCatalog;
 import com.adaptlearngraph.repository.DevelopmentTechnicalVersions;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptOutcome;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptResultQuery;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptStore;
+import com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository;
+import com.adaptlearngraph.repository.AdaptiveAttemptRepositories;
+import com.adaptlearngraph.repository.BaselineAttemptResultJpaRepository;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
@@ -236,9 +239,10 @@ public class WorkspaceBaselineConfiguration {
             }
         });
     }
-    @Bean AdaptiveAttemptStore workspaceAttemptStore(DataSource source, ObjectMapper json, AdaptiveBlueprintStore blueprints,
+    @Bean AdaptiveAttemptStore workspaceAttemptStore(org.springframework.beans.factory.BeanFactory beans,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json, AdaptiveBlueprintStore blueprints,
             PlatformTransactionManager transactions) {
-        return new JdbcAdaptiveAttemptStore(new NamedParameterJdbcTemplate(source), json, transactions, blueprints);
+        return new JpaAdaptiveAttemptStore(AdaptiveAttemptRepositories.from(beans::getBean, locks), json, transactions, blueprints);
     }
     @Bean AdaptiveAttemptPolicyPort workspaceAttemptPolicy(AdaptiveTechnicalVersionPort technical) {
         return new PinnedAdaptiveAttemptPolicyAdapter(technical);
@@ -287,12 +291,11 @@ public class WorkspaceBaselineConfiguration {
             return new AdaptiveSelectedRolePort.Selected(role.id(), role.occupationId(), selection.revision());
         };
     }
-    @Bean AdaptiveAttemptContextPort workspaceAttemptContext(DataSource source, SubscriptionIdentity identity,
+    @Bean AdaptiveAttemptContextPort workspaceAttemptContext(AdaptiveAttemptContextJpaRepository identities, SubscriptionIdentity identity,
             SubscriptionWorkspaceStore workspaces, WorkspaceBaselineResources resources, AdaptiveBaselineCatalogPort catalog,
             AdaptiveBlueprintStore blueprints, AdaptiveBlueprintEligibilityPort eligibility, AdaptiveTechnicalVersionPort technical,
             AdaptiveSelectedRolePort roles, AdaptiveAttemptStore attempts, CurrentOccupationProfile profiles,
             com.adaptlearngraph.repository.AssessmentPolicyStore assessmentPolicies) {
-        var jdbc = new NamedParameterJdbcTemplate(source);
         var snapshots = new AdaptiveAttemptSnapshotResolver(blueprints, eligibility, technical,org->{
             try{return assessmentPolicies.requireEffective(org);}
             catch(com.adaptlearngraph.services.AssessmentPolicyService.Failure missing){
@@ -311,7 +314,7 @@ public class WorkspaceBaselineConfiguration {
                 }
             }
             private LocalAdaptiveAttemptContext delegate(Employee employee) {
-                return LocalAdaptiveAttemptContext.authenticated(this::requireEmployee, jdbc, employee.organizationId(),
+                return LocalAdaptiveAttemptContext.authenticated(this::requireEmployee, identities, employee.organizationId(),
                         resources.occupations(employee.organizationId()), catalog, snapshots, roles, attempts, profiles::exists);
             }
             public AdaptiveAttempt.Scope resolveScope(Employee employee, AdaptiveAttemptUseCase.StartTarget target) {
@@ -332,9 +335,10 @@ public class WorkspaceBaselineConfiguration {
             return new RoleBaselineFlow.Actor(actor.organizationId(), actor.learnerId());
         }, catalog, store, new WorkspaceBaselineProgress(profiles, eligibility));
     }
-    @Bean AdaptiveAttemptOutcomePort workspaceAttemptOutcome(DataSource source, ObjectMapper json,
+    @Bean AdaptiveAttemptOutcomePort workspaceAttemptOutcome(org.springframework.beans.factory.BeanFactory beans,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json,
             AdaptiveAttemptStore attempts, CurrentOccupationProfile profiles) {
-        var delegate = new JdbcAdaptiveAttemptOutcome(new NamedParameterJdbcTemplate(source), json, attempts);
+        var delegate = new JpaAdaptiveAttemptOutcome(AdaptiveAttemptRepositories.from(beans::getBean, locks), json, attempts);
         return completion -> { delegate.persist(completion); profiles.initialize(completion); };
     }
     @Bean AdaptiveAttemptFinalizationPort workspaceAttemptFinalization(AdaptiveAttemptStore store,
@@ -354,8 +358,8 @@ public class WorkspaceBaselineConfiguration {
             AdaptiveAttemptFinalizationPort finalization, AdaptiveAttemptContentPort content) {
         return new AdaptiveAttemptSubmitService(identity, store, finalization, content);
     }
-    @Bean AdaptiveAttemptUseCase.Results workspaceAttemptResults(DataSource source, AdaptiveAttemptContextPort identity) {
-        return new JdbcAdaptiveAttemptResultQuery(new NamedParameterJdbcTemplate(source), identity, true);
+    @Bean AdaptiveAttemptUseCase.Results workspaceAttemptResults(BaselineAttemptResultJpaRepository results, AdaptiveAttemptContextPort identity) {
+        return new JpaAdaptiveAttemptResultQuery(results, identity, true);
     }
     @Bean(destroyMethod = "shutdown") ThreadPoolTaskScheduler workspaceBaselineScheduler() {
         var scheduler = new ThreadPoolTaskScheduler();

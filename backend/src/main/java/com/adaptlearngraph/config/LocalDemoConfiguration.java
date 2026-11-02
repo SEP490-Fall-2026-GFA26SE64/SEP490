@@ -73,8 +73,8 @@ public class LocalDemoConfiguration {
     @Bean @Primary AdaptiveBlueprintPreviewPort demoPreview(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions,ObjectMapper json) { return new JpaAdaptiveBlueprintPreviewAdapter(itemVersions,json,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptContentPort demoContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptContent(itemVersions,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptScoringPort demoScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptScoring(itemVersions,LocalDemoIdentity.BANK,true); }
-    @Bean @Primary AdaptiveAttemptContextPort demoContext(DataSource source,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog,
+    @Bean @Primary AdaptiveAttemptContextPort demoContext(com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository identities,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog,
             AdaptiveSelectedRolePort selected,AdaptiveAttemptStore attempts,CurrentOccupationProfile profiles) {
-        return new LocalAdaptiveAttemptContext(identity::actor,new NamedParameterJdbcTemplate(source),LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),catalog,new AdaptiveAttemptSnapshotResolver(store,eligibility,technical),selected,attempts,profiles::exists);
+        return new LocalAdaptiveAttemptContext(identity::actor,identities,LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),catalog,new AdaptiveAttemptSnapshotResolver(store,eligibility,technical),selected,attempts,profiles::exists);
     }
 }

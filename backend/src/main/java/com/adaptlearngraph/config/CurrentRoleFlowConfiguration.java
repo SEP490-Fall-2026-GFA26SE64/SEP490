@@ -10,7 +10,7 @@ import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
 import com.adaptlearngraph.repository.CurrentOccupationProfile;
 import com.adaptlearngraph.repository.CurrentRoleCatalog;
 import com.adaptlearngraph.repository.CurrentRoleSelectionStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptOutcome;
 import com.adaptlearngraph.services.RoleBaselineFlow;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @Profile("local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
+@Import(PersistenceConfiguration.class)
 public class CurrentRoleFlowConfiguration {
     @Bean CurrentRoleCatalog currentRoleCatalog(Driver driver,ObjectMapper json) { return new CurrentRoleCatalog(driver,json,LocalDemoIdentity.ORG); }
     @Bean CurrentRoleSelectionStore currentRoleSelectionStore(DataSource source,ObjectMapper json,PlatformTransactionManager manager) {
@@ -50,8 +51,9 @@ public class CurrentRoleFlowConfiguration {
             CurrentRoleSelectionStore store,CurrentOccupationProfile profile) {
         return new RoleBaselineFlow(()-> { var a=context.requireEmployee();return new RoleBaselineFlow.Actor(a.organizationId(),a.learnerId()); },catalog,store,profile);
     }
-    @Bean @Primary AdaptiveAttemptOutcomePort demoProfileOutcome(DataSource source,ObjectMapper json,AdaptiveAttemptStore store,CurrentOccupationProfile profiles) {
-        var delegate=new JdbcAdaptiveAttemptOutcome(new NamedParameterJdbcTemplate(source),json,store);
+    @Bean @Primary AdaptiveAttemptOutcomePort demoProfileOutcome(org.springframework.beans.factory.BeanFactory beans,
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,AdaptiveAttemptStore store,CurrentOccupationProfile profiles) {
+        var delegate=new JpaAdaptiveAttemptOutcome(com.adaptlearngraph.repository.AdaptiveAttemptRepositories.from(beans::getBean,locks),json,store);
         return completion->{delegate.persist(completion);profiles.initialize(completion);};
     }
 }

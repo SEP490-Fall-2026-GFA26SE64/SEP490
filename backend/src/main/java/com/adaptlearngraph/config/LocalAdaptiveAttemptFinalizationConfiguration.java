@@ -5,36 +5,39 @@ import com.adaptlearngraph.repository.AdaptiveAttemptContextPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptFinalizationPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptOutcomePort;
 import com.adaptlearngraph.repository.AdaptiveAttemptPolicyPort;
+import com.adaptlearngraph.repository.AdaptiveAttemptRepositories;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
+import com.adaptlearngraph.repository.BaselineAttemptResultJpaRepository;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptOutcome;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptResultQuery;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.services.AdaptiveAttemptFinalizationService;
 import com.adaptlearngraph.services.AdaptiveAttemptSubmitService;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.Submitting;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.Results;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.sql.DataSource;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /** TMP-REQ002-08: finalization is independently opt-in; the worker has a further gate. */
 @Configuration(proxyBeanMethods = false)
 @Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled", "attempts.enabled", "attempts.finalization.enabled"}, havingValue = "true")
+@Import(PersistenceConfiguration.class)
 public class LocalAdaptiveAttemptFinalizationConfiguration {
     @Bean
-    AdaptiveAttemptOutcomePort adaptiveAttemptOutcome(DataSource source, ObjectMapper mapper, AdaptiveAttemptStore store) {
-        return new JdbcAdaptiveAttemptOutcome(new NamedParameterJdbcTemplate(source), mapper, store);
+    AdaptiveAttemptOutcomePort adaptiveAttemptOutcome(BeanFactory beans, PostgresAdvisoryLocks locks, ObjectMapper mapper, AdaptiveAttemptStore store) {
+        return new JpaAdaptiveAttemptOutcome(AdaptiveAttemptRepositories.from(beans::getBean, locks), mapper, store);
     }
     @Bean
     AdaptiveAttemptFinalizationPort adaptiveAttemptFinalization(AdaptiveAttemptStore store, AdaptiveAttemptPolicyPort policies, AdaptiveAttemptOutcomePort outcomes) {
         return new AdaptiveAttemptFinalizationService(store, policies, outcomes);
     }
     @Bean
-    Results adaptiveAttemptResults(DataSource source, AdaptiveAttemptContextPort context) {
-        return new JdbcAdaptiveAttemptResultQuery(new NamedParameterJdbcTemplate(source), context);
+    Results adaptiveAttemptResults(BaselineAttemptResultJpaRepository results, AdaptiveAttemptContextPort context) {
+        return new JpaAdaptiveAttemptResultQuery(results, context);
     }
     @Bean
     Submitting adaptiveAttemptSubmitting(AdaptiveAttemptContextPort context, AdaptiveAttemptStore store,

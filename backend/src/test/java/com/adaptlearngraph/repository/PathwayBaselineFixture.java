@@ -58,9 +58,10 @@ final class PathwayBaselineFixture {
             public AdaptiveAttempt.Scope resolveScope(Employee e,AdaptiveAttemptUseCase.StartTarget target){authorizeScope(e,scope);return scope;}
             public AdaptiveAttemptSnapshot resolveStartingSnapshot(AdaptiveAttempt.Scope s,AdaptiveAttemptUseCase.StartTarget target){authorizeScope(requireEmployee(),s);return snapshot;}
         };
-        var attempts=new JdbcAdaptiveAttemptStore(jdbc,json,manager,blueprints);
+        var repos=AdaptiveAttemptRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class)));
+        var attempts=new JpaAdaptiveAttemptStore(repos,json,persistence.transactionManager(),blueprints);
         var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
-        var content=new com.adaptlearngraph.repository.JpaAdaptiveAttemptContent(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),id(50));var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,json,attempts);
+        var content=new com.adaptlearngraph.repository.JpaAdaptiveAttemptContent(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),id(50));var outcome=new JpaAdaptiveAttemptOutcome(repos,json,attempts);
         var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,outcome);
         var start=new AdaptiveAttemptStartService(context,attempts,policy,content);
         var answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),id(50)),Optional.of(finalizer));

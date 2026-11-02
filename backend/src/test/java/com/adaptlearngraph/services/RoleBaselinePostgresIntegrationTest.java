@@ -9,10 +9,14 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptOutcome;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptResultQuery;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptOutcome;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptResultQuery;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptStore;
+import com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository;
+import com.adaptlearngraph.repository.AdaptiveAttemptRepositories;
+import com.adaptlearngraph.repository.BaselineAttemptResultJpaRepository;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.JdbcAdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
@@ -43,19 +47,22 @@ class RoleBaselinePostgresIntegrationTest {
  static final PostgreSQLContainer<?> PG=new PostgreSQLContainer<>("postgres:17.6-alpine");
  static final ObjectMapper JSON=new ObjectMapper().findAndRegisterModules();
  JdbcTemplate sql; NamedParameterJdbcTemplate jdbc; DataSourceTransactionManager manager;
- JdbcAdaptiveBlueprintStore blueprints; JdbcAdaptiveAttemptStore attempts; CurrentOccupationProfile profiles;
+ JdbcAdaptiveBlueprintStore blueprints; JpaAdaptiveAttemptStore attempts; CurrentOccupationProfile profiles;
  AdaptiveBlueprintEligibilityPort eligibility; AdaptiveBlueprintService authoring; Version version;
  AdaptiveAttemptContextPort context; AdaptiveAttemptStartService starts; AdaptiveAttemptSubmitService submits;
- AdaptiveAttemptAnswerService answers; JdbcAdaptiveAttemptResultQuery results; CurrentRoleSelectionStore selections;
+ AdaptiveAttemptAnswerService answers; JpaAdaptiveAttemptResultQuery results; CurrentRoleSelectionStore selections;
  @BeforeAll static void startContainer(){PG.start();}
  @AfterAll static void stop(){if(persistence!=null)persistence.close();PG.stop();}
- static com.adaptlearngraph.support.JpaTestContext persistence; com.adaptlearngraph.repository.ItemVersionJpaRepository items;
+ static com.adaptlearngraph.support.JpaTestContext persistence; static DriverManagerDataSource DS; AdaptiveAttemptRepositories repos; com.adaptlearngraph.repository.ItemVersionJpaRepository items;
  @BeforeEach void setup() {
-  var ds=new DriverManagerDataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword());
+  // One DataSource instance so JDBC fixtures/stores join the JPA attempt transaction.
+  if(DS==null)DS=new DriverManagerDataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword());
+  var ds=DS;
   sql=new JdbcTemplate(ds);jdbc=new NamedParameterJdbcTemplate(ds);manager=new DataSourceTransactionManager(ds);
   sql.execute("DROP SCHEMA IF EXISTS platform CASCADE");sql.execute("DROP TABLE IF EXISTS public.flyway_schema_history");
   Flyway.configure().dataSource(ds).load().migrate();
   if(persistence==null)persistence=com.adaptlearngraph.support.JpaTestContext.start(ds);items=persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class);
+  repos=AdaptiveAttemptRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class)));
   sql.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'A','Org A'),(?,'B','Org B')",ORG,id(2));
   for(var who:List.of(EMP,OTHER,MANAGER,id(6))) {
    var org=who.equals(id(6))?id(2):ORG;
@@ -89,7 +96,7 @@ class RoleBaselinePostgresIntegrationTest {
   authoring=new AdaptiveBlueprintService(actors,blueprints,eligibility,preview,Clock.systemUTC(),scope->{});
   var draft=authoring.save(new Save(OCC,0,"fixture-save",config()));
   version=authoring.finalizeBlueprint(new Finalize(OCC,draft.workingRevisionId(),draft.revision(),0,"fixture-activate",null,true));
-  attempts=new JdbcAdaptiveAttemptStore(jdbc,JSON,manager,blueprints);
+  attempts=new JpaAdaptiveAttemptStore(repos,JSON,persistence.transactionManager(),blueprints);
   profiles=new CurrentOccupationProfile(jdbc,JSON,attempts,blueprints,eligibility);
   context=mock(AdaptiveAttemptContextPort.class);
   when(context.requireEmployee()).thenReturn(new AdaptiveAttemptContextPort.Employee(ORG,EMP));
@@ -97,12 +104,12 @@ class RoleBaselinePostgresIntegrationTest {
   when(context.resolveStartingSnapshot(any(),any())).thenAnswer(i->snapshot(version));
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
   var content=new JpaAdaptiveAttemptContent(items,id(50));
-  var outcome=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
+  var outcome=new JpaAdaptiveAttemptOutcome(repos,JSON,attempts);
   var finalization=new AdaptiveAttemptFinalizationService(attempts,policy,c->{outcome.persist(c);profiles.initialize(c);});
   starts=new AdaptiveAttemptStartService(context,attempts,policy,content);
   submits=new AdaptiveAttemptSubmitService(context,attempts,finalization,content);
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,content,new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalization));
-  results=new JdbcAdaptiveAttemptResultQuery(jdbc,context);
+  results=new JpaAdaptiveAttemptResultQuery(persistence.bean(BaselineAttemptResultJpaRepository.class),context);
   selections=new CurrentRoleSelectionStore(jdbc,JSON,new TransactionTemplate(manager));
  }
  AdaptiveAttemptUseCase.View start(){return starts.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"start");}
@@ -275,7 +282,7 @@ class RoleBaselinePostgresIntegrationTest {
   assertThatThrownBy(()->answers.answer(new AdaptiveAttemptUseCase.Answer(old.id(),1,1,id(100),"a","late"))).isInstanceOfSatisfying(AdaptiveAttemptUseCase.Failure.class,e->assertThat(e.code()).isEqualTo(AdaptiveAttemptUseCase.Code.DEADLINE_REACHED));
   assertThat(digest()).isEqualTo(before);
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
-  var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
+  var out=new JpaAdaptiveAttemptOutcome(repos,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,c->{out.persist(c);profiles.initialize(c);});
   var worker=new AdaptiveAttemptDeadlineWorker(attempts,finalizer,ORG,10);
   var gate=new CountDownLatch(1);
@@ -290,7 +297,7 @@ class RoleBaselinePostgresIntegrationTest {
  }
  @Test void rb15ValidHistoricalOutcomeWithoutProfileRemainsPendingAndDoesNotUnlockRetake(){
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
-  var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
+  var out=new JpaAdaptiveAttemptOutcome(repos,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,out);
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));
   var terminal=finish();assertThat(results.result(terminal.id()).skills()).hasSize(3);
@@ -307,7 +314,7 @@ class RoleBaselinePostgresIntegrationTest {
   AdaptiveSelectedRolePort selected=(org,learner)->{
    var current=selections.current(new RoleBaselineFlow.Actor(org,learner)).orElseThrow();
    return new AdaptiveSelectedRolePort.Selected(current.role().id(),current.role().occupationId(),current.revision());};
-  return new LocalAdaptiveAttemptContext(()->employee,jdbc,ORG,Set.of(OCC),scope->Optional.of(new AdaptiveBaselineCatalogPort.CatalogSnapshot(scope,"Fixture Occupation","fixture-f3-v1",roles())),resolver,selected,attempts,profiles::exists);
+  return new LocalAdaptiveAttemptContext(()->employee,persistence.bean(AdaptiveAttemptContextJpaRepository.class),ORG,Set.of(OCC),scope->Optional.of(new AdaptiveBaselineCatalogPort.CatalogSnapshot(scope,"Fixture Occupation","fixture-f3-v1",roles())),resolver,selected,attempts,profiles::exists);
  }
  @Test void rb12StaleSelectionBetweenPrecheckAndStartCannotStartWrongOccupation(){
   var flow=selectionFlow(ORG,EMP);var first=flow.choose("role-a",null,"initial");
@@ -430,7 +437,7 @@ class RoleBaselinePostgresIntegrationTest {
  @org.junit.jupiter.params.provider.ValueSource(strings={"{\"s1\":0,\"s2\":0}","{\"s1\":0,\"s2\":null,\"s3\":\"UNKNOWN\"}"})
  void rb06PartialAndInvalidProfileValuesNeverClaimCompleteCoverage(String mastery){
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
-  var out=new JdbcAdaptiveAttemptOutcome(jdbc,JSON,attempts);
+  var out=new JpaAdaptiveAttemptOutcome(repos,JSON,attempts);
   var finalizer=new AdaptiveAttemptFinalizationService(attempts,policy,out);
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));
   var terminal=finish();

@@ -10,11 +10,14 @@ import com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
+import com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository;
+import com.adaptlearngraph.repository.AdaptiveAttemptRepositories;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
-import com.adaptlearngraph.repository.JdbcAdaptiveAttemptStore;
+import com.adaptlearngraph.repository.JpaAdaptiveAttemptStore;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.PinnedAdaptiveAttemptPolicyAdapter;
+import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.services.AdaptiveAttemptAnswerService;
 import com.adaptlearngraph.services.AdaptiveAttemptSnapshotResolver;
 import com.adaptlearngraph.services.AdaptiveAttemptStartService;
@@ -24,14 +27,12 @@ import com.adaptlearngraph.services.AdaptiveAttemptUseCase.Answering;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import java.util.Optional;
-import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -44,10 +45,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @org.springframework.context.annotation.Import(PersistenceConfiguration.class)
 public class LocalAdaptiveAttemptConfiguration {
     @Bean
-    AdaptiveAttemptStore adaptiveAttemptStore(DataSource source, ObjectMapper mapper, AdaptiveBlueprintStore blueprints,
+    AdaptiveAttemptStore adaptiveAttemptStore(org.springframework.beans.factory.BeanFactory beans, PostgresAdvisoryLocks locks,
+            ObjectMapper mapper, AdaptiveBlueprintStore blueprints,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
             org.springframework.transaction.PlatformTransactionManager transactionManager) {
-        return new JdbcAdaptiveAttemptStore(new NamedParameterJdbcTemplate(source), mapper, transactionManager, blueprints);
+        return new JpaAdaptiveAttemptStore(AdaptiveAttemptRepositories.from(beans::getBean, locks), mapper, transactionManager, blueprints);
     }
     @Bean
     AdaptiveAttemptPolicyPort adaptiveAttemptPolicy(AdaptiveTechnicalVersionPort technical) { return new PinnedAdaptiveAttemptPolicyAdapter(technical); }
@@ -56,11 +58,11 @@ public class LocalAdaptiveAttemptConfiguration {
         return new JpaAdaptiveAttemptContent(itemVersions, settings.questionBankId());
     }
     @Bean
-    AdaptiveAttemptContextPort adaptiveAttemptContext(DataSource source, AdaptiveBlueprintStore blueprints,
+    AdaptiveAttemptContextPort adaptiveAttemptContext(AdaptiveAttemptContextJpaRepository identities, AdaptiveBlueprintStore blueprints,
             AdaptiveBlueprintEligibilityPort eligibility, AdaptiveTechnicalVersionPort technical, AdaptiveBaselineCatalogPort catalog,
             JdbcAdaptiveBlueprintEligibilityAdapter.Properties settings,
             @Value("${assessment.baseline.adaptive.attempts.local-employee-id:#{null}}") UUID employeeId) {
-        return new LocalAdaptiveAttemptContext(new NamedParameterJdbcTemplate(source), employeeId, settings.organizationId(),
+        return new LocalAdaptiveAttemptContext(identities, employeeId, settings.organizationId(),
                 settings.occupationIds(), catalog, new AdaptiveAttemptSnapshotResolver(blueprints, eligibility, technical));
     }
     @Bean
