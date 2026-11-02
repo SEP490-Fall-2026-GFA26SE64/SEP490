@@ -6,10 +6,12 @@ import java.util.stream.Collectors;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jTemplate;
 import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
@@ -36,23 +38,35 @@ public final class Neo4jTestContext implements AutoCloseable {
 
     /** Uses a caller-owned driver; closing the context leaves the driver open. */
     public static Neo4jTestContext start(Driver driver) {
-        return new Neo4jTestContext(refresh(driver), null);
+        return new Neo4jTestContext(refresh(driver, null), null);
+    }
+
+    /**
+     * Like {@link #start(Driver)}, with the client and {@code neo4jTransactionManager} bound to {@code database} (as
+     * {@code spring.data.neo4j.database} does in the application).
+     */
+    public static Neo4jTestContext start(Driver driver, String database) {
+        return new Neo4jTestContext(refresh(driver, database), null);
     }
 
     /** Opens (and on {@link #close()} closes) a driver for the given bolt endpoint. */
     public static Neo4jTestContext start(String boltUrl, String user, String password) {
         Driver driver = GraphDatabase.driver(boltUrl, AuthTokens.basic(user, password));
         try {
-            return new Neo4jTestContext(refresh(driver), driver);
+            return new Neo4jTestContext(refresh(driver, null), driver);
         } catch (RuntimeException failure) {
             driver.close();
             throw failure;
         }
     }
 
-    private static AnnotationConfigApplicationContext refresh(Driver driver) {
+    private static AnnotationConfigApplicationContext refresh(Driver driver, String database) {
         var context = new AnnotationConfigApplicationContext();
         context.registerBean("driver", Driver.class, () -> driver);
+        if (database != null) {
+            context.registerBean(DatabaseSelectionProvider.class,
+                    () -> DatabaseSelectionProvider.createStaticDatabaseSelectionProvider(database));
+        }
         context.register(Config.class);
         context.refresh();
         return context;
@@ -102,8 +116,9 @@ public final class Neo4jTestContext implements AutoCloseable {
     @EnableNeo4jRepositories(basePackages = "com.adaptlearngraph.repository", transactionManagerRef = TransactionManagers.NEO4J)
     static class Config {
         @Bean
-        Neo4jClient neo4jClient(Driver driver) {
-            return Neo4jClient.create(driver);
+        Neo4jClient neo4jClient(Driver driver, ObjectProvider<DatabaseSelectionProvider> databases) {
+            return Neo4jClient.with(driver).withDatabaseSelectionProvider(databases.getIfAvailable(
+                    DatabaseSelectionProvider::getDefaultSelectionProvider)).build();
         }
 
         @Bean
@@ -120,8 +135,9 @@ public final class Neo4jTestContext implements AutoCloseable {
         }
 
         @Bean(TransactionManagers.NEO4J)
-        Neo4jTransactionManager neo4jTransactionManager(Driver driver) {
-            return Neo4jTransactionManager.with(driver).build();
+        Neo4jTransactionManager neo4jTransactionManager(Driver driver, ObjectProvider<DatabaseSelectionProvider> databases) {
+            return Neo4jTransactionManager.with(driver).withDatabaseSelectionProvider(databases.getIfAvailable(
+                    DatabaseSelectionProvider::getDefaultSelectionProvider)).build();
         }
     }
 }

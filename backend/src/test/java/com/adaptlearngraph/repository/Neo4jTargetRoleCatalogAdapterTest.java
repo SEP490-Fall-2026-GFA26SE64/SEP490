@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.adaptlearngraph.exception.TargetRoleQueryException;
 import com.adaptlearngraph.exception.TargetRoleQueryException.Code;
 import com.adaptlearngraph.repository.TargetRoleCatalogPort.Criteria;
+import com.adaptlearngraph.support.Neo4jTestContext;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -28,6 +29,7 @@ class Neo4jTargetRoleCatalogAdapterTest {
             .withStartupTimeout(java.time.Duration.ofMinutes(5));
 
     private Driver driver;
+    private Neo4jTestContext graph;
     private Neo4jTargetRoleCatalogAdapter adapter;
 
     @BeforeAll
@@ -44,7 +46,8 @@ class Neo4jTargetRoleCatalogAdapterTest {
     void setUp() {
         driver = GraphDatabase.driver(
                 NEO4J.getBoltUrl(), AuthTokens.basic("neo4j", NEO4J.getAdminPassword()));
-        adapter = new Neo4jTargetRoleCatalogAdapter(driver);
+        graph = Neo4jTestContext.start(driver);
+        adapter = new Neo4jTargetRoleCatalogAdapter(graph.client(), graph.transactionManager());
         try (var session = driver.session()) {
             session.run("MATCH (node) DETACH DELETE node").consume();
             session.run(FIXTURE).consume();
@@ -53,6 +56,7 @@ class Neo4jTargetRoleCatalogAdapterTest {
 
     @AfterEach
     void closeDriver() {
+        graph.close();
         driver.close();
     }
 
@@ -91,8 +95,10 @@ class Neo4jTargetRoleCatalogAdapterTest {
     void dependencyFailureIsNotConvertedToEmptyCatalog() {
         var fastFailure = Config.builder().withMaxTransactionRetryTime(1, TimeUnit.SECONDS).build();
         try (var unavailableDriver = GraphDatabase.driver(
-                "bolt://127.0.0.1:1", AuthTokens.none(), fastFailure)) {
-            var unavailableAdapter = new Neo4jTargetRoleCatalogAdapter(unavailableDriver);
+                "bolt://127.0.0.1:1", AuthTokens.none(), fastFailure);
+                var unavailableGraph = Neo4jTestContext.start(unavailableDriver)) {
+            var unavailableAdapter = new Neo4jTargetRoleCatalogAdapter(unavailableGraph.client(),
+                    unavailableGraph.transactionManager());
 
             assertThatThrownBy(() -> unavailableAdapter.findAvailableRoles("org-a", new Criteria(null)))
                     .isInstanceOfSatisfying(TargetRoleQueryException.class,

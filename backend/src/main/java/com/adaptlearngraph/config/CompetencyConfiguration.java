@@ -119,10 +119,11 @@ public class CompetencyConfiguration {
     }
 
     @Bean
-    public TargetRoleGraphPort targetRoleGraphPort(ObjectProvider<Driver> driverProvider) {
+    public TargetRoleGraphPort targetRoleGraphPort(ObjectProvider<Driver> driverProvider, ObjectProvider<Neo4jClient> client,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jTargetRoleGraphAdapter(driver);
+            return new Neo4jTargetRoleGraphAdapter(client.getObject(), transactions.getObject());
         }
         return (orgId, roleId) -> Optional.empty();
     }

@@ -4,12 +4,16 @@ import com.adaptlearngraph.entities.PrerequisiteEdge;
 import com.adaptlearngraph.entities.RoleGraphSkill;
 import com.adaptlearngraph.entities.SkillStatus;
 import com.adaptlearngraph.entities.TargetRoleGraph;
-import org.neo4j.driver.Driver;
+import org.neo4j.driver.Record;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +22,17 @@ import java.util.Optional;
 import java.util.Set;
 
 public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
-    private final Driver driver;
+    private final Neo4jClient client;
+    private final TransactionTemplate reads;
 
-    public Neo4jTargetRoleGraphAdapter(Driver driver) {
-        this.driver = Objects.requireNonNull(driver, "Driver cannot be null");
+    public Neo4jTargetRoleGraphAdapter(Neo4jClient client, PlatformTransactionManager transactions) {
+        this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+    }
+
+    // Neo4jClient: rows carry graph nodes and relationship properties that are mapped field by field with legacy defaults.
+    private Collection<Record> rows(String cypher, Map<String, Object> parameters) {
+        return client.query(cypher).bindAll(parameters).fetchAs(Record.class).mappedBy((types, record) -> record).all();
     }
 
     @Override
@@ -55,10 +66,12 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 ORDER BY coalesce(s1.code, s1.id) ASC, coalesce(s2.code, s2.id) ASC
                 """;
 
-        try (var session = driver.session()) {
-            var roleResult = session.run(roleCypher, Map.of("organizationId", organizationId, "roleId", roleId));
+        Map<String, Object> parameters = Map.of("organizationId", organizationId, "roleId", roleId);
+        // One read-only transaction for the role, its required skills and their prerequisites.
+        return reads.execute(transaction -> {
+            var roleResult = rows(roleCypher, parameters).iterator();
             if (!roleResult.hasNext()) {
-                return Optional.empty();
+                return Optional.<TargetRoleGraph>empty();
             }
             Node roleNode = roleResult.next().get("r").asNode();
             String id = roleNode.get("id").asString();
@@ -72,7 +85,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                     ? roleNode.get("status").asString()
                     : "ACTIVE";
 
-            var skillsResult = session.run(skillsCypher, Map.of("organizationId", organizationId, "roleId", roleId));
+            var skillsResult = rows(skillsCypher, parameters).iterator();
             List<RoleGraphSkill> requiredSkills = new ArrayList<>();
             Set<String> skillIds = new HashSet<>();
             while (skillsResult.hasNext()) {
@@ -108,7 +121,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                         skillLevel));
             }
 
-            var prereqResult = session.run(prereqCypher, Map.of("organizationId", organizationId, "roleId", roleId));
+            var prereqResult = rows(prereqCypher, parameters).iterator();
             List<PrerequisiteEdge> prerequisites = new ArrayList<>();
             while (prereqResult.hasNext()) {
                 var record = prereqResult.next();
@@ -159,6 +172,6 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                     status,
                     requiredSkills,
                     prerequisites));
-        }
+        });
     }
 }

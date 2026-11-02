@@ -3,6 +3,8 @@ package com.adaptlearngraph.config;
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.repository.JpaLearningContentAdapter;
 import com.adaptlearngraph.repository.JpaModuleAuthoringAdapter;
+import com.adaptlearngraph.repository.LearningModuleNodeRepository;
+import com.adaptlearngraph.repository.Neo4jModuleCatalogGraph;
 import com.adaptlearngraph.repository.LearningContentRepositories;
 import com.adaptlearngraph.repository.LearningImportJpaRepository;
 import com.adaptlearngraph.repository.LearningNotificationJpaRepository;
@@ -18,11 +20,11 @@ import com.adaptlearngraph.repository.LearningContentPort;
 import com.adaptlearngraph.repository.LearningAssetPort;
 import com.adaptlearngraph.services.LearningContentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -32,9 +34,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class ModuleAuthoringConfiguration {
     @Bean ModuleAuthoringPort moduleAuthoringPort(ListableBeanFactory beans, PostgresAdvisoryLocks locks,
             @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
-            ObjectMapper mapper, Driver driver, @Value("${module-authoring.organization-id:comp-technova}") String organization) {
+            ObjectMapper mapper, LearningModuleNodeRepository modules, Neo4jClient neo4j,
+            @Qualifier(TransactionManagers.NEO4J) PlatformTransactionManager graphTransactions,
+            @Value("${module-authoring.organization-id:comp-technova}") String organization) {
         return new JpaModuleAuthoringAdapter(ModuleAuthoringRepositories.from(beans::getBean, locks), new TransactionTemplate(manager),
-                mapper, driver, organization);
+                mapper, new Neo4jModuleCatalogGraph(modules, neo4j, graphTransactions), organization);
     }
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="learning.mail.enabled",havingValue="true")

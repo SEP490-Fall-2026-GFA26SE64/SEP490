@@ -1,6 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.OfficialQuestionBankCatalog;
+import com.adaptlearngraph.support.Neo4jTestContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,11 +73,14 @@ class Neo4jManyToManyCatalogIntegrationTest {
                 var scope = parse(Files.readAllBytes(Path.of(
                         "../documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json")), OfficialQuestionBankCatalog.Scope.class);
                 var catalog = new OfficialQuestionBankCatalog();
-                catalog.verify(driver, "neo4j", scope);
-                session.run("MATCH (m:LearningModule)-[r:TEACHES]->(s:MicroSkill) WHERE s.id IN $ids "
-                        + "WITH m,r,s LIMIT 1 CREATE (m)-[extra:TEACHES]->(s) SET extra=properties(r),extra.id='drift'",
-                        Map.of("ids", scope.skills().keySet().stream().toList())).consume();
-                assertThrows(IllegalStateException.class, () -> catalog.verify(driver, "neo4j", scope));
+                try (var graph = Neo4jTestContext.start(driver, "neo4j")) {
+                    var reader = new Neo4jOfficialCatalogScopeReader(graph.client(), graph.transactionManager(), "neo4j");
+                    catalog.verify(reader, scope);
+                    session.run("MATCH (m:LearningModule)-[r:TEACHES]->(s:MicroSkill) WHERE s.id IN $ids "
+                            + "WITH m,r,s LIMIT 1 CREATE (m)-[extra:TEACHES]->(s) SET extra=properties(r),extra.id='drift'",
+                            Map.of("ids", scope.skills().keySet().stream().toList())).consume();
+                    assertThrows(IllegalStateException.class, () -> catalog.verify(reader, scope));
+                }
             }
         }
     }

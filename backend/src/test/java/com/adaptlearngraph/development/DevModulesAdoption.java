@@ -3,9 +3,12 @@ package com.adaptlearngraph.development;
 import com.adaptlearngraph.services.ModuleAuthoringService;
 import com.adaptlearngraph.entities.ModuleAuthoring.*;
 import com.adaptlearngraph.repository.JpaModuleAuthoringAdapter;
+import com.adaptlearngraph.repository.LearningModuleNodeRepository;
+import com.adaptlearngraph.repository.Neo4jModuleCatalogGraph;
 import com.adaptlearngraph.repository.ModuleAuthoringRepositories;
 import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.support.JpaTestContext;
+import com.adaptlearngraph.support.Neo4jTestContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,9 +65,11 @@ public final class DevModulesAdoption {
         String manager = jdbc.queryForObject("SELECT account_id::text FROM platform.account WHERE normalized_identifier='ld.manager@example.test'", String.class);
         String org = jdbc.queryForObject("SELECT organization_id::text FROM platform.account WHERE account_id::text=?", String.class, expert);
         var json = new ObjectMapper(); var saved = json.readTree(Files.readString(Path.of(env("DEV_MODULE_SNAPSHOT"))));
-        try (var driver = GraphDatabase.driver("bolt://127.0.0.1:28187", AuthTokens.basic("neo4j", env("DEV_ACCOUNTS_NEO4J_PASSWORD")))) {
+        try (var driver = GraphDatabase.driver("bolt://127.0.0.1:28187", AuthTokens.basic("neo4j", env("DEV_ACCOUNTS_NEO4J_PASSWORD")));
+                var graph = Neo4jTestContext.start(driver)) {
             var port = new JpaModuleAuthoringAdapter(ModuleAuthoringRepositories.from(persistence::bean,
-                    new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))), tx, json, driver, org);
+                    new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))), tx, json,
+                    new Neo4jModuleCatalogGraph(graph.bean(LearningModuleNodeRepository.class), graph.client(), graph.transactionManager()), org);
             var service = new ModuleAuthoringService(port);
             actor(expert, org, "EXPERT");
             tx.executeWithoutResult(outer -> {

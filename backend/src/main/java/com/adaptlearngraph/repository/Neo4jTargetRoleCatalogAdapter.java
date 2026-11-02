@@ -9,11 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Record;
 import org.neo4j.driver.exceptions.Neo4jException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPort {
     private static final Logger LOGGER = LoggerFactory.getLogger(Neo4jTargetRoleCatalogAdapter.class);
@@ -53,15 +56,17 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
             RETURN
             """ + ROLE_PROJECTION;
 
-    private final Driver driver;
+    private final Neo4jClient client;
+    private final TransactionTemplate reads;
     private final Neo4jTargetRoleMapper mapper;
 
-    public Neo4jTargetRoleCatalogAdapter(Driver driver) {
-        this(driver, new Neo4jTargetRoleMapper());
+    public Neo4jTargetRoleCatalogAdapter(Neo4jClient client, PlatformTransactionManager transactions) {
+        this(client, transactions, new Neo4jTargetRoleMapper());
     }
 
-    Neo4jTargetRoleCatalogAdapter(Driver driver, Neo4jTargetRoleMapper mapper) {
-        this.driver = Objects.requireNonNull(driver, "driver must not be null");
+    Neo4jTargetRoleCatalogAdapter(Neo4jClient client, PlatformTransactionManager transactions, Neo4jTargetRoleMapper mapper) {
+        this.client = Objects.requireNonNull(client, "client must not be null");
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
         this.mapper = Objects.requireNonNull(mapper, "mapper must not be null");
     }
 
@@ -72,13 +77,15 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
         parameters.put("organizationId", requireText(organizationId, "organizationId"));
         parameters.put("search", criteria.normalizedSearch());
 
-        try (var session = driver.session()) {
-            return session.executeRead(transaction -> transaction.run(LIST_QUERY, parameters)
-                    .list(mapper::toSummary))
+        try {
+            // Neo4jClient: one aggregate statement for the list; rows the mapper rejects are skipped.
+            return reads.execute(status -> client.query(LIST_QUERY).bindAll(parameters)
+                    .fetchAs(Row.class).mappedBy((types, row) -> new Row(mapper.toSummary(row))).all())
                     .stream()
+                    .map(Row::summary)
                     .flatMap(Optional::stream)
                     .toList();
-        } catch (Neo4jException exception) {
+        } catch (Neo4jException | DataAccessException | TransactionException exception) {
             LOGGER.warn("Failed to list available target roles", exception);
             throw catalogUnavailable(exception);
         }
@@ -89,17 +96,24 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
         Map<String, Object> parameters = Map.of(
                 "organizationId", requireText(organizationId, "organizationId"),
                 "roleId", requireText(roleId, "roleId"));
-        try (var session = driver.session()) {
-            List<Record> records = session.executeRead(
-                    transaction -> transaction.run(DETAIL_QUERY, parameters).list());
-            return records.stream().findFirst().flatMap(mapper::toDetail);
-        } catch (Neo4jException exception) {
+        try {
+            List<Optional<TargetRoleDetail>> details = reads.execute(status -> client.query(DETAIL_QUERY).bindAll(parameters)
+                    .fetchAs(Detail.class).mappedBy((types, row) -> new Detail(mapper.toDetail(row))).all())
+                    .stream().map(Detail::detail).toList();
+            return details.stream().findFirst().flatMap(detail -> detail);
+        } catch (Neo4jException | DataAccessException | TransactionException exception) {
             LOGGER.warn("Failed to read available target-role detail", exception);
             throw catalogUnavailable(exception);
         }
     }
 
-    private static TargetRoleQueryException catalogUnavailable(Neo4jException cause) {
+    private record Row(Optional<TargetRoleSummary> summary) {
+    }
+
+    private record Detail(Optional<TargetRoleDetail> detail) {
+    }
+
+    private static TargetRoleQueryException catalogUnavailable(RuntimeException cause) {
         return new TargetRoleQueryException(Code.CATALOG_UNAVAILABLE, "Target-role catalog is unavailable", cause);
     }
 

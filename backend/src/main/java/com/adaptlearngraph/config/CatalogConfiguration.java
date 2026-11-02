@@ -1,6 +1,7 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.Neo4jCompetencyRepository;
+import com.adaptlearngraph.repository.LearningModuleNodeRepository;
 import com.adaptlearngraph.repository.Neo4jLearningModuleRepository;
 import com.adaptlearngraph.repository.Neo4jOccupationRepository;
 import com.adaptlearngraph.repository.Neo4jTargetRoleCatalogAdapter;
@@ -72,8 +73,9 @@ public class CatalogConfiguration {
 
     @Bean
     @Profile({"local", "prod"})
-    public TargetRoleCatalogPort targetRoleCatalogPort(Driver driver) {
-        return new Neo4jTargetRoleCatalogAdapter(driver);
+    public TargetRoleCatalogPort targetRoleCatalogPort(Neo4jClient client,
+            @Qualifier(TransactionManagers.NEO4J) PlatformTransactionManager transactions) {
+        return new Neo4jTargetRoleCatalogAdapter(client, transactions);
     }
 
     @Bean
@@ -121,10 +123,12 @@ public class CatalogConfiguration {
     }
 
     @Bean
-    public com.adaptlearngraph.repository.LearningModuleRepository learningModuleRepository(ObjectProvider<Driver> driverProvider) {
+    public com.adaptlearngraph.repository.LearningModuleRepository learningModuleRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<LearningModuleNodeRepository> modules, ObjectProvider<Neo4jClient> client,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jLearningModuleRepository(driver);
+            return new Neo4jLearningModuleRepository(modules.getObject(), client.getObject(), transactions.getObject());
         }
         return new com.adaptlearngraph.repository.LearningModuleRepository() {
             @Override public java.util.List<com.adaptlearngraph.entities.LearningModuleRecord> findAll(String organizationId) { return java.util.List.of(); }

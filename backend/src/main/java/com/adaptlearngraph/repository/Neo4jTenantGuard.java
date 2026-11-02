@@ -3,7 +3,6 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
 import java.util.Map;
 import java.util.Set;
-import org.neo4j.driver.SimpleQueryRunner;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
 /** Organization ownership checks shared by Neo4j catalog writers. */
@@ -19,17 +18,9 @@ public final class Neo4jTenantGuard {
         return organizationId;
     }
 
-    /** Rejects a write whose node id already exists under a different (or no) organization. */
-    public static void requireOwnedOrAbsent(SimpleQueryRunner runner, String label, String id, String organizationId) {
-        if (!requiresLookup(label, id, organizationId)) return;
-        boolean foreign = runner.run(foreignOwnerQuery(label), Map.of("id", id, "organization", organizationId))
-                .single().get("foreign").asBoolean();
-        if (foreign) throw new CrossTenantWriteException();
-    }
-
     /**
-     * Same check through Spring Data Neo4j: the lookup joins the caller's {@code neo4jTransactionManager} transaction, so the
-     * guard and the guarded write commit or roll back together.
+     * Rejects a write whose node id already exists under a different (or no) organization. The lookup joins the caller's
+     * {@code neo4jTransactionManager} transaction, so the guard and the guarded write commit or roll back together.
      */
     public static void requireOwnedOrAbsent(Neo4jClient client, String label, String id, String organizationId) {
         if (!requiresLookup(label, id, organizationId)) return;

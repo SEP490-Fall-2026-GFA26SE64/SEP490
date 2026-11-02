@@ -6,10 +6,10 @@ import com.adaptlearngraph.services.OfficialQuestionBankImporter;
 import java.io.IOException;
 import java.util.UUID;
 import com.adaptlearngraph.repository.ItemVersionJpaRepository;
+import com.adaptlearngraph.repository.Neo4jOfficialCatalogScopeReader;
 import com.adaptlearngraph.repository.OfficialQuestionBankImportJpaRepository;
 import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import com.adaptlearngraph.repository.QuestionBankJpaRepository;
-import org.neo4j.driver.Driver;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.transaction.PlatformTransactionManager;
 import com.adaptlearngraph.constants.TransactionManagers;
 import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
@@ -43,7 +44,8 @@ public class OfficialQuestionBankImportConfiguration {
     @Bean
     ApplicationRunner officialQuestionBankImport(OfficialQuestionBankImportJpaRepository imports, QuestionBankJpaRepository banks,
             ItemVersionJpaRepository items, PostgresAdvisoryLocks locks,
-            @Qualifier(TransactionManagers.JPA) PlatformTransactionManager transactions, Driver driver, ResourceLoader resources,
+            @Qualifier(TransactionManagers.JPA) PlatformTransactionManager transactions, Neo4jClient neo4j,
+            @Qualifier(TransactionManagers.NEO4J) PlatformTransactionManager graphTransactions, ResourceLoader resources,
             ConfigurableApplicationContext context, Properties settings, Environment environment,
             @Value("${spring.data.neo4j.database:}") String database) {
         return args -> {
@@ -67,7 +69,7 @@ public class OfficialQuestionBankImportConfiguration {
                     && settings.expectedSourceSha256().equals(manifest.sourceSha256())
                     && settings.expectedScopeSha256().equals(manifest.scopeSha256()), "Configured import scope mismatch");
             manifest.validate(scope);
-            new OfficialQuestionBankCatalog().verify(driver, database, scope);
+            new OfficialQuestionBankCatalog().verify(new Neo4jOfficialCatalogScopeReader(neo4j, graphTransactions, database), scope);
             var result = new OfficialQuestionBankImporter(imports, banks, items, locks, transactions).importManifest(manifest,
                     new OfficialQuestionBankImporter.Owner(settings.ownerAccountId(), settings.organizationId(), settings.expectedJdbcUrl()),
                     settings.localSeed() ? OfficialQuestionBankImporter.Mode.LOCAL_SEED : OfficialQuestionBankImporter.Mode.ADMINISTRATOR);

@@ -9,8 +9,14 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.adaptlearngraph.dtos.TargetRoleFilter;
 import com.adaptlearngraph.entities.CompetencyRecord;
+import com.adaptlearngraph.entities.LearningModuleRecord;
 import com.adaptlearngraph.entities.MicroSkill;
 import com.adaptlearngraph.entities.MicroSkillId;
+import com.adaptlearngraph.entities.ModuleAuthoring;
+import com.adaptlearngraph.entities.ModuleAuthoring.Document;
+import com.adaptlearngraph.entities.ModuleAuthoring.Metadata;
+import com.adaptlearngraph.entities.ModuleAuthoring.Revision;
+import com.adaptlearngraph.entities.ModuleAuthoring.Teaching;
 import com.adaptlearngraph.entities.Occupation;
 import com.adaptlearngraph.entities.RoleStatus;
 import com.adaptlearngraph.entities.RoleTrack;
@@ -18,7 +24,9 @@ import com.adaptlearngraph.entities.SkillStatus;
 import com.adaptlearngraph.entities.TargetRole;
 import com.adaptlearngraph.entities.TargetRoleId;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
+import com.adaptlearngraph.services.ModuleAuthoringService;
 import com.adaptlearngraph.support.Neo4jTestContext;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +42,7 @@ import org.testcontainers.containers.Neo4jContainer;
 /**
  * Spring Data Neo4j catalog adapters against a real Neo4j: writes for organization B that target ids owned by organization
  * A are rejected without touching A's nodes, properties or relationships; relationship writes never connect nodes of
- * different organizations; list reads issue exactly one Cypher statement regardless of row count.
+ * different organizations (including module TEACHES edges); list reads issue exactly one Cypher statement regardless of row count.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class Neo4jCatalogTenantIsolationIntegrationTest {
@@ -62,6 +70,10 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             CREATE (s1)-[:HAS_SKILL_PREREQUISITE {requiredScore: 0.6, status: 'ACTIVE'}]->(s2)
             CREATE (s2)-[:HAS_SKILL_PREREQUISITE {requiredScore: 0.5, status: 'ACTIVE'}]->(s3)
             CREATE (macro)-[:HAS_SKILL {status: 'ACTIVE'}]->(s1)
+            CREATE (module:LearningModule {id: 'module-a', organizationId: $a, title: 'Module A', moduleType: 'LESSON_AND_PRACTICE',
+                                           version: '0.11.0', status: 'ACTIVE', reviewStatus: 'APPROVED', duration: 30, price: 1000.0})
+            CREATE (module)-[:TEACHES {id: 'teach-a', version: '0.11.0', status: 'ACTIVE', reviewStatus: 'APPROVED',
+                                       teachingFocus: 'PRIMARY', difficultyLevel: 'LOW'}]->(s1)
             CREATE (:MicroSkill {id: 'skill-b1', organizationId: $b, code: 'SKILL_B1', name: 'Skill B1', status: 'ACTIVE'})
             CREATE (:Level {id: 'level-b', organizationId: $b, code: 'LEVEL_B', name: 'Level B'})
             """;
@@ -74,6 +86,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     private Neo4jTargetRoleRepository roles;
     private Neo4jPrerequisiteRepository prerequisites;
     private Neo4jMacroCompetencyRepository macros;
+    private Neo4jLearningModuleRepository modules;
+    private Neo4jModuleCatalogGraph moduleGraph;
 
     @BeforeAll
     void start() {
@@ -89,6 +103,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         prerequisites = new Neo4jPrerequisiteRepository(persistence.bean(MicroSkillNodeRepository.class), client, mapping,
                 transactions);
         macros = new Neo4jMacroCompetencyRepository(persistence.bean(MacroCompetencyNodeRepository.class), transactions);
+        modules = new Neo4jLearningModuleRepository(persistence.bean(LearningModuleNodeRepository.class), client, transactions);
+        moduleGraph = new Neo4jModuleCatalogGraph(persistence.bean(LearningModuleNodeRepository.class), client, transactions);
     }
 
     @AfterAll
@@ -163,6 +179,50 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     }
 
     @Test
+    void moduleGraphWritesForOrganizationBNeverOverwriteOrLinkOrganizationAModules() {
+        var before = snapshot(A);
+
+        assertThatThrownBy(() -> modules.save(B, new LearningModuleRecord("module-a", "module-a", "Hijacked", null, null, null,
+                null, null, null, null, 15, List.of("skill-b1"), List.of())))
+                .isInstanceOf(CrossTenantWriteException.class);
+        assertThatThrownBy(() -> moduleGraph.project(moduleDocument("module-a", B, "skill-b1"),
+                moduleDocument("module-a", B, "skill-b1").current(), false))
+                .isInstanceOf(CrossTenantWriteException.class);
+        modules.delete(B, "module-a");
+        assertThat(modules.findById(B, "module-a")).isEmpty();
+        assertThat(moduleGraph.modules(B)).isEmpty();
+        assertThat(snapshot(A)).as("A's module, its properties and TEACHES edges").isEqualTo(before);
+
+        modules.save(B, new LearningModuleRecord("module-b", "module-b", "Module B", null, null, null, null, null, null, null,
+                15, List.of("skill-a1", "skill-b1"), List.of()));
+        assertThat(modules.findById(B, "module-b").orElseThrow().teachesSkillIds()).containsExactly("skill-b1");
+
+        var crossOrganization = moduleDocument("module-b2", B, "skill-a1");
+        assertThatThrownBy(() -> moduleGraph.project(crossOrganization, crossOrganization.current(), false))
+                .isInstanceOfSatisfying(ModuleAuthoringService.Failure.class, failure -> assertThat(failure.status()).isEqualTo(409));
+        assertThat(collectIds("MATCH (m:LearningModule {id: 'module-b2'}) RETURN collect(m.id) AS ids")).isEmpty();
+        var owned = moduleDocument("module-b2", B, "skill-b1");
+        moduleGraph.project(owned, owned.current(), false);
+        assertThat(collectIds("MATCH (m:LearningModule {id: 'module-b2', organizationId: $b})-[:TEACHES]->(s) RETURN collect(s.id) AS ids"))
+                .isEqualTo(List.of("skill-b1"));
+        assertThat(moduleGraph.modules(B)).extracting(module -> module.metadata().id()).containsExactly("module-b", "module-b2");
+
+        assertThat(snapshot(A)).as("A's module, its properties and TEACHES edges").isEqualTo(before);
+        assertThat(crossOrganizationRelationships()).isZero();
+    }
+
+    @Test
+    void targetRoleGraphReadsOnlyTheRequestingOrganization() {
+        var graphAdapter = new Neo4jTargetRoleGraphAdapter(persistence.client(), persistence.transactionManager());
+
+        var roleGraph = graphAdapter.findTargetRoleGraph(A, "ROLE_A").orElseThrow();
+        assertThat(roleGraph.requiredSkills()).extracting(skill -> skill.skillId()).containsExactly("skill-a1");
+        assertThat(roleGraph.requiredSkills().getFirst().macroCompetencyCode()).isEqualTo("COMP_A");
+        assertThat(roleGraph.prerequisites()).isEmpty();
+        assertThat(graphAdapter.findTargetRoleGraph(B, "role-a")).isEmpty();
+    }
+
+    @Test
     void listReadsIssueOneCypherStatementRegardlessOfRowCount() {
         var logger = (Logger) LoggerFactory.getLogger("org.springframework.data.neo4j.cypher");
         Level previous = logger.getLevel();
@@ -181,10 +241,25 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             assertThat(statements(appender, () -> assertThat(prerequisites.findAll(A)).hasSize(2))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(competencies.findAllCompetencies(A, null)).hasSize(1))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(macros.findAll(A)).hasSize(1))).hasSize(1);
+            modules.save(A, new LearningModuleRecord("module-a2", "module-a2", "Module A2", null, null, null, null, null, null,
+                    null, 15, List.of("skill-a1", "skill-a2"), List.of()));
+            assertThat(statements(appender, () -> assertThat(modules.findAll(A)).hasSize(2))).hasSize(1);
+            assertThat(statements(appender, () -> assertThat(moduleGraph.modules(A)).hasSize(2))).hasSize(1);
         } finally {
             logger.detachAppender(appender);
             logger.setLevel(previous);
         }
+    }
+
+    private static Document moduleDocument(String id, String organization, String skillId) {
+        String at = "2026-11-03T00:00:00Z";
+        var teaching = new Teaching(new Metadata(id + "-" + skillId, "0.11.0", "ACTIVE", "APPROVED", "reviewer", at), skillId,
+                skillId, "PRIMARY", "LOW");
+        var payload = new ModuleAuthoring.Package(new Metadata(id, "0.11.0", "ACTIVE", "APPROVED", "reviewer", at), "Hijacked",
+                "LESSON_AND_PRACTICE", "module-content:" + id, "text/markdown", "1.0", 15, new BigDecimal("1000"),
+                List.of(teaching), null);
+        var revision = new Revision(1, "RELEASED", payload, "expert", at, "reviewer", at, null);
+        return new Document(id, organization, List.of(), "expert", at, 1, true, false, 1, List.of(revision), List.of());
     }
 
     private static List<String> statements(ListAppender<ILoggingEvent> appender, Runnable action) {
