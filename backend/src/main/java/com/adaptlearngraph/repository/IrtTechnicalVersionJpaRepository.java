@@ -1,20 +1,24 @@
 package com.adaptlearngraph.repository;
 
+import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.entities.IrtParameterSetEntity;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Promoted IRT technical versions. Native SQL is kept on purpose: the effective selection filters on jsonb paths of the
+ * Promoted IRT technical versions, plus the calibration seal/promotion state changes of parameter sets. Native SQL is kept on purpose: the effective selection filters on jsonb paths of the
  * calibration run (organization/bank provenance) and optionally share-locks the selection. jsonb columns are cast to
  * text so results are plain strings. Version rows: [parameter_set_id, model_version_id, mastery_mapping_version_id,
  * model_configuration, mapping_configuration]; parameter rows: [item_version_id, micro_skill_id, a, b, c].
  */
-public interface IrtTechnicalVersionJpaRepository extends Repository<IrtParameterSetEntity, UUID> {
+public interface IrtTechnicalVersionJpaRepository extends Repository<IrtParameterSetEntity, UUID>, InsertOnlyRepository<IrtParameterSetEntity> {
     String VERSIONS = """
             SELECT parameters.parameter_set_id,parameters.model_version_id,mapping.mastery_mapping_version_id,
                    model.configuration::text AS model_configuration,mapping.configuration::text AS mapping_configuration
@@ -68,4 +72,37 @@ public interface IrtTechnicalVersionJpaRepository extends Repository<IrtParamete
             """, nativeQuery = true)
     List<Object[]> parameters(@Param("model") UUID modelVersionId, @Param("mapping") UUID mappingVersionId,
             @Param("parameters") UUID parameterSetId, @Param("skills") Collection<String> microSkillIds);
+
+    /** Calibration seal: a BUILDING set becomes an immutable CANDIDATE (the deferred seal trigger validates content). */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query("update IrtParameterSetEntity s set s.status='CANDIDATE' where s.parameterSetId=:set and s.status='BUILDING'")
+    int seal(@Param("set") UUID parameterSetId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query("""
+            update IrtParameterSetEntity s set s.status='PROMOTED',s.activatedBy=:actor,s.activatedAt=:time
+            where s.parameterSetId=:set and s.modelVersionId=:model and s.status='CANDIDATE'
+            """)
+    int promote(@Param("set") UUID parameterSetId, @Param("model") UUID modelVersionId, @Param("actor") UUID actorId,
+            @Param("time") Instant activatedAt);
+
+    /**
+     * Calibrated set of a succeeded run in the organization/bank scope, share-locking set and run. Columns: [source, status,
+     * parameter_hash, created_at, activated_by, activated_at, run configuration, run diagnostics].
+     */
+    // jsonb path filters on the run configuration and FOR SHARE OF both joined rows.
+    @Query(value = """
+            SELECT s.source,s.status,s.parameter_hash::text,s.created_at,s.activated_by,s.activated_at,
+                   r.configuration::text,r.diagnostics::text
+            FROM platform.irt_parameter_set s
+            JOIN platform.irt_calibration_run r ON r.output_parameter_set_id=s.parameter_set_id AND r.model_version_id=s.model_version_id
+            WHERE s.parameter_set_id=:set AND s.model_version_id=:model AND r.status='SUCCEEDED'
+              AND r.configuration->'request'->'scope'->>'organizationId'=:org
+              AND r.configuration->'request'->'scope'->>'bankId'=:bank
+            FOR SHARE OF s,r
+            """, nativeQuery = true)
+    List<Object[]> calibratedCandidate(@Param("set") UUID parameterSetId, @Param("model") UUID modelVersionId,
+            @Param("org") String organizationId, @Param("bank") String bankId);
 }
