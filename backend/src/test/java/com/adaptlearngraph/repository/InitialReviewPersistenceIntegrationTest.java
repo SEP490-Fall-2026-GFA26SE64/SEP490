@@ -49,12 +49,13 @@ class InitialReviewPersistenceIntegrationTest {
     final ObjectMapper json=new ObjectMapper().findAndRegisterModules();
     final UUID expert=new UUID(0,2001);final Limits limits=new Limits("c3-fixture-limits",20,20,30,10,10000);
     final AtomicLong preparedStatements=new AtomicLong();
-    Driver driver;JdbcTemplate sql;TransactionTemplate tx;InitialRevisionCodec codec;
+    Driver driver;com.adaptlearngraph.support.Neo4jTestContext graphContext;Neo4jCypher graphCypher;JdbcTemplate sql;TransactionTemplate tx;InitialRevisionCodec codec;
     JpaInitialPathways store;JpaInitialReceipts receipts;InitialPathwayRepositories repos;CurrentRoleSelectionStore selections;PathwayBaselineFixture baseline;
     Fixture retained;Map<String,String> before35,after35;List<Map<String,Object>> oldChecksums;Flyway flyway;
     final Map<String,String> versions=Map.of("catalog","fixture-v1","binding","fixture-binding-v1","publication","fixture-publication-v1","requirements","fixture-requirements-v1","compatibility","fixture-compatibility-v1","suitability",InitialSuitability.VERSION,"readiness","fixture-readiness-v1");
     @BeforeAll void setup(){
         pg.start();graph.start();driver=GraphDatabase.driver(graph.getBoltUrl(),AuthTokens.basic("neo4j",graph.getAdminPassword()));
+        graphContext=com.adaptlearngraph.support.Neo4jTestContext.start(driver);graphCypher=graphContext.cypher();
         var ds=new CountingTestDataSource(new DriverManagerDataSource(pg.getJdbcUrl(),pg.getUsername(),pg.getPassword()),preparedStatements);sql=new JdbcTemplate(ds);codec=new InitialRevisionCodec(json);
         Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").target("44").load().migrate();
         baseline=new PathwayBaselineFixture(ds,json);var persistence=baseline.persistence;tx=new TransactionTemplate(persistence.transactionManager());repos=InitialPathwayRepositories.from(persistence::bean);
@@ -66,7 +67,7 @@ class InitialReviewPersistenceIntegrationTest {
         before35=digest();oldChecksums=sql.queryForList("SELECT version,checksum FROM public.flyway_schema_history WHERE success ORDER BY installed_rank");
         flyway=Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").load();flyway.migrate();after35=digest();
     }
-    @AfterAll void stop(){if(driver!=null)driver.close();if(graph.isRunning())graph.stop();if(pg.isRunning())pg.stop();}
+    @AfterAll void stop(){if(graphContext!=null)graphContext.close();if(driver!=null)driver.close();if(graph.isRunning())graph.stop();if(pg.isRunning())pg.stop();}
     void seedGraph(){try(var session=driver.session()){session.executeWrite(t->{t.run("""
         CREATE (o:Occupation {id:$occupation,name:'Fixture Occupation'}),(r:TargetRole {id:'role-a',name:'Role A'}),(l:Level {id:'level-a',name:'Fixture Level',attainmentRule:'ALL_MANDATORY_SKILLS'})
         CREATE (o)-[:HAS_ROLE {id:'owns-role'}]->(r),(r)-[:HAS_LEVEL {id:'owns-level'}]->(l)
@@ -89,14 +90,14 @@ class InitialReviewPersistenceIntegrationTest {
         final Scope scope;final UUID id;final AtomicReference<Actor> actor=new AtomicReference<>();final AtomicBoolean sourceCurrent=new AtomicBoolean(true);
         final Coordination coordination;final Bindings bindings;final InitialProblemBuilder builder;final InitialPathwayReview review;
         final ReadinessDefinitions definitions;final Availability availability;
-        final Neo4jInitialGraph graphs=new Neo4jInitialGraph((s,r)->driver.session());
+        final Neo4jInitialGraph graphs=new Neo4jInitialGraph((s,r)->graphCypher);
         Fixture(boolean publish){this(publish,"level-a");}
         Fixture(boolean publish,String selectedLevel){
             scope=new Scope(ORG,baseline.learner());actor.set(new Actor(ORG,scope.learnerId(),Role.EMPLOYEE));
             var profiles=new JpaInitialProfiles(baseline.persistence.bean(EmployeeOccupationProfileJpaRepository.class),json);
             var references=new RoleReferences(){public RoleReference require(Actor a,String role,String level){if(!ORG.equals(a.organizationId()) || !role.equals("role-a") || !Set.of("level-a","level-no-gap").contains(level))throw new Failure(404,"ROLE_NOT_AVAILABLE");return new RoleReference(ORG,InitialCatalogPort.choiceId(role,level),role,level,OCC,"fixture-f3-v1","fixture-release",versions);}
                 public void assertCurrent(Scope s,RoleReference r){if(!sourceCurrent.get() || !ORG.equals(s.organizationId()) || !r.releaseToken().equals("fixture-release"))throw new Failure(503,"FIXTURE_SOURCE_DRIFT");}};
-            bindings=new Neo4jInitialBindings(references,(s,r)->driver.session(),()->20);
+            bindings=new Neo4jInitialBindings(references,(s,r)->graphCypher,()->20);
             var skills=List.of(new RoleBaselineFlow.Skill("s1","s1","Skill s1",1,true),new RoleBaselineFlow.Skill("s2","s2","Skill s2",1,true));
             var zero=List.of(new RoleBaselineFlow.Skill("s1","s1","Skill s1",0,true),new RoleBaselineFlow.Skill("s2","s2","Skill s2",0,true));
             var role=new RoleBaselineFlow.Role("role-a","role-a","Role A","Fixture",OCC,"Fixture Occupation","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-a","level-a","Fixture Level",1,"Fixture","ALL_MANDATORY_SKILLS",skills),new RoleBaselineFlow.Level("level-no-gap","level-no-gap","Fixture no-gap",2,"Fixture","ALL_MANDATORY_SKILLS",zero)));
@@ -221,10 +222,12 @@ class InitialReviewPersistenceIntegrationTest {
         assertThat(f.coordination.transaction(f.scope,()->store.finish(fresh,Generation.SUCCEEDED,null,plan,Duration.ZERO))).isFalse();assertThat(digest()).isEqualTo(before);assertThat(count("initial_pathway_run",f.id)).isOne();assertThat(count("initial_pathway_revision",f.id)).isOne();
     }
     @Test void R11_actualNeo4jOutageDoesNotPartiallyWriteAndRecoveryUsesOriginalKey(){
-        var f=new Fixture(true);var unavailable=new Neo4jInitialGraph((s,r)->driver.session(SessionConfig.builder().withDatabase("missing-c3-database").build()));
+        try(var missing=com.adaptlearngraph.support.Neo4jTestContext.start(driver,"missing-c3-database")){
+        var f=new Fixture(true);var missingGraph=missing.cypher();var unavailable=new Neo4jInitialGraph((s,r)->missingGraph);
         var review=f.reviewWith(new InitialProblemBuilder(unavailable,new MasterySuitabilityPolicy(),f.definitions,f.availability,limits),f.coordination);var command=f.edit("ALT");var before=digest();
         assertThatThrownBy(()->review.edit(f.id,"recover-outage",command,true)).hasMessage("CATALOG_UNAVAILABLE");assertThat(digest()).isEqualTo(before);
         f.review.edit(f.id,"recover-outage",command,true);assertThat(f.current().revision()).isEqualTo(2);assertThat(receiptCount(f.id)).isOne();
+        }
     }
     @Test void P19_literalLegacyRevisionAndApprovalRoundTripWithoutRelabelingOrRepin(){
         var f=new Fixture(false);var run=UUID.randomUUID();
@@ -281,10 +284,10 @@ class InitialReviewPersistenceIntegrationTest {
             sql.update("INSERT INTO platform.organization_membership_role(membership_id,role_code) VALUES (?,'DOMAIN_EXPERT')",membership);});
         try(var session=driver.session()){session.executeWrite(t->t.run("MATCH (r:TargetRole {id:'role-a'}) SET r.assignedExpertId=$expert",Map.of("expert",expert.toString())).consume());}
         try {
-            var catalog=new CatalogRoleReviewAssignments(driver,repos,1000,Set.of());var owner=new Actor(ORG,expert,Role.DOMAIN_EXPERT);
+            var catalog=new CatalogRoleReviewAssignments(graphCypher,repos,1000,Set.of());var owner=new Actor(ORG,expert,Role.DOMAIN_EXPERT);
             var assignment=catalog.require(owner,f.id);assertThat(assignment.expertId()).isEqualTo(expert);assertThat(assignment.id()).isEqualTo("catalog-role-review:"+ORG+":role-a");
             assertThat(catalog.assignedPathways(owner)).contains(f.id);
-            assertThat(new CatalogRoleReviewAssignments(driver,repos,1000,Set.of("foreign-role")).assignedPathways(owner)).doesNotContain(f.id);
+            assertThat(new CatalogRoleReviewAssignments(graphCypher,repos,1000,Set.of("foreign-role")).assignedPathways(owner)).doesNotContain(f.id);
             var foreign=new Actor(foreignOrg,expert,Role.DOMAIN_EXPERT);
             assertThatThrownBy(()->catalog.require(foreign,f.id)).hasMessage("FORBIDDEN");assertThatThrownBy(()->catalog.assignedPathways(foreign)).hasMessage("FORBIDDEN");
             tx.executeWithoutResult(s->store.approve(f.scope,revision,owner,assignment));

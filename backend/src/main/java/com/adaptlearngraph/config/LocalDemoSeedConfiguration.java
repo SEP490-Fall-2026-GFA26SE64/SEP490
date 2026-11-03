@@ -7,7 +7,6 @@ import com.adaptlearngraph.services.OfficialQuestionBankImporter;
 import com.fasterxml.jackson.databind.*;
 import java.nio.file.*;
 import java.util.*;
-import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
@@ -23,7 +22,7 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 @ConditionalOnProperty(name="assessment.baseline.local-demo.seed-enabled",havingValue="true")
 @Import(PersistenceConfiguration.class)
 public class LocalDemoSeedConfiguration {
-    @Bean ApplicationRunner localDemoSeed(BeanFactory beans, Driver driver, ConfigurableApplicationContext context,org.springframework.core.env.Environment environment,
+    @Bean ApplicationRunner localDemoSeed(BeanFactory beans, com.adaptlearngraph.repository.Neo4jCypher catalogGraph, ConfigurableApplicationContext context,org.springframework.core.env.Environment environment,
             @Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager transactionManager) {
         return args -> {
             byte[] graph=Files.readAllBytes(Path.of(environment.getProperty("assessment.baseline.local-demo.catalog-seed-file","/seed/ontology_seed.json")));
@@ -40,7 +39,7 @@ public class LocalDemoSeedConfiguration {
             var seeds=DevelopmentSeedRepositories.from(beans::getBean);
             var importer=new OfficialQuestionBankImporter(seeds.imports(),seeds.banks(),seeds.items(),seeds.locks(),transactionManager);
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment))MainDevelopmentBankSeed.requireFreshOrProjected(seeds.technical());
-            latest.bootstrap(driver);
+            latest.bootstrap(catalogGraph);
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)){
                 MainDevelopmentBankSeed.prepareOwner(seeds.identities());
                 var projected=MainDevelopmentBankSeed.project(bank);

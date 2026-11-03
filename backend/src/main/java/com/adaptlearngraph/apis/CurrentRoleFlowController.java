@@ -36,7 +36,7 @@ public final class CurrentRoleFlowController {
     ResponseEntity<Map<String,String>> actorFailure(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure e){
         return failure(new Failure(switch(e.code()){case UNAUTHENTICATED->401;case FORBIDDEN->403;default->503;},e.code().name()));
     }
-    @ExceptionHandler({org.springframework.dao.DataAccessException.class,org.neo4j.driver.exceptions.Neo4jException.class,IllegalStateException.class})
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class})
     ResponseEntity<Map<String,String>> unavailable(Exception e){return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));}
     @ExceptionHandler({IllegalArgumentException.class,org.springframework.web.bind.MissingRequestHeaderException.class})
     ResponseEntity<Map<String,String>> invalid(Exception e){return failure(new Failure(400,"INVALID_REQUEST"));}

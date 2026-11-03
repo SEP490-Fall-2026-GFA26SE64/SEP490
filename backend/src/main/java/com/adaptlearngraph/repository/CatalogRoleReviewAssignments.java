@@ -3,17 +3,16 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.entities.InitialIdentity;
 import java.util.*;
-import org.neo4j.driver.*;
 
 /** Reads current owner responsibility; never creates assignments or grants every Expert a tenant queue. */
 public final class CatalogRoleReviewAssignments implements ReviewAssignments {
     private record Owner(UUID expert,String id,String version) {}
     private record Candidate(UUID id,String role) {}
-    private final Driver driver;private final InitialPathwayRepositories data;private final int maximum;private final Set<String> allowed;
-    public CatalogRoleReviewAssignments(Driver driver,InitialPathwayRepositories data,int maximum,Set<String> allowed) {
+    private final Neo4jCypher graph;private final InitialPathwayRepositories data;private final int maximum;private final Set<String> allowed;
+    public CatalogRoleReviewAssignments(Neo4jCypher graph,InitialPathwayRepositories data,int maximum,Set<String> allowed) {
         if(maximum<1 || maximum==Integer.MAX_VALUE || allowed.size()>maximum)throw new IllegalArgumentException("Bounded review scope required");
         allowed.forEach(CatalogRoleReviewAssignments::text);
-        this.driver=driver;this.data=data;this.maximum=maximum;this.allowed=Set.copyOf(allowed);
+        this.graph=graph;this.data=data;this.maximum=maximum;this.allowed=Set.copyOf(allowed);
     }
     private void activeExpert(UUID org,UUID expert) {
         if(!data.actors().isActiveMemberExpert(org,expert))throw new Failure(403,"FORBIDDEN",false);
@@ -23,12 +22,13 @@ public final class CatalogRoleReviewAssignments implements ReviewAssignments {
     private Map<String,Owner> owners(UUID org,Set<String> roles) {
         if(roles.isEmpty())return Map.of();if(roles.size()>maximum)throw new Failure(503,"REVIEW_ASSIGNMENT_QUERY_LIMIT",false);
         roles.forEach(CatalogRoleReviewAssignments::text);
-        try(var session=driver.session()) {
-            return session.executeRead(tx->{
-                var rows=tx.run("""
+        // Neo4jClient: organization-scoped scalar owner projection with a read bound (LIMIT roles+1).
+        try {
+            return graph.read(tx->{
+                var rows=tx.list("""
                         MATCH (r:TargetRole) WHERE r.organizationId=$org AND r.id IN $roles AND r.status IN ['ACTIVE','PUBLISHED']
                         RETURN r.id AS id,r.version AS version,r.assignedExpertId AS expert LIMIT $maximum
-                        """,Map.of("org",org.toString(),"roles",List.copyOf(roles),"maximum",roles.size()+1)).list();
+                        """,Map.of("org",org.toString(),"roles",List.copyOf(roles),"maximum",roles.size()+1));
                 var seen=new HashSet<String>();var result=new HashMap<String,Owner>();
                 for(var row:rows) {
                     String id=row.get("id").asString();text(id);

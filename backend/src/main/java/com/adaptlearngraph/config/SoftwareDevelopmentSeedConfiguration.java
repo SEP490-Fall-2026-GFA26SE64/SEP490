@@ -10,7 +10,6 @@ import com.adaptlearngraph.utility.AdaptiveIrtPolicy;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
-import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -28,13 +27,13 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 @Import(PersistenceConfiguration.class)
 public class SoftwareDevelopmentSeedConfiguration {
     private static final String DECLARED_DIAGNOSTICS="{\"origin\":\"DECLARED_SYNTHETIC\",\"operationalPromotionEligible\":false}";
-    @Bean ApplicationRunner softwareDevelopmentSeed(BeanFactory beans,Driver driver,Environment env,ConfigurableApplicationContext context,
+    @Bean ApplicationRunner softwareDevelopmentSeed(BeanFactory beans,com.adaptlearngraph.repository.Neo4jCypher catalogGraph,Environment env,ConfigurableApplicationContext context,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
             org.springframework.transaction.PlatformTransactionManager transactionManager) {
         return args -> {
             if(!DevelopmentWorkspace.enabled(env))throw new IllegalStateException("Development fixture gate required");
             var graph=Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
-            var catalog=LocalCatalogBootstrap.forExistingDevelopment(driver,graph);
+            var catalog=LocalCatalogBootstrap.forExistingDevelopment(catalogGraph,graph);
             if(!catalog.hasSoftwareDevelopment())System.out.println("SE bank ready; existing sealed graph retained. Three additional prerequisite edges remain pending approved catalog import.");
             var manifest=MainDevelopmentBankSeed.project(bank(graph));
             var seeds=DevelopmentSeedRepositories.from(beans::getBean);

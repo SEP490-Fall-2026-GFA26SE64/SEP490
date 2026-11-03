@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.DependencyUnavailable;
+import com.adaptlearngraph.support.Neo4jTestContext;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +25,7 @@ class Neo4jBaselineOccupationCatalogAdapterIntegrationTest {
     private static boolean dockerAvailable;
 
     private Driver driver;
+    private Neo4jTestContext persistence;
     private Neo4jBaselineOccupationCatalogAdapter adapter;
 
     @BeforeAll
@@ -42,7 +44,8 @@ class Neo4jBaselineOccupationCatalogAdapterIntegrationTest {
         assumeTrue(dockerAvailable, "Docker Desktop Linux engine is required for Neo4j integration");
         driver = GraphDatabase.driver(
                 NEO4J.getBoltUrl(), AuthTokens.basic("neo4j", NEO4J.getAdminPassword()));
-        adapter = new Neo4jBaselineOccupationCatalogAdapter(driver);
+        persistence = Neo4jTestContext.start(driver);
+        adapter = new Neo4jBaselineOccupationCatalogAdapter(persistence.client(), persistence.transactionManager());
         try (var session = driver.session()) {
             session.run("MATCH (node) DETACH DELETE node").consume();
             session.run(FIXTURE).consume();
@@ -51,6 +54,7 @@ class Neo4jBaselineOccupationCatalogAdapterIntegrationTest {
 
     @AfterEach
     void closeDriver() {
+        if (persistence != null) persistence.close();
         if (driver != null) driver.close();
     }
 
@@ -83,8 +87,10 @@ class Neo4jBaselineOccupationCatalogAdapterIntegrationTest {
     @Test
     void mapsDriverFailureToDependencyUnavailable() {
         var fastFailure = Config.builder().withMaxTransactionRetryTime(1, TimeUnit.SECONDS).build();
-        try (var unavailable = GraphDatabase.driver("bolt://127.0.0.1:1", AuthTokens.none(), fastFailure)) {
-            var unavailableAdapter = new Neo4jBaselineOccupationCatalogAdapter(unavailable);
+        try (var unavailable = GraphDatabase.driver("bolt://127.0.0.1:1", AuthTokens.none(), fastFailure);
+             var unavailableGraph = Neo4jTestContext.start(unavailable)) {
+            var unavailableAdapter = new Neo4jBaselineOccupationCatalogAdapter(unavailableGraph.client(),
+                    unavailableGraph.transactionManager());
             assertThatThrownBy(() -> unavailableAdapter.findAvailableOccupations("org-alpha"))
                     .isInstanceOf(DependencyUnavailable.class);
         }

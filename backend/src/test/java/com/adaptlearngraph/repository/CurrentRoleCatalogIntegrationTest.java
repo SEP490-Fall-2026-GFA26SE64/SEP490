@@ -10,9 +10,10 @@ import org.testcontainers.containers.Neo4jContainer;
 class CurrentRoleCatalogIntegrationTest {
  static final UUID ORG=new UUID(0,1),FOREIGN=new UUID(0,2);
  static final Neo4jContainer<?> GRAPH=new Neo4jContainer<>("neo4j:5.26-community").withAdminPassword("test-fixture-neo4j");
- static Driver driver; CurrentRoleCatalog catalog;
- @BeforeAll static void start(){GRAPH.start();driver=GraphDatabase.driver(GRAPH.getBoltUrl(),AuthTokens.basic("neo4j","test-fixture-neo4j"));}
- @AfterAll static void stop(){if(driver!=null)driver.close();GRAPH.stop();}
+ static Driver driver; static com.adaptlearngraph.support.Neo4jTestContext persistence; CurrentRoleCatalog catalog;
+ @BeforeAll static void start(){GRAPH.start();driver=GraphDatabase.driver(GRAPH.getBoltUrl(),AuthTokens.basic("neo4j","test-fixture-neo4j"));
+  persistence=com.adaptlearngraph.support.Neo4jTestContext.start(driver);}
+ @AfterAll static void stop(){if(persistence!=null)persistence.close();if(driver!=null)driver.close();GRAPH.stop();}
  @BeforeEach void fixture(){
   try(var session=driver.session()){
    session.run("MATCH (n) DETACH DELETE n").consume();
@@ -37,7 +38,7 @@ class CurrentRoleCatalogIntegrationTest {
     (:Level {id:'foreign-level',code:'FL',name:'Senior',rank:1,version:'fixture-v1',status:'ACTIVE'})
     """,Map.of("foreign",FOREIGN.toString())).consume();
   }
-  catalog=new CurrentRoleCatalog(driver,new ObjectMapper().findAndRegisterModules(),ORG);
+  catalog=new CurrentRoleCatalog(persistence.cypher(),new ObjectMapper().findAndRegisterModules(),ORG);
  }
  static void skill(Session session,String level,String skill){
   session.run("""

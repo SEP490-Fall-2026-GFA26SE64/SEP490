@@ -4,23 +4,22 @@ import com.adaptlearngraph.services.RoleBaselineFlow.*;
 import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
-import org.neo4j.driver.Driver;
 
 /** Local-only current-schema catalog. Reuses full union validation; never invents legacy track/seniority. */
 public final class CurrentRoleCatalog implements Catalog {
-    private final Driver driver; private final ObjectMapper mapper; private final UUID organization;
+    private final Neo4jCypher graph; private final ObjectMapper mapper; private final UUID organization;
     private final Set<String> allowedOccupations;
     private final boolean demoReview;
     private final com.adaptlearngraph.repository.AuthoredCatalogPort authored;
-    public CurrentRoleCatalog(Driver driver,ObjectMapper mapper,UUID organization) {
-        this(driver,mapper,organization,null,true);
+    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization) {
+        this(graph,mapper,organization,null,true);
     }
-    public CurrentRoleCatalog(Driver driver,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview) {
-        this(driver,mapper,organization,allowedOccupations,demoReview,com.adaptlearngraph.repository.AuthoredCatalogPort.NONE);
+    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview) {
+        this(graph,mapper,organization,allowedOccupations,demoReview,com.adaptlearngraph.repository.AuthoredCatalogPort.NONE);
     }
-    public CurrentRoleCatalog(Driver driver,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview,
+    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview,
                               com.adaptlearngraph.repository.AuthoredCatalogPort authored) {
-        this.driver=driver;this.mapper=mapper;this.organization=organization;
+        this.graph=graph;this.mapper=mapper;this.organization=organization;
         this.allowedOccupations=allowedOccupations==null?null:Set.copyOf(allowedOccupations);this.demoReview=demoReview;
         this.authored=Objects.requireNonNull(authored);
     }
@@ -38,9 +37,10 @@ public final class CurrentRoleCatalog implements Catalog {
     }
     private List<Role> legacyRoles(UUID org,Set<String> allowedOccupations,Set<String> excluded) {
         if(allowedOccupations!=null && allowedOccupations.isEmpty())return List.of();
-        try(var session=driver.session()) {
-            return session.executeRead(tx -> {
-                var rows=tx.run("""
+        // Neo4jClient: role/level rows with collected skill maps under tenant/shared and review filters.
+        try {
+            return graph.read(tx -> {
+                var rows=tx.list("""
                         MATCH (o:Occupation)-[m:HAS_ROLE]->(r:TargetRole)-[h:HAS_LEVEL]->(l:Level)
                         WHERE o.status='ACTIVE' AND r.status='ACTIVE' AND m.status='ACTIVE' AND h.status='ACTIVE' AND l.status='ACTIVE'
                           AND all(n IN [o,r,l,m,h] WHERE n.organizationId IS NULL OR n.organizationId=$org)
@@ -56,12 +56,12 @@ public final class CurrentRoleCatalog implements Catalog {
                               id:s.id,code:s.code,name:s.name,requiredScore:q.requiredScore,mandatory:q.isMandatory} END) AS skills
                         ORDER BY o.name,r.name,l.rank
                         """,Map.of("org",org.toString(),"unrestricted",allowedOccupations==null,
-                                "occupations",allowedOccupations==null?List.of():List.copyOf(allowedOccupations),"demoReview",demoReview,"excluded",List.copyOf(excluded))).list();
+                                "occupations",allowedOccupations==null?List.of():List.copyOf(allowedOccupations),"demoReview",demoReview,"excluded",List.copyOf(excluded)));
                 Set<String> ids=new HashSet<>();
                 if(allowedOccupations!=null) ids.addAll(allowedOccupations);
                 else rows.forEach(r->ids.add(r.get("o").get("id").asString()));
                 if(ids.isEmpty()) return List.<Role>of();
-                var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(driver,mapper,org,ids,demoReview);
+                var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(graph,mapper,org,ids,demoReview);
                 var validated=new HashMap<String,com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort.CatalogSnapshot>();
                 for(String id:ids) validated.put(id,adapter.findAvailable(new Scope(org,id))
                         .orElseThrow(()->new IllegalStateException("Granted Occupation catalog unavailable")));

@@ -11,12 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.exceptions.Neo4jException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** Local read adapter for the isolated ontology 0.8 graph. */
 public final class Neo4jBaselineOccupationCatalogAdapter implements BaselineOccupationCatalogPort {
+    // Neo4jClient: aggregate (count DISTINCT) summary rows, not a node mapping.
     private static final String LIST_QUERY = """
             MATCH (occupation:Occupation)
             WHERE occupation.status = 'ACTIVE'
@@ -27,6 +32,7 @@ public final class Neo4jBaselineOccupationCatalogAdapter implements BaselineOccu
             ORDER BY toLower(occupation.name), occupation.id
             """;
 
+    // Neo4jClient: flat occupation/role/skill projection rows over optional paths with per-relationship status filters.
     private static final String DETAIL_QUERY = """
             MATCH (occupation:Occupation {id: $occupationId})
             WHERE occupation.status = 'ACTIVE'
@@ -43,21 +49,24 @@ public final class Neo4jBaselineOccupationCatalogAdapter implements BaselineOccu
             ORDER BY role.id, skill.id
             """;
 
-    private final Driver driver;
+    private final Neo4jClient client;
+    private final TransactionTemplate reads;
 
-    public Neo4jBaselineOccupationCatalogAdapter(Driver driver) {
-        this.driver = Objects.requireNonNull(driver, "driver must not be null");
+    public Neo4jBaselineOccupationCatalogAdapter(Neo4jClient client, PlatformTransactionManager transactions) {
+        this.client = Objects.requireNonNull(client, "Neo4jClient must not be null");
+        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
     }
 
     @Override
     public List<CatalogOccupationSummary> findAvailableOccupations(String organizationId) {
         requireText(organizationId, "organizationId");
-        try (var session = driver.session()) {
-            return session.executeRead(transaction -> transaction.run(LIST_QUERY).list(record ->
+        try {
+            return reads.execute(transaction -> List.copyOf(client.query(LIST_QUERY)
+                    .fetchAs(CatalogOccupationSummary.class).mappedBy((types, record) ->
                     new CatalogOccupationSummary(
                             record.get("id").asString(), record.get("name").asString(),
-                            record.get("version").asString(), record.get("roleCount").asInt())));
-        } catch (Neo4jException | IllegalArgumentException failure) {
+                            record.get("version").asString(), record.get("roleCount").asInt())).all()));
+        } catch (Neo4jException | DataAccessException | TransactionException | IllegalArgumentException failure) {
             throw unavailable(failure);
         }
     }
@@ -67,9 +76,9 @@ public final class Neo4jBaselineOccupationCatalogAdapter implements BaselineOccu
             String organizationId, String occupationId) {
         requireText(organizationId, "organizationId");
         String id = requireText(occupationId, "occupationId");
-        try (var session = driver.session()) {
-            List<Record> records = session.executeRead(transaction ->
-                    transaction.run(DETAIL_QUERY, Map.of("occupationId", id)).list());
+        try {
+            List<Record> records = reads.execute(transaction -> List.copyOf(client.query(DETAIL_QUERY)
+                    .bindAll(Map.of("occupationId", id)).fetchAs(Record.class).mappedBy((types, record) -> record).all()));
             if (records.isEmpty()) {
                 return Optional.empty();
             }
@@ -94,7 +103,7 @@ public final class Neo4jBaselineOccupationCatalogAdapter implements BaselineOccu
                     header.get("occupationVersion").asString(), roles.values().stream()
                             .map(RoleAccumulator::toCatalogRole)
                             .toList()));
-        } catch (Neo4jException | IllegalArgumentException failure) {
+        } catch (Neo4jException | DataAccessException | TransactionException | IllegalArgumentException failure) {
             throw unavailable(failure);
         }
     }

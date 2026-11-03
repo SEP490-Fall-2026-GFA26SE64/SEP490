@@ -4,21 +4,20 @@ import com.adaptlearngraph.repository.InitialCatalogPort.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.config.LocalCatalogBootstrap;
 import java.util.*;
-import org.neo4j.driver.*;
 
 /** Explicit local review-data exception, not production publication or an Expert approval. */
 public final class LocalReviewCatalogRelease implements ReleaseAuthority {
-    private final Driver driver;private final UUID organization;private final LocalCatalogBootstrap source;
+    private final Neo4jCypher graph;private final UUID organization;private final LocalCatalogBootstrap source;
     private final Release release;
-    public LocalReviewCatalogRelease(Driver driver,UUID organization,byte[] seed) {
-        this(driver,organization,seed,null,false);
+    public LocalReviewCatalogRelease(Neo4jCypher graph,UUID organization,byte[] seed) {
+        this(graph,organization,seed,null,false);
     }
-    public LocalReviewCatalogRelease(Driver driver,UUID organization,byte[] seed,String readinessVersion) {
-        this(driver,organization,seed,readinessVersion,false);
+    public LocalReviewCatalogRelease(Neo4jCypher graph,UUID organization,byte[] seed,String readinessVersion) {
+        this(graph,organization,seed,readinessVersion,false);
     }
-    public LocalReviewCatalogRelease(Driver driver,UUID organization,byte[] seed,String readinessVersion,boolean softwareDevelopment) {
-        this.driver=driver;this.organization=organization;
-        try {source=softwareDevelopment ? LocalCatalogBootstrap.forExistingDevelopment(driver,seed) : new LocalCatalogBootstrap(seed);source.verifySealed(driver);}
+    public LocalReviewCatalogRelease(Neo4jCypher graph,UUID organization,byte[] seed,String readinessVersion,boolean softwareDevelopment) {
+        this.graph=graph;this.organization=organization;
+        try {source=softwareDevelopment ? LocalCatalogBootstrap.forExistingDevelopment(graph,seed) : new LocalCatalogBootstrap(seed);source.verifySealed(graph);}
         catch(Exception invalid){throw new IllegalStateException("Local review catalog is not the exact sealed source release",invalid);}
         var versions=new TreeMap<>(Map.of(
                 "catalog",LocalCatalogBootstrap.VERSION,"publication","LOCAL_REVIEW_EXCEPTION_V1",
@@ -34,11 +33,12 @@ public final class LocalReviewCatalogRelease implements ReleaseAuthority {
         if(!organization.equals(ref.organizationId()) || !release.token().equals(ref.releaseToken())
                 || release.versions().entrySet().stream().anyMatch(e->!e.getValue().equals(ref.versions().get(e.getKey()))))throw new Failure(409,"CATALOG_RELEASE_CHANGED",false);
     }
-    public Session open(Scope scope,RoleReference ref) {
+    /** Read access to the sealed release; callers read through {@link Neo4jCypher#read} (read-only transactions). */
+    public Neo4jCypher open(Scope scope,RoleReference ref) {
         assertCurrent(scope,ref);
         // Administrative unsealing/drift is detected before a read; operators must stop API before cutover.
-        try{source.verifySealed(driver);}catch(RuntimeException invalid){throw new Failure(503,"CATALOG_RELEASE_CHANGED",false);}
-        return driver.session(SessionConfig.builder().withDefaultAccessMode(AccessMode.READ).build());
+        try{source.verifySealed(graph);}catch(RuntimeException invalid){throw new Failure(503,"CATALOG_RELEASE_CHANGED",false);}
+        return graph;
     }
     private void check(Scope scope){if(!organization.equals(scope.organizationId()))throw new Failure(403,"FORBIDDEN",false);}
 }

@@ -59,9 +59,9 @@ public class PlatformCatalogConfiguration {
             havingValue = "true", matchIfMissing = true)
     com.adaptlearngraph.services.WorkspaceCatalogImportWorker workspaceCatalogImportWorker(
             com.adaptlearngraph.repository.WorkspaceCatalogImportStore store, PlatformCatalogService catalog,
-            org.springframework.beans.factory.ObjectProvider<org.neo4j.driver.Driver> driver) {
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.repository.Neo4jCypher> graph) {
         return new com.adaptlearngraph.services.WorkspaceCatalogImportWorker(store, catalog,
-                new com.adaptlearngraph.repository.Neo4jWorkspaceCatalogWriter(driver::getObject), java.time.Clock.systemUTC());
+                new com.adaptlearngraph.repository.Neo4jWorkspaceCatalogWriter(graph::getObject), java.time.Clock.systemUTC());
     }
 
     @Bean

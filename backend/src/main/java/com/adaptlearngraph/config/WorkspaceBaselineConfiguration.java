@@ -63,7 +63,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.*;
-import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.*;
@@ -108,12 +107,12 @@ public class WorkspaceBaselineConfiguration {
     @Bean WorkspaceCatalogFixture workspaceCatalogFixture(Environment environment,ObjectMapper json) {
         return WorkspaceCatalogFixture.load(environment,json);
     }
-    @Bean SmartInitializingSingleton verifyWorkspaceDevelopmentCatalog(Driver driver,Environment environment) {
+    @Bean SmartInitializingSingleton verifyWorkspaceDevelopmentCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,Environment environment) {
         return () -> {
             if(!enabled(environment)) return;
             try {
                 var seed=java.nio.file.Files.readAllBytes(java.nio.file.Path.of(environment.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
-                com.adaptlearngraph.config.LocalCatalogBootstrap.forExistingDevelopment(driver,seed);
+                com.adaptlearngraph.config.LocalCatalogBootstrap.forExistingDevelopment(graph,seed);
             } catch(java.io.IOException invalid) { throw new IllegalStateException("Exact sealed development catalog required",invalid); }
         };
     }
@@ -126,8 +125,8 @@ public class WorkspaceBaselineConfiguration {
                     || com.adaptlearngraph.config.SoftwareDevelopmentSeed.OCCUPATION.equals(occupation)
                     && com.adaptlearngraph.config.SoftwareDevelopmentSeed.id("bank").equals(bank));
     }
-    @Bean WorkspaceBaselineOccupationPort workspaceBaselineOccupations(Driver driver,Environment environment) {
-        return new Neo4jWorkspaceBaselineOccupations(driver,environment.getProperty("assessment.baseline.workspace.catalog.max-occupations",Integer.class,1000));
+    @Bean WorkspaceBaselineOccupationPort workspaceBaselineOccupations(com.adaptlearngraph.repository.Neo4jCypher graph,Environment environment) {
+        return new Neo4jWorkspaceBaselineOccupations(graph,environment.getProperty("assessment.baseline.workspace.catalog.max-occupations",Integer.class,1000));
     }
     @Bean WorkspaceBaselineResources workspaceBaselineResources(com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository bindings,WorkspaceBaselineOccupationPort occupations) {
         return new WorkspaceBaselineResources(bindings,occupations);
@@ -154,17 +153,17 @@ public class WorkspaceBaselineConfiguration {
         return fixture.active()?new WorkspaceFixtureTechnicalVersions(developmentVersions,fixture,delegate):delegate;
     }
     @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(com.adaptlearngraph.repository.AuthoredCatalogPort.class)
-    com.adaptlearngraph.repository.AuthoredCatalogPort workspaceAuthoredCatalog(Driver driver,ObjectMapper json,Environment environment) {
-        return com.adaptlearngraph.repository.Neo4jAuthoredCatalog.configured(driver,json,environment);
+    com.adaptlearngraph.repository.AuthoredCatalogPort workspaceAuthoredCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json,Environment environment) {
+        return com.adaptlearngraph.repository.Neo4jAuthoredCatalog.configured(graph,json,environment);
     }
-    @Bean AdaptiveBaselineCatalogPort workspaceBaselineCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
+    @Bean AdaptiveBaselineCatalogPort workspaceBaselineCatalog(com.adaptlearngraph.repository.Neo4jCypher graph, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
             com.adaptlearngraph.repository.AuthoredCatalogPort authored) {
         return scope -> {
             var occupations = resources.occupations(scope.organizationId());
             if (!occupations.contains(scope.occupationId())) return Optional.empty();
             if(authored.occupations(scope.organizationId()).contains(scope.occupationId()))
                 return new AuthoredBaselineCatalog(authored,ignored->Optional.empty()).findAvailable(scope);
-            return new Neo4jAdaptiveBaselineCatalogAdapter(driver, json, scope.organizationId(), occupations,
+            return new Neo4jAdaptiveBaselineCatalogAdapter(graph, json, scope.organizationId(), occupations,
                     catalog(enabled(environment),scope.organizationId(),scope.occupationId())
                     || enabled(environment) && com.adaptlearngraph.config.MainDevelopmentBankSeed.catalog(scope.organizationId(),scope.occupationId())
                     || fixture.permits(scope.organizationId(),scope.occupationId())).findAvailable(scope)
@@ -267,7 +266,7 @@ public class WorkspaceBaselineConfiguration {
         return new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(beans::getBean, locks), json,
                 new TransactionTemplate(transactions));
     }
-    @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(Driver driver, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
+    @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(com.adaptlearngraph.repository.Neo4jCypher graph, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
             com.adaptlearngraph.repository.AuthoredCatalogPort authored) {
         return organization -> {
             var occupations = resources.configurableOccupations(organization);
@@ -275,7 +274,7 @@ public class WorkspaceBaselineConfiguration {
             boolean development=enabled(environment) && (ORGANIZATION.equals(organization) && Set.of(OCCUPATION,com.adaptlearngraph.config.SoftwareDevelopmentSeed.OCCUPATION).containsAll(occupations)
                     || com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization)
                     && com.adaptlearngraph.config.MainDevelopmentBankSeed.sourceCatalog(occupations));
-            var roles=new CurrentRoleCatalog(driver, json, organization, occupations, development || fixture.covers(organization,occupations),authored).roles(organization);
+            var roles=new CurrentRoleCatalog(graph, json, organization, occupations, development || fixture.covers(organization,occupations),authored).roles(organization);
             if(fixture.covers(organization,occupations) && roles.stream().anyMatch(role->!fixture.matches(organization,role.occupationId(),role.fingerprint())))
                 throw new IllegalStateException("Workspace fixture catalog changed");
             return roles;

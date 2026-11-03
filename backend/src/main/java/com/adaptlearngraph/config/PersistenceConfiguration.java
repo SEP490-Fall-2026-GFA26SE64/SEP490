@@ -1,11 +1,13 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.repository.Neo4jCypher;
 import com.adaptlearngraph.repository.PostgresAdvisoryLocks;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +16,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Declares both transaction managers by name so neither auto-configuration wins by ordering. PostgreSQL work runs on
@@ -46,6 +50,12 @@ public class PersistenceConfiguration {
         return Neo4jTransactionManager.with(driver)
                 .withDatabaseSelectionProvider(databases.getIfAvailable(DatabaseSelectionProvider::getDefaultSelectionProvider))
                 .build();
+    }
+
+    /** Hand-written catalog/seed Cypher over the auto-configured {@link Neo4jClient} and {@link TransactionManagers#NEO4J}. */
+    @Bean
+    Neo4jCypher neo4jCypher(Neo4jClient client, @Qualifier(TransactionManagers.NEO4J) PlatformTransactionManager graphTransactions) {
+        return new Neo4jCypher(client, graphTransactions);
     }
 
     @Bean

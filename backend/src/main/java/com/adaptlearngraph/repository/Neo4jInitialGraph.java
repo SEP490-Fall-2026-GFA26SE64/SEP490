@@ -6,13 +6,14 @@ import com.adaptlearngraph.repository.InitialPlanningPorts.*;
 import com.adaptlearngraph.repository.InitialCatalogPort.RoleReference;
 import com.adaptlearngraph.entities.InitialPlanning.*;
 import java.util.*;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.TransactionContext;
+import org.neo4j.driver.exceptions.Neo4jException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.transaction.TransactionException;
 
 /** Batch adjacency closure, not all-simple-path enumeration. No current mutable graph fallback. */
 public final class Neo4jInitialGraph implements Graphs {
-    /** Owner must supply a session pinned to the exact immutable published release, or deny. */
-    public interface PublishedSessions { Session open(Scope scope,RoleReference reference); }
+    /** Owner must supply read-only graph access pinned to the exact immutable published release, or deny. */
+    public interface PublishedSessions { Neo4jCypher open(Scope scope,RoleReference reference); }
     private final PublishedSessions sessions;
     private final boolean localReview;
     public Neo4jInitialGraph(PublishedSessions sessions) { this(sessions,false); }
@@ -20,13 +21,15 @@ public final class Neo4jInitialGraph implements Graphs {
     @Override public Graph load(Scope scope,Binding binding,Set<String> seeds,Limits limits) {
         if(seeds.isEmpty()) throw new Failure(422,"EMPTY_LEARNING_NEED");
         if(seeds.size()>limits.maxClosureNodes())throw new Failure(422,"CATALOG_LIMIT",false);
-        try(var session=sessions.open(scope,RoleReference.from(scope,binding))) {
-            return session.executeRead(tx->read(tx,scope,binding,seeds,limits));
+        try {
+            var graph=sessions.open(scope,RoleReference.from(scope,binding));
+            return graph.read(tx->read(tx,scope,binding,seeds,limits));
         } catch(Failure failure) { throw failure; }
-        catch(org.neo4j.driver.exceptions.Neo4jException unavailable) { throw new Failure(503,"CATALOG_UNAVAILABLE"); }
+        catch(Neo4jException | DataAccessException | TransactionException unavailable) { throw new Failure(503,"CATALOG_UNAVAILABLE"); }
         catch(RuntimeException invalid) { throw new Failure(503,"CATALOG_INCOMPATIBLE",false); }
     }
-    private Graph read(TransactionContext tx,Scope scope,Binding binding,Set<String> seeds,Limits limits) {
+    // Neo4jClient: bounded closure batches over raw properties/elementIds that are validated field by field.
+    private Graph read(Neo4jCypher.Statements tx,Scope scope,Binding binding,Set<String> seeds,Limits limits) {
         String version=binding.versions().get("catalog");
         var visited=new TreeSet<String>(); var frontier=new TreeSet<>(seeds); var edges=new ArrayList<Edge>();
         var edgeKeys=new HashSet<List<String>>();
@@ -34,7 +37,7 @@ public final class Neo4jInitialGraph implements Graphs {
         while(!frontier.isEmpty()) {
             var batch=frontier.stream().limit(limits.batchSize()).toList(); frontier.removeAll(batch);
             long rowLimit=(long)limits.maxClosureEdges()-edges.size()+batch.size();
-            var rows=tx.run("""
+            var rows=tx.list("""
                     UNWIND $ids AS id
                     OPTIONAL MATCH (s:MicroSkill {id:id})
                     OPTIONAL MATCH (s)-[e:HAS_SKILL_PREREQUISITE]->(p:MicroSkill)
@@ -42,7 +45,7 @@ public final class Neo4jInitialGraph implements Graphs {
                     RETURN id,properties(s) AS s,properties(e) AS e,properties(p) AS p,
                         elementId(s) AS si,elementId(e) AS ei,elementId(p) AS pi
                     ORDER BY id,p.id LIMIT $maximum
-                    """,Map.of("ids",batch,"maximum",rowLimit+1)).list();
+                    """,Map.of("ids",batch,"maximum",rowLimit+1));
             if(rows.size()>rowLimit)throw new Failure(422,"CATALOG_LIMIT",false);
             var found=new HashSet<String>();
             for(var row:rows) {
@@ -68,7 +71,7 @@ public final class Neo4jInitialGraph implements Graphs {
         for(int offset=0;offset<ids.size();offset+=limits.batchSize()) {
             var batch=ids.subList(offset,Math.min(ids.size(),offset+limits.batchSize()));
             long remaining=(long)limits.maxProviders()-scanned;
-            var rows=tx.run("""
+            var rows=tx.list("""
                     MATCH (m:LearningModule)-[candidate:TEACHES]->(seed:MicroSkill)
                     WHERE seed.id IN $ids AND m.status='ACTIVE' AND candidate.status='ACTIVE'
                       AND NOT m.id IN $loaded
@@ -77,7 +80,7 @@ public final class Neo4jInitialGraph implements Graphs {
                     MATCH (m)-[t:TEACHES]->(s:MicroSkill)
                     RETURN properties(m) AS m,properties(t) AS t,properties(s) AS s,s.id AS skill,
                         elementId(m) AS mi,elementId(t) AS ti,elementId(s) AS si ORDER BY m.id,s.id LIMIT $maximum
-                    """,Map.of("ids",batch,"loaded",List.copyOf(loadedModules),"org",scope.organizationId().toString(),"maximum",remaining+1)).list();
+                    """,Map.of("ids",batch,"loaded",List.copyOf(loadedModules),"org",scope.organizationId().toString(),"maximum",remaining+1));
             if(rows.size()>remaining)throw new Failure(422,"CATALOG_LIMIT",false);scanned+=rows.size();
             for(var row:rows) {
                 var module=row.get("m"); String id=module.get("id").asString(), skill=row.get("skill").asString();

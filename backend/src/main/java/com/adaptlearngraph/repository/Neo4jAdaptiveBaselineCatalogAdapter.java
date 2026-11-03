@@ -13,11 +13,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-import org.neo4j.driver.Driver;
 import org.neo4j.driver.exceptions.Neo4jException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.transaction.TransactionException;
 
 /** TMP-REQ002-05: explicit server grant for one isolated local/demo catalog, never a production release adapter. */
 public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaselineCatalogPort {
+    // Neo4jClient: tenant/shared-scoped optional-path snapshot with raw properties and elementIds for fingerprinting.
     private static final String QUERY = """
             MATCH (occupation:Occupation {id:$occupation}) WHERE occupation.status='ACTIVE'
               AND (occupation.organizationId IS NULL OR occupation.organizationId=$organization)
@@ -40,17 +42,17 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                    properties(requirement) AS requirement,properties(skill) AS skill
             """;
     private final boolean demoReview;
-    private final Driver driver;
+    private final Neo4jCypher graph;
     private final AdaptiveBlueprintJson json;
     private final UUID organizationId;
     private final Set<String> occupations;
 
-    public Neo4jAdaptiveBaselineCatalogAdapter(Driver driver, ObjectMapper mapper, UUID organizationId, Set<String> occupations) {
-        this(driver, mapper, organizationId, occupations, false);
+    public Neo4jAdaptiveBaselineCatalogAdapter(Neo4jCypher graph, ObjectMapper mapper, UUID organizationId, Set<String> occupations) {
+        this(graph, mapper, organizationId, occupations, false);
     }
-    public Neo4jAdaptiveBaselineCatalogAdapter(Driver driver, ObjectMapper mapper, UUID organizationId, Set<String> occupations, boolean demoReview) {
+    public Neo4jAdaptiveBaselineCatalogAdapter(Neo4jCypher graph, ObjectMapper mapper, UUID organizationId, Set<String> occupations, boolean demoReview) {
         this.demoReview = demoReview;
-        this.driver = Objects.requireNonNull(driver);
+        this.graph = Objects.requireNonNull(graph);
         this.json = new AdaptiveBlueprintJson(mapper);
         this.organizationId = Objects.requireNonNull(organizationId, "Explicit local organization required");
         this.occupations = Set.copyOf(occupations);
@@ -62,9 +64,9 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
     @Override
     public Optional<CatalogSnapshot> findAvailable(Scope scope) {
         if (!organizationId.equals(scope.organizationId()) || !occupations.contains(scope.occupationId())) return Optional.empty();
-        try (var session = driver.session()) {
-            return session.executeRead(tx -> {
-                var rows = tx.run(QUERY, Map.of("occupation", scope.occupationId(), "organization", organizationId.toString())).list();
+        try {
+            return graph.read(tx -> {
+                var rows = tx.list(QUERY, Map.of("occupation", scope.occupationId(), "organization", organizationId.toString()));
                 if (rows.isEmpty()) return Optional.empty();
                 if (rows.stream().map(row -> row.get("occupationNode").asString()).distinct().count() != 1) {
                     throw new IllegalArgumentException("Ambiguous Occupation identity");
@@ -112,7 +114,8 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                 String fingerprint = AdaptiveBlueprintJson.hash("AB-CATALOG-V1:" + scope.organizationId() + ":" + json.write(paths));
                 return Optional.of(new CatalogSnapshot(scope, name, fingerprint, roles));
             });
-        } catch (Neo4jException | IllegalArgumentException | IllegalStateException | java.time.DateTimeException failure) {
+        } catch (Neo4jException | DataAccessException | TransactionException | IllegalArgumentException | IllegalStateException
+                 | java.time.DateTimeException failure) {
             throw new DependencyUnavailable("Published Occupation catalog is unavailable or inconsistent", failure);
         }
     }

@@ -2,13 +2,13 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.repository.DevelopmentSeedJpaRepository;
+import com.adaptlearngraph.repository.Neo4jCypher;
 import com.adaptlearngraph.repository.RegistrationSecrets;
 import com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
-import org.neo4j.driver.Driver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -61,7 +61,7 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
     private final WorkspaceBaselineResourceJpaRepository resources;
     private final TransactionTemplate transactions;
     private final RegistrationSecrets secrets;
-    private final ObjectProvider<Driver> driverProvider;
+    private final ObjectProvider<Neo4jCypher> graphProvider;
     private final boolean enabled;
 
     public DevelopmentWorkspaceAccountBootstrap(
@@ -69,13 +69,13 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
             WorkspaceBaselineResourceJpaRepository resources,
             @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
             RegistrationSecrets secrets,
-            ObjectProvider<Driver> driverProvider,
+            ObjectProvider<Neo4jCypher> graphProvider,
             @Value("${workspace.dev-seed.enabled:true}") boolean enabled) {
         this.seeds = seeds;
         this.resources = resources;
         this.transactions = new TransactionTemplate(manager);
         this.secrets = secrets;
-        this.driverProvider = driverProvider;
+        this.graphProvider = graphProvider;
         this.enabled = enabled;
     }
 
@@ -159,19 +159,19 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         seeds.upsertMembershipRole(membershipId, role);
     }
     private void seedNeo4j() {
-        Driver driver = driverProvider.getIfAvailable();
-        if (driver == null) return;
-        try (var session = driver.session()) {
-            session.executeWrite(tx -> {
+        Neo4jCypher graph = graphProvider.getIfAvailable();
+        if (graph == null) return;
+        try {
+            graph.write(tx -> {
                 // Align all catalog nodes for TechNova organization and assign Dr. Sarah Chen
-                tx.run("""
+                tx.execute("""
                     MATCH (n)
                     WHERE (n:Occupation OR n:TargetRole OR n:Level OR n:Competency OR n:MicroSkill OR n:LearningModule)
                       AND (n.organizationId IS NULL OR n.organizationId = 'comp-technova')
                     SET n.organizationId = $orgId
-                    """, Map.of("orgId", TECHNOVA_ORG_ID.toString())).consume();
+                    """, Map.of("orgId", TECHNOVA_ORG_ID.toString()));
 
-                tx.run("""
+                tx.execute("""
                     MATCH (r:TargetRole)
                     WHERE r.organizationId = $orgId
                     SET r.assignedExpertId = $expertId,
@@ -179,7 +179,7 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     """, Map.of(
                         "orgId", TECHNOVA_ORG_ID.toString(),
                         "expertId", EXPERT_ACCOUNT_ID.toString()
-                    )).consume();
+                    ));
 
                 return true;
             });

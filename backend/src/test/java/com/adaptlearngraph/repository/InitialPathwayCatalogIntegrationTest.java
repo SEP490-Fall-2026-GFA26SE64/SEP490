@@ -17,9 +17,12 @@ class InitialPathwayCatalogIntegrationTest {
             Map.of("catalog","v1","binding","v1","publication","v1","requirements","v1","compatibility","v1"),List.of());
     static final Limits LIMITS=new Limits("test-limits",20,20,20,10,10000);
     static Driver driver;
+    static com.adaptlearngraph.support.Neo4jTestContext persistence;
     static Neo4jInitialGraph adapter;
     @BeforeAll static void setup(){GRAPH.start();driver=GraphDatabase.driver(GRAPH.getBoltUrl(),AuthTokens.basic("neo4j",GRAPH.getAdminPassword()));
-        adapter=new Neo4jInitialGraph((scope,reference)->driver.session());
+        persistence=com.adaptlearngraph.support.Neo4jTestContext.start(driver);
+        var graph=persistence.cypher();
+        adapter=new Neo4jInitialGraph((scope,reference)->graph);
         try(var session=driver.session()){session.executeWrite(tx->{
             tx.run("""
                 CREATE (s:MicroSkill {id:'S'}),(p:MicroSkill {id:'P'}),(q:MicroSkill {id:'Q'})
@@ -32,7 +35,7 @@ class InitialPathwayCatalogIntegrationTest {
                 SET n.status='ACTIVE',n.version='v1',n.organizationId=$org,n.reviewStatus='APPROVED',n.reviewedBy='test-expert',n.reviewedAt='2026-10-29T00:00:00Z'
                 """,Map.of("org",ORG.toString())).consume();
             tx.run("MATCH ()-[r]->() SET r.status='ACTIVE',r.version='v1',r.organizationId=$org,r.reviewStatus='APPROVED',r.reviewedBy='test-expert',r.reviewedAt='2026-10-29T00:00:00Z'",Map.of("org",ORG.toString())).consume();return null;});}}
-    @AfterAll static void stop(){if(driver!=null)driver.close();if(GRAPH.isRunning())GRAPH.stop();}
+    @AfterAll static void stop(){if(persistence!=null)persistence.close();if(driver!=null)driver.close();if(GRAPH.isRunning())GRAPH.stop();}
     @Test void P07_multihopClosureAndPerPairFocusDifficultyRoundTrip() {
         var graph=adapter.load(SCOPE,BINDING,Set.of("S"),LIMITS);
         assertThat(graph.skillIds()).containsExactlyInAnyOrder("S","P","Q");assertThat(graph.edges()).hasSize(2);

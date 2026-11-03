@@ -29,7 +29,7 @@ import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
-import org.neo4j.driver.Driver;
+import com.adaptlearngraph.repository.Neo4jCypher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,22 +46,22 @@ public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponen
     @Autowired private com.adaptlearngraph.repository.AuthoredCatalogPort authoredCatalog;
     @Autowired private ObjectMapper catalogJson;
     @Autowired private ObjectProvider<ReleaseAuthority> releaseInputs;
-    @Autowired private Driver catalogDriver;
+    @Autowired private Neo4jCypher catalogGraph;
     public WorkspaceInitialPathwayConfiguration(WorkspaceCatalogFixture fixture){this.fixture=fixture;}
     @Bean @Override @ConditionalOnMissingBean(RoleReferences.class)
     RoleReferences initialRoleReferences(com.adaptlearngraph.services.RoleBaselineFlow.Catalog catalog,ReleaseAuthority releases){
         return new CurrentCatalogRoleReferences(catalog,releases,authoredCatalog);
     }
     @Bean @Override @ConditionalOnMissingBean(ReleaseAuthority.class)
-    ReleaseAuthority initialReleaseAuthority(Driver driver,Environment env) {
+    ReleaseAuthority initialReleaseAuthority(Neo4jCypher graph,Environment env) {
         if(!fixture.active() && com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(env)
                 && env.getProperty("pathway.initial.catalog.allow-review-seed",Boolean.class,false))
-            return new MainDevelopmentCatalogRelease(driver,catalogJson,env);
+            return new MainDevelopmentCatalogRelease(graph,catalogJson,env);
         if(!fixture.active())return new ReleaseAuthority(){
             public Release require(Scope scope){throw missing("CATALOG_RELEASE_NOT_CONFIGURED");}
             public void assertCurrent(Scope scope,RoleReference ref){throw missing("CATALOG_COHERENCE_NOT_CONFIGURED");}
         };
-        try{return new WorkspaceFixtureCatalogRelease(driver,fixture,java.nio.file.Files.readAllBytes(java.nio.file.Path.of(
+        try{return new WorkspaceFixtureCatalogRelease(graph,fixture,java.nio.file.Files.readAllBytes(java.nio.file.Path.of(
                 env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),
                 env.getProperty("pathway.initial.readiness.version"));}
         catch(java.io.IOException invalid){throw new IllegalStateException("Workspace fixture catalog unavailable",invalid);}
@@ -133,7 +133,7 @@ public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponen
                 && env.getProperty("pathway.initial.local-assignment.enabled",Boolean.class,false)) {
             var roles=java.util.Arrays.stream(env.getProperty("pathway.initial.local-assignment.role-ids","").split(","))
                     .map(String::strip).filter(value->!value.isEmpty()).collect(java.util.stream.Collectors.toSet());
-            return new CatalogRoleReviewAssignments(catalogDriver,data,integer(env,"local-assignment.max-pathways"),roles);
+            return new CatalogRoleReviewAssignments(catalogGraph,data,integer(env,"local-assignment.max-pathways"),roles);
         }
         return new ReviewAssignments(){
             public Assignment require(Actor actor,java.util.UUID id){throw missing("REVIEW_ASSIGNMENT_NOT_CONFIGURED");}

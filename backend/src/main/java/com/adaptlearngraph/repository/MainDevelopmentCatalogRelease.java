@@ -7,28 +7,28 @@ import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.*;
 import java.util.*;
-import org.neo4j.driver.*;
+import org.neo4j.driver.Value;
 import org.springframework.core.env.Environment;
 
 /** TMP-MA-MAIN-GAP-20261101: exact main development source, never production publication. */
 public final class MainDevelopmentCatalogRelease implements ReleaseAuthority {
     public record Sessions(MainDevelopmentCatalogRelease release) implements Neo4jInitialGraph.PublishedSessions {
-        public Session open(Scope scope,RoleReference reference){return release.open(scope,reference);}
+        public Neo4jCypher open(Scope scope,RoleReference reference){return release.open(scope,reference);}
     }
     private LocalReviewCatalogRelease source;
     private Neo4jAdaptiveBaselineCatalogAdapter catalog;
     private Map<String,LocalSeedSemantics> semantics;
     private String token;
-    private final Driver driver;
+    private final Neo4jCypher graph;
     private final ObjectMapper json;
     private final Environment env;
     private volatile boolean initialized;
 
-    public MainDevelopmentCatalogRelease(Driver driver,ObjectMapper json,Environment env) {
+    public MainDevelopmentCatalogRelease(Neo4jCypher graph,ObjectMapper json,Environment env) {
         if(!com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(env)
                 || !env.acceptsProfiles(org.springframework.core.env.Profiles.of("local & workspace-baseline & !local-baseline-demo & !prod"))
                 || !env.getProperty("pathway.initial.catalog.allow-review-seed",Boolean.class,false))throw new IllegalStateException("Main development catalog gates required");
-        this.driver=driver;
+        this.graph=graph;
         this.json=json;
         this.env=env;
     }
@@ -37,10 +37,10 @@ public final class MainDevelopmentCatalogRelease implements ReleaseAuthority {
         if(initialized)return;
         try {
             byte[] current=Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
-            source=new LocalReviewCatalogRelease(driver,MainDevelopmentBankSeed.ORGANIZATION,current,env.getProperty("pathway.initial.readiness.version"),true);
-            var metadata=metadata(driver,json,current);
+            source=new LocalReviewCatalogRelease(graph,MainDevelopmentBankSeed.ORGANIZATION,current,env.getProperty("pathway.initial.readiness.version"),true);
+            var metadata=metadata(graph,json,current);
             var scopes=Set.of("OCC-15-1212.00",SoftwareDevelopmentSeed.OCCUPATION);
-            catalog=new Neo4jAdaptiveBaselineCatalogAdapter(driver,json,MainDevelopmentBankSeed.ORGANIZATION,scopes,true);
+            catalog=new Neo4jAdaptiveBaselineCatalogAdapter(graph,json,MainDevelopmentBankSeed.ORGANIZATION,scopes,true);
             var sources=new TreeMap<String,LocalSeedSemantics>();
             for(String occupation:scopes) {
                 boolean se=SoftwareDevelopmentSeed.OCCUPATION.equals(occupation);
@@ -72,7 +72,7 @@ public final class MainDevelopmentCatalogRelease implements ReleaseAuthority {
                 || !snapshot(ref.occupationId()).equals(ref.catalogFingerprint()) || !semantics.get(ref.occupationId()).fingerprint().equals(ref.catalogFingerprint()))
             throw new Failure(409,"CATALOG_RELEASE_CHANGED",false);
     }
-    Session open(Scope scope,RoleReference ref) {
+    Neo4jCypher open(Scope scope,RoleReference ref) {
         assertCurrent(scope,ref);
         var original=new RoleReference(ref.organizationId(),ref.businessRoleId(),ref.roleId(),ref.levelId(),ref.occupationId(),ref.catalogFingerprint(),source.require(scope).token(),ref.versions());
         return source.open(scope,original);
@@ -90,26 +90,25 @@ public final class MainDevelopmentCatalogRelease implements ReleaseAuthority {
         return catalog.findAvailable(new com.adaptlearngraph.entities.AdaptiveBlueprint.Scope(MainDevelopmentBankSeed.ORGANIZATION,occupation))
                 .orElseThrow(()->new Failure(503,"CATALOG_RELEASE_NOT_CONFIGURED",false)).fingerprint();
     }
-    private static Map<String,Map<String,Object>> metadata(Driver driver,ObjectMapper json,byte[] seed)throws java.io.IOException {
+    private static Map<String,Map<String,Object>> metadata(Neo4jCypher graph,ObjectMapper json,byte[] seed)throws java.io.IOException {
         var root=json.readTree(seed);var ids=new HashSet<String>();
         for(String group:List.of("Occupations","TargetRoles","Levels","MicroSkills"))for(var node:root.path(group))ids.add(node.path("id").asText());
         if(ids.isEmpty() || ids.size()>10000 || ids.contains(""))throw new IllegalStateException("Invalid bounded development source");
-        try(var session=driver.session()) {
-            return session.executeRead(tx->{
-                var rows=tx.run("MATCH (n) WHERE n.id IN $ids RETURN n.id AS id,labels(n) AS labels,properties(n) AS props LIMIT $maximum",Map.of("ids",List.copyOf(ids),"maximum",ids.size()+1)).list();
-                var seen=new HashSet<String>();var result=new TreeMap<String,Map<String,Object>>();
-                for(var row:rows) {
-                    var labels=row.get("labels").asList(Value::asString);var props=row.get("props");
-                    if(!seen.add(row.get("id").asString()) || labels.size()!=1 || !MainDevelopmentBankSeed.ORGANIZATION.toString().equals(props.get("organizationId").asString(null)))
-                        throw new IllegalStateException("Invalid development source ownership");
-                    var values=new TreeMap<String,Object>();
-                    for(String key:List.of("organizationId","assignedExpertId","assignedExpertName"))if(!props.get(key).isNull())values.put(key,props.get(key).asString());
-                    var previous=result.putIfAbsent(labels.getFirst(),Map.copyOf(values));
-                    if(previous!=null && !previous.equals(values))throw new IllegalStateException("Development metadata is not a coherent source");
-                }
-                if(!seen.equals(ids))throw new IllegalStateException("Development source membership incomplete");
-                return Map.copyOf(result);
-            });
-        }
+        // Neo4jClient: label-agnostic id lookup returning labels and raw properties (no single @Node type applies).
+        return graph.read(tx->{
+            var rows=tx.list("MATCH (n) WHERE n.id IN $ids RETURN n.id AS id,labels(n) AS labels,properties(n) AS props LIMIT $maximum",Map.of("ids",List.copyOf(ids),"maximum",ids.size()+1));
+            var seen=new HashSet<String>();var result=new TreeMap<String,Map<String,Object>>();
+            for(var row:rows) {
+                var labels=row.get("labels").asList(Value::asString);var props=row.get("props");
+                if(!seen.add(row.get("id").asString()) || labels.size()!=1 || !MainDevelopmentBankSeed.ORGANIZATION.toString().equals(props.get("organizationId").asString(null)))
+                    throw new IllegalStateException("Invalid development source ownership");
+                var values=new TreeMap<String,Object>();
+                for(String key:List.of("organizationId","assignedExpertId","assignedExpertName"))if(!props.get(key).isNull())values.put(key,props.get(key).asString());
+                var previous=result.putIfAbsent(labels.getFirst(),Map.copyOf(values));
+                if(previous!=null && !previous.equals(values))throw new IllegalStateException("Development metadata is not a coherent source");
+            }
+            if(!seen.equals(ids))throw new IllegalStateException("Development source membership incomplete");
+            return Map.copyOf(result);
+        });
     }
 }

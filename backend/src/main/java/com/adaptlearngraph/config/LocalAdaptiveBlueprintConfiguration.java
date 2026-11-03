@@ -9,7 +9,7 @@ import com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.neo4j.driver.Driver;
+import com.adaptlearngraph.repository.Neo4jCypher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +38,8 @@ public class LocalAdaptiveBlueprintConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.eligibility", name = "enabled", havingValue = "true")
-    AdaptiveBaselineCatalogPort adaptiveBaselineCatalogPort(Driver driver, ObjectMapper mapper, JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
-        return new Neo4jAdaptiveBaselineCatalogAdapter(driver, mapper, settings.organizationId(), settings.occupationIds());
+    AdaptiveBaselineCatalogPort adaptiveBaselineCatalogPort(Neo4jCypher graph, ObjectMapper mapper, JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
+        return new Neo4jAdaptiveBaselineCatalogAdapter(graph, mapper, settings.organizationId(), settings.occupationIds());
     }
 
     @Bean

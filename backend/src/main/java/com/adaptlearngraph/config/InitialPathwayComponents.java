@@ -57,9 +57,9 @@ public abstract class InitialPathwayComponents {
                 environment.acceptsProfiles(org.springframework.core.env.Profiles.of("workspace-baseline & !local-baseline-demo & !prod")));
     }
     @Bean Receipts initialReceipts(InitialPathwayReceiptJpaRepository receipts) { return new JpaInitialReceipts(receipts); }
-    @Bean @ConditionalOnMissingBean(ReleaseAuthority.class) ReleaseAuthority initialReleaseAuthority(org.neo4j.driver.Driver driver,Environment env) {
+    @Bean @ConditionalOnMissingBean(ReleaseAuthority.class) ReleaseAuthority initialReleaseAuthority(com.adaptlearngraph.repository.Neo4jCypher graph,Environment env) {
         if(localFixtures(env) && env.getProperty("pathway.initial.catalog.allow-review-seed",Boolean.class,false)) {
-            try{return new LocalReviewCatalogRelease(driver,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(
+            try{return new LocalReviewCatalogRelease(graph,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(
                     java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))),
                     env.getProperty("pathway.initial.readiness.version"),com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(env));}
             catch(java.io.IOException invalid){throw new IllegalStateException("Local review seed unavailable",invalid);}
@@ -77,7 +77,7 @@ public abstract class InitialPathwayComponents {
         return (s,r)->{throw missing("CATALOG_RELEASE_NOT_CONFIGURED");};
     }
     private record LocalReviewSessions(LocalReviewCatalogRelease release) implements Neo4jInitialGraph.PublishedSessions {
-        public org.neo4j.driver.Session open(Scope scope,InitialCatalogPort.RoleReference ref){return release.open(scope,ref);}
+        public com.adaptlearngraph.repository.Neo4jCypher open(Scope scope,InitialCatalogPort.RoleReference ref){return release.open(scope,ref);}
     }
     @Bean @ConditionalOnMissingBean(Bindings.class)
     Bindings initialCatalogBindings(RoleReferences references,Neo4jInitialGraph.PublishedSessions sessions,Environment env) {

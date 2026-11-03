@@ -1,6 +1,7 @@
 package com.adaptlearngraph.support;
 
 import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.repository.Neo4jCypher;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.neo4j.driver.AuthTokens;
@@ -62,7 +63,8 @@ public final class Neo4jTestContext implements AutoCloseable {
 
     private static AnnotationConfigApplicationContext refresh(Driver driver, String database) {
         var context = new AnnotationConfigApplicationContext();
-        context.registerBean("driver", Driver.class, () -> driver);
+        // No destroy method: Spring would otherwise infer AutoCloseable.close() and close the caller-owned driver.
+        context.registerBean("driver", Driver.class, () -> driver, definition -> definition.setDestroyMethodName(""));
         if (database != null) {
             context.registerBean(DatabaseSelectionProvider.class,
                     () -> DatabaseSelectionProvider.createStaticDatabaseSelectionProvider(database));
@@ -90,6 +92,11 @@ public final class Neo4jTestContext implements AutoCloseable {
 
     public PlatformTransactionManager transactionManager() {
         return context.getBean(TransactionManagers.NEO4J, PlatformTransactionManager.class);
+    }
+
+    /** Hand-written Cypher over this context's client and {@code neo4jTransactionManager}, as wired by PersistenceConfiguration. */
+    public Neo4jCypher cypher() {
+        return new Neo4jCypher(client(), transactionManager());
     }
 
     @Override

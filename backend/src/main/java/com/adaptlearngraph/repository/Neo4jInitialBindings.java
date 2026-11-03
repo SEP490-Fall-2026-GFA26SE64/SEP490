@@ -5,7 +5,6 @@ import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.entities.RoleGap;
 import java.util.*;
 import java.util.function.IntSupplier;
-import org.neo4j.driver.TransactionContext;
 import static com.adaptlearngraph.helper.InitialCatalogMetadata.*;
 
 /** Reads exact bound Role/Level requirements. No Level inference, seed fallback, or review bypass. */
@@ -39,18 +38,21 @@ public final class Neo4jInitialBindings implements Bindings {
             references.assertCurrent(scope,ref);
             return new Binding(ref.businessRoleId(),roleId,levelId,ref.occupationId(),role.name(),level.name(),ref.catalogFingerprint(),ref.releaseToken(),ref.versions(),requirements);
         }
-        try(var session=sessions.open(scope,ref)) {
-            var binding=session.executeRead(tx->read(tx,scope,ref,maximum));
+        try {
+            var graph=sessions.open(scope,ref);
+            var binding=graph.read(tx->read(tx,scope,ref,maximum));
             references.assertCurrent(scope,ref);return binding;
         }catch(Failure failure){throw failure;}
-        catch(org.neo4j.driver.exceptions.Neo4jException unavailable){throw new Failure(503,"CATALOG_UNAVAILABLE");}
+        catch(org.neo4j.driver.exceptions.Neo4jException | org.springframework.dao.DataAccessException
+              | org.springframework.transaction.TransactionException unavailable){throw new Failure(503,"CATALOG_UNAVAILABLE");}
         catch(RuntimeException invalid){throw new Failure(503,"CATALOG_REQUIREMENTS_INVALID",false);}
     }
     @Override public void assertCurrent(Scope scope,Binding binding) {
         references.assertCurrent(scope,RoleReference.from(scope,binding));
     }
-    private Binding read(TransactionContext tx,Scope scope,RoleReference ref,int maximum) {
-        var rows=tx.run("""
+    // Neo4jClient: bound Role/Level rows with ownership subqueries, raw properties and elementIds validated field by field.
+    private Binding read(Neo4jCypher.Statements tx,Scope scope,RoleReference ref,int maximum) {
+        var rows=tx.list("""
                 MATCH (o:Occupation {id:$occupation})-[membership:HAS_ROLE]->(r:TargetRole {id:$role})
                     -[roleLevel:HAS_LEVEL]->(l:Level {id:$level})
                 CALL { WITH r MATCH (parent:Occupation)-[e:HAS_ROLE]->(r)
@@ -68,7 +70,7 @@ public final class Neo4jInitialBindings implements Bindings {
                     elementId(o) AS oi,elementId(membership) AS mi,elementId(r) AS ri,
                     elementId(roleLevel) AS hi,elementId(l) AS li,elementId(q) AS qi,roleOwners,levelOwners
                 ORDER BY s.id,qi LIMIT $maximum
-                """,Map.of("occupation",ref.occupationId(),"role",ref.roleId(),"level",ref.levelId(),"maximum",maximum+1)).list();
+                """,Map.of("occupation",ref.occupationId(),"role",ref.roleId(),"level",ref.levelId(),"maximum",maximum+1));
         if(rows.isEmpty())throw new Failure(422,"BOUND_ROLE_LEVEL_UNAVAILABLE",false);
         if(rows.size()>maximum)throw new Failure(422,"CATALOG_REQUIREMENTS_LIMIT",false);
         var first=rows.getFirst();String version=ref.versions().get("catalog");

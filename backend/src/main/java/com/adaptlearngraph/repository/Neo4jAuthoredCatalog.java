@@ -5,7 +5,6 @@ import com.adaptlearngraph.services.RoleBaselineFlow.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.*;
-import org.neo4j.driver.Driver;
 import org.neo4j.driver.Value;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -16,10 +15,10 @@ import org.springframework.core.env.Profiles;
 public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
     private static final String PREFIX="assessment.baseline.workspace.catalog.authored-bindings";
     private static final int MAX_SNAPSHOT_BYTES=2_000_000;
-    private final Driver driver;private final ObjectMapper json;private final List<Binding> bindings;
+    private final Neo4jCypher graph;private final ObjectMapper json;private final List<Binding> bindings;
     private final int maximum;
-    private Neo4jAuthoredCatalog(Driver driver,ObjectMapper json,List<Binding> bindings,int maximum) {
-        this.driver=driver;this.json=json.copy().configure(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,true);this.bindings=List.copyOf(bindings);this.maximum=maximum;
+    private Neo4jAuthoredCatalog(Neo4jCypher graph,ObjectMapper json,List<Binding> bindings,int maximum) {
+        this.graph=graph;this.json=json.copy().configure(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,true);this.bindings=List.copyOf(bindings);this.maximum=maximum;
         if(bindings.isEmpty() || bindings.size()>1000 || maximum<1 || maximum>100000)throw invalid();
         var scopes=new HashSet<String>();var roles=new HashSet<String>();
         for(var b:bindings) {
@@ -27,11 +26,11 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
             for(var id:b.roleIds())if(!roles.add(b.organizationId()+"\n"+id))throw invalid();
         }
     }
-    public static AuthoredCatalogPort configured(Driver driver,ObjectMapper json,Environment env) {
+    public static AuthoredCatalogPort configured(Neo4jCypher graph,ObjectMapper json,Environment env) {
         if(!env.getProperty(PREFIX+".enabled",Boolean.class,false))return NONE;
         if(!env.acceptsProfiles(Profiles.of("local & workspace-baseline & !prod")))throw invalid();
         var bindings=Binder.get(env).bind(PREFIX+".entries",Bindable.listOf(Binding.class)).orElse(List.of());
-        return new Neo4jAuthoredCatalog(driver,json,bindings,env.getProperty(PREFIX+".max-requirements",Integer.class,10000));
+        return new Neo4jAuthoredCatalog(graph,json,bindings,env.getProperty(PREFIX+".max-requirements",Integer.class,10000));
     }
     @Override public Set<String> occupations(UUID org) {
         var result=new HashSet<String>();bindings.stream().filter(b->b.organizationId().equals(org)).forEach(b->result.add(b.occupationId()));return Set.copyOf(result);
@@ -39,9 +38,10 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
     @Override public Optional<Projection> find(UUID org,String occupation) {
         var found=bindings.stream().filter(b->b.organizationId().equals(org) && b.occupationId().equals(occupation)).findFirst();
         if(found.isEmpty())return Optional.empty();var binding=found.get();
-        try(var session=driver.session()) {
-            return Optional.of(session.executeRead(tx->{
-                var rows=tx.run("""
+        // Neo4jClient: one bounded projection over exact configured identities, validated field by field.
+        try {
+            return Optional.of(graph.read(tx->{
+                var rows=tx.list("""
                         MATCH (o:Occupation {id:$occupation}), (r:TargetRole)
                         WHERE r.id IN $roles AND r.organizationId IN $owners
                         OPTIONAL MATCH (parent:Occupation)-[m:HAS_ROLE]->(r)
@@ -51,7 +51,7 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                         RETURN properties(o) AS o,elementId(o) AS oi,properties(r) AS r,elementId(r) AS ri,
                                parents,properties(q) AS q,properties(s) AS s
                         ORDER BY r.id,q.level,s.id LIMIT $maximum
-                        """,Map.of("occupation",occupation,"roles",binding.roleIds(),"owners",List.copyOf(binding.sourceOwners()),"maximum",maximum+1)).list();
+                        """,Map.of("occupation",occupation,"roles",binding.roleIds(),"owners",List.copyOf(binding.sourceOwners()),"maximum",maximum+1));
                 if(rows.isEmpty() || rows.size()>maximum)throw invalid();
                 var first=rows.getFirst().get("o");owned(first,binding);active(first);
                 var node=rows.getFirst().get("oi").asString();String name=text(first,"name"),catalogVersion=text(first,"version");

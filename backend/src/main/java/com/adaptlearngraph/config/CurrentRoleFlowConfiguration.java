@@ -15,7 +15,6 @@ import com.adaptlearngraph.services.RoleBaselineFlow;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
-import org.neo4j.driver.Driver;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.*;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -28,7 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
 @Import(PersistenceConfiguration.class)
 public class CurrentRoleFlowConfiguration {
-    @Bean CurrentRoleCatalog currentRoleCatalog(Driver driver,ObjectMapper json) { return new CurrentRoleCatalog(driver,json,LocalDemoIdentity.ORG); }
+    @Bean CurrentRoleCatalog currentRoleCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) { return new CurrentRoleCatalog(graph,json,LocalDemoIdentity.ORG); }
     @Bean CurrentRoleSelectionStore currentRoleSelectionStore(org.springframework.beans.factory.BeanFactory beans,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,PlatformTransactionManager manager) {
         return new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(beans::getBean,locks),json,new TransactionTemplate(manager));

@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.neo4j.driver.Driver;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -150,8 +149,10 @@ public class LocalBaselineBlueprintConfiguration {
     @Bean
     @ConditionalOnProperty(
             prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
-    BaselineOccupationCatalogPort baselineOccupationCatalog(Driver driver) {
-        return new Neo4jBaselineOccupationCatalogAdapter(driver);
+    BaselineOccupationCatalogPort baselineOccupationCatalog(org.springframework.data.neo4j.core.Neo4jClient client,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.NEO4J)
+            PlatformTransactionManager graphTransactions) {
+        return new Neo4jBaselineOccupationCatalogAdapter(client, graphTransactions);
     }
 
     @Bean

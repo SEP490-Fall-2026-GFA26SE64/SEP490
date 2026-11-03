@@ -4,19 +4,17 @@ import com.adaptlearngraph.repository.InitialCatalogPort.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.config.WorkspaceCatalogFixture;
 import java.util.*;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Session;
 
 /** Test-only dispatch over exact existing seed artifacts, never a production publication protocol. */
 public final class WorkspaceFixtureCatalogRelease implements ReleaseAuthority {
     public record Sessions(WorkspaceFixtureCatalogRelease release) implements Neo4jInitialGraph.PublishedSessions {
-        @Override public Session open(Scope scope,RoleReference ref){return release.open(scope,ref);}
+        @Override public Neo4jCypher open(Scope scope,RoleReference ref){return release.open(scope,ref);}
     }
     private final WorkspaceCatalogFixture fixture;
     private final Map<UUID,LocalReviewCatalogRelease> sources;
-    public WorkspaceFixtureCatalogRelease(Driver driver,WorkspaceCatalogFixture fixture,byte[] seed,String readiness) {
+    public WorkspaceFixtureCatalogRelease(Neo4jCypher graph,WorkspaceCatalogFixture fixture,byte[] seed,String readiness) {
         this.fixture=fixture;var sources=new HashMap<UUID,LocalReviewCatalogRelease>();
-        for(UUID org:fixture.organizations().keySet())sources.put(org,new LocalReviewCatalogRelease(driver,org,seed,readiness,true));
+        for(UUID org:fixture.organizations().keySet())sources.put(org,new LocalReviewCatalogRelease(graph,org,seed,readiness,true));
         this.sources=Map.copyOf(sources);
     }
     private LocalReviewCatalogRelease source(Scope scope) {
@@ -44,7 +42,7 @@ public final class WorkspaceFixtureCatalogRelease implements ReleaseAuthority {
         return new RoleReference(ref.organizationId(),ref.businessRoleId(),ref.roleId(),ref.levelId(),ref.occupationId(),
                 ref.catalogFingerprint(),source(scope).require(scope).token(),ref.versions());
     }
-    public Session open(Scope scope,RoleReference ref) {
+    public Neo4jCypher open(Scope scope,RoleReference ref) {
         assertCurrent(scope,ref);
         return source(scope).open(scope,original(scope,ref));
     }

@@ -3,6 +3,10 @@ package com.adaptlearngraph.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.adaptlearngraph.entities.Occupation;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
 import com.adaptlearngraph.services.PlatformCatalogService;
@@ -24,6 +28,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Neo4jContainer;
 
 /** Real Neo4j copy of the platform template into two organizations, including reads through tenant-scoped adapters. */
@@ -48,8 +53,8 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
             template = new PlatformCatalogTemplate(input.readAllBytes(), new ObjectMapper());
         }
         catalog = new PlatformCatalogService(() -> Optional.of(template));
-        writer = new Neo4jWorkspaceCatalogWriter(() -> driver);
         persistence = Neo4jTestContext.start(driver);
+        writer = new Neo4jWorkspaceCatalogWriter(persistence::cypher);
     }
 
     @AfterAll
@@ -109,6 +114,82 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         assertThatThrownBy(() -> occupations.save(b, foreign)).isInstanceOf(CrossTenantWriteException.class);
         assertThat(occupations.findByIdOrCode(a, foreign.id())).get().extracting(Occupation::name).isEqualTo("Occupation One");
         assertThat(occupations.findByIdOrCode(b, foreign.id())).isEmpty();
+    }
+
+    @Test
+    void copyIntoWorkspaceBNeverTouchesWorkspaceANodesPropertiesOrRelationships() {
+        String a = UUID.randomUUID().toString(), b = UUID.randomUUID().toString(), c = UUID.randomUUID().toString();
+        copy(a, List.of("ROLE-A"));
+        var before = snapshot(a);
+        assertThat(before).isNotEmpty();
+
+        copy(b, List.of("ROLE-A"));
+        copy(b, List.of("MS-A"));
+        assertThat(snapshot(a)).as("workspace A after copies into B").isEqualTo(before);
+        assertThat(count("MATCH (x {organizationId:$a})-[r]-(y {organizationId:$b}) RETURN count(r)", Map.of("a", a, "b", b)))
+                .as("no relationship connects A and B").isZero();
+
+        // A node owned by A that already carries C's deterministic copy id: the whole copy into C is rejected and rolled back.
+        String collision = Neo4jWorkspaceCatalogWriter.copiedId(c, "OCC-1");
+        try (var session = driver.session()) {
+            session.run("CREATE (:Occupation {id:$id, organizationId:$a, name:'Owned by A'})", Map.of("id", collision, "a", a)).consume();
+        }
+        var withCollision = snapshot(a);
+        assertThatThrownBy(() -> copy(c, List.of("ROLE-A"))).isInstanceOf(CrossTenantWriteException.class);
+        assertThat(snapshot(a)).as("workspace A after a rejected copy into C").isEqualTo(withCollision);
+        assertThat(count("MATCH (n {organizationId:$c}) RETURN count(n)", Map.of("c", c))).as("rejected copy rolled back").isZero();
+        assertThat(count("MATCH ()-[r {organizationId:$c}]->() RETURN count(r)", Map.of("c", c))).isZero();
+    }
+
+    @Test
+    void copyIssuesOneOwnershipCheckAndOneUnwindPerLabelAndOneUnwindPerRelationshipGroup() {
+        String organization = UUID.randomUUID().toString();
+        var closure = catalog.closure(List.of("ROLE-A"));
+        var nodes = closure.nodeIds().stream().map(template.nodes()::get).toList();
+        var labels = new java.util.HashMap<String, String>();
+        nodes.forEach(node -> labels.put(node.id(), node.label()));
+        long labelGroups = nodes.stream().map(PlatformCatalogTemplate.Node::label).distinct().count();
+        long edgeGroups = closure.edges().stream()
+                .map(edge -> edge.type() + "|" + labels.get(edge.fromId()) + "|" + labels.get(edge.toId())).distinct().count();
+        assertThat(nodes.size()).as("fixture has more rows than label groups").isGreaterThan((int) labelGroups);
+
+        var logger = (Logger) LoggerFactory.getLogger("org.springframework.data.neo4j.cypher");
+        Level previous = logger.getLevel();
+        var appender = new ListAppender<ILoggingEvent>();
+        appender.start();
+        logger.addAppender(appender);
+        logger.setLevel(Level.DEBUG);
+        try {
+            writer.copy(organization, closure.templateVersion(), nodes, closure.edges());
+        } finally {
+            logger.detachAppender(appender);
+            logger.setLevel(previous);
+        }
+        var statements = appender.list.stream()
+                .filter(event -> event.getLoggerName().equals("org.springframework.data.neo4j.cypher"))
+                .map(ILoggingEvent::getFormattedMessage).toList();
+        assertThat(statements).hasSize((int) (2 * labelGroups + edgeGroups));
+        assertThat(statements).allSatisfy(statement -> assertThat(statement).contains("UNWIND $"));
+        assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", organization))).isEqualTo(nodes.size());
+        assertThat(count("MATCH ()-[r {organizationId:$org}]->() RETURN count(r)", Map.of("org", organization)))
+                .isEqualTo(closure.edges().size());
+    }
+
+    private List<String> snapshot(String organization) {
+        try (var session = driver.session()) {
+            var nodes = session.run("""
+                    MATCH (n) WHERE n.organizationId = $org
+                    RETURN labels(n) AS labels, properties(n) AS props ORDER BY n.id
+                    """, Map.of("org", organization)).list(row -> row.asMap().toString());
+            var relationships = session.run("""
+                    MATCH (x)-[r]-(y) WHERE x.organizationId = $org
+                    RETURN x.id + '-' + type(r) + '-' + y.id AS key, startNode(r) = x AS outgoing, properties(r) AS props
+                    ORDER BY key, outgoing, r.id
+                    """, Map.of("org", organization)).list(row -> row.asMap().toString());
+            var result = new ArrayList<String>(nodes);
+            result.addAll(relationships);
+            return result;
+        }
     }
 
     @Test

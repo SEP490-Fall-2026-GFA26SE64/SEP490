@@ -24,7 +24,6 @@ import com.adaptlearngraph.services.AdaptiveAttemptSnapshotResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.sql.DataSource;
 import java.util.*;
-import org.neo4j.driver.Driver;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.*;
 
@@ -51,8 +50,8 @@ public class LocalDemoConfiguration {
             public Set<String> authorizedOccupations(Actor actor) { return actor.isActiveLdManager() && actor.organizationId().equals(LocalDemoIdentity.ORG) ? Set.of(LocalDemoIdentity.OCC) : Set.of(); }
         };
     }
-    @Bean @Primary AdaptiveBaselineCatalogPort demoCatalog(Driver driver,ObjectMapper json) {
-        return new Neo4jAdaptiveBaselineCatalogAdapter(driver,json,LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),true);
+    @Bean @Primary AdaptiveBaselineCatalogPort demoCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) {
+        return new Neo4jAdaptiveBaselineCatalogAdapter(graph,json,LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),true);
     }
     @Bean @Primary AdaptiveTechnicalVersionPort demoTechnical(DataSource source,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions) {
         var delegate = new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);

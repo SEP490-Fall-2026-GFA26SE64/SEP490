@@ -1,10 +1,9 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.helper.OfficialQuestionBankCatalog;
+import com.adaptlearngraph.repository.Neo4jCypher;
 import com.fasterxml.jackson.databind.*;
 import java.util.*;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.TransactionContext;
 import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 
 /** Development-only exact release bootstrap. Existing different graphs are never overwritten. */
@@ -24,12 +23,10 @@ public final class LocalCatalogBootstrap {
         var catalog=new LocalCatalogBootstrap(bytes);catalog.addSoftwareDevelopment();return catalog;
     }
     public boolean hasSoftwareDevelopment() { return baseEdges!=null; }
-    public static LocalCatalogBootstrap forExistingDevelopment(Driver driver,byte[] seed) throws java.io.IOException {
-        try(var session=driver.session()) {
-            var count=session.executeRead(tx->tx.run("MATCH ()-[r {id: 'REL-SE-MS-FS03-MS-CORE01'}]->() RETURN count(r) AS c").single().get("c").asLong());
-            var catalog=count>0 ? withSoftwareDevelopment(seed) : new LocalCatalogBootstrap(seed);
-            catalog.verifySealed(driver);return catalog;
-        }
+    public static LocalCatalogBootstrap forExistingDevelopment(Neo4jCypher graph,byte[] seed) throws java.io.IOException {
+        var count=graph.read(tx->tx.single("MATCH ()-[r {id: 'REL-SE-MS-FS03-MS-CORE01'}]->() RETURN count(r) AS c").get("c").asLong());
+        var catalog=count>0 ? withSoftwareDevelopment(seed) : new LocalCatalogBootstrap(seed);
+        catalog.verifySealed(graph);return catalog;
     }
     private void addSoftwareDevelopment() throws java.io.IOException {
         baseEdges=Map.copyOf(expectedEdges);
@@ -81,28 +78,25 @@ public final class LocalCatalogBootstrap {
         Map<String,Object> props=JSON.convertValue(row,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});
         props.values().removeIf(Objects::isNull);return props;
     }
-    void bootstrap(Driver driver) {
-        try(var session=driver.session()) {
-            boolean present=session.executeRead(tx->{long count=tx.run("MATCH (n) WHERE n.id IN $ids RETURN count(n) AS c",Map.of("ids",expectedNodes.keySet())).single().get("c").asLong();if(count>0)verify(tx,true);return count>0;});
-            if(present)return; // Also permits exact idempotent startup on a sealed read-only release.
-            for(String label:nodes.keySet())session.run("CREATE CONSTRAINT ontology_v011_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE").consume();
-            session.executeWrite(tx->{
-                require(tx.run("MATCH (n) WHERE n.id IN $ids RETURN count(n) AS c",Map.of("ids",expectedNodes.keySet())).single().get("c").asLong()==0,"Catalog changed before import");
-                nodes.forEach((label,rows)->tx.run("UNWIND $rows AS row CREATE (n:"+label+") SET n=row",Map.of("rows",rows)).consume());
-                edges.forEach((type,rows)->tx.run("UNWIND $rows AS row MATCH (a {id:row.from}),(b {id:row.to}) CREATE (a)-[r:"+type+"]->(b) SET r=row.props",Map.of("rows",rows)).consume());
-                verify(tx,true);return true;
-            });
-        }
+    void bootstrap(Neo4jCypher graph) {
+        var ids=List.copyOf(expectedNodes.keySet());
+        boolean present=graph.read(tx->{long count=tx.single("MATCH (n) WHERE n.id IN $ids RETURN count(n) AS c",Map.of("ids",ids)).get("c").asLong();if(count>0)verify(tx,true);return count>0;});
+        if(present)return; // Also permits exact idempotent startup on a sealed read-only release.
+        for(String label:nodes.keySet())graph.autoCommit("CREATE CONSTRAINT ontology_v011_"+label.toLowerCase(Locale.ROOT)+"_id IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE");
+        graph.write(tx->{
+            require(tx.single("MATCH (n) WHERE n.id IN $ids RETURN count(n) AS c",Map.of("ids",ids)).get("c").asLong()==0,"Catalog changed before import");
+            nodes.forEach((label,rows)->tx.execute("UNWIND $rows AS row CREATE (n:"+label+") SET n=row",Map.of("rows",rows)));
+            edges.forEach((type,rows)->tx.execute("UNWIND $rows AS row MATCH (a {id:row.from}),(b {id:row.to}) CREATE (a)-[r:"+type+"]->(b) SET r=row.props",Map.of("rows",rows)));
+            verify(tx,true);return true;
+        });
     }
-    public void verifySealed(Driver driver) {
-        try(var session=driver.session()) {
-            // Neo4j forbids mixing administration and graph-read commands in one transaction.
-            session.executeRead(tx->{verify(tx,false);return true;});
-        }
+    public void verifySealed(Neo4jCypher graph) {
+        // Neo4j forbids mixing administration and graph-read commands in one transaction.
+        graph.read(tx->{verify(tx,false);return true;});
     }
-    private void verify(TransactionContext tx,boolean allowBase) {
+    private void verify(Neo4jCypher.Statements tx,boolean allowBase) {
         var actualNodes=new TreeMap<String,String>();var actualEdges=new TreeMap<String,String>();
-        for(var row:tx.run("MATCH (n) WHERE n.id IN $ids RETURN labels(n) AS labels,properties(n) AS props",Map.of("ids",expectedNodes.keySet())).list()) {
+        for(var row:tx.list("MATCH (n) WHERE n.id IN $ids RETURN labels(n) AS labels,properties(n) AS props",Map.of("ids",List.copyOf(expectedNodes.keySet())))) {
             var labels=row.get("labels").asList(v->v.asString());require(labels.size()==1,"Unexpected catalog label");
             var id=row.get("props").get("id").asString();
             var props=new HashMap<String,Object>(row.get("props").asMap());
@@ -110,7 +104,7 @@ public final class LocalCatalogBootstrap {
             if(allowed!=null)props.keySet().retainAll(allowed);
             require(actualNodes.put(id,canonical(JSON.valueToTree(Map.of("label",labels.getFirst(),"props",props))))==null,"Ambiguous catalog node");
         }
-        for(var row:tx.run("MATCH (a)-[r]->(b) WHERE r.id IN $ids RETURN type(r) AS type,a.id AS source,b.id AS target,properties(r) AS props",Map.of("ids",expectedEdges.keySet())).list()) {
+        for(var row:tx.list("MATCH (a)-[r]->(b) WHERE r.id IN $ids RETURN type(r) AS type,a.id AS source,b.id AS target,properties(r) AS props",Map.of("ids",List.copyOf(expectedEdges.keySet())))) {
             var id=row.get("props").get("id").asString();
             var props=new HashMap<String,Object>(row.get("props").asMap());
             var allowed=expectedEdgeKeys.get(id);
