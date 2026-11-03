@@ -45,6 +45,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-02 | M | Documentation preparation with AI assistance | Aligned ST-11 Module/Content and ST-16 Question Bank titles/notes with their updated diagrams; added ST-23 Independent Skill Learning and updated lifecycle coverage. Retained target/current boundaries and existing physical schema. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Simplified the backend package view into Presentation, Application, Domain and Infrastructure layers with Shared support. Added embedded package icons and retained only selected dependency arrows. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected the backend overview to expose hexagonal package layers, input/output ports and adapter roles using the actual identity module structure. Replaced module-family descriptions with layer-package descriptions; no source packages were renamed or created. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Aligned architecture descriptions with the eight named service groups and supporting components. Replaced exhaustive package previews with actual backend/frontend overviews and No, Package, Description tables; retained detailed inventories as references. |
@@ -5868,11 +5869,12 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 [Mermaid source: ST-11](../documents/diagrams/mermaid/st-11.mmd)
 
-![ST-11 - Learning offering bundle (target)](../documents/diagrams/mermaid/st-11.png)
+![ST-11 - Module and Learning Content](../documents/diagrams/mermaid/st-11.png)
 
 **Diagram notes (ST-11):**
 
-- Approved availability is version-specific and organization-scoped. Retirement/unapproval policy beyond the source requires explicit approval. This diagram does not invent implemented module workflow columns.
+- Current Module-document states are DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING and RELEASED. The responsible Expert edits/submits; L&D returns with feedback or approves the exact revision. Publication failure remains pending for authorized retry; successful catalog projection releases the revision.
+- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Archive/restore is outside this concise main-flow view. This does not claim that the complete module-assessment bundle is implemented; ACT-04 in the SRS remains the broader target. Learning access is separately authorized.
 
 [Mermaid source: ST-12](../documents/diagrams/mermaid/st-12.mmd)
 
@@ -5951,11 +5953,12 @@ The last read arrow is a logical persistence path through an authorized applicat
 
 [Mermaid source: ST-16](../documents/diagrams/mermaid/st-16.mmd)
 
-![ST-16 - Question/assessment version publication (physical foundation)](../documents/diagrams/mermaid/st-16.png)
+![ST-16 - Question Bank](../documents/diagrams/mermaid/st-16.png)
 
 **Diagram notes (ST-16):**
 
-- item_version and assessment_version carry publication_state. Full module offering approval and current reviewed-bank provisioning are separate obligations; this enum alone does not implement them. Revisions require new version identity rather than rewriting attempted content.
+- This is the current organization Question Bank candidate lifecycle: DRAFT, SUBMITTED and PUBLISHED. Only the responsible Expert edits/submits/withdraws; L&D acknowledges and approves the exact submitted version, or returns it with a reason to DRAFT. Submitted content is locked, and stale/invalid commands do not transition state.
+- A successor creates a new draft; it does not mutate the immutable published predecessor or existing assessment pins. Retirement/reactivation is a separate question-availability lifecycle. ACT-10 in the SRS covers the concise authoring/review activity. Physical `item_version` / `assessment_version` publication fields remain separate foundations and are not substituted for this authoring workflow; module-exam construction and calibration remain separate.
 
 Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint working rows have OPEN/FINALIZED/ABANDONED. They remain in the physical dictionary for history/compatibility; they are not substitutes for the current adaptive attempt lifecycle. Module/RIASEC completion must use purpose-specific approved state/retake contracts rather than blindly copying baseline admission rules.
 
@@ -6028,6 +6031,15 @@ Logical database arrows from actors stand for authorized use-case calls, not dir
 - Statuses exist in PostgreSQL; full service transitions are not implemented. Initial review gate is required. Subsequent adaptation is automatic under an approved override-preservation policy, not a new mandatory review each time. validation_status is a separate dimension.
 
 A current-pathway successor may be produced automatically after updated assessment evidence; the schema's review-related labels require a concrete approved mapping before this automation is implemented. The report does not claim every successor must pass a new human review.
+
+[Mermaid source: ST-23](../documents/diagrams/mermaid/st-23.mmd)
+
+![ST-23 - Independent Skill Learning](../documents/diagrams/mermaid/st-23.png)
+
+**Diagram notes (ST-23):**
+
+- Companion to ACT-07: NotStarted, Learning, ReadyForAssessment, Assessing, EvidenceRecorded and ProgressUpdated are target business states, not implemented enum values. Full persisted independent-learning context and module-assessment integration are not claimed complete.
+- Content completion alone is not mastery. Assessment admission/grading and valid evidence are separate from lesson progress. Further study may continue in the independent context; finishing a session implies neither skill certification nor replacement of the selected Role pathway.
 
 ### 3.6 Development Summaries and ROI
 
@@ -6117,17 +6129,18 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Subscription period | ST-08 | Time-derived availability; immutable period record. |
 | Department/Occupation / Expert assignment | ST-09 | Target business lifecycle, incomplete implementation. |
 | Target role | ST-10 | Required target publication workflow, not legacy enum equivalence. |
-| Learning offering / content / module assessment bundle | ST-11 | Target versioned bundle review lifecycle. |
+| Module and Learning Content | ST-11 | Current authoring/review/publication states; whole-Module lesson review. Complete module-assessment bundle remains separate. |
 | MicroSkill and other graph definitions | ST-12 | Orthogonal review/availability vocabularies; no automatic approval. |
 | Baseline Draft / released blueprint | ST-13 | Persisted working state and derived active/retiring/inactive. |
 | Baseline attempt | ST-14 | Current terminal states/reasons. |
 | Calibration / IRT parameter set | ST-15 | Current run and promotion states. |
-| Question / assessment version | ST-16 | Physical publication foundation; actual approval remains separate. |
+| Question Bank candidate | ST-16 | Current DRAFT/SUBMITTED/PUBLISHED review; immutable published versions and successor drafts. Availability is separate. |
 | Employee role selection | ST-17 | Current/history relationship and explicit replacement. |
 | Mastery/profile | ST-18 | Physical quality/revision foundation; baseline initialization versus planned tracing. |
 | Recommendation / pathway | ST-19 | Foundation states and required initial review. |
 | Evaluation run | ST-20 | Schema foundation, no inferred benchmark pass. |
 | Processing job / email delivery work | ST-21 | Handler-dependent durable state machine. |
+| Independent skill learning | ST-23 | Target business states corresponding to ACT-07; not persisted enums or a completed assessment integration. |
 | Plan version, provider observation, attempt response/result, audit/outbox event, command receipt | Immutable/versioned facts rather than independent status lifecycle | Created from an authorized event, retained for history/replay; correction creates a new version/event where the contract allows it. No artificial state machine is added. |
 | RIASEC profile, actual finance records and guidance result | Target lifecycle not yet approved | Preserve source/version/provenance; approve exact physical state/retake/correction rules before implementation. SRS and proposed sequences define business participation without claiming missing enums exist. |
 
@@ -6167,6 +6180,7 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 
 | Check | Actual result | Scope / qualification |
 | --- | --- | --- |
+| Learning / Question Bank report synchronization, 2026-11-02 | Passed | Report3 references ACT-04/07/10; Report4 references ST-11/16/23 with matching captions, notes and lifecycle coverage. All12 scoped Mermaid-source/PNG links resolve; six PNG headers/dimensions and SVG XML are valid. Existing report anchors retained. Diagram rendering was checked during their preceding edits; this synchronization ran document/link checks only, not application/database tests or full report requalification. |
 | DOCX template-body structure | Passed | 26 fixed SRS headings and 7 fixed SDD headings checked in order; feature placeholders expanded into the relevant numbered sections. Stale SRS template TOC was reconciled to its body. |
 | Functional requirement coverage | Passed | 48 distinct source FRs, 48 detailed SRS function sections, 48 use-case table entries and diagram nodes; original actor/domain identities retained. |
 | Local references | Passed | 313 local file/anchor links resolved after the visual refresh, including the design-token reference; no missing target file or section anchor detected. |

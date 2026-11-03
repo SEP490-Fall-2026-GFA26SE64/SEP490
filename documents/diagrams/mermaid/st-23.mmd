@@ -1,0 +1,25 @@
+---
+title: "ST-23 - Independent Skill Learning"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+stateDiagram-v2
+  state "NotStarted" as SDD_ST_23_NotStarted
+  state "Learning" as SDD_ST_23_Learning
+  state "ReadyForAssessment" as SDD_ST_23_Ready
+  state "Assessing" as SDD_ST_23_Assessing
+  state "EvidenceRecorded" as SDD_ST_23_Evidence
+  state "ProgressUpdated" as SDD_ST_23_Progress
+  [*] --> SDD_ST_23_NotStarted
+  SDD_ST_23_NotStarted --> SDD_ST_23_Learning : start permitted module
+  SDD_ST_23_Learning --> SDD_ST_23_Learning : study / save / resume
+  SDD_ST_23_Learning --> SDD_ST_23_Ready : content conditions satisfied
+  SDD_ST_23_Ready --> SDD_ST_23_Assessing : assessment admitted
+  SDD_ST_23_Assessing --> SDD_ST_23_Evidence : valid assessment graded
+  SDD_ST_23_Evidence --> SDD_ST_23_Progress : update independent progress
+  SDD_ST_23_Progress --> SDD_ST_23_Learning : continue independent study
+  SDD_ST_23_Progress --> [*] : finish session
+
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_23_Learning,SDD_ST_23_Ready,SDD_ST_23_Assessing working
+  class SDD_ST_23_Evidence,SDD_ST_23_Progress accepted

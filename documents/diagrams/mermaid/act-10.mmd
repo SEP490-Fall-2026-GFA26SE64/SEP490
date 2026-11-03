@@ -1,0 +1,30 @@
+---
+title: "ACT-10 - Question Bank authoring and approval"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":32,"wrappingWidth":250,"minNodeWidth":0},"look":"classic"}
+---
+flowchart TD
+    %% Main flow only. Server validates organization/access, ownership, complete content
+    %% and current revision. Import validation, successor versions, withdrawal and
+    %% availability changes are specified in features/Assessment workflows/README.md.
+    START(("Start"))
+    CREATE["<b>Responsible Expert</b><br/>Create manually or import questions"]
+    DRAFT["<b>System</b><br/>Save as DRAFT"]
+    EDIT["<b>Responsible Expert</b><br/>Complete and edit question content"]
+    SUBMIT["<b>Responsible Expert</b><br/>Submit for review"]
+    REVIEW["<b>L&amp;D Manager</b><br/>Review and acknowledge exact version"]
+    DECISION{"<b>L&amp;D Manager</b><br/>Approve or Return?"}
+    RETURN["<b>System</b><br/>Record feedback and restore DRAFT"]
+    PUBLISHED["<b>System</b><br/>Publish immutable version"]
+    END(("End"))
+
+    START --> CREATE --> DRAFT --> EDIT --> SUBMIT --> REVIEW --> DECISION
+    DECISION -->|"Return + reason"| RETURN --> EDIT
+    DECISION -->|"Approve"| PUBLISHED --> END
+
+    classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
+    classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+    classDef success fill:#f0fdf4,stroke:#16a34a,color:#14532d
+    classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
+    class START,END entry
+    class DECISION decision
+    class PUBLISHED success

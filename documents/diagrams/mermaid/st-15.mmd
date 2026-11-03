@@ -3,30 +3,29 @@ title: "ST-15 - IRT calibration and parameter promotion"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
 ---
 stateDiagram-v2
-  state "Calibration run" as SDD_ST_15_Run {
-    state "PENDING" as SDD_ST_15_PENDING
-    state "RUNNING" as SDD_ST_15_RUNNING
-    state "SUCCEEDED" as SDD_ST_15_SUCCEEDED
-    state "FAILED" as SDD_ST_15_FAILED
-    [*] --> SDD_ST_15_PENDING
-    SDD_ST_15_PENDING --> SDD_ST_15_RUNNING : worker starts actual calibration
-    SDD_ST_15_RUNNING --> SDD_ST_15_SUCCEEDED : valid output parameter set
-    SDD_ST_15_RUNNING --> SDD_ST_15_FAILED : recorded calibration failure
+  state "Calibration run" as Group0 {
+    state "PENDING" as rp
+    state "RUNNING" as rr
+    state "SUCCEEDED" as rok
+    state "FAILED" as rf
+    [*] --> rp
+    rp --> rr : Start calibration
+    rr --> rok : Valid fitted parameters
+    rr --> rf : Failure / timeout / cancellation
   }
-  state "Parameter set" as SDD_ST_15_Parameters {
-    state "BUILDING" as SDD_ST_15_BUILDING
-    state "CANDIDATE" as SDD_ST_15_CANDIDATE
-    state "PROMOTED" as SDD_ST_15_PROMOTED
-    [*] --> SDD_ST_15_BUILDING
-    SDD_ST_15_BUILDING --> SDD_ST_15_CANDIDATE : parameter construction completed
-    SDD_ST_15_CANDIDATE --> SDD_ST_15_PROMOTED : authorized scoped promotion
+  state "Parameter set" as Group1 {
+    state "BUILDING" as pb
+    state "CANDIDATE" as pc
+    state "PROMOTED" as pp
+    [*] --> pb
+    pb --> pc : Complete parameter construction
+    pc --> pp : Authorized promotion; real pilot data and readiness pass
   }
-
   classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_15_SUCCEEDED,SDD_ST_15_PROMOTED accepted
-
   classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_15_FAILED attention
-
   classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_15_PENDING,SDD_ST_15_RUNNING working
+  class rp working
+  class rr working
+  class rok accepted
+  class rf attention
+  class pp accepted

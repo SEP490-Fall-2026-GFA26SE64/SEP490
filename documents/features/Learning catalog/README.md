@@ -193,3 +193,5 @@ Both L&D module routes share a persistent parent route and the same workspace-en
 Module cards group View module first in the same wrapping action row as Details & history and available Edit/request/review actions. Button handlers and ownership/role eligibility are unchanged.
 
 Module status labels reuse shared Badge variants: Approved/Active/Released use success; submitted/review/publication/archive-pending and intake use warning; Rejected/Returned use destructive; Draft uses secondary; Archived/unknown remain neutral outline. Labels retain text and align at their natural height. Status data, decisions and action buttons are unchanged.
+
+Companion state machine for the current Module/Content main review flow: [ST-11](../../diagrams/mermaid/st-11.mmd) ([SVG](../../diagrams/mermaid/st-11.svg)). This models the current document revision; lessons are reviewed together and published history remains immutable.
