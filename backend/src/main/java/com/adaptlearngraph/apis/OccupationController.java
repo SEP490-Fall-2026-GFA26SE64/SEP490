@@ -1,8 +1,8 @@
 package com.adaptlearngraph.apis;
 
-import com.adaptlearngraph.responseDto.OccupationResponse;
-import com.adaptlearngraph.services.GetOccupationsUseCase;
-import com.adaptlearngraph.entities.domain.Occupation;
+import com.adaptlearngraph.dtos.OccupationResponse;
+import com.adaptlearngraph.dtos.SaveOccupationRequest;
+import com.adaptlearngraph.services.OccupationApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,61 +12,23 @@ import java.util.Objects;
 
 @RestController
 public class OccupationController {
-    private final GetOccupationsUseCase getOccupationsUseCase;
+    private final OccupationApplicationService occupations;
 
-    public OccupationController(GetOccupationsUseCase getOccupationsUseCase) {
-        this.getOccupationsUseCase = Objects.requireNonNull(getOccupationsUseCase, "getOccupationsUseCase cannot be null");
+    public OccupationController(OccupationApplicationService occupations) {
+        this.occupations = Objects.requireNonNull(occupations, "occupations cannot be null");
     }
 
     @GetMapping("/api/v1/organizations/{organizationId}/occupations")
     public ResponseEntity<List<OccupationResponse>> listOccupationsForOrganization(
             @PathVariable("organizationId") String organizationId) {
-        List<OccupationResponse> response = getOccupationsUseCase.listOccupations(organizationId)
-                .stream()
-                .map(OccupationResponse::fromDomain)
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(occupations.listOccupations(organizationId));
     }
-
-    public record SaveOccupationRequest(
-            String id,
-            String code,
-            String name,
-            Integer jobZone,
-            Double interestRealistic,
-            Double interestInvestigative,
-            Double interestArtistic,
-            Double interestSocial,
-            Double interestEnterprising,
-            Double interestConventional,
-            String status,
-            String version
-    ) {}
 
     @PostMapping("/api/v1/organizations/{organizationId}/occupations")
     public ResponseEntity<OccupationResponse> createOccupation(
             @PathVariable("organizationId") String organizationId,
             @RequestBody SaveOccupationRequest request) {
-        String code = request.code() != null ? request.code().trim() : "";
-        String id = request.id() != null && !request.id().isBlank() ? request.id().trim() : code;
-        Occupation occ = new Occupation(
-                id,
-                code,
-                request.name() != null ? request.name().trim() : "",
-                request.jobZone() != null && request.jobZone() > 0 ? request.jobZone() : 4,
-                request.interestRealistic() != null ? request.interestRealistic() : 0.0,
-                request.interestInvestigative() != null ? request.interestInvestigative() : 0.0,
-                request.interestArtistic() != null ? request.interestArtistic() : 0.0,
-                request.interestSocial() != null ? request.interestSocial() : 0.0,
-                request.interestEnterprising() != null ? request.interestEnterprising() : 0.0,
-                request.interestConventional() != null ? request.interestConventional() : 0.0,
-                request.status() != null ? request.status() : "ACTIVE",
-                request.version() != null ? request.version() : "0.9.0",
-                0,
-                0
-        );
-        Occupation saved = getOccupationsUseCase.saveOccupation(organizationId, occ);
-        return ResponseEntity.status(HttpStatus.CREATED).body(OccupationResponse.fromDomain(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(occupations.createOccupation(organizationId, request));
     }
 
     @PutMapping("/api/v1/organizations/{organizationId}/occupations/{id}")
@@ -74,33 +36,14 @@ public class OccupationController {
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id,
             @RequestBody SaveOccupationRequest request) {
-        String code = request.code() != null && !request.code().isBlank() ? request.code().trim() : id;
-        Occupation occ = new Occupation(
-                id,
-                code,
-                request.name() != null ? request.name().trim() : "",
-                request.jobZone() != null && request.jobZone() > 0 ? request.jobZone() : 4,
-                request.interestRealistic() != null ? request.interestRealistic() : 0.0,
-                request.interestInvestigative() != null ? request.interestInvestigative() : 0.0,
-                request.interestArtistic() != null ? request.interestArtistic() : 0.0,
-                request.interestSocial() != null ? request.interestSocial() : 0.0,
-                request.interestEnterprising() != null ? request.interestEnterprising() : 0.0,
-                request.interestConventional() != null ? request.interestConventional() : 0.0,
-                request.status() != null ? request.status() : "ACTIVE",
-                request.version() != null ? request.version() : "0.9.0",
-                0,
-                0
-        );
-        Occupation saved = getOccupationsUseCase.saveOccupation(organizationId, occ);
-        return ResponseEntity.ok(OccupationResponse.fromDomain(saved));
+        return ResponseEntity.ok(occupations.updateOccupation(organizationId, id, request));
     }
 
     @DeleteMapping("/api/v1/organizations/{organizationId}/occupations/{id}")
     public ResponseEntity<Void> deleteOccupation(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {
-        getOccupationsUseCase.deleteOccupation(organizationId, id);
+        occupations.deleteOccupation(organizationId, id);
         return ResponseEntity.noContent().build();
     }
 }
-

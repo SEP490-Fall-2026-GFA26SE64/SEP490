@@ -1,5 +1,9 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.config.ModelMapperConfiguration;
+import com.adaptlearngraph.helper.TargetRoleMappings;
+import com.adaptlearngraph.services.OrganizationTargetRoleApplicationService;
+
 import com.adaptlearngraph.dtos.CreateTargetRoleRequest;
 import com.adaptlearngraph.exception.DuplicateTargetRoleException;
 import com.adaptlearngraph.dtos.CreateTargetRoleCommand;
@@ -34,6 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, TargetRoleMappings.class, OrganizationTargetRoleApplicationService.class})
 @WebMvcTest(OrganizationTargetRoleController.class)
 @DisplayName("REQ-023-F01 & REQ-023-F02: TargetRole HTTP Controller Tests")
 class OrganizationTargetRoleControllerTest {

@@ -1,9 +1,8 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
-import com.adaptlearngraph.responseDto.MacroCompetencyResponse;
-import com.adaptlearngraph.services.GetMacroCompetenciesUseCase;
-import com.adaptlearngraph.entities.domain.MacroCompetency;
+import com.adaptlearngraph.dtos.MacroCompetencyResponse;
+import com.adaptlearngraph.services.MacroCompetencyApplicationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,19 +15,15 @@ import java.util.List;
 @RequestMapping(ApiEndpoints.MACRO_COMPETENCY)
 public class MacroCompetencyController {
 
-    private final GetMacroCompetenciesUseCase getMacroCompetenciesUseCase;
+    private final MacroCompetencyApplicationService macroCompetencies;
 
-    public MacroCompetencyController(GetMacroCompetenciesUseCase getMacroCompetenciesUseCase) {
-        this.getMacroCompetenciesUseCase = getMacroCompetenciesUseCase;
+    public MacroCompetencyController(MacroCompetencyApplicationService macroCompetencies) {
+        this.macroCompetencies = macroCompetencies;
     }
 
     @GetMapping
     public ResponseEntity<List<MacroCompetencyResponse>> listMacroCompetencies(
             @PathVariable("organizationId") String organizationId) {
-        List<MacroCompetency> macros = getMacroCompetenciesUseCase.listMacroCompetencies(organizationId);
-        List<MacroCompetencyResponse> response = macros.stream()
-                .map(MacroCompetencyResponse::fromDomain)
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(macroCompetencies.listMacroCompetencies(organizationId));
     }
 }

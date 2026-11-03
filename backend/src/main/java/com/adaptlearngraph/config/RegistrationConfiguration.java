@@ -32,8 +32,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableScheduling
 @org.springframework.context.annotation.Import({com.adaptlearngraph.config.IntegrationPolicyConfiguration.class,
-        PersistenceConfiguration.class})
+        PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class RegistrationConfiguration {
+    @Bean
+    com.adaptlearngraph.helper.ModelMapperRegistrar registrationMappings() {
+        return new com.adaptlearngraph.helper.RegistrationMappings();
+    }
+
+    @Bean
+    com.adaptlearngraph.services.RegistrationApplicationService registrationApplicationService(
+            RegistrationUseCase registration, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.RegistrationApplicationService(registration, modelMapper);
+    }
+
     @Bean
     RegistrationSecrets registrationSecrets(
             @Value("${registration.encryption-key:}") String encryptionKey,

@@ -2,12 +2,9 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.dtos.CreatePrerequisiteRequest;
-import com.adaptlearngraph.responseDto.PrerequisiteResponse;
-import com.adaptlearngraph.dtos.CreatePrerequisiteCommand;
-import com.adaptlearngraph.services.ManagePrerequisiteUseCase;
+import com.adaptlearngraph.dtos.PrerequisiteResponse;
+import com.adaptlearngraph.services.PrerequisiteApplicationService;
 import com.adaptlearngraph.exception.PrerequisiteCycleException;
-import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
-import com.adaptlearngraph.entities.domain.SkillStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,19 +26,16 @@ import java.util.Map;
 @RequestMapping(ApiEndpoints.PREREQUISITE)
 public class PrerequisiteController {
 
-    private final ManagePrerequisiteUseCase managePrerequisiteUseCase;
+    private final PrerequisiteApplicationService prerequisites;
 
-    public PrerequisiteController(ManagePrerequisiteUseCase managePrerequisiteUseCase) {
-        this.managePrerequisiteUseCase = managePrerequisiteUseCase;
+    public PrerequisiteController(PrerequisiteApplicationService prerequisites) {
+        this.prerequisites = prerequisites;
     }
 
     @GetMapping
     public ResponseEntity<List<PrerequisiteResponse>> listPrerequisites(
             @PathVariable("organizationId") String organizationId) {
-        List<PrerequisiteEdge> edges = managePrerequisiteUseCase.listPrerequisites(organizationId);
-        List<PrerequisiteResponse> response = edges.stream()
-                .map(PrerequisiteResponse::fromDomain)
-                .toList();
+        List<PrerequisiteResponse> response = prerequisites.listPrerequisites(organizationId);
         return ResponseEntity.ok(response);
     }
 
@@ -56,15 +50,8 @@ public class PrerequisiteController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can edit prerequisite relationships"));
         }
 
-        CreatePrerequisiteCommand command = new CreatePrerequisiteCommand(
-                organizationId,
-                request.sourceSkillId(),
-                request.targetSkillId(),
-                request.minMastery(),
-                request.status() != null ? request.status() : SkillStatus.ACTIVE);
-
-        PrerequisiteEdge edge = managePrerequisiteUseCase.createPrerequisite(command);
-        return ResponseEntity.status(HttpStatus.CREATED).body(PrerequisiteResponse.fromDomain(edge));
+        PrerequisiteResponse edge = prerequisites.createPrerequisite(organizationId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(edge);
     }
 
     @DeleteMapping
@@ -79,7 +66,7 @@ public class PrerequisiteController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can edit prerequisite relationships"));
         }
 
-        managePrerequisiteUseCase.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
+        prerequisites.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
         return ResponseEntity.noContent().build();
     }
 

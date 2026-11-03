@@ -1,14 +1,18 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.dtos.SubscriptionDto.MemberAccessRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.MemberProfileRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.MemberResponse;
+import com.adaptlearngraph.dtos.SubscriptionDto.OrderRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.OrderStatusResponse;
+import com.adaptlearngraph.dtos.SubscriptionDto.SummaryResponse;
+import com.adaptlearngraph.dtos.SubscriptionDto.SuspensionRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceResponse;
 import com.adaptlearngraph.services.PaymentProcessor;
-import com.adaptlearngraph.services.SubscriptionLifecycleUseCase;
-import com.adaptlearngraph.repository.PaymentOrderStore.Command;
-import com.adaptlearngraph.repository.SubscriptionWorkspaceStore.*;
+import com.adaptlearngraph.services.SubscriptionLifecycleApplicationService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Profile;
@@ -18,52 +22,44 @@ import org.springframework.web.bind.annotation.*;
 @Profile("!starter")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 public class SubscriptionLifecycleController {
-    private final SubscriptionLifecycleUseCase lifecycle;
+    private final SubscriptionLifecycleApplicationService lifecycle;
     private final PaymentProcessor payments;
-    public SubscriptionLifecycleController(SubscriptionLifecycleUseCase lifecycle,PaymentProcessor payments) {
+    public SubscriptionLifecycleController(SubscriptionLifecycleApplicationService lifecycle,PaymentProcessor payments) {
         this.lifecycle=lifecycle; this.payments=payments;
     }
     @ModelAttribute void noCache(HttpServletResponse response) { response.setHeader("Cache-Control","no-store"); }
     @GetMapping("/api/v1/subscription/access")
     void access() { lifecycle.requireWorkspace(); }
     @PostMapping("/api/v1/registration/subscription/orders")
-    SubscriptionLifecycleUseCase.Status purchase(@Valid @RequestBody OrderInput input) { return lifecycle.create(input.command(null)); }
+    OrderStatusResponse purchase(@Valid @RequestBody OrderRequest input) { return lifecycle.create(null,input); }
     @PostMapping("/api/v1/organizations/{organizationId}/subscription/orders")
-    SubscriptionLifecycleUseCase.Status renew(@PathVariable UUID organizationId,@Valid @RequestBody OrderInput input) {
-        return lifecycle.create(input.command(organizationId));
+    OrderStatusResponse renew(@PathVariable UUID organizationId,@Valid @RequestBody OrderRequest input) {
+        return lifecycle.create(organizationId,input);
     }
     @GetMapping("/api/v1/registration/subscription/current")
-    SubscriptionLifecycleUseCase.Status currentPurchase() { return lifecycle.current(null); }
+    OrderStatusResponse currentPurchase() { return lifecycle.current(null); }
     @GetMapping("/api/v1/organizations/{organizationId}/subscription/current-order")
-    SubscriptionLifecycleUseCase.Status currentRenewal(@PathVariable UUID organizationId) { return lifecycle.current(organizationId); }
+    OrderStatusResponse currentRenewal(@PathVariable UUID organizationId) { return lifecycle.current(organizationId); }
     @GetMapping({"/api/v1/registration/subscription/orders/{orderId}","/api/v1/subscription/orders/{orderId}"})
-    SubscriptionLifecycleUseCase.Status status(@PathVariable UUID orderId) { return lifecycle.status(orderId); }
+    OrderStatusResponse status(@PathVariable UUID orderId) { return lifecycle.status(orderId); }
     @PostMapping({"/api/v1/registration/subscription/orders/{orderId}/reconcile","/api/v1/subscription/orders/{orderId}/reconcile"})
-    SubscriptionLifecycleUseCase.Status reconcile(@PathVariable UUID orderId) { return lifecycle.reconcile(orderId); }
+    OrderStatusResponse reconcile(@PathVariable UUID orderId) { return lifecycle.reconcile(orderId); }
     @GetMapping("/api/v1/organizations/{organizationId}/subscription")
-    Summary summary(@PathVariable UUID organizationId) { return lifecycle.summary(organizationId); }
+    SummaryResponse summary(@PathVariable UUID organizationId) { return lifecycle.summary(organizationId); }
     @PostMapping("/api/v1/payments/payos/webhook")
     void webhook(@RequestBody String payload) { payments.webhook(payload); }
     @GetMapping("/api/v1/platform/workspaces")
-    List<Workspace> workspaces() { return lifecycle.workspaces(); }
+    List<WorkspaceResponse> workspaces() { return lifecycle.workspaces(); }
     @PutMapping("/api/v1/platform/workspaces/{organizationId}/suspension")
-    void suspend(@PathVariable UUID organizationId,@RequestBody Suspension input) { lifecycle.suspend(organizationId,input.suspended()); }
+    void suspend(@PathVariable UUID organizationId,@RequestBody SuspensionRequest input) { lifecycle.suspend(organizationId,input.suspended()); }
     @GetMapping("/api/v1/organizations/{organizationId}/subscription/members")
-    List<Member> members(@PathVariable UUID organizationId) { return lifecycle.members(organizationId); }
+    List<MemberResponse> members(@PathVariable UUID organizationId) { return lifecycle.members(organizationId); }
     @PutMapping("/api/v1/organizations/{organizationId}/subscription/members/{membershipId}")
-    void member(@PathVariable UUID organizationId,@PathVariable UUID membershipId,@Valid @RequestBody MemberInput input) {
-        lifecycle.changeMember(organizationId,membershipId,input.active(),input.roles(),input.revision());
+    void member(@PathVariable UUID organizationId,@PathVariable UUID membershipId,@Valid @RequestBody MemberAccessRequest input) {
+        lifecycle.changeMember(organizationId,membershipId,input);
     }
     @PutMapping("/api/v1/organizations/{organizationId}/subscription/members/{membershipId}/profile")
-    Member profile(@PathVariable UUID organizationId,@PathVariable UUID membershipId,@Valid @RequestBody ProfileInput input) {
-        return lifecycle.updateMember(organizationId,membershipId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
-                input.fullName(),input.roles(),input.departmentId(),input.occupationReferenceId(),input.revision()));
+    MemberResponse profile(@PathVariable UUID organizationId,@PathVariable UUID membershipId,@Valid @RequestBody MemberProfileRequest input) {
+        return lifecycle.updateMember(organizationId,membershipId,input);
     }
-    record OrderInput(@NotNull UUID planId,@NotNull UUID expectedVersionId,@NotNull UUID idempotencyKey,UUID replacesOrderId) {
-        Command command(UUID organization) { return new Command(organization,planId,expectedVersionId,idempotencyKey,replacesOrderId); }
-    }
-    record Suspension(boolean suspended) {}
-    record MemberInput(boolean active,@NotNull Set<String> roles,long revision) {}
-    record ProfileInput(@jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max=120) String fullName,
-                        @NotNull Set<String> roles,UUID departmentId,UUID occupationReferenceId,long revision) {}
 }

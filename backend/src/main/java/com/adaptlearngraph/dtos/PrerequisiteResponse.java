@@ -1,4 +1,4 @@
-package com.adaptlearngraph.responseDto;
+package com.adaptlearngraph.dtos;
 
 import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
 

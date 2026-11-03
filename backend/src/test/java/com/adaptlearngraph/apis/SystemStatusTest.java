@@ -7,7 +7,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.adaptlearngraph.dtos.SystemStatusResponse;
+import com.adaptlearngraph.helper.ModelMapperFactory;
+import com.adaptlearngraph.helper.SystemStatusMappings;
 import com.adaptlearngraph.services.SystemStatusService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -44,7 +48,9 @@ class SystemStatusTest {
     @Test
     void applicationServiceWorksWithoutSpring() {
         var expected = new SystemStatus("test", "test-version", "SCAFFOLD");
-        var service = new SystemStatusService(() -> expected);
+        var service = new SystemStatusService(() -> expected,
+                ModelMapperFactory.create(List.of(new SystemStatusMappings())));
         assertThat(service.getStatus()).isEqualTo(expected);
+        assertThat(service.status()).isEqualTo(new SystemStatusResponse("test", "test-version", "SCAFFOLD"));
     }
 }

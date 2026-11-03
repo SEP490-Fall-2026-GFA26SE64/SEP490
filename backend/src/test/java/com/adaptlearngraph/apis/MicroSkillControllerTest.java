@@ -1,5 +1,10 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.config.ModelMapperConfiguration;
+import com.adaptlearngraph.dtos.SkillStatusDto;
+import com.adaptlearngraph.helper.MicroSkillMappings;
+import com.adaptlearngraph.services.MicroSkillApplicationService;
+
 import com.adaptlearngraph.dtos.CreateMicroSkillRequest;
 import com.adaptlearngraph.dtos.UpdateMicroSkillRequest;
 import com.adaptlearngraph.exception.DuplicateMicroSkillException;
@@ -41,6 +46,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, MicroSkillMappings.class, MicroSkillApplicationService.class})
 @WebMvcTest(MicroSkillController.class)
 @DisplayName("REQ-012: MicroSkill HTTP Controller Tests")
 class MicroSkillControllerTest {
@@ -216,7 +222,7 @@ class MicroSkillControllerTest {
                 "Java Core Advanced",
                 "Updated details",
                 "INNOVATION",
-                SkillStatus.ACTIVE);
+                SkillStatusDto.ACTIVE);
 
         mockMvc.perform(put("/api/v1/organizations/org-1/micro-skills/" + skillId)
                         .with(csrf())

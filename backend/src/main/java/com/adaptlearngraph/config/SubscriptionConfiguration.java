@@ -41,8 +41,25 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Configuration(proxyBeanMethods = false)
 @Profile("!starter")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
+@org.springframework.context.annotation.Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class SubscriptionConfiguration {
+    @Bean
+    com.adaptlearngraph.helper.ModelMapperRegistrar subscriptionMappings() {
+        return new com.adaptlearngraph.helper.SubscriptionMappings();
+    }
+
+    @Bean
+    com.adaptlearngraph.services.SubscriptionPlanApplicationService subscriptionPlanApplicationService(
+            SubscriptionCatalogUseCase catalog, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.SubscriptionPlanApplicationService(catalog, modelMapper);
+    }
+
+    @Bean
+    com.adaptlearngraph.services.SubscriptionLifecycleApplicationService subscriptionLifecycleApplicationService(
+            SubscriptionLifecycleUseCase lifecycle, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.SubscriptionLifecycleApplicationService(lifecycle, modelMapper);
+    }
+
     @Bean
     SubscriptionIdentity subscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace,
             com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {

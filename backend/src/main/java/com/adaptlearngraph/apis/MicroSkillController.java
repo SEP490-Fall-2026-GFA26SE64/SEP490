@@ -2,18 +2,12 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.dtos.CreateMicroSkillRequest;
+import com.adaptlearngraph.dtos.MicroSkillResponse;
+import com.adaptlearngraph.dtos.SkillStatusDto;
 import com.adaptlearngraph.dtos.UpdateMicroSkillRequest;
-import com.adaptlearngraph.responseDto.MicroSkillResponse;
 import com.adaptlearngraph.exception.DuplicateMicroSkillException;
-import com.adaptlearngraph.dtos.CreateMicroSkillCommand;
-import com.adaptlearngraph.services.CreateMicroSkillUseCase;
-import com.adaptlearngraph.services.DeleteMicroSkillUseCase;
-import com.adaptlearngraph.services.GetMicroSkillsUseCase;
-import com.adaptlearngraph.dtos.UpdateMicroSkillCommand;
-import com.adaptlearngraph.services.UpdateMicroSkillUseCase;
-import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.exception.MicroSkillInUseException;
-import com.adaptlearngraph.entities.domain.SkillStatus;
+import com.adaptlearngraph.services.MicroSkillApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,20 +32,10 @@ import java.util.NoSuchElementException;
 @RequestMapping(ApiEndpoints.MICRO_SKILL)
 public class MicroSkillController {
 
-    private final CreateMicroSkillUseCase createMicroSkillUseCase;
-    private final GetMicroSkillsUseCase getMicroSkillsUseCase;
-    private final UpdateMicroSkillUseCase updateMicroSkillUseCase;
-    private final DeleteMicroSkillUseCase deleteMicroSkillUseCase;
+    private final MicroSkillApplicationService microSkills;
 
-    public MicroSkillController(
-            CreateMicroSkillUseCase createMicroSkillUseCase,
-            GetMicroSkillsUseCase getMicroSkillsUseCase,
-            UpdateMicroSkillUseCase updateMicroSkillUseCase,
-            DeleteMicroSkillUseCase deleteMicroSkillUseCase) {
-        this.createMicroSkillUseCase = createMicroSkillUseCase;
-        this.getMicroSkillsUseCase = getMicroSkillsUseCase;
-        this.updateMicroSkillUseCase = updateMicroSkillUseCase;
-        this.deleteMicroSkillUseCase = deleteMicroSkillUseCase;
+    public MicroSkillController(MicroSkillApplicationService microSkills) {
+        this.microSkills = microSkills;
     }
 
     @GetMapping
@@ -59,20 +43,15 @@ public class MicroSkillController {
             @PathVariable("organizationId") String organizationId,
             @RequestParam(value = "query", required = false) String query,
             @RequestParam(value = "macro", required = false) String macroCode,
-            @RequestParam(value = "status", required = false) SkillStatus status) {
-        List<MicroSkill> skills = getMicroSkillsUseCase.searchMicroSkills(organizationId, query, macroCode, status);
-        List<MicroSkillResponse> response = skills.stream()
-                .map(MicroSkillResponse::fromDomain)
-                .toList();
-        return ResponseEntity.ok(response);
+            @RequestParam(value = "status", required = false) SkillStatusDto status) {
+        return ResponseEntity.ok(microSkills.searchMicroSkills(organizationId, query, macroCode, status));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<MicroSkillResponse> getMicroSkill(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {
-        return getMicroSkillsUseCase.getMicroSkill(organizationId, id)
-                .map(MicroSkillResponse::fromDomain)
+        return microSkills.getMicroSkill(organizationId, id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -88,19 +67,7 @@ public class MicroSkillController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can create micro-skills"));
         }
 
-        String macroCode = request.macroCompetencyCode() != null && !request.macroCompetencyCode().isBlank()
-                ? request.macroCompetencyCode().trim().toUpperCase()
-                : "KNOWLEDGE";
-
-        CreateMicroSkillCommand command = new CreateMicroSkillCommand(
-                organizationId,
-                request.code(),
-                request.name(),
-                request.description(),
-                macroCode);
-
-        MicroSkill created = createMicroSkillUseCase.createMicroSkill(command);
-        MicroSkillResponse response = MicroSkillResponse.fromDomain(created);
+        MicroSkillResponse response = microSkills.createMicroSkill(organizationId, request);
 
         return ResponseEntity.created(URI.create("/api/v1/organizations/" + organizationId + "/micro-skills/" + response.id()))
                 .body(response);
@@ -118,20 +85,7 @@ public class MicroSkillController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can update micro-skills"));
         }
 
-        String macroCode = request.macroCompetencyCode() != null && !request.macroCompetencyCode().isBlank()
-                ? request.macroCompetencyCode().trim().toUpperCase()
-                : "KNOWLEDGE";
-
-        UpdateMicroSkillCommand command = new UpdateMicroSkillCommand(
-                organizationId,
-                id,
-                request.name(),
-                request.description(),
-                macroCode,
-                request.status() != null ? request.status() : SkillStatus.ACTIVE);
-
-        MicroSkill updated = updateMicroSkillUseCase.updateMicroSkill(command);
-        return ResponseEntity.ok(MicroSkillResponse.fromDomain(updated));
+        return ResponseEntity.ok(microSkills.updateMicroSkill(organizationId, id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -145,7 +99,7 @@ public class MicroSkillController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can delete micro-skills"));
         }
 
-        deleteMicroSkillUseCase.deleteMicroSkill(organizationId, id);
+        microSkills.deleteMicroSkill(organizationId, id);
         return ResponseEntity.noContent().build();
     }
 

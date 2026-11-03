@@ -1,5 +1,9 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.config.ModelMapperConfiguration;
+import com.adaptlearngraph.helper.MacroCompetencyMappings;
+import com.adaptlearngraph.services.MacroCompetencyApplicationService;
+
 import com.adaptlearngraph.services.GetMacroCompetenciesUseCase;
 import com.adaptlearngraph.entities.domain.MacroCompetency;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, MacroCompetencyMappings.class, MacroCompetencyApplicationService.class})
 @WebMvcTest(controllers = MacroCompetencyController.class)
 class MacroCompetencyControllerTest {
 

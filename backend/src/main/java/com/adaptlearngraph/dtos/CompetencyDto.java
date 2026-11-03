@@ -1,6 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.domain.CompetencyRecord;
 import java.util.List;
 
 public class CompetencyDto {
@@ -15,26 +14,11 @@ public class CompetencyDto {
             String levelId,
             String levelName,
             String roleName,
-            List<CompetencyRecord.MemberSkill> memberSkills,
+            List<MemberSkillResponse> memberSkills,
             int memberSkillCount
-    ) {
-        public static CompetencyResponse fromDomain(CompetencyRecord record) {
-            return new CompetencyResponse(
-                    record.id(),
-                    record.code(),
-                    record.name(),
-                    record.description(),
-                    record.attainmentRule(),
-                    record.status(),
-                    record.version(),
-                    record.levelId(),
-                    record.levelName(),
-                    record.roleName(),
-                    record.memberSkills(),
-                    record.memberSkills() != null ? record.memberSkills().size() : 0
-            );
-        }
-    }
+    ) {}
+
+    public record MemberSkillResponse(String id, String code, String name) {}
 
     public record CreateCompetencyRequest(
             String code,

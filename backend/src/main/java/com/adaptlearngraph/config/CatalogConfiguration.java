@@ -6,7 +6,18 @@ import com.adaptlearngraph.repository.Neo4jLearningModuleRepository;
 import com.adaptlearngraph.repository.Neo4jOccupationRepository;
 import com.adaptlearngraph.repository.Neo4jTargetRoleCatalogAdapter;
 import com.adaptlearngraph.repository.Neo4jTargetRoleRepository;
+import com.adaptlearngraph.helper.CompetencyMappings;
+import com.adaptlearngraph.helper.LearningModuleMappings;
+import com.adaptlearngraph.helper.ModelMapperRegistrar;
+import com.adaptlearngraph.helper.OccupationMappings;
+import com.adaptlearngraph.helper.TargetRoleMappings;
+import com.adaptlearngraph.services.CompetencyApplicationService;
+import com.adaptlearngraph.services.LearningModuleApplicationService;
+import com.adaptlearngraph.services.OccupationApplicationService;
+import com.adaptlearngraph.services.OrganizationTargetRoleApplicationService;
 import com.adaptlearngraph.services.TargetRoleService;
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Import;
 import com.adaptlearngraph.services.CreateTargetRoleUseCase;
 import com.adaptlearngraph.services.ManageTargetRoleUseCase;
 import com.adaptlearngraph.dtos.TargetRoleFilter;
@@ -36,7 +47,54 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Configuration(proxyBeanMethods = false)
+@Import(ModelMapperConfiguration.class)
 public class CatalogConfiguration {
+
+    @Bean
+    public ModelMapperRegistrar targetRoleMappings() {
+        return new TargetRoleMappings();
+    }
+
+    @Bean
+    public ModelMapperRegistrar occupationMappings() {
+        return new OccupationMappings();
+    }
+
+    @Bean
+    public ModelMapperRegistrar competencyMappings() {
+        return new CompetencyMappings();
+    }
+
+    @Bean
+    public ModelMapperRegistrar learningModuleMappings() {
+        return new LearningModuleMappings();
+    }
+
+    @Bean
+    public OrganizationTargetRoleApplicationService organizationTargetRoleApplicationService(
+            CreateTargetRoleUseCase createTargetRoleUseCase, ViewTargetRolesUseCase viewTargetRolesUseCase,
+            ManageTargetRoleUseCase manageTargetRoleUseCase, ModelMapper modelMapper) {
+        return new OrganizationTargetRoleApplicationService(createTargetRoleUseCase, viewTargetRolesUseCase,
+                manageTargetRoleUseCase, modelMapper);
+    }
+
+    @Bean
+    public OccupationApplicationService occupationApplicationService(
+            com.adaptlearngraph.services.GetOccupationsUseCase getOccupationsUseCase, ModelMapper modelMapper) {
+        return new OccupationApplicationService(getOccupationsUseCase, modelMapper);
+    }
+
+    @Bean
+    public CompetencyApplicationService competencyApplicationService(
+            com.adaptlearngraph.services.ManageCompetencyUseCase manageCompetencyUseCase, ModelMapper modelMapper) {
+        return new CompetencyApplicationService(manageCompetencyUseCase, modelMapper);
+    }
+
+    @Bean
+    public LearningModuleApplicationService learningModuleApplicationService(
+            com.adaptlearngraph.services.ManageLearningModuleUseCase manageLearningModuleUseCase, ModelMapper modelMapper) {
+        return new LearningModuleApplicationService(manageLearningModuleUseCase, modelMapper);
+    }
 
     @Bean
     public TargetRoleRepository targetRoleRepository(ObjectProvider<Driver> driverProvider,

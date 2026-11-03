@@ -1,5 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
+import com.adaptlearngraph.dtos.PrerequisiteResponse;
 import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import java.util.List;
 

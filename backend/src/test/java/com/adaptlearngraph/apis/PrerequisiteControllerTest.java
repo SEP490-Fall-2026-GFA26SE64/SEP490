@@ -1,5 +1,10 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.config.ModelMapperConfiguration;
+import com.adaptlearngraph.dtos.SkillStatusDto;
+import com.adaptlearngraph.helper.MicroSkillMappings;
+import com.adaptlearngraph.services.PrerequisiteApplicationService;
+
 import com.adaptlearngraph.dtos.CreatePrerequisiteRequest;
 import com.adaptlearngraph.dtos.CreatePrerequisiteCommand;
 import com.adaptlearngraph.services.ManagePrerequisiteUseCase;
@@ -30,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, MicroSkillMappings.class, PrerequisiteApplicationService.class})
 @WebMvcTest(PrerequisiteController.class)
 @DisplayName("REQ-018-F02: Prerequisite HTTP Controller Tests")
 class PrerequisiteControllerTest {
@@ -74,7 +80,7 @@ class PrerequisiteControllerTest {
 
         when(managePrerequisiteUseCase.createPrerequisite(any(CreatePrerequisiteCommand.class))).thenReturn(edge);
 
-        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatus.ACTIVE);
+        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatusDto.ACTIVE);
 
         mockMvc.perform(post("/api/v1/organizations/org-1/prerequisites")
                         .with(csrf())
@@ -94,7 +100,7 @@ class PrerequisiteControllerTest {
         when(managePrerequisiteUseCase.createPrerequisite(any(CreatePrerequisiteCommand.class)))
                 .thenThrow(new PrerequisiteCycleException("Cyclic dependency"));
 
-        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatus.ACTIVE);
+        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatusDto.ACTIVE);
 
         mockMvc.perform(post("/api/v1/organizations/org-1/prerequisites")
                         .with(csrf())
@@ -109,7 +115,7 @@ class PrerequisiteControllerTest {
     @WithMockUser
     @DisplayName("REQ-018-F02: POST returns 403 Forbidden for non-expert caller")
     void createPrerequisiteReturns403ForLearner() throws Exception {
-        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatus.ACTIVE);
+        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatusDto.ACTIVE);
 
         mockMvc.perform(post("/api/v1/organizations/org-1/prerequisites")
                         .with(csrf())

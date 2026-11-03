@@ -2,22 +2,12 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.dtos.CreateTargetRoleRequest;
+import com.adaptlearngraph.dtos.TargetRoleResponse;
 import com.adaptlearngraph.dtos.UpdateTargetRoleRequest;
-import com.adaptlearngraph.responseDto.TargetRoleResponse;
 import com.adaptlearngraph.exception.DuplicateTargetRoleException;
-import com.adaptlearngraph.dtos.CreateTargetRoleCommand;
-import com.adaptlearngraph.services.CreateTargetRoleUseCase;
-import com.adaptlearngraph.services.ManageTargetRoleUseCase;
-import com.adaptlearngraph.dtos.TargetRoleFilter;
-import com.adaptlearngraph.dtos.UpdateTargetRoleCommand;
-import com.adaptlearngraph.services.ViewTargetRolesUseCase;
-import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
-import com.adaptlearngraph.entities.domain.TargetRole;
-import com.adaptlearngraph.entities.domain.TargetRoleId;
+import com.adaptlearngraph.services.OrganizationTargetRoleApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,30 +22,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping(ApiEndpoints.ORGANIZATION_TARGET_ROLE)
 public class OrganizationTargetRoleController {
+    private static final String DRAFT = "DRAFT";
+    private static final String ACTIVE = "ACTIVE";
+    private static final String REJECTED = "REJECTED";
 
-    private final CreateTargetRoleUseCase createTargetRoleUseCase;
-    private final ViewTargetRolesUseCase viewTargetRolesUseCase;
-    private final ManageTargetRoleUseCase manageTargetRoleUseCase;
+    private final OrganizationTargetRoleApplicationService targetRoles;
 
-    public OrganizationTargetRoleController(
-            CreateTargetRoleUseCase createTargetRoleUseCase,
-            ViewTargetRolesUseCase viewTargetRolesUseCase,
-            ManageTargetRoleUseCase manageTargetRoleUseCase) {
-        this.createTargetRoleUseCase = createTargetRoleUseCase;
-        this.viewTargetRolesUseCase = viewTargetRolesUseCase;
-        this.manageTargetRoleUseCase = manageTargetRoleUseCase;
+    public OrganizationTargetRoleController(OrganizationTargetRoleApplicationService targetRoles) {
+        this.targetRoles = targetRoles;
     }
-
-    private static final com.fasterxml.jackson.databind.ObjectMapper OBJECT_MAPPER = new com.fasterxml.jackson.databind.ObjectMapper();
 
     @PostMapping
     public ResponseEntity<?> createTargetRole(
@@ -68,59 +50,7 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and Domain Experts can create target roles"));
         }
 
-        String effectiveCode = request.code();
-        if (effectiveCode == null || effectiveCode.isBlank()) {
-            String sanitized = request.name().replaceAll("[^A-Za-z0-9]", "_").toUpperCase();
-            effectiveCode = "ROLE-" + (sanitized.length() > 40 ? sanitized.substring(0, 40) : sanitized) + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        }
-
-        RoleTrack track = request.track() != null && !request.track().isBlank()
-                ? RoleTrack.fromString(request.track())
-                : RoleTrack.PROFESSIONAL;
-
-        RoleStatus status = request.status() != null && !request.status().isBlank()
-                ? RoleStatus.fromString(request.status())
-                : RoleStatus.DRAFT;
-
-        String skillTargetsJson = "[]";
-        if (request.skillTargets() != null && !request.skillTargets().isEmpty()) {
-            try {
-                skillTargetsJson = OBJECT_MAPPER.writeValueAsString(request.skillTargets());
-            } catch (Exception ignored) {}
-        }
-
-        String levelCompetenciesJson = null;
-        if (request.levelCompetencies() != null && !request.levelCompetencies().isEmpty()) {
-            try {
-                levelCompetenciesJson = OBJECT_MAPPER.writeValueAsString(request.levelCompetencies());
-            } catch (Exception ignored) {}
-        }
-
-        List<String> competencyIds = request.competencyIds() != null ? new ArrayList<>(request.competencyIds()) : new ArrayList<>();
-        if (competencyIds.isEmpty() && request.levelCompetencies() != null) {
-            request.levelCompetencies().values().forEach(competencyIds::addAll);
-            competencyIds = competencyIds.stream().distinct().toList();
-        }
-
-        CreateTargetRoleCommand command = new CreateTargetRoleCommand(
-                organizationId,
-                effectiveCode,
-                request.name(),
-
-                request.familyCode(),
-                track,
-                request.assignedExpertId(),
-                request.description(),
-                request.responsibilities() != null ? request.responsibilities() : List.of(),
-                request.version() != null && !request.version().isBlank() ? request.version().trim() : "1.0",
-                status,
-                skillTargetsJson,
-                request.levels(),
-                levelCompetenciesJson != null ? levelCompetenciesJson : "{}",
-                competencyIds);
-
-        TargetRole created = createTargetRoleUseCase.createTargetRole(command);
-        TargetRoleResponse response = TargetRoleResponse.fromDomain(created);
+        TargetRoleResponse response = targetRoles.createTargetRole(organizationId, request);
 
         return ResponseEntity.created(URI.create("/api/v1/organizations/" + organizationId + "/target-roles/" + response.id()))
                 .body(response);
@@ -152,15 +82,8 @@ public class OrganizationTargetRoleController {
             }
         }
 
-        RoleTrack trackEnum = track != null && !track.isBlank() ? RoleTrack.fromString(track) : null;
-        RoleStatus statusEnum = status != null && !status.isBlank() ? RoleStatus.fromString(status) : null;
-
-        TargetRoleFilter filter = new TargetRoleFilter(search, trackEnum, statusEnum, effectiveExpertFilter);
-        List<TargetRole> roles = viewTargetRolesUseCase.listTargetRoles(organizationId, filter);
-
-        List<TargetRoleResponse> responses = roles.stream()
-                .map(TargetRoleResponse::fromDomain)
-                .toList();
+        List<TargetRoleResponse> responses = targetRoles.listTargetRoles(organizationId, search, track, status,
+                effectiveExpertFilter);
 
         return ResponseEntity.ok(responses);
     }
@@ -180,22 +103,21 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can view target roles"));
         }
 
-        TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
-        Optional<TargetRole> roleOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
+        Optional<TargetRoleResponse> roleOpt = targetRoles.getTargetRole(organizationId, roleId);
         if (roleOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        TargetRole role = roleOpt.get();
+        TargetRoleResponse role = roleOpt.get();
 
         if (isExpert && !isManager) {
-            if (userId != null && !userId.isBlank() && !isSameExpert(userId.trim(), role.getAssignedExpertId())) {
+            if (userId != null && !userId.isBlank() && !isSameExpert(userId.trim(), role.assignedExpertId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this target role"));
             }
         }
 
-        return ResponseEntity.ok(TargetRoleResponse.fromDomain(role));
+        return ResponseEntity.ok(role);
     }
 
     @PutMapping("/{roleId}")
@@ -214,74 +136,26 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can update target roles"));
         }
 
-        TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
-
-        Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
-        TargetRole existingRole = existingOpt.orElse(null);
+        TargetRoleResponse existingRole = targetRoles.getTargetRole(organizationId, roleId).orElse(null);
 
         if (isExpert && !isManager) {
             if (existingRole == null) {
                 return ResponseEntity.notFound().build();
             }
-            if (userId != null && !userId.isBlank() && !isSameExpert(userId.trim(), existingRole.getAssignedExpertId())) {
+            if (userId != null && !userId.isBlank() && !isSameExpert(userId.trim(), existingRole.assignedExpertId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this target role"));
             }
         }
 
-        RoleTrack track = request.track() != null && !request.track().isBlank()
-                ? RoleTrack.fromString(request.track())
-                : null;
-
-        String skillTargetsJson = null;
-        if (request.skillTargets() != null) {
-            try {
-                skillTargetsJson = OBJECT_MAPPER.writeValueAsString(request.skillTargets());
-            } catch (Exception ignored) {}
-        }
-
-        RoleStatus status = request.status() != null && !request.status().isBlank()
-                ? RoleStatus.fromString(request.status())
-                : null;
-
-        if (isExpert && !isManager && existingRole != null && existingRole.getStatus() != RoleStatus.REJECTED && status == RoleStatus.REJECTED) {
+        boolean rejecting = request.status() != null && !request.status().isBlank()
+                && REJECTED.equals(request.status().trim().toUpperCase());
+        if (isExpert && !isManager && existingRole != null && !REJECTED.equals(existingRole.status()) && rejecting) {
             return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
         }
 
-        String levelCompetenciesJson = null;
-        if (request.levelCompetencies() != null) {
-            try {
-                levelCompetenciesJson = OBJECT_MAPPER.writeValueAsString(request.levelCompetencies());
-            } catch (Exception ignored) {}
-        }
-
-        List<String> competencyIds = request.competencyIds() != null ? new ArrayList<>(request.competencyIds()) : null;
-        if ((competencyIds == null || competencyIds.isEmpty()) && request.levelCompetencies() != null) {
-            List<String> derived = new ArrayList<>();
-            request.levelCompetencies().values().forEach(derived::addAll);
-            competencyIds = derived.stream().distinct().toList();
-        }
-
-        UpdateTargetRoleCommand command = new UpdateTargetRoleCommand(
-                organizationId,
-                targetRoleId,
-                request.name(),
-
-                request.familyCode(),
-                track,
-                request.assignedExpertId(),
-                request.description(),
-                request.responsibilities(),
-                status,
-                request.version(),
-                skillTargetsJson,
-                request.rejectionReason(),
-                request.levels(),
-                levelCompetenciesJson,
-                competencyIds);
-
-        return manageTargetRoleUseCase.updateTargetRole(command)
-                .map(updated -> ResponseEntity.ok(TargetRoleResponse.fromDomain(updated)))
+        return targetRoles.updateTargetRole(organizationId, roleId, request)
+                .map(updated -> ResponseEntity.ok(updated))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -296,26 +170,25 @@ public class OrganizationTargetRoleController {
                     .body(Map.of("error", "Forbidden", "message", "You do not have permission to delete target roles"));
         }
 
-        TargetRoleId targetRoleId = TargetRoleId.fromString(roleId);
-        Optional<TargetRole> existingOpt = viewTargetRolesUseCase.getTargetRole(organizationId, targetRoleId);
+        Optional<TargetRoleResponse> existingOpt = targetRoles.getTargetRole(organizationId, roleId);
         if (existingOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        TargetRole existing = existingOpt.get();
+        TargetRoleResponse existing = existingOpt.get();
 
         if (isAuthorizedManager(userRole) && !isAdministrator(userRole)) {
-            if (existing.getStatus() != RoleStatus.DRAFT) {
+            if (!DRAFT.equals(existing.status())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Forbidden", "message", "L&D Managers can only delete target roles in DRAFT status"));
             }
         } else if (isDomainExpert(userRole) && !isAdministrator(userRole)) {
-            if (existing.getStatus() != RoleStatus.DRAFT && existing.getStatus() != RoleStatus.ACTIVE) {
+            if (!DRAFT.equals(existing.status()) && !ACTIVE.equals(existing.status())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Forbidden", "message", "Experts can only delete target roles in DRAFT or PUBLISHED status"));
             }
         }
 
-        boolean deleted = manageTargetRoleUseCase.deleteTargetRole(organizationId, targetRoleId);
+        boolean deleted = targetRoles.deleteTargetRole(organizationId, roleId);
         if (deleted) {
             return ResponseEntity.noContent().build();
         }

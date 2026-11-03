@@ -1,8 +1,8 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.dtos.SystemStatusResponse;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.SystemStatusService;
-import com.adaptlearngraph.entities.domain.SystemStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +19,7 @@ public class SystemStatusController {
     }
 
     @GetMapping("/status")
-    public SystemStatus status() {
-        return service.getStatus();
+    public SystemStatusResponse status() {
+        return service.status();
     }
 }

@@ -4,7 +4,15 @@ import com.adaptlearngraph.repository.Neo4jMacroCompetencyRepository;
 import com.adaptlearngraph.repository.Neo4jMicroSkillRepository;
 import com.adaptlearngraph.repository.Neo4jPrerequisiteRepository;
 import com.adaptlearngraph.repository.Neo4jTargetRoleGraphAdapter;
+import com.adaptlearngraph.helper.MacroCompetencyMappings;
+import com.adaptlearngraph.helper.MicroSkillMappings;
+import com.adaptlearngraph.helper.ModelMapperRegistrar;
+import com.adaptlearngraph.services.MacroCompetencyApplicationService;
+import com.adaptlearngraph.services.MicroSkillApplicationService;
+import com.adaptlearngraph.services.PrerequisiteApplicationService;
 import com.adaptlearngraph.services.MicroSkillService;
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Import;
 import com.adaptlearngraph.services.PrerequisiteService;
 import com.adaptlearngraph.services.CreateMicroSkillUseCase;
 import com.adaptlearngraph.services.DeleteMicroSkillUseCase;
@@ -42,7 +50,38 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Configuration(proxyBeanMethods = false)
+@Import(ModelMapperConfiguration.class)
 public class CompetencyConfiguration {
+
+    @Bean
+    public ModelMapperRegistrar microSkillMappings() {
+        return new MicroSkillMappings();
+    }
+
+    @Bean
+    public ModelMapperRegistrar macroCompetencyMappings() {
+        return new MacroCompetencyMappings();
+    }
+
+    @Bean
+    public MicroSkillApplicationService microSkillApplicationService(CreateMicroSkillUseCase createMicroSkillUseCase,
+            GetMicroSkillsUseCase getMicroSkillsUseCase, UpdateMicroSkillUseCase updateMicroSkillUseCase,
+            DeleteMicroSkillUseCase deleteMicroSkillUseCase, ModelMapper modelMapper) {
+        return new MicroSkillApplicationService(createMicroSkillUseCase, getMicroSkillsUseCase, updateMicroSkillUseCase,
+                deleteMicroSkillUseCase, modelMapper);
+    }
+
+    @Bean
+    public PrerequisiteApplicationService prerequisiteApplicationService(ManagePrerequisiteUseCase managePrerequisiteUseCase,
+            ModelMapper modelMapper) {
+        return new PrerequisiteApplicationService(managePrerequisiteUseCase, modelMapper);
+    }
+
+    @Bean
+    public MacroCompetencyApplicationService macroCompetencyApplicationService(
+            com.adaptlearngraph.services.GetMacroCompetenciesUseCase getMacroCompetenciesUseCase, ModelMapper modelMapper) {
+        return new MacroCompetencyApplicationService(getMacroCompetenciesUseCase, modelMapper);
+    }
 
     @Bean
     public MicroSkillRepository microSkillRepository(ObjectProvider<Driver> driverProvider,

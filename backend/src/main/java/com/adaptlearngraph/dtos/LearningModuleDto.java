@@ -1,6 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.domain.LearningModuleRecord;
 import java.util.List;
 
 public class LearningModuleDto {
@@ -18,25 +17,7 @@ public class LearningModuleDto {
             int durationMinutes,
             List<String> teachesSkillIds,
             List<String> teachesSkillNames
-    ) {
-        public static LearningModuleResponse fromDomain(LearningModuleRecord m) {
-            return new LearningModuleResponse(
-                    m.id(),
-                    m.code(),
-                    m.title(),
-                    m.moduleType(),
-                    m.contentUri(),
-                    m.contentType(),
-                    m.contentVersion(),
-                    m.version(),
-                    m.status(),
-                    m.reviewStatus(),
-                    m.durationMinutes(),
-                    m.teachesSkillIds(),
-                    m.teachesSkillNames()
-            );
-        }
-    }
+    ) {}
 
     public record SaveLearningModuleRequest(
             String id,

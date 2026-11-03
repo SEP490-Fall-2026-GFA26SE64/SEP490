@@ -3,8 +3,7 @@ package com.adaptlearngraph.apis;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.dtos.LearningModuleDto.LearningModuleResponse;
 import com.adaptlearngraph.dtos.LearningModuleDto.SaveLearningModuleRequest;
-import com.adaptlearngraph.services.ManageLearningModuleUseCase;
-import com.adaptlearngraph.entities.domain.LearningModuleRecord;
+import com.adaptlearngraph.services.LearningModuleApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,28 +25,23 @@ public class LearningModuleController {
     public ResponseEntity<java.util.Map<String, String>> retiredWrite(UnsupportedOperationException error) {
         return ResponseEntity.status(410).body(java.util.Map.of("message", error.getMessage()));
     }
-    private final ManageLearningModuleUseCase manageLearningModuleUseCase;
+    private final LearningModuleApplicationService modules;
 
-    public LearningModuleController(ManageLearningModuleUseCase manageLearningModuleUseCase) {
-        this.manageLearningModuleUseCase = Objects.requireNonNull(manageLearningModuleUseCase, "manageLearningModuleUseCase cannot be null");
+    public LearningModuleController(LearningModuleApplicationService modules) {
+        this.modules = Objects.requireNonNull(modules, "modules cannot be null");
     }
 
     @GetMapping
     public ResponseEntity<List<LearningModuleResponse>> listModules(
             @PathVariable("organizationId") String organizationId) {
-        List<LearningModuleResponse> list = manageLearningModuleUseCase.listModules(organizationId)
-                .stream()
-                .map(LearningModuleResponse::fromDomain)
-                .toList();
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(modules.listModules(organizationId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LearningModuleResponse> getModule(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {
-        return manageLearningModuleUseCase.getModule(organizationId, id)
-                .map(LearningModuleResponse::fromDomain)
+        return modules.getModule(organizationId, id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -56,24 +50,7 @@ public class LearningModuleController {
     public ResponseEntity<LearningModuleResponse> createModule(
             @PathVariable("organizationId") String organizationId,
             @RequestBody SaveLearningModuleRequest request) {
-        String id = request.code() != null && !request.code().isBlank() ? request.code().trim() : request.id();
-        LearningModuleRecord record = new LearningModuleRecord(
-                id,
-                id,
-                request.title(),
-                request.moduleType() != null ? request.moduleType() : "LESSON_AND_PRACTICE",
-                request.contentUri() != null ? request.contentUri() : "",
-                request.contentType() != null ? request.contentType() : "text/markdown",
-                request.contentVersion() != null ? request.contentVersion() : "1.0",
-                request.version() != null ? request.version() : "0.9.0",
-                request.status() != null ? request.status() : "ACTIVE",
-                request.reviewStatus() != null ? request.reviewStatus() : "NEEDS_EXPERT_REVIEW",
-                request.durationMinutes() != null && request.durationMinutes() > 0 ? request.durationMinutes() : 45,
-                request.teachesSkillIds() != null ? request.teachesSkillIds() : List.of(),
-                List.of()
-        );
-        LearningModuleRecord saved = manageLearningModuleUseCase.saveModule(organizationId, record);
-        return ResponseEntity.status(HttpStatus.CREATED).body(LearningModuleResponse.fromDomain(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(modules.createModule(organizationId, request));
     }
 
     @PutMapping("/{id}")
@@ -81,30 +58,14 @@ public class LearningModuleController {
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id,
             @RequestBody SaveLearningModuleRequest request) {
-        LearningModuleRecord record = new LearningModuleRecord(
-                id,
-                id,
-                request.title(),
-                request.moduleType() != null ? request.moduleType() : "LESSON_AND_PRACTICE",
-                request.contentUri() != null ? request.contentUri() : "",
-                request.contentType() != null ? request.contentType() : "text/markdown",
-                request.contentVersion() != null ? request.contentVersion() : "1.0",
-                request.version() != null ? request.version() : "0.9.0",
-                request.status() != null ? request.status() : "ACTIVE",
-                request.reviewStatus() != null ? request.reviewStatus() : "NEEDS_EXPERT_REVIEW",
-                request.durationMinutes() != null && request.durationMinutes() > 0 ? request.durationMinutes() : 45,
-                request.teachesSkillIds() != null ? request.teachesSkillIds() : List.of(),
-                List.of()
-        );
-        LearningModuleRecord saved = manageLearningModuleUseCase.saveModule(organizationId, record);
-        return ResponseEntity.ok(LearningModuleResponse.fromDomain(saved));
+        return ResponseEntity.ok(modules.updateModule(organizationId, id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteModule(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {
-        manageLearningModuleUseCase.deleteModule(organizationId, id);
+        modules.deleteModule(organizationId, id);
         return ResponseEntity.noContent().build();
     }
 }

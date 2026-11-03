@@ -78,6 +78,12 @@ public class WorkspaceAuthenticationConfiguration {
     }
 
     @Bean
+    com.adaptlearngraph.services.RegistrationWorkspaceEntryService registrationWorkspaceEntry(
+            WorkspaceAuthenticationUseCase authentication) {
+        return new com.adaptlearngraph.services.RegistrationWorkspaceEntryService(authentication);
+    }
+
+    @Bean
     @Order(-10)
     SecurityFilterChain workspaceAuthenticationSecurity(HttpSecurity http) throws Exception {
         return http.securityMatcher("/api/v1/workspace-auth/**")

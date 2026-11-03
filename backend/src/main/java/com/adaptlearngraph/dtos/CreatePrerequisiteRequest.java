@@ -1,6 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.domain.SkillStatus;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -16,4 +15,4 @@ public record CreatePrerequisiteRequest(
         @DecimalMax(value = "1.0", message = "minMastery must be <= 1.0")
         double minMastery,
 
-        SkillStatus status) {}
+        SkillStatusDto status) {}

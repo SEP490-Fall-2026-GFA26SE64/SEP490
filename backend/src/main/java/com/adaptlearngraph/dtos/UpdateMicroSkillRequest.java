@@ -1,6 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.domain.SkillStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -14,4 +13,4 @@ public record UpdateMicroSkillRequest(
 
         String macroCompetencyCode,
 
-        SkillStatus status) {}
+        SkillStatusDto status) {}
