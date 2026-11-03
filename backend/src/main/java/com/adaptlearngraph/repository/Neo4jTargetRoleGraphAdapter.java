@@ -9,7 +9,7 @@ import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.support.TransactionOperations;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,11 +23,11 @@ import java.util.Set;
 
 public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
     private final Neo4jClient client;
-    private final TransactionTemplate reads;
+    private final TransactionOperations reads;
 
     public Neo4jTargetRoleGraphAdapter(Neo4jClient client, PlatformTransactionManager transactions) {
         this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
-        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.reads = Neo4jCatalogTransactions.autoCommitReads(transactions);
     }
 
     // Neo4jClient: rows carry graph nodes and relationship properties that are mapped field by field with legacy defaults.

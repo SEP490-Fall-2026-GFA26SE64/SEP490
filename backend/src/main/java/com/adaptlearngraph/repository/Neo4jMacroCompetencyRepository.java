@@ -9,17 +9,17 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.support.TransactionOperations;
 
 public class Neo4jMacroCompetencyRepository implements MacroCompetencyRepository {
     private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
 
     private final MacroCompetencyNodeRepository macros;
-    private final TransactionTemplate reads;
+    private final TransactionOperations reads;
 
     public Neo4jMacroCompetencyRepository(MacroCompetencyNodeRepository macros, PlatformTransactionManager transactions) {
         this.macros = Objects.requireNonNull(macros, "macros cannot be null");
-        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.reads = Neo4jCatalogTransactions.autoCommitReads(transactions);
     }
 
     @Override

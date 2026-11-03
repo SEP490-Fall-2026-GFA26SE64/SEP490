@@ -16,6 +16,7 @@ import org.neo4j.driver.types.TypeSystem;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
@@ -62,7 +63,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
     private final MicroSkillNodeRepository skills;
     private final Neo4jClient client;
     private final Neo4jMappingContext mappingContext;
-    private final TransactionTemplate reads;
+    private final TransactionOperations reads;
     private final TransactionTemplate writes;
 
     public Neo4jPrerequisiteRepository(MicroSkillNodeRepository skills, Neo4jClient client,
@@ -71,7 +72,7 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
         this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
         this.mappingContext = Objects.requireNonNull(mappingContext, "mapping context cannot be null");
         mappingContext.getRequiredPersistentEntity(MicroSkillNode.class);
-        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.reads = Neo4jCatalogTransactions.autoCommitReads(transactions);
         this.writes = Neo4jCatalogTransactions.readWrite(transactions);
     }
 

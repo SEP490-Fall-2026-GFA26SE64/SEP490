@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.neo4j.driver.Record;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jOccupationRepository implements OccupationRepository {
@@ -47,14 +48,14 @@ public class Neo4jOccupationRepository implements OccupationRepository {
 
     private final OccupationNodeRepository occupations;
     private final Neo4jClient client;
-    private final TransactionTemplate reads;
+    private final TransactionOperations reads;
     private final TransactionTemplate writes;
 
     public Neo4jOccupationRepository(OccupationNodeRepository occupations, Neo4jClient client,
             PlatformTransactionManager transactions) {
         this.occupations = Objects.requireNonNull(occupations, "occupations cannot be null");
         this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
-        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.reads = Neo4jCatalogTransactions.autoCommitReads(transactions);
         this.writes = Neo4jCatalogTransactions.readWrite(transactions);
     }
 

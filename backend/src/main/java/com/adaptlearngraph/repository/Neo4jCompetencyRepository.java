@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.neo4j.driver.Record;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jCompetencyRepository implements CompetencyRepository {
@@ -49,14 +50,14 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
 
     private final CompetencyNodeRepository competencies;
     private final Neo4jClient client;
-    private final TransactionTemplate reads;
+    private final TransactionOperations reads;
     private final TransactionTemplate writes;
 
     public Neo4jCompetencyRepository(CompetencyNodeRepository competencies, Neo4jClient client,
             PlatformTransactionManager transactions) {
         this.competencies = Objects.requireNonNull(competencies, "competencies cannot be null");
         this.client = Objects.requireNonNull(client, "Neo4jClient cannot be null");
-        this.reads = Neo4jCatalogTransactions.readOnly(transactions);
+        this.reads = Neo4jCatalogTransactions.autoCommitReads(transactions);
         this.writes = Neo4jCatalogTransactions.readWrite(transactions);
     }
 
