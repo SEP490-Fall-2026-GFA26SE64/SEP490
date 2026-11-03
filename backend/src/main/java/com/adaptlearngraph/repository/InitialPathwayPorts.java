@@ -72,14 +72,9 @@ public final class InitialPathwayPorts {
         Optional<Receipt> find(Actor actor, String operation, String resource, String key);
         void save(Actor actor, String operation, String resource, String key, Receipt receipt);
     }
-    public static final class Failure extends RuntimeException {
-        private final int status; private final String code; private final boolean retryable; private final UUID correlationId = UUID.randomUUID();
-        public Failure(int status, String code) { this(status,code,status==503); }
-        public Failure(int status,String code,boolean retryable) { super(code);this.status=status;this.code=code;this.retryable=retryable; }
-        public int status() { return status; }
-        public String code() { return code; }
-        public boolean retryable() { return retryable; }
-        public UUID correlationId() { return correlationId; }
+    public static final class Failure extends com.adaptlearngraph.exception.InitialPathwayFailure {
+        public Failure(int status, String code) { super(status,code); }
+        public Failure(int status,String code,boolean retryable) { super(status,code,retryable); }
     }
     public static void commandKey(String key) {
         if (key == null || key.isBlank() || key.length() > 128 || !key.equals(key.strip())) throw new Failure(400,"INVALID_IDEMPOTENCY_KEY");

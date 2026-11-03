@@ -26,7 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /** Real MVC parsing and workspace SecurityFilterChain; actor/application ports are unit doubles. */
 @WebMvcTest(controllers=InitialPathwayController.class,properties={"pathway.initial.enabled=true","assessment.baseline.workspace.enabled=true"})
-@Import(WorkspaceInitialPathwaySecurity.class)
+@Import({WorkspaceInitialPathwaySecurity.class, com.adaptlearngraph.config.ModelMapperConfiguration.class,
+        com.adaptlearngraph.helper.InitialPathwayMappings.class, com.adaptlearngraph.services.InitialPathwayApplicationService.class})
 @ActiveProfiles({"local","workspace-baseline"})
 class InitialPathwayApiBoundaryTest {
     @Autowired MockMvc mvc;

@@ -63,8 +63,7 @@ public final class AdaptiveBlueprintController {
     @GetMapping("/occupations/{occupationId}/versions/{blueprintId}/{version}")
     ResponseEntity<VersionDetailsResponse> version(@PathVariable String occupationId, @PathVariable java.util.UUID blueprintId,
             @PathVariable int version) {
-        var value = blueprints.getVersion(occupationId,
-                new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionId(blueprintId, version));
+        var value = blueprints.getVersion(occupationId, blueprintId, version);
         return ok(new VersionDetailsResponse(VersionResponse.from(value.version()), value.status().name()));
     }
     record VersionDetailsResponse(VersionResponse version, String status) {}

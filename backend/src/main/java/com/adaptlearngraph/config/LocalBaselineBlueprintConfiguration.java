@@ -44,8 +44,28 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Profile("local")
 @ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
-@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
+@org.springframework.context.annotation.Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class LocalBaselineBlueprintConfiguration {
+    @Bean
+    com.adaptlearngraph.helper.ModelMapperRegistrar baselineAuthoringMappings(ObjectMapper objectMapper) {
+        return new com.adaptlearngraph.helper.BaselineAuthoringMappings(objectMapper);
+    }
+
+    @Bean
+    com.adaptlearngraph.services.BaselineBlueprintApplicationService baselineBlueprintApplicationService(
+            BaselineBlueprintUseCase blueprints, BaselineAssessmentDraftUseCase drafts,
+            ObjectProvider<BaselineAssessmentManagementUseCase> management, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.BaselineBlueprintApplicationService(blueprints, drafts, management, modelMapper);
+    }
+
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+    com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService baselineAssessmentManagementApplicationService(
+            BaselineAssessmentManagementUseCase management, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService(management, modelMapper);
+    }
+
     @Bean
     BaselineBlueprintStore baselineBlueprintStore(com.adaptlearngraph.repository.BaselineBlueprintJpaRepository identities,
             com.adaptlearngraph.repository.BaselineBlueprintVersionJpaRepository versions,

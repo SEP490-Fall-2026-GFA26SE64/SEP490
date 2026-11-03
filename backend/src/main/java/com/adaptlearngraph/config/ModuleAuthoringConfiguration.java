@@ -30,8 +30,23 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("local")
-@Import(PersistenceConfiguration.class)
+@Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class ModuleAuthoringConfiguration {
+    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar moduleAuthoringMappings() {
+        return new com.adaptlearngraph.helper.ModuleAuthoringMappings();
+    }
+    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar learningContentMappings() {
+        return new com.adaptlearngraph.helper.LearningContentMappings();
+    }
+    @Bean com.adaptlearngraph.services.ModuleAuthoringApplicationService moduleAuthoringApplicationService(
+            ModuleAuthoringService modules, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.ModuleAuthoringApplicationService(modules, modelMapper);
+    }
+    @Bean com.adaptlearngraph.services.LearningContentApplicationService learningContentApplicationService(
+            LearningContentService content, ModuleAuthoringPort modules, LearningAssetPort files,
+            com.adaptlearngraph.services.LearningImportUseCase imports, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.LearningContentApplicationService(content, modules, files, imports, modelMapper);
+    }
     @Bean ModuleAuthoringPort moduleAuthoringPort(ListableBeanFactory beans, PostgresAdvisoryLocks locks,
             @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
             ObjectMapper mapper, LearningModuleNodeRepository modules, Neo4jClient neo4j,

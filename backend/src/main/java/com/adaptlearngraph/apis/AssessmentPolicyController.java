@@ -1,10 +1,13 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
-import com.adaptlearngraph.services.AssessmentPolicyService;
-import com.adaptlearngraph.services.AssessmentPolicyUseCase;
+import com.adaptlearngraph.dtos.AssessmentPolicyDto.ActivateRequest;
+import com.adaptlearngraph.dtos.AssessmentPolicyDto.PageResponse;
+import com.adaptlearngraph.dtos.AssessmentPolicyDto.SaveRequest;
+import com.adaptlearngraph.dtos.AssessmentPolicyDto.SavedResponse;
+import com.adaptlearngraph.dtos.AssessmentPolicyDto.StateResponse;
+import com.adaptlearngraph.services.AssessmentPolicyApplicationService;
 import com.adaptlearngraph.services.AssessmentPolicyService.Failure;
-import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import com.adaptlearngraph.services.AssessmentPolicyService.Encoding;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -19,17 +22,15 @@ import org.springframework.web.bind.annotation.*;
 @ConditionalOnProperty(name="assessment.baseline.workspace.enabled",havingValue="true")
 @RequestMapping(ApiEndpoints.ASSESSMENT_POLICY)
 public final class AssessmentPolicyController {
-    public record Save(UUID commandKey,double stopSe,double highConfidenceSe,double mediumConfidenceSe,double k){}
-    public record Activate(UUID commandKey,UUID policyVersionId,long expectedActivationRevision){}
-    private final AssessmentPolicyUseCase service;private final Encoding json;
-    public AssessmentPolicyController(AssessmentPolicyUseCase service,Encoding json){this.service=service;this.json=json;}
-    @GetMapping public ResponseEntity<State> read(){return response(service.read());}
-    @GetMapping("/versions") public ResponseEntity<Page> list(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return response(service.list(page,size));}
-    @PostMapping(value="/versions",consumes="application/json") public ResponseEntity<Saved> save(jakarta.servlet.http.HttpServletRequest request){
-        var r=decode(request,Save.class);var saved=service.save(r.commandKey(),new Values(r.stopSe(),r.highConfidenceSe(),r.mediumConfidenceSe(),r.k()));
+    private final AssessmentPolicyApplicationService service;private final Encoding json;
+    public AssessmentPolicyController(AssessmentPolicyApplicationService service,Encoding json){this.service=service;this.json=json;}
+    @GetMapping public ResponseEntity<StateResponse> read(){return response(service.read());}
+    @GetMapping("/versions") public ResponseEntity<PageResponse> list(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return response(service.list(page,size));}
+    @PostMapping(value="/versions",consumes="application/json") public ResponseEntity<SavedResponse> save(jakarta.servlet.http.HttpServletRequest request){
+        var r=decode(request,SaveRequest.class);var saved=service.save(r);
         return ResponseEntity.status(saved.noOp()?200:201).cacheControl(CacheControl.noStore()).body(saved);
     }
-    @PostMapping(value="/activation",consumes="application/json") public ResponseEntity<State> activate(jakarta.servlet.http.HttpServletRequest request){var r=decode(request,Activate.class);return response(service.activate(r.commandKey(),r.policyVersionId(),r.expectedActivationRevision()));}
+    @PostMapping(value="/activation",consumes="application/json") public ResponseEntity<StateResponse> activate(jakarta.servlet.http.HttpServletRequest request){var r=decode(request,ActivateRequest.class);return response(service.activate(r));}
     private <T>T decode(jakarta.servlet.http.HttpServletRequest request,Class<T> type){
         service.authorize(); // Trusted authorization precedes parsing/existence/error detail.
         try{

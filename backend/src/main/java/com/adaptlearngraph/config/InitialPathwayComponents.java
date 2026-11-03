@@ -170,4 +170,9 @@ public abstract class InitialPathwayComponents {
     @Bean InitialPathwayReview initialReview(Actors a,ReviewAssignments r,InitialPathwayStore s,Coordination c,Bindings b,InitialProblemBuilder p,Receipts receipts,Codec j,Environment env){return new InitialPathwayReview(a,r,s,c,b,p,receipts,j,()->limits(env));}
     @Bean InitialPathwayAccess initialAccess(Actors a,Coordination c,InitialPathwayStore s,ReviewAssignments r,Bindings b,Availability v,LiveReadiness l,ContentAccess content){return new InitialPathwayAccess(a,c,s,r,b,v,l,content);}
     @Bean InitialPathwayView initialView(Actors a,InitialPathwayStore s,Coordination c,InitialPathwayAccess access){return new InitialPathwayView(a,s,c,access);}
+    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar initialPathwayMappings(){return new com.adaptlearngraph.helper.InitialPathwayMappings();}
+    @Bean com.adaptlearngraph.services.InitialPathwayApplicationService initialPathwayApplicationService(RoleGapPreview g,InitialPathwayAdmission a,
+            InitialPathwayReview r,InitialPathwayView v,org.modelmapper.ModelMapper modelMapper){
+        return new com.adaptlearngraph.services.InitialPathwayApplicationService(g,a,r,v,modelMapper);
+    }
 }

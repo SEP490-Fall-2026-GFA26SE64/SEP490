@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration(proxyBeanMethods=false)
 @Profile("local & workspace-baseline & !prod & !local-baseline-demo")
-@Import(PersistenceConfiguration.class)
+@Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class QuestionBankConfiguration {
     @Bean Actors questionBankActors(SubscriptionIdentity identity,SubscriptionWorkspaceStore workspaces) {
         return ()->{var a=identity.current().actor();if(a.organizationId()==null||a.roles().size()!=1)throw new Failure(403,"Organization staff required");String role=a.roles().iterator().next().name();if(!Set.of("DOMAIN_EXPERT","LD_MANAGER").contains(role))throw new Failure(403,"Question Bank staff access required");workspaces.require(a,a.organizationId(),SubscriptionAccessPolicy.Action.WORKSPACE,Clock.systemUTC().instant());return new Actor(a.accountId(),a.organizationId(),role);};
@@ -46,6 +46,13 @@ public class QuestionBankConfiguration {
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,ObjectMapper json){
         return new com.adaptlearngraph.repository.JpaQuestionBankStore(banks,items,locks,new TransactionTemplate(manager),json);}
+    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar questionBankMappings() {
+        return new com.adaptlearngraph.helper.QuestionBankMappings();
+    }
+    @Bean com.adaptlearngraph.services.QuestionBankApplicationService questionBankApplicationService(
+            QuestionBankUseCase bank, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.QuestionBankApplicationService(bank, modelMapper);
+    }
     @Bean QuestionBankUseCase questionBankUseCase(Actors actors,Catalog catalog,Store store,@Value("${question-bank.import.max-rows:500}") int rows,@Value("${question-bank.import.max-bytes:10485760}") long bytes){return new QuestionBankService(actors,catalog,store,Clock.systemUTC(),rows,bytes);}
     @Bean QuestionBankMailWorker questionBankMailWorker(com.adaptlearngraph.repository.QuestionBankJpaRepository notices,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,TransactionalMailSender mail,

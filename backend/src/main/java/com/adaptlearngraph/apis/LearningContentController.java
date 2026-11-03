@@ -1,14 +1,17 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.dtos.LearningContentDto.AssetResponse;
+import com.adaptlearngraph.dtos.LearningContentDto.ImportPreviewResponse;
+import com.adaptlearngraph.dtos.LearningContentDto.LearningViewResponse;
+import com.adaptlearngraph.dtos.LearningContentDto.LimitsRequest;
+import com.adaptlearngraph.dtos.LearningContentDto.LimitsResponse;
+import com.adaptlearngraph.dtos.LearningContentDto.NotificationResponse;
+import com.adaptlearngraph.dtos.LearningContentDto.PathwayResponse;
+import com.adaptlearngraph.dtos.LearningContentDto.ProgressResponse;
+import com.adaptlearngraph.dtos.ModuleAuthoringDto.DocumentResponse;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
-import com.adaptlearngraph.entities.domain.LearningResources;
-import com.adaptlearngraph.entities.domain.ModuleAuthoring;
-import com.adaptlearngraph.repository.LearningAssetPort;
-import com.adaptlearngraph.repository.ModuleAuthoringPort;
-import com.adaptlearngraph.services.LearningContentService;
-import com.adaptlearngraph.services.ModuleAuthoringService;
+import com.adaptlearngraph.services.LearningContentApplicationService;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.domain.LearningResources.*;
 import com.adaptlearngraph.model.dtos.file.response.FileDownloadResponse;
 
 import org.springframework.context.annotation.Profile;
@@ -23,20 +26,10 @@ import java.util.*;
 @Profile("local")
 @RequestMapping(ApiEndpoints.LEARNING_CONTENT)
 public class LearningContentController {
-    private final com.adaptlearngraph.services.LearningImportUseCase imports;
-    private final LearningContentService service;
-    private final ModuleAuthoringPort modules;
-    private final LearningAssetPort files;
+    private final LearningContentApplicationService content;
 
-    public LearningContentController(
-            LearningContentService service,
-            ModuleAuthoringPort modules,
-            LearningAssetPort files,
-            com.adaptlearngraph.services.LearningImportUseCase imports) {
-        this.imports = imports;
-        this.service = service;
-        this.modules = modules;
-        this.files = files;
+    public LearningContentController(LearningContentApplicationService content) {
+        this.content = content;
     }
 
     @GetMapping("/imports/template")
@@ -44,57 +37,51 @@ public class LearningContentController {
         return new FileDownloadResponse(
                         "learning-modules.xlsx",
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        imports.template())
+                        content.importTemplate())
                 .toResponseEntity();
     }
 
     @PostMapping("/imports")
-    public com.adaptlearngraph.services.LearningImportUseCase.Preview preview(
+    public ImportPreviewResponse preview(
             @RequestParam("file") MultipartFile file) throws java.io.IOException {
         try (var input = file.getInputStream()) {
-            return imports.preview(file.getOriginalFilename(), file.getSize(), input);
+            return content.previewImport(file.getOriginalFilename(), file.getSize(), input);
         }
     }
 
     @GetMapping("/imports/{id}")
-    public com.adaptlearngraph.services.LearningImportUseCase.Preview validate(
+    public ImportPreviewResponse validate(
             @PathVariable String id) {
-        return imports.validate(id);
+        return content.validateImport(id);
     }
 
     public record ImportConfirmation(boolean confirmOwnedDuplicates) {}
 
     @PostMapping("/imports/{id}/commit")
-    public List<ModuleAuthoring.Document> commit(
+    public List<DocumentResponse> commit(
             @PathVariable String id, @RequestBody ImportConfirmation input) {
-        return imports.commit(id, input.confirmOwnedDuplicates());
+        return content.commitImport(id, input.confirmOwnedDuplicates());
     }
 
     @GetMapping("/upload-settings")
-    public Limits limits() {
-        return service.limits();
+    public LimitsResponse limits() {
+        return content.limits();
     }
 
     @PutMapping("/upload-settings")
-    public Limits limits(@RequestBody Limits input) {
-        return service.limits(input);
+    public LimitsResponse limits(@RequestBody LimitsRequest input) {
+        return content.limits(input);
     }
 
     @PostMapping("/assets")
-    public Asset upload(@RequestParam("file") MultipartFile file) throws java.io.IOException {
-        var a = modules.actor();
-        if (!a.expert()) throw new Failure(403, "Expert upload required");
-        try (var input = file.getInputStream()) {
-            return files.upload(
-                    a.organizationId(), a.id(), file.getOriginalFilename(), file.getSize(), input);
-        }
+    public AssetResponse upload(@RequestParam("file") MultipartFile file) throws java.io.IOException {
+        return content.upload(file, file.getOriginalFilename(), file.getSize());
     }
-
     @GetMapping("/assets/{id}")
     public ResponseEntity<StreamingResponseBody> asset(
             @PathVariable String id,
             @RequestHeader(value = "Range", required = false) String range) {
-        Asset asset = service.accessibleAsset(id);
+        var asset = content.asset(id);
         long start = 0, end = asset.byteSize() - 1;
         boolean partial = range != null;
         if (partial) {
@@ -126,7 +113,7 @@ public class LearningContentController {
             response.header("Content-Range", "bytes " + start + "-" + end + "/" + asset.byteSize());
         return response.body(
                 out -> {
-                    try (var input = files.open(asset, offset, length)) {
+                    try (var input = asset.open(offset, length)) {
                         input.transferTo(out);
                     }
                 });
@@ -137,11 +124,7 @@ public class LearningContentController {
 
     @PostMapping("/videos/verify")
     public Map<String, Boolean> verify(@RequestBody Verification input) {
-        var a = modules.actor();
-        if (!a.expert() && !a.manager()) throw new Failure(403, "Staff preview required");
-        if (!input.played()) throw new Failure(400, "Play this video in preview first");
-        files.verifyExternal(
-                a.organizationId(), a.id(), input.provider(), input.url(), input.durationSeconds());
+        content.verifyVideo(input.provider(), input.url(), input.durationSeconds(), input.played());
         return Map.of("verified", true);
     }
 
@@ -149,37 +132,29 @@ public class LearningContentController {
 
     @PostMapping("/text/preview")
     public Map<String, String> render(@RequestBody Render input) {
-        var a = modules.actor();
-        if (!a.expert() && !a.manager() && !a.roles().contains("EMPLOYEE"))
-            throw new Failure(403, "Learning access required");
-        ModuleAuthoring.text(input.body(), "body", 500000);
-        return Map.of(
-                "html",
-                input.format().equals("MARKDOWN")
-                        ? files.renderMarkdown(input.body())
-                        : files.sanitizedHtml(input.body()));
+        return Map.of("html", content.render(input.body(), input.format()));
     }
 
     @GetMapping("/pathways")
-    public List<Pathway> pathways() {
+    public List<PathwayResponse> pathways() {
         throw new Failure(410, "Manual learning pathway assignment is no longer available");
     }
 
     public record Assignment(String learnerId, String title, List<String> moduleIds) {}
 
     @PostMapping("/pathways")
-    public Pathway assign(@RequestBody Assignment input) {
+    public PathwayResponse assign(@RequestBody Assignment input) {
         throw new Failure(410, "Manual learning pathway assignment is no longer available");
     }
 
     @GetMapping("/learning/{id}/view")
-    public LearningView view(@PathVariable String id) {
-        return service.view(id, false);
+    public LearningViewResponse view(@PathVariable String id) {
+        return content.view(id, false);
     }
 
     @PostMapping("/learning/{id}/begin")
-    public LearningView begin(@PathVariable String id) {
-        return service.view(id, true);
+    public LearningViewResponse begin(@PathVariable String id) {
+        return content.view(id, true);
     }
 
     public record Update(
@@ -191,9 +166,9 @@ public class LearningContentController {
             boolean complete) {}
 
     @PutMapping("/learning/{id}/lessons/{lessonId}/progress")
-    public Progress progress(
+    public ProgressResponse progress(
             @PathVariable String id, @PathVariable String lessonId, @RequestBody Update input) {
-        return service.progress(
+        return content.progress(
                 id,
                 lessonId,
                 input.positionSeconds(),
@@ -207,26 +182,26 @@ public class LearningContentController {
     public record Switch(int revision) {}
 
     @PostMapping("/learning/{id}/switch")
-    public LearningView change(@PathVariable String id, @RequestBody Switch input) {
-        return service.switchVersion(id, input.revision());
+    public LearningViewResponse change(@PathVariable String id, @RequestBody Switch input) {
+        return content.switchVersion(id, input.revision());
     }
 
     public record Issue(String lessonId, String detail, String commandId) {}
 
     @PostMapping("/learning/{id}/issues")
     public ResponseEntity<Void> issue(@PathVariable String id, @RequestBody Issue input) {
-        service.issue(id, input.lessonId(), input.detail(), input.commandId());
+        content.issue(id, input.lessonId(), input.detail(), input.commandId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/notifications")
-    public List<Notification> notifications() {
-        return service.notifications();
+    public List<NotificationResponse> notifications() {
+        return content.notifications();
     }
 
     @PutMapping("/notifications/{id}/read")
     public ResponseEntity<Void> read(@PathVariable String id) {
-        service.read(id);
+        content.read(id);
         return ResponseEntity.noContent().build();
     }
 

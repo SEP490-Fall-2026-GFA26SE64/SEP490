@@ -32,8 +32,18 @@ import org.springframework.context.annotation.Import;
 /** Default off. Enabling without owner Identity/readiness/approved dataset registry fails startup, never creates a principal. */
 @Configuration(proxyBeanMethods=false)
 @ConditionalOnProperty(prefix="assessment.baseline.irt-administration",name="enabled",havingValue="true")
-@Import(PersistenceConfiguration.class)
+@Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class IrtAdministrationConfiguration {
+    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar irtAdministrationMappings() {
+        return new com.adaptlearngraph.helper.IrtAdministrationMappings();
+    }
+    @Bean com.adaptlearngraph.services.IrtAdministrationApplicationService irtAdministrationApplicationService(
+            CalibrationPorts.Authorization authorization, CalibrationPorts.UseCase calibration,
+            com.adaptlearngraph.repository.PromotionPorts.UseCase promotion, CalibrationPorts.Decoding json,
+            org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.IrtAdministrationApplicationService(authorization, calibration, promotion, json,
+                modelMapper);
+    }
     @Bean CalibrationJson calibrationJson() { return new CalibrationJson(CalibrationPolicy.syntheticV2()); }
     @SuppressWarnings("java:S107")
     @Bean JpaCalibrationStore calibrationStore(DataSource dataSource,IrtCalibrationRunJpaRepository runs,IrtCalibrationPinJpaRepository pins,

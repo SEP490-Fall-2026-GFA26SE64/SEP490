@@ -39,7 +39,9 @@ import com.adaptlearngraph.config.LocalCatalogSecurityConfiguration;
 @WebMvcTest(
         controllers = BaselineBlueprintController.class,
         properties = {"catalog.local-actor.enabled=true", "assessment.baseline.legacy-authoring.enabled=true"})
-@Import(LocalCatalogSecurityConfiguration.class)
+@Import({LocalCatalogSecurityConfiguration.class, com.adaptlearngraph.config.ModelMapperConfiguration.class,
+        com.adaptlearngraph.helper.BaselineAuthoringMappings.class,
+        com.adaptlearngraph.services.BaselineBlueprintApplicationService.class})
 @ActiveProfiles("local")
 class BaselineBlueprintControllerTest {
     private static final UUID ACTOR_ID = uuid(1);

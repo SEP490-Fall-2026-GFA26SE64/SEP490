@@ -2,15 +2,24 @@ package com.adaptlearngraph.architecture;
 
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.domain.JavaType;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 @AnalyzeClasses(packages = "com.adaptlearngraph", importOptions = ImportOption.DoNotIncludeTests.class)
 class LayeredArchitectureTest {
@@ -38,6 +47,9 @@ class LayeredArchitectureTest {
     private static final String[] CONTROLLER = {
             "com.adaptlearngraph.apis..", "com.adaptlearngraph.advice..", "com.adaptlearngraph.endpoints..",
             "com.adaptlearngraph.responseDto..", "com.adaptlearngraph.model.dtos.file.response.."};
+    /** HTTP-facing classes: controllers, endpoint constants and controller advice. */
+    private static final String[] WEB = {
+            "com.adaptlearngraph.apis..", "com.adaptlearngraph.endpoints..", "com.adaptlearngraph.advice.."};
     private static final String[] BUSINESS = {"com.adaptlearngraph.services.."};
     private static final String[] DATA = {
             "com.adaptlearngraph.repository..", "com.adaptlearngraph.dtos..", "com.adaptlearngraph.entities.."};
@@ -92,4 +104,37 @@ class LayeredArchitectureTest {
     @ArchTest
     static final ArchRule servicesDoNotUseControllers = noClasses().that().resideInAPackage("com.adaptlearngraph.services..")
             .should().dependOnClassesThat().resideInAnyPackage(CONTROLLER);
+
+    /** Controllers speak DTOs only: no JPA/{@code @Node} entities, immutable domain models or store/port types. */
+    @ArchTest
+    static final ArchRule webDoesNotDependOnEntitiesOrRepositories = noClasses().that().resideInAnyPackage(WEB)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "com.adaptlearngraph.entities..", "com.adaptlearngraph.repository..")
+            .allowEmptyShould(true);
+
+    /** No HTTP-facing method accepts or returns a persistence/domain model, including as a generic type argument. */
+    @ArchTest
+    static final ArchRule webSignaturesUseNoEntities = methods().that().areDeclaredInClassesThat().resideInAnyPackage(WEB)
+            .and().doNotHaveModifier(JavaModifier.PRIVATE)
+            .should(new ArchCondition<JavaMethod>("not accept or return entity or domain model types") {
+                @Override
+                public void check(JavaMethod method, ConditionEvents events) {
+                    List<JavaType> signature = new ArrayList<>(method.getParameterTypes());
+                    signature.add(method.getReturnType());
+                    signature.stream().flatMap(type -> type.getAllInvolvedRawTypes().stream()).distinct()
+                            .filter(LayeredArchitectureTest::isEntityType)
+                            .forEach(type -> events.add(SimpleConditionEvent.violated(method,
+                                    method.getFullName() + " exposes " + type.getName())));
+                }
+            })
+            .allowEmptyShould(true);
+
+    private static boolean isEntityType(JavaClass type) {
+        JavaClass base = type;
+        while (base.isArray()) base = base.getComponentType();
+        String packageName = base.getPackageName();
+        return packageName.equals("com.adaptlearngraph.entities") || packageName.startsWith("com.adaptlearngraph.entities.")
+                || base.isAnnotatedWith("jakarta.persistence.Entity")
+                || base.isAnnotatedWith("org.springframework.data.neo4j.core.schema.Node");
+    }
 }

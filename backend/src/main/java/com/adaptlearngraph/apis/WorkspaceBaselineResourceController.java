@@ -3,7 +3,7 @@ package com.adaptlearngraph.apis;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase;
 import com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase.*;
-import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
+import com.adaptlearngraph.services.AdaptiveBaselineFailures;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
@@ -27,7 +27,7 @@ public final class WorkspaceBaselineResourceController {
                 .enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
     }
     @GetMapping public ResponseEntity<Tuple> read(@PathVariable String occupationId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(resources.read(occupationId));
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.resources(() -> resources.read(occupationId)));
     }
     @PutMapping(consumes="application/json") public ResponseEntity<Tuple> configure(@PathVariable String occupationId,@RequestBody String body) {
         Configure request;
@@ -35,12 +35,12 @@ public final class WorkspaceBaselineResourceController {
         try { request=requests.readValue(body,Configure.class); }
         catch(Exception invalid) { throw new Failure(400,"INVALID_REQUEST"); }
         if (request==null) throw new Failure(400,"INVALID_REQUEST");
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(resources.configure(occupationId,request.expected(),request.desired()));
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.resources(() -> resources.configure(occupationId,request.expected(),request.desired())));
     }
     @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure failure) {
         return ResponseEntity.status(failure.status).cacheControl(CacheControl.noStore()).body(Map.of("code",failure.code));
     }
-    @ExceptionHandler({AdaptiveBlueprintEligibilityPort.DependencyUnavailable.class,org.springframework.dao.DataAccessException.class,IllegalStateException.class})
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class})
     ResponseEntity<Map<String,String>> unavailable(Exception failure) { return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE")); }
     @ExceptionHandler(com.adaptlearngraph.exception.SubscriptionFailure.class)
     ResponseEntity<Map<String,String>> subscription(com.adaptlearngraph.exception.SubscriptionFailure invalid) {

@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Profile("local & workspace-baseline & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name={"pathway.initial.enabled","assessment.baseline.workspace.enabled"},havingValue="true")
-@Import(PersistenceConfiguration.class)
+@Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponents {
     private final WorkspaceCatalogFixture fixture;
     @Autowired private ObjectProvider<WorkspacePathwayFixtures> fixtureInputs;

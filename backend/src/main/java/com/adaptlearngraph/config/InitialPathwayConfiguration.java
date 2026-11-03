@@ -28,7 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Profile("local-baseline-demo & !workspace-baseline & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name={"pathway.initial.enabled","pathway.local-auth-bypass.enabled","assessment.baseline.local-demo.enabled"},havingValue="true")
-@Import(PersistenceConfiguration.class)
+@Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class InitialPathwayConfiguration extends InitialPathwayComponents {
     @Bean @ConditionalOnProperty(name={"pathway.initial.local-assignment.enabled","pathway.initial.local-assignment.provision-expert-enabled"},havingValue="true")
     LocalExpertProvisioning initialExpertFixture(com.adaptlearngraph.repository.DevelopmentSeedJpaRepository seeds,Environment env,

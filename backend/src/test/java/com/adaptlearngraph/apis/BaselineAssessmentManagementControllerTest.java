@@ -32,7 +32,9 @@ import org.springframework.test.web.servlet.MockMvc;
         "assessment.baseline.occupation-catalog.enabled=true",
         "assessment.baseline.legacy-authoring.enabled=true"
 })
-@Import(LocalCatalogSecurityConfiguration.class)
+@Import({LocalCatalogSecurityConfiguration.class, com.adaptlearngraph.config.ModelMapperConfiguration.class,
+        com.adaptlearngraph.helper.BaselineAuthoringMappings.class,
+        com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService.class})
 @ActiveProfiles("local")
 class BaselineAssessmentManagementControllerTest {
     private static final UUID ASSESSMENT_VERSION_ID = new UUID(0L, 1);

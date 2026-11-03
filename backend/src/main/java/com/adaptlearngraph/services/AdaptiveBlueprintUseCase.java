@@ -18,6 +18,10 @@ public interface AdaptiveBlueprintUseCase {
     AdaptiveBlueprintListing.Page list(AdaptiveBlueprintListing.Query query);
     Workspace getWorkspace(String occupationId);
     VersionDetails getVersion(String occupationId, VersionId id);
+    /** HTTP-facing variant: the version identity is built from path values inside the business layer. */
+    default VersionDetails getVersion(String occupationId, UUID blueprintId, int version) {
+        return getVersion(occupationId, new VersionId(blueprintId, version));
+    }
     record VersionDetails(Version version, AdaptiveBlueprintListing.Status status) {}
 
     WorkingRevision save(Save command);

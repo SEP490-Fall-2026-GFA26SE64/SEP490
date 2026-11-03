@@ -1,36 +1,23 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.ContentHashRequest;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.EditManifestRequest;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.ExpectedRevisionRequest;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.ManagedAssessmentResponse;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.ManagedBlueprintResponse;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.ReasonRequest;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.SaveWorkingRequest;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.WorkingRevisionResponse;
+import com.adaptlearngraph.dtos.BaselineAuthoringDto.WorkspaceResponse;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase;
+import com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Failure;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.ManifestEdit;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationPage;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationQuery;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.WorkingRevision;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Workspace;
-import com.adaptlearngraph.services.BaselineBlueprintUseCase.BlueprintDraft;
-import com.adaptlearngraph.repository.BaselineAssessmentDraftStore;
-import com.adaptlearngraph.repository.BaselineAssessmentManagementStore;
-import com.adaptlearngraph.repository.BaselineBlueprintStore;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
-import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
-import com.adaptlearngraph.entities.domain.BaselineBlueprint;
-import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
-import com.adaptlearngraph.entities.domain.BaselineBlueprint.SkillConfig;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.adaptlearngraph.services.BaselineStoreFailures;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.net.URI;
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -59,13 +46,10 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @RequestMapping(ApiEndpoints.BASELINE_ASSESSMENT_MANAGEMENT)
 public class BaselineAssessmentManagementController {
-    private final BaselineAssessmentManagementUseCase management;
-    private final ObjectMapper objectMapper;
+    private final BaselineAssessmentManagementApplicationService management;
 
-    public BaselineAssessmentManagementController(
-            BaselineAssessmentManagementUseCase management, ObjectMapper objectMapper) {
+    public BaselineAssessmentManagementController(BaselineAssessmentManagementApplicationService management) {
         this.management = management;
-        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -75,122 +59,111 @@ public class BaselineAssessmentManagementController {
             @RequestParam(defaultValue = "name_asc") String sort,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) int size) {
-        return management.listOccupations(new OccupationQuery(search, status, sort, page, size));
+        return management.list(search, status, sort, page, size);
     }
 
     @GetMapping("/occupations/{occupationId}")
-    Workspace workspace(@PathVariable String occupationId) {
-        return management.getWorkspace(occupationId);
+    WorkspaceResponse workspace(@PathVariable String occupationId) {
+        return management.workspace(occupationId);
     }
 
     @PostMapping("/occupations/{occupationId}/blueprint-working-revisions")
-    ResponseEntity<WorkingRevision> startRevision(
+    ResponseEntity<WorkingRevisionResponse> startRevision(
             @PathVariable String occupationId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        WorkingRevision created = management.startBlueprintRevision(occupationId, idempotencyKey);
+        WorkingRevisionResponse created = management.startRevision(occupationId, idempotencyKey);
         return ResponseEntity.created(workingLocation(occupationId, created.workingRevisionId()))
                 .body(created);
     }
 
     @PutMapping("/occupations/{occupationId}/blueprint-working-revisions/{workingRevisionId}")
-    WorkingRevision saveRevision(
+    WorkingRevisionResponse saveRevision(
             @PathVariable String occupationId,
             @PathVariable UUID workingRevisionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody SaveWorkingRequest request) {
-        if (!occupationId.equals(request.occupationId())) {
-            throw new IllegalArgumentException("Path and body Occupation must match");
-        }
-        return management.saveBlueprintRevision(workingRevisionId, request.expectedRevision(),
-                idempotencyKey, request.toDraft());
+        return management.saveRevision(occupationId, workingRevisionId, idempotencyKey, request);
     }
 
     @PostMapping("/occupations/{occupationId}/blueprint-working-revisions/{workingRevisionId}/finalize")
-    ResponseEntity<BlueprintResponse> finalizeRevision(
+    ResponseEntity<ManagedBlueprintResponse> finalizeRevision(
             @PathVariable String occupationId,
             @PathVariable UUID workingRevisionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody ExpectedRevisionRequest request) {
-        BaselineBlueprint created = management.finalizeBlueprintRevision(
+        ManagedBlueprintResponse created = management.finalizeRevision(
                 workingRevisionId, request.expectedRevision(), idempotencyKey);
         return ResponseEntity.created(URI.create("/api/v1/ld/baseline-blueprints/"
                         + created.blueprintId() + "/versions/" + created.version()))
-                .body(toResponse(created));
+                .body(created);
     }
 
     @PostMapping("/occupations/{occupationId}/assessment-drafts")
-    ResponseEntity<AssessmentResponse> generate(
+    ResponseEntity<ManagedAssessmentResponse> generate(
             @PathVariable String occupationId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        BaselineAssessmentDraft created = management.generateAssessmentDraft(
-                occupationId, idempotencyKey);
+        ManagedAssessmentResponse created = management.generate(occupationId, idempotencyKey);
         return ResponseEntity.created(assessmentLocation(created.assessmentVersionId()))
-                .body(toResponse(created));
+                .body(created);
     }
 
     @GetMapping("/assessment-versions/{assessmentVersionId}")
-    AssessmentResponse assessment(@PathVariable UUID assessmentVersionId) {
-        return toResponse(management.getAssessmentVersion(assessmentVersionId));
+    ManagedAssessmentResponse assessment(@PathVariable UUID assessmentVersionId) {
+        return management.assessment(assessmentVersionId);
     }
 
     @PutMapping("/assessment-versions/{assessmentVersionId}")
-    AssessmentResponse edit(
+    ManagedAssessmentResponse edit(
             @PathVariable UUID assessmentVersionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody EditManifestRequest request) {
-        return toResponse(management.editAssessmentDraft(
-                assessmentVersionId, request.expectedRevision(), idempotencyKey,
-                new ManifestEdit(request.title(), request.orderedItemVersionIds())));
+        return management.edit(assessmentVersionId, idempotencyKey, request);
     }
 
     @PutMapping("/assessment-versions/{assessmentVersionId}/review")
-    AssessmentResponse review(
+    ManagedAssessmentResponse review(
             @PathVariable UUID assessmentVersionId,
             @Valid @RequestBody ContentHashRequest request) {
-        return toResponse(management.reviewAssessmentDraft(
-                assessmentVersionId, request.contentHash()));
+        return management.review(assessmentVersionId, request.contentHash());
     }
 
     @PutMapping("/assessment-versions/{assessmentVersionId}/publish")
-    AssessmentResponse publish(
+    ManagedAssessmentResponse publish(
             @PathVariable UUID assessmentVersionId,
             @Valid @RequestBody ContentHashRequest request) {
-        return toResponse(management.publishAssessment(
-                assessmentVersionId, request.contentHash()));
+        return management.publish(assessmentVersionId, request.contentHash());
     }
 
     @PostMapping("/assessment-versions/{assessmentVersionId}/replacement-draft")
-    ResponseEntity<AssessmentResponse> replaceReviewed(
+    ResponseEntity<ManagedAssessmentResponse> replaceReviewed(
             @PathVariable UUID assessmentVersionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        BaselineAssessmentDraft created = management.replaceReviewedCandidate(
-                assessmentVersionId, idempotencyKey);
+        ManagedAssessmentResponse created = management.replaceReviewed(assessmentVersionId, idempotencyKey);
         return ResponseEntity.created(assessmentLocation(created.assessmentVersionId()))
-                .body(toResponse(created));
+                .body(created);
     }
 
     @PostMapping("/assessment-versions/{assessmentVersionId}/restore")
-    ResponseEntity<AssessmentResponse> restore(
+    ResponseEntity<ManagedAssessmentResponse> restore(
             @PathVariable UUID assessmentVersionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        BaselineAssessmentDraft created = management.restoreHistoricalAssessment(
-                assessmentVersionId, idempotencyKey);
+        ManagedAssessmentResponse created = management.restore(assessmentVersionId, idempotencyKey);
         return ResponseEntity.created(assessmentLocation(created.assessmentVersionId()))
-                .body(toResponse(created));
+                .body(created);
     }
 
     @PostMapping("/assessment-versions/{assessmentVersionId}/disable")
-    Workspace disable(
+    WorkspaceResponse disable(
             @PathVariable UUID assessmentVersionId,
             @Valid @RequestBody ReasonRequest request) {
-        return management.disableActiveAssessment(assessmentVersionId, request.reason());
+        return management.disable(assessmentVersionId, request.reason());
     }
 
     @PostMapping("/occupations/{occupationId}/abandon-pending-change")
-    Workspace abandon(
+    WorkspaceResponse abandon(
             @PathVariable String occupationId,
             @Valid @RequestBody ReasonRequest request) {
-        return management.abandonPendingChange(occupationId, request.reason());
+        return management.abandon(occupationId, request.reason());
     }
 
     @ExceptionHandler(Failure.class)
@@ -227,17 +200,13 @@ public class BaselineAssessmentManagementController {
                 new ApiError(failure.code().name(), failure.getMessage(), null));
     }
 
-    @ExceptionHandler({BaselineAssessmentManagementStore.WriteConflict.class,
-            BaselineAssessmentDraftStore.WriteConflict.class,
-            BaselineBlueprintStore.WriteConflict.class})
+    @ExceptionHandler(BaselineStoreFailures.WriteConflict.class)
     ResponseEntity<ApiError> handleWriteConflict(RuntimeException failure) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 new ApiError("VERSION_CONFLICT", failure.getMessage(), null));
     }
 
-    @ExceptionHandler({BaselineAssessmentManagementStore.DependencyUnavailable.class,
-            BaselineAssessmentDraftStore.DependencyUnavailable.class,
-            BaselineOccupationCatalogPort.DependencyUnavailable.class})
+    @ExceptionHandler(BaselineStoreFailures.DependencyUnavailable.class)
     ResponseEntity<ApiError> handleDependency(RuntimeException failure) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
                 new ApiError("DEPENDENCY_UNAVAILABLE", failure.getMessage(), null));
@@ -259,96 +228,5 @@ public class BaselineAssessmentManagementController {
                 + assessmentVersionId);
     }
 
-    private static BlueprintResponse toResponse(BaselineBlueprint blueprint) {
-        return new BlueprintResponse(blueprint.blueprintId(), blueprint.version(), blueprint.name(),
-                blueprint.occupationId(), blueprint.occupationNameSnapshot(), blueprint.createdAt(),
-                blueprint.roles());
-    }
-
-    private AssessmentResponse toResponse(BaselineAssessmentDraft draft) {
-        return new AssessmentResponse(draft.assessmentVersionId(), draft.assessmentId(),
-                draft.version(), draft.title(), draft.blueprintId(), draft.blueprintVersion(),
-                draft.createdAt(), draft.contentHash(), draft.draftRevision(),
-                draft.publicationState().name(), draft.reviewedAt(),
-                draft.items().stream().map(item -> new AssessmentItemResponse(
-                        item.position(), item.itemVersionId(), item.roleId(),
-                        item.roleNameSnapshot(), item.microSkillId(),
-                        item.microSkillNameSnapshot(), item.difficulty(), item.scoringWeight(),
-                        item.prompt(), parseJson(item.responseSchemaJson()))).toList());
-    }
-
-    private JsonNode parseJson(String value) {
-        try {
-            return objectMapper.readTree(value);
-        } catch (JsonProcessingException invalid) {
-            throw new IllegalStateException("Stored response schema is invalid JSON", invalid);
-        }
-    }
-
-    record ExpectedRevisionRequest(@Min(1) long expectedRevision) {}
-
-    record SaveWorkingRequest(
-            @Min(1) long expectedRevision,
-            @NotBlank String name,
-            @NotBlank String occupationId,
-            @NotBlank String occupationNameSnapshot,
-            @NotEmpty List<@Valid RoleRequest> roles) {
-        BlueprintDraft toDraft() {
-            return new BlueprintDraft(name, occupationId, occupationNameSnapshot,
-                    roles.stream().map(RoleRequest::toDomain).toList());
-        }
-    }
-
-    record RoleRequest(
-            @NotBlank String roleId,
-            @NotBlank String roleNameSnapshot,
-            boolean enabled,
-            @NotNull @DecimalMin("0") @DecimalMax("1") BigDecimal easyScoreWeight,
-            @NotNull @DecimalMin("0") @DecimalMax("1") BigDecimal mediumScoreWeight,
-            @NotNull @DecimalMin("0") @DecimalMax("1") BigDecimal hardScoreWeight,
-            @NotEmpty List<@Valid SkillRequest> skills) {
-        RoleConfig toDomain() {
-            return new RoleConfig(roleId, roleNameSnapshot, enabled,
-                    easyScoreWeight, mediumScoreWeight, hardScoreWeight,
-                    skills.stream().map(SkillRequest::toDomain).toList());
-        }
-    }
-
-    record SkillRequest(
-            @NotBlank String microSkillId,
-            @NotBlank String microSkillNameSnapshot,
-            @Min(0) int easyQuestionCount,
-            @Min(0) int mediumQuestionCount,
-            @Min(0) int hardQuestionCount) {
-        SkillConfig toDomain() {
-            return new SkillConfig(microSkillId, microSkillNameSnapshot,
-                    easyQuestionCount, mediumQuestionCount, hardQuestionCount);
-        }
-    }
-
-    record EditManifestRequest(
-            @Min(1) long expectedRevision,
-            @NotBlank String title,
-            @NotEmpty List<@NotNull UUID> orderedItemVersionIds) {}
-
-    record ContentHashRequest(@NotBlank String contentHash) {}
-
-    record ReasonRequest(@NotBlank String reason) {}
-
     record ApiError(String code, String message, UUID existingResourceId) {}
-
-    record BlueprintResponse(
-            UUID blueprintId, int version, String name, String occupationId,
-            String occupationNameSnapshot, Instant createdAt, List<RoleConfig> roles) {}
-
-    record AssessmentResponse(
-            UUID assessmentVersionId, UUID assessmentId, int version, String title,
-            UUID blueprintId, int blueprintVersion, Instant createdAt, String contentHash,
-            long draftRevision, String publicationState, Instant reviewedAt,
-            List<AssessmentItemResponse> items) {}
-
-    record AssessmentItemResponse(
-            int position, UUID itemVersionId, String roleId, String roleNameSnapshot,
-            String microSkillId, String microSkillNameSnapshot, String difficulty,
-            BigDecimal scoringWeight, String prompt, JsonNode responseSchema) {}
 }

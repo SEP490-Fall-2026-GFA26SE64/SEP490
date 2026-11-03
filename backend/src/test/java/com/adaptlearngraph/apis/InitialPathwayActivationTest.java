@@ -1,6 +1,7 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.services.InitialPathwayAdmission;
+import com.adaptlearngraph.services.InitialPathwayApplicationService;
 import com.adaptlearngraph.services.InitialPathwayReview;
 import com.adaptlearngraph.services.InitialPathwayView;
 import com.adaptlearngraph.services.RoleGapPreview;
@@ -16,6 +17,7 @@ class InitialPathwayActivationTest {
                 .withPropertyValues("pathway.initial.enabled=true","assessment.baseline.workspace.enabled=true")
                 .withBean(RoleGapPreview.class,()->mock(RoleGapPreview.class)).withBean(InitialPathwayAdmission.class,()->mock(InitialPathwayAdmission.class))
                 .withBean(InitialPathwayReview.class,()->mock(InitialPathwayReview.class)).withBean(InitialPathwayView.class,()->mock(InitialPathwayView.class))
+                .withBean(InitialPathwayApplicationService.class,()->mock(InitialPathwayApplicationService.class))
                 .withBean(ObjectMapper.class,ObjectMapper::new).withUserConfiguration(InitialPathwayController.class);
     }
     @Test void R13_productionAlwaysDeniesControllerEvenWhenFlagsEnabled(){context("local","workspace-baseline","prod").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));}

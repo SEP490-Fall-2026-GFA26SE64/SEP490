@@ -75,8 +75,15 @@ import static com.adaptlearngraph.constants.DevelopmentWorkspace.*;
 @Configuration(proxyBeanMethods = false)
 @Profile("workspace-baseline & local & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@org.springframework.context.annotation.Import(PersistenceConfiguration.class)
+@org.springframework.context.annotation.Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class WorkspaceBaselineConfiguration {
+    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar assessmentPolicyMappings() {
+        return new com.adaptlearngraph.helper.AssessmentPolicyMappings();
+    }
+    @Bean com.adaptlearngraph.services.AssessmentPolicyApplicationService assessmentPolicyApplicationService(
+            com.adaptlearngraph.services.AssessmentPolicyUseCase policies, org.modelmapper.ModelMapper modelMapper) {
+        return new com.adaptlearngraph.services.AssessmentPolicyApplicationService(policies, modelMapper);
+    }
     @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(com.adaptlearngraph.repository.CalibrationPorts.BankSource.class)
     @Profile("workspace-development")
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="workspace.development-fixtures.enabled",havingValue="true")

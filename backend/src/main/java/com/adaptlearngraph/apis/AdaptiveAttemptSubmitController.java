@@ -2,7 +2,7 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
-import com.adaptlearngraph.repository.AdaptiveAttemptStore;
+import com.adaptlearngraph.services.AdaptiveBaselineFailures;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
@@ -28,7 +28,8 @@ public final class AdaptiveAttemptSubmitController {
     public AdaptiveAttemptSubmitController(Submitting attempts) { this.attempts = attempts; }
     @PostMapping(consumes = "application/json")
     ResponseEntity<View> submit(@PathVariable UUID attemptId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(attempts.submit(decode(attemptId, key, body)));
+        Submit command = decode(attemptId, key, body);
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.attemptStore(() -> attempts.submit(command)));
     }
     private Submit decode(UUID attemptId, String key, String body) {
         if (body == null || body.length() > 65_536) throw new Failure(Code.INVALID_REQUEST);
@@ -41,10 +42,6 @@ public final class AdaptiveAttemptSubmitController {
     }
     @ExceptionHandler(Failure.class)
     ResponseEntity<AdaptiveAttemptController.Error> failure(Failure failure) { return AdaptiveAttemptController.error(failure.code()); }
-    @ExceptionHandler(AdaptiveAttemptStore.Failure.class)
-    ResponseEntity<AdaptiveAttemptController.Error> store(AdaptiveAttemptStore.Failure failure) {
-        return AdaptiveAttemptController.error(Code.valueOf(failure.code().name()));
-    }
     @ExceptionHandler(DataAccessException.class)
     ResponseEntity<AdaptiveAttemptController.Error> dependency(Exception failure) { return AdaptiveAttemptController.error(Code.DEPENDENCY_UNAVAILABLE); }
     @ExceptionHandler({MissingRequestHeaderException.class, HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
